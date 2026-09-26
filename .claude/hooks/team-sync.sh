@@ -22,6 +22,17 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
       echo "  → Pull/merge these before editing, and tell the user what changed."
     fi
   done
+  # Is the latest main live on the site? Vercel blocks commits from accounts outside its team.
+  main_sha=$(git rev-parse --verify --quiet origin/main 2>/dev/null)
+  if [ -n "$main_sha" ]; then
+    vstatus=$(timeout 8 curl -fsS "https://api.github.com/repos/mmoustafaeditor/tier-one/commits/$main_sha/status" 2>/dev/null)
+    if printf '%s' "$vstatus" | grep -q "Deployment was blocked"; then
+      echo ""
+      echo "🚫 The latest main (${main_sha:0:7}) is NOT live on sembagames.app: Vercel blocked its deploy."
+      echo "  → Tell the user. mmoustafaeditor fixes it by pushing to main, or at"
+      echo "    https://vercel.com/semba-game-studios/tier-one/deployments → latest main deployment → ⋯ → Redeploy."
+    fi
+  fi
   echo ""
   echo "Last 8 commits on this branch:"
   git log -8 --format='  %h %ad %an: %s' --date=short
