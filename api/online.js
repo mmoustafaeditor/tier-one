@@ -121,7 +121,11 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS'); return res.status(204).end(); }
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'method' });
-  if (!URL_ || !TOKEN) return res.status(200).json({ ok: false, error: 'offline' });
+  if (!URL_ || !TOKEN) {
+    // Names only (never values), so a misnamed store connection can be spotted from the health check.
+    const seen = Object.keys(process.env).filter(k => /REDIS|KV_|UPSTASH/i.test(k)).sort();
+    return res.status(200).json({ ok: false, error: 'offline', seen });
+  }
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = null; } }
   const fn = body && actions[body.action];
