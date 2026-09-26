@@ -17,6 +17,19 @@ together with your change.
 
 ---
 
+## 2026-09-26 · mmoustafaeditor · Intro soundtrack, new barber/leak sounds, cleaner source tiles, sources bash the players
+- **What changed:** The Semba intro now has a soundtrack timed to the video (neon power-on, dim, riser, a silent beat,
+  the impact at 2.53s with debris, the neon re-ignite "shing" and a chord), baked into `semba-intro.webm/.mp4`. It plays
+  with sound where allowed (Android app, Chrome after clicking through from the home page); otherwise it plays muted
+  with a "🔊 Tap for sound" chip. New sounds: barber = scissor snips, spray bottle, comb flick and a short trimmer pass;
+  leak = an old newsroom fax (dial, handshake, data, paper feed). Source tiles: contact cost is a badge in the corner,
+  reliability (bars + High/Medium/Low) is a clean footer, "Your record" under it in Career; fixed the overlap and the
+  RTL flip. About 360 new lines where sources take football-only shots at the player they're talking about, plus
+  harsher post-match DMs at the journalist (EN/ES/AR). Web 1.3.0, Android 1.5.
+- **Files:** `tier-one/index.html`, `tier-one/semba-intro.webm|mp4`, `games/tier-one/intro-sound/render.js` (new),
+  `games/tier-one/app/build.gradle`, `downloads/TierOne.apk`, `api/tier-one/latest.js`, docs.
+- **Heads-up for the team:** `DAILY_REPLAY` is still `true` (testing). Next Android release is versionCode 7.
+
 ## 2026-09-26 · mmoustafaeditor · Sound overhaul; Daily Challenge replayable for testing
 - **What changed:** New synth sound engine (no audio files, works offline in the app): the agent call is a double phone
   ring, pickup click and a clearly fake gibberish phone voice (with a voice meter on screen); barber is electric clippers

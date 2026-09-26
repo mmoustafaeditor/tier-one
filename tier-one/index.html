@@ -237,15 +237,20 @@ html[lang="ar"] .saga .who b{ font-style:normal; line-height:1.4; }
 .transfer .lbl{ font-size:12px; font-weight:700; color:var(--text); text-align:center; margin-top:6px; max-width:100px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .srcgrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .srcbtn{ display:flex; flex-direction:column; align-items:flex-start; gap:8px; text-align:start; padding:12px; border-radius:16px; border:1px solid var(--line); background:var(--panel); color:var(--text); cursor:pointer; min-height:118px; transition:transform .08s,border-color .15s; }
-.rep{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-top:2px; width:100%; font:700 11.5px/1 var(--body); }
-.rep .bars{ display:inline-flex; gap:3px; } .rep .bars i{ width:16px; height:6px; border-radius:3px; background:var(--panel3); }
+.rep{ display:grid; grid-template-columns:auto 1fr auto; align-items:center; column-gap:8px; row-gap:6px; width:100%; margin-top:auto; padding-top:10px; border-top:1px solid var(--line); font:700 12px/1.1 var(--body); }
+.rep .bars{ display:inline-flex; gap:3px; } .rep .bars i{ display:block; width:13px; height:6px; border-radius:3px; background:var(--panel3); }
 .rep-high .bars i.on{ background:var(--green); box-shadow:0 0 8px color-mix(in srgb,var(--green) 70%,transparent); } .rep-med .bars i.on{ background:var(--gold); box-shadow:0 0 8px color-mix(in srgb,var(--gold) 60%,transparent); } .rep-low .bars i.on{ background:var(--red); box-shadow:0 0 8px color-mix(in srgb,var(--red) 60%,transparent); }
-.rep .rl{ color:var(--text); } .rep-high .rl{ color:var(--green); } .rep-med .rl{ color:var(--gold); } .rep-low .rl{ color:var(--red); }
-.rep .rc{ margin-inline-start:auto; padding:3px 6px; border-radius:6px; background:var(--panel3); color:var(--text); }
-.rep .rl,.rep .rme{ flex-basis:100%; } .rep .rme{ color:var(--muted); font-weight:600; }
-.srcbtn .rep span,.srcstat .rep span{ display:inline-flex; align-items:center; margin-top:0; font-size:11.5px; line-height:1.15; }
-.srcbtn .rep .rl,.srcbtn .rep .rme,.srcstat .rep .rl{ display:block; }
-.srcbtn .rep{ margin-top:auto; } .srcstat .rep{ margin-top:6px; max-width:240px; } .srcstat .rep .rc{ margin-inline-start:6px; }
+.rep .rl{ min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .rep-high .rl{ color:var(--green); } .rep-med .rl{ color:var(--gold); } .rep-low .rl{ color:var(--red); }
+.rep .rc{ justify-self:end; padding:4px 7px; border-radius:7px; background:var(--panel3); color:var(--text); font-weight:800; white-space:nowrap; unicode-bidi:isolate; }
+.rep .rme{ grid-column:1/-1; color:var(--muted); font-weight:600; font-size:11.5px; }
+.srcbtn .rep span,.srcstat .rep span{ display:block; margin-top:0; font-size:inherit; line-height:inherit; }
+.srcbtn .rep .bars,.srcstat .rep .bars{ display:inline-flex; } .srcbtn .rep .rme{ font-size:11.5px; color:var(--muted); }
+.srcbtn .rep .rc{ color:var(--text); } .srcbtn .rep-high .rl{ color:var(--green); } .srcbtn .rep-med .rl{ color:var(--gold); } .srcbtn .rep-low .rl{ color:var(--red); }
+.srcstat .rep{ max-width:220px; margin-top:8px; padding-top:0; border-top:0; }
+.srcbtn .rep,.srcstat .rep{ display:grid; }
+.srcbtn{ position:relative; } .srcbtn .rep{ grid-template-columns:auto 1fr; }
+.srcbtn .costtag{ position:absolute; top:12px; right:12px; display:inline-flex; align-items:center; gap:4px; margin:0; padding:5px 8px; border-radius:9px; background:var(--panel3); border:1px solid var(--line2); color:var(--text); font:800 13px/1 var(--body); unicode-bidi:isolate; }
+[dir="rtl"] .srcbtn .costtag{ right:auto; left:12px; }
 .srcbtn:active{ transform:scale(.97); } .srcbtn[disabled]{ opacity:.4; cursor:not-allowed; }
 .srcbtn .ic{ width:42px; height:42px; border-radius:13px; display:grid; place-items:center; font-size:22px; background:var(--panel3); }
 .srcbtn b{ display:block; font-size:14.5px; font-weight:700; } .srcbtn span{ display:block; font-size:12px; color:var(--muted); line-height:1.3; margin-top:2px; }
@@ -479,6 +484,8 @@ body.has-consent .home{ padding-bottom:190px; }
 @media (max-aspect-ratio:6/5){ #boot video,#boot .bp{ position:absolute; left:50%; top:50%; width:150vw; height:auto; max-width:none; aspect-ratio:864/496; transform:translate(-50%,-50%); } #boot::before{ content:""; position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(#000,transparent 28%,transparent 72%,#000); } }
 #boot .bskip{ position:absolute; z-index:2; right:max(16px,env(safe-area-inset-right)); bottom:calc(24px + env(safe-area-inset-bottom,0px)); height:38px; padding:0 16px; border-radius:999px; border:1px solid rgba(255,255,255,.3); background:rgba(0,0,0,.45); color:#fff; font:700 14px system-ui,sans-serif; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); cursor:pointer; opacity:0; animation:bootSkip .4s ease .9s forwards; }
 @keyframes bootSkip{ to{ opacity:1; } }
+#boot .bsound{ position:absolute; z-index:2; left:50%; bottom:calc(84px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); height:44px; padding:0 20px; border-radius:999px; border:1px solid rgba(182,255,58,.6); background:rgba(0,0,0,.55); color:#fff; font:700 15px system-ui,sans-serif; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); box-shadow:0 0 24px -6px rgba(182,255,58,.8); cursor:pointer; animation:bootSkip .35s ease forwards; }
+#boot .bsound[hidden]{ display:none; }
 #boot .bbar{ position:absolute; z-index:2; left:0; right:0; bottom:0; height:3px; background:rgba(255,255,255,.08); }
 #boot .bbar i{ display:block; height:100%; width:100%; background:#B6FF3A; box-shadow:0 0 12px #B6FF3A; transform:scaleX(0); transform-origin:left; }
 #boot.playing .bbar i,#boot.still .bbar i{ animation:bootBar var(--bd,4.1s) linear forwards; }
@@ -492,33 +499,37 @@ body.has-consent .home{ padding-bottom:190px; }
 <body>
 <div id="boot" aria-label="Semba Studios">
  <img class="bp" alt="" decoding="async">
- <video muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
+ <video playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
+ <button class="bsound" type="button" hidden>🔊 Tap for sound</button>
  <button class="bskip" type="button">Skip ›</button>
  <div class="bbar"><i></i></div>
 </div>
 <script>
 (function(){
  var b=document.getElementById('boot'); if(!b) return;
- var seen=/[?&]purchase=/.test(location.search)||/^#(privacy|terms|contact)$/.test(location.hash);
  function gone(){ try{ window.dispatchEvent(new Event('sembaboot')); }catch(e){} }
- if(seen){ b.remove(); window.__bootDone=true; return; }
+ if(/[?&]purchase=/.test(location.search)||/^#(privacy|terms|contact)$/.test(location.hash)){ b.remove(); window.__bootDone=true; return; }
  var base=location.protocol==='file:'?'':'/tier-one/';
- var v=b.querySelector('video'), img=b.querySelector('.bp'), done=false;
+ var v=b.querySelector('video'), img=b.querySelector('.bp'), chip=b.querySelector('.bsound'), done=false;
+ var soundOn=true; try{ var sv=JSON.parse(localStorage.getItem('tierone_v1')||'{}'); if(sv.settings&&sv.settings.sound===false) soundOn=false; }catch(e){}
  img.src=base+'semba-intro.jpg';
- function end(){ if(done) return; done=true; window.__bootDone=true; b.classList.add('out'); setTimeout(function(){ b.remove(); },900); gone(); }
- function still(ms){ if(done||b.classList.contains('still')) return; b.classList.remove('playing'); b.classList.add('still'); b.style.setProperty('--bd',(ms/1000)+'s'); setTimeout(end,ms); }
- b.addEventListener('click',end);
+ function fadeOut(){ if(v.muted||v.paused) return; var k=0; var iv=setInterval(function(){ k++; try{ v.volume=Math.max(0,1-k/8); }catch(e){} if(k>=8){ clearInterval(iv); try{ v.pause(); }catch(e){} } },90); }
+ function end(){ if(done) return; done=true; window.__bootDone=true; fadeOut(); b.classList.add('out'); setTimeout(function(){ try{ v.pause(); }catch(e){} b.remove(); },900); gone(); }
+ function still(ms){ if(done||b.classList.contains('still')) return; b.classList.remove('playing'); b.classList.add('still'); chip.hidden=true; b.style.setProperty('--bd',(ms/1000)+'s'); setTimeout(end,ms); }
+ chip.addEventListener('click',function(e){ e.stopPropagation(); v.muted=false; try{ v.volume=1; }catch(x){} chip.hidden=true; var q=v.play&&v.play(); if(q&&q.catch) q.catch(function(){}); });
+ b.querySelector('.bskip').addEventListener('click',function(e){ e.stopPropagation(); end(); });
+ b.addEventListener('click',function(){ if(!chip.hidden){ chip.click(); return; } end(); });
  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
  if(reduce||!v.canPlayType){ still(1400); return; }
- var src=v.canPlayType('video/webm; codecs="vp9"')?'semba-intro.webm':'semba-intro.mp4';
- v.src=base+src;
+ v.src=base+(v.canPlayType('video/webm; codecs="vp9, opus"')?'semba-intro.webm':'semba-intro.mp4');
  v.addEventListener('playing',function(){ if(!b.classList.contains('still')) b.classList.add('playing'); });
  v.addEventListener('ended',end);
  v.addEventListener('error',function(){ still(2200); });
- var p; try{ p=v.play(); }catch(e){ still(2200); }
- if(p&&p.catch) p.catch(function(){ still(2200); });
+ function playMuted(){ v.muted=true; var q; try{ q=v.play(); }catch(e){ still(2200); return; } if(q&&q.then) q.then(function(){ if(soundOn) chip.hidden=false; },function(){ still(2200); }); }
+ if(soundOn){ v.muted=false; var p; try{ p=v.play(); }catch(e){ playMuted(); } if(p&&p.catch) p.catch(playMuted); }
+ else playMuted();
  setTimeout(function(){ if(!done&&!b.classList.contains('playing')) still(1800); },1600);
- setTimeout(end,7000);
+ setTimeout(end,7500);
 })();
 </script>
 <div class="app" id="app"></div>
@@ -538,7 +549,7 @@ body.has-consent .home{ padding-bottom:190px; }
    your own domain — not inside the claude.ai preview.
    ============================================================ */
 const CONFIG={
- VERSION:'1.2.0',
+ VERSION:'1.3.0',
  GAME_NAME:'Tier One',
  STUDIO_NAME:'Semba Studios',
  SITE_URL:'https://sembagames.app/tier-one',
@@ -619,7 +630,7 @@ I18N.en={
  howto:{title:'How to play',cards:[['The window','8 real players, 8 rumored moves. Every saga has a hidden truth: the deal happens, he leaves somewhere else, it collapses, or it was never real.'],['10 contacts',"Each day you get 10 contacts to spend. Every source shows a reliability bar. High (Physio, Airport spotter) costs 3 contacts, Medium (Agent, Kitman) costs 2, Low (Barber, Rival newsroom leak) costs 1. Even the best ones lie sometimes."],['Post your call','Pick what happens and how loud you say it. Quiet call: +10 right, −5 wrong. Loud "Confirmed" call: +40 right, −35 wrong. Earlier calls earn a bonus. Beat every rival to a correct call and it\'s an exclusive: +15. Tier 1 now takes 300+ pts.'],['Changing your mind',"You can delete a posted call and re-call it, but it's public: followers drop, the Tabloid mocks you, and the new call scores half with no exclusive."],['Deadline Day',"Day 7 is a 60-second timer with 3 contacts. Whatever you haven't called gets ⚪ and zero points. Then everything is announced, the replies roll in, and you get your tier."],['Daily vs Career','The daily window is identical for everyone, no gear, no boosts — just skill and nerve. Career is your own long game: earn credits, buy gear, bribe sources, unlock catchphrases, grow your followers.'],['Rivals',"The Tabloid posts early and loud and is wrong more than half the time. The ITK account is a coin flip. The Club Insider posts late and is nearly always right — by then it's not an exclusive."]]},
  settings:{title:'Settings',theme:'Theme',auto:'Auto',light:'Light',dark:'Dark',language:'Language',look:'Look',lookNote:'Buy more in Career › Style.',sound:'Sound',on:'On',off:'Off',wipe:'Wipe all progress',saved:'Progress is saved in this browser only.',confirm:'Wipe every window, badge and credit?',tutorial:'Replay the tutorial',close:'Close'},
  tut:{cards:[['🎙️',"You're a transfer journalist",'8 real players are linked with moves. Each rumor hides a truth. Your job: find it and post it before the rivals.'],['💬','DM your sources','Tap a player, then message a source. You get 10 contacts a day. High-reliability sources cost 3, Medium 2, Low 1. Check the bar under each one.'],['🚀','Post your call',"Pick what happens and how loud you say it. Loud and right = big points. Loud and wrong = ratio'd. Earlier calls score more. Tier 1 takes 300+ pts."],['⏱️','Deadline Day','End each day when you\'re done. Day 7 is a 60-second timer with only 3 contacts, then everything is announced and you get your tier.']],next:'Next',skip:'Skip',practice:'Play a practice window first',start:'Start',gotit:'Got it',coach:{c1:'Tap a player to open his saga.',c2:'Message a source. The bar shows how reliable they are: High 📞3, Medium 📞2, Low 📞1.',c3:'Got a clue? Scroll down and make your call.',c4:'Out of contacts? End the day. Rivals post overnight.',c5:"60 seconds left, 3 contacts. Call everything you haven't."}},
-rep:{high:'High reliability',med:'Medium reliability',low:'Low reliability',you:'you: {ok}/{n} true'},
+rep:{high:'High',med:'Medium',low:'Low',title:'Reliability and contact cost',cost:'Costs {n} contacts',you:'Your record: {ok}/{n} true'},
  arch:{title:'Past challenges',open:'📅 Past challenges ({n})',sub:'Every Daily Challenge you have played, with the full breakdown.',played:'Played',best:'Best tier',avg:'Average',streak:'Streak',empty:'No Daily Challenges yet. Play today\'s and it will show up here.',local:'Saved on this device only. Clearing your browser data removes it.',noDetail:'Played before the archive existed, so only your result for this story was saved.',back:'All past challenges',view:'Results',again:'Play again'},
  country:{ENG:'England',ESP:'Spain',GER:'Germany',FRA:'France',ITA:'Italy',TUR:'Turkey',KSA:'Saudi Arabia',USA:'the US'}
 };
@@ -672,7 +683,7 @@ I18N.es={
  howto:{title:'Cómo se juega',cards:[['El mercado','8 jugadores reales, 8 rumores. Cada culebrón esconde una verdad: se hace, se va a otro sitio, se cae o nunca fue real.'],['10 contactos','Cada día tienes 10 contactos. Cada fuente muestra una barra de fiabilidad. Alta (Fisio, Vigía del aeropuerto) cuesta 3 contactos, Media (Agente, Utillero) cuesta 2, Baja (Barbero, Topo de la redacción rival) cuesta 1. Hasta las mejores mienten a veces.'],['Publica tu apuesta','Elige qué pasa y con cuánta fuerza lo dices. Apuesta suave: +10 acierto, −5 fallo. Apuesta "Confirmado" a gritos: +40 acierto, −35 fallo. Apostar antes suma bonus. Si le ganas a todos los rivales con un acierto, es exclusiva: +15. Tier 1 ahora exige 300+ pts.'],['Cambiar de opinión','Puedes borrar una apuesta publicada y volver a apostar, pero es público: pierdes seguidores, el Tabloide se burla y la nueva apuesta puntúa la mitad sin exclusiva.'],['Día límite','El día 7 es un temporizador de 60 segundos con solo 3 contactos. Lo que no hayas apostado recibe ⚪ y cero puntos. Luego se anuncia todo, llegan las respuestas y recibes tu tier.'],['Diario vs Carrera','El mercado diario es idéntico para todos, sin equipo ni mejoras: solo habilidad y valor. Carrera es tu partida larga: gana créditos, compra equipo, soborna fuentes, desbloquea coletillas, suma seguidores.'],['Rivales','El Tabloide publica pronto y a gritos, y falla más de la mitad de las veces. La cuenta ITK es cara o cruz. El Insider del club publica tarde y casi siempre acierta… pero para entonces ya no es exclusiva.']]},
  settings:{title:'Ajustes',theme:'Tema',auto:'Auto',light:'Claro',dark:'Oscuro',language:'Idioma',look:'Estilo visual',lookNote:'Compra más en Carrera › Estilo.',sound:'Sonido',on:'Sí',off:'No',wipe:'Borrar todo el progreso',saved:'El progreso se guarda solo en este navegador.',confirm:'¿Borrar todos los mercados, insignias y créditos?',tutorial:'Repetir el tutorial',close:'Cerrar'},
  tut:{cards:[['🎙️','Eres periodista de fichajes','8 jugadores reales suenan para irse. Cada rumor esconde una verdad. Tu trabajo: descubrirla y publicarla antes que los rivales.'],['💬','Escribe a tus fuentes','Toca un jugador y escribe a una fuente. Tienes 10 contactos al día. Las de fiabilidad alta cuestan 3, media 2 y baja 1. Mira la barra debajo de cada una.'],['🚀','Publica tu apuesta','Elige qué pasa y con cuánta fuerza lo dices. A gritos y acertar = muchos puntos. A gritos y fallar = ratio. Apostar antes suma más. Tier 1 exige 300+ pts.'],['⏱️','Día límite','Termina cada día cuando acabes. El día 7 es un temporizador de 60 segundos con solo 3 contactos; luego se anuncia todo y recibes tu tier.']],next:'Siguiente',skip:'Saltar',practice:'Jugar un mercado de práctica primero',start:'Empezar',gotit:'Entendido',coach:{c1:'Toca un jugador para abrir su culebrón.',c2:'Escribe a una fuente. La barra dice cuánto te puedes fiar: Alta 📞3, Media 📞2, Baja 📞1.',c3:'¿Ya tienes una pista? Baja y apuesta.',c4:'¿Sin contactos? Termina el día. Los rivales publican de madrugada.',c5:'60 segundos, 3 contactos. Apuesta todo lo que falte.'}},
-rep:{high:'Fiabilidad alta',med:'Fiabilidad media',low:'Fiabilidad baja',you:'contigo: {ok}/{n} ciertas'},
+rep:{high:'Alta',med:'Media',low:'Baja',title:'Fiabilidad y coste en contactos',cost:'Cuesta {n} contactos',you:'Contigo: {ok}/{n} ciertas'},
  arch:{title:'Retos anteriores',open:'📅 Retos anteriores ({n})',sub:'Cada Reto diario que has jugado, con el desglose completo.',played:'Jugados',best:'Mejor tier',avg:'Media',streak:'Racha',empty:'Aún no hay retos. Juega el de hoy y aparecerá aquí.',local:'Guardado solo en este dispositivo. Si borras los datos del navegador, se pierde.',noDetail:'Jugado antes de que existiera el archivo: solo se guardó tu resultado en esta historia.',back:'Todos los retos anteriores',view:'Resultados',again:'Otra vez'},
  country:{ENG:'Inglaterra',ESP:'España',GER:'Alemania',FRA:'Francia',ITA:'Italia',TUR:'Turquía',KSA:'Arabia Saudí',USA:'Estados Unidos'}
 };
@@ -725,7 +736,7 @@ I18N.ar={
  howto:{title:'إزاي تلعب',cards:[['النافذة','8 لعيبة حقيقيين، و8 إشاعات انتقال. كل قصة وراها حقيقة مستخبية: الصفقة هتتم، أو هيروح حتة تانية، أو هتبوظ، أو كانت هري من الأول.'],['10 اتصالات','كل يوم معاك 10 اتصالات. تحت كل مصدر شريط بيقولك مصداقيته. العالية (الفسيو والواد بتاع المطار) بتاكل 3 اتصالات، المتوسطة (السمسار وعم سيد) بتاكل 2، والضعيفة (الحلاق والمسرّب) بتاكل 1. وحتى الكويسين بيكدبوا ساعات.'],['انزل بتوقّعك','اختار إيه اللي هيحصل وهتقولها بصوت قد إيه. توقّع هادي: +10 لو صح، −5 لو غلط. "خلصانة" بصوت عالي: +40 لو صح، −35 لو غلط. كل ما تقول بدري تاخد بونص. ولو سبقت كل المنافسين بتوقّع صح يبقى انفراد: +15. تير 1 بقى محتاج 300+ نقطة.'],['غيّرت رأيك؟','تقدر تمسح توقّعك المنشور وتقول تاني، بس ده بيبان للكل: هتخسر متابعين، وجرنال الفضايح هيتريق عليك، والتوقّع الجديد بياخد نص النقط من غير انفراد.'],['يوم القفلة','اليوم السابع عداد 60 ثانية وفيه 3 اتصالات بس. أي حاجة ماقلتهاش بتاخد ⚪ وصفر نقط. وبعدين كل حاجة بتتعلن، والردود بتنزل ترف، وتعرف انت تير كام.'],['اليومية ولا المسيرة','اليومية واحدة للكل، من غير عدّة ولا مساعدات — شطارة وجرأة بس. المسيرة لعبتك الطويلة: اكسب رصيد، اشتري عدّة، ارشي مصادر، افتح إفيهات، وكبّر متابعينك.'],['المنافسين','جرنال الفضايح بينشر بدري وبصوت عالي وبيغلط أكتر من نص الوقت. حساب مصادري ملك وكتابة. ابن النادي بينشر متأخر وغالبًا صح — بس ساعتها مابقاش انفراد.']]},
  settings:{title:'الإعدادات',theme:'الثيم',auto:'أوتوماتيك',light:'فاتح',dark:'غامق',language:'اللغة',look:'الشكل',lookNote:'اشتري أشكال أكتر من المسيرة › الستايل.',sound:'الصوت',on:'شغّال',off:'مقفول',wipe:'امسح كل حاجة',saved:'التقدم متسيّف على المتصفح ده بس.',confirm:'تمسح كل النوافذ والشارات والرصيد؟',tutorial:'اشرحلي تاني',close:'اقفل'},
  tut:{cards:[['🎙️','انت صحفي انتقالات','8 لعيبة حقيقيين في كلام عن انتقالهم. كل إشاعة وراها حقيقة. شغلتك: تعرفها وتنشرها قبل المنافسين.'],['💬','كلّم مصادرك في الخاص','دوس على لعيب وبعدين كلّم مصدر. معاك 10 اتصالات في اليوم. المصدر العالي بياكل 3، المتوسط 2، والضعيف 1. بص على الشريط اللي تحت كل واحد.'],['🚀','انزل بتوقّعك','اختار إيه اللي هيحصل وهتقولها بصوت قد إيه. عالي وصح = نقط كتير. عالي وغلط = راتيو. كل ما تقول بدري تاخد أكتر. تير 1 محتاج 300+ نقطة.'],['⏱️','يوم القفلة','خلّص كل يوم لما تخلص. اليوم السابع عداد 60 ثانية وفيه 3 اتصالات بس، وبعدين كل حاجة بتتعلن وتعرف انت تير كام.']],next:'اللي بعده',skip:'فكّك',practice:'سخّن الأول بنافذة تجريبية',start:'يلا بينا',gotit:'تمام',coach:{c1:'دوس على لعيب عشان تفتح قصته.',c2:'كلّم مصدر. الشريط بيقولك تصدقه قد إيه: عالي 📞3، متوسط 📞2، ضعيف 📞1.',c3:'معاك دليل؟ انزل تحت وقول توقّعك.',c4:'خلصت اتصالاتك؟ خلّص اليوم. المنافسين بينشروا بالليل.',c5:'60 ثانية، 3 اتصالات. قول أي حاجة ماقلتهاش.'}},
-rep:{high:'مصداقية عالية',med:'مصداقية متوسطة',low:'مصداقية ضعيفة',you:'معاك: {ok}/{n} صح'},
+rep:{high:'عالية',med:'متوسطة',low:'ضعيفة',title:'المصداقية وتمن الاتصال',cost:'بياكل {n} اتصالات',you:'معاك: {ok}/{n} صح'},
  arch:{title:'التحديات اللي فاتت',open:'📅 التحديات اللي فاتت ({n})',sub:'كل تحدي يومي لعبته، بالتفاصيل كلها.',played:'لعبت',best:'أحسن تير',avg:'المتوسط',streak:'السلسلة',empty:'لسه مالعبتش أي تحدي. العب بتاع النهارده وهيظهر هنا.',local:'متسيّف على الجهاز ده بس. لو مسحت بيانات المتصفح هيتمسح.',noDetail:'اتلعب قبل ما الأرشيف يبقى موجود، فاتحفظت نتيجتك في القصة دي بس.',back:'كل التحديات اللي فاتت',view:'النتيجة',again:'العب تاني'},
  country:{ENG:'إنجلترا',ESP:'إسبانيا',GER:'ألمانيا',FRA:'فرنسا',ITA:'إيطاليا',TUR:'تركيا',KSA:'السعودية',USA:'أمريكا'}
 };
@@ -1324,6 +1335,411 @@ VOICE2.ar={
 };
 function appendMerge(a,b){ for(const k in b){ const v=b[k]; if(Array.isArray(v)){ const cur=a[k]; a[k]=Array.isArray(cur)?cur.concat(v):(cur!=null?[cur].concat(v):v.slice()); } else if(v&&typeof v==='object'){ a[k]=a[k]||{}; appendMerge(a[k],v); } else a[k]=v; } return a; }
 for(const l in VOICE2){ if(I18N[l]) appendMerge(I18N[l],VOICE2[l]); }
+/* Voice pack v3: sources take football-only shots at the player, and harsher post-match DMs */
+const VOICE3={};
+VOICE3.en={
+ line:{
+  agent:{
+   DONE:["{d} have agreed to pay {p} what his highlight reel thinks he's worth. Not what his actual games think. Done deal.","{p} signs for {d} this week. I told them he's 'press-resistant'. He's not. He's just never been pressed. It's on.","{d} have met every demand, including a parking space near the club shop. {p} is theirs. My commission is mine.","{p} has already practised his {d} badge kiss in the mirror. Thirty takes. It's happening."],
+   HIJACK:["{d} offered {p} a nice contract. {h} offered him a nicer car. He's a simple man. {hc} it is.","{p} listened to {d}'s pitch for ten minutes, then asked if {hc} has a Nando's. It does. Hijack.","{h} have swooped for {p}. I'd love to say it's the project. It's the signing-on fee."],
+   OFF:["{c} valued {p} like a Ballon d'Or winner. {d} valued him like a squad player. Both are wrong, but it's dead.","{p} wanted a clause guaranteeing he takes every free kick. {d} watched his free kicks. Deal off, he stays at {c}.","Deal's off. {d} asked for {p}'s stats and I had to send them. Worst email of my career. He stays at {c}."],
+   FAKE:["{p}? To {d}? Mate, I can't even get {d} to watch his highlights. Nobody's called. Made up.","I'd love to tell you {d} want {p}. I'd love a lot of things. Nobody's asked about him. Nothing in it.","I've been shopping {p} around for months and {d} haven't once replied. No talks. Never were."]
+  },
+  kitman:{
+   DONE:["{p} has packed eleven pairs of boots for {dc}. Eleven. And he still can't trap a ball. He's off to {d}.","{p} left his lucky gloves in the bin with a note: 'see you never, {c}'. {d} have got him.","Found a {d} shirt with {p} on the back in his wash bag. He's been sleeping in it, the absolute melt."],
+   HIJACK:["{p} told the lads it's {d}. Then asked me to label his boot bag '{hc}'. Worst liar in the building.","{p} has swapped his boots for a pair in {h} colours. Pink and lime, somehow. He's joining {h}.","His locker's got a {h} scarf in it and a {d} one in the bin. {p} isn't subtle, bless him."],
+   OFF:["{p} has just ordered new personalised slides for the {c} dressing room. With his own face on. He's not going anywhere.","Nobody at {d} wanted {p}'s washing, clearly. His kit's back on the peg at {c}. It's off.","{p} was sulking in the boot room all morning. His move's collapsed. He took it out on a foam roller."],
+   FAKE:["{p} thinks {d} is a type of energy drink. There's no move. The only thing he's chasing is followers.","Rumours about {p}? The only rumour in this dressing room is that he's hopeless at head tennis. Nothing in it.","I asked {p} about {d} and he asked if I'd washed his headband. That's the whole saga. Invented."]
+  },
+  physio:{
+   DONE:["{p}'s transfer paperwork is clinically complete. His first touch remains untreatable. Medical in {dc} tomorrow.","Assessment: {p} presents with acute ambition and chronic step-overs. {d} have booked him in anyway. It's done.","{d}'s doctors requested {p}'s performance data. I sent it with a sympathy card. Medical in {dc} confirmed."],
+   HIJACK:["{p}'s medical has been transferred to {hc}. {d} have been discharged from the saga.","Referral letter for {p} came from {h}, not {d}. Symptoms include sudden interest in a bigger wage packet.","Test results: {p} is fit to sign for {h}. Positive for greed, negative for loyalty. {hc} tomorrow."],
+   OFF:["No medical for {p}. The deal has flatlined, and so has his celebration routine. He's staying at {c}.","Prognosis for the {p} move: terminal. He'll be back at {c} doing his cones, badly.","I've cleared {p}'s calendar for pre-season at {c}. Transfer talks: no pulse detected."],
+   FAKE:["Nobody has requested {p}'s file. Not {d}, not anyone. The only thing he's had scanned is his Instagram.","Zero clubs have asked about {p}. The rumour is psychosomatic, like his diving.","I've had no calls about {p}. Frankly I'd need a microscope to find the interest. Pure fiction."]
+  },
+  airport:{
+   DONE:["Private jet to {dc}, and {p} took eleven selfies on the steps. Worst geotagging I've ever seen. He's joining {d}.","{p} landed in {dc} wearing sunglasses indoors at 11pm. Tail number checks out. It's {d}.","Watched {p} board for {dc} carrying a designer handbag the size of a goal. Wheels up. It's on."],
+   HIJACK:["{p}'s jet was meant for {dc}. It's now descending into {hc}. Pilot's clearly got a better agent than {d}.","Flight plan changed mid-taxi. {p} is heading to {hc}. The only U-turn he's ever completed on time.","{p} spotted in {hc} arrivals with a {h} scarf and a neck pillow shaped like a crown. Hijack."],
+   OFF:["{p}'s charter got scrubbed. He sat on the tarmac for an hour posting sad emojis. He's staying at {c}.","No jet for {p}. He's taking the team coach with {c} again on Saturday. Deal dead.","{p} turned up at the airport in a full tracksuit and left in a sulk. Flight cancelled. It's off."],
+   FAKE:["{p} hasn't been near an airport since the pre-season tour. The only thing flying is this rumour. Fake.","Zero flights for {p}. The lad's not moving, mate, he's not even on a flight sim.","I've tracked every jet in the region. Not one for {p}. Someone's typed this up in their bedroom."]
+  },
+  barber:{
+   DONE:["{p} wants a '{d}' line shaved in. Told him to learn to cross the ball first. He's off to {dc} regardless.","{p} asked for a haircut that 'looks good under {dc} floodlights'. His passing won't, mind. It's done.","{p} showed me his {d} unveiling pose. Finger to lips, like anyone asked. He's going."],
+   HIJACK:["{p} kept saying {d} but asked for the '{hc} special' fade. That's not even a cut, I made it up. He's off to {h}.","{p} left a {h} membership card in my chair. Accidentally. With his name on it. Hijack.","{p} took a call mid-trim, said 'yes {h}, of course {h}'. Half his head still undone. Chaos."],
+   OFF:["{p} cancelled his big unveiling haircut. Asked for the usual boring one. He's staying at {c}.","{p}'s move is dead and he wanted bleached tips to cheer himself up. Didn't work. He stays.","{p} sat in my chair moaning that {d} 'don't respect his brand'. His brand is missing sitters. Off."],
+   FAKE:["{p} to {d}? He spent forty minutes asking if frosted tips are coming back. There's no move.","Asked {p} about {d} and he asked if they sponsor boots. That's his entire knowledge of it. Nothing.","{p} hasn't spoken to anyone about a move. He speaks to me about his skincare routine. Fake."]
+  },
+  leak:{
+   DONE:["Our copy's filed: '{p} completes {d} move'. Sub-editor added 'somehow'. Pint, please.","We've got {p} in the {d} kit for tomorrow's back page. Photoshop took longer than his last goal. Done.","{d} want {p}. Our pundit called it 'brave'. It's happening in {dc}. My round, your wallet."],
+   HIJACK:["Desk just spiked the {p} to {d} story. It's {h}. Our headline writer has already done a pun on {hc}.","{p} is going to {h}. Our rewrite deadline is midnight and I've skipped dinner. You owe me.","We've got a snapper in {hc} waiting for {p}. Newspapers don't send snappers for their health."],
+   OFF:["{p}'s move is dead. Our editor called him 'overpriced furniture'. He's staying at {c}.","We've binned the {p} story. Fee too high for a lad who celebrates tap-ins like cup finals. Off.","{c} wouldn't budge on {p}'s price. We've gone with the headline 'NO DEAL' because 'NO THANKS' was taken."],
+   FAKE:["Traced the {p} story to a fan account with his face as the avatar. Nothing in it.","We looked into {p} to {d} and found a Fantasy League forum post. That's it. Invented.","Nobody's bidding for {p}. The only thing chasing him is his own highlights reel. Fake."]
+  }
+ },
+ sreply:{
+  agent:{
+   toldYou:["Right again. I'd frame this but I'll just add it to my rate card.","See? Trust the suit. Consultation fees are due Friday, and yes, I take cards.","You're welcome. Mention me in your bio. Big letters."],
+   ignored:["I handed you the truth and you tweeted the opposite. Incredible. Were you raised by a rival agency?","I told you. I never tell anyone anything for free and you still binned it.","You ignored me? Me? I've had clubs ignore me less than you just did."],
+   dodged:["I lied, you got it right anyway. Clearly my coaching is working.","You called it! Brilliant. I obviously planted the idea subconsciously.","Great instinct. Shame it came from ignoring me, but I'll invoice you regardless."],
+   lied:["Look, I sold you a story. You bought it. That's just business, pal.","You believed an agent. On a transfer. In the window. That one's on you.","Wasn't me who tweeted it, was it? Nope. Your name, your problem."]
+  },
+  kitman:{
+   toldYou:["Called it from the drying room. I want my picture on your profile.","Right again. The kitman never misses. Unlike your followers.","Said it, meant it, washed it. You're welcome."],
+   ignored:["I told you straight and you went the other way. You couldn't find the laundry room with a map.","I gave you the answer on a plate. You sent the plate back.","You ignored the kitman. That's how you end up with muddy boots, pal."],
+   dodged:["I got it wrong, you got it right. I'm still taking the credit. Laundry rules.","Lucky you didn't listen, eh? I was on my third coffee.","Fine, you nailed it. I'll wash your socks. Once."],
+   lied:["The lads told me. The lads lie. You should know that by now.","It's a laundry room, not a newsroom. Why were you listening to me?","Not my fault. You took gossip from a man who smells of fabric softener."]
+  },
+  physio:{
+   toldYou:["Diagnosis confirmed. Your career has improved, marginally.","I was right. You were right. Only one of us will stop bragging, and it's not me.","Clinical. You're welcome. My invoice is labelled 'consultation'."],
+   ignored:["I gave you a clean diagnosis and you went with a horoscope. Remarkable.","The results were clear. You read them upside down. Twice.","I told you. You ignored me. Symptoms of a terminal case of being wrong."],
+   dodged:["My notes were wrong. Your call wasn't. Let's agree it was teamwork.","Fine, I misread it. You'll find the error was on page 2, which you skipped. Well done.","I'll log that as 'patient recovered despite treatment'."],
+   lied:["Wrong file, right attitude. You should always seek a second opinion.","Medicine isn't an exact science. Neither is your journalism.","You took a tip from a physio. That's on you, not the physio."]
+  },
+  airport:{
+   toldYou:["Tail number never lies. Neither do I. Screenshot this.","Radar says you're finally good at your job. I say it's all me.","Called it from the fence with a flask. Respect the spotters."],
+   ignored:["I told you the destination and you went the other way. Were you on autopilot?","You ignored the spotter. That's like ignoring the control tower, mate.","I gave you coordinates. You picked a random country off a menu."],
+   dodged:["My radar was glitchy. Your call wasn't. Credit shared, mostly mine.","Wrong jet, right call. Honestly, a great day for aviation.","You got lucky. I'll take it as proof you listened to my vibe."],
+   lied:["Wrong tail number. Could happen to anyone. Mostly it happens to you.","Look, planes change plans. So should you, clearly.","I watch planes, not contracts. You knew that. You chose chaos."]
+  },
+  barber:{
+   toldYou:["Called it from the chair. You owe me a free cut, or at least a follow back.","See? The barber knows all. You should book me in for more than gossip.","Right again. I'll put your tweet on the mirror next to my certificate."],
+   ignored:["I told you. You ignored me. That's why your haircut is from 2011.","I said it clear as a fresh fade and you still messed it up.","You didn't listen and now you've got egg all over your perfect side parting."],
+   dodged:["I was guessing. You weren't. Let's say we both nailed it.","Fine, I talked nonsense. You filtered it. Proper teamwork.","You got it right after I got it wrong. Classic barber-client relationship."],
+   lied:["Mate, I cut hair. You thought I was a news agency?","I made it up, yes. You posted it, also yes. Only one of us has followers watching.","I said it for a laugh. You tweeted it for real. Different energy."]
+  },
+  leak:{
+   toldYou:["Right again. My editor hates me, you should love me. Pint, now.","I gave you the scoop and you ran with it. Beautiful. Mine's a double.","Credit my newsroom, don't credit my newsroom, just buy the drinks."],
+   ignored:["I leaked you the truth and you binned it. My own editor wouldn't do that.","You had the scoop and fumbled it. I risked my job for a bloke who can't read.","I told you. You ignored me. That's why you're still on page 47."],
+   dodged:["My tip was dodgy. Your call wasn't. My paper's now claiming you as a source.","You got it right after I got it wrong. We'll call that journalism.","Well, someone had to be right and it clearly wasn't going to be us."],
+   lied:["It was a bad tip. My paper ran it too. At least I got paid.","Don't blame me, blame the lad who briefed me, and his lad, and his lad.","You took a leak from a rival? At this point that's just your own fault."]
+  }
+ }
+};
+VOICE3.es={
+ line:{
+  agent:{
+   DONE:[
+    "{p} a {d}, cerrado. Por lo que pagan, podrían haberse llevado dos jugadores de verdad. No se lo digas, que le represento yo.",
+    "{d} ha aceptado todo: el sueldo, la prima y que {p} elija la música del vestuario. Pobres. Mi comisión, encantada.",
+    "Ya he buscado casoplón en {dc}. Para {p} no, para mí. Él con un piso con espejo para ensayar celebraciones va sobrado."
+   ],
+   HIJACK:[
+    "{d} ofrecía un sueldo normal. {h} ofrece un sueldo que {p} no justifica ni en tres vidas. Adivina a dónde vamos, crack.",
+    "{p} rumbo a {hc}. Cambió de idea cuando le dije que allí le dejan tirar los penaltis. Aunque los falle, que los falla.",
+    "Mira, a {p} le da igual el proyecto. Le he enseñado el cheque de {h} y ha dicho 'qué bonito proyecto'. Tal cual."
+   ],
+   OFF:[
+    "{c} pide por {p} como si fuera Messi. Y yo, que le cobro comisión, te juro que no es Messi. Esto no sale, tío.",
+    "{p} se queda en {c}. He vendido 'compromiso con el club'. Traducción: nadie paga lo que pide por jugar veinte minutos.",
+    "Lo de {p} está muerto. {d} vio sus números de la temporada y me colgó sin despedirse. Grosero, pero con razón."
+   ],
+   FAKE:[
+    "¿{p} a {d}? Ojalá fuera verdad, tío, que llevo meses sin comisión. Pero no ha llamado nadie. Ni para preguntar el precio.",
+    "Ese rumor de {p} lo ha inventado alguien con mucha fe. Yo le represento y ni yo me lo creo. Humo del bueno.",
+    "Nadie ha preguntado por {p}. He mandado su vídeo de highlights a medio mundo. Tiene cuatro goles, dos de rebote. Cero respuestas."
+   ]
+  },
+  kitman:{
+   DONE:[
+    "{p} ha dejado aquí seis pares de botas rosas fosforito. Que se las pongan en {d}, que aquí nos daban dolor de cabeza. Se va, fijo.",
+    "Se ha llevado hasta las chanclas con su nombre. {p} a {dc}, y yo recuperando una taquilla que olía a colonia cara.",
+    "{p} ha preguntado si en {d} lavan los petos a mano. Aquí los manchaba de césped de tanto tirarse. Se marcha, crack."
+   ],
+   HIJACK:[
+    "{p} tiene en la bolsa una bufanda de {h}. Ni de {d} ni de nada. Y mira que la bufanda le pega más que el primer control.",
+    "{p} ha pedido que le manden las botas a {hc}. Botas doradas, por cierto, para un tío que marca dos al año. Giro, tío.",
+    "En el vestuario todos decían {d}. {p} se ha ido a la ducha tarareando el himno de {h}. Desafinando, como cuando define."
+   ],
+   OFF:[
+    "{p} me ha pedido otra camiseta de {c} con el nombre más grande. Más grande, tío, con lo poco que la suda. No se va.",
+    "{p} acaba de cambiar las botas por unas nuevas con su nombre y el escudo de {c} bordado. Nadie borda para irse.",
+    "{p} sigue dejando los calcetines tirados en mi lavandería como si fuera el dueño. Y aquí sigue. Se queda en {c}."
+   ],
+   FAKE:[
+    "Le he nombrado {d} a {p} y me ha preguntado si era una marca de gomina. Aquí nadie ha hablado de fichajes.",
+    "En el vestuario de {p} se habla de su peinado nuevo, que es de traca. De fichajes, ni media palabra. Inventado.",
+    "{p} no ha tocado ni la taquilla. Sigue con sus botas, sus fundas del móvil y su selfie diario. Ese rumor es humo."
+   ]
+  },
+  physio:{
+   DONE:[
+    "{p}: reconocimiento en {dc} mañana a las 9. Constantes normales. Primer control, pendiente de revisión desde hace años. Fichaje.",
+    "Historial de {p} enviado a los médicos de {d}. No incluye su definición: eso ya no tiene tratamiento. Operación cerrada.",
+    "Exploración de {p} completa. Papeleo en orden, firma en orden, criterio con el balón ausente. Apto para {d}. Siguiente."
+   ],
+   HIJACK:[
+    "La cita médica de {p} es en {hc}. No en {dc}. Lo he comprobado dos veces, que yo sí remato las cosas, no como él.",
+    "Informe de {p} solicitado por {h}. {d} no ha pedido nada. Diagnóstico: giro inesperado. Pronóstico: cheque grande.",
+    "Me ha llamado el cuerpo médico de {h} por {p}. Les he dicho que está perfecto, salvo cuando le llega un balón al pie."
+   ],
+   OFF:[
+    "Plan de pretemporada de {p} en {c} hasta octubre. Objetivo: que pase el balón a un compañero. Plazo largo. Se queda.",
+    "Nadie ha pedido el historial de {p}. Ni {d} ni nadie. Sigue aquí, en {c}, con su rutina de estiramientos y selfies.",
+    "{p} pasará la revisión de mitad de temporada aquí. Valoración: estable. Como su banquillo. No hay traspaso."
+   ],
+   FAKE:[
+    "No hay cita médica para {p}. Ninguna. Lo único que ha pedido es un espejo nuevo para la sala de estiramientos.",
+    "Nadie ha solicitado pruebas de {p}. El rumor de {d} no tiene constantes vitales. Diagnóstico: invento.",
+    "Agenda de {p} revisada: cero reconocimientos, cero viajes. Solo sesión de fotos para su marca de gafas. Falso."
+   ]
+  },
+  airport:{
+   DONE:[
+    "Jet privado registrado a {dc} con {p} en la lista. Llevaba gafas de sol dentro del avión. Nublado. Fichaje, tío.",
+    "{p} vuela a {dc} mañana a primera hora. Ha pedido asiento de ventanilla para hacerse fotos. Más que remates tiene, seguro.",
+    "Pasaporte de {p} escaneado rumbo a {dc}. Maletas a juego con el chándal. Vaya tela. Se va a {d}."
+   ],
+   HIJACK:[
+    "Ojo: el plan de vuelo de {p} marcaba {dc} y lo han cambiado a {hc}. Como él cambia de dirección en cada control. Giro.",
+    "Un Gulfstream de {hc} espera a {p} en pista. Está en la escalerilla grabándose un story. Ni {d} ni leches: {h}.",
+    "{p} ha pasado el control rumbo a {hc} con una chaqueta de lentejuelas. Yo en {dc} no veo nada, tío. Robo de fichaje."
+   ],
+   OFF:[
+    "Cero vuelos de {p}. Nada a {dc}, nada a ningún sitio. Solo le he visto por la tele, en el banquillo de {c}. Se queda.",
+    "El jet que iba a por {p} ha vuelto vacío. Ni una maleta. Como sus remates: a ninguna parte. No hay fichaje.",
+    "Vuelo a {dc} para {p} cancelado. Motivo en el sistema: 'operación caída'. Él sigue colgando fotos desde {c}."
+   ],
+   FAKE:[
+    "No hay ni un solo plan de vuelo con {p}. Ni a {dc} ni a nada. El único que vuela aquí es el rumor.",
+    "Llevo días en la terraza con los prismáticos y a {p} no le he visto ni en foto. Nadie le ha fletado nada. Humo.",
+    "El único avión relacionado con {p} es el de papel que tiró un aficionado cuando le cambiaron. Nada real."
+   ]
+  },
+  barber:{
+   DONE:[
+    "{p} me ha pedido el escudo de {d} rapado en la nuca. Le ha quedado torcido, como sus pases. Se va, fijo.",
+    "{p} dice que en {dc} no hay barberos buenos y que me va a fichar a mí también. Primero que le fichen a él, que ya está.",
+    "{p} quiere mechas con los colores de {d} para la presentación. Le he dicho que el peinado no te mete goles. Se va igual."
+   ],
+   HIJACK:[
+    "Le estaba rapando a {p} el escudo de {d} y a mitad me dice: 'mejor el de {h}'. Ahora tiene un escudo mutante. Se va a {hc}.",
+    "{p} me ha pedido corte 'estilo {hc}'. No sé qué es eso, pero le he dejado un cenicero en la cabeza. Giro, tío.",
+    "Me ha soltado en la silla que {h} le paga más que {d}. Y luego se ha puesto a hablar de su marca de colonia. {p} es de traca."
+   ],
+   OFF:[
+    "{p} ha reservado cita conmigo hasta junio. Nadie reserva hasta junio en {c} si se va. Y lo de su tupé no tiene arreglo.",
+    "{p} se queda en {c} porque aquí le dejan celebrar con el baile ese. Nadie más le aguanta el baile.",
+    "{p} dice que {d} no le quería. Normal, le vieron el tinte naranja y el primer control. Se queda."
+   ],
+   FAKE:[
+    "¿{p} a {d}? Aquí solo ha hablado de su tinte y de que su gato tiene más seguidores que él. De fichajes nada.",
+    "Me he inventado yo lo de {p}, creo. O mi cuñado. O el del kebab. No sé, tío, pero real no es.",
+    "{p} no sabía ni que se hablaba de él. Estaba ocupado pidiéndome la raya en la ceja. Es humo del todo."
+   ]
+  },
+  leak:{
+   DONE:[
+    "Mi redacción tiene lo de {p} a {d} cerrado. Lo sacamos mañana. Tú lo sacas hoy, me citas y me pagas tres cañas. Trato.",
+    "{p} a {d}, hecho. Por ese dinero yo me habría comprado un delantero de verdad, pero oye, no es mi pasta. Cítame.",
+    "En {dc} ya imprimen la camiseta de {p}. Con el dorsal pequeño, para que no se note tanto. Hecho, crack."
+   ],
+   HIJACK:[
+    "Mi jefe dice {d}. Mi jefe no se entera de nada. {p} se va a {h}. Si aciertas, quiero un 'vía @topo' en mayúsculas.",
+    "{p} a {hc}. Lo sé porque su agente me pidió que lo escondiera. Por algo tan malo me debo de estar ganando las cañas.",
+    "Escucha: {h} ha pagado de más por {p} con tal de pisar a {d}. Nadie ahí ha visto un partido suyo entero. Giro."
+   ],
+   OFF:[
+    "Lo de {p} está muerto. {d} miró sus números, miró su sueldo y se echó a reír. Esa risa te la cambio por dos cañas.",
+    "{p} se queda en {c}. Ni su agente se cree lo que pide. En mi redacción lo llamamos 'el tapón'. Cítame, anda.",
+    "Se ha caído. {c} quería una fortuna por {p} y {d} ofreció lo que vale de verdad. O sea, un bocata. No hay trato."
+   ],
+   FAKE:[
+    "Lo de {p} a {d} lo inventó un becario de mi redacción para ver si picabais. Picasteis. Me debes un café por el aviso.",
+    "Nadie quiere a {p}, tío. El rumor lo filtró su propio agente para subirle el sueldo. Humo puro. Paga las cañas.",
+    "{p} a {d} es tan real como sus asistencias. Cero. Esto lo sé gratis, pero te lo cobro igual."
+   ]
+  }
+ },
+ sreply:{
+  agent:{
+   toldYou:[
+    "Hemos acertado los dos. Bueno, yo más. Te mando la factura de asesoría. En negrita, para que la veas bien.",
+    "Mi info, tu tuit, mis likes. Esto es un buen reparto. Aunque yo me quedo el 90%, como siempre."
+   ],
+   ignored:[
+    "Te lo dije. Palabra por palabra. Y tú a lo tuyo. Si fueras mi cliente te habría vendido a Segunda.",
+    "Me ignoraste, fallaste y ahora te mandan capturas. Yo cobro comisión hasta de tus errores. Gracias, crack."
+   ],
+   dodged:[
+    "Te engañé y acertaste igual. Eso es porque sabes leer entre mis mentiras. Te lo enseñé yo. Me debes el 10%.",
+    "Te mentí por tu bien y mira: aciertas. Soy el mejor agente de tu carrera. Eso también se cobra."
+   ],
+   lied:[
+    "Te mentí, sí. Es mi trabajo. El tuyo era no creerme. Uno de los dos lo ha hecho bien.",
+    "¿Arrepentido? Tío, yo me arrepiento cuando no cobro. Y he cobrado. Tú apáñatelas con el ratio."
+   ]
+  },
+  kitman:{
+   toldYou:[
+    "Acertamos los dos, pero la pista era mía. Tú solo pusiste los emojis. Ya te traigo toalla para el sudor de la fama.",
+    "Mi lavandería te ha dado la exclusiva. Que se sepa. Y lávate esa camiseta de periodista, que ya huele a Tier One."
+   ],
+   ignored:[
+    "Te dije lo que pasaba en mi vestuario y apostaste lo contrario. Hasta las toallas saben más de fútbol que tú.",
+    "Te lo dije, literalmente. En el vestuario se están leyendo tu tuit en voz alta. Con voz de pito, además."
+   ],
+   dodged:[
+    "Te conté una trola y acertaste igual. Eso es por la intuición que te he ido enseñando en la lavandería. De nada.",
+    "Te la colé y aun así lo clavaste. Tienes más suerte que un portero con el palo. Mérito mío, claro."
+   ],
+   lied:[
+    "Te mentí y te lo tragaste. Hombre, es que tú preguntas en una lavandería. ¿Qué esperabas, un comunicado oficial?",
+    "No me sabe mal, tío. Tú fallas y yo sigo doblando toallas tan tranquilo. Tu reputación, esa sí que está para lavar."
+   ]
+  },
+  physio:{
+   toldYou:[
+    "Diagnóstico acertado. Por mi parte. Tu parte fue copiarlo. Alta médica para tu ego. Siguiente paciente.",
+    "Los dos acertamos. Yo con datos, tú con un emoji de fuego. Evolución favorable. No te acostumbres."
+   ],
+   ignored:[
+    "Te di un informe clínico y tú apostaste al revés. Te lo dije, literalmente. Pronóstico: ratio crónico.",
+    "Exploración completada: te di la verdad, la ignoraste, fallaste. Sin tratamiento conocido. Siguiente."
+   ],
+   dodged:[
+    "Mi dato era falso y acertaste. Efecto placebo. Funciona hasta con periodistas. Me atribuyo el éxito.",
+    "Te pasé un informe erróneo y aun así diste en el clavo. Te he entrenado bien. Factura por sesión adjunta."
+   ],
+   lied:[
+    "Error en el informe. El tuyo fue creértelo. Responsabilidad compartida: 10% mía, 90% tuya.",
+    "No hay remordimiento. Solo una nota en tu ficha: 'se cree cualquier cosa'. Siguiente paciente."
+   ]
+  },
+  airport:{
+   toldYou:[
+    "Mis radares no fallan y tú solo tuviste que mirar mi pantalla. Aterrizaje perfecto. Pilotaba yo, claro.",
+    "Acertamos. Yo con el plan de vuelo, tú con cara de listo. Te dejo sentarte en mi terraza un día. Un día."
+   ],
+   ignored:[
+    "Te di la ruta, la hora y la matrícula del avión. Y tú apostaste lo contrario. Te lo dije, literalmente. Vaya tela.",
+    "Tenía el avión en pantalla y tú preferiste mirar a otro lado. Tu tuit ha tenido más turbulencias que mi Airbus favorito."
+   ],
+   dodged:[
+    "El vuelo que te dije no existía y aun así acertaste. Eso es porque te he pegado el olfato aeronáutico. De nada.",
+    "Mi pista era un Boeing fantasma y lo clavaste igual. Vuelas bien porque te enseñé yo a mirar el cielo."
+   ],
+   lied:[
+    "Te di un vuelo falso y te subiste sin mirar la puerta de embarque. Eso ya no es culpa del piloto, tío.",
+    "Cero remordimientos. Tu carrera ha tenido un aterrizaje de emergencia. Yo sigo en mi terraza con los prismáticos."
+   ]
+  },
+  barber:{
+   toldYou:[
+    "¿Ves? Mi silla es la mejor fuente de España. Acertamos. Tú invitas al próximo degradado.",
+    "Te lo di en bandeja y lo clavaste. Ahora que eres famoso a ver si te cortas el pelo, que das pena en la foto de perfil."
+   ],
+   ignored:[
+    "Te lo dije, tío. Con estas tijeras en la mano. Y tú fallando como un corte hecho a oscuras.",
+    "Por una vez que digo la verdad, me ignoras. Mira, te hago un rapado gratis para que te escondas en casa."
+   ],
+   dodged:[
+    "No sé qué te dije, pero acertaste. Así que te dije bien. Quiero mi nombre en tu próxima exclusiva, en negrita.",
+    "Te conté lo primero que me vino a la cabeza y lo clavaste. Soy un genio. Te cobro el doble el próximo corte."
+   ],
+   lied:[
+    "Te dije una tontería, sí. Soy barbero, tío. ¿Tú le preguntas a tu barbero por fichajes? Pues eso.",
+    "¿Culpa mía? Tú escribiste el tuit. Yo solo estaba dándole a la maquinilla. Te dejo el flequillo torcido gratis."
+   ]
+  },
+  leak:{
+   toldYou:[
+    "Mi exclusiva, tu tuit, tus likes. Qué bonito es robar el trabajo de otro, ¿eh? Tres cañas. Esta semana.",
+    "Acertamos. Mi jefe falló y tú no. Te he hecho mejor periodista que a él. Y a él le pagan. Paga tú."
+   ],
+   ignored:[
+    "Te lo dije, literalmente, y fallaste. Te he hecho captura para enseñarla en mi redacción. Se han reído hasta los becarios.",
+    "Me pediste info, te la di y hiciste lo contrario. Así se construye una carrera de Tier Nueve, crack."
+   ],
+   dodged:[
+    "Te mentí para despistarte y aun así acertaste. Eso es porque te he enseñado a desconfiar de mí. Genio yo.",
+    "Mi soplo era falso y tú acertaste. Esa exclusiva lleva mi sello. Cítame o se lo cuento a todo Twitter."
+   ],
+   lied:[
+    "Te engañé y caíste. Ahora mi redacción dice que eres un pardillo. No es personal, es periodismo. Invítame a una caña.",
+    "Nada de remordimiento, crack. En este oficio o engañas o te engañan. Tú has elegido la segunda opción."
+   ]
+  }
+ }
+};
+VOICE3.ar={
+ line:{
+  agent:{
+   DONE:['{p} لو اتباع بنص الرقم يبقى أنا نصاب محترف. بس {d} دفعوا كامل ومضوا. عمولتي أنضف من لمسته الأولى 💸','بيني وبينك {p} مايستاهلش التلت، بس رئيس {d} شافله فيديو هايلايتس متقطّع حلو. خلاص، الشنطة رايحة {dc}.','{p} طالب مرتب نجم عالمي وبيلعب زي لاعب ترسو. و{d} وافقوا! أنا بس بمضي وبعد الفلوس 😂'],
+   HIJACK:['{p} فاكر نفسه ميسي في المفاوضات. {d} زهقوا من طلباته و{h} قالوا "هاتوه بطلباته". رايح {hc} يا باشا.','{d} عرضوا على {p} عقد محترم، و{h} عرضوا عليه يبقى وش الإعلانات. واد بيحب الكاميرا أكتر من الكورة، اختار {h} طبعًا.'],
+   OFF:['{c} طالبين في {p} رقم كأنه جاب الدوري لوحده، وهو آخر جول ليه كان من أيام الكاسيت. محدش هيدفع. قاعد.','{p} عايز زيادة 300% عشان عمل هاتريك في ودية. {d} قفلوا الموبايل. الواد قاعد في {c} ومعاه الهاتريك.'],
+   FAKE:['{p} مين اللي {d} عايزينه؟ ده أنا بعرضه على النوادي بقالي سنتين ومحدش رد. الإشاعة دي أنا نفسي ماصدقتهاش.','{p} نزّل بوست "قريبًا 👀" فالناس ألّفت صفقة. يا باشا ده كان بيعلن عن كريم شعر. ولا نادي كلمني.']
+  },
+  kitman:{
+   DONE:['فضّى الدولاب وساب الجزمة الفسفوري اللي كان بيضيّع بيها الفرص. قالي "خدها ذكرى". ذكرى وحشة يا ابني. {p} رايح {d} خلاص.','{p} طلب مني أكوي فانلة {d} عشان صورة التقديم. أول مرة يهتم بفانلة من ساعة ما جه عندنا.'],
+   HIJACK:['كنت مجهز لـ{p} شنطة مكتوب عليها {dc}، جه شطبها وكتب {hc} بخط زي تسديداته: معووج بس وصل.','الواد {p} مابيعرفش يكتم سر زي ما مابيعرفش يكتم الكورة. قال للعيال {h} مش {d}. أوضة اللبس كلها عرفت.'],
+   OFF:['{p} طلب مني أغسل الترينج الاحتياطي تاني. الدكة عندنا نضيفة وهو قاعد عليها الموسم كله. مش ماشي من {c}.','الجزمة اللي بيشوّط بيها في المدرجات لسه في دولابه. {p} قاعد في {c} يا ابني، وأنا اللي هفضل ألمّ الكور من ورا الجول.'],
+   FAKE:['{p} ده لو حد عايزه كنت عرفت قبله. محدش سأل ولا حد جه، والواد نفسه مش واخد باله، مشغول بالتسريحة.','قالوا {p} رايح {d}؟ ده مابيعرفش يوصل التمرين في ميعاده. لا حد اتصل ولا حد جه يا ابني، كلام قهاوي.']
+  },
+  physio:{
+   DONE:['الفحص الطبي لـ{p} اتحدد في {dc} الساعة 10. اللياقة ممتازة. المشكلة الوحيدة في لمسته الأولى، ودي مش تخصصي.','ملف {p} اتبعت لـ{d}. كتبت فيه "لياقة ممتازة"، وماكتبتش حاجة عن قراراته في التمريرة الأخيرة. أمانة مهنية جزئية.'],
+   HIJACK:['التحاليل بتاعة {p} راحت {hc} مش {dc}. التشخيص: حساسية مزمنة من العروض الأقل. {h} عالجوها بالفلوس.','{p} عمل الكشف مع دكاترة {h}. النتيجة سليمة، ما عدا ميل مزمن للتسديد في المدرجات. ده مش مرض، ده أسلوب لعب.'],
+   OFF:['مفيش كشف ولا ملف اتطلب. {p} مكمل هنا في {c}، وبرنامجه عندي مكمل: تمارين تحمّل عشان يستحمل قعدة الدكة.','حالة {p} مستقرة في {c}. العرض مات إكلينيكيًا أول ما شافوا رقم المرتب. ده مش إسعاف، ده أرشيف.'],
+   FAKE:['ملف {p} محدش فتحه غيري، وأنا فتحته أدور على تفسير علمي لطريقة احتفاله. ولا نادي سأل عليه.','التشخيص: {p} عنده إشاعة موسمية بتظهر كل ما يغيّر تسريحته. ولا طلب رسمي. العلاج: تجاهل تام.']
+  },
+  airport:{
+   DONE:['طيارة خاصة لـ{dc} وعليها {p} لابس نضارة شمس الساعة 2 بالليل. مين يلبس نضارة بالليل غير واحد رايح يتقدّم؟ ✈️','{p} عطّل طابور الجوازات 20 دقيقة بيتصور سيلفي. الوجهة {dc}. أول مرة يتأخر في حاجة غير الرجوع الدفاعي.'],
+   HIJACK:['الكل مستني {p} على رحلة {dc}، وهو زي عادته في الملعب: جري في حتة تانية خالص. ركب رحلة {hc}.','رصدت {p} في صالة السفر بشنطة جديدة بألوان {h}. البوردنج: {hc}. على الأقل الشنطة شيك، مش زي الطقم اللي لابسه.'],
+   OFF:['طيارة {dc} كانت جاهزة و{p} ماجاش. الراجل بيتأخر على الكورة المرتدة، هيلحق طيارة؟ الرحلة اتلغت وهو لسه في {c}.','قعدت أتابع الرادار طول الليل عشان {p}. صفر حركة. آخر مرة الواد ده ماتحركش كده كان في الديربي. مفيش سفر.'],
+   FAKE:['دوّرت على أي رحلة ليها علاقة بـ{p}. ولا رحلة ولا حجز ولا حتى تاكسي مطار. الإشاعة دي أسرع من {p} نفسه، ودي مش صعبة.','{p} نزّل صورة جوه طيارة، رجعت لها: صورة قديمة من رحلة المعسكر من سنتين. مفيش حاجة، كله هري.']
+  },
+  barber:{
+   DONE:['{p} طلب قصة زي نجم {d} بالظبط. قلتله القصة سهلة، اللعب زيه هو الصعب. ضحك وقالي "هتشوفني في {dc}".','{p} صبغ شعره بلون {d} وقالي "ظبطني للمؤتمر الصحفي". ياريته يظبط التسديد زي ما بيظبط السوالف 💈'],
+   HIJACK:['{p} قعد يقلّب في صور لاعيبة {h} عشان يختار قصة. قلتله {d}؟ قالي "لا يا عم، {hc}". والسشوار شاهد.','قالي اعملي نقشة {h} على الجنب. {p} مابيعرفش يلعب على الجنب، بس بيعرف يختار نادي. رايح {hc}.'],
+   OFF:['{p} حاجز عندي كل خميس لآخر السنة. واحد ماشي يحجز عند حلاق في {c}؟ ده قاعد، وتسريحته كمان مش هتتغير للأسف.','قالي "مش مسافر، خليها زي ما هي". {p} زي التسريحة دي بالظبط: مالوش أي نية يتحرك من {c}.'],
+   FAKE:['سألت {p} عن {d}، قالي "مين قال كده؟" وكمّل يتفرج على نفسه في الموبايل. مفيش صفقة، في مراية.','{p} قعد ساعة يحكي عن اللايكات على بوست العربية الجديدة. ولا كلمة عن انتقالات. الإشاعة دي حد ألّفها وهو زهقان.']
+  },
+  leak:{
+   DONE:['الديسك عندنا حاضر عنوان "{p} في {d}: أغلى صفقة في تاريخ الدكة". هزار يعني. بس الصفقة رسمي، وحقي فطار.','مصورنا في {dc} بيجرب إضاءة تنفع لواحد بيبتسم كتير وبيسجل قليل. قصدي {p}. هات الفول.'],
+   HIJACK:['الديسك كله راهن إن {p} رايح {d}، وأنا كسبت الرهان لأني قلت {h}. ده الشيء الوحيد اللي {p} بيعرف يعمله: يفاجئ الناس.','مصدري في {h} قالي "جهزوا صورة {p} بفانلتنا". غالبًا هتبقى أحسن صورة ليه، لأنها مش في ماتش.'],
+   OFF:['الصفقة ماتت. {c} عايزين في {p} فلوس ولا كأنه هداف الدوري، وهو هداف الدكة بس. قاعد، وتعزمني.','رئيس التحرير شطب خبر {p} وقال "مين هيدفع الرقم ده؟". محدش. قاعد في {c}. والحساب عليك يا بطل.'],
+   FAKE:['دوّرنا ورا خبر {p}، لقيناه طالع من صفحة فانز بتنشر كمان إن {p} أحسن من رونالدو. عارف المصداقية بقى.','لا {d} قدموا عرض ولا حد فكّر في {p} أصلًا. الوكيل طلّع الإشاعة عشان يلمّع لاعيبه. خد دي ببلاش، أول مرة.']
+  }
+ },
+ sreply:{
+  agent:{
+   toldYou:['شايف؟ لما بتسمع كلامي بتبقى صحفي. لما مابتسمعش بتبقى صفحة كوميكس. الحساب 15%.','أنا اللي عملتلك الخبطة دي، انت بس دوست "نشر". حتى صباعك بياخد عمولة أقل مني.'],
+   ignored:['مش قلتلك؟ انت أول صحفي أشوفه بيدفع عشان يغلط. أنا ببيعلك المعلومة وانت بتحطها في الدرج.','إديتك الخبر مقشّر وانت رحت تقشّر بصل. روح اكتب نتايج الماتشات الودية.'],
+   dodged:['أيوه قلتلك العكس، بس بنبرة صوت معناها الصح. انت فهمتني. وعمولتي موجودة.','انت صح عشان أنا علمتك تشك فيا. ده كورس، والكورس بفلوس.'],
+   lied:['انت اللي صدّقت سمسار. ده غلطك، زي اللي بيسيب مفتاح العربية مع سايس.','أنا ماكدبتش، أنا بعتلك خبر مستعمل. انت اللي ماسألتش عن الضمان.']
+  },
+  kitman:{
+   toldYou:['شفت يا ابني؟ عم سيد بيعرف من الشرابات قبل ما الإدارة تعرف من العقود. هاتلي شاي بلبن.','اتعلمت أهو. أنا بقالي 30 سنة بلمّ فانلات، وانت بقالك 30 ثانية صحفي كويس.'],
+   ignored:['مش قلتلك؟ شلتلك الخبر زي ما بشيل الشنط، وانت رميته في الغسالة من غير ما تفضّي جيوبه.','يا ابني حتى اللي بيمسح الممر عرف قبلك. انت شغال صحفي ولا مشجع درجة تالتة؟'],
+   dodged:['قلتلك غلط وانت عملت صح؟ ده عشان أنا مربيك يا ابني. الفضل للي علّم.','ماتفرحش أوي، كنت عارف إنك مش هتسمعني فقلتلك العكس. تكتيك يا ابني.'],
+   lied:['ماتبصليش كده. انت اللي صدقت راجل بيقضي يومه بين الجزم. الريحة بتلخبط.','الغلط عند الغسالة اللي كانت بتزن وأنا بكلمك. وعندك انت عشان صدقت.']
+  },
+  physio:{
+   toldYou:['النتيجة جت مطابقة لتشخيصي. نفّذت الروشتة صح لأول مرة. هكتب في ملفك: تحسن ملحوظ.','دقة التشخيص 100%. مساهمتك: إنك قريت الرسالة. هنعتبرها مساهمة.'],
+   ignored:['مش قلتلك؟ إديتك التشخيص مختوم وممضي، ورحت تسأل الحلاق. ده إهمال مهني موثّق.','ملاحظة في ملفك: رفض العلاج وفضّل الوصفات البلدي. التطور المتوقع: فضيحة على تويتر.'],
+   dodged:['تشخيصي كان غلط وانت طلعت صح. هنسميها "استجابة غير متوقعة للعلاج"، وهتتنسب ليا في البحث.','خالفت تعليماتي ونجحت. ده مايحصلش غير في الأفلام. ماتتعودش.'],
+   lied:['حصل خطأ في قراية النتيجة. من ناحيتك. أنا بعتلك تقرير، انت اللي قريته بالمقلوب.','كل تشخيص فيه نسبة خطأ. انت اللي راهنت بسمعتك على النسبة دي. ده قرار مش طبي.']
+  },
+  airport:{
+   toldYou:['الرادار قال، وانت كتبت، والناس صفّقت. أنا الكابتن وانت المضيف اللي بيوزع العصير. بس ماشي، مبروك.','تعرف الفرق بيني وبينك؟ أنا بتابع الطيارات، وانت بتابعني. عشان كده طلعت صح.'],
+   ignored:['مش قلتلك؟ إديتك الوجهة ورقم الذيل والساعة، ناقص أركّبك الطيارة بنفسي. نمت في الترانزيت؟','انت الوحيد اللي شاف طيارة طالعة وكتب إنها مركونة. الرادار اللي في دماغك محتاج صيانة.'],
+   dodged:['قريت الشاشة غلط وانت طلعت صح. بس الفكرة أصلًا فكرتي، أنا اللي فتحتلك الموضوع.','حصل تشويش على الرادار وانت طلعت صح بالصدفة. مبروك يا كابتن الحظ.'],
+   lied:['الطيارة غيّرت خط سيرها، وانت كان لازم تغيّر رأيك معاها. ماتلومنيش على قلة مرونتك.','أنا بقرا شاشة مش بقرا الفنجان. انت اللي حطيت كل حاجة على رحلة واحدة.']
+  },
+  barber:{
+   toldYou:['شفت الحلاق طلع أحسن من وكالات الأنباء؟ من النهاردة الخبطة عندي بخمسين والحلاقة ببلاش.','فاكر نفسك صحفي شاطر؟ لأ، انت زبون شاطر. والحلاقة الجاية على حسابك برضه.'],
+   ignored:['مش قلتلك؟ قلتهالك وانت قاعد على الكرسي والفوطة على رقبتك. كنت فين؟ جوه السشوار؟','حتى الزبون اللي مستني دوره صدقني. وانت اللي معاك المتابعين كتبت العكس. بعدين معاك.'],
+   dodged:['قلتلك حاجة غلط وطلعت صح؟ طبيعي، الناس بتفهم الحلاق بالعكس. ده نظام شغلي.','ماتاخدش على كده. أنا مش بقول غلط، أنا بس ساعات بقول حاجة تانية.'],
+   lied:['يا عم انت اللي صدقت حلاق! أنا بقول كلام عشان الزبون مايزهقش. ده جزء من الخدمة.','ماكدبتش، اتلخبطت بين زبونين: واحد ماشي وواحد قاعد. انت اللي اخترت الغلط.']
+  },
+  leak:{
+   toldYou:['الخبر اللي كسّرت بيه الدنيا ده بتاعي، انت حطيت اسمك تحته بس. عزومة مشويات مش أقل.','مبروك يا نجم. اكتب في البايو "بمساعدة صاحبي في الجرنال". ولا الوجبة أهم؟ الوجبة أهم.'],
+   ignored:['مش قلتلك؟ الخبر نزل عندنا واتشيّر ألف مرة وانت لسه بتكتب العكس. رئيس تحريري بيضحك عليك في الاجتماع.','إديتك سبق ببلاش ورميته. أول مرة أتنازل عن وجبة، وآخر مرة.'],
+   dodged:['كنت غلطان وانت طلعت صح؟ خلاص نكتب المصدر "صاحب في جرنال تاني" والكريدت يتقسم.','ماتقولش لحد إني قلتلك غلط، وأنا مش هقول لحد إنك نجحت من غيري. اتفاق شرف وعليه عشا.'],
+   lied:['الغلط غلط الديسك مش غلطي. وانت اللي نقلت من غير ما تتأكد. وأنا متأكد إني مش هدفع الأكل.','احنا جرنال بيغلط عشر مرات في اليوم. انت اللي قررت تبقى المرة الحداشر.']
+  }
+ }
+};
+for(const l in VOICE3){ if(I18N[l]) appendMerge(I18N[l],VOICE3[l]); }
 /* =========================================================
    Engine. Game objects store keys (outcomes, indices, sources), never text —
    every line is rendered through i18n, so switching language works mid-window.
@@ -1373,7 +1789,7 @@ const clubByName=n=>CLUBS.find(c=>c.name===n);
 const OUTCOMES=['DONE','HIJACK','OFF','FAKE'];
 const SOURCES={ physio:{ic:'🩺',rel:0.85,cost:3,tier:'high',lock:'medical'}, airport:{ic:'🛩️',rel:0.80,cost:3,tier:'high'}, agent:{ic:'🕴️',rel:0.65,cost:2,tier:'med',bias:'DONE'}, kitman:{ic:'🧺',rel:0.62,cost:2,tier:'med',lock:'press'}, barber:{ic:'💈',rel:0.45,cost:1,tier:'low'}, leak:{ic:'📰',rel:0.50,cost:1,tier:'low'} };
 const TIER_BARS={high:3,med:2,low:1};
-function repBar(src,extra){ const n=TIER_BARS[src.tier]||1; return `<span class="rep rep-${src.tier}"><span class="bars">${[1,2,3].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span><span class="rc">📞${src.cost}</span><span class="rl">${esc(t('rep.'+src.tier))}</span>${extra||''}</span>`; }
+function repBar(src,extra,noCost){ const n=TIER_BARS[src.tier]||1; return `<span class="rep rep-${src.tier}" title="${esc(t('rep.title'))}"><span class="bars" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span><span class="rl">${esc(t('rep.'+src.tier))}</span>${noCost?'':`<span class="rc" dir="ltr" aria-label="${esc(t('rep.cost',{n:src.cost}))}">📞 ${src.cost}</span>`}${extra||''}</span>`; }
 const EVENT_DAYS={DONE:[2,4,5],HIJACK:[2,4,5],OFF:[2,4,5],FAKE:[3,5]};
 const RIVALS=[ {key:'tabloid',handle:'@BackPageBants',ic:'🗞️',rel:0.40,dmin:2,dmax:3,style:'high'}, {key:'itk',handle:'@TransferITK_',ic:'🕵️',rel:0.55,dmin:3,dmax:5,style:'med'}, {key:'insider',handle:'@PressBoxPete',ic:'🎙️',rel:0.85,dmin:5,dmax:7,style:'med'} ];
 const CATCH_KEYS=['confirmed','sources','allegedly','barber','myman','scoop','trust','tier1'];
@@ -1715,6 +2131,18 @@ const SFX=(()=>{
   kitman:t=>{ noise(t,1.3,{type:'lowpass',f:180,q:.6,g:.22,a:.2,r:.4}); [[523,1],[1307,.6],[2210,.4],[3140,.25]].forEach(([f,a])=>tone(f,t+.45,.9,{g:.07*a,a:.001,r:.85})); boom(t+.45,.2); [0,1,2,3,4].forEach(i=>tone(rnd(4200,6200),t+.95+i*.05,.06,{g:.03,a:.001})); },
   typewriter:t=>{ for(let i=0;i<9;i++){ const st=t+i*rnd(.07,.12); noise(st,.03,{type:'bandpass',f:rnd(1800,3200),q:3,g:.3,a:.001,r:.025}); tone(rnd(140,200),st,.03,{type:'square',g:.04,a:.001,lp:800}); } noise(t+1.0,.18,{type:'bandpass',f:900,fto:2200,q:1,g:.12}); bell(2637,t+1.12,.6,.08); },
   register:t=>{ noise(t,.35,{type:'bandpass',f:1400,q:1.2,g:.2,a:.01,r:.2}); click(t+.3,.3); bell(2093,t+.36,.9,.12); bell(2637,t+.42,.9,.1); },
+  // barber: busy salon chair. Scissors snipping in rhythm, a spray-bottle mist, a comb flick, and a short trimmer pass
+  salon:t=>{ const snipAt=[0,.16,.32,.62,.78,1.18,1.34]; snipAt.forEach(d=>{ const st=t+d; noise(st,.035,{type:'bandpass',f:7200,q:4,g:.32,a:.001,r:.03}); tone(5400,st+.004,.09,{type:'sine',g:.035,a:.001,r:.085}); noise(st+.045,.02,{type:'highpass',f:6000,g:.14,a:.001,r:.018}); });
+   [.46,.52].forEach(d=>noise(t+d,.1,{type:'highpass',f:3500,g:.2,a:.004,r:.07}));
+   for(let i=0;i<6;i++) tone(rnd(2600,3400),t+.95+i*.018,.03,{type:'triangle',g:.03,a:.001});
+   const tr=t+1.45, g=ctx.createGain(); env(g,tr,.03,.07,.42,.1); const hp=filt('bandpass',1800,.9); g.connect(hp); hp.connect(master); [[240,'square',1],[480,'sawtooth',.4]].forEach(([f,ty,a])=>{ const o=ctx.createOscillator(); o.type=ty; o.frequency.value=f; const og=ctx.createGain(); og.gain.value=a; o.connect(og); og.connect(g); o.start(tr); o.stop(tr+.45); }); noise(tr,.42,{type:'bandpass',f:6500,q:1,g:.05,a:.03,r:.1}); },
+  // leak: an old newsroom fax spitting out the leaked document. Dial, handshake squeal, data warble, paper feeding out
+  fax:t=>{ [[697,1209],[770,1336],[852,1477],[941,1336]].forEach(([a,b],i)=>{ const st=t+i*.09; tone(a,st,.07,{g:.05,a:.003,r:.01}); tone(b,st,.07,{g:.05,a:.003,r:.01}); });
+   tone(2100,t+.42,.32,{g:.06,a:.01,r:.03});
+   const w=ctx.createOscillator(), wg=ctx.createGain(); w.type='sine'; for(let i=0;i<14;i++) w.frequency.setValueAtTime(i%2?1650:1850,t+.78+i*.028); env(wg,t+.78,.01,.06,.4,.03); w.connect(wg); wg.connect(master); w.start(t+.78); w.stop(t+1.2);
+   const dn=noise(t+1.18,.28,{type:'bandpass',f:1800,q:.8,g:.1,a:.01,r:.04}); const am=ctx.createOscillator(), ag=ctx.createGain(); am.frequency.value=38; ag.gain.value=.05; am.connect(ag); ag.connect(dn.g.gain); am.start(t+1.18); am.stop(t+1.48);
+   const feed=t+1.5, fg=ctx.createGain(); env(fg,feed,.02,.06,.5,.08); const fm=ctx.createOscillator(); fm.type='sawtooth'; fm.frequency.value=92; const fl=filt('lowpass',700); fm.connect(fl); fl.connect(fg); fg.connect(master); fm.start(feed); fm.stop(feed+.52);
+   for(let i=0;i<5;i++) noise(feed+.05+i*.09,.05,{type:'highpass',f:2800,g:.08,a:.004,r:.04}); noise(feed+.5,.12,{type:'bandpass',f:2400,q:.7,g:.16,a:.005,r:.1}); },
   sparkle:t=>{ [N.C5,N.E5,N.G5,N.C6,N.E5*2].forEach((f,i)=>tone(f,t+i*.05,.3,{type:'sine',g:.09,a:.004})); }
  };
  function play(kind){ const c=init(); if(!c) return; if(c.state==='suspended') c.resume(); const fn=P[kind]||P.pop; try{ fn(c.currentTime+.02); }catch(e){} }
@@ -1756,8 +2184,8 @@ function contactOverlay(kind,then){
  else if(kind==='barber') art=`<div class="icon">${ic}</div><div class="scissors">✂️</div>`;
  else if(kind==='paid') art=`<div class="icon">${ic}</div>${Array.from({length:12},(_,i)=>`<div class="money" style="left:${5+i*8}%;animation-delay:${(i*.12).toFixed(2)}s">💵</div>`).join('')}`;
  else art=`<div class="icon">${ic}</div>`;
- beep({agent:'agentcall',barber:'clippers',airport:'airport',physio:'monitor',kitman:'kitman',leak:'typewriter',paid:'register',tipoff:'sparkle'}[kind]||'pop'); if(kind==='agent') buzzPhone([60,120,60,500,60,120,60]);
- bigOverlay(`${art}<div class="label">${esc(fx.label)}</div><div class="sub">${esc(fx.sub)}</div><div class="conn"><i></i></div>`,kind,{agent:3800,airport:2400,barber:1800,leak:1500,kitman:1600}[kind]||1500,then);
+ beep({agent:'agentcall',barber:'salon',airport:'airport',physio:'monitor',kitman:'kitman',leak:'fax',paid:'register',tipoff:'sparkle'}[kind]||'pop'); if(kind==='agent') buzzPhone([60,120,60,500,60,120,60]);
+ bigOverlay(`${art}<div class="label">${esc(fx.label)}</div><div class="sub">${esc(fx.sub)}</div><div class="conn"><i></i></div>`,kind,{agent:3800,airport:2400,barber:2000,leak:2200,kitman:1600}[kind]||1500,then);
 }
 function composeOverlay(id,outcome,conf){
  const s=game.sagas[id]; const text=tweetText(outcome,conf,s); const uturn=!!s.uturns;
@@ -1920,7 +2348,7 @@ function renderSagaModal(id){
   return me+`<div class="bub them ${cl.source==='paid'||cl.source==='tipoff'?'paid':''}"><span class="who">${esc(who)} · ${esc(t('win.dayN',{d:cl.day}))}</span>${esc(clueText(s,cl))}${extra}</div>`;
  }).join('');
  const srcHtml=Object.entries(SOURCES).map(([k,src])=>{ const locked=career&&src.lock&&!save.career.equip.includes(src.lock); const dis=game.actions<(src.cost||1)||locked||pending;
-  return `<button class="srcbtn" data-act="contact" data-id="${id}" data-src="${k}" ${dis?'disabled':''}><div class="ic">${src.ic}</div><div><b>${esc(t('src.'+k+'.name'))}${locked?' 🔒':''}</b><span>${locked?esc(t('sheet.lockedGear',{g:t('equip.'+src.lock+'.name')})):esc(t('src.'+k+'.desc'))}</span></div>${repBar(src,career&&save.career.sources[k]&&save.career.sources[k].n?`<span class="rme">${esc(t('rep.you',{ok:save.career.sources[k].ok,n:save.career.sources[k].n}))}</span>`:'')}</button>`; }).join('');
+  return `<button class="srcbtn" data-act="contact" data-id="${id}" data-src="${k}" ${dis?'disabled':''}><span class="costtag" dir="ltr" aria-label="${esc(t('rep.cost',{n:src.cost}))}">📞 ${src.cost}</span><div class="ic">${src.ic}</div><div><b>${esc(t('src.'+k+'.name'))}${locked?' 🔒':''}</b><span>${locked?esc(t('sheet.lockedGear',{g:t('equip.'+src.lock+'.name')})):esc(t('src.'+k+'.desc'))}</span></div>${repBar(src,career&&save.career.sources[k]&&save.career.sources[k].n?`<span class="rme">${esc(t('rep.you',{ok:save.career.sources[k].ok,n:save.career.sources[k].n}))}</span>`:'',true)}</button>`; }).join('');
  const lv=levelInfo(save.career.xp).n;
  const boostHtml=career?`<div class="divider"></div><h3>${esc(t('sheet.boosts'))} <span class="muted small" style="font-family:var(--body);font-weight:500">${esc(t('sheet.credits',{n:save.career.credits}))}</span></h3><div class="srcgrid">${BOOSTS.map(b=>{const lk=lv<b.lvl; const dis=lk||save.career.credits<b.cost||pending||(b.key==='tipoff'&&s.clues.some(x=>x.source==='tipoff'))||(b.key==='burner'&&game.day===7); return `<button class="srcbtn" data-act="boost" data-id="${id}" data-b="${b.key}" ${dis?'disabled':''}><div class="ic">${b.ic}</div><div><b>${esc(t('boost.'+b.key+'.name'))} · ${b.cost} cr${lk?' 🔒':''}</b><span>${lk?esc(t('sheet.unlockLvl',{n:b.lvl})):esc(t('boost.'+b.key+'.desc'))}</span></div></button>`;}).join('')}</div>`:'';
  let callHtml;

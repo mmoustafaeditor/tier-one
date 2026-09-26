@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TierOne.apk"><img alt="Download APK" src="https://img.shields.io/badge/⬇_Download-APK-FFD23F?style=for-the-badge&labelColor=0B1224"></a>
   <a href="https://sembagames.app"><img alt="Play on the web" src="https://img.shields.io/badge/▶_Play-sembagames.app-27E08A?style=for-the-badge&labelColor=0B1224"></a>
-  <img alt="Version" src="https://img.shields.io/badge/version-web%201.2.0%20·%20android%201.4-3D8BFF?style=for-the-badge&labelColor=0B1224">
+  <img alt="Version" src="https://img.shields.io/badge/version-web%201.3.0%20·%20android%201.5-3D8BFF?style=for-the-badge&labelColor=0B1224">
   <img alt="Languages" src="https://img.shields.io/badge/lang-EN%20·%20ES%20·%20AR-A07BFF?style=for-the-badge&labelColor=0B1224">
 </p>
 
@@ -135,7 +135,7 @@ launch checklist are covered in [`LAUNCH.md`](LAUNCH.md).
 |---|---|
 | [`tier-one/index.html`](../../tier-one/index.html) | The entire game (HTML + CSS + JS, EN/ES/AR), served at sembagames.app/tier-one |
 | [`api/tier-one/latest.js`](../../api/tier-one/latest.js) | Update feed the Android app polls at `https://sembagames.app/api/tier-one/latest` |
-| [`downloads/TierOne.apk`](../../downloads/TierOne.apk) | Published APK (1.4, versionCode 5) |
+| [`downloads/TierOne.apk`](../../downloads/TierOne.apk) | Published APK (1.5, versionCode 6) |
 | [`verify-purchase.js`](../../verify-purchase.js) | Optional Stripe purchase verification |
 
 These stay where they are because the site and installed apps load them from there.
