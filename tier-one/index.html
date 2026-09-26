@@ -496,7 +496,7 @@ body.has-consent .home{ padding-bottom:190px; }
 <script>
 (function(){
  var b=document.getElementById('boot'); if(!b) return;
- var seen=false; try{ seen=sessionStorage.getItem('sembaIntro')==='1'; sessionStorage.setItem('sembaIntro','1'); }catch(e){}
+ var seen=/[?&]purchase=/.test(location.search)||/^#(privacy|terms|contact)$/.test(location.hash);
  function gone(){ try{ window.dispatchEvent(new Event('sembaboot')); }catch(e){} }
  if(seen){ b.remove(); window.__bootDone=true; return; }
  var base=location.protocol==='file:'?'':'/tier-one/';

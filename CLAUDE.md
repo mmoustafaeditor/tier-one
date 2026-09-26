@@ -46,7 +46,7 @@ an APK that still needs rebuilding, config they must fill in, etc.
 | `index.html` | Semba Games studio home page, served at sembagames.app |
 | `assets/` | Web-sized copies of the Semba logo for the home page (made from `.github/assets/semba-logo.png`) |
 | `tier-one/index.html` | **Tier One: the entire game** (HTML + CSS + JS, EN/ES/AR), served at sembagames.app/tier-one. The only copy: the Android build bundles it. |
-| `tier-one/semba-intro.{webm,mp4,jpg}` | The Semba Studios intro shown as the game's loading screen (once per session; tap to skip). Also bundled into the APK. |
+| `tier-one/semba-intro.{webm,mp4,jpg}` | The Semba Studios intro shown as the game's loading screen on every load of the game page (tap to skip; skipped when returning from a payment or opening a Privacy/Terms link). Also bundled into the APK. |
 | `api/tier-one/latest.js` | Android update feed (Vercel function) polled by the app's UpdateChecker |
 | `downloads/TierOne.apk` | Published APK; the feed and README download links point to it |
 | `verify-purchase.js` | Optional Stripe purchase verification (see `games/tier-one/LAUNCH.md`) |

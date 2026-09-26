@@ -17,6 +17,13 @@ together with your change.
 
 ---
 
+## 2026-09-26 · mmoustafaeditor · Cleaner studio home page; intro plays on every game load
+- **What changed:** sembagames.app is now a single screen: headline, one Tier One card (Play / Android),
+  "More games coming soon", and a one-line footer. The Semba intro now plays every time the game page loads
+  (clicking Tier One or reloading), not once per session; it is skipped on Stripe returns and Privacy/Terms links.
+- **Files:** `index.html`, `tier-one/index.html`, `CLAUDE.md`.
+- **Heads-up for the team:** The APK already plays the intro on every app launch, so no rebuild needed.
+
 ## 2026-09-26 · mmoustafaeditor · Tier One 1.3: Semba intro, 3 source tiers, way more banter, new animations
 - **What changed:** The game now opens with the Semba Studios intro video (once per browser session, tap to skip,
   still-image fallback when autoplay is blocked). Sources come in 3 tiers with a reliability bar under each one:
