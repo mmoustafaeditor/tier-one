@@ -46,7 +46,7 @@ an APK that still needs rebuilding, config they must fill in, etc.
 | `index.html` | Semba Games studio home page, served at sembagames.app |
 | `assets/` | Web-sized copies of the Semba logo for the home page (made from `.github/assets/semba-logo.png`) |
 | `tier-one/index.html` | **Tier One: the entire game** (HTML + CSS + JS, EN/ES/AR), served at sembagames.app/tier-one. The only copy: the Android build bundles it. |
-| `tier-one/semba-intro.{webm,mp4,jpg}` | The Semba Studios intro shown as the game's loading screen on every load of the game page, with a soundtrack timed to the animation (plays with sound where the browser allows it, otherwise muted with a "Tap for sound" chip; Skip ends it; skipped on payment returns and Privacy/Terms links). The soundtrack is synthesized; its source script is kept in `games/tier-one/intro-sound/`. Also bundled into the APK. |
+| `tier-one/semba-intro.{webm,mp4,jpg}` | The Semba Studios intro shown as the game's loading screen on every load of the game page, with a soundtrack timed to the animation. It can't be skipped; where the browser blocks autoplay with sound it shows a "Tap to start" button so the intro always plays with sound. Not shown on payment returns and Privacy/Terms links. The soundtrack is synthesized; its source script is kept in `games/tier-one/intro-sound/`. Also bundled into the APK. |
 | `api/tier-one/latest.js` | Android update feed (Vercel function) polled by the app's UpdateChecker |
 | `downloads/TierOne.apk` | Published APK; the feed and README download links point to it |
 | `verify-purchase.js` | Optional Stripe purchase verification (see `games/tier-one/LAUNCH.md`) |
@@ -71,7 +71,7 @@ signed with it or installed apps refuse the update.
   APK from the run and replace `downloads/TierOne.apk`; bump `version`,
   `versionCode` and `changelog` in `api/tier-one/latest.js`; update the version badge in
   `games/tier-one/README.md`. Say in `UPDATES.md` if the APK is not rebuilt yet.
-- Current versions: web game `1.3.0`, Android `1.5` (versionCode 6).
+- Current versions: web game `1.4.0`, Android `1.6` (versionCode 7).
 - ⚠️ `CONFIG.DAILY_REPLAY` in `tier-one/index.html` is `true` **for testing only** (the Daily Challenge can be replayed). Set it back to `false` before real players use it.
 - **New game:** create `games/<slug>/` with its own `README.md` and add a card/row to the root `README.md`.
 - The game file is large (~270 KB, very long lines). Search it with grep; don't rewrite it wholesale.

@@ -17,6 +17,17 @@ together with your change.
 
 ---
 
+## 2026-09-26 · mmoustafaeditor · Player types matter, roomy source list, unskippable intro with sound
+- **What changed:** Superstar ★★★ (×1.5 points, ×2 followers), Star ★★ (×1.2, ×1.4) and Squad player ★ (×1) now
+  change scoring, right or wrong: gold/silver badges on saga cards, an explainer in the saga sheet, the call buttons
+  show this player's exact stakes, and results show points and followers per call. Tier cutoffs raised ~25%
+  (Tier 1 = 375+) to keep it hard. Sources are now a one-per-row list with a big "contacts left today" wallet
+  (number + pips) and a cost pill per source. The Semba intro can't be skipped; if the browser blocks sound it shows
+  "Tap to start" so it always plays with sound. Web 1.4.0, Android 1.6.
+- **Files:** `tier-one/index.html`, `games/tier-one/app/build.gradle`, `downloads/TierOne.apk`, `api/tier-one/latest.js`, docs.
+- **Heads-up for the team:** Open question with the user: renaming/merging the "❌ Collapses / he stays" and
+  "🧢 Nothing in it" outcomes (unchanged for now). `DAILY_REPLAY` still `true`. Next Android release is versionCode 8.
+
 ## 2026-09-26 · mmoustafaeditor · Intro soundtrack, new barber/leak sounds, cleaner source tiles, sources bash the players
 - **What changed:** The Semba intro now has a soundtrack timed to the video (neon power-on, dim, riser, a silent beat,
   the impact at 2.53s with debris, the neon re-ignite "shing" and a chord), baked into `semba-intro.webm/.mp4`. It plays
