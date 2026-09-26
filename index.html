@@ -5,25 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Semba Games — games by Semba Studios</title>
 <meta name="description" content="Semba Studios makes sharp, replayable games you can play instantly in your browser. Play Tier One, the football transfer journalist game — free, new Daily Challenge every day.">
-<meta name="theme-color" content="#08090F">
+<meta name="theme-color" content="#07090B">
 <link rel="canonical" href="https://sembagames.app/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Semba Games">
 <meta property="og:title" content="Semba Games — games by Semba Studios">
 <meta property="og:description" content="Sharp, replayable games you can play instantly. Now playing: Tier One, the transfer journalist game.">
 <meta property="og:url" content="https://sembagames.app/">
+<meta property="og:image" content="https://sembagames.app/assets/semba-logo-192.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Semba Games">
 <meta name="twitter:description" content="Sharp, replayable games you can play instantly. Now playing: Tier One.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF9F43'/%3E%3Cstop offset='1' stop-color='%23FF4D6D'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M44 19c-3-2.6-7-4-11.5-4C25 15 19.5 19 19.5 25c0 13 25 7.8 25 17.9 0 3.4-3.5 5.8-8.7 5.8-4.9 0-9.2-2-12.2-5' fill='none' stroke='%23fff' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="/assets/semba-logo-64.png">
+<link rel="apple-touch-icon" href="/assets/semba-logo-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@1,800&display=swap" rel="stylesheet">
 <style>
 :root{
- --bg:#08090F; --panel:#12141F; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+ --bg:#07090B; --panel:#12141F; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
  --text:#F4F5FA; --muted:#A1A6BD; --dim:#6C7290;
- --a1:#FF9F43; --a2:#FF4D6D; --grad:linear-gradient(120deg,var(--a1),var(--a2));
+ --a1:#B6FF3A; --a2:#3AF2A0; --ink:#0A1400; --grad:linear-gradient(120deg,var(--a1),var(--a2));
  --t1:#FFD23F; --t1ink:#1A1400;
  --display:Sora,system-ui,sans-serif; --body:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
  --cond:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
@@ -39,13 +41,13 @@ a{ color:inherit; }
 .skip{ position:absolute; left:-999px; top:8px; background:#fff; color:#000; padding:8px 12px; border-radius:8px; z-index:100; }
 .skip:focus{ left:8px; }
 .glow{ position:fixed; inset:0; z-index:-1; pointer-events:none;
- background:radial-gradient(60% 40% at 85% -5%,rgba(255,77,109,.20),transparent 70%),radial-gradient(50% 40% at 0% 10%,rgba(255,159,67,.16),transparent 70%),radial-gradient(60% 50% at 50% 110%,rgba(90,110,255,.14),transparent 70%),var(--bg); }
+ background:radial-gradient(60% 40% at 85% -5%,rgba(182,255,58,.16),transparent 70%),radial-gradient(50% 40% at 0% 10%,rgba(58,242,160,.10),transparent 70%),radial-gradient(60% 50% at 50% 110%,rgba(90,110,255,.14),transparent 70%),var(--bg); }
 
 /* header */
-header{ position:sticky; top:0; z-index:50; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); background:rgba(8,9,15,.72); border-bottom:1px solid var(--line); }
+header{ position:sticky; top:0; z-index:50; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); background:rgba(7,9,11,.74); border-bottom:1px solid var(--line); }
 .nav{ display:flex; align-items:center; justify-content:space-between; height:66px; gap:16px; }
 .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; font:700 18px/1 var(--display); letter-spacing:-.01em; }
-.brand .mark{ width:34px; height:34px; border-radius:10px; background:var(--grad); display:grid; place-items:center; box-shadow:0 8px 24px -8px rgba(255,77,109,.7); flex-shrink:0; }
+.brand .mark{ width:36px; height:36px; border-radius:10px; flex-shrink:0; box-shadow:0 0 22px -6px rgba(182,255,58,.7); }
 .brand small{ display:block; font:500 11px/1 var(--body); color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-top:4px; }
 .links{ display:flex; align-items:center; gap:4px; }
 .links a:not(.btn){ text-decoration:none; color:var(--muted); font:600 14.5px var(--body); padding:9px 12px; border-radius:10px; transition:color .15s,background .15s; }
@@ -53,7 +55,8 @@ header{ position:sticky; top:0; z-index:50; backdrop-filter:blur(14px); -webkit-
 .btn{ display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:50px; padding:0 22px; border-radius:14px; border:1px solid var(--line2); background:rgba(255,255,255,.04); color:var(--text); font:700 15.5px/1 var(--body); text-decoration:none; cursor:pointer; transition:transform .12s,box-shadow .2s,background .2s; white-space:nowrap; }
 .btn:hover{ background:rgba(255,255,255,.08); }
 .btn:active{ transform:scale(.97); }
-.btn.primary{ background:var(--grad); border-color:transparent; color:#fff; box-shadow:0 12px 32px -12px rgba(255,77,109,.8); }
+.btn.primary{ background:var(--a1); border-color:transparent; color:var(--ink); box-shadow:0 12px 32px -12px rgba(182,255,58,.75); }
+.btn.primary:hover{ background:#C6FF63; }
 .btn.t1{ background:var(--t1); color:var(--t1ink); border-color:transparent; box-shadow:0 12px 30px -12px rgba(255,210,63,.75); }
 .btn.sm{ min-height:40px; padding:0 16px; font-size:14px; border-radius:12px; }
 .btn .ar{ transition:transform .15s; } .btn:hover .ar{ transform:translateX(3px); }
@@ -149,17 +152,18 @@ h2{ font:800 clamp(30px,4vw,46px)/1.08 var(--display); letter-spacing:-.03em; ma
 .card p{ margin:0; color:var(--muted); font-size:14.5px; }
 .more{ margin-top:auto; padding-top:10px; font:700 14px var(--body); }
 .status{ font:700 11.5px var(--body); letter-spacing:.06em; text-transform:uppercase; padding:5px 9px; border-radius:8px; white-space:nowrap; }
-.status.on{ background:rgba(39,224,138,.14); color:#7CF2B7; } .status.dev{ background:rgba(255,159,67,.14); color:#FFC48A; } .status.lab{ background:rgba(160,123,255,.16); color:#C9B6FF; }
+.status.on{ background:rgba(39,224,138,.14); color:#7CF2B7; } .status.dev{ background:rgba(182,255,58,.12); color:#D4FF8A; } .status.lab{ background:rgba(160,123,255,.16); color:#C9B6FF; }
 
 /* studio */
 .studio{ display:grid; grid-template-columns:.9fr 1.1fr; gap:48px; align-items:start; }
 .big{ font:600 clamp(22px,2.4vw,28px)/1.4 var(--display); letter-spacing:-.015em; margin:18px 0 0; }
+.studiologo{ width:120px; height:120px; border-radius:28px; margin-bottom:22px; box-shadow:0 0 60px -12px rgba(182,255,58,.55); }
 .pillars{ display:grid; gap:14px; }
 .pillar{ display:flex; gap:16px; padding:20px; border-radius:var(--r); border:1px solid var(--line); background:var(--panel); }
 .pillar .n{ flex-shrink:0; width:44px; height:44px; border-radius:14px; display:grid; place-items:center; font-size:22px; background:rgba(255,255,255,.05); border:1px solid var(--line); }
 .pillar b{ display:block; font:700 17px var(--display); margin-bottom:4px; } .pillar p{ margin:0; color:var(--muted); font-size:15px; }
 
-.contact{ border-radius:32px; padding:48px; text-align:center; border:1px solid var(--line2); background:radial-gradient(60% 100% at 50% 0%,rgba(255,77,109,.18),transparent 70%),var(--panel); }
+.contact{ border-radius:32px; padding:48px; text-align:center; border:1px solid var(--line2); background:radial-gradient(60% 100% at 50% 0%,rgba(182,255,58,.14),transparent 70%),var(--panel); }
 .contact p{ color:var(--muted); max-width:52ch; margin:14px auto 26px; }
 .contact .cta-row{ justify-content:center; }
 
@@ -199,14 +203,17 @@ footer{ border-top:1px solid var(--line); margin-top:40px; padding:32px 0 calc(3
 </style>
 </head>
 <body>
-<script>document.documentElement.classList.add('js');</script>
+<script>
+document.documentElement.classList.add('js');
+if(/[?&]purchase=/.test(location.search)) location.replace('/tier-one/'+location.search);
+</script>
 <a class="skip" href="#main">Skip to content</a>
 <div class="glow" aria-hidden="true"></div>
 
 <header>
  <div class="wrap nav">
   <a class="brand" href="/" aria-label="Semba Games home">
-   <span class="mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 64 64"><path d="M44 19c-3-2.6-7-4-11.5-4C25 15 19.5 19 19.5 25c0 13 25 7.8 25 17.9 0 3.4-3.5 5.8-8.7 5.8-4.9 0-9.2-2-12.2-5" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/></svg></span>
+   <img class="mark" src="/assets/semba-logo-192.webp" width="36" height="36" alt="">
    <span>Semba Games<small>by Semba Studios</small></span>
   </a>
   <nav class="links" aria-label="Main">
@@ -299,7 +306,7 @@ footer{ border-top:1px solid var(--line); margin-top:40px; padding:32px 0 calc(3
      </div>
     </a>
     <a class="card rv" href="mailto:hello@sembastudios.com?subject=Tell%20me%20when%20the%20next%20Semba%20game%20launches">
-     <div class="art soon" style="--c1:rgba(255,159,67,.35)"><div class="q">?</div></div>
+     <div class="art soon" style="--c1:rgba(182,255,58,.28)"><div class="q">?</div></div>
      <div class="info">
       <div class="top"><h4>Next game</h4><span class="status dev">In development</span></div>
       <p>Our second title is in the works. Same promise: quick to learn, hard to put down.</p>
@@ -321,9 +328,10 @@ footer{ border-top:1px solid var(--line); margin-top:40px; padding:32px 0 calc(3
  <section id="studio" class="sec">
   <div class="wrap studio">
    <div class="rv">
+    <img class="studiologo" src="/assets/semba-logo-512.webp" width="120" height="120" alt="Semba Studios logo" loading="lazy">
     <div class="kicker">The studio</div>
     <h2>About Semba Studios</h2>
-    <p class="big">We're an independent studio making games that fit into <span class="g">real life</span> — a few minutes on the bus, a daily ritual with friends, a card worth sharing.</p>
+    <p class="big">Semba Studios is a small, <span class="g">AI-native</span> indie game studio. We design, write and ship games as a tiny human team working side by side with AI — games that fit into real life: a few minutes on the bus, a daily ritual with friends, a card worth sharing.</p>
    </div>
    <div class="pillars">
     <div class="pillar rv"><div class="n">⚡</div><div><b>Instant</b><p>Our games run in the browser first. Tap a link and you're playing — no store, no install, no account.</p></div></div>
