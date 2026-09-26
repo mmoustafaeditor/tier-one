@@ -186,3 +186,19 @@ Terms of use, Privacy policy and Contact are in the footer, in Settings and in t
 - **Leaderboards / friends**: needs a tiny backend (Vercel KV or Supabase) — only worth it once daily retention is proven.
 - **Push notifications** for the daily window: comes free with the app wrapper.
 - **og:image**: a 1200×630 PNG with the logo gets you the big-image card on X — the single cheapest marketing upgrade.
+
+
+---
+
+## Online play (rooms + transfer codes)
+
+`api/online.js` stores rooms and transfer codes in Redis through the Upstash REST API. One-time setup:
+
+1. Vercel → the **tier-one** project → **Storage** → **Create Database** → **Upstash for Redis** (free plan is plenty).
+2. Connect it to the tier-one project (all environments). Vercel adds `KV_REST_API_URL` and `KV_REST_API_TOKEN`
+   (or `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`) automatically.
+3. Redeploy (Deployments → ⋯ → Redeploy). Check: `curl -X POST https://www.sembagames.app/api/online -H 'Content-Type: application/json' -d '{"action":"health"}'`
+   should return `{"ok":true,"store":true}`.
+
+Data kept: rooms and player scores for 90 days, transfer codes for 30 days. Scores are submitted by the game, so
+treat leaderboards as friendly competition (the server checks order, season limits and a per-player secret).

@@ -61,6 +61,7 @@ an APK that still needs rebuilding, config they must fill in, etc.
 | `tier-one/index.html` | **Tier One: the entire game** (HTML + CSS + JS, EN/ES/AR), served at sembagames.app/tier-one. The only copy: the Android build bundles it. |
 | `tier-one/semba-intro.{webm,mp4,jpg}` | The Semba Studios intro shown as the game's loading screen on every load of the game page, with a soundtrack timed to the animation. It can't be skipped; where the browser blocks autoplay with sound it shows a "Tap to start" button so the intro always plays with sound. Not shown on payment returns and Privacy/Terms links. The soundtrack is synthesized; its source script is kept in `games/tier-one/intro-sound/`. Also bundled into the APK. |
 | `api/tier-one/latest.js` | Android update feed (Vercel function) polled by the app's UpdateChecker |
+| `api/online.js` | Online features (Vercel function): career transfer codes and multiplayer rooms. Needs a Redis store connected in Vercel (see `games/tier-one/LAUNCH.md` › Online play); without it the game shows "Online play is switching on soon". |
 | `downloads/TierOne.apk` | Published APK; the feed and README download links point to it |
 | `api/verify-purchase.js` | Optional Stripe purchase verification, served at `/api/verify-purchase` (see `games/tier-one/LAUNCH.md`) |
 | `games/<game>/` | One folder per game, each with its own `README.md` |
@@ -86,7 +87,9 @@ signed with it or installed apps refuse the update.
   APK from the run and replace `downloads/TierOne.apk`; bump `version`,
   `versionCode` and `changelog` in `api/tier-one/latest.js`; update the version badge in
   `games/tier-one/README.md`. Say in `UPDATES.md` if the APK is not rebuilt yet.
-- Current versions: web game `1.4.0`, Android `1.6` (versionCode 7).
+- Current versions: web game `1.5.0`, Android `1.7` (versionCode 8).
+- In-game currency is shown as dollars (`$`), but the save field is still `career.credits`.
+- Multiplayer rooms: each room has its own career in `save.rooms[code].career`; game code reads the active career through `C()` (solo career unless `roomCtx` is set). Use `C()`, not `save.career`, in anything that runs during a window.
 - ⚠️ `CONFIG.DAILY_REPLAY` in `tier-one/index.html` is `true` **for testing only** (the Daily Challenge can be replayed). Set it back to `false` before real players use it.
 - **New game:** create `games/<slug>/` with its own `README.md` and add a card/row to the root `README.md`.
 - The game file is large (~270 KB, very long lines). Search it with grep; don't rewrite it wholesale.
