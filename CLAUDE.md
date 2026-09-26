@@ -20,6 +20,9 @@ Then, **before doing the task**:
 - If there are new commits or `UPDATES.md` entries from another teammate, tell the user in 2–4
   lines what changed (who, what, any heads-up). The user wants to hear about teammates' updates.
 - If the branch is behind `origin/main`, merge it in before editing, so you don't overwrite their work.
+- If the hook shows **open requests** from `.claude/requests.md`, tell the user about them first and say who each
+  is for. When the person it's for says it's done, delete the request and log it in `UPDATES.md`. To leave a
+  request for a teammate (something only they can do), add one there using its template.
   Never force-push over a teammate's commits.
 
 ## 2. At the end of every change: log it
@@ -53,6 +56,7 @@ an APK that still needs rebuilding, config they must fill in, etc.
 | `games/<game>/` | One folder per game, each with its own `README.md` |
 | `games/tier-one/` | Tier One's game page (`README.md`), hosting/ads/payments guide (`LAUNCH.md`) and the Android WebView project (Gradle 8.9, JDK 17, SDK 34). `store/` holds Play Store art (512px icon). |
 | `.github/workflows/build-tier-one.yml` | Builds the APK on pushes touching the game or `games/tier-one/**`; the APK is attached to the run |
+| `.claude/requests.md` | Open requests between teammates; the session hook shows them at the start of every Claude Code session |
 | `.gitignore` | Keeps Gradle/Android build output, `local.properties` and OS/editor junk out of git |
 | `.vercelignore` | Keeps `games/` (incl. the signing key), `.github/` and `.claude/` off the public site. Don't remove it. |
 | `.github/assets/` | Brand art: `semba-logo.png` (studio logo, the exact design #17 "Neon Ring"; never redraw it), `tier-one-logo.svg` (T1), plus the banner and game card that embed them |

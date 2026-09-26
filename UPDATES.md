@@ -17,6 +17,15 @@ together with your change.
 
 ---
 
+## 2026-09-26 · saifsaber · Team requests board; ⚠️ Mohamed: please Redeploy on Vercel
+- **What changed:** New `.claude/requests.md` for requests one teammate leaves for another (things only that person
+  can do). The session hook reads it from `origin/main` and shows every open request at the start of each Claude Code
+  session, so Claude tells the user first. First request: mmoustafaeditor, please Redeploy on Vercel (the PR #2 deploy
+  was blocked because Saif's account isn't in the Vercel team).
+- **Files:** `.claude/requests.md` (new), `.claude/hooks/team-sync.sh`, `CLAUDE.md`, `UPDATES.md`.
+- **Heads-up for the team:** Live site is still the pre-tidy-up deploy until Mohamed redeploys. When a request is
+  done, delete it from `.claude/requests.md`.
+
 ## 2026-09-26 · mmoustafaeditor · Repo tidy-up: Stripe function into api/, .gitignore, hook fix, old branches removed
 - **What changed:** Done by saifsaber at mmoustafaeditor's request. The session hook no longer prints "This repo is
   RETIRED" in the team repo (it now only shows inside a `saifsaber/tier-one` clone). `verify-purchase.js` moved to
