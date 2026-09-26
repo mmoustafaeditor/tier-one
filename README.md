@@ -49,12 +49,14 @@ Tap a game to open its page: the story, how to play and the download.
 ├── assets/                ← web-sized Semba logos used by the home page
 ├── tier-one/index.html    ← Tier One: the whole game (served at sembagames.app/tier-one)
 ├── api/tier-one/latest.js ← Android update feed (Vercel function)
-├── verify-purchase.js     ← Stripe purchase check (see games/tier-one/LAUNCH.md)
+├── api/verify-purchase.js ← Stripe purchase check (see games/tier-one/LAUNCH.md)
 ├── downloads/TierOne.apk  ← published Android APK
 ├── .github/assets/        ← logos (Semba neon S, Tier One T1), banner and game card
+├── .gitignore            ← keeps Android/Gradle build output out of git
 ├── .vercelignore          ← keeps games/, .github/ and .claude/ off the public site
 └── games/
-    └── tier-one/          ← Game 01 page (README), launch guide, Android project (Gradle)
+    └── tier-one/          ← Game 01 page (README), launch guide, Android project (Gradle),
+                              store/ (Play Store art), intro-sound/ (intro soundtrack source)
 ```
 
 The web files stay where the site serves them: the home page at `/`, the game at `/tier-one`, and the

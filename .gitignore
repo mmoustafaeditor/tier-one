@@ -1,0 +1,21 @@
+# Android / Gradle build output (games/tier-one). The APK we publish lives in downloads/ and stays tracked.
+.gradle/
+build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.iml
+.idea/
+
+# Node (games/tier-one/intro-sound)
+node_modules/
+
+# Vercel CLI
+.vercel/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+*~

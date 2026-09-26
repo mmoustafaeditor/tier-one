@@ -4,7 +4,10 @@
 cd "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}" 2>/dev/null || exit 0
 
 echo "=== TEAM SYNC (Semba Studios) ==="
-echo "⛔ This repo (saifsaber/tier-one) is RETIRED. The team works in mmoustafaeditor/tier-one. Do not make changes here."
+# Only warn inside a clone of the retired repo, not in the team repo itself.
+case "$(git remote get-url origin 2>/dev/null)" in
+  *saifsaber/tier-one*) echo "⛔ This repo (saifsaber/tier-one) is RETIRED. The team works in mmoustafaeditor/tier-one. Do not make changes here." ;;
+esac
 if git rev-parse --git-dir >/dev/null 2>&1; then
   timeout 20 git fetch --quiet origin 2>/dev/null
   branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
