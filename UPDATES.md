@@ -17,6 +17,17 @@ together with your change.
 
 ---
 
+## 2026-09-26 · mmoustafaeditor · Sound overhaul; Daily Challenge replayable for testing
+- **What changed:** New synth sound engine (no audio files, works offline in the app): the agent call is a double phone
+  ring, pickup click and a clearly fake gibberish phone voice (with a voice meter on screen); barber is electric clippers
+  and scissor snips; airport is a terminal chime and a jet flyby; physio heart monitor, kitman locker clang, leak
+  typewriter, bribe cash register. Also a day boom, Deadline Day siren, typing clicks, send whoosh, hit/miss stings,
+  a Tier 1–2 fanfare and a sad trombone for the clown tier. `CONFIG.DAILY_REPLAY` (new) lets the Daily be replayed:
+  the tile says "Play again" and the latest run replaces that day's result (streak unaffected). Web 1.2.0, Android 1.4.
+- **Files:** `tier-one/index.html`, `games/tier-one/app/build.gradle`, `downloads/TierOne.apk`, `api/tier-one/latest.js`, docs.
+- **Heads-up for the team:** ⚠️ `DAILY_REPLAY` is `true` for testing. Flip it to `false` (and ship a build) before launch.
+  Next Android release is versionCode 6.
+
 ## 2026-09-26 · mmoustafaeditor · Cleaner studio home page; intro plays on every game load
 - **What changed:** sembagames.app is now a single screen: headline, one Tier One card (Play / Android),
   "More games coming soon", and a one-line footer. The Semba intro now plays every time the game page loads

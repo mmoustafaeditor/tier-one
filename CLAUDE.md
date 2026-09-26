@@ -71,7 +71,8 @@ signed with it or installed apps refuse the update.
   APK from the run and replace `downloads/TierOne.apk`; bump `version`,
   `versionCode` and `changelog` in `api/tier-one/latest.js`; update the version badge in
   `games/tier-one/README.md`. Say in `UPDATES.md` if the APK is not rebuilt yet.
-- Current versions: web game `1.1.0`, Android `1.3` (versionCode 4).
+- Current versions: web game `1.2.0`, Android `1.4` (versionCode 5).
+- ⚠️ `CONFIG.DAILY_REPLAY` in `tier-one/index.html` is `true` **for testing only** (the Daily Challenge can be replayed). Set it back to `false` before real players use it.
 - **New game:** create `games/<slug>/` with its own `README.md` and add a card/row to the root `README.md`.
 - The game file is large (~270 KB, very long lines). Search it with grep; don't rewrite it wholesale.
 - Arabic text in the game and READMEs is Egyptian Arabic; keep that tone.

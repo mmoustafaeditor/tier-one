@@ -384,6 +384,9 @@ html[lang="ar"] .stinger .st-big{ font-style:normal; line-height:1.35; }
 /* contact call: connection bar + springier art */
 .big .inner{ animation:bigPop .5s var(--ease-spring) both; }
 @keyframes bigPop{ from{ opacity:0; transform:scale(.86) translateY(14px); filter:blur(4px); } to{ opacity:1; transform:none; filter:none; } }
+.big .voice{ display:flex; justify-content:center; align-items:center; gap:5px; height:34px; margin-top:12px; opacity:0; animation:voiceShow .2s ease 2.15s forwards; }
+.big .voice i{ width:5px; height:100%; border-radius:3px; background:var(--accent); box-shadow:0 0 10px var(--accent); animation:voiceBar .18s ease-in-out infinite alternate; }
+@keyframes voiceShow{ to{ opacity:1; } } @keyframes voiceBar{ from{ transform:scaleY(.2); } to{ transform:scaleY(1); } }
 .big .conn{ width:180px; height:4px; margin:22px auto 0; border-radius:99px; background:rgba(255,255,255,.14); overflow:hidden; }
 .big .conn i{ display:block; height:100%; width:100%; border-radius:inherit; background:var(--accent); box-shadow:0 0 12px var(--accent); transform-origin:left; animation:conn 1.4s var(--ease-io) both; }
 [dir="rtl"] .big .conn i{ transform-origin:right; }
@@ -535,10 +538,11 @@ body.has-consent .home{ padding-bottom:190px; }
    your own domain — not inside the claude.ai preview.
    ============================================================ */
 const CONFIG={
- VERSION:'1.1.0',
+ VERSION:'1.2.0',
  GAME_NAME:'Tier One',
  STUDIO_NAME:'Semba Studios',
- SITE_URL:'https://sembagames.app/tier-one',                 // your live URL — printed at the bottom of every share card
+ SITE_URL:'https://sembagames.app/tier-one',
+ DAILY_REPLAY:true,                              // TESTING ONLY: lets the Daily Challenge be replayed. Set to false to make it one-go-a-day again.                 // your live URL — printed at the bottom of every share card
  CONTACT_EMAIL:'hello@sembastudios.com',         // support + legal contact shown in Terms / Privacy / Contact
  JURISDICTION:'',                                // e.g. 'the State of Florida, USA' — used in the Terms. '' = generic wording
  LEGAL_EFFECTIVE:'September 25, 2026',          // effective date printed on Terms & Privacy — update when you edit them
@@ -616,7 +620,7 @@ I18N.en={
  settings:{title:'Settings',theme:'Theme',auto:'Auto',light:'Light',dark:'Dark',language:'Language',look:'Look',lookNote:'Buy more in Career › Style.',sound:'Sound',on:'On',off:'Off',wipe:'Wipe all progress',saved:'Progress is saved in this browser only.',confirm:'Wipe every window, badge and credit?',tutorial:'Replay the tutorial',close:'Close'},
  tut:{cards:[['🎙️',"You're a transfer journalist",'8 real players are linked with moves. Each rumor hides a truth. Your job: find it and post it before the rivals.'],['💬','DM your sources','Tap a player, then message a source. You get 10 contacts a day. High-reliability sources cost 3, Medium 2, Low 1. Check the bar under each one.'],['🚀','Post your call',"Pick what happens and how loud you say it. Loud and right = big points. Loud and wrong = ratio'd. Earlier calls score more. Tier 1 takes 300+ pts."],['⏱️','Deadline Day','End each day when you\'re done. Day 7 is a 60-second timer with only 3 contacts, then everything is announced and you get your tier.']],next:'Next',skip:'Skip',practice:'Play a practice window first',start:'Start',gotit:'Got it',coach:{c1:'Tap a player to open his saga.',c2:'Message a source. The bar shows how reliable they are: High 📞3, Medium 📞2, Low 📞1.',c3:'Got a clue? Scroll down and make your call.',c4:'Out of contacts? End the day. Rivals post overnight.',c5:"60 seconds left, 3 contacts. Call everything you haven't."}},
 rep:{high:'High reliability',med:'Medium reliability',low:'Low reliability',you:'you: {ok}/{n} true'},
- arch:{title:'Past challenges',open:'📅 Past challenges ({n})',sub:'Every Daily Challenge you have played, with the full breakdown.',played:'Played',best:'Best tier',avg:'Average',streak:'Streak',empty:'No Daily Challenges yet. Play today\'s and it will show up here.',local:'Saved on this device only. Clearing your browser data removes it.',noDetail:'Played before the archive existed, so only your result for this story was saved.',back:'All past challenges',view:'Results'},
+ arch:{title:'Past challenges',open:'📅 Past challenges ({n})',sub:'Every Daily Challenge you have played, with the full breakdown.',played:'Played',best:'Best tier',avg:'Average',streak:'Streak',empty:'No Daily Challenges yet. Play today\'s and it will show up here.',local:'Saved on this device only. Clearing your browser data removes it.',noDetail:'Played before the archive existed, so only your result for this story was saved.',back:'All past challenges',view:'Results',again:'Play again'},
  country:{ENG:'England',ESP:'Spain',GER:'Germany',FRA:'France',ITA:'Italy',TUR:'Turkey',KSA:'Saudi Arabia',USA:'the US'}
 };
 I18N.es={
@@ -669,7 +673,7 @@ I18N.es={
  settings:{title:'Ajustes',theme:'Tema',auto:'Auto',light:'Claro',dark:'Oscuro',language:'Idioma',look:'Estilo visual',lookNote:'Compra más en Carrera › Estilo.',sound:'Sonido',on:'Sí',off:'No',wipe:'Borrar todo el progreso',saved:'El progreso se guarda solo en este navegador.',confirm:'¿Borrar todos los mercados, insignias y créditos?',tutorial:'Repetir el tutorial',close:'Cerrar'},
  tut:{cards:[['🎙️','Eres periodista de fichajes','8 jugadores reales suenan para irse. Cada rumor esconde una verdad. Tu trabajo: descubrirla y publicarla antes que los rivales.'],['💬','Escribe a tus fuentes','Toca un jugador y escribe a una fuente. Tienes 10 contactos al día. Las de fiabilidad alta cuestan 3, media 2 y baja 1. Mira la barra debajo de cada una.'],['🚀','Publica tu apuesta','Elige qué pasa y con cuánta fuerza lo dices. A gritos y acertar = muchos puntos. A gritos y fallar = ratio. Apostar antes suma más. Tier 1 exige 300+ pts.'],['⏱️','Día límite','Termina cada día cuando acabes. El día 7 es un temporizador de 60 segundos con solo 3 contactos; luego se anuncia todo y recibes tu tier.']],next:'Siguiente',skip:'Saltar',practice:'Jugar un mercado de práctica primero',start:'Empezar',gotit:'Entendido',coach:{c1:'Toca un jugador para abrir su culebrón.',c2:'Escribe a una fuente. La barra dice cuánto te puedes fiar: Alta 📞3, Media 📞2, Baja 📞1.',c3:'¿Ya tienes una pista? Baja y apuesta.',c4:'¿Sin contactos? Termina el día. Los rivales publican de madrugada.',c5:'60 segundos, 3 contactos. Apuesta todo lo que falte.'}},
 rep:{high:'Fiabilidad alta',med:'Fiabilidad media',low:'Fiabilidad baja',you:'contigo: {ok}/{n} ciertas'},
- arch:{title:'Retos anteriores',open:'📅 Retos anteriores ({n})',sub:'Cada Reto diario que has jugado, con el desglose completo.',played:'Jugados',best:'Mejor tier',avg:'Media',streak:'Racha',empty:'Aún no hay retos. Juega el de hoy y aparecerá aquí.',local:'Guardado solo en este dispositivo. Si borras los datos del navegador, se pierde.',noDetail:'Jugado antes de que existiera el archivo: solo se guardó tu resultado en esta historia.',back:'Todos los retos anteriores',view:'Resultados'},
+ arch:{title:'Retos anteriores',open:'📅 Retos anteriores ({n})',sub:'Cada Reto diario que has jugado, con el desglose completo.',played:'Jugados',best:'Mejor tier',avg:'Media',streak:'Racha',empty:'Aún no hay retos. Juega el de hoy y aparecerá aquí.',local:'Guardado solo en este dispositivo. Si borras los datos del navegador, se pierde.',noDetail:'Jugado antes de que existiera el archivo: solo se guardó tu resultado en esta historia.',back:'Todos los retos anteriores',view:'Resultados',again:'Otra vez'},
  country:{ENG:'Inglaterra',ESP:'España',GER:'Alemania',FRA:'Francia',ITA:'Italia',TUR:'Turquía',KSA:'Arabia Saudí',USA:'Estados Unidos'}
 };
 I18N.ar={
@@ -722,7 +726,7 @@ I18N.ar={
  settings:{title:'الإعدادات',theme:'الثيم',auto:'أوتوماتيك',light:'فاتح',dark:'غامق',language:'اللغة',look:'الشكل',lookNote:'اشتري أشكال أكتر من المسيرة › الستايل.',sound:'الصوت',on:'شغّال',off:'مقفول',wipe:'امسح كل حاجة',saved:'التقدم متسيّف على المتصفح ده بس.',confirm:'تمسح كل النوافذ والشارات والرصيد؟',tutorial:'اشرحلي تاني',close:'اقفل'},
  tut:{cards:[['🎙️','انت صحفي انتقالات','8 لعيبة حقيقيين في كلام عن انتقالهم. كل إشاعة وراها حقيقة. شغلتك: تعرفها وتنشرها قبل المنافسين.'],['💬','كلّم مصادرك في الخاص','دوس على لعيب وبعدين كلّم مصدر. معاك 10 اتصالات في اليوم. المصدر العالي بياكل 3، المتوسط 2، والضعيف 1. بص على الشريط اللي تحت كل واحد.'],['🚀','انزل بتوقّعك','اختار إيه اللي هيحصل وهتقولها بصوت قد إيه. عالي وصح = نقط كتير. عالي وغلط = راتيو. كل ما تقول بدري تاخد أكتر. تير 1 محتاج 300+ نقطة.'],['⏱️','يوم القفلة','خلّص كل يوم لما تخلص. اليوم السابع عداد 60 ثانية وفيه 3 اتصالات بس، وبعدين كل حاجة بتتعلن وتعرف انت تير كام.']],next:'اللي بعده',skip:'فكّك',practice:'سخّن الأول بنافذة تجريبية',start:'يلا بينا',gotit:'تمام',coach:{c1:'دوس على لعيب عشان تفتح قصته.',c2:'كلّم مصدر. الشريط بيقولك تصدقه قد إيه: عالي 📞3، متوسط 📞2، ضعيف 📞1.',c3:'معاك دليل؟ انزل تحت وقول توقّعك.',c4:'خلصت اتصالاتك؟ خلّص اليوم. المنافسين بينشروا بالليل.',c5:'60 ثانية، 3 اتصالات. قول أي حاجة ماقلتهاش.'}},
 rep:{high:'مصداقية عالية',med:'مصداقية متوسطة',low:'مصداقية ضعيفة',you:'معاك: {ok}/{n} صح'},
- arch:{title:'التحديات اللي فاتت',open:'📅 التحديات اللي فاتت ({n})',sub:'كل تحدي يومي لعبته، بالتفاصيل كلها.',played:'لعبت',best:'أحسن تير',avg:'المتوسط',streak:'السلسلة',empty:'لسه مالعبتش أي تحدي. العب بتاع النهارده وهيظهر هنا.',local:'متسيّف على الجهاز ده بس. لو مسحت بيانات المتصفح هيتمسح.',noDetail:'اتلعب قبل ما الأرشيف يبقى موجود، فاتحفظت نتيجتك في القصة دي بس.',back:'كل التحديات اللي فاتت',view:'النتيجة'},
+ arch:{title:'التحديات اللي فاتت',open:'📅 التحديات اللي فاتت ({n})',sub:'كل تحدي يومي لعبته، بالتفاصيل كلها.',played:'لعبت',best:'أحسن تير',avg:'المتوسط',streak:'السلسلة',empty:'لسه مالعبتش أي تحدي. العب بتاع النهارده وهيظهر هنا.',local:'متسيّف على الجهاز ده بس. لو مسحت بيانات المتصفح هيتمسح.',noDetail:'اتلعب قبل ما الأرشيف يبقى موجود، فاتحفظت نتيجتك في القصة دي بس.',back:'كل التحديات اللي فاتت',view:'النتيجة',again:'العب تاني'},
  country:{ENG:'إنجلترا',ESP:'إسبانيا',GER:'ألمانيا',FRA:'فرنسا',ITA:'إيطاليا',TUR:'تركيا',KSA:'السعودية',USA:'أمريكا'}
 };
 const NAMES={
@@ -1584,6 +1588,7 @@ function resolveWindow(){
   const k=todayKey(); const d=save.daily;
   if(!d.history[k]){ const y=new Date(); y.setDate(y.getDate()-1); const yk=y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
    d.streak=(d.lastDate===yk)?d.streak+1:1; d.lastDate=k; d.history[k]={score:total,tier:tier.n,row:per.map(x=>x.emoji).join(''),num:dailyNumber()}; }
+  else if(CONFIG.DAILY_REPLAY) Object.assign(d.history[k],{score:total,tier:tier.n,row:per.map(x=>x.emoji).join('')});
   archiveDaily(k,res);
  }else if(game.mode==='career'){
   const c=save.career; const before=levelInfo(c.xp); c.followers=game.followers;
@@ -1645,15 +1650,79 @@ function renderIntro(){
 }
 function closeIntro(){ const d=document.querySelector('.big.tut'); if(d) d.remove(); }
 
-// ----- sound -----
-let audioCtx=null;
-function beep(kind){
- if(!save.settings.sound) return;
- try{ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)(); const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); const tm=audioCtx.currentTime;
-  const P={pop:[[600,0,'sine'],[900,.06]],ding:[[880,0,'sine'],[1320,.08],[1760,.16]],buzz:[[160,0,'sawtooth'],[110,.2]],tick:[[1000,0,'square']],whoosh:[[300,0,'triangle'],[1200,.12]]}[kind]||[[500,0,'sine']];
-  o.type=P[0][2]; P.forEach(([f,dt])=>o.frequency.setValueAtTime(f,tm+dt)); const dur=kind==='buzz'?.28:kind==='tick'?.05:kind==='ding'?.32:.14;
-  g.gain.setValueAtTime(kind==='tick'?.05:.12,tm); g.gain.exponentialRampToValueAtTime(.001,tm+dur); o.start(tm); o.stop(tm+dur); }catch(e){}
-}
+// ----- sound: small synth engine (no audio files) -----
+const SFX=(()=>{
+ let ctx=null, master=null, noiseBuf=null;
+ function init(){
+  if(ctx) return ctx; const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null;
+  ctx=new AC(); const comp=ctx.createDynamicsCompressor(); comp.threshold.value=-16; comp.knee.value=12; comp.ratio.value=4; comp.attack.value=.004; comp.release.value=.2;
+  master=ctx.createGain(); master.gain.value=.85; master.connect(comp); comp.connect(ctx.destination);
+  noiseBuf=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate); const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  return ctx;
+ }
+ const rnd=(a,b)=>a+Math.random()*(b-a);
+ function env(g,t,a,peak,dur,rel){ const e=.0001; g.gain.setValueAtTime(e,t); g.gain.exponentialRampToValueAtTime(Math.max(peak,e*2),t+a); g.gain.setValueAtTime(Math.max(peak,e*2),t+Math.max(a,dur-rel)); g.gain.exponentialRampToValueAtTime(e,t+dur); }
+ function filt(type,f,q){ const b=ctx.createBiquadFilter(); b.type=type; b.frequency.value=f; if(q!=null) b.Q.value=q; return b; }
+ function tone(f,t,dur,o={}){ const osc=ctx.createOscillator(); osc.type=o.type||'sine'; osc.frequency.setValueAtTime(f,t); if(o.to) osc.frequency.exponentialRampToValueAtTime(o.to,t+(o.slide||dur)); if(o.detune) osc.detune.value=o.detune;
+  const g=ctx.createGain(); env(g,t,o.a||.005,o.g||.2,dur,o.r!=null?o.r:dur*.7); let n=osc; if(o.lp){ const b=filt('lowpass',o.lp,o.q||.7); osc.connect(b); n=b; } n.connect(g); g.connect(o.dest||master); osc.start(t); osc.stop(t+dur+.05); return {osc,g}; }
+ function noise(t,dur,o={}){ const src=ctx.createBufferSource(); src.buffer=noiseBuf; src.loop=true; const b=filt(o.type||'bandpass',o.f||1000,o.q!=null?o.q:1); if(o.fto) b.frequency.exponentialRampToValueAtTime(o.fto,t+(o.fslide||dur));
+  const g=ctx.createGain(); env(g,t,o.a||.005,o.g||.2,dur,o.r!=null?o.r:dur*.7); src.connect(b); b.connect(g); g.connect(o.dest||master); src.start(t,Math.random()*1.5); src.stop(t+dur+.05); return {src,b,g}; }
+ function bell(f,t,dur,g){ [[1,1],[2.01,.5],[3.02,.25],[4.23,.12]].forEach(([m,a])=>tone(f*m,t,dur*(1.1-m*.12),{g:g*a,a:.002,r:dur*.95})); }
+ function curve(k){ const n=256, c=new Float32Array(n); for(let i=0;i<n;i++){ const x=i*2/n-1; c[i]=(1+k)*x/(1+k*Math.abs(x)); } return c; }
+ // gibberish "phone voice": formant-filtered sawtooth syllables through a telephone band + a little grit
+ function babble(t0,dur,base){ const out=ctx.createGain(); out.gain.value=.32; const sh=ctx.createWaveShaper(); sh.curve=curve(6); const hp=filt('highpass',380,.7), lp=filt('lowpass',3200,.7);
+  out.connect(sh); sh.connect(hp); hp.connect(lp); lp.connect(master); noise(t0,dur,{type:'bandpass',f:2400,q:.6,g:.005,a:.05,r:.1});
+  let t=t0; while(t<t0+dur-.08){ const syl=rnd(.07,.16), f0=base*rnd(.85,1.35); const o=ctx.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(f0,t); o.frequency.linearRampToValueAtTime(f0*rnd(.75,1.3),t+syl);
+   const f1=filt('bandpass',rnd(320,850),6), f2=filt('bandpass',rnd(900,2300),9); f1.frequency.linearRampToValueAtTime(rnd(320,850),t+syl); f2.frequency.linearRampToValueAtTime(rnd(900,2300),t+syl);
+   const g=ctx.createGain(); env(g,t,.018,.9,syl,syl*.55); o.connect(f1); o.connect(f2); f1.connect(g); f2.connect(g); g.connect(out); o.start(t); o.stop(t+syl+.03);
+   t+=syl+(Math.random()<.22?rnd(.08,.18):.012); } }
+ function ring(t){ [0,.52].forEach(dt=>{ const st=t+dt, dur=.38; const g=ctx.createGain(); env(g,st,.01,.2,dur,.05); const lfo=ctx.createOscillator(), lg=ctx.createGain(); lfo.frequency.value=24; lg.gain.value=.11; lfo.connect(lg); lg.connect(g.gain);
+   [400,450].forEach(f=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; o.connect(g); o.start(st); o.stop(st+dur+.03); }); lfo.start(st); lfo.stop(st+dur+.03); const lp=filt('lowpass',2600); g.connect(lp); lp.connect(master); }); }
+ function click(t,g){ noise(t,.03,{type:'highpass',f:1800,g:g||.25,a:.001,r:.025}); tone(1600,t,.02,{type:'square',g:(g||.25)*.25,a:.001}); }
+ function clippers(t,dur){ const g=ctx.createGain(); env(g,t,.06,.16,dur,.12); const lp=filt('lowpass',2800,1.2); g.connect(lp); lp.connect(master);
+  const am=ctx.createOscillator(), amg=ctx.createGain(); am.frequency.value=120; amg.gain.value=.06; am.connect(amg); amg.connect(g.gain); am.start(t); am.stop(t+dur+.05);
+  [[118,'sawtooth',1],[236,'square',.35],[59,'triangle',.6]].forEach(([f,ty,a])=>{ const o=ctx.createOscillator(); o.type=ty; o.frequency.setValueAtTime(f,t); [.3,.62,.95].forEach(c=>{ if(c<dur-.1){ o.frequency.setValueAtTime(f,t+c); o.frequency.linearRampToValueAtTime(f*.9,t+c+.06); o.frequency.linearRampToValueAtTime(f,t+c+.2); } }); const og=ctx.createGain(); og.gain.value=a; o.connect(og); og.connect(g); o.start(t); o.stop(t+dur+.05); });
+  noise(t,dur,{type:'bandpass',f:3200,q:1.5,g:.05,a:.05,r:.1}); [.3,.62,.95].forEach(c=>{ if(c<dur-.1) noise(t+c,.18,{type:'bandpass',f:5200,q:1,g:.09,a:.01,r:.12}); }); }
+ function snip(t){ noise(t,.045,{type:'highpass',f:4200,g:.3,a:.001,r:.04}); tone(3800,t,.03,{type:'triangle',g:.08,a:.001}); noise(t+.05,.03,{type:'highpass',f:5200,g:.18,a:.001,r:.025}); }
+ function jet(t,dur){ noise(t,dur,{type:'lowpass',f:260,fto:3600,fslide:dur*.55,q:.9,g:.32,a:dur*.45,r:dur*.5}); const w=tone(2600,t+dur*.15,dur*.8,{to:1300,slide:dur*.8,g:.03,a:dur*.3,r:dur*.4}); noise(t,dur,{type:'lowpass',f:110,q:.5,g:.25,a:dur*.4,r:dur*.5}); }
+ function boom(t,g){ tone(140,t,.7,{to:38,slide:.5,g:g||.55,a:.004,r:.6}); noise(t,.25,{type:'lowpass',f:900,fto:120,g:(g||.55)*.5,a:.002,r:.22}); }
+ function stab(t,notes,ty,g,dur){ notes.forEach((f,i)=>tone(f,t,dur||.35,{type:ty||'sawtooth',g:(g||.08),a:.01,lp:2400,detune:i%2?6:-6})); }
+ const N={C4:261.6,D4:293.7,E4:329.6,F4:349.2,G4:392,A4:440,Bb4:466.2,B4:493.9,C5:523.3,E5:659.3,G5:784,C6:1046.5};
+ const P={
+  pop:t=>{ tone(520,t,.09,{to:880,slide:.06,g:.16,a:.003}); click(t,.06); },
+  tap:t=>click(t,.12),
+  tick:t=>tone(1300,t,.035,{type:'square',g:.05,a:.001,lp:5000}),
+  key:t=>{ noise(t,.028,{type:'bandpass',f:rnd(2500,4200),q:2,g:.14,a:.001,r:.024}); tone(rnd(160,240),t,.03,{type:'triangle',g:.05,a:.001}); },
+  clock:(()=>{ let alt=false; return t=>{ alt=!alt; noise(t,.03,{type:'bandpass',f:alt?3200:2200,q:6,g:.35,a:.001,r:.028}); tone(alt?1900:1400,t,.04,{g:.07,a:.001}); }; })(),
+  ding:t=>bell(1318.5,t,.9,.12),
+  whoosh:t=>noise(t,.42,{type:'bandpass',f:380,fto:3200,fslide:.34,q:1.3,g:.28,a:.12,r:.25}),
+  buzz:t=>{ tone(112,t,.34,{type:'square',g:.12,lp:900,detune:-8}); tone(115,t,.34,{type:'square',g:.1,lp:900,detune:8}); noise(t,.12,{type:'lowpass',f:300,g:.2}); },
+  send:t=>{ noise(t,.3,{type:'bandpass',f:600,fto:4200,fslide:.26,q:1.4,g:.25,a:.06,r:.2}); bell(1568,t+.22,.6,.09); },
+  good:t=>{ tone(N.E5,t,.16,{type:'triangle',g:.13}); tone(N.G5*1.0,t+.09,.28,{type:'triangle',g:.13}); },
+  star:t=>{ [N.C5,N.E5,N.G5,N.C6].forEach((f,i)=>tone(f,t+i*.06,.35,{type:'triangle',g:.1})); bell(2093,t+.26,.8,.06); },
+  bad:t=>{ tone(196,t,.4,{type:'sawtooth',to:120,slide:.38,g:.15,lp:1100}); noise(t,.08,{type:'lowpass',f:400,g:.15}); },
+  stamp:t=>{ boom(t,.25); noise(t,.06,{type:'bandpass',f:1600,q:.8,g:.2,a:.001}); },
+  open:t=>{ noise(t,.5,{type:'bandpass',f:300,fto:2800,fslide:.4,q:1,g:.22,a:.25,r:.2}); boom(t+.42,.45); stab(t+.42,[N.C4,N.E4,N.G4,N.C5],'sawtooth',.06,.55); },
+  dayhit:t=>{ noise(t,.3,{type:'bandpass',f:400,fto:2600,fslide:.28,q:1.2,g:.2,a:.2,r:.1}); boom(t+.26,.5); tone(N.C5,t+.3,.5,{type:'triangle',g:.08}); tone(N.G5,t+.3,.5,{type:'triangle',g:.05}); },
+  siren:t=>{ boom(t,.55); for(let i=0;i<4;i++){ const st=t+.05+i*.28; tone(i%2?720:960,st,.26,{type:'sawtooth',g:.07,lp:1800,a:.02,r:.05}); } },
+  reveal:t=>{ boom(t,.35); noise(t,.5,{type:'highpass',f:6000,g:.06,a:.002,r:.45}); },
+  fanfare:t=>{ boom(t,.4); [[N.C4,0],[N.E4,.12],[N.G4,.24]].forEach(([f,d])=>stab(t+d,[f,f*2],'sawtooth',.07,.16)); stab(t+.38,[N.C4,N.E4,N.G4,N.C5],'sawtooth',.07,.9); noise(t+.38,1.1,{type:'highpass',f:7000,g:.07,a:.005,r:1}); },
+  sad:t=>{ [[N.G4,0],[N.F4*1.0,.34],[N.E4,.68],[N.D4*.97,1.02]].forEach(([f,d],i)=>{ const x=tone(f,t+d,i===3?.9:.32,{type:'sawtooth',g:.15,lp:1300,a:.03}); if(i===3){ const l=ctx.createOscillator(), lg=ctx.createGain(); l.frequency.value=6; lg.gain.value=9; l.connect(lg); lg.connect(x.osc.frequency); l.start(t+d); l.stop(t+d+.95); } }); },
+  agentcall:t=>{ ring(t); ring(t+1.1); click(t+2.08,.3); babble(t+2.18,1.35,rnd(130,170)); click(t+3.6,.22); },
+  clippers:t=>{ click(t,.2); clippers(t+.05,1.25); snip(t+1.38); snip(t+1.55); },
+  airport:t=>{ bell(N.G5,t,.7,.09); bell(N.E5,t+.28,.7,.09); bell(N.C5,t+.56,.9,.09); jet(t+.7,1.6); },
+  monitor:t=>{ [0,.62,1.24].forEach(d=>{ tone(1000,t+d,.1,{g:.12,a:.003,r:.03}); tone(62,t+d+.02,.12,{g:.35,a:.004}); tone(55,t+d+.2,.1,{g:.25,a:.004}); }); },
+  kitman:t=>{ noise(t,1.3,{type:'lowpass',f:180,q:.6,g:.22,a:.2,r:.4}); [[523,1],[1307,.6],[2210,.4],[3140,.25]].forEach(([f,a])=>tone(f,t+.45,.9,{g:.07*a,a:.001,r:.85})); boom(t+.45,.2); [0,1,2,3,4].forEach(i=>tone(rnd(4200,6200),t+.95+i*.05,.06,{g:.03,a:.001})); },
+  typewriter:t=>{ for(let i=0;i<9;i++){ const st=t+i*rnd(.07,.12); noise(st,.03,{type:'bandpass',f:rnd(1800,3200),q:3,g:.3,a:.001,r:.025}); tone(rnd(140,200),st,.03,{type:'square',g:.04,a:.001,lp:800}); } noise(t+1.0,.18,{type:'bandpass',f:900,fto:2200,q:1,g:.12}); bell(2637,t+1.12,.6,.08); },
+  register:t=>{ noise(t,.35,{type:'bandpass',f:1400,q:1.2,g:.2,a:.01,r:.2}); click(t+.3,.3); bell(2093,t+.36,.9,.12); bell(2637,t+.42,.9,.1); },
+  sparkle:t=>{ [N.C5,N.E5,N.G5,N.C6,N.E5*2].forEach((f,i)=>tone(f,t+i*.05,.3,{type:'sine',g:.09,a:.004})); }
+ };
+ function play(kind){ const c=init(); if(!c) return; if(c.state==='suspended') c.resume(); const fn=P[kind]||P.pop; try{ fn(c.currentTime+.02); }catch(e){} }
+ function unlock(){ const c=init(); if(c&&c.state==='suspended') c.resume(); }
+ ['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,unlock,{once:true,passive:true}));
+ return {play,unlock};
+})();
+function beep(kind){ if(!save.settings.sound) return; SFX.play(kind); }
 function buzzPhone(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} }
 
 // ----- graphics -----
@@ -1681,14 +1750,14 @@ function dismissBig(d,then){ if(!d) return; if(d._typing) clearInterval(d._typin
 function bigOverlay(html,cls,ms,then){ const d=bigOverlayPersistent(html,cls); setTimeout(()=>dismissBig(d,then),ms); return d; }
 function contactOverlay(kind,then){
  const fx=tt('fx')[kind]||tt('fx').leak; const ic={agent:'📞',kitman:'🧺',physio:'🩺',airport:'✈️',barber:'💈',leak:'📰',paid:'💸',tipoff:'💡'}[kind]||'📰'; let art='';
- if(kind==='agent') art=`<div class="rings"><div class="icon">${ic}</div></div>`;
+ if(kind==='agent') art=`<div class="rings"><div class="icon">${ic}</div></div><div class="voice" aria-hidden="true">${[0,1,2,3,4,5,6,7,8].map(i=>`<i style="animation-delay:${(i*.07).toFixed(2)}s"></i>`).join('')}</div>`;
  else if(kind==='physio') art=`<div class="icon">${ic}</div><svg class="ecgbig" viewBox="0 0 400 70" preserveAspectRatio="none"><path d="M0 35 H90 L100 35 L110 8 L122 62 L134 35 H220 L230 26 L240 48 L250 35 H400"/></svg>`;
  else if(kind==='airport') art=`<div class="radar"></div><div class="runway"><div class="plane">✈️</div></div>`;
  else if(kind==='barber') art=`<div class="icon">${ic}</div><div class="scissors">✂️</div>`;
  else if(kind==='paid') art=`<div class="icon">${ic}</div>${Array.from({length:12},(_,i)=>`<div class="money" style="left:${5+i*8}%;animation-delay:${(i*.12).toFixed(2)}s">💵</div>`).join('')}`;
  else art=`<div class="icon">${ic}</div>`;
- beep({agent:'tick',airport:'whoosh',paid:'ding',tipoff:'ding'}[kind]||'pop'); if(kind==='agent'){ setTimeout(()=>beep('tick'),400); setTimeout(()=>beep('tick'),800); }
- bigOverlay(`${art}<div class="label">${esc(fx.label)}</div><div class="sub">${esc(fx.sub)}</div><div class="conn"><i></i></div>`,kind,1500,then);
+ beep({agent:'agentcall',barber:'clippers',airport:'airport',physio:'monitor',kitman:'kitman',leak:'typewriter',paid:'register',tipoff:'sparkle'}[kind]||'pop'); if(kind==='agent') buzzPhone([60,120,60,500,60,120,60]);
+ bigOverlay(`${art}<div class="label">${esc(fx.label)}</div><div class="sub">${esc(fx.sub)}</div><div class="conn"><i></i></div>`,kind,{agent:3800,airport:2400,barber:1800,leak:1500,kitman:1600}[kind]||1500,then);
 }
 function composeOverlay(id,outcome,conf){
  const s=game.sagas[id]; const text=tweetText(outcome,conf,s); const uturn=!!s.uturns;
@@ -1696,7 +1765,7 @@ function composeOverlay(id,outcome,conf){
   <div class="tweetbig ${uturn?'uturn':''}"><div class="av">✍️</div><div style="flex:1;min-width:0"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · ${esc(t('compose.drafting'))}</span></div><div class="txt" id="typed"><span class="cursor"></span></div><div class="foot"><span>💬 0</span><span>🔁 0</span><span>❤️ 0</span><span class="up" id="gain"></span></div></div></div>
   <div class="actions"><button class="btn primary" id="postBtn" data-act="publish" data-id="${id}" data-o="${outcome}" data-c="${conf}" disabled>${esc(t('compose.typing'))}</button><button class="btn ghost" data-act="rewrite">${esc(t('compose.rewrite'))}</button></div>`,'compose');
  const el=d.querySelector('#typed'); let i=0; const chars=Array.from(text);
- d._typing=setInterval(()=>{ i++; el.innerHTML=esc(chars.slice(0,i).join(''))+'<span class="cursor"></span>'; if(i%3===0) beep('tick'); if(i>=chars.length){ clearInterval(d._typing); el.innerHTML=esc(text); const b=d.querySelector('#postBtn'); if(b){ b.disabled=false; b.textContent=t(uturn?'compose.postU':'compose.post'); } } },34);
+ d._typing=setInterval(()=>{ i++; el.innerHTML=esc(chars.slice(0,i).join(''))+'<span class="cursor"></span>'; if(i%2===0) beep('key'); if(i>=chars.length){ clearInterval(d._typing); el.innerHTML=esc(text); const b=d.querySelector('#postBtn'); if(b){ b.disabled=false; b.textContent=t(uturn?'compose.postU':'compose.post'); } } },34);
 }
 function postFromCompose(id,outcome,conf){
  const d=document.querySelector('.big.compose'); if(!d) return;
@@ -1706,7 +1775,7 @@ function postFromCompose(id,outcome,conf){
  const meta=d.querySelector('.meta span'); if(meta) meta.textContent='@tierone_you · '+t('compose.now');
  const q=d.querySelector('.quirk'); if(q){ const a=tt('after'); q.innerHTML=esc(a[Math.floor(Math.random()*a.length)])+`<small>${esc(t('compose.lockedDay',{d:game.day}))}</small>`; }
  const acts=d.querySelector('.actions'); if(acts) acts.remove();
- beep('ding'); buzzPhone(40); render(); bumpFollowers();
+ beep('send'); buzzPhone(40); render(); bumpFollowers();
  setTimeout(()=>dismissBig(d,()=>toast(t('compose.toast'))),1500);
 }
 function uturnOverlay(id,then){
@@ -1720,7 +1789,7 @@ function showAd(then){ if(CONFIG.REWARDED_ADS==='h5'&&Ads.active()&&window.adBre
 function bumpFollowers(){ const el=$('followers'); if(!el) return; el.textContent=fmtK(game.followers); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
 
 // ----- timer -----
-function startTimer(){ stopTimer(); if(!game||game.day!==7||game.result) return; timerHandle=setInterval(()=>{ if(!game||game.result||screen!=='window'){ stopTimer(); return; } game.timer--; const el=$('timer'); if(el){ el.textContent=game.timer+'s'; if(game.timer<=10){ el.classList.add('pulse'); beep('tick'); const tb=document.querySelector('.hud'); if(tb) tb.classList.add('alarm'); } } if(game.timer<=0){ stopTimer(); finishWindow(); } },1000); }
+function startTimer(){ stopTimer(); if(!game||game.day!==7||game.result) return; timerHandle=setInterval(()=>{ if(!game||game.result||screen!=='window'){ stopTimer(); return; } game.timer--; const el=$('timer'); if(el){ el.textContent=game.timer+'s'; if(game.timer<=10){ el.classList.add('pulse'); beep('clock'); const tb=document.querySelector('.hud'); if(tb) tb.classList.add('alarm'); } } if(game.timer<=0){ stopTimer(); finishWindow(); } },1000); }
 function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
 function finishWindow(){ stopTimer(); dismissCoach('c5'); resolveWindow(); try{ const r=game.result; Analytics.track('level_end',{level_name:game.mode,success:r.tier.n<=3}); Analytics.track('post_score',{score:r.total,level:game.mode,character:r.tier.key}); (r.newBadges||[]).forEach(b=>Analytics.track('unlock_achievement',{achievement_id:b})); }catch(e){} go('results'); }
 
@@ -1768,7 +1837,7 @@ function renderHome(){
    <span class="num">#${dailyNumber()}</span>
    <span class="t-title">${esc(t('home.daily',{n:dailyNumber()}))}</span>
    ${done?`<span class="donerow">${done.row}</span><span class="t-sub">${esc(tierName(tierOf(done.tier)))} · ${done.score} ${esc(t('app.ptsShort'))}</span>`:`<span class="t-sub">${esc(t('home.dailySub'))}</span>`}
-   <span class="t-foot"><span class="meta"><span class="pill">${esc(t('home.streak',{n:save.daily.streak}))}</span><span class="pill" id="countdown">⏱ ${esc(t('home.newIn',{t:fmtHMS(msToMidnight())}))}</span></span><span class="cta ${done?'done':''}">${esc(done?t('arch.view')+' ›':t('home.play'))}</span></span>
+   <span class="t-foot"><span class="meta"><span class="pill">${esc(t('home.streak',{n:save.daily.streak}))}</span><span class="pill" id="countdown">⏱ ${esc(t('home.newIn',{t:fmtHMS(msToMidnight())}))}</span></span><span class="cta ${done&&!CONFIG.DAILY_REPLAY?'done':''}">${esc(done?(CONFIG.DAILY_REPLAY?t('arch.again'):t('arch.view')+' ›'):t('home.play'))}</span></span>
   </button>
   ${Object.keys(save.daily.history).length?`<button class="archlink" data-act="archive">${esc(t('arch.open',{n:Object.keys(save.daily.history).length}))}<span class="chev">›</span></button>`:''}
   <button class="tile career" data-act="openCareer">
@@ -1926,8 +1995,8 @@ function renderResults(){
 function afterResults(){
  const r=game.result; if(!r) return; if(r._played){ const el=$('scoreNum'); if(el) el.textContent=r.total; return; }
  r._played=true; const step=550;
- r.per.forEach((x,i)=>{ setTimeout(()=>{ if(screen!=='results'||!x.called) return; if(x.correct) beep(x.exclusive?'ding':'pop'); else { beep('buzz'); buzzPhone(120); shakeScreen(); } },i*step+350); });
- setTimeout(()=>{ if(screen!=='results') return; const el=$('scoreNum'); if(el) countUp(el,r.total,900); if(r.tier.n<=2){ confetti(); beep('ding'); } else if(r.tier.n===9){ shakeScreen(); beep('buzz'); buzzPhone([100,60,100]); } },r.per.length*step+400);
+ r.per.forEach((x,i)=>{ setTimeout(()=>{ if(screen!=='results'||!x.called) return; if(x.correct) beep(x.exclusive?'star':'good'); else { beep('bad'); buzzPhone(120); shakeScreen(); } },i*step+350); });
+ setTimeout(()=>{ if(screen!=='results') return; const el=$('scoreNum'); if(el) countUp(el,r.total,900); if(r.tier.n<=2){ confetti(); beep('fanfare'); } else if(r.tier.n===9){ shakeScreen(); beep('sad'); buzzPhone([100,60,100]); } else beep('reveal'); },r.per.length*step+400);
 }
 
 // ----- daily archive -----
@@ -1979,10 +2048,10 @@ function renderSettings(){
 }
 function startMode(mode){
  stopTimer();
- if(mode==='daily'){ const k=todayKey(); if(save.daily.history[k]){ openDaily(k); return; } if(save.inProgress&&save.inProgress.mode==='daily'&&save.inProgress.seed==='daily-'+k){ game=save.inProgress; go('window'); return; } newGame('daily','daily-'+k); }
+ if(mode==='daily'){ const k=todayKey(); if(save.daily.history[k]&&!CONFIG.DAILY_REPLAY){ openDaily(k); return; } if(save.inProgress&&save.inProgress.mode==='daily'&&save.inProgress.seed==='daily-'+k){ game=save.inProgress; go('window'); return; } newGame('daily','daily-'+k); }
  else if(mode==='career') newGame('career','career-'+Date.now()+'-'+Math.floor(Math.random()*1e6));
  else newGame('practice','practice-'+Date.now()+'-'+Math.floor(Math.random()*1e6));
- Analytics.track('level_start',{level_name:mode}); beep('whoosh'); splash(t('sys.open').split('.')[0],t('win.day',{d:1}),false); go('window');
+ Analytics.track('level_start',{level_name:mode}); beep('open'); splash(t('sys.open').split('.')[0],t('win.day',{d:1}),false); go('window');
 }
 function maybeIntro(mode){ if(save.tutorial.intro){ startMode(mode); return; } save.tutorial.intro=true; persist(); Analytics.track('tutorial_begin',{}); showIntro(choice=>{ startMode(choice==='practice'?'practice':mode); }); }
 
@@ -2030,7 +2099,7 @@ document.addEventListener('click',(e)=>{
  if(a==='uturnGo'){ closeModalQuiet(); uturnOverlay(id,()=>{ draft={outcome:null,conf:null}; render(); renderSagaModal(id); }); return; }
  if(a==='boost'){ runBoost(id,el.dataset.b); return; }
  if(a==='adAction'){ showAd(()=>{ game.actions++; game.adActionUsed=true; saveGame(); toast(t('ad.plus')); render(); }); return; }
- if(a==='endDay'){ endDay(); dismissCoach('c4'); const dd=game.day===7; beep(dd?'buzz':'whoosh'); if(dd) buzzPhone([80,40,80]); splash(dd?t('win.deadline'):t('win.day',{d:game.day}), dd?t('tut.coach.c5'):t('sys.day',{d:game.day}).split('.').slice(1).join('.').trim(), dd); render(); if(dd) startTimer(); return; }
+ if(a==='endDay'){ endDay(); dismissCoach('c4'); const dd=game.day===7; beep(dd?'siren':'dayhit'); if(dd) buzzPhone([80,40,80]); splash(dd?t('win.deadline'):t('win.day',{d:game.day}), dd?t('tut.coach.c5'):t('sys.day',{d:game.day}).split('.').slice(1).join('.').trim(), dd); render(); if(dd) startTimer(); return; }
  if(a==='finish'){ finishWindow(); return; }
  if(a==='copyShare'){ const tx=$('shareText').textContent; const done=()=>{ toast(t('toast.copied')); Analytics.track('share',{method:'copy',content_type:'result_card'}); }; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(tx).then(done,()=>fallbackCopy(tx,done)); else fallbackCopy(tx,done); return; }
  if(a==='buyEquip'){ const eq=EQUIP.find(x=>x.key===v); if(save.career.credits>=eq.cost&&!save.career.equip.includes(v)){ save.career.credits-=eq.cost; save.career.equip.push(v); persist(); Analytics.track('spend_virtual_currency',{value:eq.cost,virtual_currency_name:'credits',item_name:v}); beep('ding'); toast(t('toast.bought',{x:t('equip.'+v+'.name')})); render(); } return; }
