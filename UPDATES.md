@@ -17,6 +17,14 @@ together with your change.
 
 ---
 
+## 2026-09-26 · mmoustafaeditor · Redeploy request done
+- **What changed:** Saif's "Redeploy the site on Vercel" request is closed: mmoustafaeditor's push to `main` (2a3614d)
+  deployed on Vercel ✅, which also put Saif's tidy-up live (`/api/verify-purchase` now answers). Removed the request
+  from `.claude/requests.md`.
+- **Files:** `.claude/requests.md`, `UPDATES.md`.
+- **Heads-up for the team:** Saif's own merges will still be blocked until he's added to the `semba-game-studios`
+  Vercel team (Settings → Members).
+
 ## 2026-09-26 · mmoustafaeditor · Play with friends (rooms), transfer codes, dollars, 10 new gear items
 - **What changed:** New **Play with friends**: create a private room (3/5/10 seasons) or join with a 5-letter code or
   invite link; each season everyone in the room gets the same sagas; each room has its own career and a leaderboard.
