@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '1.2',
-  versionCode: 3,
+  version: '1.3',
+  versionCode: 4,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'Tap a finished Daily Challenge to see the full results again, browse every past challenge in the new archive, 10 contacts a day with premium and budget sources, and a harder Tier 1.',
+  changelog: 'New Semba intro, sources now show a High / Medium / Low reliability bar, hundreds of new lines from your sources and the fans, and slicker animations everywhere.',
 };
 
 export default function handler(req, res) {
