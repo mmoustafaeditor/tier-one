@@ -46,6 +46,7 @@ an APK that still needs rebuilding, config they must fill in, etc.
 | `index.html` | Semba Games studio home page, served at sembagames.app |
 | `assets/` | Web-sized copies of the Semba logo for the home page (made from `.github/assets/semba-logo.png`) |
 | `tier-one/index.html` | **Tier One: the entire game** (HTML + CSS + JS, EN/ES/AR), served at sembagames.app/tier-one. The only copy: the Android build bundles it. |
+| `tier-one/semba-intro.{webm,mp4,jpg}` | The Semba Studios intro shown as the game's loading screen (once per session; tap to skip). Also bundled into the APK. |
 | `api/tier-one/latest.js` | Android update feed (Vercel function) polled by the app's UpdateChecker |
 | `downloads/TierOne.apk` | Published APK; the feed and README download links point to it |
 | `verify-purchase.js` | Optional Stripe purchase verification (see `games/tier-one/LAUNCH.md`) |
@@ -60,7 +61,7 @@ installed apps load them from there (`https://sembagames.app/api/tier-one/latest
 `https://www.sembagames.app/downloads/TierOne.apk`).
 
 The Android wrapper lives in `games/tier-one/`. It has no copy of the game: Gradle copies
-`tier-one/index.html` into the app's assets at build time. Keep `app/debug.keystore`: every release must be
+`tier-one/index.html` and the intro video into the app's assets at build time. Keep `app/debug.keystore`: every release must be
 signed with it or installed apps refuse the update.
 
 ## 4. Conventions
@@ -70,7 +71,7 @@ signed with it or installed apps refuse the update.
   APK from the run and replace `downloads/TierOne.apk`; bump `version`,
   `versionCode` and `changelog` in `api/tier-one/latest.js`; update the version badge in
   `games/tier-one/README.md`. Say in `UPDATES.md` if the APK is not rebuilt yet.
-- Current versions: web game `1.0.0`, Android `1.2` (versionCode 3).
+- Current versions: web game `1.1.0`, Android `1.3` (versionCode 4).
 - **New game:** create `games/<slug>/` with its own `README.md` and add a card/row to the root `README.md`.
 - The game file is large (~270 KB, very long lines). Search it with grep; don't rewrite it wholesale.
 - Arabic text in the game and READMEs is Egyptian Arabic; keep that tone.

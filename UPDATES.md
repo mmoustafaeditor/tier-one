@@ -17,6 +17,21 @@ together with your change.
 
 ---
 
+## 2026-09-26 · mmoustafaeditor · Tier One 1.3: Semba intro, 3 source tiers, way more banter, new animations
+- **What changed:** The game now opens with the Semba Studios intro video (once per browser session, tap to skip,
+  still-image fallback when autoplay is blocked). Sources come in 3 tiers with a reliability bar under each one:
+  High (Physio, Airport spotter) costs 3 contacts, Medium (Agent, Kitman) 2, Low (Barber, Rival newsroom leak) 1;
+  Deadline Day now has 3 contacts. About 600 new lines (source clues, source post-match DMs, fan roasts and praise)
+  written natively in English, Spain Spanish and Egyptian Arabic, PG-13; fixed source replies only ever using 2
+  variants and the fan-comment pool being capped. The murky "Day 2 of 7" splash is replaced by a full-contrast
+  day stinger; new motion across the game (screen entrances, spring bottom sheets that slide out, logo slam,
+  tier sunburst, contact connection bar). Web 1.1.0, Android 1.3 (versionCode 4).
+- **Files:** `tier-one/index.html`, `tier-one/semba-intro.webm|mp4|jpg` (new), `games/tier-one/app/build.gradle`,
+  `.github/workflows/build-tier-one.yml`, `downloads/TierOne.apk`, `api/tier-one/latest.js`, docs.
+- **Heads-up for the team:** New game text goes through the "Voice pack v2" block in `tier-one/index.html`
+  (arrays there are appended to the older packs, not replacing them). The APK build now bundles the whole
+  `tier-one/` folder's `index.html` and `semba-intro.*`. Next Android release is versionCode 5.
+
 ## 2026-09-26 · mmoustafaeditor · Android project wired up: builds from the live game, CI, 1.2
 - **What changed:** Finished bringing the Android app into `games/tier-one/`. The APK no longer keeps its own copy
   of the game: Gradle copies `tier-one/index.html` into the app at build time. New workflow

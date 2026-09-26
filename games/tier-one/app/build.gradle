@@ -1,12 +1,13 @@
 plugins { id 'com.android.application' }
 
-// The game has one copy, at tier-one/index.html in the repo root (served at sembagames.app/tier-one).
-def webGameSrc = rootProject.file('../../tier-one/index.html')
+// The game has one copy: the tier-one/ folder in the repo root (served at sembagames.app/tier-one).
+// Its index.html and the Semba intro video are bundled into the app's assets.
+def webGameSrc = rootProject.file('../../tier-one')
 def webGameDir = layout.buildDirectory.dir('generated/webgame').get().asFile
 def copyWebGame = tasks.register('copyWebGame', Copy) {
-    from webGameSrc
+    from(webGameSrc) { include 'index.html', 'semba-intro.*' }
     into webGameDir
-    doFirst { if (!webGameSrc.exists()) throw new GradleException("Missing game file: ${webGameSrc}") }
+    doFirst { if (!new File(webGameSrc, 'index.html').exists()) throw new GradleException("Missing game file: ${webGameSrc}/index.html") }
 }
 
 android {
@@ -17,8 +18,8 @@ android {
         applicationId "com.tierone.game"
         minSdk 24
         targetSdk 34
-        versionCode 3
-        versionName "1.2"
+        versionCode 4
+        versionName "1.3"
     }
 
     signingConfigs {

@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TierOne.apk"><img alt="Download APK" src="https://img.shields.io/badge/⬇_Download-APK-FFD23F?style=for-the-badge&labelColor=0B1224"></a>
   <a href="https://sembagames.app"><img alt="Play on the web" src="https://img.shields.io/badge/▶_Play-sembagames.app-27E08A?style=for-the-badge&labelColor=0B1224"></a>
-  <img alt="Version" src="https://img.shields.io/badge/version-web%201.0.0%20·%20android%201.2-3D8BFF?style=for-the-badge&labelColor=0B1224">
+  <img alt="Version" src="https://img.shields.io/badge/version-web%201.1.0%20·%20android%201.3-3D8BFF?style=for-the-badge&labelColor=0B1224">
   <img alt="Languages" src="https://img.shields.io/badge/lang-EN%20·%20ES%20·%20AR-A07BFF?style=for-the-badge&labelColor=0B1224">
 </p>
 
@@ -37,17 +37,17 @@ Post early and loud and you could land the exclusive. Get it wrong and the repli
 
 ## 🕵️ Your sources
 
-You get **10 contacts every day**. Premium sources cost 2 contacts and are more reliable;
-budget sources cost 1 and are shakier. Every source can lie.
+You get **10 contacts every day**. Every source has a reliability bar in the game: **High** costs 3 contacts,
+**Medium** 2, **Low** 1. Every source can still lie.
 
-| Source | Cost | What they're good for |
-|---|---|---|
-| 🕴️ **The agent** | 📞 2 | Talks a big game. Always wants a bigger fee (and leans towards "done deal" when he lies). |
-| 🩺 **The physio** | 📞 2 | If a medical is booked, they know first. |
-| 🛩️ **Airport spotter** | 📞 2 | Tracks the jets. Knows the city, not the club. |
-| 🧺 **The kitman** | 📞 1 | Knows if he's leaving. Never knows where. |
-| 💈 **His barber** | 📞 1 | Chaotic. Occasionally pure gold. |
-| 📰 **Rival newsroom leak** | 📞 1 | A friend at another paper. Decent, not perfect. |
+| Source | Reliability | Cost | What they're good for |
+|---|---|---|---|
+| 🩺 **The physio** | 🟢🟢🟢 High | 📞 3 | If a medical is booked, they know first. |
+| 🛩️ **Airport spotter** | 🟢🟢🟢 High | 📞 3 | Tracks the jets. Knows the city, not the club. |
+| 🕴️ **The agent** | 🟡🟡 Medium | 📞 2 | Talks a big game. Always wants a bigger fee (and leans towards "done deal" when he lies). |
+| 🧺 **The kitman** | 🟡🟡 Medium | 📞 2 | Knows if he's leaving. Never knows where. |
+| 💈 **His barber** | 🔴 Low | 📞 1 | Chaotic. Occasionally pure gold. |
+| 📰 **Rival newsroom leak** | 🔴 Low | 📞 1 | A friend at another paper. Decent, not perfect. |
 
 In Career, the kitman and the physio are locked until you buy the **Press pass** and the **Medical contact**.
 
@@ -69,7 +69,7 @@ In Career, the kitman and the physio are locked until you buy the **Press pass**
    mocks you, a correct re-call scores only half its base points (no early bonus, no exclusive) and a
    wrong one costs an extra 10.
 5. **End the day** when you're done. Rivals post overnight and new events drop.
-6. **Deadline Day.** Day 7 is a 60-second timer with only 2 contacts. Anything you haven't called scores zero.
+6. **Deadline Day.** Day 7 is a 60-second timer with only 3 contacts. Anything you haven't called scores zero.
    Then everything is announced, the replies roll in and you get your tier.
 
 ### Tiers
@@ -135,7 +135,7 @@ launch checklist are covered in [`LAUNCH.md`](LAUNCH.md).
 |---|---|
 | [`tier-one/index.html`](../../tier-one/index.html) | The entire game (HTML + CSS + JS, EN/ES/AR), served at sembagames.app/tier-one |
 | [`api/tier-one/latest.js`](../../api/tier-one/latest.js) | Update feed the Android app polls at `https://sembagames.app/api/tier-one/latest` |
-| [`downloads/TierOne.apk`](../../downloads/TierOne.apk) | Published APK (1.2, versionCode 3) |
+| [`downloads/TierOne.apk`](../../downloads/TierOne.apk) | Published APK (1.3, versionCode 4) |
 | [`verify-purchase.js`](../../verify-purchase.js) | Optional Stripe purchase verification |
 
 These stay where they are because the site and installed apps load them from there.
