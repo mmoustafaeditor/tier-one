@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '1.3',
-  versionCode: 4,
+  version: '1.4',
+  versionCode: 5,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'New Semba intro, sources now show a High / Medium / Low reliability bar, hundreds of new lines from your sources and the fans, and slicker animations everywhere.',
+  changelog: 'All-new sound: the agent actually picks up the phone, the barber gets real clippers, jets roar at the airport, plus fanfares, sirens and more.',
 };
 
 export default function handler(req, res) {
