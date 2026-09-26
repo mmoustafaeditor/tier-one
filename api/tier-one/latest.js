@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '1.1',
-  versionCode: 2,
+  version: '1.2',
+  versionCode: 3,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: '10 contacts a day with premium and budget sources, harder Tier 1, bigger Career rewards for bigger names, more drama in English, Spanish and Arabic, and you can revisit your Daily results.',
+  changelog: 'Tap a finished Daily Challenge to see the full results again, browse every past challenge in the new archive, 10 contacts a day with premium and budget sources, and a harder Tier 1.',
 };
 
 export default function handler(req, res) {

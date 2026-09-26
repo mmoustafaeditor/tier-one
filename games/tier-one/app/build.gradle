@@ -1,5 +1,14 @@
 plugins { id 'com.android.application' }
 
+// The game has one copy, at tier-one/index.html in the repo root (served at sembagames.app/tier-one).
+def webGameSrc = rootProject.file('../../tier-one/index.html')
+def webGameDir = layout.buildDirectory.dir('generated/webgame').get().asFile
+def copyWebGame = tasks.register('copyWebGame', Copy) {
+    from webGameSrc
+    into webGameDir
+    doFirst { if (!webGameSrc.exists()) throw new GradleException("Missing game file: ${webGameSrc}") }
+}
+
 android {
     namespace 'com.tierone.game'
     compileSdk 34
@@ -8,8 +17,8 @@ android {
         applicationId "com.tierone.game"
         minSdk 24
         targetSdk 34
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
     }
 
     signingConfigs {
@@ -30,8 +39,13 @@ android {
     buildFeatures {
         buildConfig true
     }
+    sourceSets {
+        main { assets.srcDirs += webGameDir }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 }
+
+tasks.named('preBuild') { dependsOn copyWebGame }

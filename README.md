@@ -26,7 +26,7 @@ Tap a game to open its page: the story, how to play and the download.
 
 | Game | Genre | Status | Play |
 |---|---|---|---|
-| **[Tier One](games/tier-one)** | Football transfer-journalist strategy game | Web `v1.0.0` · Android `1.1` beta | [🌐 sembagames.app](https://sembagames.app) · [⬇️ Download APK](https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TierOne.apk) |
+| **[Tier One](games/tier-one)** | Football transfer-journalist strategy game | Web `v1.0.0` · Android `1.2` beta | [🌐 Play](https://sembagames.app/tier-one) · [⬇️ Download APK](https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TierOne.apk) |
 | *Game 02* | 🔒 In the lab | Coming soon | — |
 
 ---
@@ -45,17 +45,21 @@ Tap a game to open its page: the story, how to play and the download.
 ├── README.md              ← you are here (studio page)
 ├── UPDATES.md             ← team update log: who changed what, and when
 ├── CLAUDE.md              ← working rules for Claude Code sessions on this repo
-├── index.html             ← Tier One: the whole game (served at sembagames.app)
+├── index.html             ← Semba Games studio home page (served at sembagames.app)
+├── assets/                ← web-sized Semba logos used by the home page
+├── tier-one/index.html    ← Tier One: the whole game (served at sembagames.app/tier-one)
 ├── api/tier-one/latest.js ← Android update feed (Vercel function)
 ├── verify-purchase.js     ← Stripe purchase check (see games/tier-one/LAUNCH.md)
 ├── downloads/TierOne.apk  ← published Android APK
 ├── .github/assets/        ← logos (Semba neon S, Tier One T1), banner and game card
+├── .vercelignore          ← keeps games/, .github/ and .claude/ off the public site
 └── games/
-    └── tier-one/          ← Game 01 page (README) + launch guide
+    └── tier-one/          ← Game 01 page (README), launch guide, Android project (Gradle)
 ```
 
-Tier One's web files stay at the repo root on purpose: the site and the update feed that installed
-apps poll (`/api/tier-one/latest`, `/downloads/TierOne.apk`) are served from there.
+The web files stay where the site serves them: the home page at `/`, the game at `/tier-one`, and the
+update feed and APK that installed apps poll (`/api/tier-one/latest`, `/downloads/TierOne.apk`).
+The Android app bundles `tier-one/index.html` at build time, so there is one copy of the game.
 
 ## 🤝 Working on this repo
 

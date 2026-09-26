@@ -17,6 +17,30 @@ together with your change.
 
 ---
 
+## 2026-09-26 · mmoustafaeditor · Android project wired up: builds from the live game, CI, 1.2
+- **What changed:** Finished bringing the Android app into `games/tier-one/`. The APK no longer keeps its own copy
+  of the game: Gradle copies `tier-one/index.html` into the app at build time. New workflow
+  `build-tier-one.yml` builds the APK on every push that touches the game or `games/tier-one/**`. Version set to
+  1.2 (versionCode 3) to match the APK already published. Added `.vercelignore` so `games/` (which holds the
+  signing key), `.github/`, `.claude/`, `CLAUDE.md` and `UPDATES.md` are not served on sembagames.app.
+  Docs updated for the new site layout.
+- **Files:** `games/tier-one/app/build.gradle`, `.github/workflows/build-tier-one.yml`, `.vercelignore`,
+  `README.md`, `CLAUDE.md`, `games/tier-one/README.md`, `games/tier-one/LAUNCH.md`.
+- **Heads-up for the team:** ⚠️ Keep `.vercelignore`: without it the signing key would be downloadable from the site.
+  Next Android release is versionCode 4.
+
+## 2026-09-26 · mmoustafaeditor · Studio home page, game moved to /tier-one, Daily archive, APK 1.2
+- **What changed:** sembagames.app is now the Semba Games studio home page (official Neon Ring logo, green brand).
+  Tier One moved to `tier-one/index.html`, served at sembagames.app/tier-one; share cards link there. In the game:
+  "Daily window" is now "Daily Challenge"; tapping a finished Daily opens the full results (it used to do nothing);
+  a new *Past challenges* screen keeps the last 120 days on the device. Days played before this change show outcomes
+  and your emoji row but not your tweets. Published APK 1.2 (versionCode 3) and bumped the update feed.
+- **Files:** `index.html` (now the home page), `tier-one/index.html` (the game), `assets/`, `downloads/TierOne.apk`,
+  `api/tier-one/latest.js`.
+- **Heads-up for the team:** ⚠️ The game is no longer at the root `index.html`: edit `tier-one/index.html`.
+  Stripe Payment Links, once added, should return buyers to `/tier-one` (the home page forwards `?purchase=` there
+  as a fallback).
+
 ## 2026-09-26 · saifsaber · Studio setup brought over from saifsaber/tier-one
 - **What changed:** This repo is now the Semba Studios repo everyone works in (`saifsaber/tier-one` is retired).
   Added the studio README with the banner and clickable Tier One card, the brand art, `CLAUDE.md`, this log,

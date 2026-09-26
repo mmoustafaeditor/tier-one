@@ -1,0 +1,6 @@
+# Private to the repo: never serve these on sembagames.app.
+/games
+/.github
+/.claude
+/CLAUDE.md
+/UPDATES.md

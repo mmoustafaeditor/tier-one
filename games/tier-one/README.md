@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TierOne.apk"><img alt="Download APK" src="https://img.shields.io/badge/⬇_Download-APK-FFD23F?style=for-the-badge&labelColor=0B1224"></a>
   <a href="https://sembagames.app"><img alt="Play on the web" src="https://img.shields.io/badge/▶_Play-sembagames.app-27E08A?style=for-the-badge&labelColor=0B1224"></a>
-  <img alt="Version" src="https://img.shields.io/badge/version-web%201.0.0%20·%20android%201.1-3D8BFF?style=for-the-badge&labelColor=0B1224">
+  <img alt="Version" src="https://img.shields.io/badge/version-web%201.0.0%20·%20android%201.2-3D8BFF?style=for-the-badge&labelColor=0B1224">
   <img alt="Languages" src="https://img.shields.io/badge/lang-EN%20·%20ES%20·%20AR-A07BFF?style=for-the-badge&labelColor=0B1224">
 </p>
 
@@ -91,8 +91,9 @@ In Career, the kitman and the physio are locked until you buy the **Press pass**
 
 ## 🕹️ Modes and features
 
-- **Daily window.** The same 8 sagas for everyone, every day (Daily #1 was 25 September 2026). No gear, no boosts:
-  just skill and nerve. Keep a streak going, and reopen your results after you've played.
+- **Daily Challenge.** The same 8 sagas for everyone, every day (Daily #1 was 25 September 2026). No gear, no
+  boosts: just skill and nerve. Keep a streak going, tap the tile after playing to reopen the full results, and
+  browse every past challenge (tweets, replies and all) under *Past challenges*. Saved on the device only.
 - **Career.** Your own long game. Scores are multiplied by how big you are (×1.0 under 400 followers,
   ×1.1 under 1,500, ×1.2 under 4,000, ×1.25 above). Earn XP and credits, climb 7 levels from
   *Local blogger* to *Global insider*, and spend credits on:
@@ -126,29 +127,31 @@ The app checks for new versions by itself and offers the download when one is ou
 
 ## 🛠️ For developers
 
-The whole game is a single web file, [`index.html`](../../index.html) at the repo root. Studio, legal, ads and
+The whole game is a single web file, [`tier-one/index.html`](../../tier-one/index.html), served at sembagames.app/tier-one. Studio, legal, ads and
 payment settings live in the `CONFIG` object at the top of its script. Hosting, ads, analytics, Stripe and the
 launch checklist are covered in [`LAUNCH.md`](LAUNCH.md).
 
 | Path | What it is |
 |---|---|
-| [`index.html`](../../index.html) | The entire game (HTML + CSS + JS, EN/ES/AR), served at sembagames.app |
+| [`tier-one/index.html`](../../tier-one/index.html) | The entire game (HTML + CSS + JS, EN/ES/AR), served at sembagames.app/tier-one |
 | [`api/tier-one/latest.js`](../../api/tier-one/latest.js) | Update feed the Android app polls at `https://sembagames.app/api/tier-one/latest` |
-| [`downloads/TierOne.apk`](../../downloads/TierOne.apk) | Published APK (1.1, versionCode 2) |
+| [`downloads/TierOne.apk`](../../downloads/TierOne.apk) | Published APK (1.2, versionCode 3) |
 | [`verify-purchase.js`](../../verify-purchase.js) | Optional Stripe purchase verification |
 
-These stay at the root because the site and installed apps load them from there.
+These stay where they are because the site and installed apps load them from there.
 
 ### Android app
 
-The APK is a WebView wrapper around the same `index.html`, with an update checker that reads the feed above.
-**Its source (Gradle project + signing key) is not in this repo yet.** It still lives in the retired
-`saifsaber/tier-one`. Once it is brought over it goes in this folder, with a GitHub Actions build.
+The APK is a WebView wrapper around the same `tier-one/index.html`, with an update checker that reads the feed
+above. Its Gradle project is in this folder (`app/`, `build.gradle`, `settings.gradle`); the build copies the
+game into the app's assets, so there is only one copy to edit. GitHub Actions
+([`build-tier-one.yml`](../../.github/workflows/build-tier-one.yml)) builds it on every push that touches the
+game or this folder and attaches `TierOne-apk` to the run. Releases must be signed with `app/debug.keystore`.
 
 ### Releasing a new version
 
-1. Update `index.html` and bump `VERSION` in its `CONFIG`.
-2. Build the APK with a higher `versionCode`, signed with the same key as before, and replace `downloads/TierOne.apk`.
+1. Update `tier-one/index.html` and bump `VERSION` in its `CONFIG`.
+2. Bump `versionCode`/`versionName` in `app/build.gradle`, push, and when the build is green replace `downloads/TierOne.apk` with the APK from the run.
 3. Bump `version`, `versionCode` and `changelog` in `api/tier-one/latest.js` so installed apps get prompted.
 4. Update the version badge above and add an entry to [`UPDATES.md`](../../UPDATES.md).
 

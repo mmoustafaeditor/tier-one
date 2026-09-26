@@ -43,28 +43,34 @@ an APK that still needs rebuilding, config they must fill in, etc.
 |---|---|
 | `README.md` | Studio landing page (Semba Studios) with a clickable card per game |
 | `UPDATES.md` | Team update log, newest first |
-| `index.html` | **Tier One: the entire game** (HTML + CSS + JS, EN/ES/AR), served at sembagames.app |
+| `index.html` | Semba Games studio home page, served at sembagames.app |
+| `assets/` | Web-sized copies of the Semba logo for the home page (made from `.github/assets/semba-logo.png`) |
+| `tier-one/index.html` | **Tier One: the entire game** (HTML + CSS + JS, EN/ES/AR), served at sembagames.app/tier-one. The only copy: the Android build bundles it. |
 | `api/tier-one/latest.js` | Android update feed (Vercel function) polled by the app's UpdateChecker |
 | `downloads/TierOne.apk` | Published APK; the feed and README download links point to it |
 | `verify-purchase.js` | Optional Stripe purchase verification (see `games/tier-one/LAUNCH.md`) |
 | `games/<game>/` | One folder per game, each with its own `README.md` |
-| `games/tier-one/` | Tier One's game page (`README.md`) and hosting/ads/payments guide (`LAUNCH.md`) |
+| `games/tier-one/` | Tier One's game page (`README.md`), hosting/ads/payments guide (`LAUNCH.md`) and the Android WebView project (Gradle 8.9, JDK 17, SDK 34) |
+| `.github/workflows/build-tier-one.yml` | Builds the APK on pushes touching the game or `games/tier-one/**`; the APK is attached to the run |
+| `.vercelignore` | Keeps `games/` (incl. the signing key), `.github/` and `.claude/` off the public site. Don't remove it. |
 | `.github/assets/` | Brand art: `semba-logo.png` (studio logo, the exact design #17 "Neon Ring"; never redraw it), `tier-one-logo.svg` (T1), plus the banner and game card that embed them |
 
-**Don't move** `index.html`, `api/` or `downloads/` out of the root: the site, the update feed and
+**Don't move** `index.html`, `tier-one/`, `api/` or `downloads/`: the site, the update feed and
 installed apps load them from there (`https://sembagames.app/api/tier-one/latest`,
 `https://www.sembagames.app/downloads/TierOne.apk`).
 
-The Android wrapper source (Gradle project, `debug.keystore`) is **not in this repo yet**; it is still in the
-retired `saifsaber/tier-one`. When it comes over, put it in `games/tier-one/` and add a build workflow.
+The Android wrapper lives in `games/tier-one/`. It has no copy of the game: Gradle copies
+`tier-one/index.html` into the app's assets at build time. Keep `app/debug.keystore`: every release must be
+signed with it or installed apps refuse the update.
 
 ## 4. Conventions
 
-- **Releasing a Tier One version:** bump `CONFIG.VERSION` in `index.html`; build the APK with a higher
-  `versionCode` (signed with the same key) and replace `downloads/TierOne.apk`; bump `version`,
+- **Releasing a Tier One version:** bump `CONFIG.VERSION` in `tier-one/index.html`; bump `versionCode` (+1) and
+  `versionName` in `games/tier-one/app/build.gradle`, push, and when the build workflow is green download the
+  APK from the run and replace `downloads/TierOne.apk`; bump `version`,
   `versionCode` and `changelog` in `api/tier-one/latest.js`; update the version badge in
   `games/tier-one/README.md`. Say in `UPDATES.md` if the APK is not rebuilt yet.
-- Current versions: web game `1.0.0`, Android `1.1` (versionCode 2).
+- Current versions: web game `1.0.0`, Android `1.2` (versionCode 3).
 - **New game:** create `games/<slug>/` with its own `README.md` and add a card/row to the root `README.md`.
 - The game file is large (~270 KB, very long lines). Search it with grep; don't rewrite it wholesale.
 - Arabic text in the game and READMEs is Egyptian Arabic; keep that tone.

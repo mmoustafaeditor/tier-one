@@ -1,7 +1,8 @@
 # Tier One — Launch Kit
 
-> Moved here from the repo root. Paths in this guide (`index.html`, `api/`, …) are relative to the **repo root**,
-> where the live files still are. Note: `verify-purchase.js` is currently at the root, not in `api/`.
+> Moved here from the repo root. Paths in this guide are relative to the **repo root**. The game file this guide
+> calls `index.html` now lives at `tier-one/index.html` (served at sembagames.app/tier-one); the root
+> `index.html` is the Semba Games home page. Note: `verify-purchase.js` is currently at the root, not in `api/`.
 
 Everything below is what goes live.
 
