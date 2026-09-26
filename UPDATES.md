@@ -17,6 +17,17 @@ together with your change.
 
 ---
 
+## 2026-09-26 · mmoustafaeditor · Career cash economy: goals, payday, bigger packs; online store connected
+- **What changed:** Career pay now rewards good windows ($40 + half the points + $25/exclusive + tier bonus, about
+  $150–$600 a window). Boosts cost $40/$60/$90. New **Career goals** card (level 7, Tier 1 three times, all 14 gear,
+  100K followers) → 👑 Tier One Legend badge; completable in roughly 15–20 windows without paying. Soft nudges: daily
+  Payday +$60, one ad a day for +$40, gear you can't afford shows "need $X" and points to cash packs, packs are now
+  $400/$1,400/$3,500 with "Most popular"/"Best value" tags. Rooms stay level: no packs, payday or ad cash there.
+  mmoustafaeditor connected the Redis store in Vercel; this deploy turns online play on. Web 1.6.0, Android 1.8.
+- **Files:** `tier-one/index.html`, `games/tier-one/app/build.gradle`, `downloads/TierOne.apk`, `api/tier-one/latest.js`, docs.
+- **Heads-up for the team:** Real-money cash packs stay disabled until Stripe Payment Links are pasted into
+  `CONFIG.STRIPE_LINKS` (see `games/tier-one/LAUNCH.md`). `DAILY_REPLAY` still `true`. Next Android release is versionCode 10.
+
 ## 2026-09-26 · mmoustafaeditor · Redeploy request done
 - **What changed:** Saif's "Redeploy the site on Vercel" request is closed: mmoustafaeditor's push to `main` (2a3614d)
   deployed on Vercel ✅, which also put Saif's tidy-up live (`/api/verify-purchase` now answers). Removed the request
