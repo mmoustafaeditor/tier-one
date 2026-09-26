@@ -20,10 +20,11 @@ Then, **before doing the task**:
 - If there are new commits or `UPDATES.md` entries from another teammate, tell the user in 2–4
   lines what changed (who, what, any heads-up). The user wants to hear about teammates' updates.
 - If the branch is behind `origin/main`, merge it in before editing, so you don't overwrite their work.
+  Never force-push over a teammate's commits.
 - If the hook shows **open requests** from `.claude/requests.md`, tell the user about them first and say who each
   is for. When the person it's for says it's done, delete the request and log it in `UPDATES.md`. To leave a
   request for a teammate (something only they can do), add one there using its template.
-  Never force-push over a teammate's commits.
+- If the hook says the latest `main` is **not live on the site** (Vercel blocked it), tell the user. See section 2.
 
 ## 2. At the end of every change: log it
 
@@ -36,6 +37,15 @@ at the **top** of the list in [`UPDATES.md`](UPDATES.md), in the same commit or 
 - **Files:** …
 - **Heads-up for the team:** … ("None" if nothing)
 ```
+
+**After it lands on `main`, make sure it's live.** Check the Vercel status on the latest `main` commit
+(GitHub shows ✅/❌ next to it). Vercel deploys a commit only if its author is in the `semba-game-studios`
+Vercel team (mmoustafaeditor's account); merges from saifsaber or moemsacod show ❌ "Deployment was blocked".
+- If you're working for **mmoustafaeditor**: your own push to `main` deploys everything on it, teammates' blocked
+  commits included. If the latest `main` still shows blocked, tell them to open
+  https://vercel.com/semba-game-studios/tier-one/deployments → latest `main` deployment → `⋯` → **Redeploy**.
+- If you're working for **someone else**: tell the user the change is on `main` but not live until mmoustafaeditor
+  pushes or redeploys. Don't push empty commits to force a deploy.
 
 Put in "Heads-up" anything that would surprise the others: moved files, new version numbers,
 an APK that still needs rebuilding, config they must fill in, etc.

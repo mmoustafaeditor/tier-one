@@ -17,6 +17,15 @@ together with your change.
 
 ---
 
+## 2026-09-26 · saifsaber · Deploy check: every session says if main isn't live on the site
+- **What changed:** The session hook now checks the Vercel status of the latest `main` and warns when the deploy was
+  blocked (Vercel only deploys commits from accounts in the `semba-game-studios` team, so merges from saifsaber or
+  moemsacod get blocked). `CLAUDE.md` section 2 now says: after a change lands on `main`, make sure it's live; a push
+  to `main` from mmoustafaeditor deploys everything, otherwise Redeploy in Vercel.
+- **Files:** `.claude/hooks/team-sync.sh`, `CLAUDE.md`, `UPDATES.md`.
+- **Heads-up for the team:** mmoustafaeditor: after you finish new work and push to `main`, check that `main` shows ✅.
+  That one push also puts live anything Saif or Moemen merged before it.
+
 ## 2026-09-26 · saifsaber · Team requests board; ⚠️ Mohamed: please Redeploy on Vercel
 - **What changed:** New `.claude/requests.md` for requests one teammate leaves for another (things only that person
   can do). The session hook reads it from `origin/main` and shows every open request at the start of each Claude Code
