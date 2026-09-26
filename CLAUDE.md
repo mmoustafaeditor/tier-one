@@ -49,10 +49,11 @@ an APK that still needs rebuilding, config they must fill in, etc.
 | `tier-one/semba-intro.{webm,mp4,jpg}` | The Semba Studios intro shown as the game's loading screen on every load of the game page, with a soundtrack timed to the animation. It can't be skipped; where the browser blocks autoplay with sound it shows a "Tap to start" button so the intro always plays with sound. Not shown on payment returns and Privacy/Terms links. The soundtrack is synthesized; its source script is kept in `games/tier-one/intro-sound/`. Also bundled into the APK. |
 | `api/tier-one/latest.js` | Android update feed (Vercel function) polled by the app's UpdateChecker |
 | `downloads/TierOne.apk` | Published APK; the feed and README download links point to it |
-| `verify-purchase.js` | Optional Stripe purchase verification (see `games/tier-one/LAUNCH.md`) |
+| `api/verify-purchase.js` | Optional Stripe purchase verification, served at `/api/verify-purchase` (see `games/tier-one/LAUNCH.md`) |
 | `games/<game>/` | One folder per game, each with its own `README.md` |
-| `games/tier-one/` | Tier One's game page (`README.md`), hosting/ads/payments guide (`LAUNCH.md`) and the Android WebView project (Gradle 8.9, JDK 17, SDK 34) |
+| `games/tier-one/` | Tier One's game page (`README.md`), hosting/ads/payments guide (`LAUNCH.md`) and the Android WebView project (Gradle 8.9, JDK 17, SDK 34). `store/` holds Play Store art (512px icon). |
 | `.github/workflows/build-tier-one.yml` | Builds the APK on pushes touching the game or `games/tier-one/**`; the APK is attached to the run |
+| `.gitignore` | Keeps Gradle/Android build output, `local.properties` and OS/editor junk out of git |
 | `.vercelignore` | Keeps `games/` (incl. the signing key), `.github/` and `.claude/` off the public site. Don't remove it. |
 | `.github/assets/` | Brand art: `semba-logo.png` (studio logo, the exact design #17 "Neon Ring"; never redraw it), `tier-one-logo.svg` (T1), plus the banner and game card that embed them |
 

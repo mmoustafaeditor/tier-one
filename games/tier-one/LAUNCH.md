@@ -2,7 +2,7 @@
 
 > Moved here from the repo root. Paths in this guide are relative to the **repo root**. The game file this guide
 > calls `index.html` now lives at `tier-one/index.html` (served at sembagames.app/tier-one); the root
-> `index.html` is the Semba Games home page. Note: `verify-purchase.js` is currently at the root, not in `api/`.
+> `index.html` is the Semba Games home page. The Stripe check is at `api/verify-purchase.js`.
 
 Everything below is what goes live.
 

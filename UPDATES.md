@@ -17,6 +17,20 @@ together with your change.
 
 ---
 
+## 2026-09-26 · mmoustafaeditor · Repo tidy-up: Stripe function into api/, .gitignore, hook fix, old branches removed
+- **What changed:** Done by saifsaber at mmoustafaeditor's request. The session hook no longer prints "This repo is
+  RETIRED" in the team repo (it now only shows inside a `saifsaber/tier-one` clone). `verify-purchase.js` moved to
+  `api/verify-purchase.js`, so Vercel actually serves it at `/api/verify-purchase` (it did nothing at the root).
+  New `.gitignore` for Gradle/Android build output. Removed the unused `assets/semba-logo-512.webp`; the Play Store
+  icon moved to `games/tier-one/store/`. Stale branches `claude/android-project` and `claude/studio-setup-port`
+  (fully merged) were deleted. No game or app changes.
+- **Files:** `.claude/hooks/team-sync.sh`, `api/verify-purchase.js` (moved), `.gitignore` (new),
+  `assets/semba-logo-512.webp` (deleted), `games/tier-one/store/play-store-icon-512.png` (moved), `README.md`,
+  `CLAUDE.md`, `games/tier-one/README.md`, `games/tier-one/LAUNCH.md`.
+- **Heads-up for the team:** `claude/apk-build-sembagames-sync-1cnmkc` is identical to `main` but was left alone
+  because it was in use; delete it once that session is done. The Stripe function is now live on deploy but harmless
+  until `STRIPE_SECRET_KEY` is set and `VERIFY_ENDPOINT` is filled in. `DAILY_REPLAY` is still `true`.
+
 ## 2026-09-26 · mmoustafaeditor · Player types matter, roomy source list, unskippable intro with sound
 - **What changed:** Superstar ★★★ (×1.5 points, ×2 followers), Star ★★ (×1.2, ×1.4) and Squad player ★ (×1) now
   change scoring, right or wrong: gold/silver badges on saga cards, an explainer in the saga sheet, the call buttons

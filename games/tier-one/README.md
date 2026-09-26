@@ -146,7 +146,7 @@ launch checklist are covered in [`LAUNCH.md`](LAUNCH.md).
 | [`tier-one/index.html`](../../tier-one/index.html) | The entire game (HTML + CSS + JS, EN/ES/AR), served at sembagames.app/tier-one |
 | [`api/tier-one/latest.js`](../../api/tier-one/latest.js) | Update feed the Android app polls at `https://sembagames.app/api/tier-one/latest` |
 | [`downloads/TierOne.apk`](../../downloads/TierOne.apk) | Published APK (1.6, versionCode 7) |
-| [`verify-purchase.js`](../../verify-purchase.js) | Optional Stripe purchase verification |
+| [`api/verify-purchase.js`](../../api/verify-purchase.js) | Optional Stripe purchase verification, served at `/api/verify-purchase` |
 
 These stay where they are because the site and installed apps load them from there.
 
