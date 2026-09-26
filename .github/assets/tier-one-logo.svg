@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Tier One logo">
+  <defs>
+    <linearGradient id="t1bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0C1224"/>
+      <stop offset="1" stop-color="#070B17"/>
+    </linearGradient>
+    <pattern id="t1stripes" width="36" height="512" patternUnits="userSpaceOnUse">
+      <rect width="18" height="512" fill="#FFFFFF" opacity=".035"/>
+    </pattern>
+    <clipPath id="t1clip"><rect width="512" height="512" rx="112"/></clipPath>
+  </defs>
+  <g clip-path="url(#t1clip)">
+    <rect width="512" height="512" fill="url(#t1bg)"/>
+    <rect width="512" height="512" fill="url(#t1stripes)"/>
+  </g>
+  <rect x="3" y="3" width="506" height="506" rx="110" fill="none" stroke="#FFFFFF" stroke-opacity=".08" stroke-width="6"/>
+  <path d="M130 150 H424 Q438 150 435 164 L396 348 Q393 362 379 362 H86 Q72 362 75 348 L114 164 Q117 150 130 150 Z" fill="#FFD23F"/>
+  <text x="258" y="316" text-anchor="middle" font-family="'Arial Black','Helvetica Neue',Arial,sans-serif" font-weight="900" font-style="italic" font-size="176" letter-spacing="-4" fill="#1A1400">T1</text>
+  <circle cx="408" cy="98" r="30" fill="#FF3D55"/>
+</svg>
