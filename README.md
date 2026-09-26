@@ -3,7 +3,10 @@
 Everything in this folder is what goes live.
 
 ```
-index.html               the whole game (daily, career, practice, 3 languages, ads, analytics, Stripe, legal)
+index.html               the Semba Games studio home page (sembagames.app)
+tier-one/index.html      the whole Tier One game (sembagames.app/tier-one) — daily, career, practice, 3 languages, ads, analytics, Stripe, legal
+api/tier-one/latest.js   Android update feed polled by the app; bump versionCode with each new APK
+downloads/TierOne.apk    the current Android build
 api/verify-purchase.js   optional serverless function that confirms Stripe payments before credits are granted
 .env.example             the two environment variables the function needs
 README.md                this guide
