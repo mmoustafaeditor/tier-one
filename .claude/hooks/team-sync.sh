@@ -27,6 +27,16 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
   git log -8 --format='  %h %ad %an: %s' --date=short
 fi
 
+# Open requests between teammates (.claude/requests.md), read from origin/main so a stale checkout still sees them.
+requests=$(git show origin/main:.claude/requests.md 2>/dev/null || cat .claude/requests.md 2>/dev/null)
+requests=$(printf '%s\n' "$requests" | awk 'f; /<!-- requests start -->/{f=1}' | sed '/./,$!d')
+if [ -n "$requests" ]; then
+  echo ""
+  echo "📌 OPEN REQUESTS FROM TEAMMATES (.claude/requests.md) — tell the user about these FIRST, and say who each is for:"
+  printf '%s\n' "$requests"
+  echo "  → When the person it's for confirms it's done, delete it from .claude/requests.md and log it in UPDATES.md."
+fi
+
 if [ -f UPDATES.md ]; then
   echo ""
   echo "Latest entries in UPDATES.md (newest first):"
