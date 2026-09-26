@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '1.7',
-  versionCode: 8,
+  version: '1.8',
+  versionCode: 9,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'Play with friends in private rooms, move your career to another device with a code, a bigger gear shop in dollars, and clearer outcome names.',
+  changelog: 'Career goals and the Tier One Legend badge, better pay for great windows, a daily payday, and online rooms are switched on.',
 };
 
 export default function handler(req, res) {
