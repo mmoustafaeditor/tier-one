@@ -17,6 +17,19 @@ together with your change.
 
 ---
 
+## 2026-09-26 · mmoustafaeditor · Play with friends (rooms), transfer codes, dollars, 10 new gear items
+- **What changed:** New **Play with friends**: create a private room (3/5/10 seasons) or join with a 5-letter code or
+  invite link; each season everyone in the room gets the same sagas; each room has its own career and a leaderboard.
+  **Move to another device** in Settings gives a short transfer code (30 days). Credits are now dollars (`$`).
+  Gear shop grew from 4 to 14 items with level locks (source-reliability boosts, Deadline Day power bank, podcast
+  studio for followers, blue tick for exclusives, lucky trench coat, second laptop). Outcomes renamed to
+  "❌ Deal collapses, he stays" / "🧢 Fake news, never real". Web 1.5.0, Android 1.7.
+- **Files:** `tier-one/index.html`, `api/online.js` (new), `games/tier-one/LAUNCH.md`, `games/tier-one/app/build.gradle`,
+  `downloads/TierOne.apk`, `api/tier-one/latest.js`, docs.
+- **Heads-up for the team:** ⚠️ Online play needs a Redis store connected in Vercel (steps in `games/tier-one/LAUNCH.md` ›
+  Online play). Until then the game says "Online play is switching on soon". Use `C()` for the active career in game code.
+  `DAILY_REPLAY` still `true`. Next Android release is versionCode 9.
+
 ## 2026-09-26 · saifsaber · Deploy check: every session says if main isn't live on the site
 - **What changed:** The session hook now checks the Vercel status of the latest `main` and warns when the deploy was
   blocked (Vercel only deploys commits from accounts in the `semba-game-studios` team, so merges from saifsaber or

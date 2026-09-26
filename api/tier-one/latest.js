@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '1.6',
-  versionCode: 7,
+  version: '1.7',
+  versionCode: 8,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'Superstars and stars now swing your score and followers, a clearer source list with your contacts left, and the Semba intro plays with sound.',
+  changelog: 'Play with friends in private rooms, move your career to another device with a code, a bigger gear shop in dollars, and clearer outcome names.',
 };
 
 export default function handler(req, res) {
