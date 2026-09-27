@@ -936,6 +936,100 @@ html.lt body{ zoom:1.12; }
 /* @@LANE CSS:home END */
 /* ─ */
 /* @@LANE CSS:board BEGIN (lane-owned; insert only between BEGIN and END) */
+/* ================= BOARD ================= */
+.dayhead{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin:12px 2px 12px; }
+.dayhead .d2 small{ font-size:22px; color:var(--dim); margin-inline-start:3px; }
+.dayhead .sub{ margin-top:6px; font:600 var(--fs-sm) var(--body); color:var(--muted); }
+.wallet{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; padding-bottom:2px; }
+.wallet .wn{ display:flex; align-items:baseline; gap:6px; font:600 var(--fs-xs) var(--body); color:var(--muted); }
+.wallet .wn b{ font:800 var(--ital) 30px/1 var(--display); color:var(--text); }
+.tomorrow{ display:flex; align-items:center; gap:8px; margin:12px 0 0; padding:7px 12px; border-radius:12px; border:1px dashed var(--line2); font:600 var(--fs-sm)/1.25 var(--body); color:var(--muted); }
+.tomorrow b{ color:var(--text); }
+.pcards{ display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+.pcard{ --c:transparent; position:relative; display:grid; grid-template-columns:46px minmax(0,1fr) auto; gap:12px; align-items:center; width:100%; min-height:82px; padding:10px 12px 10px 12px; border-radius:18px; border:1px solid var(--line); background:var(--panel); color:var(--text); text-align:start; box-shadow:var(--e1); cursor:pointer; overflow:hidden; }
+.pcard::before{ content:""; position:absolute; inset-block:0; inset-inline-start:0; width:4px; background:var(--c); }
+.pcard .kit{ width:46px; height:46px; }
+.pcard .pm{ min-width:0; }
+.pcard .pn{ display:flex; align-items:center; gap:6px; min-width:0; }
+.pcard .pn b{ font:800 var(--ital) 19px/1.05 var(--display); text-transform:var(--caps); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html[lang="ar"] .pcard .pn b{ line-height:1.4; }
+.pcard .route{ margin-top:3px; }
+.pcard .intel{ display:flex; align-items:center; flex-wrap:nowrap; gap:5px; margin-top:6px; font:600 var(--fs-xs) var(--body); color:var(--dim); white-space:nowrap; overflow:hidden; }
+.tl{ --c:var(--muted); display:inline-flex; align-items:center; gap:3px; height:20px; padding:0 6px; border-radius:5px; background:color-mix(in srgb,var(--c) 15%,transparent); color:var(--c); font:800 11px/1 var(--body); flex-shrink:0; }
+.tl.done{ --c:var(--o-done); } .tl.hijack{ --c:var(--o-hijack); } .tl.off{ --c:var(--o-off); } .tl.fake{ --c:var(--o-fake); }
+.tl.old{ background:transparent; box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent); opacity:.7; }
+.pcard .side{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.callpill{ display:inline-flex; align-items:center; height:26px; padding:0 10px; border-radius:8px; border:1.5px dashed var(--line2); color:var(--dim); font:800 var(--ital) 13px/1 var(--display); letter-spacing:.04em; text-transform:var(--caps); white-space:nowrap; }
+.pcard .when{ display:inline-flex; align-items:center; gap:4px; font:700 11px/1 var(--body); color:var(--muted); white-space:nowrap; }
+.pcard.called{ --c:var(--oc); }
+.pcard.twisted{ border-color:color-mix(in srgb,var(--twist) 50%,var(--line)); }
+.pcard .newdot{ position:absolute; top:8px; inset-inline-start:44px; width:10px; height:10px; border-radius:50%; background:var(--news); box-shadow:0 0 0 3px var(--panel); }
+.pcard.super{ border-color:color-mix(in srgb,#FFB020 40%,var(--line)); }
+.pcard.dd:not(.called){ border-color:color-mix(in srgb,#FF3D55 60%,var(--line)); }
+.quickcall{ position:relative; display:inline-flex; align-items:center; justify-content:center; min-width:76px; height:44px; padding:0 16px; border-radius:12px; border:0; background:var(--cta); color:var(--cta-ink); font:800 var(--ital) 19px/1 var(--display); text-transform:var(--caps); box-shadow:var(--cta-glow); }
+
+/* DD board head */
+.ddhead{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 2px 12px; }
+.ddhead .d2{ color:#FF6B7D; font-size:40px; line-height:.9; }
+.ddhead .sub{ margin-top:8px; font:600 var(--fs-sm) var(--body); color:var(--muted); }
+.ddhead .sub b{ color:var(--text); }
+
+/* board lane additions */
+.screen.board{ padding-top:0; }
+.screen.board .appbar{ margin-bottom:0; }
+.pcard .kit,.pcard > svg{ width:46px; height:46px; }
+.pcard .stars{ font:700 11px/1 var(--body); color:#FFB020; letter-spacing:1px; flex-shrink:0; }
+.pcard .intel .nr{ color:var(--muted); overflow:hidden; text-overflow:ellipsis; }
+.pcard .intel .tag{ flex-shrink:0; }
+.pcard .quickcall{ cursor:pointer; }
+:root[data-dd="1"] .quickcall{ background:#fff; color:#D0102B; box-shadow:0 6px 18px -6px rgba(255,255,255,.5); }
+.bspacer{ height:150px; }
+.bdock .btn{ display:flex; align-items:center; justify-content:center; gap:8px; }
+.bdock .btn svg{ width:20px; height:20px; }
+.bdock .row .adq{ flex:none; padding:0 14px; white-space:nowrap; }
+.bdock .btn.armed{ font-size:17px; animation:clockBeat 1s ease-in-out infinite; }
+.bdock.dd .btn.outline-cta{ width:100%; }
+.b-sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+/* feed + overnight sheets */
+.fchips{ display:flex; gap:6px; margin:4px 0 8px; overflow-x:auto; }
+.fchips button{ height:34px; padding:0 14px; border-radius:99px; border:1px solid var(--line2); background:var(--panel2); color:var(--muted); font:700 var(--fs-sm) var(--body); white-space:nowrap; }
+.fchips button.on{ background:var(--text); color:var(--bg); border-color:var(--text); }
+.fday{ position:sticky; top:0; z-index:2; margin:0; padding:8px 2px 6px; background:var(--bg2); font:800 var(--ital) 15px/1 var(--display); text-transform:var(--caps); color:var(--muted); letter-spacing:.04em; }
+.frow,.onrow{ display:flex; align-items:center; gap:10px; width:100%; margin:0 0 6px; padding:10px 12px; border-radius:14px; border:1px solid var(--line); background:var(--panel); color:var(--text); text-align:start; font:inherit; }
+.frow .fav{ width:36px; height:36px; flex-shrink:0; display:grid; place-items:center; border-radius:50%; background:var(--panel2); font-size:18px; }
+.frow .fav.dashed{ background:transparent; border:1.5px dashed var(--line2); }
+.frow .fb,.onrow .om{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.frow .fmeta{ font:600 var(--fs-xs) var(--body); color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.frow .fmeta b{ color:var(--text); }
+.frow .ftxt{ font:500 var(--fs-sm)/1.35 var(--body); }
+.frow .fnote{ font:600 11px var(--body); color:var(--twist); }
+.frow.deleted .ftxt{ text-decoration:line-through; color:var(--dim); }
+.frow.twist{ border-color:color-mix(in srgb,var(--twist) 50%,var(--line)); }
+.frow.sys{ justify-content:center; color:var(--muted); font-size:var(--fs-xs); }
+.frow .oc,.onrow .oc{ flex-shrink:0; }
+.fempty{ color:var(--muted); text-align:center; padding:24px 0; }
+.onight .on-n{ margin:0 0 10px; font:700 var(--fs-sm) var(--body); color:var(--muted); }
+.onrow svg:first-child{ width:36px; height:36px; flex-shrink:0; }
+.onrow .om b{ font:800 var(--ital) 16px/1.1 var(--display); text-transform:var(--caps); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.onrow .ow{ font:600 var(--fs-xs)/1.3 var(--body); color:var(--muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.onrow .oside{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+.onrow.twist{ border-color:color-mix(in srgb,var(--twist) 55%,var(--line)); }
+.onight .on-cta{ width:100%; margin-top:10px; }
+.brules{ margin:4px 0 14px; padding-inline-start:20px; font:500 var(--fs-sm)/1.45 var(--body); }
+.brules li{ margin-bottom:6px; }
+.bsrc{ width:100%; border-collapse:collapse; font:600 var(--fs-sm) var(--body); }
+.bsrc th{ text-align:start; font-size:var(--fs-xs); color:var(--muted); padding:6px 4px; border-bottom:1px solid var(--line2); }
+.bsrc td{ padding:8px 4px; border-bottom:1px solid var(--line); }
+/* WINDOW SHUT stinger */
+.wshut{ position:fixed; inset:0; z-index:9999; display:grid; place-items:center; background:rgba(10,2,5,.55); animation:scrimIn .15s ease-out both; }
+.wshut .ws-slab{ width:112%; padding:22px 0 18px; background:#fff; transform:rotate(-4deg); text-align:center; box-shadow:0 20px 80px rgba(0,0,0,.6); animation:wsSlam .32s cubic-bezier(.2,1.4,.4,1) both; }
+.wshut .ws-slab b{ font:800 var(--ital) clamp(46px,15vw,86px)/1 var(--display); text-transform:uppercase; color:#E0102E; letter-spacing:-.01em; }
+html[lang="ar"] .wshut .ws-slab b{ line-height:1.35; }
+.wshut.out{ opacity:0; transition:opacity .25s; }
+@keyframes wsSlam{ from{ transform:rotate(-4deg) scale(1.9); opacity:0; } to{ transform:rotate(-4deg) scale(1); opacity:1; } }
+@keyframes scrimIn{ from{ opacity:0; } to{ opacity:1; } }
+html.rm .wshut .ws-slab,html.rm .bdock .btn.armed{ animation:none; }
+@media (prefers-reduced-motion:reduce){ .wshut .ws-slab,.bdock .btn.armed{ animation:none; } }
 /* @@LANE CSS:board END */
 /* ─ */
 /* @@LANE CSS:player BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -2766,6 +2860,47 @@ deepMerge(I18N,{
 /* @@LANE I18N:home END */
 /* ─ */
 /* @@LANE I18N:board BEGIN (lane-owned; insert only between BEGIN and END) */
+deepMerge(I18N,{
+en:{board:{conf:{low:'👀 Talks',med:'📈 Advanced',high:'📢 Confirmed'},dShort:'D{d}',call:'Call',noCall:'No call',say:'{n} say {o}',twist:'Twist',ut:'U-turn',
+ noReports:'No reports yet — ask a source',askAgain:'ask again',report1:'1 report',reports:'{n} reports',wire:'+ wire',
+ ddHint:'Uncalled players score **0** when the clock hits 0:00',closeEarly:'Close early · {n} uncalled',closeWin:'Close the window',
+ hintAll:'All 5 called · you can still U-turn',hintUnused1:'**1 contact unused** · it doesn\'t roll over',hintUnused:'**{n} contacts unused** · they don\'t roll over',hintNone:'All contacts used · rivals post overnight',
+ ad:'▶ +1 contact',planted:'Wire stories can be planted',twistWire:'The story just changed',secsLeft:'{n} seconds left',
+ tmDD:'Tomorrow: **Deadline Day** · {s} s · {n} contacts',flav:{physio:'medicals get booked',airport:'private jets get tracked'},tmOpen:'Tomorrow: **{x} opens**',tmNone:'Tomorrow: rivals post overnight',
+ exit:'Save and exit',feedA:'Feed, {n} new',feed:'Feed',rulesT:'How it works',ddL1:'Deadline',ddL2:'Day',ddSub:'**{c}** contacts · **{u}** uncalled',
+ day:'Day {d}',ddTomorrow:'Deadline Day tomorrow',ddIn:'Deadline Day in {n} days',left1:'contact left',left:'contacts left',dayOf:'Day {d} of 7',ddShort:'DD',ddFull:'Deadline Day',
+ t15:'15 seconds · {n} uncalled',shut:'Window shut',twistTag:'Twist',quiet:'Quiet night.',onN:'{n} new',backToWork:'Back to work',onTitle:'Overnight · Day {d}',
+ f:{all:'All',rival:'Rivals',wire:'Wire',you:'You'},fEmpty:'Nothing here yet.',
+ rulesB:['Five transfer sagas. Seven days. Call each one: **Done, Hijack, Off or Fake**.','Each day you get a few **contacts**. Spend them asking sources — they don\'t roll over.','Sources can lie. Better sources cost more and some only open later in the window.','Call early for more points, go louder for more risk. **Deadline Day** is a race against the clock.'],
+ th:{src:'Source',cost:'Cost',opens:'Opens'},always:'Day 1',endAnyway1:'End day anyway? · 1 contact unused',endAnyway:'End day anyway? · {n} unused',
+ stDD:'Deadline Day',stDDsub:'{s} seconds · {n} contacts',closeAnyway:'Close anyway? · {n} score 0',saved:'Saved. Resume from Today.'}},
+es:{board:{conf:{low:'👀 Charlas',med:'📈 Avanzado',high:'📢 Confirmado'},dShort:'D{d}',call:'Lanzar',noCall:'Sin exclusiva',say:'{n} dicen {o}',twist:'Giro',ut:'Rectificación',
+ noReports:'Aún sin informes — pregunta a una fuente',askAgain:'vuelve a preguntar',report1:'1 informe',reports:'{n} informes',wire:'+ agencia',
+ ddHint:'Los jugadores sin exclusiva suman **0** cuando el reloj llegue a 0:00',closeEarly:'Cerrar ya · {n} sin exclusiva',closeWin:'Cerrar el mercado',
+ hintAll:'Los 5 lanzados · aún puedes rectificar',hintUnused1:'**1 contacto sin usar** · no se acumula',hintUnused:'**{n} contactos sin usar** · no se acumulan',hintNone:'Contactos gastados · los rivales publican de noche',
+ ad:'▶ +1 contacto',planted:'Las noticias de agencia pueden ser plantadas',twistWire:'La historia acaba de cambiar',secsLeft:'Quedan {n} segundos',
+ tmDD:'Mañana: **Día del cierre** · {s} s · {n} contactos',flav:{physio:'se agendan los reconocimientos',airport:'se rastrean los jets privados'},tmOpen:'Mañana: **se abre {x}**',tmNone:'Mañana: los rivales publican de noche',
+ exit:'Guardar y salir',feedA:'Feed, {n} nuevos',feed:'Feed',rulesT:'Cómo funciona',ddL1:'Día del',ddL2:'cierre',ddSub:'**{c}** contactos · **{u}** sin exclusiva',
+ day:'Día {d}',ddTomorrow:'Mañana es el día del cierre',ddIn:'Día del cierre en {n} días',left1:'contacto',left:'contactos',dayOf:'Día {d} de 7',ddShort:'DC',ddFull:'Día del cierre',
+ t15:'15 segundos · {n} sin exclusiva',shut:'Mercado cerrado',twistTag:'Giro',quiet:'Noche tranquila.',onN:'{n} nuevos',backToWork:'A trabajar',onTitle:'De madrugada · Día {d}',
+ f:{all:'Todo',rival:'Rivales',wire:'Agencia',you:'Tú'},fEmpty:'Aún no hay nada.',
+ rulesB:['Cinco culebrones de fichajes. Siete días. Lanza cada uno: **Hecho, Giro, Se cae o Humo**.','Cada día tienes unos pocos **contactos**. Úsalos con tus fuentes: no se acumulan.','Las fuentes mienten. Las mejores cuestan más y algunas solo se abren más tarde.','Lanza pronto para sumar más, sube el tono para arriesgar más. El **día del cierre** es contra el reloj.'],
+ th:{src:'Fuente',cost:'Coste',opens:'Se abre'},always:'Día 1',endAnyway1:'¿Terminar igual? · 1 contacto sin usar',endAnyway:'¿Terminar igual? · {n} sin usar',
+ stDD:'Día del cierre',stDDsub:'{s} segundos · {n} contactos',closeAnyway:'¿Cerrar igual? · {n} suman 0',saved:'Guardado. Sigue desde Hoy.'}},
+ar:{board:{conf:{low:'👀 كلام',med:'📈 مراحل متقدمة',high:'📢 رسمي'},dShort:'ي{d}',call:'انشر',noCall:'مفيش خبر',say:'{n} بيقولوا {o}',twist:'قلبة',ut:'رجوع في الكلام',
+ noReports:'مفيش أخبار لسه — اسأل مصدر',askAgain:'اسأل تاني',report1:'خبر واحد',reports:'{n} أخبار',wire:'+ وكالة',
+ ddHint:'اللي ملوش خبر بياخد **0** لما الساعة توصل 0:00',closeEarly:'اقفل بدري · {n} من غير خبر',closeWin:'اقفل الميركاتو',
+ hintAll:'الخمسة اتنشروا · لسه تقدر ترجع في كلامك',hintUnused1:'**اتصال واحد لسه متستخدمش** · مش بيترحّل',hintUnused:'**{n} اتصالات لسه متستخدمتش** · مش بتترحّل',hintNone:'الاتصالات خلصت · المنافسين بينشروا بالليل',
+ ad:'▶ +1 اتصال',planted:'أخبار الوكالة ممكن تكون مزروعة',twistWire:'القصة لسه متقلبة',secsLeft:'فاضل {n} ثانية',
+ tmDD:'بكرة: **يوم القفلة** · {s} ث · {n} اتصالات',flav:{physio:'الكشف الطبي بيتحجز',airport:'الطيارات الخاصة بتتراقب'},tmOpen:'بكرة: **{x} بيفتح**',tmNone:'بكرة: المنافسين بينشروا بالليل',
+ exit:'احفظ واخرج',feedA:'الأخبار، {n} جديد',feed:'الأخبار',rulesT:'بتلعبها إزاي',ddL1:'يوم',ddL2:'القفلة',ddSub:'**{c}** اتصالات · **{u}** من غير خبر',
+ day:'يوم {d}',ddTomorrow:'يوم القفلة بكرة',ddIn:'يوم القفلة بعد {n} أيام',left1:'اتصال فاضل',left:'اتصالات فاضلة',dayOf:'يوم {d} من 7',ddShort:'القفلة',ddFull:'يوم القفلة',
+ t15:'15 ثانية · {n} من غير خبر',shut:'الميركاتو قفل',twistTag:'قلبة',quiet:'ليلة هادية.',onN:'{n} جديد',backToWork:'يلا نشتغل',onTitle:'بالليل · يوم {d}',
+ f:{all:'الكل',rival:'المنافسين',wire:'الوكالة',you:'إنت'},fEmpty:'مفيش حاجة لسه.',
+ rulesB:['خمس صفقات. سبع أيام. انشر خبر لكل واحدة: **خلصانة، خطفوه، وقعت ولا فشنك**.','كل يوم عندك كام **اتصال**. استخدمهم مع المصادر — مش بيترحّلوا.','المصادر ممكن تكدب. المصادر الأحسن أغلى وفيه منهم بيفتح متأخر.','انشر بدري تاخد نقط أكتر، وعلّي صوتك تخاطر أكتر. **يوم القفلة** سباق مع الساعة.'],
+ th:{src:'المصدر',cost:'التكلفة',opens:'بيفتح'},always:'يوم 1',endAnyway1:'تخلّص اليوم برضه؟ · اتصال متستخدمش',endAnyway:'تخلّص اليوم برضه؟ · {n} متستخدموش',
+ stDD:'يوم القفلة',stDDsub:'{s} ثانية · {n} اتصالات',closeAnyway:'تقفل برضه؟ · {n} هياخدوا 0',saved:'اتحفظت. كمّل من النهارده.'}}
+});
 /* @@LANE I18N:board END */
 /* ─ */
 /* @@LANE I18N:player BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -2971,7 +3106,7 @@ function scoopBar(s,x){ if(!x.called||!x.correct||!s.call) return '';
  const rp=(s.rivalPosts||[]).filter(p=>p.correct&&p.day<=s.call.day).sort((a,b)=>a.day-b.day)[0];
  return `<div class="scoopbar late"><b>✅ ${esc(t('scoop.rightTitle'))}</b><span>${esc(rp?t('scoop.beaten',{r:t('rival.'+rp.rival),d:rp.day}):t('scoop.late'))}</span></div>`; }
 /* ─ lane boundary: results | board ─ */
-function unseenNews(s,from){ from=from!=null?from:(s.newsSeen||1); return game.feed.filter(f=>f.sagaId===s.id&&(f.type==='rival'||(f.type==='event'&&f.day>1))&&f.day>from); }
+function unseenNews(s,from){ from=from!=null?from:(s.newsSeen||1); return game.feed.filter(f=>f.sagaId===s.id&&(f.type==='rival'||f.type==='twist'||(f.type==='event'&&f.day>1))&&f.day>from); }
 function newsChip(s){ const un=unseenNews(s); if(!un.length) return ''; const last=un[un.length-1]; if(last.type!=='rival'||!last.claim) return `<span class="newsnip"><i>${esc(t('news.new'))}</i>📡 ${esc(t('news.n',{n:un.length}))}</span>`; const rp=last; return `<span class="newsnip"><i>${esc(t('news.new'))}</i>${RIVALS.find(r=>r.key===rp.rival).ic} ${esc(t('news.claim.'+rp.claim))}</span>`; }
 /* ─ lane boundary: board | legacy ─ */
 function headlinesSheet(){ if(!game||game.day<2||game.day>=7) return; const items=game.feed.filter(f=>f.day===game.day&&(f.type==='rival'||f.type==='event')&&f.sagaId!=null); if(!items.length) return;
@@ -3142,7 +3277,7 @@ function closeModal(){ const root=$('modalRoot'); const ov=root.querySelector('.
  else closeModalQuiet();
  if(had&&screen==='window'&&game) syncWindow(); }
 function fmtK(n){ return n>=10000?(n/1000).toFixed(0)+'K':n>=1000?(n/1000).toFixed(1)+'K':String(n); }
-function syncWindow(){ if(screen!=='window'||!game) return; const list=$('sagaList'); if(list&&game.tab==='sagas') list.innerHTML=sagaListHtml(); const ch=$('actionsChip'); if(ch){ if(ch.textContent!==String(game.actions)){ ch.classList.remove('bump'); void ch.offsetWidth; ch.classList.add('bump'); } ch.textContent=game.actions; ch.classList.toggle('warn',game.actions===0); } const fl=$('followers'); if(fl) fl.textContent=fmtK(game.followers); const eb=$('endDayBtn'); if(eb&&game.day<7) eb.textContent=endDayLabel(); const cz=$('coachZone'); if(cz) cz.innerHTML=coachHtml('c1')+coachHtml('c4')+coachHtml('c5'); }
+function syncWindow(){ if(!game||screen!=='window') return; const b=$('boardScreen'); if(b) b.innerHTML=boardBodyHtml(); const eb=$('endDayBtn'); if(!(eb&&eb.dataset.armed==='1')) $('hudRoot').innerHTML=hudHtml(); if(game.day===7) ddTick(); }
 function endDayLabel(){ return t('win.endDay',{d:game.day}); }
 
 // ----- tutorial / coach -----
@@ -3430,11 +3565,19 @@ function uturnOverlay(id,then){
 function showAd(then){ if(CONFIG.REWARDED_ADS==='h5'&&Ads.active()&&window.adBreak){ let rewarded=false; try{ window.adBreak({type:'reward',name:'extra_contact',beforeReward:(show)=>{ show(); },adViewed:()=>{ rewarded=true; },adDismissed:()=>{},adBreakDone:(info)=>{ Analytics.track('rewarded_ad',{status:info&&info.breakStatus||''}); if(rewarded) then(); else toast(t('prod.adSkipped')); }}); }catch(e){ then(); } return; } Analytics.track('rewarded_ad',{status:'placeholder'}); let n=5; openModal(`<div class="ad"><p class="small">${esc(t('ad.title'))}</p><div class="cnt" id="adcnt">${n}</div><p class="small">${esc(t('ad.sub'))}</p></div>`); const h=setInterval(()=>{ n--; const el=$('adcnt'); if(!el){ clearInterval(h); return; } el.textContent=n; if(n<=0){ clearInterval(h); closeModal(); then(); } },1000); }
 function bumpFollowers(){ const el=$('followers'); if(!el) return; el.textContent=fmtK(game.followers); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
 
-// ----- timer -----
-function ddTick(){ if(!game) return; const sec=Math.max(0,game.timer), mx=game.timerMax||60; document.querySelectorAll('[data-ddtimer]').forEach(el=>{ el.textContent=sec+'s'; el.classList.toggle('pulse',sec<=10); }); document.querySelectorAll('[data-ddring]').forEach(el=>el.style.setProperty('--ddp',(sec/mx).toFixed(3))); if(sec<=10){ const tb=document.querySelector('.hud'); if(tb) tb.classList.add('alarm'); document.documentElement.classList.add('dd-alarm'); } }
-function startTimer(){ stopTimer(); if(!game||game.day!==7||game.result) return; ddTick(); timerHandle=setInterval(()=>{ if(!game||game.result||screen!=='window'){ stopTimer(); return; } game.timer--; ddTick(); if(game.timer<=10&&game.timer>0) beep('clock'); fireHook('ddtick',game.timer); if(game.timer<=0){ stopTimer(); finishWindow(); } },1000); }
+// ----- timer (wall clock: game.ddEndsAt; one 250 ms ticker; spec §5.10) -----
+function ddTick(){ if(!game) return 0; const mx=game.timerMax||ddMax(); let ms=ddPending?mx*1000:game.ddEndsAt?game.ddEndsAt-Date.now():(game.timer||0)*1000; ms=Math.max(0,ms); const sec=Math.ceil(ms/1000); game.timer=sec; const p=Math.max(0,Math.min(1,ms/(mx*1000)));
+ document.querySelectorAll('[data-ddtimer]').forEach(el=>{ el.textContent=sec+'s'; el.classList.toggle('pulse',sec<=10); });
+ document.querySelectorAll('[data-ddclock]').forEach(el=>{ const v=fmtClock(sec); if(el.textContent!==v) el.textContent=v; });
+ document.querySelectorAll('[data-ddring]').forEach(el=>el.style.setProperty('--ddp',p.toFixed(4)));
+ document.querySelectorAll('.clock').forEach(el=>{ el.classList.toggle('warn',sec<=20&&sec>10); el.classList.toggle('alarm',sec<=10); });
+ document.documentElement.classList.toggle('dd-alarm',sec<=10&&game.day===7&&!game.result&&!ddPending); return sec; }
+function startTimer(){ stopTimer(); if(!game||game.day!==7||game.result||ddShutting) return; ddMax(); if(ddPending){ ddTick(); return; }
+ if(!game.ddEndsAt){ const left=(game.timer>0&&game.timer<game.timerMax)?game.timer:game.timerMax; game.ddEndsAt=Date.now()+left*1000; saveGame(); }
+ ddLastSec=null; const step=()=>{ if(!game||game.result||game.day!==7||BOARD_HUBS.includes(screen)){ stopTimer(); return; } const sec=ddTick(); if(sec!==ddLastSec){ const prev=ddLastSec; ddLastSec=sec; ddSecond(sec,prev); } if(sec<=0){ stopTimer(); windowShut(); } };
+ step(); if(!timerHandle&&!ddShutting&&game&&!game.result) timerHandle=setInterval(step,250); }
 function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
-function finishWindow(){ stopTimer(); dismissCoach('c5'); resolveWindow(); try{ const r=game.result; Analytics.track('level_end',{level_name:game.mode,success:r.tier.n<=3}); Analytics.track('post_score',{score:r.total,level:game.mode,character:r.tier.key}); (r.newBadges||[]).forEach(b=>Analytics.track('unlock_achievement',{achievement_id:b})); }catch(e){} go('results'); }
+function finishWindow(){ stopTimer(); ddPending=false; if(game) game.closedWithSecs=game.day===7?Math.max(0,game.timer|0):0; dismissCoach('c5'); resolveWindow(); try{ const r=game.result; Analytics.track('level_end',{level_name:game.mode,success:r.tier.n<=3}); Analytics.track('post_score',{score:r.total,level:game.mode,character:r.tier.key}); (r.newBadges||[]).forEach(b=>Analytics.track('unlock_achievement',{achievement_id:b})); }catch(e){} go('results'); }
 
 // ----- root -----
 function render(){
@@ -3508,44 +3651,45 @@ function renderHome(){
 }
 
 // ----- window -----
-function sagaStatus(s){ const n=Math.min(5,s.clues.length); const pips=`<span class="pips">${[0,1,2,3,4].map(i=>`<i class="${i<n?'on':''}"></i>`).join('')}</span>`; return pips+(s.call?`<span class="state">🔒 ${esc(t('win.posted'))}</span>`:`<span class="state">${esc(t('win.noCall'))}</span>`); }
-function sagaListHtml(){ return game.sagas.map(s=>`<button class="saga pt-${ptype(s.player).key} ${s.call?'called':''}" data-act="openSaga" data-id="${s.id}">${kitSVG(s.club,initials(s.player.name))}<span class="who">${ptBadge(s.player)}<b>${esc(pName(s.player))}</b>${newsChip(s)}<span class="route"><i style="background:${s.club.kit}"></i>${esc(cName(s.club))}<span class="arr">→</span><i style="background:${s.dest.kit}"></i><span class="to">${esc(cName(s.dest))}</span></span>${s.call?`<span class="snip">✍️ ${esc(tweetText(s.call.outcome,s.call.conf,s))}</span>`:''}</span><span class="status">${sagaStatus(s)}</span></button>`).join(''); }
-function tickerHtml(){ const items=game.feed.filter(f=>f.type==='rival'||f.type==='event').slice(-6).map(f=>esc(feedText(f))); if(!items.length) return ''; const body=items.map(x=>`<b>${esc(t(game.day===7?'win.ddTicker':'win.breaking'))}</b>${x}`).join('&nbsp;&nbsp;&nbsp;&nbsp;'); const chars=items.join(' ').length*2+items.length*20; const dur=Math.max(50,Math.round((420+chars*7)/34)); return `<div class="ticker ${game.day===7?'dd':''}"><div class="track" style="animation-duration:${dur}s">${body}&nbsp;&nbsp;&nbsp;&nbsp;${body}</div></div>`; }
+function sagaStatus(s){ const dd=game.day===7;
+ if(s.call){ const c=s.call; return `${ocHtml(c.outcome,'solid')}<span class="when">${esc(t('board.conf.'+c.conf))} · ${esc(t('board.dShort',{d:c.day}))}</span>`; }
+ if(dd) return `<span class="quickcall" role="button" tabindex="0" data-act="ddQuick" data-id="${s.id}">${esc(t('board.call'))}</span>`;
+ return (unseenNews(s).length?`<span class="tag new">${esc(t('news.new'))}</span>`:'')+`<span class="callpill">${esc(t('board.noCall'))}</span>`; }
+function sagaListHtml(){ const dd=game.day===7, now=Date.now();
+ return `<div class="pcards">`+game.sagas.map(s=>{ const tw=boardTwist(s), twUnseen=!!(tw&&(s.newsSeen||1)<tw.day), pt=ptype(s.player), un=unseenNews(s).length>0;
+  const claims=[...s.clues.filter(c=>!(c.revealAt&&c.revealAt>now)).map(c=>({o:c.out,day:c.day,old:!!c.outdated})),...game.feed.filter(f=>f.sagaId===s.id&&f.type==='rival'&&f.claim).map(f=>({o:f.claim,day:f.day,old:!!f.outdated}))];
+  claims.forEach(c=>{ if(tw&&c.day<tw.day) c.old=true; });
+  const tally={}; claims.forEach(c=>{ const k=c.o+(c.old?'|old':''); tally[k]=(tally[k]||0)+1; });
+  const tls=Object.keys(tally).sort((a,b)=>tally[b]-tally[a]).slice(0,3).map(k=>{ const o=k.split('|')[0], lo=String(o).toLowerCase(); return `<span class="tl ${lo}${k.includes('|old')?' old':''}" aria-label="${esc(t('board.say',{n:tally[k],o:t('ds.oc.'+o)}))}">${glyph(lo)}${tally[k]}</span>`; }).join('');
+  const wire=game.feed.some(f=>f.sagaId===s.id&&f.type==='event'&&f.day>1);
+  let intel=(twUnseen?`<span class="tag twist">🌀 ${esc(t('board.twist'))}</span>`:'')+(s.call&&s.uturns?`<span class="tag ut">↺ ${esc(t('board.ut'))}</span>`:'')+tls;
+  if(!claims.length) intel+=`<span class="nr">${esc(t('board.noReports'))}</span>`;
+  else if(twUnseen) intel+=`<span>${esc(t('board.askAgain'))}</span>`;
+  else intel+=`<span>${esc(t(claims.length===1?'board.report1':'board.reports',{n:claims.length}))}${wire?' '+esc(t('board.wire')):''}</span>`;
+  const cls=['pcard',s.call?'called':'',twUnseen?'twisted':'',pt.key==='super'?'super':'',dd?'dd':''].filter(Boolean).join(' ');
+  return `<button class="${cls}" ${s.call?`style="--oc:var(--o-${String(s.call.outcome).toLowerCase()})"`:''} data-act="openSaga" data-id="${s.id}" aria-label="${esc(pName(s.player))}">${un?`<span class="newdot" aria-label="${esc(t('news.new'))}"></span>`:''}${kitSVG(s.club,initials(s.player.name))}
+ <span class="pm"><span class="pn"><b>${esc(pName(s.player))}</b><span class="stars">${'★'.repeat(pt.stars||1)}</span></span><span class="route"><i style="--c:${s.club.kit}"></i><span class="from">${esc(cName(s.club))}</span><span class="arr">→</span><i style="--c:${s.dest.kit}"></i><b>${esc(cName(s.dest))}</b></span><span class="intel">${intel}</span></span>
+ <span class="side">${sagaStatus(s)}</span></button>`; }).join('')+`</div>`; }
+function tickerHtml(){ return ''; /* marquee ticker deleted (spec §5.3) */ }
 function modeLabel(){ return game.mode==='daily'?t('win.daily',{n:dailyNumber()}):game.mode==='career'?(game.room?t('online.label',{c:game.room,s:game.season+1,n:roomSeasons(game.room)}):t('win.career')):t('win.practice'); }
 function hudHtml(){
- const isDD=game.day===7; const uncalled=game.sagas.filter(s=>!s.call).length;
- return `<div class="hud ${isDD&&game.timer<=10?'alarm':''}">
-  <div class="hud-stats">
-   ${isDD?`<div class="hstat"><b class="timer ${game.timer<=10?'pulse':''}" id="timer" data-ddtimer>${game.timer}s</b><span>⏱ ${esc(t('win.deadline'))}</span></div>`:''}
-   <div class="hstat"><b id="actionsChip" class="${game.actions===0?'warn':''}">${game.actions}</b><span>📞 ${esc(t('win.contactsLbl'))}</span></div>
-   ${isDD?'':`<div class="hstat"><b id="followers">${fmtK(game.followers)}</b><span>👥 ${esc(t('win.followersLbl'))}</span></div>`}
-  </div>
-  ${isDD?`<button class="btn danger" id="endDayBtn" data-act="finish">${esc(t('win.finishShort'))}${uncalled?' ('+uncalled+')':''}</button>`
-       :`<button class="btn primary" id="endDayBtn" data-act="endDay">${esc(endDayLabel())}</button>`}
- </div>`;
+ const dd=game.day===7, unc=game.sagas.filter(s=>!s.call).length;
+ if(dd) return `<div class="dock bdock dd"><p class="hint">${bb(t('board.ddHint'))}</p>${unc?`<button class="btn outline-cta" id="endDayBtn" data-act="finish">${esc(t('board.closeEarly',{n:unc}))}</button>`:`<button class="btn primary" id="endDayBtn" data-act="finish">${esc(t('board.closeWin'))}</button>`}</div>`;
+ const hint=unc===0?t('board.hintAll'):game.actions>0?t(game.actions===1?'board.hintUnused1':'board.hintUnused',{n:game.actions}):t('board.hintNone');
+ const ad=isCareer()&&game.actions===0&&!game.adActionUsed&&CONFIG.REWARDED_ADS!=='off';
+ return `<div class="dock bdock"><p class="hint">${game.actions>0&&unc?'⚠️ ':''}${bb(hint)}</p><div class="row">${ad?`<button class="btn adq" data-act="adAction">${esc(t('board.ad'))}</button>`:''}<button class="btn primary" id="endDayBtn" data-act="endDay">${esc(endDayLabel())} ${uiIcon('arrow')}</button></div></div>`;
 }
-function renderWindow(){
- const isDD=game.day===7;
- const tabs=`<div class="tabs"><button class="${game.tab==='sagas'?'on':''}" data-act="tab" data-v="sagas">${esc(t('win.tabSagas'))}</button><button class="${game.tab==='feed'?'on':''}" data-act="tab" data-v="feed">${esc(t('win.tabFeed',{n:game.feed.length}))}</button></div>`;
- const list=`<div class="stack" id="sagaList">${sagaListHtml()}</div>`;
- const feedHtml=`<div class="stack">${game.feed.slice().reverse().map(f=>renderFeedItem(f)).join('')}</div>`;
- return `<div class="screen game">
-  <div class="gamehead"><div><span class="t-mode">${esc(modeLabel())}${isCareer()?' · '+esc(t('win.cr',{c:C().credits})):''}</span><h1 class="dayttl ${isDD?'dd':''}">${esc(isDD?t('win.deadline'):t('win.day',{d:game.day}))}</h1></div><button class="iconbtn" data-act="home" aria-label="${esc(t('win.home'))}" title="${esc(t('win.home'))}">✕</button></div>
-  <div class="daytrack">${[1,2,3,4,5,6,7].map(d=>`<i class="${d<game.day?'past':d===game.day?'now':''} ${d===7?'dd':''}"></i>`).join('')}</div>
-  ${tickerHtml()}
-  ${tabs}
-  <div id="coachZone">${coachHtml('c1')}${coachHtml('c4')}${coachHtml('c5')}</div>
-  ${isCareer()&&game.actions===0&&!game.adActionUsed&&!isDD&&CONFIG.REWARDED_ADS!=='off'?`<button class="btn adbtn" data-act="adAction">${esc(t('win.ad'))}</button>`:''}
-  ${game.tab==='sagas'?list:feedHtml}
-  <div style="height:110px"></div>
- </div>`;
-}
+function renderWindow(){ return `<div class="screen game board" id="boardScreen">${boardBodyHtml()}</div>`; }
 function renderFeedItem(f){
- if(f.type==='sys') return `<div class="tweet sys">${esc(feedText(f))}</div>`;
- if(f.type==='event') return `<div class="tweet event"><div class="av">📡</div><div class="body"><div class="meta"><b>${esc(t('win.wire'))}</b><span class="h">${esc(t('win.wireHandle',{d:f.day}))}</span></div><div class="txt">${esc(feedText(f))}</div></div></div>`;
- if(f.type==='rival'){ const rv=RIVALS.find(r=>r.key===f.rival); return `<div class="tweet"><div class="av">${rv.ic}</div><div class="body"><div class="meta"><b>${esc(t('rival.'+rv.key))}</b><span class="h">${rv.handle} · ${esc(t('win.dayN',{d:f.day}))}</span></div><div class="txt">${esc(feedText(f))}</div><div class="foot"><span>💬 ${140+f.day*37}</span><span>🔁 ${90+f.day*21}</span><span>❤️ ${400+f.day*130}</span></div></div></div>`; }
- if(f.type==='you') return `<div class="tweet ${f.deleted?'deleted':'livepost'}"><div class="av you">✍️</div><div class="body">${f.deleted?`<div class="stamp">${esc(t('win.deleted'))}</div>`:''}<div class="meta"><b>${esc(t('win.you'))}</b><span class="h">${esc(t('win.youHandle',{d:f.day}))}</span></div><div class="txt">${esc(feedText(f))}</div><div class="foot"><span>💬 …</span><span>🔁 …</span><span>❤️ …</span></div></div></div>`;
- return '';
+ const s=f.sagaId!=null?game.sagas[f.sagaId]:null; if(f.type==='sys') return `<div class="frow sys">${esc(boardFeedText(f))}</div>`;
+ let av='📡', who=t('win.wire'), chip='', note='';
+ if(f.type==='twist'){ av='🌀'; }
+ else if(f.type==='event'){ if(!game._firstWire){ game._firstWire=1; note=`<span class="fnote">${esc(t('board.planted'))}</span>`; } }
+ else if(f.type==='rival'){ const rv=RIVALS.find(r=>r.key===f.rival)||{ic:'👤',key:f.rival,handle:''}; av=rv.ic; who=t('rival.'+rv.key); chip=f.claim?ocHtml(f.claim):''; }
+ else if(f.type==='you'){ av='✍️'; who=t('win.you'); }
+ else return '';
+ const tag=s?'button':'div';
+ return `<${tag} class="frow ${f.type}${f.deleted?' deleted':''}"${s?` data-act="feedOpen" data-id="${s.id}"`:''}><span class="fav ${f.type==='rival'?'dashed':''}">${av}</span><span class="fb"><span class="fmeta"><b>${esc(who)}</b>${s?`<span> · ${esc(pName(s.player))}</span>`:''}</span><span class="ftxt">${esc(boardFeedText(f))}</span>${note}</span>${chip}</${tag}>`;
 }
 
 // ----- saga sheet -----
@@ -3857,6 +4001,80 @@ function fallbackCopy(tx,done){ const ta=document.createElement('textarea'); ta.
 /* @@LANE JS:home END */
 /* ─ */
 /* @@LANE JS:board BEGIN (lane-owned; insert only between BEGIN and END) */
+var ddPending=false, ddLastSec=null, ddShutting=false, boardFeedF='all';
+var BOARD_HUBS=['home','career','online','room','archive','howto','results','achievements','more','settings'];
+function bb(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'); }
+function fmtClock(s){ s=Math.max(0,s|0); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function boardTwist(s){ return s&&(s.tw||s.twist)||null; }
+function ddContacts(){ return CONFIG.DD_CONTACTS||3; }
+function ddMax(){ if(game&&game.ddMax) return game.ddMax; let m=CONFIG.DD_SECONDS||60;
+ if(game&&save.settings&&save.settings.relaxedDD&&(game.mode==='practice'||(game.mode==='career'&&!game.room))) m=Math.round(m*1.5);
+ if(game){ game.ddMax=m; game.timerMax=m; } return m; }
+function boardFeedText(f){ if(f.type==='twist'){ const s=game.sagas[f.sagaId], tw=boardTwist(s)||{}; const x=f.text||tw.text; if(x){ const v=tt(x); return typeof v==='string'?t(x,s?ctxOf(s):{}):x; } if(f.k) try{ return feedText(f); }catch(e){} return t('board.twistWire'); } try{ return feedText(f); }catch(e){ return ''; } }
+function boardSub(){ if(game.mode==='daily'){ try{ return new Date().toLocaleDateString(lang==='ar'?'ar-EG':lang==='es'?'es-ES':'en-GB',{weekday:'short',day:'numeric',month:'short'}); }catch(e){ return ''; } } if(isCareer()&&!game.room) return t('win.cr',{c:C().credits}); return ''; }
+function feedUnseenN(){ return game.feed.filter((f,i)=>i>=(game.feedSeenN||0)&&f.type!=='sys'&&f.type!=='you').length; }
+function clockHtml(big){ const s=Math.max(0,game.timer|0); return `<span class="clock${big?' big':''}" role="timer" aria-label="${esc(t('board.secsLeft',{n:s}))}">${uiIcon('clock')}<b data-ddclock>${fmtClock(s)}</b></span>`; }
+function tomorrowHtml(){ const d=game.day; if(d>=7) return ''; let x;
+ if(d===6) x=t('board.tmDD',{s:ddMax(),n:ddContacts()});
+ else{ let ks=[]; try{ if(typeof whatOpensTomorrow==='function') ks=whatOpensTomorrow(d)||[]; }catch(e){ ks=[]; }
+  const k=ks[0]; if(k){ const src=(tt('src')||{})[k]||{}, ic=(SOURCES[k]||{}).ic||'', fl=tt('board.flav.'+k); x=t('board.tmOpen',{x:ic+' '+(src.name||k)})+(typeof fl==='string'?' · '+fl:''); } else x=t('board.tmNone'); }
+ return `<p class="tomorrow">🌙 <span>${bb(x)}</span></p>`; }
+function boardBodyHtml(){ const dd=game.day===7, unc=game.sagas.filter(s=>!s.call).length, fb=feedUnseenN(), sub=boardSub();
+ const bar=`<header class="appbar"><button class="iconbtn" data-act="home" aria-label="${esc(t('board.exit'))}">${uiIcon('close')}</button><div class="ttl">${esc(modeLabel())}${sub?`<small>${esc(sub)}</small>`:''}</div><div class="right"><button class="iconbtn" data-act="boardFeed" aria-label="${esc(t('board.feedA',{n:fb}))}">${uiIcon('feed')}${fb&&!dd?`<span class="badge">${fb}</span>`:''}</button><button class="iconbtn" data-act="boardRules" aria-label="${esc(t('board.rulesT'))}">${uiIcon('help')}</button></div></header>`;
+ const head=dd?`<div class="ddhead"><div><h1 class="d2">${esc(t('board.ddL1'))}<br>${esc(t('board.ddL2'))}</h1><p class="sub">📞 ${bb(t('board.ddSub',{c:game.actions,u:unc}))}</p></div>${clockHtml(true)}</div>`
+  :`<div class="dayhead"><div><h1 class="d2">${esc(t('board.day',{d:game.day}))}<small>/7</small></h1><p class="sub">${esc(game.day>=6?t('board.ddTomorrow'):t('board.ddIn',{n:7-game.day}))}</p></div><div class="wallet"><span class="wn"><b class="num" id="actionsChip">${game.actions}</b>${esc(t(game.actions===1?'board.left1':'board.left'))}</span>${pipsHtml(game.actions,Math.max(game.actions,baseActions()))}</div></div>`;
+ const days=`<div class="days" role="img" aria-label="${esc(t('board.dayOf',{d:game.day}))}">${[1,2,3,4,5,6,7].map(d=>`<i class="${d<game.day?'past':d===game.day?'now':''}${d===7?' dd':''}"></i>`).join('')}</div><div class="dayslbl" aria-hidden="true">${[1,2,3,4,5,6,7].map(d=>`<span class="${d===game.day?'now':''}${d===7?' dd':''}">${d===7?esc(t('board.ddShort')):d}</span>`).join('')}</div>`;
+ return `${bar}${head}${days}${tomorrowHtml()}<div id="coachZone">${coachHtml('c1')}${coachHtml('c4')}${coachHtml('c5')}</div><div id="sagaList">${sagaListHtml()}</div><div class="bspacer"></div>`; }
+function armConfirm(el,label){ if(el.dataset.armed==='1'){ clearTimeout(el._arm); el.dataset.armed=''; return true; } el.dataset.armed='1'; el._orig=el.innerHTML; el.textContent=label; el.classList.add('armed'); beep('tap');
+ clearTimeout(el._arm); el._arm=setTimeout(()=>{ if(el.isConnected&&el.dataset.armed==='1'){ el.dataset.armed=''; el.innerHTML=el._orig; el.classList.remove('armed'); } },3000); return false; }
+function ddLive(msg,assertive){ let el=$('ddLive'); if(!el){ el=document.createElement('div'); el.id='ddLive'; el.className='b-sr'; document.body.appendChild(el); } el.setAttribute('aria-live',assertive?'assertive':'polite'); el.textContent=''; setTimeout(()=>{ el.textContent=msg; },30); }
+function ddSecond(sec,prev){ fireHook('ddtick',sec); document.querySelectorAll('.clock[role="timer"]').forEach(el=>el.setAttribute('aria-label',t('board.secsLeft',{n:sec}))); if(prev==null) return;
+ const unc=game.sagas.filter(s=>!s.call).length;
+ if(sec===30||sec===20) ddLive(t('board.secsLeft',{n:sec}));
+ if(sec===15&&unc) toast(t('board.t15',{n:unc}));
+ if(sec<=10&&sec>0) sfxCue('heartbeat',sec);
+ if(sec===0) ddLive(t('board.shut'),true); }
+function windowShut(){ if(ddShutting||!game||game.result) return; ddShutting=true; stopTimer(); game.timer=0;
+ const d=document.createElement('div'); d.className='wshut'; d.setAttribute('role','alert'); d.innerHTML=`<div class="ws-slab"><b>${esc(t('board.shut'))}</b></div>`; document.body.appendChild(d);
+ ['click','pointerdown','touchstart','keydown'].forEach(ev=>d.addEventListener(ev,e=>{ e.stopPropagation(); e.preventDefault(); },true));
+ sfxCue('shut');
+ setTimeout(()=>{ try{ closeModalQuiet(); document.querySelectorAll('.big,.stinger,.sheet,.scrim').forEach(x=>x.remove()); finishWindow(); }catch(e){ console.error(e); } setTimeout(()=>{ d.classList.add('out'); setTimeout(()=>d.remove(),260); ddShutting=false; },250); },motionReduced()?500:900); }
+function overnightRow(f){ const s=game.sagas[f.sagaId]; if(!s) return ''; let who, chip='';
+ if(f.type==='twist') who=`<span class="tag twist">${esc(t('board.twistTag'))}</span> 🌀 ${esc(boardFeedText(f))}`;
+ else if(f.type==='rival'){ const rv=RIVALS.find(r=>r.key===f.rival)||{ic:'👤',key:f.rival}; who=`${rv.ic} ${esc(t('rival.'+rv.key))}`; chip=f.claim?ocHtml(f.claim):''; }
+ else who=`📡 ${esc(boardFeedText(f))}`;
+ return `<button class="onrow ${f.type}" data-act="feedOpen" data-id="${s.id}">${kitSVG(s.club,initials(s.player.name))}<span class="om"><b>${esc(pName(s.player))}</b><span class="ow">${who}</span></span><span class="oside">${chip}<span class="tag new">${esc(t('news.new'))}</span></span></button>`; }
+function showOvernight(){ if(!game||game.day>=7||screen!=='window'||game.result) return; const d=game.day;
+ let items=game.feed.filter(f=>f.day===d&&f.sagaId!=null&&(f.type==='twist'||f.type==='rival'||f.type==='event'));
+ game.sagas.forEach(s=>{ const tw=boardTwist(s); if(tw&&tw.day===d&&!items.some(f=>f.type==='twist'&&f.sagaId===s.id)) items.push({type:'twist',sagaId:s.id,day:d,text:tw.text}); });
+ if(!items.length){ toast(t('board.quiet')); return; }
+ const tw=items.filter(f=>f.type==='twist'), rest=items.filter(f=>f.type!=='twist').sort((a,b)=>a.sagaId-b.sagaId);
+ if(tw.length) sfxCue('twist');
+ openModal(`<div class="onight"><p class="on-n">${esc(t('board.onN',{n:items.length}))}</p><div class="on-rows">${[...tw,...rest].map(overnightRow).join('')}</div><button class="btn primary on-cta" data-act="closeSheet">${esc(t('board.backToWork'))}</button></div>`,t('board.onTitle',{d})); }
+function feedSheetHtml(){ const F=boardFeedF; game._firstWire=0;
+ const items=game.feed.filter(f=>f.type!=='sys'&&(F==='all'||(F==='rival'&&f.type==='rival')||(F==='wire'&&(f.type==='event'||f.type==='twist'))||(F==='you'&&f.type==='you')));
+ const chips=`<div class="fchips">${['all','rival','wire','you'].map(k=>`<button class="${F===k?'on':''}" data-act="feedF" data-v="${k}">${esc(t('board.f.'+k))}</button>`).join('')}</div>`;
+ const byDay={}; items.forEach(f=>{ (byDay[f.day]=byDay[f.day]||[]).push(f); });
+ const ds=Object.keys(byDay).map(Number).sort((a,b)=>b-a);
+ const body=ds.length?ds.map(d=>`<h3 class="fday">${esc(d===7?t('board.ddFull'):t('board.day',{d}))}</h3>${byDay[d].slice().reverse().map(renderFeedItem).join('')}`).join(''):`<p class="fempty">${esc(t('board.fEmpty'))}</p>`;
+ return chips+body; }
+function rulesHtml(){ const b=tt('board.rulesB')||[]; const opens=k=>{ try{ return typeof srcOpenDay==='function'?srcOpenDay(k):1; }catch(e){ return 1; } };
+ return `<ul class="brules">${b.map(x=>`<li>${bb(x)}</li>`).join('')}</ul><table class="bsrc"><thead><tr><th>${esc(t('board.th.src'))}</th><th>${esc(t('board.th.cost'))}</th><th>${esc(t('board.th.opens'))}</th></tr></thead><tbody>${Object.keys(SOURCES).filter(k=>k!=='paid'&&k!=='tipoff').map(k=>{ const n=((tt('src')||{})[k]||{}).name||k; const o=opens(k); return `<tr><td>${SOURCES[k].ic||''} ${esc(n)}</td><td><bdi dir="ltr">📞×${SOURCES[k].cost||1}</bdi></td><td>${esc(o>1?t('board.day',{d:o}):t('board.always'))}</td></tr>`; }).join('')}</tbody></table>`; }
+LANE_ACTS.endDay=(el)=>{ if(!game||game.day>=7||game.result) return; if(game.actions>0&&game.sagas.some(s=>!s.call)&&!armConfirm(el,t(game.actions===1?'board.endAnyway1':'board.endAnyway',{n:game.actions}))) return;
+ endDay(); dismissCoach('c4');
+ if(game.day===7){ ddPending=true; game.ddEndsAt=null; game.ddMax=null; ddMax(); game.timer=game.timerMax; render(); sfxCue('dd');
+  const go2=()=>{ if(!ddPending) return; ddPending=false; if(game&&game.day===7&&!game.result) startTimer(); };
+  splash(t('board.stDD'),t('board.stDDsub',{s:game.timerMax,n:game.actions}),true,{ms:1400,then:go2}); setTimeout(go2,2600); }
+ else { sfxCue('day'); render(); splash(t('win.day',{d:game.day}),t('sys.day',{d:game.day}).split('.').slice(1).join('.').trim(),false,{then:showOvernight}); } };
+LANE_ACTS.finish=(el)=>{ if(!game||game.result||ddShutting) return; const unc=game.sagas.filter(s=>!s.call).length; if(unc&&!armConfirm(el,t('board.closeAnyway',{n:unc}))) return; finishWindow(); };
+LANE_ACTS.home=()=>{ const onBoard=screen==='window'&&game&&!game.result; stopTimer(); go('home'); if(onBoard) toast(t('board.saved')); };
+LANE_ACTS.boardFeed=()=>{ game.feedSeenN=game.feed.length; beep('tap'); openModal(`<div class="fsheet" id="fsheet">${feedSheetHtml()}</div>`,t('board.feed')); };
+LANE_ACTS.feedF=(el,v)=>{ boardFeedF=v||'all'; const b=$('fsheet'); if(b) b.innerHTML=feedSheetHtml(); };
+LANE_ACTS.feedOpen=(el,v,id)=>{ if(id==null) return; closeModalQuiet(); beep('pop'); openSaga(id); };
+LANE_ACTS.boardRules=()=>openModal(rulesHtml(),t('board.rulesT'));
+LANE_ACTS.ddQuick=(el,v,id,e)=>{ if(e&&e.stopPropagation) e.stopPropagation(); if(id==null) return; beep('pop'); if(typeof window.quickCall==='function') window.quickCall(id); else openSaga(id); };
+onHook('rendered',sc=>{ if(game&&game.day===7&&!game.result&&!timerHandle&&!ddShutting&&!BOARD_HUBS.includes(sc)) startTimer(); });
+onHook('resolved',r=>{ if(r&&r.closedWithSecs==null&&game) r.closedWithSecs=game.closedWithSecs||0; });
 /* @@LANE JS:board END */
 /* ─ */
 /* @@LANE JS:player BEGIN (lane-owned; insert only between BEGIN and END) */
