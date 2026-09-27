@@ -1818,21 +1818,26 @@ button.onl-cd b{ font-weight:800; }
 .mxd > summary::-webkit-details-marker{ display:none; }
 .mxd > summary .chev{ font-size:20px; transition:transform .2s; } .mxd[open] > summary .chev{ transform:rotate(90deg); }
 .mx .insight{ margin-top:0; }
+/* anchor ads (see the QA JS): nothing pinned to an edge may sit under them */
+html.ad-anchored .dock,html.ad-anchored .tabbar{ bottom:var(--ad-bot,0px); }
+html.ad-anchored body.has-tabs .consent{ bottom:calc(var(--tabbar) + var(--ad-bot,0px) + env(safe-area-inset-bottom,0px)); }
+html.ad-anchored .app{ padding-top:var(--ad-top,0px); padding-bottom:calc(var(--dock) + 24px + var(--ad-bot,0px)); }
+html.ad-anchored .pp{ top:var(--ad-top,0px); } html.ad-anchored .pp .ppin{ padding-bottom:calc(150px + var(--ad-bot,0px)); }
+html.ad-anchored .appbar{ top:var(--ad-top,0px); } html.ad-anchored .pp .appbar{ top:0; }
+html.ad-anchored .overlay,html.ad-anchored .rvl{ top:var(--ad-top,0px); bottom:var(--ad-bot,0px); } html.ad-anchored .sheet{ bottom:var(--ad-bot,0px); max-height:calc(94vh - var(--ad-bot,0px) - var(--ad-top,0px)); }
 /* trophy pop-ups (PS5-style) */
-#trophyRoot{ position:fixed; z-index:97; top:calc(62px + env(safe-area-inset-top,0px)); left:0; right:0; display:grid; justify-items:center; pointer-events:none; padding:0 12px; }
+#trophyRoot{ position:fixed; z-index:97; top:auto; bottom:90px; left:0; right:0; display:grid; justify-items:center; pointer-events:none; padding:0 12px; }
 #trophyRoot > .trophy{ grid-area:1/1; }
-.trophy{ --tc:#CD7F32; pointer-events:auto; display:flex; align-items:center; gap:12px; max-width:min(100%,360px); padding:8px 16px 8px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(14,18,30,.86); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); color:#F3F5FA; text-align:start; box-shadow:0 14px 34px -10px rgba(0,0,0,.6),inset 0 0 0 1px color-mix(in srgb,var(--tc) 30%,transparent); cursor:pointer; opacity:0; transform:translateY(-130%); transition:transform .38s cubic-bezier(.2,1.2,.4,1),opacity .25s; }
-.trophy.show{ opacity:1; transform:none; } .trophy.hide{ opacity:0; transform:translateY(-130%); transition:transform .3s ease-in,opacity .3s; }
+.trophy{ --tc:#CD7F32; pointer-events:auto; display:flex; align-items:center; gap:12px; max-width:min(100%,360px); padding:8px 16px 8px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(14,18,30,.86); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); color:#F3F5FA; text-align:start; box-shadow:0 14px 34px -10px rgba(0,0,0,.6),inset 0 0 0 1px color-mix(in srgb,var(--tc) 30%,transparent); cursor:pointer; opacity:0; transform:translateY(130%); transition:transform .38s cubic-bezier(.2,1.2,.4,1),opacity .25s; }
+.trophy.show{ opacity:1; transform:none; } .trophy.hide{ opacity:0; transform:translateY(130%); transition:transform .3s ease-in,opacity .3s; }
 .trophy.dd{ pointer-events:none; }
-@media (min-width:700px){ #trophyRoot{ top:calc(16px + env(safe-area-inset-top,0px)); } }
-html[data-dd="1"] #trophyRoot{ top:auto; bottom:calc(132px + env(safe-area-inset-bottom,0px)); justify-items:center; padding:0 12px; } /* the DD clock lives at the top: never cover it */
-html[data-dd="1"] .trophy{ transform:translateY(130%); } html[data-dd="1"] .trophy.show{ transform:none; } html[data-dd="1"] .trophy.hide{ transform:translateY(130%); }
+
 .trophy .medal{ flex-shrink:0; filter:drop-shadow(0 0 10px color-mix(in srgb,var(--tc) 55%,transparent)); }
 .trophy .tx{ min-width:0; display:flex; flex-direction:column; gap:2px; }
 .trophy small{ font:700 11px/1.2 var(--body); letter-spacing:.02em; color:var(--tc); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .trophy b{ font:800 16px/1.15 var(--body); color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .trophy.tr-common{ --tc:#E0A26A; } .trophy.tr-rare{ --tc:#D5DEEA; } .trophy.tr-epic{ --tc:#FFC933; } .trophy.tr-legend{ --tc:#9FE8FF; } .trophy.tr-shame{ --tc:#FF7A8A; }
-@media (min-width:700px){ #trophyRoot{ justify-items:end; padding-inline-end:20px; } }
+@media (min-width:1000px){ #trophyRoot{ top:calc(16px + env(safe-area-inset-top,0px)); bottom:auto!important; justify-items:end; padding-inline-end:20px; } .trophy,.trophy.hide{ transform:translateY(-130%); } .trophy.show{ transform:none; } }
 html.rm .trophy,html.rm .trophy.hide{ transform:none; transition:opacity .15s linear; }
 @media (prefers-reduced-motion:reduce){ .trophy,.trophy.hide{ transform:none; transition:opacity .15s linear; } }
 /* ─ */
@@ -5525,12 +5530,12 @@ function ppKnowHtml(s){ const ctx=ctxOf(s), claims=ppClaims(s).filter(c=>c.out),
  const lanes=OUTCOMES.filter(o=>claims.some(c=>c.out===o)).map(o=>`<div class="lane${mine===o?' mine':''}" style="--c:var(--o-${o.toLowerCase()})"><span class="ll"><span class="lw">${glyph(o)}${esc(t('ds.oc.'+o))}</span><small>${esc(sub[o])}</small>${mine===o?`<span class="tag ppmine">${esc(t('pp.yourCallTag',{d:s.call.day}))}</span>`:''}</span><div class="toks">${claims.filter(c=>c.out===o).map(ppTok).join('')}</div></div>`).join('');
  const zero=OUTCOMES.filter(o=>!claims.some(c=>c.out===o));
  const zrow=zero.length&&mine&&zero.includes(mine)?`<div class="zrow"><span>${esc(t('pp.nobody'))}</span>${zero.map(o=>`<span class="zo" style="--c:var(--o-${o.toLowerCase()})">${glyph(o)}${esc(t('ds.oc.'+o))}</span>`).join('')}${mine&&zero.includes(mine)?`<span class="tag ppmine">${esc(t('pp.yourCallTag',{d:s.call.day}))} · ${esc(t('ds.oc.'+mine))}</span>`:''}</div>`:'';
- const w=wire[0];
+ const w=wire.find(x=>!(x.twist&&tw&&!s.ppTwSeen))||null;
  const kwire=w?`<div class="kwire"><span class="wl">📡 ${esc(t('pp.wire'))}</span><p>${w.twist?'🌀 ':''}${esc(w.text)} <span>· ${esc(t('pp.dShort',{d:w.day}))}</span>${wire.length>1?` <button class="pplink" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.moreN',{n:wire.length-1}))}</button>`:''}</p></div>`:'';
  const quote=q?`<div class="quote${PP.quoteOpen?' open':''}" style="--c:var(--o-${q.out.toLowerCase()})" data-act="ppQuote"><div class="qh"><span aria-hidden="true">${ppIc(q.kind,q.key)}</span><b>${esc(ppName(q.kind,q.key,true))}</b><span>· ${q.kind==='rival'?esc(t('pp.rival'))+' · ':''}${esc(ppDayLbl(q.day))}</span>${PP.fresh.has(q.id)?`<span class="tag new">${esc(t('pp.new'))}</span>`:''}${q.old?`<span class="tag twist">${esc(t('pp.beforeTwist'))}</span>`:''}${ocHtml(q.out)}</div><p class="qt">${esc(q.text)}</p></div>`:`<p class="ppempty">${esc(t('pp.empty'))}</p>`;
  const showLegend=(isCareer()?(C().windows||0):(save.stats&&save.stats.windows)||0)<3;
  const legend=showLegend&&claims.length?`<div class="legend"><span>${sigHtml(3,false,null,{hidden:true})} ${esc(t('pp.lgTrust'))}</span><span><i class="dash"></i> ${esc(t('pp.lgRival'))}</span><span>${esc(t('pp.lgTap'))}</span></div>`:'';
- return `<section class="card know" id="ppKnow" aria-label="${esc(t('pp.know'))}"><div class="kh"><h2 class="over">${esc(t('pp.know'))}</h2><span class="aux">${claims.length?esc(t('pp.reports',{n:claims.length})):''}</span></div>${lanes}${zrow}${kwire}${quote}${legend}</section>`;
+ return `<section class="card know" id="ppKnow" aria-label="${esc(t('pp.know'))}"><div class="kh"><h2 class="over">${esc(t('pp.know'))}</h2><span class="aux">${claims.length?esc(t(claims.length===1?'board.report1':'pp.reports',{n:claims.length})):''}</span></div>${lanes}${zrow}${kwire}${quote}${legend}</section>`;
 }
 function ppTileHtml(s,k){ const src=SOURCES[k], st=ppSrcState(s,k), nm=esc(ppName('src',k)), dd=ppDD();
  const cost=`<span class="cost">📞${st.cost}</span>`, face=`<span class="ic" aria-hidden="true">${src.ic}</span>`;
@@ -5934,6 +5939,8 @@ function achEval(ctx){ const out=[]; achList().forEach(a=>{ if(save.ach.got[a.id
    Shown mid-game too (Deadline Day included) but never blocking: during the DD clock they sit below the header and ignore taps. */
 function achLive(ids){ if(!ids||!ids.length) return; persist(); ids.forEach(id=>achToast(id)); }
 function achToast(id){ const A=achEnsure(), g=A.got[id]; if(!ACH_BY[id]||(g&&g.pop)||achQueue.includes(id)) return; achQueue.push(id); if(!achToastBusy) achToastNext(); }
+/* the pill sits just above whatever is pinned to the bottom (dock, tab bar, consent), so it never covers a close button, the DD clock or a primary action */
+function achTrophyBottom(){ let b=0; const H=window.innerHeight; document.querySelectorAll('.dock,.tabbar,.consent,.pp .dock').forEach(e=>{ const r=e.getBoundingClientRect(); if(r.height&&r.bottom>=H-2&&getComputedStyle(e).visibility!=='hidden') b=Math.max(b,H-r.top); }); return Math.round(b+10); }
 function achTrophyRoot(){ let r=$('trophyRoot'); if(!r){ r=document.createElement('div'); r.id='trophyRoot'; r.setAttribute('aria-live','polite'); document.body.appendChild(r); } return r; }
 function achToastNext(){ if(!achQueue.length){ achToastBusy=false; return; } achToastBusy=true;
  const id=achQueue.shift(), a=ACH_BY[id]; if(!a){ achToastNext(); return; }
@@ -5942,7 +5949,7 @@ function achToastNext(){ if(!achQueue.length){ achToastBusy=false; return; } ach
  const el=document.createElement('button'); el.type='button'; el.className='trophy tr-'+a.r+(dd?' dd':''); el.setAttribute('role','status');
  el.innerHTML=`${medalHtml(a.ic,a.r,{size:'sm'})}<span class="tx"><small>🏆 ${esc(t('qa.trophy'))} · ${esc(t('ds.rar.'+a.r))}</small><b>${esc(achName(a))}</b></span>`;
  if(!dd) el.addEventListener('click',()=>{ el.remove(); achDetail(id); });
- achTrophyRoot().appendChild(el); achTry(()=>sfxCue('unlock',a.r));
+ const root=achTrophyRoot(); root.style.bottom=achTrophyBottom()+'px'; root.appendChild(el); achTry(()=>sfxCue('unlock',a.r));
  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
  const ms=achQueue.length>=3?2200:4000;
  setTimeout(()=>{ el.classList.remove('show'); el.classList.add('hide'); setTimeout(()=>el.remove(),350); setTimeout(achToastNext,250); },ms); }
@@ -6210,6 +6217,15 @@ onHook('rendered',scr=>{
 /* ─ */
 /* @@LANE JS:content BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:content END */
+/* ---- QA: keep ads out of the way. AdSense anchor/overlay ads are position:fixed at the top or bottom edge; measure them and
+   lift every bottom-pinned control (dock, End day, tab bar, consent, trophy pills) above a bottom anchor and push sticky/fixed
+   headers (✕, back, DD clock) below a top anchor. No-op while ads are off. ---- */
+(function(){ let last='';
+ function measure(){ if(typeof Ads==='undefined'||!Ads.loaded) return; const H=window.innerHeight; let top=0, bot=0;
+  document.querySelectorAll('ins.adsbygoogle[data-anchor-status],ins.adsbygoogle[data-anchor-shown],.adsbygoogle-noablate,div[id^="google_ads_iframe"],iframe[id^="aswift"]').forEach(el=>{ let n=el, fixed=false; for(let i=0;i<4&&n&&n!==document.body;i++,n=n.parentElement){ if(getComputedStyle(n).position==='fixed'){ fixed=true; break; } } if(!fixed) return;
+   const r=el.getBoundingClientRect(); if(!r.height||r.width<200||getComputedStyle(el).display==='none') return; if(r.top<=2) top=Math.max(top,r.bottom); else if(r.bottom>=H-2) bot=Math.max(bot,H-r.top); });
+  const k=top+'|'+bot; if(k===last) return; last=k; const s=document.documentElement.style; s.setProperty('--ad-top',Math.round(top)+'px'); s.setProperty('--ad-bot',Math.round(bot)+'px'); document.documentElement.classList.toggle('ad-anchored',!!(top||bot)); }
+ setInterval(measure,1000); window.addEventListener('resize',measure); })();
 /* ─ */
 // ============================================================
 // PRODUCTION LAYER — analytics, ads, consent, payments, legal, save codes
