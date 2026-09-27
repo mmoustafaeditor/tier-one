@@ -1815,19 +1815,20 @@ button.onl-cd b{ font-weight:800; }
 .pptwdock .hint b{ color:var(--twist); }
 .mxt .sn{ white-space:normal; line-height:1.15; }
 /* trophy pop-ups (PS5-style) */
-#trophyRoot{ position:fixed; z-index:97; top:calc(62px + env(safe-area-inset-top,0px)); left:0; right:0; display:flex; justify-content:center; pointer-events:none; padding:0 12px; }
+#trophyRoot{ position:fixed; z-index:97; top:calc(62px + env(safe-area-inset-top,0px)); left:0; right:0; display:grid; justify-items:center; pointer-events:none; padding:0 12px; }
+#trophyRoot > .trophy{ grid-area:1/1; }
 .trophy{ --tc:#CD7F32; pointer-events:auto; display:flex; align-items:center; gap:12px; max-width:min(100%,360px); padding:8px 16px 8px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(14,18,30,.86); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); color:#F3F5FA; text-align:start; box-shadow:0 14px 34px -10px rgba(0,0,0,.6),inset 0 0 0 1px color-mix(in srgb,var(--tc) 30%,transparent); cursor:pointer; opacity:0; transform:translateY(-130%); transition:transform .38s cubic-bezier(.2,1.2,.4,1),opacity .25s; }
 .trophy.show{ opacity:1; transform:none; } .trophy.hide{ opacity:0; transform:translateY(-130%); transition:transform .3s ease-in,opacity .3s; }
 .trophy.dd{ pointer-events:none; }
 @media (min-width:700px){ #trophyRoot{ top:calc(16px + env(safe-area-inset-top,0px)); } }
-html[data-dd="1"] #trophyRoot{ top:auto; bottom:calc(132px + env(safe-area-inset-bottom,0px)); justify-content:center; padding:0 12px; } /* the DD clock lives at the top: never cover it */
+html[data-dd="1"] #trophyRoot{ top:auto; bottom:calc(132px + env(safe-area-inset-bottom,0px)); justify-items:center; padding:0 12px; } /* the DD clock lives at the top: never cover it */
 html[data-dd="1"] .trophy{ transform:translateY(130%); } html[data-dd="1"] .trophy.show{ transform:none; } html[data-dd="1"] .trophy.hide{ transform:translateY(130%); }
 .trophy .medal{ flex-shrink:0; filter:drop-shadow(0 0 10px color-mix(in srgb,var(--tc) 55%,transparent)); }
 .trophy .tx{ min-width:0; display:flex; flex-direction:column; gap:2px; }
 .trophy small{ font:700 11px/1.2 var(--body); letter-spacing:.02em; color:var(--tc); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .trophy b{ font:800 16px/1.15 var(--body); color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .trophy.tr-common{ --tc:#E0A26A; } .trophy.tr-rare{ --tc:#D5DEEA; } .trophy.tr-epic{ --tc:#FFC933; } .trophy.tr-legend{ --tc:#9FE8FF; } .trophy.tr-shame{ --tc:#FF7A8A; }
-@media (min-width:700px){ #trophyRoot{ justify-content:flex-end; padding-inline-end:20px; } }
+@media (min-width:700px){ #trophyRoot{ justify-items:end; padding-inline-end:20px; } }
 html.rm .trophy,html.rm .trophy.hide{ transform:none; transition:opacity .15s linear; }
 @media (prefers-reduced-motion:reduce){ .trophy,.trophy.hide{ transform:none; transition:opacity .15s linear; } }
 /* ─ */
