@@ -1828,6 +1828,12 @@ html.ad-anchored .pp{ top:var(--ad-top,0px); } html.ad-anchored .pp .ppin{ paddi
 /* Deadline-Day cards: a slimmer Call button leaves room for the player's name */
 .pcard .quickcall{ min-width:0; padding:0 14px; height:42px; font-size:18px; }
 html[lang="ar"] .pcard .pn b{ font-size:17px; }
+/* right/wrong marks: one ink for both (the outcome-chip ink), so ✓ and ✕ look like a pair on every skin */
+.rt.right .sq,.rt.wrong .sq,.srow .sc .res.r,.srow .sc .res.w,.dotc.t,.dotc.f{ color:var(--o-ink); }
+.dotc svg,.srow .sc .res svg,.rt .sq svg{ display:block; margin:auto; }
+.mxleg{ align-items:center; } .mxleg span{ line-height:1; }
+[dir="rtl"] .mxd[open] > summary .chev{ transform:rotate(-90deg); }
+.rt small.dd{ color:var(--bad); }
 /* one app-bar title style on every screen (Friends/Room used a display face) */
 .onl-bar .ttl{ font:700 var(--fs-md)/1.1 var(--body); text-transform:none; letter-spacing:0; }
 html.ad-anchored .appbar{ top:var(--ad-top,0px); } html.ad-anchored .pp .appbar{ top:0; }
@@ -5785,7 +5791,7 @@ function rsTruthHtml(){ const r=game.result, sg=game.sagas; const perBy={}; r.pe
  const srcName=k=>{ const s=String(t('src.'+k+'.name')).replace(/^(The |El |La |His |Su )/i,''); return s.charAt(0).toUpperCase()+s.slice(1); };
  let insight='';
  const pw=(r.plantedWire||[]).filter(p=>sg[p.sagaId]);
- if(pw.length){ const m=Math.max(pw.length,r.wireTotal||pw.length); insight=`📡 <span>${esc(t(pw.length===1?'rs.planted1':'rs.plantedN',{n:pw.length,m}))} <b>${pw.map(p=>esc(pName(sg[p.sagaId].player).split(' ').pop()+', '+rsDayLabel(p.day))).join(' · ')}</b>. ${esc(t('rs.fresh'))}</span>`; }
+ if(pw.length){ const m=Math.max(pw.length,r.wireTotal||pw.length); insight=`📡 <span>${esc(t(pw.length===1?'rs.planted1':'rs.plantedN',{n:pw.length,m}))} <b>${pw.map(p=>esc(pName(sg[p.sagaId].player).split(' ').pop()+(lang==='ar'?'، ':', ')+rsDayLabel(p.day))).join(' · ')}</b>. ${esc(t('rs.fresh'))}</span>`; }
  else { const all=srcKeys.map(k=>({k,ic:SOURCES[k].ic,nm:srcName(k),R:rows[k]})).filter(o=>o.R.n>0).sort((a,b)=>(b.R.t/b.R.n)-(a.R.t/a.R.n)||b.R.n-a.R.n);
   insight=all.length?`${all[0].ic} <span>${esc(t('rs.straight'))} <b>${esc(all[0].nm)} <bdi dir="ltr">${all[0].R.t}/${all[0].R.n}</bdi></b>. ${esc(t('rs.fresh'))}</span>`:`💬 <span>${esc(t('rs.noReads'))} ${esc(t('rs.fresh'))}</span>`; }
  if(!srcKeys.length&&!rvKeys.length) return `<div class="sechead"><h2 class="d4">${esc(t('rs.truth'))}</h2><span class="aux">${esc(t('rs.truthAux'))}</span></div><section class="card mx"><p class="insight">${insight}</p></section>`;
