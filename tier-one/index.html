@@ -4019,15 +4019,15 @@ function cleanIdx(k,l){ l=l||lang; const L=getPath(I18N[l],k)||getPath(I18N.en,k
 /* ─ */
 /* QA: no cryptic abbreviations (D3, DD, ½, ×1.2) — spell things out; one name per concept */
 deepMerge(I18N,{
- en:{qa:{youAv:'YOU',player1:'1 player',seeTable:'See every source and rival',ptsX:'×{p} points',nContacts:'{n} contacts'},tut2:{d1:'Day 1'},
+ en:{cr:{inUse:'In use'},qa:{youAv:'YOU',player1:'1 player',seeTable:'See every source and rival',ptsX:'×{p} points',nContacts:'{n} contacts'},tut2:{d1:'Day 1'},
   board:{dShort:'Day {d}',ddShort:'Deadline'},
   pp:{dShort:'Day {d}',ddShort:'Deadline Day',yourCallTag:'Your call · Day {d}',twistTag:'Twist · Day {d}'},
   rs:{dayShort:'Day {d}',ddShort:'Deadline',whyHalf:'right after a U-turn · half points',vtHalf:'↺ Half points',stHalf:'Right · half points'}},
- es:{qa:{youAv:'TÚ',player1:'1 jugador',seeTable:'Ver todas las fuentes y rivales',ptsX:'×{p} puntos',nContacts:'{n} contactos'},tut2:{d1:'Día 1'},
+ es:{cr:{inUse:'En uso'},qa:{youAv:'TÚ',player1:'1 jugador',seeTable:'Ver todas las fuentes y rivales',ptsX:'×{p} puntos',nContacts:'{n} contactos'},tut2:{d1:'Día 1'},
   board:{dShort:'Día {d}',ddShort:'Límite',ddFull:'Día límite'},
   pp:{dShort:'Día {d}',ddShort:'Día límite',yourCallTag:'Tu apuesta · Día {d}',twistTag:'Giro · Día {d}'},
   rs:{dayShort:'Día {d}',ddShort:'Límite',dd:'Día límite',whyHalf:'acierto tras rectificar · mitad de puntos',vtHalf:'↺ Mitad de puntos',stHalf:'Acierto · mitad de puntos'}},
- ar:{qa:{youAv:'إنت',player1:'لاعب واحد',seeTable:'شوف كل المصادر والمنافسين',ptsX:'×{p} نقط',nContacts:'{n} اتصالات'},tut2:{d1:'يوم 1'},
+ ar:{cr:{inUse:'شغال'},qa:{youAv:'إنت',player1:'لاعب واحد',seeTable:'شوف كل المصادر والمنافسين',ptsX:'×{p} نقط',nContacts:'{n} اتصالات'},tut2:{d1:'يوم 1'},
   board:{dShort:'يوم {d}',ddShort:'القفلة'},
   pp:{dShort:'يوم {d}',ddShort:'يوم القفلة',yourCallTag:'توقعك · يوم {d}',twistTag:'قلبة · يوم {d}'},
   rs:{dayShort:'يوم {d}',ddShort:'القفلة',dd:'يوم القفلة',whyHalf:'صح بعد ما رجعت في كلامك · نص النقط',vtHalf:'↺ نص النقط',stHalf:'صح · نص النقط'}}
@@ -6239,6 +6239,8 @@ onHook('rendered',scr=>{
    const r=el.getBoundingClientRect(); if(!r.height||r.width<200||getComputedStyle(el).display==='none') return; if(r.top<=2) top=Math.max(top,r.bottom); else if(r.bottom>=H-2) bot=Math.max(bot,H-r.top); });
   const k=top+'|'+bot; if(k===last) return; last=k; const s=document.documentElement.style; s.setProperty('--ad-top',Math.round(top)+'px'); s.setProperty('--ad-bot',Math.round(bot)+'px'); document.documentElement.classList.toggle('ad-anchored',!!(top||bot)); }
  setInterval(measure,1000); window.addEventListener('resize',measure); })();
+/* Back from a More sub-page (How to play, Past dailies) returns to More, not Home */
+BACK.unshift(()=>{ if((screen==='howto'||screen==='archive')&&!$('modalRoot').innerHTML&&!document.querySelector('.big')&&SCREENS.more){ go('more'); return true; } return false; });
 /* ─ */
 // ============================================================
 // PRODUCTION LAYER — analytics, ads, consent, payments, legal, save codes
