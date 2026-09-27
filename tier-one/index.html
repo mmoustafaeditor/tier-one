@@ -592,6 +592,27 @@ body.has-consent .home{ padding-bottom:190px; }
 #boot.out video,#boot.out .bp{ animation:bootZoom .9s cubic-bezier(.7,0,.2,1) forwards; }
 @keyframes bootOut{ 0%{ opacity:1; } 25%{ opacity:1; } 100%{ opacity:0; } }
 @keyframes bootZoom{ 0%{ scale:1; filter:none; } 30%{ filter:brightness(1.8) saturate(1.3); } 100%{ scale:1.35; filter:brightness(2.2) blur(8px); } }
+/* @@LANE CSS:ds BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE CSS:ds END */
+/* ─ */
+/* @@LANE CSS:home BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE CSS:home END */
+/* ─ */
+/* @@LANE CSS:board BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE CSS:board END */
+/* ─ */
+/* @@LANE CSS:player BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE CSS:player END */
+/* ─ */
+/* @@LANE CSS:results BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE CSS:results END */
+/* ─ */
+/* @@LANE CSS:career BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE CSS:career END */
+/* ─ */
+/* @@LANE CSS:online BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE CSS:online END */
+/* ─ */
 </style>
 </head>
 <body>
@@ -2379,6 +2400,45 @@ VOICE4.ar={
  ]
 };
 for(const l in VOICE4){ if(I18N[l]) appendMerge(I18N[l],VOICE4[l]); }
+/* @@LANE I18N:core BEGIN (lane-owned; insert only between BEGIN and END) */
+/* U-turn fan replies: mixed reactions (content lane appends more via appendMerge) */
+deepMerge(I18N,{
+ en:{ureply:{right:["Right in the end. The delete button did most of the work though.","Correct after a U-turn. Even a broken clock deletes its first tweet.","Screenshot of your first take is already in the group chat, just so you know.","Got there eventually. Via the scenic route and a public meltdown.","Took two drafts and a panic, but fine. FINE.","Right answer, wrong journey. We all saw the deleted post.","A win is a win, but that flip-flop is going in the season highlights.","Congrats on being right the second time. The first time is archived forever."],
+  wrong:["Deleted a tweet to be MORE wrong. Genuinely impressive.","U-turned straight into a wall.","Your first take was wrong too, but at least it was consistent.","Two calls, zero right. A clean sheet of the bad kind.","Flip-flopped and still fumbled. Hand the laptop over.","Imagine deleting a tweet for THIS.","The U-turn was the most confident thing you did all window. Still wrong.","Went back to the drawing board and drew a clown."]}},
+ es:{ureply:{right:["Acertaste al final. Aunque el botón de borrar hizo casi todo el trabajo.","Acierto tras cambiar de opinión. Hasta un reloj parado borra su primer tuit.","Tu primera versión ya circula en capturas por el grupo, que lo sepas.","Llegaste, sí. Por la ruta panorámica y con drama en público.","Dos borradores y un ataque de nervios, pero vale. VALE.","Respuesta correcta, camino horrible. Todos vimos el tuit borrado.","Un acierto es un acierto, pero el bandazo va directo al resumen de la temporada.","Enhorabuena por acertar a la segunda. La primera queda archivada para siempre."],
+  wrong:["Borraste un tuit para equivocarte MÁS. Un talento.","Cambiaste de opinión y te estampaste contra la pared.","Tu primera versión también era mala, pero al menos eras coherente.","Dos apuestas, cero aciertos. Portería a cero, pero de las malas.","Cambiaste de chaqueta y aun así la liaste. Suelta el portátil.","Imagínate borrar un tuit para ESTO.","El cambio de opinión fue lo más seguro que hiciste en todo el mercado. Y aun así fallaste.","Volviste a la pizarra y dibujaste un payaso."]}},
+ ar:{ureply:{right:["صح في الآخر، بس زرار المسح هو اللي اشتغل مش إنت.","جبتها صح بعد ما لفّيت. حتى الساعة الواقفة بتمسح أول تويتة ليها.","على فكرة، سكرين شوت أول رأي ليك في الجروب من بدري.","وصلت، ماشي. بس من الطريق الدائري وبفضيحة على الملأ.","مسودتين ونوبة هلع، بس خلاص. خلاص يا سيدي.","الإجابة صح والرحلة كارثة. كلنا شفنا التويتة الممسوحة.","المكسب مكسب، بس اللفّة دي هتتحط في ملخص الموسم.","مبروك إنك جبتها صح تاني مرة. أول مرة متأرشفة للأبد."],
+  wrong:["مسحت تويتة عشان تغلط أكتر؟ موهبة والله.","لفّيت ودخلت في الحيطة على طول.","رأيك الأولاني كان غلط برضه، بس كنت ثابت على الأقل.","توقعين، ولا واحد صح. كلين شيت بس بالعكس.","غيّرت رأيك وبرضه بوّظتها. سلّم اللابتوب لو سمحت.","تخيل تمسح تويتة عشان ده.","اللفّة دي كانت أكتر حاجة واثق فيها طول الميركاتو، وبرضه غلط.","رجعت للسبورة ورسمت مهرج."]}}
+});
+/* @@LANE I18N:core END */
+/* ─ */
+/* @@LANE I18N:math BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE I18N:math END */
+/* ─ */
+/* @@LANE I18N:ds BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE I18N:ds END */
+/* ─ */
+/* @@LANE I18N:home BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE I18N:home END */
+/* ─ */
+/* @@LANE I18N:board BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE I18N:board END */
+/* ─ */
+/* @@LANE I18N:player BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE I18N:player END */
+/* ─ */
+/* @@LANE I18N:results BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE I18N:results END */
+/* ─ */
+/* @@LANE I18N:career BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE I18N:career END */
+/* ─ */
+/* @@LANE I18N:online BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE I18N:online END */
+/* ─ */
+/* @@LANE I18N:content BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE I18N:content END */
+/* ─ */
 /* =========================================================
    Engine. Game objects store keys (outcomes, indices, sources), never text —
    every line is rendered through i18n, so switching language works mid-window.
@@ -2430,8 +2490,10 @@ const SOURCES={ physio:{ic:'🩺',rel:0.85,cost:3,tier:'high',lock:'medical'}, a
 const TIER_BARS={high:3,med:2,low:1};
 const PTYPE={1:{key:'super',pts:1.5,fans:2,stars:3},2:{key:'star',pts:1.2,fans:1.4,stars:2},3:{key:'squad',pts:1,fans:1,stars:1}};
 function ptype(p){ return PTYPE[p&&p.tier]||PTYPE[3]; }
+/* ─ lane boundary: engine | shared ui ─ */
 function ptBadge(p){ const pt=ptype(p); return `<span class="ptb ptb-${pt.key}"><span class="st" aria-hidden="true">${'★'.repeat(pt.stars)}</span>${esc(t('ptype.'+pt.key))}</span>`; }
 function repBar(src,extra,noCost){ const n=TIER_BARS[src.tier]||1; return `<span class="rep rep-${src.tier}" title="${esc(t('rep.title'))}"><span class="bars" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span><span class="rl">${esc(t('rep.'+src.tier))}</span>${noCost?'':`<span class="rc" dir="ltr" aria-label="${esc(t('rep.cost',{n:src.cost}))}">📞 ${src.cost}</span>`}${extra||''}</span>`; }
+/* ─ lane boundary: shared ui | engine ─ */
 const EVENT_DAYS={DONE:[2,4,5],HIJACK:[2,4,5],OFF:[2,4,5],FAKE:[3,5]};
 const RIVALS=[ {key:'tabloid',handle:'@BackPageBants',ic:'🗞️',rel:0.40,dmin:2,dmax:3,style:'high'}, {key:'itk',handle:'@TransferITK_',ic:'🕵️',rel:0.55,dmin:3,dmax:5,style:'med'}, {key:'insider',handle:'@PressBoxPete',ic:'🎙️',rel:0.85,dmin:5,dmax:7,style:'med'} ];
 const CATCH_KEYS=['confirmed','sources','allegedly','barber','myman','scoop','trust','tier1'];
@@ -2439,9 +2501,11 @@ const BADGE_KEYS=[['legend','👑'],['first','📝'],['clean','🧼'],['ddhero',
 const LEVEL_XP=[0,100,250,450,700,1000,1400];
 const EQUIP=[{key:'wifi',ic:'📶',cost:120,lvl:1},{key:'press',ic:'🎫',cost:150,lvl:1},{key:'chair',ic:'💺',cost:140,lvl:1},{key:'coffee',ic:'☕',cost:140,lvl:1},{key:'medical',ic:'🏥',cost:200,lvl:2},{key:'locker',ic:'🔑',cost:160,lvl:2},{key:'radar',ic:'📡',cost:180,lvl:2},{key:'lunch',ic:'🍽️',cost:220,lvl:2},{key:'phone2',ic:'📱',cost:250,lvl:3},{key:'bank',ic:'🔋',cost:260,lvl:3},{key:'mic',ic:'🎙️',cost:320,lvl:3},{key:'tick',ic:'☑️',cost:400,lvl:4},{key:'coat',ic:'🧥',cost:450,lvl:5},{key:'laptop',ic:'💻',cost:600,lvl:5}];
 const GEAR_REL={airport:['radar',.10],agent:['lunch',.10],kitman:['locker',.10],barber:['chair',.12],leak:['coffee',.12]};
+/* ─ lane boundary: engine | career ─ */
 function goalsHtml(c){ const gs=careerGoals(c), all=gs.every(g=>g.cur>=g.max);
  return `<div class="card goals ${all?'done':''}"><h3>${esc(t('econ.goalsTitle'))}</h3><p class="muted small" style="margin:4px 0 8px">${esc(all?t('econ.legend'):t('econ.goalsSub'))}</p>${gs.map(g=>{ const pct=Math.round(g.cur/g.max*100), ok=g.cur>=g.max; return `<div class="goal ${ok?'ok':''}"><div class="gl"><span>${ok?'✅':'◻️'} ${esc(t('econ.goal.'+g.k))}</span><b>${g.k==='fans'?fmtK(g.cur)+' / 100K':g.cur+' / '+g.max}</b></div><div class="bar"><i style="width:${pct}%"></i></div></div>`; }).join('')}</div>`; }
 function careerGoals(c){ return [{k:'lvl',cur:Math.min(levelInfo(c.xp).n,7),max:7},{k:'t1',cur:Math.min(c.t1||0,3),max:3},{k:'gear',cur:EQUIP.filter(e=>c.equip.includes(e.key)).length,max:EQUIP.length},{k:'fans',cur:Math.min(c.followers||0,100000),max:100000}]; }
+/* ─ lane boundary: career | engine ─ */
 function gearOwned(k){ return isCareer()&&C().equip.includes(k); }
 const BOOSTS=[{key:'burner',ic:'☎️',cost:40,lvl:1},{key:'tipoff',ic:'💡',cost:60,lvl:2},{key:'bribe',ic:'💸',cost:150,lvl:3}];
 const SKINS=[{key:'default',cost:0},{key:'stadium',cost:100},{key:'tabloid',cost:80},{key:'broadsheet',cost:80},{key:'neon',cost:120}];
@@ -2550,18 +2614,22 @@ function openDaily(k){
 function fmtDay(k){ try{ return new Date(k+'T12:00:00').toLocaleDateString(lang,{weekday:'short',day:'numeric',month:'short',year:'numeric'}); }catch(e){ return k; } }
 const LIE_W={DONE:.45,HIJACK:.3,OFF:.15,FAKE:.1};
 function pickLie(r,truth){ const o=OUTCOMES.filter(x=>x!==truth); let x=r.next()*o.reduce((a,k)=>a+LIE_W[k],0); for(const k of o){ x-=LIE_W[k]; if(x<=0) return k; } return o[o.length-1]; }
+/* ─ lane boundary: engine | player ─ */
 function jetHtml(s,out){ const from=esc(cityName(s.club)), dc=esc(cityName(s.dest)), hc=esc(cityName(s.hijack));
  if(out==='DONE') return `<div class="jetline go"><span>${from}</span><div class="track"><i>✈️</i></div><span class="to">${dc} 🛬</span></div>`;
  if(out==='HIJACK') return `<div class="jetline divert"><span>${from}</span><div class="track"><i>✈️</i></div><span class="to"><s>${dc}</s> ↪ <b>${hc}</b></span></div><div class="jetcap">${esc(t('jet.divert'))}</div>`;
  if(out==='OFF') return `<div class="jetline back"><span>${from}</span><div class="track"><i>✈️</i></div><span class="to"><s>${dc}</s></span></div><div class="jetcap">${esc(t('jet.cancel'))}</div>`;
  return `<div class="jetline none"><span>${from}</span><div class="track"></div><span class="to">?</span></div><div class="jetcap">${esc(t('jet.none'))}</div>`; }
+/* ─ lane boundary: player | results ─ */
 function scoopBar(s,x){ if(!x.called||!x.correct||!s.call) return '';
  if(x.exclusive) return `<div class="scoopbar ex"><b>👑 ${esc(t('scoop.exTitle'))}</b><span>${esc(t('scoop.exSub'))}</span></div>`;
  if(x.uturn) return `<div class="scoopbar late"><b>✅ ${esc(t('scoop.rightTitle'))}</b><span>${esc(t('scoop.uturn'))}</span></div>`;
  const rp=(s.rivalPosts||[]).filter(p=>p.correct&&p.day<=s.call.day).sort((a,b)=>a.day-b.day)[0];
  return `<div class="scoopbar late"><b>✅ ${esc(t('scoop.rightTitle'))}</b><span>${esc(rp?t('scoop.beaten',{r:t('rival.'+rp.rival),d:rp.day}):t('scoop.late'))}</span></div>`; }
+/* ─ lane boundary: results | board ─ */
 function unseenNews(s,from){ from=from!=null?from:(s.newsSeen||1); return game.feed.filter(f=>f.sagaId===s.id&&(f.type==='rival'||(f.type==='event'&&f.day>1))&&f.day>from); }
 function newsChip(s){ const un=unseenNews(s); if(!un.length) return ''; const last=un[un.length-1]; if(last.type!=='rival'||!last.claim) return `<span class="newsnip"><i>${esc(t('news.new'))}</i>📡 ${esc(t('news.n',{n:un.length}))}</span>`; const rp=last; return `<span class="newsnip"><i>${esc(t('news.new'))}</i>${RIVALS.find(r=>r.key===rp.rival).ic} ${esc(t('news.claim.'+rp.claim))}</span>`; }
+/* ─ lane boundary: board | legacy ─ */
 function headlinesSheet(){ if(!game||game.day<2||game.day>=7) return; const items=game.feed.filter(f=>f.day===game.day&&(f.type==='rival'||f.type==='event')&&f.sagaId!=null); if(!items.length) return;
  const cards=items.map(f=>{ const sg=game.sagas[f.sagaId]; const rv=f.type==='rival'?RIVALS.find(r=>r.key===f.rival):null;
   return `<button class="headline ${rv?'rival':'wire'}" data-act="openSaga" data-id="${sg.id}"><span class="hl-top">${rv?`${rv.ic} <b>${esc(t('rival.'+rv.key))}</b> <span class="muted">${esc(rv.handle)}</span>${f.claim?`<span class="hl-claim c-${f.claim}">${esc(t('news.claim.'+f.claim))}</span>`:''}`:`📡 <b>${esc(t('win.wire'))}</b>`}</span><span class="hl-txt">${esc(feedText(f))}</span><span class="hl-p">${esc(pName(sg.player))} ›</span></button>`; }).join('');
@@ -2592,6 +2660,7 @@ function feedText(f){
  if(f.type==='you') return tweetText(f.outcome,f.conf,game.sagas[f.sagaId]);
  return '';
 }
+function replyText(x,rp,ctx){ if(typeof rp==='number') return fill(pickVar(tt(x.correct?'praise':'roast'),rp),ctx); return fill(pickVar(tt(rp.k)||[],rp.i||0),ctx); }
 function tweetText(outcome,conf,s){ return fill(tt('tweet')[outcome][conf],ctxOf(s)); }
 function officialText(s){ return fill(pickVar(tt('official')[s.truth],s.ov!=null?s.ov:s.id),ctxOf(s)); }
 function getPlayerType(followers){
@@ -2620,7 +2689,7 @@ function contactSource(sagaId,key,opts){
   if(isCareer()){ const st=C().sources[key]||(C().sources[key]={n:0,ok:0}); st.n++; if(truthful) st.ok++; if(key==='barber') C().barber++; }
  }
  const lk=paid?'leak':key; s.clues.push({source:paid?'paid':key,out,truthful,day:game.day,v:freshPick('line.'+lk+'.'+out,((tt('line')[lk]||{})[out]||[]).length),a:freshPick('ask',(tt('ask')||[]).length),revealAt:Date.now()+2100+Math.floor(Math.random()*500)});
- commitRng(r); saveGame();
+ commitRng(r); saveGame(); fireHook('contact',sagaId,key,s.clues[s.clues.length-1]);
 }
 function endDay(){
  if(game.day>=7) return;
@@ -2631,14 +2700,14 @@ function endDay(){
  });
  if(game.day===7){ game.actions=3+(gearOwned('bank')?1:0); game.timer=60; game.feed.push({day:7,type:'sys',k:'sys.dd'}); }
  else game.feed.push({day:game.day,type:'sys',k:'sys.day',ctx:{d:game.day}});
- saveGame();
+ saveGame(); fireHook('day',game.day);
 }
 function publishCall(sagaId,outcome,conf){
  const s=game.sagas[sagaId]; if(s.call) return 0;
  s.call={outcome,conf,day:game.day,uturn:!!s.uturns};
  const r=rng(); const gain=Math.round((15+r.int(40))*({low:1,med:1.6,high:2.4}[conf])*ptype(s.player).fans); game.followers+=gain; commitRng(r);
  game.feed.push({day:game.day,type:'you',sagaId,outcome,conf});
- saveGame(); return gain;
+ saveGame(); fireHook('call',sagaId,s.call); return gain;
 }
 function uturnCall(sagaId){
  const s=game.sagas[sagaId]; if(!s.call) return 0;
@@ -2648,7 +2717,7 @@ function uturnCall(sagaId){
  game.feed.push({day:game.day,type:'sys',k:'sys.deleted',sagaId,ctx:{n:loss}});
  game.feed.push({day:game.day,type:'rival',rival:'tabloid',sagaId,k:'rivalmsg.uturn'});
  s.call=null; if(isCareer()&&!C().badges.includes('flip')) C().badges.push('flip');
- saveGame(); return loss;
+ saveGame(); fireHook('uturn',sagaId); return loss;
 }
 function resolveWindow(){
  if(game.result) return;
@@ -2667,11 +2736,11 @@ function resolveWindow(){
     if(out.uturn) out.pts=Math.round(PTS[s.call.conf][0]*0.5);
     if(out.exclusive){ out.pts+=15+(gearOwned('tick')?10:0); exclusives++; }
     if(s.call.day===7) ddCorrect=true; out.emoji=out.exclusive?'🔵':'🟢';
-    out.replies=[draw('p',PRAISE_N,usedP),draw('p',PRAISE_N,usedP)];
-   }else{ wrongs++; out.pts=PTS[s.call.conf][1]-(out.uturn?10:0); if(!coatUsed&&gearOwned('coat')){ out.pts=Math.round(out.pts/2); coatUsed=true; } if(s.call.conf==='high') highWrong=true; out.emoji='🔴'; out.replies=[draw('r',ROAST_N,usedR),draw('r',ROAST_N,usedR)]; }
+    out.replies=out.uturn?shuffleRand([{k:'praise',i:draw('p',PRAISE_N,usedP)},{k:'ureply.right',i:freshPick('ureply.right',(tt('ureply.right')||[]).length)},{k:'ureply.right',i:freshPick('ureply.right',(tt('ureply.right')||[]).length)}]):[{k:'praise',i:draw('p',PRAISE_N,usedP)},{k:'praise',i:draw('p',PRAISE_N,usedP)}];
+   }else{ wrongs++; out.pts=PTS[s.call.conf][1]-(out.uturn?10:0); if(!coatUsed&&gearOwned('coat')){ out.pts=Math.round(out.pts/2); coatUsed=true; } if(s.call.conf==='high') highWrong=true; out.emoji='🔴'; out.replies=out.uturn?shuffleRand([{k:'roast',i:draw('r',ROAST_N,usedR)},{k:'ureply.wrong',i:freshPick('ureply.wrong',(tt('ureply.wrong')||[]).length)},{k:'roast',i:draw('r',ROAST_N,usedR)}]):[{k:'roast',i:draw('r',ROAST_N,usedR)},{k:'roast',i:draw('r',ROAST_N,usedR)}]; }
    out.pts=Math.round(out.pts*ptype(s.player).pts);
    total+=out.pts;
-   out.handles=[hdeck.pop()||0,hdeck.pop()||0];
+   out.handles=out.replies.map(()=>hdeck.pop()||0);
    const cl=[...s.clues].reverse().find(c=>c.source!=='paid'&&c.source!=='tipoff');
    if(cl){ const cs=cl.truthful?(out.correct?'toldYou':'ignored'):(out.correct?'dodged':'lied'); const k0=cl.source+'.'+cs+'.'; const pool=((tt('sreply')||{})[cl.source]||{})[cs]; const v=freshPick('sreply.'+cl.source+'.'+cs,Array.isArray(pool)?pool.length:1); usedS.add(k0+v); out.srcReply={src:cl.source,cs,v}; }
   }
@@ -2681,7 +2750,7 @@ function resolveWindow(){
  game.followers=Math.max(100,game.followers+fDelta); commitRng(r);
  const multipliedTotal=applyScoreMultiplier(total,game.mode==='career');
  const tier=tierFor(multipliedTotal);
- const res={per,total:multipliedTotal,baseTotal:total,tier,exclusives,wrongs,corrects,newBadges:[],newCatch:[],xpGain:0,creditGain:0,repDelta:0,levelUp:null,fDelta};
+ const res={per,total:multipliedTotal,baseTotal:total,tier,exclusives,wrongs,corrects,newBadges:[],newCatch:[],achUnlocked:[],xpGain:0,creditGain:0,repDelta:0,levelUp:null,fDelta};
  if(game.mode==='daily'){
   const k=todayKey(); const d=save.daily;
   if(!d.history[k]){ const y=new Date(); y.setDate(y.getDate()-1); const yk=y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
@@ -2702,7 +2771,7 @@ function resolveWindow(){
   const cg=(k)=>{ if(!c.catch.includes(k)){ c.catch.push(k); res.newCatch.push(k);} };
   if(after.n>=2) cg('sources'); if(c.windows>=3) cg('allegedly'); if(c.barber>=10) cg('barber'); if(c.wrong>=10) cg('myman'); if(c.exclusives>=5) cg('scoop'); if(c.rep>=80) cg('trust'); if(tier.n===1) cg('tier1');
  }
- game.result=res; save.inProgress=null; persist();
+ fireHook('resolved',res); game.result=res; save.inProgress=null; persist();
  if(game.mode==='career'&&game.room) queueRoomResult(game.room,game.season,res);
 }
 /* =========================================================
@@ -2711,6 +2780,11 @@ function resolveWindow(){
 const $=(id)=>document.getElementById(id);
 const esc=(s)=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let screen='home', careerTab='profile', timerHandle=null, currentSaga=null, draft={outcome:null,conf:null}, pendingTimer=null;
+/* Lane registries: LANE_ACTS[name](el,v,id,event) is checked before the built-in click actions (same name overrides);
+   SCREENS[name]() returns HTML for screen `name` (checked before built-in screens); onHook(event,fn)/fireHook(event,...args). */
+const LANE_ACTS={}, SCREENS={}, HOOKS={};
+function onHook(k,f){ (HOOKS[k]=HOOKS[k]||[]).push(f); }
+function fireHook(k,...a){ (HOOKS[k]||[]).forEach(f=>{ try{ f(...a); }catch(err){ console.error('hook '+k,err); } }); }
 function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.remove('show'),1800); }
 function go(s){ if(s!=='room') stopRoomPoll(); if(s==='home'||s==='online') roomCtx=null; screen=s; closeModal(); render(); window.scrollTo(0,0); animateEnter(); }
 function sheetHead(title){ return `<div class="sheethead"><button class="back" data-act="closeSheet"><span class="chev">‹</span>${esc(t('sheet.back'))}</button><span class="ttl">${esc(title||'')}</span></div>`; }
@@ -2900,14 +2974,16 @@ function showAd(then){ if(CONFIG.REWARDED_ADS==='h5'&&Ads.active()&&window.adBre
 function bumpFollowers(){ const el=$('followers'); if(!el) return; el.textContent=fmtK(game.followers); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
 
 // ----- timer -----
-function startTimer(){ stopTimer(); if(!game||game.day!==7||game.result) return; timerHandle=setInterval(()=>{ if(!game||game.result||screen!=='window'){ stopTimer(); return; } game.timer--; const el=$('timer'); if(el){ el.textContent=game.timer+'s'; if(game.timer<=10){ el.classList.add('pulse'); beep('clock'); const tb=document.querySelector('.hud'); if(tb) tb.classList.add('alarm'); } } if(game.timer<=0){ stopTimer(); finishWindow(); } },1000); }
+function ddTick(){ if(!game) return; const sec=Math.max(0,game.timer), mx=game.timerMax||60; document.querySelectorAll('[data-ddtimer]').forEach(el=>{ el.textContent=sec+'s'; el.classList.toggle('pulse',sec<=10); }); document.querySelectorAll('[data-ddring]').forEach(el=>el.style.setProperty('--ddp',(sec/mx).toFixed(3))); if(sec<=10){ const tb=document.querySelector('.hud'); if(tb) tb.classList.add('alarm'); document.documentElement.classList.add('dd-alarm'); } }
+function startTimer(){ stopTimer(); if(!game||game.day!==7||game.result) return; ddTick(); timerHandle=setInterval(()=>{ if(!game||game.result||screen!=='window'){ stopTimer(); return; } game.timer--; ddTick(); if(game.timer<=10&&game.timer>0) beep('clock'); fireHook('ddtick',game.timer); if(game.timer<=0){ stopTimer(); finishWindow(); } },1000); }
 function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
 function finishWindow(){ stopTimer(); dismissCoach('c5'); resolveWindow(); try{ const r=game.result; Analytics.track('level_end',{level_name:game.mode,success:r.tier.n<=3}); Analytics.track('post_score',{score:r.total,level:game.mode,character:r.tier.key}); (r.newBadges||[]).forEach(b=>Analytics.track('unlock_achievement',{achievement_id:b})); }catch(e){} go('results'); }
 
 // ----- root -----
 function render(){
  applyTheme(); document.documentElement.setAttribute('data-dd',screen==='window'&&game&&game.day===7&&!game.result?'1':''); const app=$('app');
- if(screen==='home') app.innerHTML=renderHome();
+ if(SCREENS[screen]) app.innerHTML=SCREENS[screen]();
+ else if(screen==='home') app.innerHTML=renderHome();
  else if(screen==='window') app.innerHTML=renderWindow();
  else if(screen==='results'){ app.innerHTML=renderResults(); afterResults(); }
  else if(screen==='career') app.innerHTML=renderCareer();
@@ -2919,7 +2995,8 @@ function render(){
  if(screen==='home') startHomeTimers();
  if(screen==='window'){ const tr=document.querySelector('.ticker .track'); if(tr){ const w=tr.getBoundingClientRect().width; if(w>0) tr.style.animationDuration=Math.max(20,Math.round(w/70))+'s'; } }
  if(screen==='window'&&game&&game.day===7&&!timerHandle) startTimer();
- Ads.push(); renderConsent();
+ if(!(screen==='window'&&game&&game.day===7&&!game.result)) document.documentElement.classList.remove('dd-alarm');
+ Ads.push(); renderConsent(); fireHook('rendered',screen);
 }
 function langPills(){ return `<div class="pills">${Object.keys(I18N).map(k=>`<button class="${lang===k?'on':''}" data-act="setLang" data-v="${k}">${esc(I18N[k].langName)}</button>`).join('')}</div>`; }
 
@@ -2982,7 +3059,7 @@ function hudHtml(){
  const isDD=game.day===7; const uncalled=game.sagas.filter(s=>!s.call).length;
  return `<div class="hud ${isDD&&game.timer<=10?'alarm':''}">
   <div class="hud-stats">
-   ${isDD?`<div class="hstat"><b class="timer ${game.timer<=10?'pulse':''}" id="timer">${game.timer}s</b><span>⏱ ${esc(t('win.deadline'))}</span></div>`:''}
+   ${isDD?`<div class="hstat"><b class="timer ${game.timer<=10?'pulse':''}" id="timer" data-ddtimer>${game.timer}s</b><span>⏱ ${esc(t('win.deadline'))}</span></div>`:''}
    <div class="hstat"><b id="actionsChip" class="${game.actions===0?'warn':''}">${game.actions}</b><span>📞 ${esc(t('win.contactsLbl'))}</span></div>
    ${isDD?'':`<div class="hstat"><b id="followers">${fmtK(game.followers)}</b><span>👥 ${esc(t('win.followersLbl'))}</span></div>`}
   </div>
@@ -3084,8 +3161,8 @@ function renderResults(){
  const step=0.55; const roasts=tt('roast'), praise=tt('praise');
  const rows=r.per.map((x,i)=>{ const s=game.sagas[x.sagaId]; const ctx=ctxOf(s);
   const stamp=!x.called?'':x.correct?`<div class="stamp late ${x.exclusive?'ex':'ok'}" style="animation-delay:${(i*step+.35).toFixed(2)}s">${esc(t(x.exclusive?'res.exclusive':'res.called'))}</div>`:`<div class="stamp late" style="animation-delay:${(i*step+.35).toFixed(2)}s">${esc(t('res.deletedTweet'))}</div>`;
-  const replies=x.called?x.replies.map(n=>fill((x.correct?praise:roasts)[n%(x.correct?praise.length:roasts.length)],ctx)):[];
-  const handles=(x.handles||[0,1]).map(i=>HANDLES[i%HANDLES.length]);
+  const replies=x.called?(x.replies||[]).map(rp=>replyText(x,rp,ctx)):[];
+  const handles=replies.map((_,j)=>HANDLES[((x.handles&&x.handles[j]!=null)?x.handles[j]:j)%HANDLES.length]);
   return `<div class="card flat reveal" style="padding:0;overflow:hidden;animation-delay:${(i*step).toFixed(2)}s">
    <div class="tweet event" style="border:none;border-radius:0"><div class="av">${kitSVG(s.truth==='HIJACK'?s.hijack:s.truth==='DONE'?s.dest:s.club,initials(s.player.name))}</div><div class="body"><div class="meta"><b>${esc(t('win.wire'))}</b><span class="h">${esc(t('res.closed'))}</span></div><div class="txt">${esc(officialText(s))}</div></div></div>
    ${x.called&&!s.call?`<div class="tweet ${x.correct?'right':'wrong'}" style="border-radius:0;border-left:none;border-right:none;border-bottom:none"><div class="av you">✍️</div><div class="body"><div class="meta"><b>${esc(t('win.you'))}</b><span class="h">${x.emoji}${x.exclusive?' '+esc(t('res.first')):''}${x.pts!=null?` · ${x.pts>0?'+':''}${x.pts} ${esc(t('app.ptsShort'))}`:''}</span></div><div class="txt muted small">${esc(t('arch.noDetail'))}</div>${replies.map((rp,j)=>`<div class="reply"><b>${esc(handles[j])}</b>${esc(rp)}</div>`).join('')}</div></div>`
@@ -3251,6 +3328,7 @@ function maybeIntro(mode){ if(save.tutorial.intro){ startMode(mode); return; } s
 document.addEventListener('click',(e)=>{
  const el=e.target.closest('[data-act]'); if(!el) return;
  const a=el.dataset.act, v=el.dataset.v, id=el.dataset.id!=null?+el.dataset.id:null;
+ if(LANE_ACTS[a]){ LANE_ACTS[a](el,v,id,e); return; }
  if(a==='closeModal'){ if(e.target===el) closeModal(); return; }
  if(a==='closeSheet'){ closeModal(); return; }
  if(a==='home'){ stopTimer(); go('home'); return; }
@@ -3315,6 +3393,30 @@ document.addEventListener('click',(e)=>{
 function fallbackCopy(tx,done){ const ta=document.createElement('textarea'); ta.value=tx; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); done(); }catch(e){ toast(t('toast.copyFail')); } ta.remove(); }
 
 
+/* @@LANE JS:math BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE JS:math END */
+/* ─ */
+/* @@LANE JS:home BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE JS:home END */
+/* ─ */
+/* @@LANE JS:board BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE JS:board END */
+/* ─ */
+/* @@LANE JS:player BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE JS:player END */
+/* ─ */
+/* @@LANE JS:results BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE JS:results END */
+/* ─ */
+/* @@LANE JS:career BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE JS:career END */
+/* ─ */
+/* @@LANE JS:online BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE JS:online END */
+/* ─ */
+/* @@LANE JS:content BEGIN (lane-owned; insert only between BEGIN and END) */
+/* @@LANE JS:content END */
+/* ─ */
 // ============================================================
 // PRODUCTION LAYER — analytics, ads, consent, payments, legal, save codes
 // ============================================================
