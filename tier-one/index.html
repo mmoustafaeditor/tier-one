@@ -939,6 +939,209 @@ html.lt body{ zoom:1.12; }
 /* @@LANE CSS:board END */
 /* ─ */
 /* @@LANE CSS:player BEGIN (lane-owned; insert only between BEGIN and END) */
+:is(.pp,.ppsheet) .ph{ display:grid; grid-template-columns:44px minmax(0,1fr); gap:12px; align-items:center; margin:10px 0 10px; }
+:is(.pp,.ppsheet) .ph .kit{ width:44px; height:44px; }
+:is(.pp,.ppsheet) .ph .d3{ font-size:27px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+:is(.pp,.ppsheet) .pmeta{ display:flex; align-items:center; gap:8px; margin-top:4px; min-width:0; }
+:is(.pp,.ppsheet) .pmeta .route{ font-size:14px; flex:0 1 auto; }
+:is(.pp,.ppsheet) .ptype{ position:relative; flex-shrink:0; display:inline-flex; align-items:center; gap:4px; height:24px; padding:0 8px; border-radius:12px; border:1px solid var(--line2); background:transparent; color:var(--text); font:800 12px/1 var(--body); white-space:nowrap; cursor:help; }
+:is(.pp,.ppsheet) .ptype::after{ content:""; position:absolute; inset:-10px -4px; }
+:is(.pp,.ppsheet) .ph .route{ margin-top:5px; font-size:14px; }
+:is(.pp,.ppsheet) .ph .meta{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; margin-top:5px; font:600 var(--fs-xs) var(--body); color:var(--muted); }
+:is(.pp,.ppsheet) .ctx{ display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 12px; border-radius:var(--r-pill); background:var(--panel2); border:1px solid var(--line); font:800 14px/1 var(--body); white-space:nowrap; }
+:is(.pp,.ppsheet) .ctx .pips i{ width:7px; height:7px; }
+:is(.pp,.ppsheet) .ctx svg{ width:16px; height:16px; }
+:is(.pp,.ppsheet) .know{ padding:11px 14px 11px; }
+:is(.pp,.ppsheet) .know + .sechead,:is(.pp,.ppsheet) .sgrid + .sechead{ margin-top:18px; }
+:is(.pp,.ppsheet) .know .kh{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:4px; }
+:is(.pp,.ppsheet) .know .kh .aux{ font:600 var(--fs-xs) var(--body); color:var(--muted); white-space:nowrap; }
+:is(.pp,.ppsheet) .lane{ display:grid; grid-template-columns:94px minmax(0,1fr); gap:8px; align-items:center; min-height:44px; padding:5px 0; border-top:1px solid var(--line); }
+:is(.pp,.ppsheet) .lane .ll{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-width:0; }
+:is(.pp,.ppsheet) .lane .lw{ display:inline-flex; align-items:center; gap:5px; color:var(--c); font:800 13.5px/1.1 var(--body); letter-spacing:.05em; text-transform:var(--caps); white-space:nowrap; }
+:is(.pp,.ppsheet) .lane .lw .og{ width:14px; height:14px; }
+html[lang="ar"] :is(.pp,.ppsheet) .lane .lw{ letter-spacing:0; font-size:14.5px; }
+:is(.pp,.ppsheet) .lane .ll small{ max-width:100%; font:600 11.5px/1.2 var(--body); color:var(--muted); white-space:normal; overflow-wrap:anywhere; }
+:is(.pp,.ppsheet) .lane .toks{ display:flex; flex-wrap:wrap; gap:6px; }
+:is(.pp,.ppsheet) .lane.mine{ background:linear-gradient(var(--gdir),color-mix(in srgb,var(--c) 10%,transparent),transparent 80%); margin:0 -14px; padding-inline:14px; }
+:is(.pp,.ppsheet) .zrow{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 12px; min-height:34px; padding:5px 0; border-top:1px solid var(--line); font:600 var(--fs-xs) var(--body); color:var(--dim); }
+:is(.pp,.ppsheet) .zo{ display:inline-flex; align-items:center; gap:4px; color:color-mix(in srgb,var(--c) 70%,var(--dim)); font:800 11.5px/1 var(--body); letter-spacing:.05em; text-transform:var(--caps); }
+:is(.pp,.ppsheet) .zo .og{ width:12px; height:12px; }
+:is(.pp,.ppsheet) .tok{ position:relative; display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 7px 0 3px; border-radius:16px; background:var(--panel2); border:1px solid var(--line2); color:var(--text); font:700 12.5px/1 var(--body); cursor:pointer; white-space:nowrap; }
+:is(.pp,.ppsheet) .tok::after{ content:""; position:absolute; inset:-7px -2px; }
+:is(.pp,.ppsheet) .tok .e{ width:23px; height:23px; border-radius:50%; display:grid; place-items:center; font-size:13px; background:var(--panel3); }
+:is(.pp,.ppsheet) .tok.rival{ background:transparent; border-style:dashed; }
+:is(.pp,.ppsheet) .tok.rival .e{ background:transparent; }
+:is(.pp,.ppsheet) .tok.on{ border-color:var(--text); box-shadow:0 0 0 1px var(--text); }
+:is(.pp,.ppsheet) .tok.new::before{ content:""; position:absolute; top:-3px; inset-inline-end:-2px; width:9px; height:9px; border-radius:50%; background:var(--news); box-shadow:0 0 0 2px var(--panel); }
+:is(.pp,.ppsheet) .tok.old{ opacity:.45; }
+:is(.pp,.ppsheet) .tok.old .n{ text-decoration:line-through; text-decoration-thickness:1.5px; }
+:is(.pp,.ppsheet) .kwire{ display:flex; gap:8px; align-items:baseline; padding:7px 0 1px; border-top:1px solid var(--line); font-size:var(--fs-sm); line-height:1.4; }
+:is(.pp,.ppsheet) .kwire .wl{ flex-shrink:0; display:inline-flex; align-items:center; gap:5px; font:800 10.5px/1 var(--body); letter-spacing:.07em; text-transform:var(--caps); color:var(--muted); }
+:is(.pp,.ppsheet) .kwire p span{ color:var(--dim); white-space:nowrap; }
+:is(.pp,.ppsheet) .quote{ --c:var(--line2); margin-top:8px; padding:9px 12px 10px; border-radius:14px; background:var(--panel2); border-inline-start:3px solid var(--c); }
+:is(.pp,.ppsheet) .quote .qh{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 6px; font:700 var(--fs-xs)/1.2 var(--body); color:var(--muted); white-space:nowrap; }
+:is(.pp,.ppsheet) .quote .qh b{ color:var(--text); font-size:13px; }
+:is(.pp,.ppsheet) .quote .qh .oc{ margin-inline-start:auto; }
+:is(.pp,.ppsheet) .quote .qt{ margin-top:4px; font:500 14.5px/1.38 var(--body); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+:is(.pp,.ppsheet) .legend{ display:flex; flex-wrap:wrap; gap:4px 12px; margin-top:8px; font:600 11px/1.3 var(--body); color:var(--dim); }
+:is(.pp,.ppsheet) .legend span{ display:inline-flex; align-items:center; gap:5px; }
+:is(.pp,.ppsheet) .legend .dash{ width:16px; height:11px; border-radius:6px; border:1px dashed var(--muted); }
+:is(.pp,.ppsheet) .sgrid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+:is(.pp,.ppsheet) .st{ position:relative; display:flex; flex-direction:column; justify-content:space-between; gap:5px; min-height:90px; padding:9px 9px 8px; border-radius:16px; border:1px solid var(--line2); background:var(--panel); color:var(--text); text-align:start; cursor:pointer; box-shadow:var(--e1); min-width:0; }
+:is(.pp,.ppsheet) .st .top{ display:flex; align-items:flex-start; justify-content:space-between; gap:4px; }
+:is(.pp,.ppsheet) .st .ic{ width:32px; height:32px; border-radius:10px; display:grid; place-items:center; font-size:18px; background:var(--panel3); flex-shrink:0; }
+:is(.pp,.ppsheet) .st .nm{ font:700 14px/1.15 var(--body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+:is(.pp,.ppsheet) .st .ft{ display:flex; align-items:center; gap:5px; min-height:20px; font:700 11.5px/1.15 var(--body); color:var(--muted); white-space:nowrap; overflow:hidden; }
+:is(.pp,.ppsheet) .st .ft .oc{ height:20px; font-size:10.5px; padding:0 6px 0 5px; }
+:is(.pp,.ppsheet) .cost{ display:inline-flex; align-items:center; gap:3px; height:24px; padding:0 8px; border-radius:12px; background:var(--cta); color:var(--cta-ink); font:800 13px/1 var(--body); white-space:nowrap; }
+:is(.pp,.ppsheet) .cost svg{ width:12px; height:12px; }
+:is(.pp,.ppsheet) .st[data-src="physio"] .ic{ background:rgba(255,61,85,.16); }
+:is(.pp,.ppsheet) .st[data-src="airport"] .ic{ background:rgba(61,139,255,.2); }
+:is(.pp,.ppsheet) .st[data-src="agent"] .ic{ background:rgba(255,176,32,.16); }
+:is(.pp,.ppsheet) .st[data-src="kitman"] .ic{ background:rgba(39,224,138,.14); }
+:is(.pp,.ppsheet) .st[data-src="barber"] .ic{ background:rgba(169,139,255,.18); }
+:is(.pp,.ppsheet) .st[data-src="leak"] .ic{ background:rgba(255,255,255,.1); }
+:is(.pp,.ppsheet) .st.sharp{ border-color:color-mix(in srgb,var(--sharp) 70%,var(--line)); box-shadow:0 0 0 1px color-mix(in srgb,var(--sharp) 30%,transparent),var(--e1); }
+:is(.pp,.ppsheet) .st.sharp .ft{ color:var(--accent-text); }
+:is(.pp,.ppsheet) .st.asked{ background:transparent; box-shadow:none; border-style:dashed; border-color:var(--line2); }
+:is(.pp,.ppsheet) .st.asked .ic{ filter:saturate(.5); opacity:.8; }
+:is(.pp,.ppsheet) .st.later,:is(.pp,.ppsheet) .st.locked{ background:transparent; box-shadow:none; border-style:dashed; border-color:var(--line); }
+:is(.pp,.ppsheet) .st.later .ic,:is(.pp,.ppsheet) .st.locked .ic{ filter:grayscale(1); opacity:.5; }
+:is(.pp,.ppsheet) .st.later .nm,:is(.pp,.ppsheet) .st.locked .nm{ color:var(--muted); }
+:is(.pp,.ppsheet) .st.short .ic,:is(.pp,.ppsheet) .st.short .nm{ opacity:.55; }
+:is(.pp,.ppsheet) .st.short .cost{ background:transparent; color:var(--o-off); box-shadow:inset 0 0 0 1.5px var(--o-off); }
+:is(.pp,.ppsheet) .st.re{ border-color:color-mix(in srgb,var(--twist) 65%,var(--line)); }
+:is(.pp,.ppsheet) .st.re .ft{ color:var(--twist); }
+:is(.pp,.ppsheet) .st .corner{ position:absolute; top:-10px; inset-inline-start:6px; }
+:is(.pp,.ppsheet) .st .corner .tag{ height:19px; font-size:10px; padding:0 6px; }
+:is(.pp,.ppsheet) .earlier{ padding:0; overflow:hidden; }
+:is(.pp,.ppsheet) .msg{ display:grid; grid-template-columns:34px minmax(0,1fr); gap:10px; padding:11px 14px; }
+:is(.pp,.ppsheet) .msg + .msg{ border-top:1px solid var(--line); }
+:is(.pp,.ppsheet) .msg .me{ width:34px; height:34px; border-radius:10px; display:grid; place-items:center; font-size:17px; background:var(--panel3); }
+:is(.pp,.ppsheet) .msg .me.rival{ border-radius:50%; background:transparent; box-shadow:inset 0 0 0 1.5px var(--line2); }
+:is(.pp,.ppsheet) .msg .mh{ display:flex; align-items:center; flex-wrap:wrap; gap:4px 6px; font:700 var(--fs-xs)/1.2 var(--body); color:var(--muted); white-space:nowrap; }
+:is(.pp,.ppsheet) .msg .mh b{ color:var(--text); font-size:13px; }
+:is(.pp,.ppsheet) .msg .mh .oc{ margin-inline-start:auto; height:20px; font-size:10.5px; }
+:is(.pp,.ppsheet) .msg .mt{ margin-top:3px; font:500 14px/1.4 var(--body); color:var(--text); }
+:is(.pp,.ppsheet) .msg.old{ opacity:.55; }
+:is(.pp,.ppsheet) .collapse{ display:flex; align-items:center; gap:8px; width:100%; min-height:48px; padding:0 14px; border:0; border-top:1px solid var(--line); background:transparent; color:var(--accent-text); font:700 var(--fs-sm) var(--body); cursor:pointer; text-align:start; }
+:is(.pp,.ppsheet) .collapse .chev{ margin-inline-start:auto; transform:rotate(90deg); font-size:18px; color:var(--accent-text); }
+:is(.pp,.ppsheet) .boosts{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+:is(.pp,.ppsheet) .appbar.ddbar{ grid-template-columns:var(--tap) minmax(0,1fr) auto; height:64px; }
+:is(.pp,.ppsheet) .appbar.ddbar .ttl{ text-align:start; }
+:is(.pp,.ppsheet) .appbar.ddbar .ttl > b{ display:block; font:800 var(--ital) 21px/1 var(--display); text-transform:var(--caps); overflow:hidden; text-overflow:ellipsis; }
+:is(.pp,.ppsheet) .appbar.ddbar .ttl .route{ margin-top:3px; font-size:12.5px; }
+:is(.pp,.ppsheet) .ddnote{ display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:12px 0 10px; font:600 var(--fs-sm)/1.3 var(--body); color:var(--muted); }
+:is(.pp,.ppsheet) .ddnote .slab{ flex-shrink:0; display:inline-flex; align-items:center; height:24px; padding:0 10px; background:#fff; color:#C8102E; font:800 var(--ital) 14px/1 var(--display); letter-spacing:.04em; text-transform:var(--caps); clip-path:polygon(5% 0,100% 0,95% 100%,0 100%); }
+:is(.pp,.ppsheet) .ddnote b{ color:var(--text); }
+:is(.pp,.ppsheet) .comp .ch{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin:2px 0 12px; }
+:is(.pp,.ppsheet) .comp .ch .d3{ font-size:28px; }
+:is(.pp,.ppsheet) .step{ display:flex; align-items:center; gap:8px; margin:0 0 8px; font:700 var(--fs-sm) var(--body); color:var(--muted); }
+:is(.pp,.ppsheet) .step .sn{ width:20px; height:20px; border-radius:50%; background:var(--text); color:var(--bg); display:grid; place-items:center; font:800 11px var(--body); }
+:is(.pp,.ppsheet) .step .aux{ margin-inline-start:auto; font-weight:600; }
+:is(.pp,.ppsheet) .opts{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+:is(.pp,.ppsheet) .opt{ --c:var(--line2); position:relative; display:flex; flex-direction:column; gap:6px; min-height:96px; padding:11px 12px 10px; border-radius:16px; border:1.5px solid var(--line); background:var(--panel); color:var(--text); text-align:start; cursor:pointer; min-width:0; }
+:is(.pp,.ppsheet) .opt .oh{ display:flex; align-items:center; gap:8px; }
+:is(.pp,.ppsheet) .opt .gt{ width:30px; height:30px; border-radius:9px; display:grid; place-items:center; background:var(--c); color:var(--o-ink); }
+:is(.pp,.ppsheet) .opt .gt .og{ width:17px; height:17px; }
+:is(.pp,.ppsheet) .opt .ow{ font:800 var(--ital) 20px/1 var(--display); text-transform:var(--caps); color:var(--c); }
+:is(.pp,.ppsheet) .opt .d{ font:600 13px/1.3 var(--body); color:var(--text); }
+:is(.pp,.ppsheet) .opt .who{ display:flex; align-items:center; gap:6px; margin-top:auto; font:700 11px/1 var(--body); color:var(--muted); }
+:is(.pp,.ppsheet) .opt .who .avs{ display:inline-flex; }
+:is(.pp,.ppsheet) .opt .who .avs span{ width:20px; height:20px; border-radius:50%; display:grid; place-items:center; font-size:11px; background:var(--panel3); box-shadow:0 0 0 2px var(--panel); }
+:is(.pp,.ppsheet) .opt .who .avs span + span{ margin-inline-start:-6px; }
+:is(.pp,.ppsheet) .opt.done{ --c:var(--o-done); }
+:is(.pp,.ppsheet) .opt.hijack{ --c:var(--o-hijack); }
+:is(.pp,.ppsheet) .opt.off{ --c:var(--o-off); }
+:is(.pp,.ppsheet) .opt.fake{ --c:var(--o-fake); }
+:is(.pp,.ppsheet) .opt.on{ border-color:var(--c); background:color-mix(in srgb,var(--c) 10%,var(--panel)); box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 22%,transparent); }
+:is(.pp,.ppsheet) .opt.on .who .avs span{ box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 10%,var(--panel)); }
+:is(.pp,.ppsheet) .opt .chk{ position:absolute; top:10px; inset-inline-end:10px; width:22px; height:22px; border-radius:50%; background:var(--c); color:var(--o-ink); display:grid; place-items:center; }
+:is(.pp,.ppsheet) .opt .chk svg{ width:13px; height:13px; }
+:is(.pp,.ppsheet) .confs{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+:is(.pp,.ppsheet) .cf{ display:flex; flex-direction:column; align-items:center; gap:3px; min-height:80px; padding:9px 4px 8px; border-radius:16px; border:1.5px solid var(--line); background:var(--panel); color:var(--text); cursor:pointer; text-align:center; }
+:is(.pp,.ppsheet) .cf .ci{ font-size:19px; line-height:1; }
+:is(.pp,.ppsheet) .cf b{ font:800 var(--ital) 16px/1 var(--display); text-transform:var(--caps); }
+:is(.pp,.ppsheet) .cf .pts{ font:800 13px/1.2 var(--body); color:var(--muted); font-variant-numeric:tabular-nums; }
+:is(.pp,.ppsheet) .cf .pts .up{ color:var(--ok); }
+:is(.pp,.ppsheet) .cf .pts .dn{ color:var(--bad); }
+:is(.pp,.ppsheet) .cf.on{ border-color:var(--cta); background:color-mix(in srgb,var(--cta) 9%,var(--panel)); box-shadow:0 0 0 3px color-mix(in srgb,var(--cta) 22%,transparent); }
+:is(.pp,.ppsheet) .preview{ margin-top:12px; padding:11px 12px; border-radius:16px; background:var(--panel); border:1px dashed var(--line2); }
+:is(.pp,.ppsheet) .preview .tw .txt mark{ background:none; color:var(--accent-text); font-weight:700; }
+:is(.pp,.ppsheet) .hints{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+:is(.pp,.ppsheet) .hints > div{ display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:12px; background:var(--panel); border:1px solid var(--line); font:600 12px/1.3 var(--body); color:var(--muted); }
+:is(.pp,.ppsheet) .hints > div b{ color:var(--text); }
+:is(.pp,.ppsheet) .hints > div .hi{ font-size:16px; }
+:is(.pp,.ppsheet) .stakes{ display:flex; justify-content:center; gap:12px; margin:10px 0 10px; font:700 var(--fs-sm) var(--body); color:var(--muted); }
+:is(.pp,.ppsheet) .stakes b.up{ color:var(--ok); }
+:is(.pp,.ppsheet) .stakes b.dn{ color:var(--bad); }
+.pp{ position:fixed; inset:0; z-index:50; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; background:var(--bg); animation:ppIn .22s var(--ease-out) both; }
+@keyframes ppIn{ from{ opacity:0; transform:translateY(14px); } }
+html.rm .pp{ animation:none; }
+.pp .ppin{ max-width:430px; margin:0 auto; padding:0 var(--gutter) 150px; }
+.pp .appbar{ margin:0 calc(var(--gutter) * -1); }
+.pp .appbar.ddbar{ position:sticky; }
+.pp .dock{ z-index:56; }
+.pp .dock .row{ align-items:center; }
+.pp .dock .fixedw{ flex:none; width:auto; padding:0 16px; min-height:52px; }
+.pp .ppchip{ display:flex; align-items:center; gap:8px; min-width:0; font:700 var(--fs-sm) var(--body); color:var(--muted); white-space:nowrap; overflow:hidden; }
+.pp .ppchip small{ font-size:var(--fs-xs); }
+.pp .btn.primary svg{ width:20px; height:20px; }
+:root[data-dd="1"] .pp,.pp.ppdd{ background:#1A060C; }
+.pp.ppdd .ppcallnow{ background:#fff; color:#C8102E; box-shadow:0 10px 30px -10px rgba(255,255,255,.5); }
+.pp .ppclock b{ font-size:26px; }
+.pp .ppclock{ height:40px; }
+.pp .tag.ppmine{ margin-top:3px; background:transparent; color:var(--c,var(--text)); box-shadow:inset 0 0 0 1px currentColor; height:18px; font-size:9.5px; }
+.pp .zrow .tag.ppmine{ margin-inline-start:auto; }
+.pp .pplink{ border:0; background:none; padding:0 2px; color:var(--accent-text); font:700 var(--fs-xs) var(--body); cursor:pointer; min-height:24px; }
+.pp .kwire p{ margin:0; }
+.pp .quote{ cursor:pointer; }
+.pp .quote.open .qt{ -webkit-line-clamp:unset; display:block; }
+.pp .ppempty{ margin:6px 0 2px; font:500 var(--fs-sm)/1.4 var(--body); color:var(--muted); }
+.pp .pptwist{ display:flex; flex-direction:column; gap:3px; margin:4px 0 10px; padding:10px 12px; border-radius:14px; border:1px solid color-mix(in srgb,var(--twist) 55%,var(--line)); background:color-mix(in srgb,var(--twist) 10%,var(--panel)); font:500 var(--fs-sm)/1.35 var(--body); }
+.pp .pptwist b{ color:var(--twist); font-weight:800; }
+.pp .st{ font:inherit; }
+.pp .st[disabled]{ opacity:.5; cursor:default; }
+.pp .st[aria-disabled="true"]{ cursor:default; }
+.pp .st.calling{ border-color:var(--cta); animation:ppPulse .8s ease-in-out infinite alternate; }
+@keyframes ppPulse{ from{ border-color:var(--line2); } to{ border-color:var(--cta); } }
+.pp .st.calling .ft{ color:var(--text); } .pp .st .typing{ padding:0; } .pp .st .typing i{ width:5px; height:5px; }
+.pp .st .cost{ font-size:12px; height:22px; padding:0 7px; }
+.pp .sgrid{ margin-top:0; }
+.pp .ppboosts{ margin-top:12px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--panel); overflow:hidden; }
+.pp .ppboosts summary{ list-style:none; border-top:0; color:var(--text); }
+.pp .ppboosts summary::-webkit-details-marker{ display:none; }
+.pp .ppboosts[open] summary .chev{ transform:rotate(-90deg); }
+.pp .ppboosts .boosts{ padding:0 10px 10px; }
+.pp .ppboosts .st{ min-height:84px; }
+.pp .ppboosts .st .cost{ background:var(--panel3); color:var(--text); }
+.ppsheet .ch{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin:2px 0 12px; }
+.ppsheet .ch .d3{ font-size:26px; overflow-wrap:anywhere; }
+.ppsheet .ch .clock{ height:36px; } .ppsheet .ch .clock b{ font-size:22px; }
+.ppsheet .opt{ font:inherit; }
+.ppsheet .opt.prev{ opacity:.5; cursor:not-allowed; border-style:dashed; }
+.ppsheet .btn.primary{ width:100%; }
+.ppsheet .btn.primary.ppdis{ opacity:.45; box-shadow:none; }
+.ppsheet .pputstrip{ margin:0 0 12px; padding:8px 12px; border-radius:12px; background:var(--panel2); border:1px dashed var(--line2); font:700 var(--fs-sm) var(--body); color:var(--text); }
+.ppsheet .ppfine{ margin:8px 0 0; text-align:center; font:600 var(--fs-xs)/1.3 var(--body); color:var(--muted); }
+.ppsheet .ppshake{ animation:ppShake .36s ease-in-out; }
+@keyframes ppShake{ 20%,60%{ transform:translateX(-6px); } 40%,80%{ transform:translateX(6px); } }
+.ppsheet .cell.pprescue{ background:color-mix(in srgb,var(--ok) 12%,transparent); }
+.ppsheet .cell.pprescue b{ color:var(--ok); }
+.ppsheet .ppday{ border-bottom:1px solid var(--line); }
+.ppsheet .ppday summary{ list-style:none; border-top:0; padding:0 4px; }
+.ppsheet .ppday summary::-webkit-details-marker{ display:none; }
+.ppsheet .ppday[open] summary .chev{ transform:rotate(-90deg); }
+.ppsheet .ppday .chat{ padding:0 2px 12px; }
+.ppsheet .bub.ppold{ opacity:.55; }
+.big.ppcall .inner{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+.big.ppcall .ppcallh{ font:700 var(--fs-sm) var(--body); color:rgba(255,255,255,.7); }
+.big.ppcall .bub{ max-width:92%; text-align:start; animation:none; }
+.big.ppcall .bub.me{ align-self:flex-end; }
+.big.ppcall .bub.them{ align-self:flex-start; background:rgba(255,255,255,.12); color:#fff; }
+.big.ppcall .ppadded{ display:flex; align-items:center; gap:8px; font:700 var(--fs-sm) var(--body); color:#fff; }
+.big.ppcall .ppskip{ font:600 11px var(--body); color:rgba(255,255,255,.5); }
+.big .ppclk{ position:fixed; top:calc(10px + env(safe-area-inset-top,0px)); left:50%; transform:translateX(-50%); }
 /* @@LANE CSS:player END */
 /* ─ */
 /* @@LANE CSS:results BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -2769,6 +2972,71 @@ deepMerge(I18N,{
 /* @@LANE I18N:board END */
 /* ─ */
 /* @@LANE I18N:player BEGIN (lane-owned; insert only between BEGIN and END) */
+deepMerge(I18N,{
+en:{pp:{back:'Back to the board',close:'Close',dayOf:'Day {d} of 7',ctxAria:'{n} contacts left',secsLeft:'{n} seconds left',dayN:'Day {d}',dShort:'D{d}',ddShort:'DD',justNow:'just now',
+ know:'What we know',reports:'{n} reports',newN:' · {n} new',nobody:'Nobody yet:',wire:'Wire',moreN:'+{n} more',rival:'rival',new:'New',beforeTwist:'Before the twist',empty:'Nothing yet. Ask a source below.',
+ lane:{DONE:'to {d}',HIJACK:'not {d}',OFF:'he stays',FAKE:'never real'},yourCallTag:'Your call · D{d}',
+ lgTrust:'trust',lgRival:'rival guess',lgTap:'tap a name to read it',tokAria:'{n}, {tr}, said {o} on day {d}',
+ ask:'Ask a source',quick:'Quick calls',left:'{n} contacts left today',left1:'1 contact left today',none:'Out of contacts — end the day',quickAux:'📞 {n} left · answers in 1 s',
+ tier:{1:'Low',2:'Medium',3:'High'},sharper:'Sharper today',sharpest:'Sharpest',openedToday:'Opened today',opens:'Opens Day {d}',needs:'Needs {g}',needMore:'Need {n} more',again:'Ask again',calling:'Calling…',
+ opensToast:'This source only knows more later — Day {d}.',gearToast:'Needs {g}. Find it in Career › Shop.',shortToast:'Out of contacts. End the day for more.',cantAsk:"You've already asked this source.",
+ short:{physio:'Physio',airport:'Airport',agent:'Agent',kitman:'Kitman',barber:'Barber',leak:'Leak',paid:'Paid leak',tipoff:'Tip-off',tabloid:'Tabloid',itk:'ITK',insider:'Insider'},
+ earlier:'Earlier',newest:'newest first',earlierN:'Earlier messages ({n})',twistGroup:'🌀 Before the twist ({n})',fullChat:'Full chat with your questions ({n})',msgs:'Messages',msgsN:'{n} messages',
+ boosts:'Boosts',makeCall:'Make your call',uturn:'U-turn',exHint:'Right **and** before every rival = **Exclusive {n}**',noContactsHint:'No contacts left today · you can still call',
+ ptTip:{super:'Superstar: right or wrong, this story counts ×{p} points and ×{f} followers.',star:'Star player: right or wrong, this story counts ×{p} points and ×{f} followers.',squad:'Squad player: normal points (×{p}) and followers (×{f}).'},
+ twistTitle:'Twist on Day {d}',twistBody:'The story changed. Older reads are out of date — sources can be asked again.',twistTag:'Twist D{d}',
+ added:'Added to What we know',tapSkip:'tap to skip',sharpDD:'sharpest on Deadline Day',
+ dd:{slab:'Deadline Day',uncalled:'{n} players still uncalled',uncalled1:'1 player still uncalled',zero:'they score 0 at 0:00',callNow:'Call it now',next:'Next uncalled: {p}',board:'Back to the board'},
+ conf:{low:'Talks',med:'Advanced',high:'Confirmed'},
+ c:{over:'Your call · Day {d}',title:'{p} → {d}?',s1:'What happens?',s2:'How loud?',s2aux:'louder = bigger swing',DONE:'He joins {d}',HIJACK:'He leaves {c} — not for {d}',OFF:'Deal dies. He stays at {c}',FAKE:'It was never real',
+  said:'{n} said',nobody:'Nobody said',oldCall:'your old call',preview:'preview',early:'Early bonus {n} in · drops 3 a day',ex:'Beat every rival: {n} more',rivals:'{n} rivals posted',rivals1:'1 rival posted',
+  ifRight:'If right',ifWrong:'If wrong',post:'Post it →',postU:'Post the U-turn',utStrip:'U-TURN · new call scores half, no exclusive',first:'Posted calls are public. You can U-turn, but it costs.'},
+ u:{over:'U-turn · {p}',title:'Delete & re-call?',twistOn:'Twist on Day {d}',reads:'{n} new reads',reads1:'1 new read',posted:'posted',
+  r1a:'Followers notice',r1b:'right now, whatever happens',r2a:'New call scores half',r2b:"and can't be an exclusive",r3a:'Wrong again?',r3b:'an extra penalty on top',r4a:'Replies will be mixed',r4b:'some respect it, some never forget',public:'Public',
+  rescue:'Twist rescue: this U-turn is free',keep:'Keep my call',del:'Delete',toast:'−{n} followers. The Tabloid saw it.',toastFree:'Deleted. New call time.'}}},
+es:{pp:{back:'Volver al tablero',close:'Cerrar',dayOf:'Día {d} de 7',ctxAria:'Te quedan {n} contactos',secsLeft:'Quedan {n} segundos',dayN:'Día {d}',dShort:'D{d}',ddShort:'DC',justNow:'ahora mismo',
+ know:'Lo que sabemos',reports:'{n} informes',newN:' · {n} nuevos',nobody:'Nadie aún:',wire:'Agencia',moreN:'+{n} más',rival:'rival',new:'Nuevo',beforeTwist:'Antes del giro',empty:'Nada todavía. Pregunta a una fuente abajo.',
+ lane:{DONE:'al {d}',HIJACK:'no al {d}',OFF:'se queda',FAKE:'nunca fue real'},yourCallTag:'Tu apuesta · D{d}',
+ lgTrust:'fiabilidad',lgRival:'apuesta rival',lgTap:'toca un nombre para leerlo',tokAria:'{n}, {tr}, dijo {o} el día {d}',
+ ask:'Pregunta a una fuente',quick:'Llamadas rápidas',left:'Te quedan {n} contactos hoy',left1:'Te queda 1 contacto hoy',none:'Sin contactos — termina el día',quickAux:'📞 quedan {n} · responden en 1 s',
+ tier:{1:'Baja',2:'Media',3:'Alta'},sharper:'Más fiable hoy',sharpest:'Al máximo',openedToday:'Abierta hoy',opens:'Abre el día {d}',needs:'Necesita {g}',needMore:'Falta {n}',again:'Pregunta otra vez',calling:'Llamando…',
+ opensToast:'Esta fuente sabrá más adelante — día {d}.',gearToast:'Necesita {g}. Está en Carrera › Tienda.',shortToast:'Sin contactos. Termina el día para tener más.',cantAsk:'Ya le preguntaste a esta fuente.',
+ short:{physio:'Fisio',airport:'Aeropuerto',agent:'Agente',kitman:'Utilero',barber:'Barbero',leak:'Filtración',paid:'Soplo pagado',tipoff:'Chivatazo',tabloid:'Tabloide',itk:'ITK',insider:'Insider'},
+ earlier:'Antes',newest:'lo más nuevo primero',earlierN:'Mensajes anteriores ({n})',twistGroup:'🌀 Antes del giro ({n})',fullChat:'Chat completo con tus preguntas ({n})',msgs:'Mensajes',msgsN:'{n} mensajes',
+ boosts:'Extras',makeCall:'Haz tu apuesta',uturn:'Rectificar',exHint:'Acierta **y** adelántate a todos los rivales = **Exclusiva {n}**',noContactsHint:'Sin contactos hoy · aún puedes apostar',
+ ptTip:{super:'Superestrella: aciertes o falles, esta historia cuenta ×{p} puntos y ×{f} seguidores.',star:'Estrella: aciertes o falles, esta historia cuenta ×{p} puntos y ×{f} seguidores.',squad:'Jugador de plantilla: puntos (×{p}) y seguidores (×{f}) normales.'},
+ twistTitle:'Giro el día {d}',twistBody:'La historia cambió. Lo anterior está desfasado — puedes volver a preguntar a las fuentes.',twistTag:'Giro D{d}',
+ added:'Añadido a Lo que sabemos',tapSkip:'toca para saltar',sharpDD:'al máximo en el Día de Cierre',
+ dd:{slab:'Día de cierre',uncalled:'{n} jugadores sin apuesta',uncalled1:'1 jugador sin apuesta',zero:'puntúan 0 a las 0:00',callNow:'Apuesta ya',next:'Siguiente sin apuesta: {p}',board:'Volver al tablero'},
+ conf:{low:'Charlas',med:'Avanzado',high:'Confirmado'},
+ c:{over:'Tu apuesta · Día {d}',title:'¿{p} → {d}?',s1:'¿Qué pasa?',s2:'¿Qué tan fuerte?',s2aux:'más fuerte = más en juego',DONE:'Ficha por el {d}',HIJACK:'Deja el {c} — pero no por el {d}',OFF:'Se cae. Se queda en el {c}',FAKE:'Nunca fue real',
+  said:'{n} lo dijeron',nobody:'Nadie lo dijo',oldCall:'tu apuesta anterior',preview:'vista previa',early:'Bonus por madrugar {n} · baja 3 al día',ex:'Gana a todos los rivales: {n} más',rivals:'{n} rivales publicaron',rivals1:'1 rival publicó',
+  ifRight:'Si aciertas',ifWrong:'Si fallas',post:'Publicar →',postU:'Publicar la rectificación',utStrip:'RECTIFICACIÓN · la nueva apuesta puntúa la mitad, sin exclusiva',first:'Las apuestas son públicas. Puedes rectificar, pero cuesta.'},
+ u:{over:'Rectificar · {p}',title:'¿Borrar y volver a apostar?',twistOn:'Giro el día {d}',reads:'{n} datos nuevos',reads1:'1 dato nuevo',posted:'publicado',
+  r1a:'Tus seguidores lo notan',r1b:'ahora mismo, pase lo que pase',r2a:'La nueva apuesta puntúa la mitad',r2b:'y no puede ser exclusiva',r3a:'¿Fallas otra vez?',r3b:'penalización extra',r4a:'Respuestas divididas',r4b:'unos lo respetan, otros no olvidan',public:'Público',
+  rescue:'Rescate por giro: esta rectificación es gratis',keep:'Mantener',del:'Borrar',toast:'−{n} seguidores. El Tabloide lo vio.',toastFree:'Borrado. A apostar de nuevo.'}}},
+ar:{pp:{back:'ارجع للوحة',close:'اقفل',dayOf:'اليوم {d} من 7',ctxAria:'فاضلك {n} اتصالات',secsLeft:'فاضل {n} ثانية',dayN:'يوم {d}',dShort:'ي{d}',ddShort:'آخر يوم',justNow:'دلوقتي',
+ know:'اللي نعرفه',reports:'{n} أخبار',newN:' · {n} جديد',nobody:'محدش قال لسه:',wire:'الوكالة',moreN:'+{n} كمان',rival:'منافس',new:'جديد',beforeTwist:'قبل المفاجأة',empty:'لسه مفيش حاجة. اسأل مصدر تحت.',
+ lane:{DONE:'لـ{d}',HIJACK:'مش لـ{d}',OFF:'قاعد',FAKE:'عمرها ما كانت حقيقية'},yourCallTag:'توقعك · ي{d}',
+ lgTrust:'الثقة',lgRival:'تخمين منافس',lgTap:'دوس على اسم عشان تقراه',tokAria:'{n}، {tr}، قال {o} يوم {d}',
+ ask:'اسأل مصدر',quick:'مكالمات سريعة',left:'فاضلك {n} اتصالات النهارده',left1:'فاضلك اتصال واحد النهارده',none:'خلصت الاتصالات — خلّص اليوم',quickAux:'📞 فاضل {n} · الرد في ثانية',
+ tier:{1:'ضعيفة',2:'متوسطة',3:'عالية'},sharper:'أدق النهارده',sharpest:'في أدق حالاته',openedToday:'اتفتح النهارده',opens:'يفتح يوم {d}',needs:'محتاج {g}',needMore:'ناقص {n}',again:'اسأله تاني',calling:'بيتصل…',
+ opensToast:'المصدر ده هيعرف أكتر بعدين — يوم {d}.',gearToast:'محتاج {g}. هتلاقيه في المشوار › المحل.',shortToast:'خلصت الاتصالات. خلّص اليوم عشان تاخد تاني.',cantAsk:'انت سألت المصدر ده قبل كده.',
+ short:{physio:'الدكتور',airport:'المطار',agent:'الوكيل',kitman:'المهمات',barber:'الحلاق',leak:'تسريب',paid:'تسريب مدفوع',tipoff:'معلومة',tabloid:'الفضايح',itk:'مصادري',insider:'ابن النادي'},
+ earlier:'قبل كده',newest:'الأحدث الأول',earlierN:'رسايل قديمة ({n})',twistGroup:'🌀 قبل المفاجأة ({n})',fullChat:'الشات كله بأسئلتك ({n})',msgs:'الرسايل',msgsN:'{n} رسايل',
+ boosts:'إضافات',makeCall:'قول توقعك',uturn:'رجوع',exHint:'صح **و** قبل كل المنافسين = **انفراد {n}**',noContactsHint:'مفيش اتصالات النهارده · لسه تقدر تتوقع',
+ ptTip:{super:'سوبر ستار: صح أو غلط، القصة دي بتتحسب ×{p} نقط و×{f} متابعين.',star:'نجم: صح أو غلط، القصة دي بتتحسب ×{p} نقط و×{f} متابعين.',squad:'لاعب عادي: نقط (×{p}) ومتابعين (×{f}) عاديين.'},
+ twistTitle:'مفاجأة يوم {d}',twistBody:'القصة اتغيرت. الكلام القديم بقى قديم — تقدر تسأل المصادر تاني.',twistTag:'مفاجأة ي{d}',
+ added:'اتضاف لـ اللي نعرفه',tapSkip:'دوس عشان تعدّي',sharpDD:'في أدق حالاته في آخر يوم',
+ dd:{slab:'آخر يوم',uncalled:'{n} لاعيبة لسه من غير توقع',uncalled1:'لاعب واحد لسه من غير توقع',zero:'هياخدوا صفر عند 0:00',callNow:'اتوقع دلوقتي',next:'اللي بعده: {p}',board:'ارجع للوحة'},
+ conf:{low:'كلام',med:'متقدم',high:'مؤكد'},
+ c:{over:'توقعك · يوم {d}',title:'{p} ← {d}؟',s1:'إيه اللي هيحصل؟',s2:'بصوت عالي قد إيه؟',s2aux:'أعلى = مكسب وخسارة أكبر',DONE:'هيمضي لـ{d}',HIJACK:'هيسيب {c} — بس مش لـ{d}',OFF:'الصفقة باظت. قاعد في {c}',FAKE:'عمرها ما كانت حقيقية',
+  said:'{n} قالوا',nobody:'محدش قال',oldCall:'توقعك القديم',preview:'معاينة',early:'بونص البدري {n} · بيقل 3 كل يوم',ex:'اسبق كل المنافسين: {n} كمان',rivals:'{n} منافسين نشروا',rivals1:'منافس واحد نشر',
+  ifRight:'لو صح',ifWrong:'لو غلط',post:'انشر ←',postU:'انشر التوقع الجديد',utStrip:'رجوع · التوقع الجديد بنص النقط ومن غير انفراد',first:'التوقعات بتبقى علنية. تقدر ترجع فيها، بس ليها تمن.'},
+ u:{over:'رجوع · {p}',title:'تمسح وتتوقع تاني؟',twistOn:'مفاجأة يوم {d}',reads:'{n} أخبار جديدة',reads1:'خبر جديد',posted:'اتنشر',
+  r1a:'المتابعين هياخدوا بالهم',r1b:'دلوقتي، مهما حصل',r2a:'التوقع الجديد بنص النقط',r2b:'ومينفعش يبقى انفراد',r3a:'غلطت تاني؟',r3b:'عقوبة زيادة',r4a:'الردود هتبقى متلخبطة',r4b:'ناس هتحترمها وناس مش هتنسى',public:'علني',
+  rescue:'إنقاذ المفاجأة: الرجوع ده ببلاش',keep:'خليه',del:'امسح',toast:'−{n} متابع. جرنال الفضايح شاف.',toastFree:'اتمسح. يلا توقع جديد.'}}}
+});
 /* @@LANE I18N:player END */
 /* ─ */
 /* @@LANE I18N:results BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -3390,42 +3658,46 @@ function shakeScreen(){ if(motionReduced()) return; const a=$('app'); if(!a) ret
 function bigOverlayPersistent(html,cls){ const d=document.createElement('div'); d.className='big '+(cls||''); d.innerHTML=`<div class="inner">${html}</div>`; document.body.appendChild(d); return d; }
 function dismissBig(d,then){ if(!d||d._gone) return; d._gone=true; if(d._typing) clearInterval(d._typing); d.classList.add('out'); setTimeout(()=>{ d.remove(); if(then) then(); },motionReduced()?0:280); }
 function bigOverlay(html,cls,ms,then){ const d=bigOverlayPersistent(html,cls); const fin=()=>dismissBig(d,then); setTimeout(fin,ms); d.addEventListener('click',fin); /* tap to skip (never block input) */ return d; }
-function contactOverlay(kind,then){
- const fx=tt('fx')[kind]||tt('fx').leak; const ic={agent:'📞',kitman:'🧺',physio:'🩺',airport:'✈️',barber:'💈',leak:'📰',paid:'💸',tipoff:'💡'}[kind]||'📰'; let art='';
- if(kind==='agent') art=`<div class="rings"><div class="icon">${ic}</div></div><div class="voice" aria-hidden="true">${[0,1,2,3,4,5,6,7,8].map(i=>`<i style="animation-delay:${(i*.07).toFixed(2)}s"></i>`).join('')}</div>`;
+function contactOverlay(kind,then,o){
+ const dd=!!game&&game.day===7; const fx=tt('fx')[kind]||tt('fx').leak; const ic={agent:'📞',kitman:'🧺',physio:'🩺',airport:'✈️',barber:'💈',leak:'📰',paid:'💸',tipoff:'💡'}[kind]||'📰'; let art='';
+ if(dd) art=`<div class="icon">${ic}</div>`;
+ else if(kind==='agent') art=`<div class="rings"><div class="icon">${ic}</div></div><div class="voice" aria-hidden="true">${[0,1,2,3,4,5,6,7,8].map(i=>`<i style="animation-delay:${(i*.07).toFixed(2)}s"></i>`).join('')}</div>`;
  else if(kind==='physio') art=`<div class="icon">${ic}</div><svg class="ecgbig" viewBox="0 0 400 70" preserveAspectRatio="none"><path d="M0 35 H90 L100 35 L110 8 L122 62 L134 35 H220 L230 26 L240 48 L250 35 H400"/></svg>`;
- else if(kind==='airport') art=`<div class="radar"></div><div class="runway"><div class="plane">✈️</div></div>`;
+ else if(kind==='airport') art=`<div class="radar"></div>`;
  else if(kind==='barber') art=`<div class="icon">${ic}</div><div class="scissors">✂️</div>`;
  else if(kind==='paid') art=`<div class="icon">${ic}</div>${Array.from({length:12},(_,i)=>`<div class="money" style="left:${5+i*8}%;animation-delay:${(i*.12).toFixed(2)}s">💵</div>`).join('')}`;
  else art=`<div class="icon">${ic}</div>`;
- beep({agent:'agentcall',barber:'salon',airport:'airport',physio:'monitor',kitman:'kitman',leak:'fax',paid:'register',tipoff:'sparkle'}[kind]||'pop'); if(kind==='agent') buzzPhone([60,120,60,500,60,120,60]);
- bigOverlay(`${art}<div class="label">${esc(fx.label)}</div><div class="sub">${esc(fx.sub)}</div><div class="conn"><i></i></div>`,kind,{agent:3800,airport:2400,barber:2000,leak:2200,kitman:1600}[kind]||1500,then);
+ const first=kind==='agent'&&!!game&&!game.ppRang; if(first) game.ppRang=true;
+ beep({agent:'agentcall',barber:'salon',airport:'airport',physio:'monitor',kitman:'kitman',leak:'fax',paid:'register',tipoff:'sparkle'}[kind]||'pop'); if(first) buzzPhone([60,120,60,500,60,120,60]);
+ let body=`${art}<div class="label">${esc(fx.label)}</div><div class="sub">${esc(fx.sub)}</div>`;
+ if(o&&o.clue&&game&&game.sagas[o.id]){ const s=game.sagas[o.id], cl=o.clue, ctx=ctxOf(s), asks=tt('ask'), i=s.clues.indexOf(cl), bars=ppClueBars(cl); const oc=cl.source==='tipoff'?(cl.out==='FAKE'?'FAKE':null):cl.out;
+  body=`<div class="ppcallh">${esc(pName(s.player))} · ${esc(t('pp.dayN',{d:game.day}))}</div>${art}<div class="label">${esc(clueWho(cl))}</div><div class="sub">${sigHtml(bars,false,null,{hidden:true})} ${esc(t('pp.tier.'+bars))}${dd?' · '+esc(t('pp.sharpDD')):''}</div>${cl.source!=='tipoff'&&cl.source!=='paid'?`<div class="bub me">${esc(fill(asks[(cl.a!=null?cl.a:o.id+i)%asks.length],ctx))}</div>`:''}<div class="bub them">${esc(clueText(s,cl))}</div>${oc?`<div class="ppadded">${esc(t('pp.added'))} ${ocHtml(oc)}</div>`:''}<div class="ppskip">${esc(t('pp.tapSkip'))}</div>`; }
+ bigOverlay(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}${body}`,kind+' ppcall',dd?600:1200,then);
 }
 function composeOverlay(id,outcome,conf){
- const s=game.sagas[id]; const text=tweetText(outcome,conf,s); const uturn=!!s.uturns;
- const d=bigOverlayPersistent(`<div class="quirk">${esc(tt('quirk')[outcome][conf])}<small>${esc(pName(s.player))} · ${esc(t('conf.'+conf))}${uturn?' · '+esc(t('uturn.tag')):''}</small></div>
-  <div class="tweetbig ${uturn?'uturn':''}"><div class="av">✍️</div><div style="flex:1;min-width:0"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · ${esc(t('compose.drafting'))}</span></div><div class="txt" id="typed"><span class="cursor"></span></div><div class="foot"><span>💬 0</span><span>🔁 0</span><span>❤️ 0</span><span class="up" id="gain"></span></div></div></div>
-  <div class="actions"><button class="btn primary" id="postBtn" data-act="publish" data-id="${id}" data-o="${outcome}" data-c="${conf}" disabled>${esc(t('compose.typing'))}</button><button class="btn ghost" data-act="rewrite">${esc(t('compose.rewrite'))}</button></div>`,'compose');
- const el=d.querySelector('#typed'); let i=0; const chars=Array.from(text);
- d._typing=setInterval(()=>{ i++; el.innerHTML=esc(chars.slice(0,i).join(''))+'<span class="cursor"></span>'; if(i%2===0) beep('key'); if(i>=chars.length){ clearInterval(d._typing); el.innerHTML=esc(text); const b=d.querySelector('#postBtn'); if(b){ b.disabled=false; b.textContent=t(uturn?'compose.postU':'compose.post'); } } },34);
+ const s=game.sagas[id]; const text=tweetText(outcome,conf,s); const uturn=!!s.uturns; const dd=game.day===7;
+ const d=bigOverlayPersistent(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}<div class="quirk">${esc(tt('quirk')[outcome][conf])}<small>${esc(pName(s.player))} · ${esc(t('conf.'+conf))}${uturn?' · '+esc(t('uturn.tag')):''}</small></div>
+  <div class="tweetbig ${uturn?'uturn':''}"><div class="av">✍️</div><div style="flex:1;min-width:0"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · ${esc(t('compose.drafting'))}</span></div><div class="txt" id="typed"><span class="cursor"></span></div><div class="foot"><span>💬 0</span><span>🔁 0</span><span>❤️ 0</span><span class="up" id="gain"></span></div></div></div>`,'compose');
+ const el=d.querySelector('#typed'); const chars=Array.from(text); const total=dd?300:900; const step=Math.max(1,Math.ceil(chars.length*30/total)); let i=0;
+ d._typing=setInterval(()=>{ i+=step; el.innerHTML=esc(chars.slice(0,i).join(''))+'<span class="cursor"></span>'; if(i%4<step) beep('key'); if(i>=chars.length){ clearInterval(d._typing); d._typing=null; el.innerHTML=esc(text); postFromCompose(id,outcome,conf); } },30);
 }
 function postFromCompose(id,outcome,conf){
- const d=document.querySelector('.big.compose'); if(!d) return;
- const gain=publishCall(id,outcome,conf); const s=game.sagas[id]; dismissCoach('c3');
- const tb=d.querySelector('.tweetbig'); const st=document.createElement('div'); st.className='poststamp'; st.textContent=t(s.call.uturn?'compose.postedU':'compose.posted'); tb.appendChild(st);
- const g=d.querySelector('#gain'); if(g) g.textContent='👥 +'+gain;
- const meta=d.querySelector('.meta span'); if(meta) meta.textContent='@tierone_you · '+t('compose.now');
- const q=d.querySelector('.quirk'); if(q){ const a=tt('after'); q.innerHTML=esc(a[Math.floor(Math.random()*a.length)])+`<small>${esc(t('compose.lockedDay',{d:game.day}))}</small>`; }
- const acts=d.querySelector('.actions'); if(acts) acts.remove();
- beep('send'); buzzPhone(40); render(); bumpFollowers();
- setTimeout(()=>dismissBig(d,()=>toast(t('compose.toast'))),1500);
+ const d=document.querySelector('.big.compose'); if(!game||game.result){ if(d) dismissBig(d); return; }
+ const gain=publishCall(id,outcome,conf); const s=game.sagas[id]; dismissCoach('c3'); draft={outcome:null,conf:null};
+ if(d&&s.call){ const tb=d.querySelector('.tweetbig'); const st=document.createElement('div'); st.className='poststamp'; st.textContent=t(s.call.uturn?'compose.postedU':'compose.posted'); tb.appendChild(st);
+  const g=d.querySelector('#gain'); if(g) g.textContent='👥 +'+gain;
+  const meta=d.querySelector('.meta span'); if(meta) meta.textContent='@tierone_you · '+t('compose.now');
+  const q=d.querySelector('.quirk'); if(q){ const a=tt('after'); q.innerHTML=esc(a[Math.floor(Math.random()*a.length)])+`<small>${esc(t('compose.lockedDay',{d:game.day}))}</small>`; } }
+ beep('send'); buzzPhone(40); render(); bumpFollowers(); if($('modalRoot').querySelector('.pp')) ppRender(id);
+ setTimeout(()=>{ if(d) dismissBig(d,()=>toast(t('compose.toast'))); },game.day===7?300:700);
 }
 function uturnOverlay(id,then){
- const s=game.sagas[id]; const old=tweetText(s.call.outcome,s.call.conf,s);
- const d=bigOverlayPersistent(`<div class="quirk">${esc(t('uturn.deleting'))}<small>${esc(t('uturn.sub'))}</small></div><div class="tweetbig"><div class="av">✍️</div><div style="flex:1;min-width:0"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · ${esc(t('win.dayN',{d:s.call.day}))}</span></div><div class="txt">${esc(old)}</div></div></div>`,'delete');
+ const s=game.sagas[id]; const old=tweetText(s.call.outcome,s.call.conf,s); const dd=game.day===7;
+ const d=bigOverlayPersistent(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}<div class="quirk">${esc(t('uturn.deleting'))}<small>${esc(t('uturn.sub'))}</small></div><div class="tweetbig"><div class="av">✍️</div><div style="flex:1;min-width:0"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · ${esc(t('win.dayN',{d:s.call.day}))}</span></div><div class="txt">${esc(old)}</div></div></div>`,'delete');
  beep('buzz'); buzzPhone(120);
  setTimeout(()=>{ const tb=d.querySelector('.tweetbig'); const st=document.createElement('div'); st.className='stamp'; st.style.cssText='inset-inline-end:14px;top:-10px;font-size:26px;border-width:4px'; st.textContent=t('uturn.stamp'); tb.appendChild(st);
-  setTimeout(()=>{ tb.classList.add('shred'); const loss=uturnCall(id); const q=d.querySelector('.quirk'); if(q) q.innerHTML=esc(t('uturn.gone'))+`<small>${esc(t('uturn.lost',{n:loss}))}</small>`; shakeScreen(); setTimeout(()=>dismissBig(d,then),900); },500); },500);
+  setTimeout(()=>{ tb.classList.add('shred'); beep('shred'); const f0=game.followers; const loss=uturnCall(id); const lost=Math.max(0,f0-game.followers); const q=d.querySelector('.quirk'); if(q) q.innerHTML=esc(t('uturn.gone'))+`<small>${esc(t('uturn.lost',{n:loss}))}</small>`; shakeScreen();
+   setTimeout(()=>dismissBig(d,()=>{ toast(lost?t('pp.u.toast',{n:fmtK(lost)}):t('pp.u.toastFree')); if(then) then(); }),dd?250:700); },dd?250:500); },dd?150:300);
 }
 function showAd(then){ if(CONFIG.REWARDED_ADS==='h5'&&Ads.active()&&window.adBreak){ let rewarded=false; try{ window.adBreak({type:'reward',name:'extra_contact',beforeReward:(show)=>{ show(); },adViewed:()=>{ rewarded=true; },adDismissed:()=>{},adBreakDone:(info)=>{ Analytics.track('rewarded_ad',{status:info&&info.breakStatus||''}); if(rewarded) then(); else toast(t('prod.adSkipped')); }}); }catch(e){ then(); } return; } Analytics.track('rewarded_ad',{status:'placeholder'}); let n=5; openModal(`<div class="ad"><p class="small">${esc(t('ad.title'))}</p><div class="cnt" id="adcnt">${n}</div><p class="small">${esc(t('ad.sub'))}</p></div>`); const h=setInterval(()=>{ n--; const el=$('adcnt'); if(!el){ clearInterval(h); return; } el.textContent=n; if(n<=0){ clearInterval(h); closeModal(); then(); } },1000); }
 function bumpFollowers(){ const el=$('followers'); if(!el) return; el.textContent=fmtK(game.followers); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
@@ -3550,63 +3822,14 @@ function renderFeedItem(f){
 
 // ----- saga sheet -----
 let breaking=null;
-function openSaga(id){ const s=game.sagas[id]; breaking={id,from:s.newsSeen||1}; if(s.newsSeen!==game.day){ s.newsSeen=game.day; saveGame(); } draft={outcome:null,conf:null}; dismissCoach('c1'); renderSagaModal(id); }
-function renderSagaModal(id){
- currentSaga=id; clearTimeout(pendingTimer);
- const s=game.sagas[id]; const ctx=ctxOf(s); const career=isCareer(); const now=Date.now();
- const pending=s.clues.some(cl=>cl.revealAt&&cl.revealAt>now);
- const asks=tt('ask');
- const items=[
-  ...s.clues.map((cl,i)=>({k:'clue',cl,day:cl.day,ask:fill(asks[(cl.a!=null?cl.a:id+i)%asks.length],ctx),wait:cl.revealAt&&cl.revealAt>now,seq:i})),
-  ...game.feed.filter(f=>f.sagaId===id&&f.type==='rival').map(f=>({k:'rival',rv:RIVALS.find(r=>r.key===f.rival),day:f.day,text:feedText(f),seq:-1})),
-  ...game.feed.filter(f=>f.sagaId===id&&f.type==='event'&&f.day>1).map(f=>({k:'evt',day:f.day,text:feedText(f),seq:-1}))
- ].sort((a,b)=>a.day-b.day||a.seq-b.seq);
- const bn=breaking&&breaking.id===id?unseenNews(s,breaking.from):[];
- const breakHtml=bn.length?`<div class="breaking" role="status"><div class="bh"><span class="bl">🚨 ${esc(t('news.breaking',{p:pName(s.player)}))}</span></div>${bn.map(f=>`<div class="bi">${f.type==='rival'?RIVALS.find(r=>r.key===f.rival).ic+' <b>'+esc(t('rival.'+f.rival))+'</b>':'📡 <b>'+esc(t('win.wire'))+'</b>'} · ${esc(t('win.dayN',{d:f.day}))}<div>${esc(feedText(f))}</div></div>`).join('')}<div class="bs">${esc(t('news.bsub'))}</div></div>`:'';
- const chat=items.map(it=>{
-  if(it.k==='rival') return `<div class="bub them rival"><span class="who">${it.rv.ic} ${esc(t('rival.'+it.rv.key))} · ${esc(t('win.dayN',{d:it.day}))}</span>${esc(it.text)}</div>`;
-  if(it.k==='evt') return `<div class="bub them evt"><span class="who">📡 ${esc(t('win.wire'))} · ${esc(t('win.dayN',{d:it.day}))}</span>${esc(it.text)}</div>`;
-  const cl=it.cl; const who=clueWho(cl); const me=cl.source==='tipoff'?'':`<div class="bub me">${esc(it.ask)}</div>`;
-  if(it.wait) return me+`<div class="bub them"><span class="who">${esc(who)}</span><span class="typing"><i></i><i></i><i></i></span></div>`;
-  let extra='';
-  if(cl.source==='airport') extra=jetHtml(s,cl.out);
-  if(cl.source==='physio') extra=ecgSVG();
-  return me+`<div class="bub them ${cl.source==='paid'||cl.source==='tipoff'?'paid':''}"><span class="who">${esc(who)} · ${esc(t('win.dayN',{d:cl.day}))}</span>${esc(clueText(s,cl))}${extra}</div>`;
- }).join('');
- const srcHtml=Object.entries(SOURCES).map(([k,src])=>{ const locked=career&&src.lock&&!C().equip.includes(src.lock); const short=game.actions<(src.cost||1); const asked=s.clues.some(c=>c.source===k); const dis=short||locked||pending||asked; const rec=career&&C().sources[k]&&C().sources[k].n?`<span class="rme">${esc(t('rep.you',{ok:C().sources[k].ok,n:C().sources[k].n}))}</span>`:'';
-  return `<button class="srcbtn ${asked?'asked':''}" data-act="contact" data-id="${id}" data-src="${k}" ${dis?'disabled':''}><span class="ic">${src.ic}</span><span class="mid"><b>${esc(t('src.'+k+'.name'))}${locked?' 🔒':''}</b><span class="d">${locked?esc(t('sheet.lockedGear',{g:t('equip.'+src.lock+'.name')})):asked?'✓ '+esc(t('news.asked')):esc(t('src.'+k+'.desc'))}</span>${repBar(src,rec,true)}</span><span class="cost ${short&&!locked?'short':''}" aria-label="${esc(t('rep.cost',{n:src.cost}))}"><b>${src.cost}</b><small>📞 ${esc(t(src.cost===1?'wallet.one':'wallet.many'))}</small></span></button>`; }).join('');
- const cap=Math.max(game.actions,game.day===7?3+(gearOwned('bank')?1:0):baseActions()); const wallet=`<div class="wallet ${game.actions===0?'empty':''}"><div class="wl"><span class="wn">${game.actions}</span><span class="wt">${esc(t(game.actions===0?'wallet.none':'wallet.left'))}</span></div><div class="wpips" aria-hidden="true">${Array.from({length:cap},(_,i)=>`<i class="${i<game.actions?'on':''}"></i>`).join('')}</div></div>`;
- const lv=levelInfo(C().xp).n;
- const boostHtml=career?`<div class="divider"></div><h3>${esc(t('sheet.boosts'))} <span class="muted small" style="font-family:var(--body);font-weight:500">${esc(t('sheet.credits',{n:C().credits}))}</span></h3><div class="srcgrid">${BOOSTS.map(b=>{const lk=lv<b.lvl; const dis=lk||C().credits<b.cost||pending||(b.key==='tipoff'&&s.clues.some(x=>x.source==='tipoff'))||(b.key==='burner'&&game.day===7)||(b.key==='bribe'&&s.bribed); return `<button class="srcbtn" data-act="boost" data-id="${id}" data-b="${b.key}" ${dis?'disabled':''}><div class="ic">${b.ic}</div><div><b>${esc(t('boost.'+b.key+'.name'))} · $${b.cost}${lk?' 🔒':''}</b><span>${lk?esc(t('sheet.unlockLvl',{n:b.lvl})):esc(t('boost.'+b.key+'.desc'))}</span></div></button>`;}).join('')}</div>`:'';
- let callHtml;
- if(s.call){
-  callHtml=`<div class="tweet livepost"><div class="av you">✍️</div><div class="body"><div class="meta"><b>${esc(t('win.you'))}</b><span class="h">${esc(t('win.dayN',{d:s.call.day}))}</span>${s.call.uturn?` <span class="utag">${esc(t('uturn.tag'))}</span>`:''}</div><div class="txt">${esc(tweetText(s.call.outcome,s.call.conf,s))}</div></div></div>
-   <div class="callnote">${esc(t('sheet.lockedNote'))}</div><button class="btn ghost center" style="margin-top:8px" data-act="uturnAsk" data-id="${id}">${esc(t('sheet.change'))}</button>`;
- }else{
-  const o=draft.outcome, cf=draft.conf;
-  callHtml=`${s.uturns?`<div class="callnote"><span class="utag">${esc(t('uturn.tag'))}</span> ${esc(t('sheet.uturnNote'))}</div>`:''}
-   <p class="small muted" style="margin:6px 0">${esc(t('sheet.step1'))}</p>
-   <div class="choice step" id="outcomeStep">${OUTCOMES.map(k=>`<button class="${o===k?'on':''}" data-act="pickOutcome" data-v="${k}">${esc(fill(tt('outcome')[k],ctx))}</button>`).join('')}</div>
-   <p class="small muted step" id="confStep" style="margin:12px 0 6px">${esc(t('sheet.step2'))} ${o?'':'<span class="tiny">'+esc(t('sheet.pickFirst'))+'</span>'}</p>
-   <div class="choice">${['low','med','high'].map(k=>`<button class="${cf===k?'on':''}" data-act="pickConf" data-v="${k}" ${o?'':'disabled'}>${esc(t('conf.'+k))}<br><span class="tiny muted">${esc(t('sheet.scoreHint',{a:Math.round(PTS[k][0]*ptype(s.player).pts),b:Math.round(PTS[k][1]*ptype(s.player).pts)}))}</span></button>`).join('')}</div>
-   <div class="scoophint">👑 ${esc(t('scoop.hint'))}</div><p class="muted small" style="margin-top:10px">${esc(t('sheet.bothHint'))}</p>`;
- }
- const keep=$('modalRoot').querySelector('.modal'); const scrollY=keep?keep.scrollTop:0;
- openModal(`<h2>${esc(pName(s.player))}</h2><p class="muted">${esc(s.player.pos)} · ${esc(t('sheet.rumored',{d:ctx.d}))}</p><div class="ptnote ptn-${ptype(s.player).key}">${ptBadge(s.player)}<span>${esc(t('ptype.note',{p:ptype(s.player).pts,f:ptype(s.player).fans}))}</span></div>
-  ${breakHtml}${transferGraphic(s)}
-  <h3>${esc(t('sheet.dms'))}</h3>${coachHtml('c2')}<div class="chat">${chat||`<div class="bub them"><span class="who">📡 ${esc(t('win.wire'))}</span>${esc(t('sheet.dmsEmpty'))}</div>`}</div>
-  <h3>${esc(t('sheet.contact'))}</h3>${wallet}<div class="srclist">${srcHtml}</div>
-  ${boostHtml}
-  <div class="divider"></div><h3>${esc(t('sheet.yourCall'))}</h3>${coachHtml('c3')}<div style="margin-top:8px">${callHtml}</div>`,pName(s.player));
- const m=$('modalRoot').querySelector('.modal'); if(m&&scrollY) m.scrollTop=scrollY;
- if(pending){ const wait=Math.max(50,Math.min(...s.clues.filter(cl=>cl.revealAt>now).map(cl=>cl.revealAt-now))+30); pendingTimer=setTimeout(()=>{ if(currentSaga===id&&$('modalRoot').innerHTML){ beep('pop'); renderSagaModal(id); } },wait); }
-}
+function openSaga(id){ ppOpen(id); }
+function renderSagaModal(id){ ppRender(id); }
 function runBoost(id,key){
  const s=game.sagas[id]; const b=BOOSTS.find(x=>x.key===key); const c=C(); if(c.credits<b.cost) return; c.credits-=b.cost;
  if(key==='burner'){ game.actions++; beep('pop'); toast(t('toast.plus1')); saveGame(); syncWindow(); renderSagaModal(id); return; }
- if(key==='tipoff'){ s.clues.push({source:'tipoff',out:s.truth,truthful:true,day:game.day,revealAt:Date.now()+2000}); saveGame(); closeModalQuiet(); contactOverlay('tipoff',()=>renderSagaModal(id)); return; }
+ if(key==='tipoff'){ s.clues.push({source:'tipoff',out:s.truth,truthful:true,day:game.day,revealAt:0}); PP.sel='c'+(s.clues.length-1); saveGame(); contactOverlay('tipoff',()=>renderSagaModal(id),{id,clue:s.clues[s.clues.length-1]}); return; }
  if(key==='bribe'){ s.bribed=true; const r=rng(); const ok=r.chance(0.75); commitRng(r);
-  if(ok){ contactSource(id,'leak',{paid:true}); saveGame(); closeModalQuiet(); contactOverlay('paid',()=>renderSagaModal(id)); return; }
+  if(ok){ contactSource(id,'leak',{paid:true}); const pc=s.clues[s.clues.length-1]; if(pc) pc.revealAt=0; PP.sel='c'+(s.clues.length-1); saveGame(); contactOverlay('paid',()=>renderSagaModal(id),{id,clue:pc}); return; }
   c.rep=Math.max(0,c.rep-8); if(!c.badges.includes('blocked')) c.badges.push('blocked'); game.feed.push({day:game.day,type:'rival',rival:'tabloid',sagaId:id,k:'rivalmsg.bribe'}); beep('buzz'); buzzPhone(200); shakeScreen(); toast(t('toast.leaked')); saveGame(); renderSagaModal(id); }
 }
 
@@ -3860,6 +4083,201 @@ function fallbackCopy(tx,done){ const ta=document.createElement('textarea'); ta.
 /* @@LANE JS:board END */
 /* ─ */
 /* @@LANE JS:player BEGIN (lane-owned; insert only between BEGIN and END) */
+/* ===== Player page (§5.5/§5.10), call overlay (§5.6), composer (§5.7), U-turn sheet (§5.8), twists (§5.9) ===== */
+const PP={id:null,fresh:new Set(),sel:null,calling:null,quoteOpen:false};
+function ppDD(){ return !!game&&game.day===7; }
+function ppSecs(){ if(game.ddEndsAt) return Math.max(0,Math.ceil((game.ddEndsAt-Date.now())/1000)); return Math.max(0,game.timer|0); }
+function ppMax(){ return game.timerMax||(CONFIG&&CONFIG.DD_SECONDS)||60; }
+function ppClock(){ const s=ppSecs(); return `<span class="clock ppclock${s<=10?' alarm':s<=20?' warn':''}" role="timer" aria-label="${esc(t('pp.secsLeft',{n:s}))}"><span aria-hidden="true">⏱</span><b data-ddclock data-ddtimer class="${s<=10?'pulse':''}">${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}</b></span>`; }
+function ppDrain(){ return `<div class="drain" data-ddring style="--ddp:${(ppSecs()/ppMax()).toFixed(3)}" aria-hidden="true"><i></i></div>`; }
+function ppTwist(s){ const tw=s.twist||s.tw; const d=tw&&typeof tw==='object'?tw.day:tw; return d&&d<=game.day?{day:d,text:tw&&typeof tw==='object'?tw.text:null}:null; }
+function ppStale(s,c){ if(c.outdated!=null) return !!c.outdated; if(typeof clueStale==='function'){ try{ return !!clueStale(s,c,game.day); }catch(e){} } const tw=ppTwist(s); return !!tw&&c.day<tw.day; }
+function ppBars(rel){ return rel>=.75?3:rel>=.55?2:1; }
+function ppSrcBars(k,day){ if(typeof srcRel==='function'){ try{ const r=srcRel(k,day); if(r!=null) return ppBars(r); }catch(e){} } return {low:1,med:2,high:3}[SOURCES[k]&&SOURCES[k].tier]||2; }
+function ppClueBars(c){ if(c.bars) return c.bars; if(c.source==='paid'||c.source==='tipoff') return 3; return SOURCES[c.source]?ppSrcBars(c.source,c.day):2; }
+function ppIc(kind,key){ if(kind==='rival') return (RIVALS.find(r=>r.key===key)||{}).ic||'🗞️'; return key==='paid'?'💸':key==='tipoff'?'💡':(SOURCES[key]||{}).ic||'📰'; }
+function ppName(kind,key,long){ if(long) return kind==='rival'?t('rival.'+key):key==='paid'?t('sheet.paid'):key==='tipoff'?t('sheet.tip'):t('src.'+key+'.name'); return t('pp.short.'+key); }
+function ppSrcState(s,k){ let st=null; if(typeof sourceState==='function'){ try{ st=sourceState(s.id,k); }catch(e){ st=null; } }
+ const src=SOURCES[k], cost=src.cost||1, mine=s.clues.filter(c=>c.source===k), last=mine[mine.length-1];
+ if(st){ if(st.state==='asked'&&!st.clue) st=Object.assign({},st,{clue:last}); if(st.cost==null) st=Object.assign({},st,{cost}); if(!st.bars) st=Object.assign({},st,{bars:ppSrcBars(k,game.day)}); return st; }
+ const bars=ppSrcBars(k,game.day);
+ if(last&&!ppStale(s,last)) return {state:'asked',clue:last,bars,cost};
+ if(isCareer()&&src.lock&&!C().equip.includes(src.lock)) return {state:'gear',gearKey:src.lock,bars,cost};
+ if(game.actions<cost) return {state:'short',bars,cost};
+ return {state:last?'reopened':'open',bars,cost,atMax:ppDD()&&bars===3};
+}
+function ppClaims(s){ const out=[], now=Date.now(), tw=ppTwist(s);
+ s.clues.forEach((c,i)=>{ if(c.revealAt&&c.revealAt>now&&PP.calling==null) return; const o=c.source==='tipoff'?(c.out==='FAKE'?'FAKE':null):c.out;
+  out.push({id:'c'+i,kind:'src',key:c.source,out:o,day:c.day,bars:ppClueBars(c),old:ppStale(s,c),text:clueText(s,c),clue:c,seq:i}); });
+ game.feed.forEach((f,i)=>{ if(f.sagaId!==s.id||f.type!=='rival'||!f.claim) return; const rv=RIVALS.find(r=>r.key===f.rival)||{rel:.5};
+  out.push({id:'r'+i,kind:'rival',key:f.rival,out:f.claim,day:f.day,bars:ppBars(rv.rel),old:f.outdated!=null?!!f.outdated:!!tw&&f.day<tw.day,text:feedText(f),seq:1000+i}); });
+ return out.sort((a,b)=>(a.old-b.old)||(b.day-a.day)||(b.seq-a.seq));
+}
+function ppWire(s){ return game.feed.map((f,i)=>({f,i})).filter(({f})=>f.sagaId===s.id&&((f.type==='event'&&f.day>1)||f.type==='twist')).map(({f,i})=>({id:'w'+i,day:f.day,twist:f.type==='twist'||!!f.twist,text:feedText(f)})).reverse(); }
+function ppSeenArr(id){ game.seen=game.seen&&typeof game.seen==='object'?game.seen:{}; let a=game.seen[id]; if(a instanceof Set) a=[...a]; if(!Array.isArray(a)) a=[]; game.seen[id]=a; return a; }
+function ppMarkSeen(id,ids){ const a=ppSeenArr(id); ids.forEach(x=>{ if(!a.includes(x)) a.push(x); }); }
+function ppDayLbl(d){ return d===game.day?t('pp.justNow'):t('pp.dayN',{d}); }
+function ppTok(c){ const lab=t('pp.tokAria',{n:ppName(c.kind,c.key,true),tr:t('ds.trust.'+c.bars),o:t('ds.oc.'+c.out),d:c.day});
+ return `<button class="tok${c.kind==='rival'?' rival':''}${PP.fresh.has(c.id)?' new':''}${PP.sel===c.id?' on':''}${c.old?' old':''}" data-act="ppTok" data-v="${c.id}" aria-label="${esc(lab)}"><span class="e" aria-hidden="true">${ppIc(c.kind,c.key)}</span><span class="n">${esc(ppName(c.kind,c.key))}</span>${sigHtml(c.bars,false,null,{hidden:true})}</button>`; }
+function ppKnowHtml(s){ const ctx=ctxOf(s), claims=ppClaims(s).filter(c=>c.out), wire=ppWire(s), tw=ppTwist(s);
+ const nNew=claims.filter(c=>PP.fresh.has(c.id)).length;
+ if(!PP.sel||!claims.some(c=>c.id===PP.sel)){ const f=claims.find(c=>PP.fresh.has(c.id)&&!c.old)||claims.find(c=>!c.old)||claims[0]; PP.sel=f?f.id:null; }
+ const q=claims.find(c=>c.id===PP.sel);
+ const sub={DONE:t('pp.lane.DONE',{d:ctx.d}),HIJACK:t('pp.lane.HIJACK',{d:ctx.d}),OFF:t('pp.lane.OFF'),FAKE:t('pp.lane.FAKE')};
+ const mine=s.call&&s.call.outcome;
+ const lanes=OUTCOMES.filter(o=>claims.some(c=>c.out===o)).map(o=>`<div class="lane${mine===o?' mine':''}" style="--c:var(--o-${o.toLowerCase()})"><span class="ll"><span class="lw">${glyph(o)}${esc(t('ds.oc.'+o))}</span><small>${esc(sub[o])}</small>${mine===o?`<span class="tag ppmine">${esc(t('pp.yourCallTag',{d:s.call.day}))}</span>`:''}</span><div class="toks">${claims.filter(c=>c.out===o).map(ppTok).join('')}</div></div>`).join('');
+ const zero=OUTCOMES.filter(o=>!claims.some(c=>c.out===o));
+ const zrow=zero.length?`<div class="zrow"><span>${esc(t('pp.nobody'))}</span>${zero.map(o=>`<span class="zo" style="--c:var(--o-${o.toLowerCase()})">${glyph(o)}${esc(t('ds.oc.'+o))}</span>`).join('')}${mine&&zero.includes(mine)?`<span class="tag ppmine">${esc(t('pp.yourCallTag',{d:s.call.day}))} · ${esc(t('ds.oc.'+mine))}</span>`:''}</div>`:'';
+ const w=wire[0];
+ const kwire=w?`<div class="kwire"><span class="wl">📡 ${esc(t('pp.wire'))}</span><p>${w.twist?'🌀 ':''}${esc(w.text)} <span>· ${esc(t('pp.dShort',{d:w.day}))}</span>${wire.length>1?` <button class="pplink" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.moreN',{n:wire.length-1}))}</button>`:''}</p></div>`:'';
+ const quote=q?`<div class="quote${PP.quoteOpen?' open':''}" style="--c:var(--o-${q.out.toLowerCase()})" data-act="ppQuote"><div class="qh"><span aria-hidden="true">${ppIc(q.kind,q.key)}</span><b>${esc(ppName(q.kind,q.key,true))}</b><span>· ${q.kind==='rival'?esc(t('pp.rival'))+' · ':''}${esc(ppDayLbl(q.day))}</span>${PP.fresh.has(q.id)?`<span class="tag new">${esc(t('pp.new'))}</span>`:''}${q.old?`<span class="tag twist">${esc(t('pp.beforeTwist'))}</span>`:''}${ocHtml(q.out)}</div><p class="qt">${esc(q.text)}</p></div>`:`<p class="ppempty">${esc(t('pp.empty'))}</p>`;
+ const showLegend=(isCareer()?(C().windows||0):(save.stats&&save.stats.windows)||0)<3;
+ const legend=showLegend&&claims.length?`<div class="legend"><span>${sigHtml(3,false,null,{hidden:true})} ${esc(t('pp.lgTrust'))}</span><span><i class="dash"></i> ${esc(t('pp.lgRival'))}</span><span>${esc(t('pp.lgTap'))}</span></div>`:'';
+ return `<section class="card know" id="ppKnow" aria-label="${esc(t('pp.know'))}"><div class="kh"><h2 class="over">${esc(t('pp.know'))}</h2><span class="aux">${esc(t('pp.reports',{n:claims.length}))}${nNew?esc(t('pp.newN',{n:nNew})):''}${tw?` · <span class="tag twist">🌀 ${esc(t('pp.dShort',{d:tw.day}))}</span>`:''}</span></div>${lanes}${zrow}${kwire}${quote}${legend}</section>`;
+}
+function ppTileHtml(s,k){ const src=SOURCES[k], st=ppSrcState(s,k), nm=esc(ppName('src',k)), dd=ppDD();
+ const cost=`<span class="cost">📞${st.cost}</span>`, face=`<span class="ic" aria-hidden="true">${src.ic}</span>`;
+ const tier=w=>`${sigHtml(st.bars,st.sharper||st.atMax,null,{hidden:true})} ${esc(w)}`; const tw=t('pp.tier.'+st.bars);
+ let cls='', top=face+cost, ft='', corner='';
+ if(PP.calling===k){ cls='calling'; ft=`<span class="typing"><i></i><i></i><i></i></span> ${esc(t('pp.calling'))}`; }
+ else if(st.state==='asked'){ const c=st.clue; cls='asked'; top=face; ft=c?`${ocHtml(c.source==='tipoff'?(c.out==='FAKE'?'FAKE':'DONE'):c.out)} ${esc(c.day===7?t('pp.ddShort'):t('pp.dShort',{d:c.day}))}`:'✓'; }
+ else if(st.state==='later'){ cls='later'; top=face; ft=`🕐 ${esc(t('pp.opens',{d:st.opensDay}))}`; }
+ else if(st.state==='gear'){ cls='locked'; top=face; ft=`🔒 ${esc(t('pp.needs',{g:t('equip.'+(st.gearKey||src.lock)+'.name')}))}`; }
+ else if(st.state==='short'){ cls='short'; ft=tier(t('pp.needMore',{n:Math.max(1,st.cost-game.actions)})); }
+ else if(st.state==='reopened'){ cls='re'; ft=`🌀 ${esc(t('pp.again'))}`; }
+ else if(dd&&st.atMax){ cls='sharp'; ft=tier(t('pp.sharpest')); }
+ else if(st.sharper){ cls='sharp'; ft=tier(t('pp.sharper')); }
+ else ft=tier(tw);
+ if(st.openedToday&&st.state==='open') corner=`<span class="corner"><span class="tag new">${esc(t('pp.openedToday'))}</span></span>`;
+ const dis=PP.calling!=null&&PP.calling!==k;
+ return `<button class="st ${cls}" data-act="contact" data-id="${s.id}" data-src="${k}"${dis?' disabled':''}${/later|gear|short/.test(st.state)?' aria-disabled="true"':''} aria-label="${esc(t('src.'+k+'.name'))}. ${esc(ft.replace(/<[^>]+>/g,' ').replace(/\s+/g,' '))}">${corner}<span class="top">${top}</span><span class="nm">${nm}</span><span class="ft">${ft}</span></button>`; }
+function ppMsgRow(c){ return `<div class="msg${c.old?' old':''}"><span class="me${c.kind==='rival'?' rival':''}" aria-hidden="true">${ppIc(c.kind,c.key)}</span><div style="min-width:0"><div class="mh"><b>${esc(ppName(c.kind,c.key,true))}</b><span>· ${esc(t('pp.dayN',{d:c.day}))}</span>${c.out?ocHtml(c.out):''}</div><p class="mt">${esc(c.text)}</p></div></div>`; }
+function ppEarlierHtml(s){ const all=ppClaims(s).filter(c=>c.id!==PP.sel); const fresh=all.filter(c=>!c.old), old=all.filter(c=>c.old);
+ const nChat=s.clues.length*2+game.feed.filter(f=>f.sagaId===s.id&&(f.type==='rival'||f.type==='twist'||(f.type==='event'&&f.day>1))).length;
+ if(!fresh.length&&!old.length&&!nChat) return '';
+ const dd=ppDD(); const rows=dd?'':fresh.slice(0,2).map(ppMsgRow).join('');
+ return `<div class="sechead"><h2 class="d4">${esc(t('pp.earlier'))}</h2><span class="aux">${esc(t('pp.newest'))}</span></div><section class="card earlier">${rows}${dd&&fresh.length?`<button class="collapse" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.earlierN',{n:fresh.length}))} <span class="chev" aria-hidden="true">›</span></button>`:''}${old.length?`<button class="collapse" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.twistGroup',{n:old.length}))} <span class="chev" aria-hidden="true">›</span></button>`:''}<button class="collapse" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.fullChat',{n:nChat}))} <span class="chev" aria-hidden="true">›</span></button></section>`; }
+function ppPts(id,o,c){ if(typeof previewPoints==='function'){ try{ const p=previewPoints(id,o,c); if(p) return p; }catch(e){} }
+ const s=game.sagas[id], m=ptype(s.player).pts, ut=!!s.uturns;
+ const early=ut?0:Math.max(0,(7-game.day)*3); const ex=ut?0:15+(gearOwned('tick')?10:0);
+ return {win:Math.round((ut?PTS[c][0]*.5:PTS[c][0]+early)*m),lose:Math.round((PTS[c][1]-(ut?10:0))*m),early:Math.round(early*m),exclusive:Math.round(ex*m)}; }
+function ppRivalsPosted(id){ if(typeof rivalsPostedOn==='function'){ try{ return rivalsPostedOn(id)|0; }catch(e){} } return new Set(game.feed.filter(f=>f.sagaId===id&&f.type==='rival'&&f.claim).map(f=>f.rival)).size; }
+function ppUncalled(){ return game.sagas.filter(x=>!x.call); }
+function ppDockHtml(s){ const dd=ppDD(), un=ppUncalled();
+ if(dd){ if(!s.call) return `<div class="dock ppdock"><p class="hint">⏱ <b>${esc(t(un.length===1?'pp.dd.uncalled1':'pp.dd.uncalled',{n:un.length}))}</b> · ${esc(t('pp.dd.zero'))}</p><button class="btn primary ppcallnow" data-act="ppCompose" data-id="${s.id}">📢 ${esc(t('pp.dd.callNow'))}</button></div>`;
+  const nx=un[0]; return `<div class="dock ppdock"><div class="row"><span class="ppchip">${ocHtml(s.call.outcome,'solid')} <small>${esc(t('conf.'+s.call.conf))} · ${esc(t('pp.dShort',{d:s.call.day}))}</small></span>${nx?`<button class="btn primary" data-act="openSaga" data-id="${nx.id}">${esc(t('pp.dd.next',{p:pName(nx.player)}))} ›</button>`:`<button class="btn" data-act="closeSheet">${esc(t('pp.dd.board'))}</button>`}</div></div>`; }
+ if(s.call) return `<div class="dock ppdock"><div class="row"><span class="ppchip">${ocHtml(s.call.outcome,'solid')} <small>${esc(t('conf.'+s.call.conf))} · ${esc(t('pp.dShort',{d:s.call.day}))}</small></span><button class="btn fixedw" data-act="uturnAsk" data-id="${s.id}">↺ ${esc(t('pp.uturn'))}</button></div></div>`;
+ const hint=game.actions===0?esc(t('pp.noContactsHint')):`👑 ${t('pp.exHint',{n:'<b>+'+ppPts(s.id,'DONE','med').exclusive+'</b>'}).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}`;
+ return `<div class="dock ppdock"><p class="hint">${hint}</p><button class="btn primary" data-act="ppCompose" data-id="${s.id}">${uiIcon('pen')} ${esc(t('pp.makeCall'))}</button></div>`; }
+function ppBoostsHtml(s){ if(!isCareer()) return ''; const lv=levelInfo(C().xp).n;
+ const tiles=BOOSTS.map(b=>{ const lk=lv<b.lvl; const dis=lk||C().credits<b.cost||(b.key==='tipoff'&&s.clues.some(x=>x.source==='tipoff'))||(b.key==='burner'&&game.day===7)||(b.key==='bribe'&&s.bribed); return `<button class="st ppboost" data-act="boost" data-id="${s.id}" data-b="${b.key}" ${dis?'disabled':''}><span class="top"><span class="ic" aria-hidden="true">${b.ic}</span><span class="cost">$${b.cost}</span></span><span class="nm">${esc(t('boost.'+b.key+'.name'))}</span><span class="ft">${lk?'🔒 '+esc(t('sheet.unlockLvl',{n:b.lvl})):''}</span></button>`; }).join('');
+ return `<details class="ppboosts"><summary class="collapse">${esc(t('pp.boosts'))} · $${C().credits} <span class="chev" aria-hidden="true">›</span></summary><div class="boosts">${tiles}</div></details>`; }
+function ppPageHtml(id){ const s=game.sagas[id], ctx=ctxOf(s), dd=ppDD(), pt=ptype(s.player);
+ const route=`<span class="route"><i style="--c:${esc(s.club.kit||'var(--muted)')}"></i><span class="from">${esc(ctx.c)}</span><span class="arr">→</span><i style="--c:${esc(s.dest.kit||'var(--muted)')}"></i><b>${esc(ctx.d)}</b></span>`;
+ const ptb=`<button class="ptype" data-act="ppType" data-id="${id}" aria-label="${esc(t('pp.ptTip.'+pt.key,{p:pt.pts,f:pt.fans}))}"><span class="stars">${'★'.repeat(pt.stars)}</span>×${pt.pts}</button>`;
+ const cap=Math.max(game.actions,dd?3+(gearOwned('bank')?1:0):baseActions());
+ const tw=ppTwist(s);
+ const bar=dd?`<header class="appbar ddbar"><button class="iconbtn" data-act="closeSheet" aria-label="${esc(t('pp.back'))}">${uiIcon('back')}</button><div class="ttl"><b>${esc(pName(s.player))}</b>${route}</div><div class="right">${ppClock()}</div>${ppDrain()}</header><div class="ddnote"><span class="slab">${esc(t('pp.dd.slab'))}</span>${ptb}${tw?`<span class="tag twist">🌀 ${esc(t('pp.twistTag',{d:tw.day}))}</span>`:''}</div>`
+  :`<header class="appbar"><button class="iconbtn" data-act="closeSheet" aria-label="${esc(t('pp.back'))}">${uiIcon('back')}</button><div class="ttl">${esc(t('pp.dayOf',{d:game.day}))}</div><div class="right"><span class="ctx" aria-label="${esc(t('pp.ctxAria',{n:game.actions}))}">📞 ${game.actions} ${pipsHtml(game.actions,cap)}</span></div></header>
+   <section class="ph">${kitSVG(s.club,initials(s.player.name),'md')}<div style="min-width:0"><h1 class="d3">${esc(pName(s.player))}</h1><div class="pmeta">${route}${ptb}</div></div></section>`;
+ const banner=tw&&!s.ppTwSeen?`<div class="pptwist" role="status"><b>🌀 ${esc(t('pp.twistTitle',{d:tw.day}))}</b><span>${esc(tw.text||t('pp.twistBody'))}</span></div>`:'';
+ const aux=dd?t('pp.quickAux',{n:game.actions}):game.actions===0?t('pp.none'):t(game.actions===1?'pp.left1':'pp.left',{n:game.actions});
+ return `<div class="pp${dd?' ppdd':''}" role="dialog" aria-label="${esc(pName(s.player))}"><div class="ppin">${bar}${banner}${ppKnowHtml(s)}
+  <div class="sechead"><h2 class="d4">${esc(t(dd?'pp.quick':'pp.ask'))}</h2><span class="aux">${esc(aux)}</span></div>
+  <div class="sgrid">${Object.keys(SOURCES).map(k=>ppTileHtml(s,k)).join('')}</div>${ppBoostsHtml(s)}${ppEarlierHtml(s)}</div>${ppDockHtml(s)}</div>`; }
+function ppRender(id){ if(!game||game.result||screen!=='window') return; const s=game.sagas[id]; if(!s) return;
+ const root=$('modalRoot'); const old=root.querySelector('.pp'); const y=old&&PP.id===id?old.scrollTop:0;
+ if(PP.id!==id){ PP.id=id; PP.sel=null; PP.quoteOpen=false; }
+ currentSaga=id; clearTimeout(pendingTimer);
+ root._tok=(root._tok||0)+1; root.innerHTML=ppPageHtml(id); document.body.classList.add('modal-open');
+ const pg=root.querySelector('.pp'); if(pg&&y) pg.scrollTop=y;
+ ppMarkSeen(id,ppClaims(s).map(c=>c.id));
+}
+function ppOpen(id){ const s=game.sagas[id]; if(!s) return; if(s.newsSeen!==game.day){ s.newsSeen=game.day; }
+ const seen=ppSeenArr(id); PP.fresh=new Set(ppClaims(s).filter(c=>!seen.includes(c.id)).map(c=>c.id)); PP.id=null; PP.calling=null;
+ draft={outcome:null,conf:null}; dismissCoach('c1'); ppRender(id);
+ if(ppTwist(s)&&!s.ppTwSeen){ s.ppTwSeen=true; beep('twist'); }
+ saveGame(); }
+
+/* ----- sheets (composer, U-turn, messages) ----- */
+function ppSheet(html,cls){ ppSheetClose(true); const w=document.createElement('div'); w.id='ppSheet'; w.innerHTML=`<div class="scrim" data-act="ppSheetX"></div><section class="sheet ppsheet ${cls||''}" role="dialog" aria-modal="true"><div class="grab"></div>${html}</section>`; document.body.appendChild(w); return w; }
+function ppSheetBody(html){ const sh=document.querySelector('#ppSheet .sheet'); if(sh){ const y=sh.scrollTop; sh.innerHTML='<div class="grab"></div>'+html; sh.scrollTop=y; } }
+function ppSheetClose(quiet){ const w=$('ppSheet'); if(!w) return; w.id=''; if(quiet||motionReduced()){ w.remove(); return; } w.querySelector('.sheet').classList.add('out'); w.querySelector('.scrim').classList.add('out'); setTimeout(()=>w.remove(),240); }
+function ppSheetHead(over,title,side){ return `<div class="ch"><div style="min-width:0">${ppDD()?ppClock():`<p class="over">${esc(over)}</p>`}<h2 class="d3" style="margin-top:4px">${esc(title)}</h2></div>${side||`<button class="iconbtn solid" data-act="ppSheetX" aria-label="${esc(t('pp.close'))}">${uiIcon('close')}</button>`}</div>`; }
+function ppComposeHtml(id){ const s=game.sagas[id], ctx=ctxOf(s), dd=ppDD(), o=draft.outcome, cf=draft.conf, ut=!!s.uturns&&!s.call, prev=s.uturnFrom||s.ppPrev;
+ const claims=ppClaims(s).filter(c=>c.out&&!c.old);
+ const line={DONE:t('pp.c.DONE',ctx),HIJACK:t('pp.c.HIJACK',ctx),OFF:t('pp.c.OFF',ctx),FAKE:t('pp.c.FAKE',ctx)};
+ const opts=OUTCOMES.map(k=>{ const lk=k.toLowerCase(), who=claims.filter(c=>c.out===k), isPrev=ut&&prev&&prev.out===k;
+  return `<button class="opt ${lk}${o===k?' on':''}${isPrev?' prev':''}" role="radio" aria-checked="${o===k}" data-act="pickOutcome" data-v="${k}"${isPrev?' disabled':''}><span class="oh"><span class="gt">${glyph(k)}</span><span class="ow">${esc(t('ds.oc.'+k))}</span></span><span class="d">${esc(line[k])}</span><span class="who">${isPrev?esc(t('pp.c.oldCall')):who.length?`<span class="avs">${who.slice(0,4).map(c=>`<span>${ppIc(c.kind,c.key)}</span>`).join('')}</span>${esc(t('pp.c.said',{n:who.length}))}`:esc(t('pp.c.nobody'))}</span>${o===k?`<span class="chk">${glyph('done')}</span>`:''}</button>`; }).join('');
+ const confs=[['low','👀'],['med','📈'],['high','📢']].map(([c,ic])=>{ const p=ppPts(id,o||'DONE',c); return `<button class="cf${cf===c?' on':''}" role="radio" aria-checked="${cf===c}" data-act="pickConf" data-v="${c}"><span class="ci" aria-hidden="true">${ic}</span><b>${esc(t('pp.conf.'+c))}</b><span class="pts"><bdi dir="ltr"><span class="up">+${p.win}</span> · <span class="dn">−${Math.abs(p.lose)}</span></bdi></span></button>`; }).join('');
+ let preview='';
+ if(o&&cf){ const tx=esc(tweetText(o,cf,s)), dn=esc(ctx.d); preview=`<div class="preview"><div class="tw"><span class="av you">✍️</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · ${esc(t('pp.c.preview'))}</span></div><p class="txt">${dn&&tx.includes(dn)?tx.split(dn).join(`<mark>${dn}</mark>`):tx}</p></div></div></div>`; }
+ const p=ppPts(id,o||'DONE',cf||'med'), nr=ppRivalsPosted(id);
+ const hints=ut?'':`<div class="hints"><div><span class="hi">⏳</span><span>${t('pp.c.early',{n:'<b>+'+p.early+'</b>'})}</span></div><div><span class="hi">👑</span><span>${t('pp.c.ex',{n:'<b>+'+p.exclusive+'</b>'})} · ${esc(t(nr===1?'pp.c.rivals1':'pp.c.rivals',{n:nr}))}</span></div></div>`;
+ const stakes=cf?`<p class="stakes">${esc(t('pp.c.ifRight'))} <b class="up"><bdi dir="ltr">+${p.win}</bdi></b> · ${esc(t('pp.c.ifWrong'))} <b class="dn"><bdi dir="ltr">−${Math.abs(p.lose)}</bdi></b></p>`:'';
+ const ok=!!(o&&cf); const btn=`${t(ut?'pp.c.postU':'pp.c.post')}${dd?' · '+ppSecs()+'s':''}`;
+ return `${ppSheetHead(t('pp.c.over',{d:game.day}),t('pp.c.title',{p:pName(s.player),d:ctx.d}))}
+  ${ut?`<div class="pputstrip">↺ ${esc(t('pp.c.utStrip'))}</div>`:''}
+  <div class="step" id="ppStep1"><span class="sn">1</span>${esc(t('pp.c.s1'))}</div><div class="opts" role="radiogroup" aria-label="${esc(t('pp.c.s1'))}">${opts}</div>
+  <div class="step" style="margin-top:14px"><span class="sn">2</span>${esc(t('pp.c.s2'))}<span class="aux">${esc(t('pp.c.s2aux'))}</span></div><div class="confs" role="radiogroup" aria-label="${esc(t('pp.c.s2'))}">${confs}</div>
+  ${preview}${hints}${stakes}
+  <button class="btn primary${ok?'':' ppdis'}" data-act="publish" data-id="${id}" data-o="${o||''}" data-c="${cf||''}" aria-disabled="${!ok}">${esc(btn)}</button>
+  ${save.ppPosted?'':`<p class="ppfine">${esc(t('pp.c.first'))}</p>`}`; }
+function ppCompose(id){ if(!game||game.result) return; const s=game.sagas[id]; if(!s||s.call) return; currentSaga=id; if(draft.sid!==id) draft={outcome:null,conf:null,sid:id}; ppSheet(ppComposeHtml(id),'comp'); beep('whoosh'); }
+function ppUturnHtml(id){ const s=game.sagas[id]; const tw=ppTwist(s); const twAfter=tw&&s.call&&tw.day>s.call.day;
+ const nNew=ppClaims(s).filter(c=>c.day>s.call.day&&!c.old).length;
+ const side=twAfter?`<span class="tag twist" style="margin-top:4px">🌀 ${esc(t('pp.u.twistOn',{d:tw.day}))}</span>`:nNew?`<span class="tag new" style="margin-top:4px">${esc(t(nNew===1?'pp.u.reads1':'pp.u.reads',{n:nNew}))}</span>`:'';
+ let rescue=false; if(typeof twistedSinceCall==='function'){ try{ rescue=!!twistedSinceCall(s); }catch(e){} }
+ const row=(ic,a,b,price,bad)=>`<div class="cell" style="cursor:default"><span style="font-size:20px" aria-hidden="true">${ic}</span><span class="cmain"><b style="font-size:14.5px">${esc(a)}</b><span>${esc(b)}</span></span><b class="d5"${bad?' style="color:var(--bad)"':''}><bdi dir="ltr">${esc(price)}</bdi></b></div>`;
+ const rows=rescue?`<div class="cell pprescue" style="cursor:default"><span style="font-size:20px">🌀</span><span class="cmain"><b style="font-size:14.5px">${esc(t('pp.u.rescue'))}</b></span></div>${row('💬',t('pp.u.r4a'),t('pp.u.r4b'),t('pp.u.public'))}`
+  :row('👥',t('pp.u.r1a'),t('pp.u.r1b'),'−4–8%',1)+row('½',t('pp.u.r2a'),t('pp.u.r2b'),'×0.5',1)+row('✕',t('pp.u.r3a'),t('pp.u.r3b'),'−10',1)+row('💬',t('pp.u.r4a'),t('pp.u.r4b'),t('pp.u.public'));
+ return `${ppSheetHead(t('pp.u.over',{p:pName(s.player)}),t('pp.u.title'),side)}
+  <div class="card" style="padding:12px"><div class="tw"><span class="av you">✍️</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(t('pp.dayN',{d:s.call.day}))} · ${esc(t('pp.u.posted'))}</span></div><p class="txt">${esc(tweetText(s.call.outcome,s.call.conf,s))}</p></div></div></div>
+  <section class="list" style="margin-top:10px">${rows}</section>
+  <div class="row" style="display:flex;gap:10px;margin-top:14px"><button class="btn" style="flex:1" data-act="ppSheetX">${esc(t('pp.u.keep'))}</button><button class="btn danger" style="flex:1" data-act="uturnGo" data-id="${id}">↺ ${esc(t('pp.u.del'))}</button></div>`; }
+function ppMsgsHtml(id){ const s=game.sagas[id], ctx=ctxOf(s), asks=tt('ask'); const by={};
+ const add=(d,h)=>{ (by[d]=by[d]||[]).push(h); };
+ s.clues.forEach((cl,i)=>{ const st=ppStale(s,cl); if(cl.source!=='tipoff') add(cl.day,`<div class="bub me">${esc(fill(asks[(cl.a!=null?cl.a:id+i)%asks.length],ctx))}</div>`);
+  add(cl.day,`<div class="bub them${st?' ppold':''}"><span class="who">${esc(clueWho(cl))}${st?' · '+esc(t('pp.beforeTwist')):''}</span>${esc(clueText(s,cl))}</div>`); });
+ game.feed.forEach(f=>{ if(f.sagaId!==id) return; if(f.type==='rival'){ const rv=RIVALS.find(r=>r.key===f.rival)||{}; add(f.day,`<div class="bub them rival"><span class="who">${rv.ic||''} ${esc(t('rival.'+f.rival))}</span>${esc(feedText(f))}</div>`); }
+  else if(f.type==='twist'||(f.type==='event'&&f.day>1)) add(f.day,`<div class="bub them evt"><span class="who">📡 ${esc(t('pp.wire'))}</span>${f.type==='twist'||f.twist?'🌀 ':''}${esc(feedText(f))}</div>`); });
+ const days=Object.keys(by).map(Number).sort((a,b)=>b-a);
+ const body=days.length?days.map((d,i)=>`<details class="ppday"${i===0?' open':''}><summary class="collapse">${esc(t('pp.dayN',{d}))} · ${esc(t('pp.msgsN',{n:by[d].length}))} <span class="chev" aria-hidden="true">›</span></summary><div class="chat">${by[d].join('')}</div></details>`).join(''):`<p class="ppempty">${esc(t('pp.empty'))}</p>`;
+ return `${ppSheetHead(pName(s.player),t('pp.msgs'))}<div class="ppmsgs">${body}</div>`; }
+
+/* ----- click actions ----- */
+LANE_ACTS.ppSheetX=()=>{ ppSheetClose(); };
+LANE_ACTS.ppTok=(el,v)=>{ PP.sel=v; PP.fresh.delete(v); PP.quoteOpen=false; beep('select'); const k=$('ppKnow'); const s=game.sagas[PP.id]; if(k&&s) k.outerHTML=ppKnowHtml(s); };
+LANE_ACTS.ppQuote=()=>{ PP.quoteOpen=!PP.quoteOpen; const q=document.querySelector('.pp .quote'); if(q) q.classList.toggle('open',PP.quoteOpen); };
+LANE_ACTS.ppType=(el,v,id)=>{ const pt=ptype(game.sagas[+id].player); toast(t('pp.ptTip.'+pt.key,{p:pt.pts,f:pt.fans})); };
+LANE_ACTS.ppMsgs=(el,v,id)=>{ ppSheet(ppMsgsHtml(+id),'ppmsg'); };
+LANE_ACTS.ppCompose=(el,v,id)=>{ ppCompose(+id); };
+LANE_ACTS.compose=LANE_ACTS.ppCompose;
+LANE_ACTS.contact=(el,v,id)=>{ id=+id; const k=el.dataset.src; const s=game&&game.sagas[id]; if(!s||game.result||!SOURCES[k]) return; if(document.querySelector('.big:not(.clock)')||PP.calling!=null) return;
+ const st=ppSrcState(s,k);
+ if(st.state==='asked'){ const i=s.clues.lastIndexOf(st.clue); if(i>=0){ PP.sel='c'+i; PP.fresh.delete(PP.sel); } const kn=$('ppKnow'); if(kn){ kn.outerHTML=ppKnowHtml(s); const n=$('ppKnow'); if(n&&n.scrollIntoView) n.scrollIntoView({behavior:motionReduced()?'auto':'smooth',block:'start'}); } return; }
+ if(st.state==='later'){ toast(st.reasonKey?t(st.reasonKey,{d:st.opensDay}):t('pp.opensToast',{d:st.opensDay})); return; }
+ if(st.state==='gear'){ toast(t('pp.gearToast',{g:t('equip.'+(st.gearKey||SOURCES[k].lock)+'.name')})); return; }
+ if(st.state==='short'||game.actions<(st.cost||SOURCES[k].cost||1)){ beep('buzz'); toast(t('pp.shortToast')); return; }
+ const n=s.clues.length; contactSource(id,k); const cl=s.clues[n];
+ if(!cl){ toast(t('pp.cantAsk')); ppRender(id); return; }
+ cl.revealAt=0; saveGame(); dismissCoach('c2'); syncWindow(); PP.sel='c'+n; PP.fresh.add('c'+n); PP.calling=k; ppRender(id);
+ contactOverlay(k,()=>{ PP.calling=null; ppRender(id); },{id,clue:cl});
+};
+LANE_ACTS.pickOutcome=(el,v)=>{ const id=currentSaga; if(id==null) return; draft.outcome=v; draft.sid=id; beep('select'); if($('ppSheet')) ppSheetBody(ppComposeHtml(id)); else ppCompose(id); };
+LANE_ACTS.pickConf=(el,v)=>{ const id=currentSaga; if(id==null) return; draft.conf=v; draft.sid=id; beep('select'); if($('ppSheet')) ppSheetBody(ppComposeHtml(id)); else ppCompose(id); };
+LANE_ACTS.publish=(el,v,id)=>{ id=+id; const o=draft.outcome, c=draft.conf; if(!o||!c){ const st=$('ppStep1'); const g=document.querySelector('#ppSheet .opts'); if(g&&!o){ g.classList.remove('ppshake'); void g.offsetWidth; g.classList.add('ppshake'); } else toast(t('toast.pickFirst')); if(st&&st.scrollIntoView) st.scrollIntoView({block:'nearest'}); return; }
+ if(game.result) return; ppSheetClose(true); composeOverlay(id,o,c); };
+LANE_ACTS.rewrite=()=>{ const id=currentSaga; const d=document.querySelector('.big.compose'); dismissBig(d,()=>{ if(id!=null) ppCompose(id); }); };
+LANE_ACTS.uturnAsk=(el,v,id)=>{ id=+id; const s=game.sagas[id]; if(!s||!s.call) return; ppSheet(ppUturnHtml(id),'pputurn'); };
+LANE_ACTS.uturnGo=(el,v,id)=>{ id=+id; const s=game.sagas[id]; if(!s||!s.call||game.result) return; s.ppPrev={out:s.call.outcome,conf:s.call.conf,day:s.call.day}; ppSheetClose(true);
+ uturnOverlay(id,()=>{ draft={outcome:null,conf:null,sid:id}; render(); ppRender(id); ppCompose(id); }); };
+
+/* ----- hooks ----- */
+BACK.push(()=>{ if($('ppSheet')){ ppSheetClose(); return true; } return false; });
+onHook('rendered',scr=>{ if(scr!=='window'){ ppSheetClose(true); PP.calling=null; } });
+onHook('call',(id,call)=>{ if(game&&game.day===7&&call) call.secsLeft=ppSecs(); save.ppPosted=true; });
+window.quickCall=id=>{ if(!game||game.result) return; ppCompose(+id); };
 /* @@LANE JS:player END */
 /* ─ */
 /* @@LANE JS:results BEGIN (lane-owned; insert only between BEGIN and END) */
