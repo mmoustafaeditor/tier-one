@@ -1814,6 +1814,10 @@ button.onl-cd b{ font-weight:800; }
 .frow.warn,.onrow.warn{ border-color:color-mix(in srgb,var(--ex) 50%,var(--line)); }
 .pptwdock .hint b{ color:var(--twist); }
 .mxt .sn{ white-space:normal; line-height:1.15; }
+.mxd > summary{ list-style:none; display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:44px; padding:10px 2px 2px; border-top:1px solid var(--line); margin-top:10px; font:700 var(--fs-sm) var(--body); color:var(--accent-text); cursor:pointer; }
+.mxd > summary::-webkit-details-marker{ display:none; }
+.mxd > summary .chev{ font-size:20px; transition:transform .2s; } .mxd[open] > summary .chev{ transform:rotate(90deg); }
+.mx .insight{ margin-top:0; }
 /* trophy pop-ups (PS5-style) */
 #trophyRoot{ position:fixed; z-index:97; top:calc(62px + env(safe-area-inset-top,0px)); left:0; right:0; display:grid; justify-items:center; pointer-events:none; padding:0 12px; }
 #trophyRoot > .trophy{ grid-area:1/1; }
@@ -3994,6 +3998,22 @@ function replyClean(k,i,l){ l=l||lang; const L=getPath(I18N[l],k)||getPath(I18N.
 function cleanIdx(k,l){ l=l||lang; const L=getPath(I18N[l],k)||getPath(I18N.en,k)||[]; return (Array.isArray(L)?L:[L]).map((_,i)=>i).filter(i=>replyClean(k,i,l)); }
 /* @@LANE I18N:content END */
 /* ─ */
+/* ─ */
+/* QA: no cryptic abbreviations (D3, DD, ½, ×1.2) — spell things out; one name per concept */
+deepMerge(I18N,{
+ en:{qa:{seeTable:'See every source and rival',ptsX:'×{p} points',nContacts:'{n} contacts'},tut2:{d1:'Day 1'},
+  board:{dShort:'Day {d}',ddShort:'Deadline'},
+  pp:{dShort:'Day {d}',ddShort:'Deadline Day',yourCallTag:'Your call · Day {d}',twistTag:'Twist · Day {d}'},
+  rs:{dayShort:'Day {d}',ddShort:'Deadline',whyHalf:'right after a U-turn · half points',vtHalf:'↺ Half points',stHalf:'Right · half points'}},
+ es:{qa:{seeTable:'Ver todas las fuentes y rivales',ptsX:'×{p} puntos',nContacts:'{n} contactos'},tut2:{d1:'Día 1'},
+  board:{dShort:'Día {d}',ddShort:'Límite',ddFull:'Día límite'},
+  pp:{dShort:'Día {d}',ddShort:'Día límite',yourCallTag:'Tu apuesta · Día {d}',twistTag:'Giro · Día {d}'},
+  rs:{dayShort:'Día {d}',ddShort:'Límite',dd:'Día límite',whyHalf:'acierto tras rectificar · mitad de puntos',vtHalf:'↺ Mitad de puntos',stHalf:'Acierto · mitad de puntos'}},
+ ar:{qa:{seeTable:'شوف كل المصادر والمنافسين',ptsX:'×{p} نقط',nContacts:'{n} اتصالات'},tut2:{d1:'يوم 1'},
+  board:{dShort:'يوم {d}',ddShort:'القفلة'},
+  pp:{dShort:'يوم {d}',ddShort:'يوم القفلة',yourCallTag:'توقعك · يوم {d}',twistTag:'قلبة · يوم {d}'},
+  rs:{dayShort:'يوم {d}',ddShort:'القفلة',dd:'يوم القفلة',whyHalf:'صح بعد ما رجعت في كلامك · نص النقط',vtHalf:'↺ نص النقط',stHalf:'صح · نص النقط'}}
+});
 /* QA integration: copy that must follow the live rules (CONFIG / MATH), terminology fixes (EN/ES/AR) */
 deepMerge(I18N,{
  en:{qa:{trophy:'Trophy unlocked',update:'Update call',updated:'Updated.',stampUpd:'UPDATED 🌀'},sys:{dd:"🚨 DEADLINE DAY. {s} seconds. Whatever you haven't called, call it now."},
@@ -4762,7 +4782,7 @@ function renderHome(){
  const cells=done?hmRowCells(done.row):null;
  const five=(ipDaily?ipDaily.sagas:hmFive(k)).slice(0,CONFIG.SAGAS||5).map((s,i)=>{ const pt=ptype(s.player); let mark='';
   if(cells&&cells[i]) mark=hmSqHtml(cells[i]); else if(ipDaily&&s.call){ const o=s.call.outcome; mark=`<span class="hmmk c-${o.toLowerCase()}" aria-label="${esc(t('ds.oc.'+o))}">${glyph(o)}</span>`; }
-  return `<div>${kitSVG(s.club,initials(s.player.name))}<b>${esc(hmSurname(s.player))}</b><span class="stars" aria-label="${esc(t('ptype.'+pt.key))}">${'★'.repeat(pt.stars)}</span>${mark}</div>`; }).join('');
+  return `<div>${kitSVG(s.club,initials(s.player.name))}<b>${esc(hmSurname(s.player))}</b>${mark}</div>`; }).join('');
  const firstRun=!save.tutorial.intro;
  const cta=done?`<div class="hmduo"><button class="btn primary xl" data-act="hmShare">${uiIcon('share')}${esc(t('home.share'))}</button><button class="btn" data-act="openDay" data-v="${esc(k)}">${esc(t('home.seeResults'))}</button></div>`
   :ipDaily?`<button class="btn primary xl" data-act="resume">${uiIcon('play')}${esc(t('home.resumeDay',{d:ipDaily.day}))}</button>`
@@ -4771,14 +4791,13 @@ function renderHome(){
   <div class="htop"><span class="live"><i></i>${esc(t('app.live'))}</span>${langPills()}</div>
   <section class="hero"><h1 class="wordmark lg" aria-label="Tier One"><span>TIER</span><b>ONE</b></h1><p class="tagline">${esc(t('home.tag1'))} <b>${esc(t('home.tag2'))}</b></p></section>
   <section class="daily ${done?'isdone':''}" aria-label="${esc(t('home.dailyN',{n:num}))}">
-   <span class="num-bg" aria-hidden="true">#${num}</span>
    <div class="dtop"><span class="over">${esc(t('home.dailyN',{n:num}))}${date?' · '+esc(date):''}</span>${streak?`<span class="streakchip">🔥 ${esc(t('home.streakN',{n:streak}))}</span>`:''}</div>
    <h2 class="d2">${esc(t('home.todaysFive'))}</h2>
    <div class="five">${five}</div>
    ${done?`<div class="hmdone"><span>${esc(tierName(tierOf(done.tier)))} · ${hmNum(done.score)} ${esc(t('app.ptsShort'))}</span><span class="newin">${esc(t('home.nextIn'))}<b id="countdown">${fmtHMS(msToMidnight())}</b></span></div>`
     :`<div class="weekrow"><div class="week" aria-label="${esc(t('home.weekAria'))}">${hmWeek()}</div><div class="newin">${esc(t('home.newIn5'))}<b id="countdown">${fmtHMS(msToMidnight())}</b></div></div>`}
    ${cta}
-   <p class="fine">🌍 ${esc(t('home.fine'))}</p>
+   ${done?'':`<p class="fine">🌍 ${esc(t('home.fine'))}</p>`}
   </section>
   <div class="sechead"><span class="over">${esc(t('home.moreWays'))}</span></div>
   <div class="modes">
@@ -4793,20 +4812,20 @@ function renderHome(){
 
 // ----- window -----
 function sagaStatus(s){ const dd=game.day===7;
- if(s.call){ const c=s.call; return `${ocHtml(c.outcome,'solid')}<span class="when">${esc(t('board.conf.'+c.conf))} · ${esc(t('board.dShort',{d:c.day}))}</span>`; }
+ if(s.call){ const c=s.call; return `${ocHtml(c.outcome,'solid')}<span class="when">${esc(t('board.dShort',{d:c.day}))}</span>`; }
  if(dd) return `<span class="quickcall" role="button" tabindex="0" data-act="ddQuick" data-id="${s.id}">${esc(t('board.call'))}</span>`;
- return (unseenNews(s).length?`<span class="tag new">${esc(t('news.new'))}</span>`:'')+`<span class="callpill">${esc(t('board.noCall'))}</span>`; }
+ return `<span class="callpill">${esc(t('board.noCall'))}</span>`; }
 function sagaListHtml(){ const dd=game.day===7, now=Date.now();
  return `<div class="pcards">`+game.sagas.map(s=>{ const tw=boardTwist(s), twUnseen=!!(tw&&(s.newsSeen||1)<tw.day), pt=ptype(s.player), un=unseenNews(s).length>0;
   const claims=[...s.clues.filter(c=>!(c.revealAt&&c.revealAt>now)).map(c=>({o:c.out,day:c.day,old:!!c.outdated})),...game.feed.filter(f=>f.sagaId===s.id&&f.type==='rival'&&f.claim).map(f=>({o:f.claim,day:f.day,old:!!f.outdated}))];
   claims.forEach(c=>{ if(tw&&c.day<tw.day) c.old=true; });
   const tally={}; claims.forEach(c=>{ const k=c.o+(c.old?'|old':''); tally[k]=(tally[k]||0)+1; });
-  const tls=Object.keys(tally).sort((a,b)=>tally[b]-tally[a]).slice(0,3).map(k=>{ const o=k.split('|')[0], lo=String(o).toLowerCase(); return `<span class="tl ${lo}${k.includes('|old')?' old':''}" aria-label="${esc(t('board.say',{n:tally[k],o:t('ds.oc.'+o)}))}">${glyph(lo)}${tally[k]}</span>`; }).join('');
+  const tls=Object.keys(tally).sort((a,b)=>tally[b]-tally[a]).slice(0,twUnseen?0:2).map(k=>{ const o=k.split('|')[0], lo=String(o).toLowerCase(); return `<span class="tl ${lo}${k.includes('|old')?' old':''}" aria-label="${esc(t('board.say',{n:tally[k],o:t('ds.oc.'+o)}))}">${glyph(lo)}${tally[k]}</span>`; }).join('');
   const wire=game.feed.some(f=>f.sagaId===s.id&&f.type==='event'&&f.day>1);
   let intel=(twUnseen?`<span class="tag twist">🌀 ${esc(t('board.twist'))}</span>`:'')+(s.call&&s.uturns?`<span class="tag ut">↺ ${esc(t('board.ut'))}</span>`:'')+tls;
   if(!claims.length) intel+=`<span class="nr">${esc(t('board.noReports'))}</span>`;
   else if(twUnseen) intel+=`<span>${esc(t('board.askAgain'))}</span>`;
-  else intel+=`<span>${esc(t(claims.length===1?'board.report1':'board.reports',{n:claims.length}))}${wire?' '+esc(t('board.wire')):''}</span>`;
+  else intel+=`<span>${esc(t(claims.length===1?'board.report1':'board.reports',{n:claims.length}))}</span>`;
   const cls=['pcard',s.call?'called':'',twUnseen?'twisted':'',pt.key==='super'?'super':'',dd?'dd':''].filter(Boolean).join(' ');
   return `<button class="${cls}" ${s.call?`style="--oc:var(--o-${String(s.call.outcome).toLowerCase()})"`:''} data-act="openSaga" data-id="${s.id}" aria-label="${esc(pName(s.player))}">${un?`<span class="newdot" aria-label="${esc(t('news.new'))}"></span>`:''}${kitSVG(s.club,initials(s.player.name))}
  <span class="pm"><span class="pn"><b>${esc(pName(s.player))}</b><span class="stars">${'★'.repeat(pt.stars||1)}</span></span><span class="route"><i style="--c:${s.club.kit}"></i><span class="from">${esc(cName(s.club))}</span><span class="arr">→</span><i style="--c:${s.dest.kit}"></i><b>${esc(cName(s.dest))}</b></span><span class="intel">${intel}</span></span>
@@ -4866,8 +4885,8 @@ function renderResults(){
  const ach=(r.achUnlocked||[]).map(id=>{ const a=rsAch(id); let rr=String(a.r).toLowerCase(); if(rr==='legendary') rr='legend';
   return `<div class="ucard" style="--rc:var(--r-${esc(rr)})">${medalHtml(a.ic,rr)}<span class="ut"><span class="rw">${esc(t('rs.isNew',{r:t('ds.rar.'+rr)}))}</span><b>${esc(a.name)}</b>${a.how?`<small>${esc(a.how)}</small>`:''}</span></div>`; }).join('');
  const order=r.per.map((x,i)=>({x,i})).sort((a,b)=>((b.x.uturn&&b.x.called?1:0)-(a.x.uturn&&a.x.called?1:0))||(Math.abs(b.x.pts||0)-Math.abs(a.x.pts||0))||(a.i-b.i));
- const thr=order.map((o,j)=>rsThreadHtml(o.x,j>=2)).join('');
- const hiddenNames=order.slice(2).map(o=>sg[o.x.sagaId]&&sg[o.x.sagaId].player?pName(sg[o.x.sagaId].player):'').filter(Boolean);
+ const thr=order.map((o,j)=>rsThreadHtml(o.x,j>=1)).join('');
+ const hiddenNames=order.slice(1).map(o=>sg[o.x.sagaId]&&sg[o.x.sagaId].player?pName(sg[o.x.sagaId].player):'').filter(Boolean);
  const dock=game.mode==='career'&&game.room?`<button class="btn primary" data-act="openRoom" data-v="${esc(game.room)}">${esc(t('online.back'))}</button>`:game.mode==='career'?`<button class="btn primary" data-act="startCareer">${esc(t('res.next'))}</button>`:game.mode==='practice'?`<button class="btn primary" data-act="startPractice">${esc(t('res.again'))}</button>`:`<button class="btn primary" data-act="rsShare">${uiIcon('share')} ${esc(t('rs.share'))}</button>`;
  return `<div class="rsx">
  <header class="appbar"><button class="iconbtn" data-act="home" aria-label="${esc(t('rs.close'))}">${uiIcon('close')}</button><div class="ttl">${esc(label)} · ${esc(t('rs.results'))}${sub?`<small>${esc(sub)}</small>`:''}</div><div class="right"><button class="iconbtn" data-act="rsShare" aria-label="${esc(t('rs.share'))}">${uiIcon('share')}</button></div></header>
@@ -5034,7 +5053,7 @@ function renderCareer(){
   const bestRel=Object.entries(GEAR_REL).filter(([k,g])=>c.equip.includes(g[0])&&SOURCES[k]).sort((a,b)=>b[1][1]-a[1][1])[0];
   const pod=crOpens('physio');
   const load=`<section class="card" style="margin-top:12px;padding:12px"><div class="lohead"><span class="over">${esc(t('cr.desk'))}</span><span class="xs muted"><bdi dir="ltr">${esc(t('cr.gearN',{n:c.equip.filter(k=>EQUIP.some(e=>e.key===k)).length,m:EQUIP.length}))}</bdi></span></div>
-   <div class="loadout"><div><b>${crContacts()}</b><span>${esc(t('cr.perDay'))}</span></div><div><b>${crDD()}</b><span>${esc(t('cr.onDD'))}</span></div><div><b>${pod==null?'🔒':(lang==='ar'?'ي':'D')+pod}</b><span>🩺 ${esc(t('cr.physioOpens'))}</span></div><div><b><bdi dir="ltr">+${bestRel?Math.round(bestRel[1][1]*100):0}%</bdi></b><span>${bestRel?SOURCES[bestRel[0]].ic+' ':''}${esc(t('cr.honesty'))}</span></div></div></section>`;
+   <div class="loadout"><div><b>${crContacts()}</b><span>${esc(t('cr.perDay'))}</span></div><div><b>${crDD()}</b><span>${esc(t('cr.onDD'))}</span></div><div><b>${pod==null?'🔒':esc(t('board.dShort',{d:pod}))}</b><span>🩺 ${esc(t('cr.physioOpens'))}</span></div><div><b><bdi dir="ltr">+${bestRel?Math.round(bestRel[1][1]*100):0}%</bdi></b><span>${bestRel?SOURCES[bestRel[0]].ic+' ':''}${esc(t('cr.honesty'))}</span></div></div></section>`;
   const groups=['contacts','open','sharp','warn','pay','safety']; const by={}; EQUIP.forEach(e=>{ const g=crGroup(e.key); (by[g]=by[g]||[]).push(e); });
   const gear=groups.filter(g=>by[g]).map(g=>`<div class="sechead"><h2 class="d4">${esc(t('cr.grp.'+g))}</h2><span class="aux">${esc(t('cr.grpSub.'+g))}</span></div><section class="list">${by[g].map(e=>crGearRow(e,c,lv)).join('')}</section>`).join('');
   const boosts=`<div class="sechead"><h2 class="d4">${esc(t('career.boosts'))}</h2><span class="aux">${esc(t('cr.boostSub'))}</span></div><section class="list">${BOOSTS.map(b=>`<div class="gear ${lv.n<b.lvl?'lockd':''}"><span class="gi" aria-hidden="true">${b.ic}</span><span style="min-width:0"><b>${esc(t('boost.'+b.key+'.name'))}</b><span class="fx">${esc(t('boost.'+b.key+'.desc'))}</span></span><span class="gp">${lv.n<b.lvl?`<span class="buy no">🔒 ${esc(t('cr.lv',{n:b.lvl}))}</span>`:`<span class="buy no"><bdi dir="ltr">$${b.cost}</bdi><small>${esc(t('cr.inWindow'))}</small></span>`}</span></div>`).join('')}</section>`;
@@ -5051,7 +5070,7 @@ function renderCareer(){
   body=skins+cps+titles;
  }else{ body=crSourcesTab(c); }
  const bar=`<header class="appbar">${roomCtx?`<button type="button" class="iconbtn" data-act="openRoom" data-v="${esc(roomCtx)}" aria-label="${esc(t('online.backShort'))}">${uiIcon('back')}</button>`:'<span></span>'}<div class="ttl">${esc(roomCtx?t('online.roomTag',{c:roomCtx}):t('cr.title'))}</div><div class="right"><button type="button" class="wal" data-act="ctab" data-v="shop" aria-label="${esc(t('career.credits'))}">💵 <bdi dir="ltr">$${c.credits}</bdi></button></div></header>`;
- return bar+prof+primary+crGoal(c)+tabs+body;
+ return bar+prof+primary+tabs+body;
 }
 
 // ----- how to / settings -----
@@ -5346,7 +5365,7 @@ function hmTutKnow(){ const T=HM.tut, c=hmTutCtx(); const lanes=['DONE','HIJACK'
   ${nob.length?`<div class="nob"><span>${esc(t('tut2.nobody'))}</span>${nob.map(o=>ocHtml(o,'ghost')).join('')}</div>`:''}
   ${last?`<div class="quote c-${last.o.toLowerCase()}"><div class="qh"><b>${SOURCES[last.k].ic} ${esc(t('tut2.src.'+last.k))}</b><span class="muted xs">· ${esc(t('tut2.day1'))}</span>${ocHtml(last.o,'')}</div><p>${T.typing?'<span class="hmdots"><i></i><i></i><i></i></span>':esc(t('tut2.dm.'+last.k,{d:c.d}))}</p></div>`:''}</div>`; }
 function hmTutHead(){ const T=HM.tut, c=hmTutCtx(); return `<div class="hmtbar"><span class="over">${esc(t('tut.step',{n:T.step}))}</span><span class="segs" aria-hidden="true">${[1,2,3,4].map(i=>`<i class="${i<T.step?'done':i===T.step?'on':''}"></i>`).join('')}</span><button class="btn text" data-act="hmTutSkip">${esc(t('tut.skip'))}</button></div>
-  ${T.step<4?`<div class="hmphead">${kitSVG(c.cl,initials(HM_TUT.player),'md')}<div class="pn"><b class="d3">${esc(c.p)}</b><span class="route"><i style="--c:${c.cl.kit}"></i><span class="from">${esc(c.c)}</span><span class="arr">→</span><i style="--c:${c.de.kit}"></i><b>${esc(c.d)}</b><span class="chip hmpt"><span class="stars">★★★</span>${hmNum('×'+((PTYPE[HM_TUT.tier]||{pts:1.5}).pts))}</span></span></div></div>`:''}`; }
+  ${T.step<4?`<div class="hmphead">${kitSVG(c.cl,initials(HM_TUT.player),'md')}<div class="pn"><b class="d3">${esc(c.p)}</b><span class="route"><i style="--c:${c.cl.kit}"></i><span class="from">${esc(c.c)}</span><span class="arr">→</span><i style="--c:${c.de.kit}"></i><b>${esc(c.d)}</b><span class="chip hmpt"><span class="stars">★★★</span>${esc(t('qa.ptsX',{p:(PTYPE[HM_TUT.tier]||{pts:1.5}).pts}))}</span></span></div></div>`:''}`; }
 function hmCoach(h,p,small){ return `<div class="hmcoach" role="status"><h3>${esc(h)}</h3><p>${esc(p)}</p>${small?`<small>${esc(small)}</small>`:''}</div>`; }
 function renderIntro(){ const T=HM.tut; if(!T) return; let d=document.querySelector('.big.hmob'); if(!d){ d=document.createElement('div'); d.className='big tut hmob'; d.setAttribute('role','dialog'); d.setAttribute('aria-modal','true'); d.setAttribute('aria-label',t('tut2.aria')); document.body.appendChild(d); }
  const c=hmTutCtx(); let body='';
@@ -5442,7 +5461,7 @@ function feedSheetHtml(){ const F=boardFeedF; game._firstWire=0;
  const body=ds.length?ds.map(d=>`<h3 class="fday">${esc(d===7?t('board.ddFull'):t('board.day',{d}))}</h3>${byDay[d].slice().reverse().sort((a,b)=>(b.type==='twist')-(a.type==='twist')||(!!b.warn)-(!!a.warn)).map(renderFeedItem).join('')}`).join(''):`<p class="fempty">${esc(t('board.fEmpty'))}</p>`;
  return chips+body; }
 function rulesHtml(){ const b=tt('board.rulesB')||[]; const opens=k=>{ try{ return typeof srcOpenDay==='function'?srcOpenDay(k):1; }catch(e){ return 1; } };
- return `<ul class="brules">${b.map(x=>`<li>${bb(x)}</li>`).join('')}<li>${bb(t('board.rulesTw'))}</li></ul><table class="bsrc"><thead><tr><th>${esc(t('board.th.src'))}</th><th>${esc(t('board.th.cost'))}</th><th>${esc(t('board.th.opens'))}</th></tr></thead><tbody>${Object.keys(SOURCES).filter(k=>k!=='paid'&&k!=='tipoff').map(k=>{ const n=((tt('src')||{})[k]||{}).name||k; const o=opens(k); return `<tr><td>${SOURCES[k].ic||''} ${esc(n)}</td><td><bdi dir="ltr">📞×${SOURCES[k].cost||1}</bdi></td><td>${esc(o>1?t('board.day',{d:o}):t('board.always'))}</td></tr>`; }).join('')}</tbody></table>`; }
+ return `<ul class="brules">${b.map(x=>`<li>${bb(x)}</li>`).join('')}<li>${bb(t('board.rulesTw'))}</li></ul><table class="bsrc"><thead><tr><th>${esc(t('board.th.src'))}</th><th>${esc(t('board.th.cost'))}</th><th>${esc(t('board.th.opens'))}</th></tr></thead><tbody>${Object.keys(SOURCES).filter(k=>k!=='paid'&&k!=='tipoff').map(k=>{ const n=((tt('src')||{})[k]||{}).name||k; const o=opens(k); return `<tr><td>${SOURCES[k].ic||''} ${esc(n)}</td><td>${esc(t('qa.nContacts',{n:SOURCES[k].cost||1}))}</td><td>${esc(o>1?t('board.day',{d:o}):t('board.always'))}</td></tr>`; }).join('')}</tbody></table>`; }
 LANE_ACTS.endDay=(el)=>{ if(!game||game.day>=7||game.result) return; if(game.actions>0&&game.sagas.some(s=>!s.call)&&!armConfirm(el,t(game.actions===1?'board.endAnyway1':'board.endAnyway',{n:game.actions}))) return;
  endDay(); dismissCoach('c4');
  if(game.day===7){ ddPending=true; game.ddEndsAt=null; game.ddMax=null; ddMax(); game.timer=game.timerMax; render(); sfxCue('dd');
@@ -5505,20 +5524,20 @@ function ppKnowHtml(s){ const ctx=ctxOf(s), claims=ppClaims(s).filter(c=>c.out),
  const mine=s.call&&s.call.outcome;
  const lanes=OUTCOMES.filter(o=>claims.some(c=>c.out===o)).map(o=>`<div class="lane${mine===o?' mine':''}" style="--c:var(--o-${o.toLowerCase()})"><span class="ll"><span class="lw">${glyph(o)}${esc(t('ds.oc.'+o))}</span><small>${esc(sub[o])}</small>${mine===o?`<span class="tag ppmine">${esc(t('pp.yourCallTag',{d:s.call.day}))}</span>`:''}</span><div class="toks">${claims.filter(c=>c.out===o).map(ppTok).join('')}</div></div>`).join('');
  const zero=OUTCOMES.filter(o=>!claims.some(c=>c.out===o));
- const zrow=zero.length?`<div class="zrow"><span>${esc(t('pp.nobody'))}</span>${zero.map(o=>`<span class="zo" style="--c:var(--o-${o.toLowerCase()})">${glyph(o)}${esc(t('ds.oc.'+o))}</span>`).join('')}${mine&&zero.includes(mine)?`<span class="tag ppmine">${esc(t('pp.yourCallTag',{d:s.call.day}))} · ${esc(t('ds.oc.'+mine))}</span>`:''}</div>`:'';
+ const zrow=zero.length&&mine&&zero.includes(mine)?`<div class="zrow"><span>${esc(t('pp.nobody'))}</span>${zero.map(o=>`<span class="zo" style="--c:var(--o-${o.toLowerCase()})">${glyph(o)}${esc(t('ds.oc.'+o))}</span>`).join('')}${mine&&zero.includes(mine)?`<span class="tag ppmine">${esc(t('pp.yourCallTag',{d:s.call.day}))} · ${esc(t('ds.oc.'+mine))}</span>`:''}</div>`:'';
  const w=wire[0];
  const kwire=w?`<div class="kwire"><span class="wl">📡 ${esc(t('pp.wire'))}</span><p>${w.twist?'🌀 ':''}${esc(w.text)} <span>· ${esc(t('pp.dShort',{d:w.day}))}</span>${wire.length>1?` <button class="pplink" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.moreN',{n:wire.length-1}))}</button>`:''}</p></div>`:'';
  const quote=q?`<div class="quote${PP.quoteOpen?' open':''}" style="--c:var(--o-${q.out.toLowerCase()})" data-act="ppQuote"><div class="qh"><span aria-hidden="true">${ppIc(q.kind,q.key)}</span><b>${esc(ppName(q.kind,q.key,true))}</b><span>· ${q.kind==='rival'?esc(t('pp.rival'))+' · ':''}${esc(ppDayLbl(q.day))}</span>${PP.fresh.has(q.id)?`<span class="tag new">${esc(t('pp.new'))}</span>`:''}${q.old?`<span class="tag twist">${esc(t('pp.beforeTwist'))}</span>`:''}${ocHtml(q.out)}</div><p class="qt">${esc(q.text)}</p></div>`:`<p class="ppempty">${esc(t('pp.empty'))}</p>`;
  const showLegend=(isCareer()?(C().windows||0):(save.stats&&save.stats.windows)||0)<3;
  const legend=showLegend&&claims.length?`<div class="legend"><span>${sigHtml(3,false,null,{hidden:true})} ${esc(t('pp.lgTrust'))}</span><span><i class="dash"></i> ${esc(t('pp.lgRival'))}</span><span>${esc(t('pp.lgTap'))}</span></div>`:'';
- return `<section class="card know" id="ppKnow" aria-label="${esc(t('pp.know'))}"><div class="kh"><h2 class="over">${esc(t('pp.know'))}</h2><span class="aux">${esc(t('pp.reports',{n:claims.length}))}${nNew?esc(t('pp.newN',{n:nNew})):''}${tw?` · <span class="tag twist">🌀 ${esc(t('pp.dShort',{d:tw.day}))}</span>`:''}</span></div>${lanes}${zrow}${kwire}${quote}${legend}</section>`;
+ return `<section class="card know" id="ppKnow" aria-label="${esc(t('pp.know'))}"><div class="kh"><h2 class="over">${esc(t('pp.know'))}</h2><span class="aux">${claims.length?esc(t('pp.reports',{n:claims.length})):''}</span></div>${lanes}${zrow}${kwire}${quote}${legend}</section>`;
 }
 function ppTileHtml(s,k){ const src=SOURCES[k], st=ppSrcState(s,k), nm=esc(ppName('src',k)), dd=ppDD();
  const cost=`<span class="cost">📞${st.cost}</span>`, face=`<span class="ic" aria-hidden="true">${src.ic}</span>`;
  const tier=w=>`${sigHtml(st.bars,st.sharper||st.atMax,null,{hidden:true})} ${esc(w)}`; const tw=t('pp.tier.'+st.bars);
  let cls='', top=face+cost, ft='', corner='';
  if(PP.calling===k){ cls='calling'; ft=`<span class="typing"><i></i><i></i><i></i></span> ${esc(t('pp.calling'))}`; }
- else if(st.state==='asked'){ const c=st.clue; cls='asked'; top=face; ft=c?`${ocHtml(c.source==='tipoff'?(c.out==='FAKE'?'FAKE':'DONE'):c.out)} ${esc(c.day===7?t('pp.ddShort'):t('pp.dShort',{d:c.day}))}`:'✓'; }
+ else if(st.state==='asked'){ const c=st.clue; cls='asked'; top=face; ft=c?`${ocHtml(c.source==='tipoff'?(c.out==='FAKE'?'FAKE':'DONE'):c.out)}`:'✓'; }
  else if(st.state==='later'){ cls='later'; top=face; ft=`🕐 ${esc(t('pp.opens',{d:st.opensDay}))}`; }
  else if(st.state==='gear'){ cls='locked'; top=face; ft=`🔒 ${esc(t('pp.needs',{g:t('equip.'+(st.gearKey||src.lock)+'.name')}))}`; }
  else if(st.state==='short'){ cls='short'; ft=tier(t('pp.needMore',{n:Math.max(1,st.cost-game.actions)})); }
@@ -5556,7 +5575,7 @@ function ppBoostsHtml(s){ if(!isCareer()) return ''; const lv=levelInfo(C().xp).
  return `<details class="ppboosts"><summary class="collapse">${esc(t('pp.boosts'))} · $${C().credits} <span class="chev" aria-hidden="true">›</span></summary><div class="boosts">${tiles}</div></details>`; }
 function ppPageHtml(id){ const s=game.sagas[id], ctx=ctxOf(s), dd=ppDD(), pt=ptype(s.player);
  const route=`<span class="route"><i style="--c:${esc(s.club.kit||'var(--muted)')}"></i><span class="from">${esc(ctx.c)}</span><span class="arr">→</span><i style="--c:${esc(s.dest.kit||'var(--muted)')}"></i><b>${esc(ctx.d)}</b></span>`;
- const ptb=`<button class="ptype" data-act="ppType" data-id="${id}" aria-label="${esc(t('pp.ptTip.'+pt.key,{p:pt.pts,f:pt.fans}))}"><span class="stars">${'★'.repeat(pt.stars)}</span>×${pt.pts}</button>`;
+ const ptb=`<button class="ptype" data-act="ppType" data-id="${id}" aria-label="${esc(t('pp.ptTip.'+pt.key,{p:pt.pts,f:pt.fans}))}"><span class="stars">${'★'.repeat(pt.stars)}</span>${esc(t('qa.ptsX',{p:pt.pts}))}</button>`;
  const cap=Math.max(game.actions,dd?3+(gearOwned('bank')?1:0):baseActions());
  const tw=ppTwist(s);
  const bar=dd?`<header class="appbar ddbar"><button class="iconbtn" data-act="closeSheet" aria-label="${esc(t('pp.back'))}">${uiIcon('back')}</button><div class="ttl"><b>${esc(pName(s.player))}</b>${route}</div><div class="right">${ppClock()}</div>${ppDrain()}</header><div class="ddnote"><span class="slab">${esc(t('pp.dd.slab'))}</span>${ptb}${tw?`<span class="tag twist">🌀 ${esc(t('pp.twistTag',{d:tw.day}))}</span>`:''}</div>`
@@ -5759,13 +5778,12 @@ function rsTruthHtml(){ const r=game.result, sg=game.sagas; const perBy={}; r.pe
   insight=all.length?`${all[0].ic} <span>${esc(t('rs.straight'))} <b>${esc(all[0].nm)} <bdi dir="ltr">${all[0].R.t}/${all[0].R.n}</bdi></b>. ${esc(t('rs.fresh'))}</span>`:`💬 <span>${esc(t('rs.noReads'))} ${esc(t('rs.fresh'))}</span>`; }
  if(!srcKeys.length&&!rvKeys.length) return `<div class="sechead"><h2 class="d4">${esc(t('rs.truth'))}</h2><span class="aux">${esc(t('rs.truthAux'))}</span></div><section class="card mx"><p class="insight">${insight}</p></section>`;
  return `<div class="sechead"><h2 class="d4">${esc(t('rs.truth'))}</h2><span class="aux">${esc(t('rs.truthAux'))}</span></div>
- <section class="card mx"><table class="mxt"><caption class="sr">${esc(t('rs.cap'))}</caption>
+ <section class="card mx"><p class="insight">${insight}</p><details class="mxd"><summary>${esc(t('qa.seeTable'))}<span class="chev" aria-hidden="true">›</span></summary><table class="mxt"><caption class="sr">${esc(t('rs.cap'))}</caption>
   <thead><tr><th scope="col" class="over">${esc(t('rs.sources'))}</th>${sg.map(s=>`<th scope="col"><b>${esc(code(s))}</b><i style="background:${s.club.kit}"></i></th>`).join('')}<th scope="col" class="over sc2">${esc(t('rs.score'))}</th></tr></thead>
   <tbody>${srcKeys.map(k=>row(SOURCES[k].ic,srcName(k),rows[k])).join('')}</tbody>
   ${rvKeys.length?`<tbody class="riv"><tr><th scope="rowgroup" colspan="${sg.length+2}" class="over" style="text-align:start">${esc(t('rs.rivals'))}</th></tr>${rvKeys.map(k=>{ const q=RIVALS.find(o=>o.key===k); return row(q.ic,t('rival.'+k),rv[k]); }).join('')}</tbody>`:''}
  </table>
- <div class="mxleg"><span>${dot('t')} ${esc(t('rs.lgT'))}</span><span>${dot('f')} ${esc(t('rs.lgF'))}</span><span>${dot('o')} ${esc(t('rs.lgO'))}</span><span>${dot('n')} ${esc(t('rs.lgN'))}</span></div>
- <p class="insight">${insight}</p></section>`; }
+ <div class="mxleg"><span>${dot('t')} ${esc(t('rs.lgT'))}</span><span>${dot('f')} ${esc(t('rs.lgF'))}</span><span>${dot('o')} ${esc(t('rs.lgO'))}</span><span>${dot('n')} ${esc(t('rs.lgN'))}</span></div></details></section>`; }
 function rsModeHtml(){ const r=game.result;
  if(game.mode==='daily'){ if(game.archived) return `<div class="sechead"><h2 class="d4">${esc(t('rs.yourDaily'))}</h2><button class="link" data-act="archive">${esc(t('rs.pastDailies'))}</button></div><p class="rsnote">${esc(t('rs.archived'))}</p>`;
   const ms=msToMidnight(), hh=Math.floor(ms/3600000), mm=Math.floor(ms%3600000/60000);
