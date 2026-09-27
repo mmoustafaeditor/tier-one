@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '2.0',
-  versionCode: 11,
+  version: '2.1',
+  versionCode: 12,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'Harder Tier 1, sources that stick to their story, planted news-wire stories, breaking news per player and much harsher banter in every language.',
+  changelog: 'The big one: plot twists, sources that open late, a brand-new look, a Trophies cabinet with PS5-style pop-ups, a cleaner player page with the Deadline Day clock, new results with a who-told-the-truth table, and the Back button now works.',
 };
 
 export default function handler(req, res) {

@@ -1910,7 +1910,7 @@ html.rm .trophy,html.rm .trophy.hide{ transform:none; transition:opacity .15s li
    your own domain — not inside the claude.ai preview.
    ============================================================ */
 const CONFIG={
- VERSION:'1.19.0',
+ VERSION:'2.0.0',
  GAME_NAME:'Tier One',
  STUDIO_NAME:'Semba Studios',
  SITE_URL:'https://sembagames.app/tier-one',
@@ -6394,6 +6394,7 @@ const Prod={ boot(){ if(!CONFIG.CONSENT_REQUIRED||save.consent==='all'){ Analyti
 
 // ----- boot -----
 loadSave(); applyTheme(); Prod.boot(); render();
+(function(){ const ip=save.inProgress; if(ip&&ip.day===7&&!ip.result&&!(ip.mode==='daily'&&ip.seed!=='daily-'+todayKey())&&!/[?&](room|purchase)=/.test(location.search)){ game=ip; roomCtx=game.room||null; go('window'); } })();
 { const rq=(new URLSearchParams(location.search).get('room')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8); if(rq){ history.replaceState(null,'',location.pathname); if(save.rooms&&save.rooms[rq]) openRoom(rq); else { onlineForm.code=rq; go('online'); } } }
 if(!window.__bootDone) addEventListener('sembaboot',()=>{ if(screen==='home') render(); animateEnter(); },{once:true});
 function legalFromHash(){ const lh=(location.hash||'').slice(1); if(['privacy','terms','contact'].includes(lh)) renderLegal(lh); }
