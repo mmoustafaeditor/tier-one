@@ -933,6 +933,176 @@ html.lt body{ zoom:1.12; }
 /* @@LANE CSS:ds END */
 /* ─ */
 /* @@LANE CSS:home BEGIN (lane-owned; insert only between BEGIN and END) */
+/* home lane: Today, tab bar extras, sheets, Settings, More, How to play, training, tips */
+.today{ padding-top:env(safe-area-inset-top,0px); }
+.today .htop{ display:flex; align-items:center; justify-content:space-between; height:52px; }
+.today .live{ display:inline-flex; align-items:center; gap:7px; height:24px; padding:0 9px 0 8px; border-radius:5px; background:#E0162F; color:#fff; font:800 var(--ital) 12.5px/1 var(--display); letter-spacing:.09em; text-transform:var(--caps); }
+html[lang="ar"] .today .live{ letter-spacing:0; font-size:13px; }
+.today .live i{ width:7px; height:7px; border-radius:50%; background:#fff; animation:blip 1.2s infinite; }
+.langchip{ display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 12px; border-radius:var(--r-pill); border:1px solid var(--line2); background:transparent; color:var(--text); font:700 var(--fs-sm) var(--body); position:relative; cursor:pointer; }
+.langchip::after{ content:""; position:absolute; inset:-4px; }
+.langchip svg{ width:18px; height:18px; }
+.today .hero{ padding:6px 2px 16px; }
+.today .tagline{ margin-top:12px; font:500 15.5px/1.35 var(--body); color:var(--muted); max-width:none; }
+.today .tagline b{ color:var(--text); font-weight:700; }
+.today .daily{ position:relative; overflow:hidden; isolation:isolate; padding:16px 16px 14px; border-radius:24px; border:1px solid color-mix(in srgb,var(--accent) 42%,var(--line)); background:radial-gradient(120% 80% at 100% 0%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 60%),linear-gradient(165deg,var(--panel2),var(--panel)); box-shadow:var(--e2); }
+.today .daily .num-bg{ position:absolute; z-index:-1; inset-inline-end:-6px; top:-26px; font:800 italic 150px/1 "Barlow Condensed",Impact,sans-serif; color:var(--text); opacity:.045; direction:ltr; pointer-events:none; }
+.today .dtop{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:28px; }
+.today .dtop .over{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.streakchip{ display:inline-flex; align-items:center; gap:5px; height:28px; padding:0 10px; border-radius:var(--r-pill); background:color-mix(in srgb,#FF8A00 16%,var(--panel)); border:1px solid color-mix(in srgb,#FF8A00 45%,var(--line)); color:var(--text); font:800 12.5px/1 var(--body); white-space:nowrap; flex-shrink:0; }
+.today .daily h2{ margin-top:10px; font-size:32px; }
+.today .five{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin:12px 0; }
+.today .five > div{ position:relative; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 2px 7px; border-radius:14px; background:color-mix(in srgb,var(--panel3) 70%,transparent); border:1px solid var(--line); min-width:0; }
+.today .five .kit{ width:38px; height:38px; }
+.today .five b{ max-width:100%; font:800 var(--ital) 14px/1.05 var(--display); text-transform:var(--caps); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+html[lang="ar"] .today .five b{ font-size:12.5px; line-height:1.3; }
+.today .five .stars{ font-size:10.5px; }
+.hmmk,.hmsq{ position:absolute; top:4px; inset-inline-end:4px; width:18px; height:18px; border-radius:5px; display:grid; place-items:center; }
+.hmmk{ border-radius:50%; background:var(--c); color:var(--o-ink); box-shadow:0 0 0 2px var(--panel2); }
+.hmmk svg,.hmsq svg{ width:11px; height:11px; }
+.hmsq.ok{ background:var(--ok); color:var(--o-ink); } .hmsq.ex{ background:var(--ex); color:var(--ex-ink); } .hmsq.bad{ background:var(--bad); color:var(--o-ink); } .hmsq.none{ background:var(--panel3); box-shadow:inset 0 0 0 1.5px var(--line2); }
+.today .weekrow,.hmdone{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+.hmdone > span:first-child{ font:800 var(--ital) 20px/1.1 var(--display); text-transform:var(--caps); }
+.today .week{ display:flex; gap:5px; direction:inherit; }
+.today .week span{ display:flex; flex-direction:column; align-items:center; gap:3px; font:700 10px/1 var(--body); color:var(--dim); }
+.today .week span i{ width:26px; height:26px; border-radius:8px; display:grid; place-items:center; font-style:normal; font-size:13px; background:var(--panel3); }
+.today .week span.on i{ background:color-mix(in srgb,#FF8A00 22%,var(--panel2)); box-shadow:inset 0 0 0 1.5px color-mix(in srgb,#FF8A00 60%,transparent); }
+.today .week span.today i{ background:transparent; box-shadow:inset 0 0 0 2px var(--cta); }
+.today .week span.today{ color:var(--text); }
+.today .newin{ text-align:end; font:600 var(--fs-xs)/1.2 var(--body); color:var(--muted); flex-shrink:0; }
+.today .newin b{ display:block; margin-top:2px; font:800 italic 22px/1 "Barlow Condensed",Impact,sans-serif; color:var(--text); font-variant-numeric:tabular-nums; direction:ltr; }
+.today .daily.isdone .newin b{ font-size:28px; }
+.today .btn.primary .hmst{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+.hmduo{ display:grid; grid-template-columns:1.4fr 1fr; gap:8px; } .hmduo .btn{ min-height:60px; }
+.today .fine{ margin-top:9px; text-align:center; font:600 var(--fs-xs)/1.3 var(--body); color:var(--muted); }
+.today .modes{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.today .mode{ position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:6px; min-height:98px; padding:11px 11px 10px; border-radius:16px; border:1px solid var(--line); background:var(--panel); color:var(--text); text-align:start; box-shadow:var(--e1); cursor:pointer; min-width:0; transition:transform var(--t-press) ease-out; }
+.today .mode:active,.today .btn:active{ transform:scale(.97); }
+.today .mode .mi{ width:34px; height:34px; border-radius:10px; display:grid; place-items:center; font-size:18px; background:var(--panel3); }
+.today .mode .ring{ width:34px; height:34px; } .today .mode .ring > b{ font-size:15px; width:26px; height:26px; }
+.today .mode b.mt{ font:800 var(--ital) 17px/1 var(--display); text-transform:var(--caps); }
+html[lang="ar"] .today .mode b.mt{ line-height:1.3; }
+.today .mode small{ font:600 11.5px/1.25 var(--body); color:var(--muted); overflow-wrap:anywhere; }
+.today .mode .go{ position:absolute; top:10px; inset-inline-end:10px; }
+.today .sechead{ margin:22px 2px 10px; }
+.today .ad-wrap{ margin-top:16px; }
+.today .foot{ margin-top:22px; padding:0; text-align:center; color:var(--dim); font-size:var(--fs-xs); line-height:1.5; }
+.today .foot nav{ display:flex; justify-content:center; gap:10px; margin-top:4px; }
+.today .foot nav button{ min-height:44px; padding:0 8px; border:0; background:none; color:var(--muted); font:600 var(--fs-sm) var(--body); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+/* tab bar: label span + consent above it */
+.tabbar button > span:not(.badge){ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 2px; }
+.tabbar button:active{ transform:scale(.95); }
+body.has-tabs .consent{ bottom:calc(var(--tabbar) + env(safe-area-inset-bottom,0px)); z-index:41; }
+body.has-tabs.has-consent .app{ padding-bottom:calc(var(--tabbar) + 200px); }
+/* hub pages (More, How to play) */
+.hmbar{ grid-template-columns:var(--tap) 1fr var(--tap); }
+.hmpage{ padding:14px 0 24px; }
+.hmic{ width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background:var(--panel3); font-size:17px; flex-shrink:0; }
+a.cell{ text-decoration:none; }
+.hmver{ margin-top:18px; text-align:center; font:600 var(--fs-xs)/1.5 var(--body); color:var(--dim); }
+.hmlead{ font:500 16px/1.45 var(--body); color:var(--text); margin-bottom:14px; }
+.hmrule{ margin-bottom:10px; }
+.hmrule .rh{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.hmrule .rn{ width:26px; height:26px; border-radius:8px; display:grid; place-items:center; background:var(--cta); color:var(--cta-ink); font:800 var(--ital) 16px/1 var(--display); flex-shrink:0; }
+.hmgoal{ display:grid; gap:8px; } .hmgoal > div{ display:flex; align-items:center; gap:10px; font-size:var(--fs-sm); color:var(--muted); } .hmgoal .oc{ min-width:92px; }
+.hmul{ margin:0; padding-inline-start:18px; display:grid; gap:6px; font-size:var(--fs-sm); line-height:1.4; color:var(--muted); }
+.hmpts{ width:100%; border-collapse:collapse; margin-bottom:10px; font-size:var(--fs-sm); }
+.hmpts caption{ text-align:start; font:700 var(--fs-xs) var(--body); color:var(--dim); padding-bottom:6px; }
+.hmpts th,.hmpts td{ padding:7px 6px; border-bottom:1px solid var(--line); text-align:start; } .hmpts thead th{ color:var(--dim); font-weight:700; font-size:var(--fs-xs); }
+.hmpts td{ font:800 var(--ital) 18px/1 var(--display); } .hmpts td.ok{ color:var(--ok); } .hmpts td.bad{ color:var(--bad); }
+.hmladder{ list-style:none; margin:12px 0 0; padding:0; display:grid; gap:6px; }
+.hmladder li{ display:flex; align-items:center; gap:10px; } .hmladder li span{ flex:1; font-weight:700; } .hmladder .tmedal.sm{ width:36px; height:40px; } .hmladder .tmedal.sm .tv b{ font-size:22px; } .hmladder .tmedal.sm .tv small{ font-size:6px; }
+.hmladder b{ font:800 var(--ital) 18px/1 var(--display); }
+.hmsrc{ display:flex; align-items:center; gap:10px; padding:10px 14px; } .hmsrc + .hmsrc{ border-top:1px solid var(--line); }
+.hmsrc .ti{ width:34px; height:34px; border-radius:10px; display:grid; place-items:center; background:var(--panel3); font-size:18px; flex-shrink:0; }
+.hmsrc .cmain{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; } .hmsrc .cmain b{ font-size:15px; } .hmsrc .cmain span{ font-size:var(--fs-xs); color:var(--muted); }
+.hmsrc .meta{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; font:700 var(--fs-xs) var(--body); color:var(--muted); flex-shrink:0; } .hmsrc .meta > span{ display:inline-flex; align-items:center; gap:3px; } .hmsrc .op{ color:var(--text); }
+.hmmodes{ display:grid; gap:8px; } .hmmodes .card{ padding:12px 14px; } .hmmodes p{ margin-top:4px; font-size:var(--fs-sm); color:var(--muted); }
+/* sheets */
+.sheet.hm{ padding-top:8px; }
+.hmsh-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.hmsh-head h2{ font-size:28px; }
+.hmrow{ min-height:52px; }
+.hmcheck{ color:var(--accent-text); } .hmcheck svg{ width:22px; height:22px; }
+.hmgrp{ margin-top:18px; } .hmgrp > .over{ margin:0 4px 8px; }
+.hmpad .hmline,.hmline{ padding:12px 16px; display:flex; flex-direction:column; gap:8px; } .hmline + .hmline{ border-top:1px solid var(--line); }
+.list > .hmline.cellish{ border-top:1px solid var(--line); }
+.hmline b{ font:700 16px/1.2 var(--body); }
+.hmnote{ font-size:var(--fs-xs); color:var(--muted); margin:0; }
+.hmskins{ display:flex; flex-wrap:wrap; gap:8px; }
+.hmskin{ display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:0 12px 0 8px; border-radius:var(--r-pill); border:1px solid var(--line2); background:var(--panel2); color:var(--text); font:700 var(--fs-sm) var(--body); cursor:pointer; }
+.hmskin.on{ box-shadow:0 0 0 2px var(--cta); }
+.hmskin i{ width:22px; height:22px; border-radius:50%; background:linear-gradient(135deg,#0B1224 50%,#FFD23F 50%); box-shadow:inset 0 0 0 1px rgba(128,128,128,.4); }
+.hmskin.sk-stadium i{ background:linear-gradient(135deg,#0B2A1A 50%,#C6FF3D 50%); } .hmskin.sk-tabloid i{ background:linear-gradient(135deg,#F6F1EA 50%,#E1061B 50%); } .hmskin.sk-broadsheet i{ background:linear-gradient(135deg,#F1EBDD 50%,#1E1A12 50%); } .hmskin.sk-neon i{ background:linear-gradient(135deg,#0A0620 50%,#33E6FF 50%); }
+.hmsw{ position:relative; width:46px; height:28px; border-radius:14px; background:var(--panel3); box-shadow:inset 0 0 0 1px var(--line2); flex-shrink:0; transition:background-color var(--t-fast); }
+.hmsw::after{ content:""; position:absolute; top:3px; inset-inline-start:3px; width:22px; height:22px; border-radius:50%; background:var(--text); transition:transform var(--t-fast) var(--ease-out); }
+[aria-checked="true"] > .hmsw{ background:var(--ok); } [aria-checked="true"] > .hmsw::after{ transform:translateX(18px); background:#fff; }
+[dir="rtl"] [aria-checked="true"] > .hmsw::after{ transform:translateX(-18px); }
+.seg[aria-disabled="true"]{ opacity:.45; }
+.hmdanger b{ color:var(--bad); }
+.hmp{ font-size:15px; line-height:1.45; color:var(--muted); margin:4px 0 14px; }
+.hmstack{ display:grid; gap:8px; }
+/* one-shot tips (coachHtml) */
+.coach.hmtip{ display:flex; align-items:center; gap:10px; margin:10px 0; padding:10px 10px 10px 12px; border-radius:var(--r-md); background:color-mix(in srgb,var(--accent) 14%,var(--panel)); border:1px solid color-mix(in srgb,var(--accent) 50%,var(--line)); color:var(--text); box-shadow:none; animation:none; }
+.coach.hmtip .ic{ font-size:20px; flex-shrink:0; width:auto; height:auto; background:none; }
+.coach.hmtip .tx{ flex:1; min-width:0; font:600 var(--fs-sm)/1.35 var(--body); }
+.coach.hmtip .btn{ flex-shrink:0; width:auto; }
+/* first-run training */
+.big.hmob{ display:block; overflow-y:auto; padding:0 var(--gutter) calc(24px + env(safe-area-inset-bottom,0px)); background:var(--bg); color:var(--text); text-align:start; }
+.big.hmob .hmin{ max-width:430px; margin:0 auto; padding-top:env(safe-area-inset-top,0px); }
+.hmtbar{ display:flex; align-items:center; gap:12px; height:var(--appbar); position:sticky; top:0; background:var(--bg); z-index:2; }
+.hmtbar .over{ white-space:nowrap; } .hmtbar .btn.text{ color:var(--muted); }
+.hmtbar .segs{ flex:1; display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
+.hmtbar .segs i{ height:5px; border-radius:3px; background:var(--panel3); } .hmtbar .segs i.done{ background:var(--ok); } .hmtbar .segs i.on{ background:var(--cta); }
+.hmphead{ display:flex; align-items:center; gap:12px; margin:4px 0 12px; } .hmphead .pn{ min-width:0; flex:1; display:flex; flex-direction:column; gap:6px; }
+.hmphead .route{ flex-wrap:wrap; row-gap:6px; } .hmpt{ height:24px; margin-inline-start:4px; }
+.hmknow{ padding:12px 14px; border-radius:var(--r-lg); background:var(--panel); border:1px solid var(--line); }
+.hmknow .kh{ display:flex; justify-content:space-between; align-items:baseline; padding-bottom:8px; border-bottom:1px solid var(--line); }
+.hmlane{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); }
+.hmlane .ll{ display:flex; flex-direction:column; gap:3px; min-width:108px; } .hmlane .ll small{ font-size:var(--fs-xs); color:var(--muted); }
+.hmlane .toks{ display:flex; flex-wrap:wrap; gap:6px; }
+.hmtok{ display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 12px 0 6px; border-radius:18px; background:var(--panel2); border:1.5px solid var(--line2); font:700 var(--fs-sm) var(--body); }
+.hmtok > i{ font-style:normal; width:26px; height:26px; border-radius:50%; background:var(--panel3); display:grid; place-items:center; font-size:14px; }
+.hmtok.fly{ animation:hmFly var(--t-slow) var(--ease-spring) both; }
+@keyframes hmFly{ from{ transform:translateY(60px) scale(.6); opacity:0; } }
+.hmknow .nob{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-top:10px; font-size:var(--fs-sm); color:var(--dim); }
+.hmknow .quote{ margin-top:10px; padding:10px 12px; border-radius:12px; background:var(--panel2); border-inline-start:3px solid var(--c); }
+.hmknow .quote .qh{ display:flex; align-items:center; gap:6px; } .hmknow .quote .qh .oc{ margin-inline-start:auto; }
+.hmknow .quote p{ margin-top:6px; font:500 15px/1.4 var(--body); }
+.hmdots{ display:inline-flex; gap:4px; } .hmdots i{ width:7px; height:7px; border-radius:50%; background:var(--muted); animation:blip 1s infinite; } .hmdots i:nth-child(2){ animation-delay:.2s; } .hmdots i:nth-child(3){ animation-delay:.4s; }
+.hmcoach{ position:relative; margin:14px 0; padding:14px 16px 12px; border-radius:20px; background:var(--accent); color:var(--accent-ink); box-shadow:0 18px 40px -16px color-mix(in srgb,var(--accent) 60%,transparent); }
+.hmcoach h3{ font:800 var(--ital) 22px/1.05 var(--display); text-transform:var(--caps); } html[lang="ar"] .hmcoach h3{ line-height:1.3; }
+.hmcoach p{ margin-top:6px; font:600 15px/1.4 var(--body); } .hmcoach small{ display:block; margin-top:8px; font:700 13px/1.2 var(--body); opacity:.8; }
+.hmtiles{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.hmtiles .tw{ position:relative; }
+.hmtile{ position:relative; width:100%; min-height:96px; display:flex; flex-direction:column; align-items:flex-start; gap:6px; padding:10px; border-radius:16px; border:1.5px solid var(--line2); background:var(--panel); color:var(--text); text-align:start; cursor:pointer; }
+.hmtile.asked{ border-style:dashed; background:transparent; }
+.hmtile .ti{ width:32px; height:32px; border-radius:10px; display:grid; place-items:center; background:var(--panel3); font-size:17px; }
+.hmtile .cost{ position:absolute; top:10px; inset-inline-end:10px; display:inline-flex; align-items:center; gap:3px; height:24px; padding:0 8px; border-radius:12px; background:var(--panel3); font:800 13px/1 var(--body); } .hmtile .cost svg{ width:13px; height:13px; }
+.hmtile.hmpulse .cost{ background:var(--cta); color:var(--cta-ink); }
+.hmtile b{ font:700 15px/1.1 var(--body); } .hmtile .lv{ display:inline-flex; align-items:center; gap:6px; font:600 var(--fs-xs) var(--body); color:var(--muted); } .hmtile .dday{ font:700 var(--fs-xs) var(--body); color:var(--muted); }
+.hmpulse{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent),0 0 30px -4px var(--accent); }
+.dimmed{ opacity:.32; }
+.hmfinger{ position:absolute; bottom:-30px; inset-inline-end:-2px; font-size:34px; pointer-events:none; animation:hmTap 1.2s ease-in-out infinite; }
+@keyframes hmTap{ 50%{ transform:translateY(-6px); } }
+.hmnext{ margin-top:28px; text-align:center; font-size:var(--fs-sm); color:var(--muted); }
+.hmcomp{ padding-bottom:8px; }
+.hmopts{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.hmopt{ display:flex; flex-direction:column; align-items:flex-start; gap:6px; min-height:78px; padding:10px; border-radius:14px; border:1.5px solid var(--line2); background:var(--panel); color:var(--text); text-align:start; font:600 var(--fs-sm)/1.3 var(--body); cursor:pointer; }
+.hmopt.on{ border-color:var(--c); background:color-mix(in srgb,var(--c) 12%,var(--panel)); box-shadow:0 0 0 1.5px var(--c); }
+.hmlouds{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+.hmloud{ display:flex; flex-direction:column; align-items:center; gap:4px; min-height:60px; padding:8px 4px; border-radius:14px; border:1.5px solid var(--line2); background:var(--panel); color:var(--text); cursor:pointer; font:700 var(--fs-sm)/1.2 var(--body); text-align:center; }
+.hmloud span{ font:800 var(--ital) 15px/1 var(--display); color:var(--muted); } .hmloud.on{ border-color:var(--cta); box-shadow:0 0 0 1.5px var(--cta); }
+.hmres{ padding:18px 0; text-align:center; } .hmres .stamp{ font-size:26px; padding:6px 12px 4px; }
+.hmres .hero-n{ margin-top:18px; } .hmres .hero-n.ok{ color:var(--ok); } .hmres .hero-n.bad{ color:var(--bad); }
+.hmres .hmp{ margin-top:12px; } .hmreplies{ text-align:start; }
+.hmdd{ position:relative; padding:14px; border-radius:var(--r-lg); background:linear-gradient(180deg,#2A0A12,#15060A); border:1px solid #6A2437; color:#FFF1F3; cursor:pointer; }
+.hmdd .ddh{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; } .hmdd .ddh .d4{ color:#FF7A8A; }
+.hmdd .clock{ --clock-bg:#fff; --clock-ink:#D0142A; --clock-alarm:#FF3D55; }
+.hmdd .ddr{ display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid #4D1826; }
+.hmdd .ddr .kit{ background:#3C131F; border-radius:8px; } .hmdd .ddr .nm{ flex:1; height:10px; border-radius:5px; background:#3C131F; } .hmdd .tag{ background:#3C131F; color:#EDB4BE; }
+.hmdd .shut{ position:absolute; inset:0; display:grid; place-items:center; background:rgba(10,2,5,.6); border-radius:inherit; } .hmdd .shut .stamp{ font-size:30px; background:#15060A; }
+.hmthat{ margin:16px 0 12px; text-align:center; font:700 16px/1.4 var(--body); }
 /* @@LANE CSS:home END */
 /* ─ */
 /* @@LANE CSS:board BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -2763,6 +2933,96 @@ deepMerge(I18N,{
 /* @@LANE I18N:ds END */
 /* ─ */
 /* @@LANE I18N:home BEGIN (lane-owned; insert only between BEGIN and END) */
+/* home lane: Today, tab bar, More, Settings, How to play, training, tips */
+deepMerge(I18N,{
+ en:{
+  nav:{main:'Main',today:'Today',career:'Career',friends:'Friends',trophies:'Trophies',more:'More',newN:'{n} new'},
+  home:{expired:"That Daily expired. Today's is fresh.",langAria:'Language: {l}. Change language',sq:{ok:'right',ex:'exclusive',bad:'wrong',none:'no call'},dailyN:'Daily #{n}',shareEx:'{n} exclusives',
+   friendsSub:'Private rooms. Same boards.',friendsOff:'Offline — rooms need a connection',rank:"You're #{n}",seasonOf:'Season {s}/{n}',yourGo:'Your go',share:'Share',seeResults:'See results',resumeDay:'Resume · Day {d}',playToday:'Play today',tutFirst:'45-sec tutorial first',
+   tag1:'Break the transfer first.',tag2:"Or get ratio'd trying.",streakN:'{n}-day streak',todaysFive:"Today's five",nextIn:'Next five in',newIn5:'New five in',weekAria:'This week: fire marks the days you played',fine:'Same five for everyone · 7 days · about 6 min',moreWays:'More ways to play',dayChip:'Day {d}',practiceT:'Practice',practiceSub:'Random board. Nothing counts.'},
+  more:{howtoSub:'Rules, sources, points',past:'Past dailies',pastN:'{n} played',pastNone:'None yet',move:'Move to another device',moveSub:'Transfer code'},
+  settings:{wipeGo:'Wipe everything',keep:'Keep my progress',appearance:'Appearance',fixedLook:'This look has its own lighting',feel:'Sound & feel',haptics:'Haptics',motion:'Motion',mSystem:'System',mReduced:'Reduced',replies:'Fan replies',clean:'Clean fan replies',cleanSub:'Hides replies with swearing',a11y:'Accessibility',large:'Larger text',largeSub:'Makes everything 12% bigger',relaxed:'Relaxed Deadline Day',relaxedSub:'+50% time · Practice and Career only',tutGrp:'Tutorial',tutorial2:'Replay the 45-sec tutorial',data:'Your data',advanced:'Advanced',danger:'Danger zone'},
+  tut:{step:'Training · {n} of 4',coach:{c1:"Tap a player to see what everyone's saying.",c2:'Tap a source to ask. More bars = more trustworthy.',c3:'Two reads agree? Make your call.',c4:"Unused contacts don't roll over. Rivals post overnight.",c5:"Deadline Day: call everything you haven't. Uncalled scores 0.",opens:"Some sources only open later in the window.",overnight:'Rivals post overnight. Some are guessing.',twist:'Twists re-open sources. Old reads may be outdated.',results:"Share your card — it's spoiler-free.",unused:"Unused contacts don't roll over."}},
+  tut2:{aria:'Training',src:{agent:'Agent',barber:'Barber',airport:'Airport'},d1:'D1',tier:{1:'Low',2:'Medium',3:'High'},conf:{low:'👀 Talks',med:'📈 Advanced',high:'📢 Confirmed'},sub:{DONE:'to {d}',HIJACK:'not {d}'},
+   know:'What we know',report1:'1 report',reports:'{n} reports',noReports:'No reports yet',nobody:'Nobody yet:',day1:'Day 1',
+   dm:{agent:'Personal terms with {d}? Basically done. Now pay my fee.',airport:'Jet’s filed for Paris. Not Madrid.'},
+   s1:{h:'5 players. 7 days. Find the truth.',p:'Tap the agent — he always has a take.',do:'Tap the agent ↓'},
+   s2:{h:'Agents talk up deals 🙄',p:"One read isn't proof. Check with someone who can see the move — the airport spotter tracks the jets.",do:'Tap the airport spotter ↓'},
+   s3:{h:'Two sources disagree.',p:'More bars = more trustworthy. Make your call: what happens, and how loud?'},
+   s4:{h:'Day 7 is Deadline Day',p:'The clock is on every screen. Anyone uncalled at 0:00 scores zero.'},
+   next1:'Next: check it with a second source.',next2:'Next: make the call — and see the truth instantly.',
+   opt:{DONE:'He joins {d}',HIJACK:'He leaves {c} — not for {d}',OFF:'Deal dies. He stays at {c}',FAKE:'It was never real'},
+   what:'What happens?',loud:'How loud?',post:'Post it',stampEx:'Exclusive',stampWrong:'Wrong',truth:'The truth: {p} joins {h}. The spotter was right.',praiseTag:'praise',
+   praise1:'how are you ALWAYS first 😭',praise2:'the rest of twitter is reading your tweets rn',wrongH:'Trust the bars',wrongP:'The spotter had 3 bars. The agent had 2. Trust the bars.',nextBtn:'Next',
+   ddTitle:'Deadline Day',uncalled:'Uncalled',shut:'Window shut',thats:"That's it: 5 players, 7 days, 1 deadline.",playDaily:"Play today's Daily",practice:'Practice first',tapSkip:'Tap to skip',notThis:'Try the {s} for this step.'},
+  howto2:{lead:"Five transfer rumours, seven days, {n} contacts a day. Ask sources (some lie), then post what really happens — right and early scores big, loud and wrong gets you ratio'd.",
+   goal:'The goal',o:{DONE:'He joins the club in the rumour.',HIJACK:'He leaves — but for a different club.',OFF:'The deal dies. He stays.',FAKE:'It was never real.'},
+   ask:'Ask sources',ask1:'You get {n} contacts a day. Unused ones don’t roll over.',ask2:'Each source costs contacts. More bars = more trustworthy, but anyone can lie.',ask3:'The physio and the airport spotter open later in the window, and sources get sharper near the deadline.',ask4:'Nobody tells you who lied until the window shuts.',
+   call:'Make the call',tblCap:'Points for a ★★ player',right:'Right',wrong:'Wrong',early:'Early bonus: +{n} for every day left when you post a right call.',ex:'Exclusive: right AND before every rival = +{n}.',types:'★★★ players swing more points, ★ players less.',ut:'U-turn: delete and re-call. Followers notice and the new call scores half.',
+   dd:'Deadline Day',dd1:'Day 7 is a {s}-second clock with {n} contacts.',dd2:'Anyone still uncalled at 0:00 scores zero.',twist:'Two deals twist every window: the wire shouts 🌀, old reads go out of date and his sources talk again.',
+   sources:'Sources',rivals:'Rivals',modes:'Daily, Career, Friends',opens:'Day {d}',rival:'Posts on days {a}–{b}',
+   knows:{physio:'Knows about medicals',airport:'Sees the jets',agent:'Pushes the deal',kitman:'Sees the dressing room',barber:'Hears everything',leak:"Another paper's gossip"},
+   m:{daily:'Daily',dailyT:'Same five for everyone, once a day. No gear, nothing carries over.',careerT:'Your long game: earn cash, buy gear, level up your desk.',friendsT:'Private rooms with a code. Everyone plays the same seasons.'}}
+ },
+ es:{
+  nav:{main:'Principal',today:'Hoy',career:'Carrera',friends:'Amigos',trophies:'Trofeos',more:'Más',newN:'{n} nuevos'},
+  home:{expired:'Ese diario caducó. El de hoy está recién hecho.',langAria:'Idioma: {l}. Cambiar idioma',sq:{ok:'acierto',ex:'exclusiva',bad:'fallo',none:'sin apuesta'},dailyN:'Diario #{n}',shareEx:'{n} exclusivas',
+   friendsSub:'Salas privadas. Mismos tableros.',friendsOff:'Sin conexión — las salas la necesitan',rank:'Vas #{n}',seasonOf:'Temporada {s}/{n}',yourGo:'Te toca',share:'Compartir',seeResults:'Ver resultados',resumeDay:'Seguir · Día {d}',playToday:'Jugar hoy',tutFirst:'Antes, tutorial de 45 s',
+   tag1:'Da la exclusiva primero.',tag2:'O que te hagan ratio intentándolo.',streakN:'Racha de {n} días',todaysFive:'Los cinco de hoy',nextIn:'Nuevos cinco en',newIn5:'Nuevos cinco en',weekAria:'Esta semana: el fuego marca los días que jugaste',fine:'Los mismos cinco para todos · 7 días · unos 6 min',moreWays:'Más formas de jugar',dayChip:'Día {d}',practiceT:'Práctica',practiceSub:'Tablero al azar. No cuenta.'},
+  more:{howtoSub:'Reglas, fuentes, puntos',past:'Diarios anteriores',pastN:'{n} jugados',pastNone:'Aún ninguno',move:'Pasar a otro dispositivo',moveSub:'Código de traspaso'},
+  settings:{wipeGo:'Borrarlo todo',keep:'Conservar mi progreso',appearance:'Apariencia',fixedLook:'Este aspecto tiene su propia luz',feel:'Sonido y tacto',haptics:'Vibración',motion:'Animaciones',mSystem:'Sistema',mReduced:'Reducidas',replies:'Respuestas de fans',clean:'Respuestas limpias',cleanSub:'Oculta las respuestas con tacos',a11y:'Accesibilidad',large:'Texto más grande',largeSub:'Todo un 12% más grande',relaxed:'Día límite relajado',relaxedSub:'+50% de tiempo · Solo Práctica y Carrera',tutGrp:'Tutorial',tutorial2:'Repetir el tutorial de 45 s',data:'Tus datos',advanced:'Avanzado',danger:'Zona peligrosa'},
+  tut:{step:'Entreno · {n} de 4',coach:{c1:'Toca un jugador para ver qué dice todo el mundo.',c2:'Toca una fuente para preguntar. Más barras = más fiable.',c3:'¿Dos datos coinciden? Haz tu apuesta.',c4:'Los contactos sin usar no se acumulan. Los rivales publican de noche.',c5:'Día límite: apuesta todo lo que falte. Sin apuesta = 0.',opens:'Algunas fuentes abren más tarde en el mercado.',overnight:'Los rivales publican de noche. Algunos adivinan.',twist:'Los vuelcos reabren fuentes. Lo anterior puede estar desfasado.',results:'Comparte tu tarjeta: no tiene spoilers.',unused:'Los contactos sin usar no se acumulan.'}},
+  tut2:{aria:'Entreno',src:{agent:'Agente',barber:'Barbero',airport:'Aeropuerto'},d1:'D1',tier:{1:'Baja',2:'Media',3:'Alta'},conf:{low:'👀 Charlas',med:'📈 Avanzado',high:'📢 Confirmado'},sub:{DONE:'a {d}',HIJACK:'no a {d}'},
+   know:'Lo que sabemos',report1:'1 dato',reports:'{n} datos',noReports:'Aún no hay datos',nobody:'Nadie aún:',day1:'Día 1',
+   dm:{agent:'¿Términos personales con el {d}? Prácticamente hecho. Ahora págame la comisión.',airport:'El jet va a París. No a Madrid.'},
+   s1:{h:'5 jugadores. 7 días. Encuentra la verdad.',p:'Toca al agente: siempre tiene algo que contar.',do:'Toca al agente ↓'},
+   s2:{h:'Los agentes inflan los fichajes 🙄',p:'Un dato no es prueba. Contrástalo con alguien que vea el movimiento: el vigía del aeropuerto sigue los jets.',do:'Toca al vigía del aeropuerto ↓'},
+   s3:{h:'Dos fuentes no coinciden.',p:'Más barras = más fiable. Haz tu apuesta: ¿qué pasa y con cuánta fuerza?'},
+   s4:{h:'El día 7 es el Día límite',p:'El reloj está en todas las pantallas. Quien no tenga apuesta a las 0:00 suma cero.'},
+   next1:'Luego: contrástalo con otra fuente.',next2:'Luego: apuesta y ve la verdad al instante.',
+   opt:{DONE:'Ficha por el {d}',HIJACK:'Se va del {c} — pero no al {d}',OFF:'Se cae. Se queda en el {c}',FAKE:'Nunca fue real'},
+   what:'¿Qué pasa?',loud:'¿Qué tan alto?',post:'Publicar',stampEx:'Exclusiva',stampWrong:'Fallo',truth:'La verdad: {p} ficha por el {h}. El vigía tenía razón.',praiseTag:'elogio',
+   praise1:'¿cómo eres SIEMPRE el primero? 😭',praise2:'el resto de twitter está leyendo tus tuits ahora mismo',wrongH:'Fíate de las barras',wrongP:'El vigía tenía 3 barras. El agente, 2. Fíate de las barras.',nextBtn:'Siguiente',
+   ddTitle:'Día límite',uncalled:'Sin apuesta',shut:'Mercado cerrado',thats:'Eso es todo: 5 jugadores, 7 días, 1 cierre.',playDaily:'Jugar el diario de hoy',practice:'Practicar antes',tapSkip:'Toca para saltar',notThis:'En este paso, prueba con: {s}.'},
+  howto2:{lead:'Cinco rumores, siete días, {n} contactos al día. Pregunta a tus fuentes (algunas mienten) y publica lo que de verdad pasa: acertar pronto da muchos puntos; gritar y fallar te cuesta un ratio.',
+   goal:'El objetivo',o:{DONE:'Ficha por el club del rumor.',HIJACK:'Se va, pero a otro club.',OFF:'La operación se cae. Se queda.',FAKE:'Nunca fue real.'},
+   ask:'Pregunta a las fuentes',ask1:'Tienes {n} contactos al día. Los que no uses no se acumulan.',ask2:'Cada fuente cuesta contactos. Más barras = más fiable, pero cualquiera puede mentir.',ask3:'El fisio y el vigía del aeropuerto abren más tarde, y las fuentes afinan cerca del cierre.',ask4:'Nadie te dice quién mintió hasta que cierra el mercado.',
+   call:'Haz tu apuesta',tblCap:'Puntos con un jugador ★★',right:'Acierto',wrong:'Fallo',early:'Bonus por pronto: +{n} por cada día que quede al publicar un acierto.',ex:'Exclusiva: acertar ANTES que todos los rivales = +{n}.',types:'Los ★★★ mueven más puntos; los ★, menos.',ut:'Giro: borra y vuelve a apostar. Tus seguidores lo notan y la nueva apuesta vale la mitad.',
+   dd:'Día límite',dd1:'El día 7 es un reloj de {s} segundos con {n} contactos.',dd2:'Quien siga sin apuesta a las 0:00 suma cero.',twist:'Dos fichajes dan un vuelco en cada mercado: el teletipo grita 🌀, lo anterior queda desfasado y sus fuentes vuelven a hablar.',
+   sources:'Fuentes',rivals:'Rivales',modes:'Diario, Carrera, Amigos',opens:'Día {d}',rival:'Publica los días {a}–{b}',
+   knows:{physio:'Sabe de reconocimientos',airport:'Ve los jets',agent:'Empuja la operación',kitman:'Ve el vestuario',barber:'Lo oye todo',leak:'Chismes de otro periódico'},
+   m:{daily:'Diario',dailyT:'Los mismos cinco para todos, una vez al día. Sin equipo; nada se arrastra.',careerT:'Tu partida larga: gana dinero, compra equipo, sube de nivel.',friendsT:'Salas privadas con código. Todos juegan las mismas temporadas.'}}
+ },
+ ar:{
+  nav:{main:'الرئيسية',today:'النهارده',career:'المسيرة',friends:'الصحاب',trophies:'الكاسات',more:'المزيد',newN:'{n} جديد'},
+  home:{expired:'تحدي امبارح خلص. بتاع النهارده جديد.',langAria:'اللغة: {l}. غيّر اللغة',sq:{ok:'صح',ex:'انفراد',bad:'غلط',none:'من غير توقّع'},dailyN:'اليومي #{n}',shareEx:'{n} انفرادات',
+   friendsSub:'أوض خاصة. نفس اللوحات.',friendsOff:'مفيش نت — الأوض محتاجة اتصال',rank:'إنت رقم {n}',seasonOf:'الموسم {s}/{n}',yourGo:'دورك',share:'شير',seeResults:'شوف النتيجة',resumeDay:'كمّل · يوم {d}',playToday:'العب النهارده',tutFirst:'تدريب 45 ثانية الأول',
+   tag1:'اخبط الخبر الأول…',tag2:'يا إما تاكل راتيو وانت بتحاول.',streakN:'سلسلة {n} أيام',todaysFive:'خمسة النهارده',nextIn:'الخمسة الجداد بعد',newIn5:'الخمسة الجداد بعد',weekAria:'الأسبوع ده: النار على الأيام اللي لعبتها',fine:'نفس الخمسة للكل · 7 أيام · حوالي 6 دقايق',moreWays:'طرق تانية للعب',dayChip:'يوم {d}',practiceT:'تسخين',practiceSub:'لوحة عشوائية. مش بتتحسب.'},
+  more:{howtoSub:'القواعد، المصادر، النقط',past:'التحديات اللي فاتت',pastN:'لعبت {n}',pastNone:'لسه مفيش',move:'انقل لجهاز تاني',moveSub:'كود النقل'},
+  settings:{wipeGo:'امسح كل حاجة',keep:'سيب تقدّمي',appearance:'الشكل',fixedLook:'الشكل ده ليه إضاءته الخاصة',feel:'الصوت والإحساس',haptics:'الاهتزاز',motion:'الحركة',mSystem:'زي الجهاز',mReduced:'أقل',replies:'ردود الجمهور',clean:'ردود محترمة',cleanSub:'بيخبّي الردود اللي فيها شتيمة',a11y:'سهولة الاستخدام',large:'خط أكبر',largeSub:'كل حاجة أكبر 12%',relaxed:'يوم قفلة هادي',relaxedSub:'+50% وقت · التسخين والمسيرة بس',tutGrp:'التدريب',tutorial2:'عيد تدريب الـ45 ثانية',data:'بياناتك',advanced:'متقدم',danger:'منطقة خطر'},
+  tut:{step:'تدريب · {n} من 4',coach:{c1:'دوس على لعيب عشان تشوف الكل بيقول إيه.',c2:'دوس على مصدر عشان تسأله. شرط أكتر = ثقة أكتر.',c3:'مصدرين متفقين؟ قول توقّعك.',c4:'الاتصالات اللي ماستخدمتهاش مش بتترحّل. المنافسين بينزّلوا بالليل.',c5:'يوم القفلة: قول توقّعك في كل اللي فاضل. اللي من غير توقّع = صفر.',opens:'في مصادر بتفتح بعدين في النافذة.',overnight:'المنافسين بينزّلوا بالليل. شوية منهم بيخمّنوا.',twist:'القلبات بتفتح المصادر تاني. الكلام القديم ممكن يكون اتغيّر.',results:'شير الكارت بتاعك — مفيهوش حرق.',unused:'الاتصالات اللي ماستخدمتهاش مش بتترحّل.'}},
+  tut2:{aria:'تدريب',src:{agent:'السمسار',barber:'الحلاق',airport:'المطار'},d1:'ي1',tier:{1:'ضعيف',2:'متوسط',3:'عالي'},conf:{low:'👀 الكلام شغال',med:'📈 متقدمة',high:'📢 مؤكدة'},sub:{DONE:'لـ{d}',HIJACK:'مش لـ{d}'},
+   know:'اللي نعرفه',report1:'خبر واحد',reports:'{n} أخبار',noReports:'لسه مفيش أخبار',nobody:'لسه محدش:',day1:'يوم 1',
+   dm:{agent:'الشروط الشخصية مع {d}؟ خلصانة تقريبًا. هات عمولتي بقى.',airport:'الطيارة متسجلة لباريس. مش مدريد.'},
+   s1:{h:'5 لعيبة. 7 أيام. دوّر على الحقيقة.',p:'دوس على السمسار — دايمًا عنده كلام.',do:'دوس على السمسار ↓'},
+   s2:{h:'السماسرة بيكبّروا الصفقات 🙄',p:'خبر واحد مش دليل. اتأكد من حد شايف الحركة بعينه — بتاع المطار بيتابع الطيارات.',do:'دوس على بتاع المطار ↓'},
+   s3:{h:'مصدرين مش متفقين.',p:'شرط أكتر = ثقة أكتر. قول توقّعك: إيه اللي هيحصل، وبصوت قد إيه؟'},
+   s4:{h:'يوم 7 هو يوم القفلة',p:'الساعة على كل شاشة. أي لعيب من غير توقّع على 0:00 بياخد صفر.'},
+   next1:'بعد كده: اتأكد من مصدر تاني.',next2:'بعد كده: قول توقّعك وشوف الحقيقة على طول.',
+   opt:{DONE:'هيمضي لـ{d}',HIJACK:'ماشي من {c} — بس مش لـ{d}',OFF:'الصفقة باظت. قاعد في {c}',FAKE:'ماكانش حقيقي أصلًا'},
+   what:'إيه اللي هيحصل؟',loud:'بصوت قد إيه؟',post:'انزل بيها',stampEx:'انفراد',stampWrong:'غلط',truth:'الحقيقة: {p} رايح {h}. بتاع المطار كان صح.',praiseTag:'مدح',
+   praise1:'إزاي إنت دايمًا الأول 😭',praise2:'تويتر كله بيقرا تويتاتك دلوقتي',wrongH:'صدّق الشرط',wrongP:'بتاع المطار كان عنده 3 شرط. السمسار 2. صدّق الشرط.',nextBtn:'اللي بعده',
+   ddTitle:'يوم القفلة',uncalled:'من غير توقّع',shut:'النافذة قفلت',thats:'بس كده: 5 لعيبة، 7 أيام، قفلة واحدة.',playDaily:'العب تحدي النهارده',practice:'سخّن الأول',tapSkip:'دوس عشان تتخطّى',notThis:'في الخطوة دي جرّب: {s}.'},
+  howto2:{lead:'خمس إشاعات انتقالات، سبع أيام، {n} اتصالات في اليوم. اسأل مصادرك (فيهم اللي بيكدب)، وبعدين انزل باللي هيحصل فعلًا — صح وبدري يجيب نقط كتير، وبصوت عالي وغلط تاكل راتيو.',
+   goal:'الهدف',o:{DONE:'هيمضي للنادي اللي في الإشاعة.',HIJACK:'ماشي — بس لنادي تاني.',OFF:'الصفقة باظت. قاعد مكانه.',FAKE:'ماكانش حقيقي أصلًا.'},
+   ask:'اسأل المصادر',ask1:'عندك {n} اتصالات في اليوم. اللي ماتستخدمهاش مش بتترحّل.',ask2:'كل مصدر بياخد اتصالات. شرط أكتر = ثقة أكتر، بس أي حد ممكن يكدب.',ask3:'الدكتور وبتاع المطار بيفتحوا بعدين في النافذة، والمصادر بتبقى أدق قرب القفلة.',ask4:'محدش هيقولك مين كدب غير لما النافذة تقفل.',
+   call:'قول توقّعك',tblCap:'النقط للعيب ★★',right:'صح',wrong:'غلط',early:'بونص بدري: +{n} عن كل يوم فاضل لما تنزل توقّع صح.',ex:'انفراد: صح وقبل كل المنافسين = +{n}.',types:'لعيبة ★★★ بتحرّك نقط أكتر، و★ أقل.',ut:'اللفّة: امسح وقول تاني. المتابعين هياخدوا بالهم والتوقّع الجديد بنص النقط.',
+   dd:'يوم القفلة',dd1:'يوم 7 ساعة {s} ثانية و{n} اتصالات.',dd2:'أي لعيب لسه من غير توقّع على 0:00 بياخد صفر.',twist:'صفقتين بيتقلبوا في كل نافذة: الخبر العاجل بيصرّخ 🌀، الكلام القديم بيبقى قديم، ومصادره بتتكلم تاني.',
+   sources:'المصادر',rivals:'المنافسين',modes:'اليومي، المسيرة، الصحاب',opens:'يوم {d}',rival:'بينزّل من يوم {a} لـ{b}',
+   knows:{physio:'عارف الكشف الطبي',airport:'شايف الطيارات',agent:'بيزقّ الصفقة',kitman:'شايف غرفة اللبس',barber:'بيسمع كل حاجة',leak:'رغي جرنال تاني'},
+   m:{daily:'اليومي',dailyT:'نفس الخمسة للكل، مرة في اليوم. من غير عدّة، ومفيش حاجة بتترحّل.',careerT:'لعبتك الطويلة: اكسب فلوس، اشتري عدّة، وكبّر مكتبك.',friendsT:'أوض خاصة بكود. الكل بيلعب نفس المواسم.'}}
+ }
+});
 /* @@LANE I18N:home END */
 /* ─ */
 /* @@LANE I18N:board BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -3147,28 +3407,23 @@ function endDayLabel(){ return t('win.endDay',{d:game.day}); }
 
 // ----- tutorial / coach -----
 function coachDone(k){ return !!(save.tutorial.steps&&save.tutorial.steps[k]); }
-function dismissCoach(k){ save.tutorial.steps[k]=true; persist(); }
+function dismissCoach(k){ if(!save.tutorial.steps) save.tutorial.steps={}; save.tutorial.steps[k]=true; persist(); }
+/* one-shot tips: each shows once, one sentence, in context. Known keys have a show rule; any other key shows once while a window is open. */
 function coachHtml(k){
  if(!game||coachDone(k)) return '';
  const s=currentSaga!=null?game.sagas[currentSaga]:null;
- const show={ c1:screen==='window'&&game.tab==='sagas'&&!game.sagas.some(x=>x.clues.length||x.call),
+ const known={ c1:screen==='window'&&(game.tab||'sagas')==='sagas'&&!game.sagas.some(x=>x.clues.length||x.call),
               c2:!!s&&s.clues.length===0&&game.actions>0,
               c3:!!s&&s.clues.length>0&&!s.call,
               c4:screen==='window'&&game.day<7&&(game.actions===0||game.sagas.some(x=>x.call)),
-              c5:screen==='window'&&game.day===7 }[k];
+              c5:screen==='window'&&game.day===7 };
+ const show=k in known?known[k]:true;
  if(!show) return '';
- return `<div class="coach"><div class="ic">${{c1:'👆',c2:'💬',c3:'🚀',c4:'🌙',c5:'⏱️'}[k]}</div><div class="tx">${esc(t('tut.coach.'+k))}</div><button data-act="coachOk" data-v="${k}">${esc(t('tut.gotit'))}</button></div>`;
+ const ic={c1:'👆',c2:'📞',c3:'🎯',c4:'🌙',c5:'⏱️',opens:'🕐',overnight:'🌙',twist:'🌀',results:'📤',unused:'📞'}[k]||'💡';
+ return `<div class="coach hmtip" role="note"><span class="ic" aria-hidden="true">${ic}</span><span class="tx">${esc(t('tut.coach.'+k,{n:hmDDSecs()}))}</span><button class="btn sm ghost" data-act="coachOk" data-v="${esc(k)}">${esc(t('tut.gotit'))}</button></div>`;
 }
 let introStep=0, introThen=null;
-function showIntro(then){ introStep=0; introThen=then; renderIntro(); }
-function renderIntro(){
- const cards=tt('tut.cards'); const c=cards[introStep]; const last=introStep===cards.length-1;
- let d=document.querySelector('.big.tut'); if(!d){ d=document.createElement('div'); d.className='big tut'; document.body.appendChild(d); }
- d.innerHTML=`<div class="inner"><div class="tutcard"><div class="ic">${c[0]}</div><h2>${esc(c[1])}</h2><p>${esc(c[2])}</p><div class="dotsrow">${cards.map((_,i)=>`<i class="${i===introStep?'on':''}"></i>`).join('')}</div>
-  ${last?`<div class="stack"><button class="btn primary" data-act="introGo" data-v="practice">${esc(t('tut.practice'))}</button><button class="btn center" data-act="introGo" data-v="start">${esc(t('tut.start'))}</button></div>`
-       :`<div class="row"><button class="btn center" data-act="introGo" data-v="skip">${esc(t('tut.skip'))}</button><button class="btn primary" data-act="introNext">${esc(t('tut.next'))}</button></div>`}</div></div>`;
-}
-function closeIntro(){ const d=document.querySelector('.big.tut'); if(d) d.remove(); }
+/* showIntro / renderIntro / closeIntro: the scripted training window lives in the home JS slot */
 
 // ----- sound: small synth engine (no audio files) -----
 const SFX=(()=>{
@@ -3455,7 +3710,7 @@ function render(){
  if(!(screen==='window'&&game&&game.day===7&&!game.result)) document.documentElement.classList.remove('dd-alarm');
  Ads.push(); renderConsent(); fireHook('rendered',screen);
 }
-function langPills(){ return `<div class="pills">${Object.keys(I18N).map(k=>`<button class="${lang===k?'on':''}" data-act="setLang" data-v="${k}">${esc(I18N[k].langName)}</button>`).join('')}</div>`; }
+function langPills(){ return `<button class="langchip" data-act="hmLang" aria-label="${esc(t('home.langAria',{l:I18N[lang].langName}))}">${uiIcon('globe')}<span>${esc(lang.toUpperCase())}</span></button>`; }
 
 // ----- home -----
 let homeTick=null, nTimer=null;
@@ -3463,47 +3718,42 @@ function msToMidnight(){ const n=new Date(), m=new Date(n); m.setHours(24,0,0,0)
 function fmtHMS(ms){ const x=Math.max(0,Math.floor(ms/1000)); return [Math.floor(x/3600),Math.floor(x%3600/60),x%60].map(v=>String(v).padStart(2,'0')).join(':'); }
 function startHomeTimers(){
  clearInterval(homeTick); clearInterval(nTimer);
- homeTick=setInterval(()=>{ if(screen!=='home'){ clearInterval(homeTick); return; } const el=$('countdown'); if(el) el.textContent='⏱ '+t('home.newIn',{t:fmtHMS(msToMidnight())}); },1000);
- const els=[...document.querySelectorAll('#nstack .notif')]; if(!els.length||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
- let k=0; nTimer=setInterval(()=>{ if(screen!=='home'||!document.body.contains(els[0])){ clearInterval(nTimer); return; } k=(k+1)%els.length; els.forEach((el,i)=>{ el.className='notif p'+((i-k+els.length)%els.length); }); },2800);
+ homeTick=setInterval(()=>{ if(screen!=='home'){ clearInterval(homeTick); return; } const el=$('countdown'); if(el) el.textContent=fmtHMS(msToMidnight()); },1000);
 }
 function renderHome(){
- const k=todayKey(); const done=save.daily.history[k]; const c=save.career; const lv=levelInfo(c.xp); const inprog=save.inProgress;
- const pct=lv.next?Math.round((c.xp-lv.cur)/(lv.next-lv.cur)*100):100;
- const notes=[['🛩️','src.airport.name','home.notif1'],['🗞️','rival.tabloid','home.notif2'],['💈','src.barber.name','home.notif3']];
- return `<div class="screen home">
-  <div class="homebar">${/^https?:/.test(location.protocol)?`<a class="studiolink" href="/" aria-label="Semba Games home"><span class="arr">‹</span> Semba Games</a>`:'<span></span>'}${langPills()}</div>
-  <section class="hero">
-   <span class="livebug"><i></i>${esc(t('app.live'))}</span>
-   <h1 class="logo" aria-label="Tier One"><span>TIER</span><b>ONE</b></h1>
-   <p class="tagline">${esc(t('app.tagline'))}</p>
+ const k=todayKey(), done=save.daily.history[k], c=save.career, lv=levelInfo(c.xp), ip=save.inProgress;
+ const ipDaily=ip&&ip.mode==='daily'&&ip.seed==='daily-'+k?ip:null, ipCareer=ip&&ip.mode==='career'&&!ip.room?ip:null;
+ const pct=lv.next?Math.round((c.xp-lv.cur)/(lv.next-lv.cur)*100):100, num=done&&done.num||dailyNumber(), streak=hmStreak();
+ let date=''; try{ date=new Date().toLocaleDateString(hmLoc(),{weekday:'short',day:'numeric',month:'short'}); }catch(e){}
+ const cells=done?hmRowCells(done.row):null;
+ const five=(ipDaily?ipDaily.sagas:hmFive(k)).slice(0,CONFIG.SAGAS||5).map((s,i)=>{ const pt=ptype(s.player); let mark='';
+  if(cells&&cells[i]) mark=hmSqHtml(cells[i]); else if(ipDaily&&s.call){ const o=s.call.outcome; mark=`<span class="hmmk c-${o.toLowerCase()}" aria-label="${esc(t('ds.oc.'+o))}">${glyph(o)}</span>`; }
+  return `<div>${kitSVG(s.club,initials(s.player.name))}<b>${esc(hmSurname(s.player))}</b><span class="stars" aria-label="${esc(t('ptype.'+pt.key))}">${'★'.repeat(pt.stars)}</span>${mark}</div>`; }).join('');
+ const firstRun=!save.tutorial.intro;
+ const cta=done?`<div class="hmduo"><button class="btn primary xl" data-act="hmShare">${uiIcon('share')}${esc(t('home.share'))}</button><button class="btn" data-act="openDay" data-v="${esc(k)}">${esc(t('home.seeResults'))}</button></div>`
+  :ipDaily?`<button class="btn primary xl" data-act="resume">${uiIcon('play')}${esc(t('home.resumeDay',{d:ipDaily.day}))}</button>`
+  :`<button class="btn primary xl" data-act="startDaily">${uiIcon('play')}<span class="hmst">${esc(t('home.playToday'))}${firstRun?`<span class="sub">${esc(t('home.tutFirst'))}</span>`:''}</span></button>`;
+ return `<div class="today">
+  <div class="htop"><span class="live"><i></i>${esc(t('app.live'))}</span>${langPills()}</div>
+  <section class="hero"><h1 class="wordmark lg" aria-label="Tier One"><span>TIER</span><b>ONE</b></h1><p class="tagline">${esc(t('home.tag1'))} <b>${esc(t('home.tag2'))}</b></p></section>
+  <section class="daily ${done?'isdone':''}" aria-label="${esc(t('home.dailyN',{n:num}))}">
+   <span class="num-bg" aria-hidden="true">#${num}</span>
+   <div class="dtop"><span class="over">${esc(t('home.dailyN',{n:num}))}${date?' · '+esc(date):''}</span>${streak?`<span class="streakchip">🔥 ${esc(t('home.streakN',{n:streak}))}</span>`:''}</div>
+   <h2 class="d2">${esc(t('home.todaysFive'))}</h2>
+   <div class="five">${five}</div>
+   ${done?`<div class="hmdone"><span>${esc(tierName(tierOf(done.tier)))} · ${hmNum(done.score)} ${esc(t('app.ptsShort'))}</span><span class="newin">${esc(t('home.nextIn'))}<b id="countdown">${fmtHMS(msToMidnight())}</b></span></div>`
+    :`<div class="weekrow"><div class="week" aria-label="${esc(t('home.weekAria'))}">${hmWeek()}</div><div class="newin">${esc(t('home.newIn5'))}<b id="countdown">${fmtHMS(msToMidnight())}</b></div></div>`}
+   ${cta}
+   <p class="fine">🌍 ${esc(t('home.fine'))}</p>
   </section>
-  <div class="nstack" id="nstack" aria-hidden="true">${notes.map((n,i)=>`<div class="notif p${i}"><div class="ic">${n[0]}</div><div class="tx"><b>${esc(t(n[1]))}<em>${esc(t('compose.now'))}</em></b><span class="m">${esc(t(n[2]))}</span></div></div>`).join('')}</div>
-  ${inprog?`<button class="resume" data-act="resume"><span class="dot"></span>${esc(t('home.resume',{mode:t('mode.'+inprog.mode),d:inprog.day}))}</button>`:''}
-  <button class="tile daily" data-act="startDaily">
-   <span class="num">#${dailyNumber()}</span>
-   <span class="t-title">${esc(t('home.daily',{n:dailyNumber()}))}</span>
-   ${done?`<span class="donerow">${done.row}</span><span class="t-sub">${esc(tierName(tierOf(done.tier)))} · ${done.score} ${esc(t('app.ptsShort'))}</span>`:`<span class="t-sub">${esc(t('home.dailySub'))}</span>`}
-   <span class="t-foot"><span class="meta"><span class="pill">${esc(t('home.streak',{n:save.daily.streak}))}</span><span class="pill" id="countdown">⏱ ${esc(t('home.newIn',{t:fmtHMS(msToMidnight())}))}</span></span><span class="cta ${done&&!CONFIG.DAILY_REPLAY?'done':''}">${esc(done?(CONFIG.DAILY_REPLAY?t('arch.again'):t('arch.view')+' ›'):t('home.play'))}</span></span>
-  </button>
-  ${Object.keys(save.daily.history).length?`<button class="archlink" data-act="archive">${esc(t('arch.open',{n:Object.keys(save.daily.history).length}))}<span class="chev">›</span></button>`:''}
-  <button class="tile career" data-act="openCareer">
-   <span class="ctop"><span class="ring" style="--p:${pct}"><b>${lv.n}</b></span><span class="cinfo"><span class="t-title">${esc(t('home.career'))}</span><span class="t-sub" style="margin-top:4px">${esc(lv.title)}</span></span><span class="chev">›</span></span>
-   <span class="t-foot" style="margin-top:14px"><span class="meta"><span class="pill">💵 $${c.credits}</span><span class="pill">👥 ${fmtK(c.followers||1200)}</span><span class="pill">⭐ ${c.rep}</span></span></span>
-   <span class="t-sub small" style="margin-top:12px">${esc(t('home.careerSub'))}</span>
-  </button>
-  <button class="tile online" data-act="openOnline">
-   <span class="ctop"><span class="oic" aria-hidden="true">👥</span><span class="cinfo"><span class="t-title">${esc(t('online.tile'))}</span><span class="t-sub" style="margin-top:4px">${esc(t('online.tileSub'))}</span></span><span class="chev">›</span></span>
-   ${Object.keys(save.rooms||{}).length?`<span class="t-foot" style="margin-top:12px"><span class="meta">${Object.keys(save.rooms).slice(0,3).map(c=>`<span class="pill">🏟️ ${esc(c)}</span>`).join('')}</span></span>`:''}
-  </button>
-  <div class="quick">
-   <button data-act="startPractice"><span>🎯</span>${esc(t('home.practiceShort'))}</button>
-   <button data-act="howto"><span>📖</span>${esc(t('home.howto'))}</button>
-   <button data-act="settings"><span>⚙️</span>${esc(t('home.settings'))}</button>
+  <div class="sechead"><span class="over">${esc(t('home.moreWays'))}</span></div>
+  <div class="modes">
+   <button class="mode" data-act="hmTab" data-v="career"><span class="ring" style="--p:${pct}"><b>${lv.n}</b></span><b class="mt">${esc(t('nav.career'))}</b><small>${esc(lv.title)}</small>${ipCareer?`<span class="tag sharp go">▶ ${esc(t('home.dayChip',{d:ipCareer.day}))}</span>`:''}</button>
+   ${hmFriendsCard()}
+   <button class="mode" data-act="startPractice"><span class="mi" aria-hidden="true">🎯</span><b class="mt">${esc(t('home.practiceT'))}</b><small>${esc(t('home.practiceSub'))}</small></button>
   </div>
   ${Ads.slot('home')}
-  <div class="foot">${esc(t('app.disclaimer'))}</div>
-  <div class="legalfoot"><span>© ${esc(CONFIG.STUDIO_NAME)}</span><button data-act="legal" data-v="terms">${esc(t('prod.terms'))}</button><button data-act="legal" data-v="privacy">${esc(t('prod.privacy'))}</button><button data-act="legal" data-v="contact">${esc(t('prod.contact'))}</button></div>
+  <footer class="foot">${esc(t('app.disclaimer'))}<nav><button data-act="legal" data-v="terms">${esc(t('prod.terms'))}</button><button data-act="legal" data-v="privacy">${esc(t('prod.privacy'))}</button><button data-act="legal" data-v="contact">${esc(t('prod.contact'))}</button></nav></footer>
  </div>`;
 }
 
@@ -3764,13 +4014,45 @@ function renderCareer(){
 }
 
 // ----- how to / settings -----
-function renderHowTo(){ return `<div class="topbar"><div class="wordmark">TIER <b>ONE</b></div><button class="btn sm ghost" data-act="home">${esc(t('res.home'))}</button></div><div class="screen stack"><h2>${esc(t('howto.title'))}</h2>${tt('howto.cards').map(c=>`<div class="card"><b>${esc(c[0])}</b><p class="small" style="margin:6px 0 0">${esc(c[1])}</p></div>`).join('')}</div>`; }
+function renderHowTo(){
+ const pm=(PTYPE[2]||{pts:1.2}).pts, early=hmEarly(), ex=hmExcl(), dds=hmDDSecs(), ddc=hmDDContacts(), n=hmContacts();
+ const lb=['low','med','high'].map(k=>{ const P=PTS[k]; return `<tr><th scope="row">${esc(t('tut2.conf.'+k))}</th><td class="ok">${hmNum('+'+Math.round(P[0]*pm))}</td><td class="bad">${hmNum('−'+Math.abs(Math.round(P[1]*pm)))}</td></tr>`; }).join('');
+ const srcs=Object.keys(SOURCES).map(k=>{ const S=SOURCES[k], bars=TIER_BARS[S.tier]||1, od=hmOpenDay(k); return `<div class="hmsrc"><span class="ti" aria-hidden="true">${S.ic}</span><span class="cmain"><b>${esc(t('src.'+k+'.name'))}</b><span>${esc(t('howto2.knows.'+k))}</span></span><span class="meta">${sigHtml(bars,false)}<span>${uiIcon('phone','ic16')}${hmNum(S.cost||1)}</span>${od>1?`<span class="op">🕐 ${esc(t('howto2.opens',{d:od}))}</span>`:''}</span></div>`; }).join('');
+ const rv=RIVALS.map(r=>`<div class="hmsrc"><span class="ti" aria-hidden="true">${r.ic}</span><span class="cmain"><b>${esc(t('rival.'+r.key))}</b><span>${esc(t('howto2.rival',{a:r.dmin,b:Math.min(7,r.dmax)}))}</span></span><span class="meta">${sigHtml(r.rel>=.75?3:r.rel>=.55?2:1,false)}</span></div>`).join('');
+ const tiers=hmTiers().filter(x=>x.key!=='clown').map(x=>`<li>${tmedalHtml(x.key,{size:'sm'})}<span>${esc(tierName(x))}</span><b>${hmNum(x.min+'+')}</b></li>`).join('');
+ const card=(i,h,body)=>`<section class="card hmrule"><div class="rh"><span class="rn">${i}</span><h2 class="d4">${esc(h)}</h2></div>${body}</section>`;
+ return `<header class="appbar hmbar"><button class="iconbtn" data-act="hmBack" data-v="more" aria-label="${esc(t('sheet.back'))}">${uiIcon('back')}</button><div class="ttl">${esc(t('home.howto'))}</div><span></span></header><div class="hmpage">
+  <p class="hmlead">${esc(t('howto2.lead',{n}))}</p>
+  ${card(1,t('howto2.goal'),`<div class="hmgoal">${['DONE','HIJACK','OFF','FAKE'].map(o=>`<div>${ocHtml(o,'lg')}<span>${esc(t('howto2.o.'+o))}</span></div>`).join('')}</div>`)}
+  ${card(2,t('howto2.ask'),`<ul class="hmul"><li>${esc(t('howto2.ask1',{n}))}</li><li>${esc(t('howto2.ask2'))}</li><li>${esc(t('howto2.ask3'))}</li><li>${esc(t('howto2.ask4'))}</li></ul>`)}
+  ${card(3,t('howto2.call'),`<table class="hmpts"><caption>${esc(t('howto2.tblCap'))}</caption><thead><tr><th scope="col"></th><th scope="col">${esc(t('howto2.right'))}</th><th scope="col">${esc(t('howto2.wrong'))}</th></tr></thead><tbody>${lb}</tbody></table><ul class="hmul"><li>${esc(t('howto2.early',{n:early}))}</li><li>${esc(t('howto2.ex',{n:ex}))}</li><li>${esc(t('howto2.types'))}</li><li>${esc(t('howto2.ut'))}</li></ul>`)}
+  ${card(4,t('howto2.dd'),`<ul class="hmul"><li>${esc(t('howto2.dd1',{s:dds,n:ddc}))}</li><li>${esc(t('howto2.dd2'))}</li><li>${esc(t('howto2.twist'))}</li></ul><ol class="hmladder">${tiers}</ol>`)}
+  <div class="sechead"><span class="over">${esc(t('howto2.sources'))}</span></div><div class="list hmsrcs">${srcs}</div>
+  <div class="sechead"><span class="over">${esc(t('howto2.rivals'))}</span></div><div class="list hmsrcs">${rv}</div>
+  <div class="sechead"><span class="over">${esc(t('howto2.modes'))}</span></div>
+  <div class="hmmodes"><div class="card"><b>📅 ${esc(t('howto2.m.daily'))}</b><p>${esc(t('howto2.m.dailyT'))}</p></div><div class="card"><b>💼 ${esc(t('nav.career'))}</b><p>${esc(t('howto2.m.careerT'))}</p></div><div class="card"><b>🏟️ ${esc(t('nav.friends'))}</b><p>${esc(t('howto2.m.friendsT'))}</p></div></div>
+  <button class="btn" style="margin-top:16px" data-act="replayTut">${esc(t('settings.tutorial2'))}</button>
+ </div>`;
+}
 function renderSettings(){
- openModal(`<h2>${esc(t('settings.title'))}</h2>
-  <h3 style="margin-top:12px">${esc(t('settings.language'))}</h3>${langPills()}
-  <h3 style="margin-top:12px">${esc(t('settings.look'))}</h3><p class="muted tiny">${esc(t('settings.lookNote'))}</p><div class="choice" style="margin-top:8px">${SKINS.filter(k=>save.settings.skins.includes(k.key)).map(k=>`<button class="${save.settings.skin===k.key?'on':''}" data-act="setSkin" data-v="${k.key}">${esc(t('skin.'+k.key+'.name'))}</button>`).join('')}</div>
-  <h3 style="margin-top:12px">${esc(t('settings.sound'))}</h3><div class="choice" style="margin-top:8px"><button class="${save.settings.sound?'on':''}" data-act="setSound" data-v="1">${esc(t('settings.on'))}</button><button class="${!save.settings.sound?'on':''}" data-act="setSound" data-v="0">${esc(t('settings.off'))}</button></div>
-  ${prodSettingsHtml()}<div class="divider"></div><button class="btn center" data-act="replayTut">${esc(t('settings.tutorial'))}</button><button class="btn danger" style="margin-top:8px" data-act="resetAll">${esc(t('settings.wipe'))}</button><p class="muted tiny" style="margin-top:8px">${esc(t('settings.saved'))} · ${esc(CONFIG.GAME_NAME)} v${esc(CONFIG.VERSION)} · ${esc(CONFIG.STUDIO_NAME)}</p>`,t('settings.title'));
+ const st=save.settings, isDef=(st.skin||'default')==='default', th=st.theme||'auto';
+ const seg=(act,cur,opts,dis)=>`<div class="seg" role="radiogroup"${dis?' aria-disabled="true"':''}>${opts.map(([v,l])=>`<button class="${cur===v?'on':''}" role="radio" aria-checked="${cur===v}" data-act="${act}" data-v="${v}"${dis?' disabled':''}>${esc(l)}</button>`).join('')}</div>`;
+ const skins=SKINS.filter(k=>st.skins.includes(k.key)).map(k=>`<button class="hmskin sk-${k.key} ${st.skin===k.key?'on':''}" data-act="setSkin" data-v="${k.key}" aria-pressed="${st.skin===k.key}"><i aria-hidden="true"></i>${esc(t('skin.'+k.key+'.name'))}</button>`).join('');
+ const x=typeof xferCode!=='undefined'?xferCode:'';
+ const body=`${hmGrp(t('settings.language'),`<div role="radiogroup" aria-label="${esc(t('settings.language'))}">${hmLangRows()}</div>`)}
+  ${hmGrp(t('settings.appearance'),`<div class="list hmpad"><div class="hmline"><b>${esc(t('settings.theme'))}</b>${seg('setTheme',th,[['auto',t('settings.auto')],['dark',t('settings.dark')],['light',t('settings.light')]],!isDef)}${!isDef?`<p class="hmnote">${esc(t('settings.fixedLook'))}</p>`:''}</div><div class="hmline"><b>${esc(t('settings.look'))}</b><div class="hmskins">${skins}</div><p class="hmnote">${esc(t('settings.lookNote'))}</p></div></div>`)}
+  ${hmGrp(t('settings.feel'),`<div class="list">${hmTog('sound',st.sound,t('settings.sound'),'','setSound')}${hmTog('haptics',st.haptics!==false,t('settings.haptics'),'')}<div class="hmline cellish"><b>${esc(t('settings.motion'))}</b>${seg('hmSetM',st.motion==='reduced'?'reduced':'system',[['system',t('settings.mSystem')],['reduced',t('settings.mReduced')]])}</div></div>`)}
+  ${hmGrp(t('settings.replies'),`<div class="list">${hmTog('clean',!!st.clean,t('settings.clean'),t('settings.cleanSub'))}</div>`)}
+  ${hmGrp(t('settings.a11y'),`<div class="list">${hmTog('largeText',!!st.largeText,t('settings.large'),t('settings.largeSub'))}${hmTog('relaxedDD',!!st.relaxedDD,t('settings.relaxed'),t('settings.relaxedSub'))}</div>`)}
+  ${hmGrp(t('settings.tutGrp'),`<div class="list">${hmLinkCell('replayTut',null,t('settings.tutorial2'),'')}${SCREENS.achievements?hmLinkCell('hmTab','trophies',t('nav.trophies'),''):''}</div>`)}
+  ${hmGrp(t('settings.data'),`<div class="list hmpad"><div class="hmline"><b>${esc(t('transfer.title'))}</b><p class="hmnote">${esc(t('transfer.note'))}</p>${x?`<div class="xfer"><span class="muted tiny">${esc(t('transfer.your'))}</span><b dir="ltr">${esc(x)}</b><span class="muted tiny">${esc(t('transfer.expires',{d:30}))}</span></div>`:''}<div class="row" style="margin-top:8px"><button class="btn sm" data-act="getTransfer">${esc(t('transfer.get'))}</button><button class="btn sm ghost" data-act="enterTransfer">${esc(t('transfer.enter'))}</button></div></div>
+   <button class="cell hmrow" data-act="hmAdv" aria-expanded="${HM.adv}"><span class="cmain"><b>${esc(t('settings.advanced'))}</b><span>${esc(t('prod.saveData'))}</span></span><span class="chev" aria-hidden="true" style="transform:rotate(${HM.adv?90:0}deg)">›</span></button>
+   ${HM.adv?`<div class="hmline"><p class="hmnote">${esc(t('prod.saveNote'))}</p><textarea class="savecode" id="saveCode" readonly aria-label="${esc(t('prod.copyCode'))}">${esc(exportSave())}</textarea><div class="row" style="margin-top:8px"><button class="btn sm" data-act="copySave">${esc(t('prod.copyCode'))}</button><button class="btn sm ghost" data-act="importSaveUI">${esc(t('prod.loadCode'))}</button></div></div>`:''}</div>`,'hmData')}
+  ${hmGrp(t('prod.adsCookies'),`<div class="list"><div class="cell hmrow"><span class="cmain"><b>${esc(t('prod.ads'))}</b></span><span class="muted sm">${esc(save.purchases.removeAds?t('prod.adsRemoved'):t('prod.adsOn'))}</span></div>${!save.purchases.removeAds&&Pay.available('removeAds')?hmLinkCell('buyPack','removeAds',t('prod.removeAds'),CONFIG.PACKS.removeAds.price):''}${CONFIG.CONSENT_REQUIRED?hmLinkCell('consentPrefs',null,t('prod.cookies'),''):''}</div>`)}
+  ${hmGrp(t('prod.legal'),`<div class="list">${hmLinkCell('legal','terms',t('prod.terms'),'')}${hmLinkCell('legal','privacy',t('prod.privacy'),'')}${hmLinkCell('legal','contact',t('prod.contact'),'')}</div>`)}
+  ${hmGrp(t('settings.danger'),`<div class="list">${hmLinkCell('hmWipe',null,t('settings.wipe'),'','hmdanger')}</div>`)}
+  <p class="hmver">${esc(t('settings.saved'))}<br>${esc(CONFIG.GAME_NAME)} v${esc(CONFIG.VERSION)} · ${esc(CONFIG.STUDIO_NAME)}</p>`;
+ hmSheet('settings',t('settings.title'),body);
 }
 function startMode(mode){
  stopTimer();
@@ -3779,7 +4061,8 @@ function startMode(mode){
  else newGame('practice','practice-'+Date.now()+'-'+Math.floor(Math.random()*1e6));
  Analytics.track('level_start',{level_name:mode}); beep('open'); splash(t('sys.open').split('.')[0],t('win.day',{d:1}),false); go('window');
 }
-function maybeIntro(mode){ if(save.tutorial.intro){ startMode(mode); return; } save.tutorial.intro=true; persist(); Analytics.track('tutorial_begin',{}); showIntro(choice=>{ startMode(choice==='practice'?'practice':mode); }); }
+/* first Play (Daily or Practice) runs the ~45 s training first; Career never does */
+function maybeIntro(mode){ if(save.tutorial.intro||mode==='career'){ startMode(mode); return; } showIntro(choice=>{ startMode(choice==='practice'?'practice':mode); }); }
 
 // ----- events -----
 document.addEventListener('click',(e)=>{
@@ -3854,6 +4137,164 @@ function fallbackCopy(tx,done){ const ta=document.createElement('textarea'); ta.
 /* @@LANE JS:math END */
 /* ─ */
 /* @@LANE JS:home BEGIN (lane-owned; insert only between BEGIN and END) */
+/* home lane: Today screen, tab bar, sheets (language, settings), More, How to play, first-run training, one-shot tips */
+const HM={adv:false,opener:null,tut:null};
+const HM_HUBS=['home','career','online','room','achievements','more','archive','howto'];
+function hmLoc(){ return lang==='ar'?'ar-EG-u-nu-latn':lang; }
+function hmKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function hmNum(n){ return `<bdi dir="ltr">${esc(n)}</bdi>`; }
+function hmM(){ return (typeof MATH!=='undefined'&&MATH)||{}; }
+function hmContacts(){ return CONFIG.CONTACTS||hmM().CONTACTS||3; }
+function hmDDSecs(){ return CONFIG.DD_SECONDS||hmM().DD_TIMER||60; }
+function hmDDContacts(){ return CONFIG.DD_CONTACTS||hmM().DD_CONTACTS||3; }
+function hmEarly(){ return hmM().EARLY||CONFIG.EARLY||3; }
+function hmExcl(){ return hmM().EXCL||CONFIG.EXCL||15; }
+function hmOpenDay(k){ try{ if(typeof srcOpenDay==='function') return srcOpenDay(k)||1; if(typeof srcFrom==='function') return srcFrom(k)||1; }catch(e){} const s=SOURCES[k]||{}; return s.opensDay||s.opens||s.from||1; }
+function hmTiers(){ const out=[]; let prev=null; for(let s=0;s<=1000;s++){ const tr=tierFor(s); if(!prev||tr.n!==prev.n){ out.push({n:tr.n,key:tr.key,min:s}); prev=tr; } } return out.reverse(); }
+function hmIsApk(){ return location.protocol==='file:'&&/Android/i.test(navigator.userAgent||''); }
+function hmPlayOnce(k){ try{ beep(k); }catch(e){} }
+
+/* ---------- tab bar (global; other lanes may call it) ---------- */
+function hmAchBadge(){ const a=save&&save.ach; if(!a||!a.got) return 0; const seen=new Set(a.seen||[]); return Object.keys(a.got).filter(k=>!seen.has(k)).length; }
+function hmTabOf(s){ return {home:'today',career:'career',online:'friends',room:'friends',achievements:'trophies'}[s]||'more'; }
+function tabbarHtml(active){ const n=hmAchBadge(); const items=[['today','today'],['career','career'],['friends','friends'],['trophies','trophy'],['more','more']];
+ return `<nav class="tabbar" aria-label="${esc(t('nav.main'))}">${items.map(([k,ic])=>`<button class="${active===k?'on':''}" data-act="hmTab" data-v="${k}"${active===k?' aria-current="page"':''}>${uiIcon(ic)}<span>${esc(t('nav.'+k))}</span>${k==='trophies'&&n?`<span class="badge" aria-label="${esc(t('nav.newN',{n}))}">${n>99?'99+':n}</span>`:''}</button>`).join('')}</nav>`; }
+window.tabbarHtml=tabbarHtml;
+onHook('rendered',s=>{
+ if(save&&save.settings&&save.settings.clean===undefined){ save.settings.clean=hmIsApk(); }
+ const hub=HM_HUBS.includes(s)&&!(s==='results'); const tr=$('tabRoot'); if(tr) tr.innerHTML=hub?tabbarHtml(hmTabOf(s)):'';
+ const a=$('app'); if(a) a.classList.toggle('tabs',hub); document.body.classList.toggle('has-tabs',hub);
+ if(s==='home'){ const ip=save.inProgress; if(ip&&ip.mode==='daily'&&ip.seed!=='daily-'+todayKey()){ save.inProgress=null; persist(); toast(t('home.expired')); setTimeout(()=>{ if(screen==='home') render(); },0); } }
+});
+LANE_ACTS.hmTab=(el,v,id,e)=>{ beep('tap'); stopTimer();
+ if(v==='today'){ go('home'); return; }
+ if(v==='career'){ if(LANE_ACTS.openCareer&&LANE_ACTS.openCareer!==LANE_ACTS.hmTab){ LANE_ACTS.openCareer(el,v,id,e); return; } roomCtx=null; careerTab='profile'; if(save.career.payday!==todayKey()){ save.career.payday=todayKey(); save.career.credits+=60; persist(); beep('register'); setTimeout(()=>toast(t('econ.payday',{n:60})),350); } go('career'); return; }
+ if(v==='friends'){ if(LANE_ACTS.openOnline){ LANE_ACTS.openOnline(el,v,id,e); return; } go('online'); return; }
+ if(v==='trophies'){ go(SCREENS.achievements?'achievements':'career'); return; }
+ go('more'); };
+
+/* ---------- sheets (language, settings, confirm) ---------- */
+function hmSheet(id,title,body){ const root=$('modalRoot'); const ex=root.querySelector(`.sheet.hm[data-id="${id}"]:not(.out)`);
+ const inner=`<div class="grab" aria-hidden="true"></div><div class="hmsh-head"><h2 class="d3">${esc(title)}</h2><button class="iconbtn" data-act="hmClose" aria-label="${esc(t('settings.close'))}">${uiIcon('close')}</button></div>${body}`;
+ if(ex){ const st=ex.scrollTop; ex.innerHTML=inner; ex.scrollTop=st; return ex; }
+ if(!root.querySelector('.sheet.hm')) HM.opener=document.activeElement;
+ root._tok=(root._tok||0)+1; root.innerHTML=`<div class="scrim" data-act="hmClose"></div><div class="sheet hm" data-id="${id}" role="dialog" aria-modal="true" aria-label="${esc(title)}">${inner}</div>`;
+ document.body.classList.add('modal-open'); setTimeout(()=>{ const b=root.querySelector('.sheet.hm .iconbtn'); if(b) try{ b.focus({preventScroll:true}); }catch(e){} },60); return root.querySelector('.sheet.hm'); }
+function hmClose(){ const root=$('modalRoot'); const sh=root.querySelector('.sheet.hm'); if(!sh){ closeModal(); return; }
+ const sc=root.querySelector('.scrim'); document.body.classList.remove('modal-open'); const op=HM.opener; HM.opener=null;
+ if(motionReduced()){ closeModalQuiet(); } else { sh.classList.add('out'); if(sc) sc.classList.add('out'); const tok=root._tok=(root._tok||0)+1; setTimeout(()=>{ if(root._tok===tok) closeModalQuiet(); },240); }
+ try{ if(op&&document.body.contains(op)) op.focus({preventScroll:true}); }catch(e){} }
+LANE_ACTS.hmClose=(el,v,id,e)=>{ if(el.classList.contains('scrim')&&e.target!==el) return; hmClose(); };
+BACK.push(()=>{ if($('modalRoot').querySelector('.sheet.hm:not(.out)')){ hmClose(); return true; } return false; });
+BACK.push(()=>{ if(document.querySelector('.big.hmob')){ hmTutEnd('skip'); return true; } return false; });
+document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return; if(document.querySelector('.big.hmob')){ hmTutEnd('skip'); return; } if($('modalRoot').querySelector('.sheet.hm:not(.out)')) hmClose(); });
+function hmLangRows(){ return `<div class="list">${Object.keys(I18N).map(k=>`<button class="cell hmrow" role="radio" aria-checked="${lang===k}" data-act="setLang" data-v="${k}" lang="${k}"><span class="cmain"><b>${esc(I18N[k].langName)}</b></span>${lang===k?`<span class="hmcheck">${uiIcon('check')}</span>`:''}</button>`).join('')}</div>`; }
+function hmLangSheet(){ hmSheet('lang',t('settings.language'),`<div role="radiogroup" aria-label="${esc(t('settings.language'))}">${hmLangRows()}</div>`); }
+LANE_ACTS.hmLang=()=>{ beep('tap'); hmLangSheet(); };
+LANE_ACTS.setLang=(el,v)=>{ const root=$('modalRoot'); const sh=root.querySelector('.sheet.hm'); const which=sh&&sh.dataset.id; setLang(v); toast(t('toast.lang'));
+ if(which==='lang'){ hmClose(); render(); return; }
+ if(which==='settings'){ render(); renderSettings(); return; }
+ if(root.innerHTML&&currentSaga!=null&&screen==='window'){ render(); renderSagaModal(currentSaga); return; }
+ render(); };
+
+/* ---------- Home helpers ---------- */
+function hmFive(k){ if(hmFive.k!==k){ try{ hmFive.v=buildBoard('daily-'+k).sagas; hmFive.k=k; }catch(e){ hmFive.v=[]; } } return hmFive.v||[]; }
+function hmSurname(p){ const n=pName(p); const w=n.split(' '); return w.length>1?w.slice(1).join(' '):n; }
+const HM_SQ={'🔵':'ex','🟨':'ex','🟢':'ok','🟩':'ok','🔴':'bad','🟥':'bad','⚪':'none','⬛':'none'};
+function hmRowCells(row){ return Array.from(row||'').filter(e=>HM_SQ[e]).map(e=>HM_SQ[e]); }
+function hmSqHtml(c){ const g={ok:glyph('DONE'),ex:uiIcon('star'),bad:glyph('OFF'),none:''}[c]; return `<span class="hmsq ${c}" aria-label="${esc(t('home.sq.'+c))}">${g}</span>`; }
+function hmStreak(){ const d=save.daily; const now=new Date(); const y=new Date(now); y.setDate(now.getDate()-1); return (d.lastDate===hmKey(now)||d.lastDate===hmKey(y))?(d.streak||0):0; }
+function hmWeek(){ const now=new Date(), dow=(now.getDay()+6)%7; const hist=save.daily.history||{};
+ return [...Array(7)].map((_,i)=>{ const d=new Date(now); d.setDate(now.getDate()-dow+i); const k=hmKey(d), today=i===dow, played=!!hist[k];
+  let lb=''; try{ lb=d.toLocaleDateString(hmLoc(),{weekday:'narrow'}); }catch(e){ lb='MTWTFSS'[i]; }
+  return `<span class="${played?'on':''} ${today?'today':''}"><i>${played?'🔥':''}</i>${esc(lb)}</span>`; }).join(''); }
+function hmShareText(k){ const h=save.daily.history[k]; if(!h) return ''; const a=save.daily.archive&&save.daily.archive[k];
+ const sq=hmRowCells(h.row).map(c=>({ok:'🟩',ex:'🟨',bad:'🟥',none:'⬛'}[c])).join('');
+ const kc=['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣'];
+ const days=a&&a.sagas?a.sagas.map((s,i)=>{ const x=a.result&&a.result.per&&a.result.per[i]; if(!s.call) return '➖'; if(s.call.uturn||(x&&x.uturn)) return '🔄'; return kc[s.call.day]||'➖'; }).join(''):'';
+ const md={1:' 🥇',2:' 🥈',3:' 🥉',9:' 🤡'}[h.tier]||''; const ex=hmRowCells(h.row).filter(c=>c==='ex').length;
+ return [`${CONFIG.GAME_NAME} · ${t('home.dailyN',{n:h.num||dailyNumber()})} — ${tierName(tierOf(h.tier))}${md}`,sq,days,`${h.score} ${t('app.ptsShort')}${ex?' · '+t('home.shareEx',{n:ex}):''}`,String(CONFIG.SITE_URL||'').replace(/^https?:\/\//,'')].filter(Boolean).join('\n'); }
+LANE_ACTS.hmShare=()=>{ const tx=hmShareText(todayKey()); if(!tx) return; beep('tap'); if(navigator.share){ navigator.share({text:tx}).then(()=>{ try{ Analytics.track('share',{method:'native',content_type:'home_card'}); }catch(e){} },()=>{}); } else copyText(tx,t('toast.copied')); };
+function hmFriendsCard(){ const codes=Object.keys(save.rooms||{}); const off=navigator.onLine===false;
+ let sub=t('home.friendsSub'), go=false;
+ if(off) sub=t('home.friendsOff');
+ else if(codes.length){ const c=codes.sort((a,b)=>((save.rooms[b].joined||0)-(save.rooms[a].joined||0)))[0], R=save.rooms[c], room=R.room||{}; const mine=(R.career&&R.career.windows)||0, tot=room.seasons||R.seasons||1;
+  const rows=(room.players||[]).map(p=>({p,sum:(p.results||[]).reduce((s,x)=>s+(x.score||0),0),n:(p.results||[]).length})).sort((a,b)=>b.sum-a.sum||b.n-a.n);
+  const rk=rows.findIndex(x=>x.p.pid===R.pid); go=mine<tot&&(mine===0||rows.some(x=>x.n>mine));
+  sub=`${room.name||c}\n${rk>=0&&rows.length>1?t('home.rank',{n:rk+1}):t('home.seasonOf',{s:Math.min(mine+1,tot),n:tot})}`; }
+ return `<button class="mode" data-act="hmTab" data-v="friends"><span class="mi" aria-hidden="true">🏟️</span><b class="mt">${esc(t('nav.friends'))}</b><small>${esc(sub).replace('\n','<br>')}</small>${go?`<span class="tag new go">${esc(t('home.yourGo'))}</span>`:''}</button>`; }
+
+/* ---------- More screen ---------- */
+SCREENS.more=()=>{ const web=/^https?:/.test(location.protocol); const row=(act,v,ic,label,sub)=>`<button class="cell" data-act="${act}"${v?` data-v="${v}"`:''}><span class="hmic" aria-hidden="true">${ic}</span><span class="cmain"><b>${esc(label)}</b>${sub?`<span>${esc(sub)}</span>`:''}</span><span class="chev" aria-hidden="true">›</span></button>`;
+ const n=Object.keys(save.daily.history||{}).length;
+ return `<header class="appbar hmbar"><span></span><div class="ttl">${esc(t('nav.more'))}</div><span></span></header><div class="hmpage">
+  <div class="list">${row('howto','','📖',t('home.howto'),t('more.howtoSub'))}${row('archive','','🗓️',t('more.past'),n?t('more.pastN',{n}):t('more.pastNone'))}${row('settings','','⚙️',t('settings.title'),'')}${row('hmMove','','📲',t('more.move'),t('more.moveSub'))}</div>
+  <div class="list" style="margin-top:12px">${row('legal','terms','📄',t('prod.terms'),'')}${row('legal','privacy','🔒',t('prod.privacy'),'')}${row('legal','contact','✉️',t('prod.contact'),'')}</div>
+  ${web?`<div class="list" style="margin-top:12px"><a class="cell" href="/"><span class="hmic" aria-hidden="true">🎮</span><span class="cmain"><b><span class="chev" style="font-size:16px">‹</span> Semba Games</b></span></a></div>`:''}
+  <p class="hmver">${esc(CONFIG.GAME_NAME)} v${esc(CONFIG.VERSION)} · ${esc(CONFIG.STUDIO_NAME)}</p></div>`; };
+LANE_ACTS.hmMove=()=>{ renderSettings(); setTimeout(()=>{ const el=document.getElementById('hmData'); if(el&&el.scrollIntoView) el.scrollIntoView({block:'start'}); },80); };
+LANE_ACTS.hmBack=(el,v)=>{ go(v||'home'); };
+
+/* ---------- Settings helpers ---------- */
+function hmGrp(title,inner,id){ return `<section class="hmgrp"${id?` id="${id}"`:''}><h3 class="over">${esc(title)}</h3>${inner}</section>`; }
+function hmTog(key,on,label,sub,act){ return `<button class="cell hmrow" role="switch" aria-checked="${!!on}" data-act="${act||'hmSet'}" data-v="${act?(on?'0':'1'):key+':'+(on?'0':'1')}"><span class="cmain"><b>${esc(label)}</b>${sub?`<span>${esc(sub)}</span>`:''}</span><i class="hmsw" aria-hidden="true"></i></button>`; }
+function hmLinkCell(act,v,label,sub,cls){ return `<button class="cell hmrow ${cls||''}" data-act="${act}"${v!=null?` data-v="${esc(v)}"`:''}><span class="cmain"><b>${esc(label)}</b>${sub?`<span>${esc(sub)}</span>`:''}</span><span class="chev" aria-hidden="true">›</span></button>`; }
+LANE_ACTS.hmSet=(el,v)=>{ const i=v.indexOf(':'); const k=v.slice(0,i); let val=v.slice(i+1); if(val==='1') val=true; else if(val==='0') val=false; save.settings[k]=val; persist(); try{ fxSync(); }catch(e){} if(k==='haptics'&&val) buzzPhone(12); beep('tap'); renderSettings(); };
+LANE_ACTS.hmAdv=()=>{ HM.adv=!HM.adv; renderSettings(); };
+LANE_ACTS.hmWipe=()=>{ hmSheet('wipe',t('settings.wipe'),`<p class="hmp">${esc(t('settings.confirm'))}</p><div class="hmstack"><button class="btn danger" data-act="hmWipeGo">${esc(t('settings.wipeGo'))}</button><button class="btn" data-act="settings">${esc(t('settings.keep'))}</button></div>`); };
+LANE_ACTS.hmWipeGo=()=>{ const l=lang, pu=save.purchases, co=save.consent; save=freshSave(); save.settings.lang=l; save.purchases=pu; save.consent=co; game=null; persist(); try{ Analytics.track('save_reset',{}); }catch(e){} closeModalQuiet(); applyTheme(); go('home'); };
+LANE_ACTS.replayTut=()=>{ closeModalQuiet(); save.tutorial.steps={}; save.tips={}; persist(); showIntro(choice=>{ save.tutorial.intro=true; persist(); if(choice==='practice') startMode('practice'); else if(choice==='start') startMode('daily'); else render(); }); };
+
+/* ---------- first-run training (scripted, engine-free) ---------- */
+const HM_TUT={player:'Bukayo Saka',club:'Arsenal',dest:'Real Madrid',hijack:'Paris Saint-Germain',tier:1,truth:'HIJACK'};
+function hmTutClub(n){ return (typeof clubByName==='function'&&clubByName(n))||{name:n,kit:'#C8102E',kit2:'#fff'}; }
+function hmTutCtx(){ const T=HM_TUT; const cl=hmTutClub(T.club), de=hmTutClub(T.dest), hj=hmTutClub(T.hijack); return {p:pName({name:T.player}),c:cName(cl),d:cName(de),h:cName(hj),cl,de,hj}; }
+function hmTutPts(conf){ const P=PTS[conf]||[20,-15]; const m=(PTYPE[HM_TUT.tier]||{pts:1}).pts; return {win:Math.round((P[0]+6*hmEarly()+hmExcl())*m),lose:Math.round(P[1]*m)}; }
+function hmTutTile(k,target){ const T=HM.tut, asked=T.asked[k]; const S=SOURCES[k]||{}; const bars=TIER_BARS[S.tier]||1;
+ return `<button class="hmtile ${target?'hmpulse':''} ${asked?'asked':''} ${!target&&!asked?'dimmed':''}" data-act="hmTutAsk" data-v="${k}" ${!target?'aria-disabled="true"':''}><span class="ti" aria-hidden="true">${S.ic||'❔'}</span>${!asked?`<span class="cost">${uiIcon('phone')}${hmNum(S.cost||1)}</span>`:''}<b>${esc(t('tut2.src.'+k))}</b>${asked?ocHtml(T.asked[k],'')+`<span class="dday">${esc(t('tut2.d1'))}</span>`:`<span class="lv">${sigHtml(bars,false)}<span>${esc(t('tut2.tier.'+bars))}</span></span>`}</button>${target&&!asked?`<span class="hmfinger" aria-hidden="true">👆</span>`:''}`; }
+function hmTutKnow(){ const T=HM.tut, c=hmTutCtx(); const lanes=['DONE','HIJACK','OFF','FAKE']; const by={}; Object.entries(T.asked).forEach(([k,o])=>{ if(o) (by[o]=by[o]||[]).push(k); });
+ const n=Object.values(T.asked).filter(Boolean).length; const sub={DONE:t('tut2.sub.DONE',{d:c.d}),HIJACK:t('tut2.sub.HIJACK',{d:c.d})};
+ const rows=lanes.filter(o=>by[o]).map(o=>`<div class="hmlane"><div class="ll">${ocHtml(o,'lg')}<small>${esc(sub[o]||'')}</small></div><div class="toks">${by[o].map(k=>`<span class="hmtok ${T.fly===k?'fly':''}"><i aria-hidden="true">${SOURCES[k].ic}</i>${esc(t('tut2.src.'+k))}${sigHtml(TIER_BARS[SOURCES[k].tier]||1,false)}</span>`).join('')}</div></div>`).join('');
+ const nob=lanes.filter(o=>!by[o]); const last=T.last;
+ return `<div class="hmknow"><div class="kh"><span class="over">${esc(t('tut2.know'))}</span><span class="muted xs">${esc(n?t(n===1?'tut2.report1':'tut2.reports',{n}):t('tut2.noReports'))}</span></div>${rows}
+  ${nob.length?`<div class="nob"><span>${esc(t('tut2.nobody'))}</span>${nob.map(o=>ocHtml(o,'ghost')).join('')}</div>`:''}
+  ${last?`<div class="quote c-${last.o.toLowerCase()}"><div class="qh"><b>${SOURCES[last.k].ic} ${esc(t('tut2.src.'+last.k))}</b><span class="muted xs">· ${esc(t('tut2.day1'))}</span>${ocHtml(last.o,'')}</div><p>${T.typing?'<span class="hmdots"><i></i><i></i><i></i></span>':esc(t('tut2.dm.'+last.k,{d:c.d}))}</p></div>`:''}</div>`; }
+function hmTutHead(){ const T=HM.tut, c=hmTutCtx(); return `<div class="hmtbar"><span class="over">${esc(t('tut.step',{n:T.step}))}</span><span class="segs" aria-hidden="true">${[1,2,3,4].map(i=>`<i class="${i<T.step?'done':i===T.step?'on':''}"></i>`).join('')}</span><button class="btn text" data-act="hmTutSkip">${esc(t('tut.skip'))}</button></div>
+  ${T.step<4?`<div class="hmphead">${kitSVG(c.cl,initials(HM_TUT.player),'md')}<div class="pn"><b class="d3">${esc(c.p)}</b><span class="route"><i style="--c:${c.cl.kit}"></i><span class="from">${esc(c.c)}</span><span class="arr">→</span><i style="--c:${c.de.kit}"></i><b>${esc(c.d)}</b><span class="chip hmpt"><span class="stars">★★★</span>${hmNum('×'+((PTYPE[HM_TUT.tier]||{pts:1.5}).pts))}</span></span></div></div>`:''}`; }
+function hmCoach(h,p,small){ return `<div class="hmcoach" role="status"><h3>${esc(h)}</h3><p>${esc(p)}</p>${small?`<small>${esc(small)}</small>`:''}</div>`; }
+function renderIntro(){ const T=HM.tut; if(!T) return; let d=document.querySelector('.big.hmob'); if(!d){ d=document.createElement('div'); d.className='big tut hmob'; d.setAttribute('role','dialog'); d.setAttribute('aria-modal','true'); d.setAttribute('aria-label',t('tut2.aria')); document.body.appendChild(d); }
+ const c=hmTutCtx(); let body='';
+ if(T.step<=2){ const tgt=T.step===1?'agent':'airport';
+  body=`<div class="${T.step===2?'dimmed':''}">${hmTutKnow()}</div>${T.typing?'':(T.step===1?hmCoach(t('tut2.s1.h'),t('tut2.s1.p'),t('tut2.s1.do')):hmCoach(t('tut2.s2.h'),t('tut2.s2.p'),t('tut2.s2.do')))}
+   <div class="hmtiles">${['agent','barber','airport'].map(k=>`<div class="tw">${hmTutTile(k,!T.typing&&k===tgt&&!T.asked[k])}</div>`).join('')}</div><p class="hmnext">${esc(t(T.step===1?'tut2.next1':'tut2.next2'))}</p>`; }
+ else if(T.step===3&&!T.posted){ const P=o=>`<button class="hmopt c-${o.toLowerCase()} ${T.pick.o===o?'on':''}" role="radio" aria-checked="${T.pick.o===o}" data-act="hmTutPick" data-v="o:${o}">${ocHtml(o,'lg')}<span>${esc(t('tut2.opt.'+o,{c:c.c,d:c.d}))}</span></button>`;
+  const L=k=>{ const p=hmTutPts(k); return `<button class="hmloud ${T.pick.c===k?'on':''}" role="radio" aria-checked="${T.pick.c===k}" data-act="hmTutPick" data-v="c:${k}"><b>${esc(t('tut2.conf.'+k))}</b><span>${hmNum('+'+p.win)} / ${hmNum(String(p.lose).replace('-','−'))}</span></button>`; };
+  body=`${hmTutKnow()}${hmCoach(t('tut2.s3.h'),t('tut2.s3.p'))}<div class="hmcomp"><div class="over">${esc(t('tut2.what'))}</div><div class="hmopts" role="radiogroup">${['DONE','HIJACK','OFF','FAKE'].map(P).join('')}</div><div class="over" style="margin-top:12px">${esc(t('tut2.loud'))}</div><div class="hmlouds" role="radiogroup">${['low','med','high'].map(L).join('')}</div>
+   <button class="btn primary" style="margin-top:14px" data-act="hmTutPost" ${T.pick.o&&T.pick.c?'':'aria-disabled="true"'}>${esc(t('tut2.post'))}</button></div>`; }
+ else if(T.step===3){ const ok=T.posted.o===HM_TUT.truth; const p=hmTutPts(T.posted.c);
+  body=`<div class="hmres"><span class="stamp slam ${ok?'ex':'bad'}">${esc(t(ok?'tut2.stampEx':'tut2.stampWrong'))}</span><div class="hero-n ${ok?'ok':'bad'}">${hmNum(ok?'+'+p.win:String(p.lose).replace('-','−'))}</div>
+   <p class="hmp">${esc(t('tut2.truth',{h:c.h,p:c.p}))}</p>
+   ${ok?`<div class="hmreplies">${[1,2].map(i=>`<div class="reply"><span class="rav" style="--hc:${i===1?'#3D8BFF':'#27A06A'}">${i===1?'DD':'WW'}</span><span class="rb"><b>${i===1?'@deadlinedan':'@windowwatcher'}</b><span class="tone pos">${esc(t('tut2.praiseTag'))}</span>${esc(t('tut2.praise'+i))}</span></div>`).join('')}</div>`:hmCoach(t('tut2.wrongH'),t('tut2.wrongP'))}
+   <button class="btn primary" style="margin-top:16px" data-act="hmTutNext">${esc(t('tut2.nextBtn'))}</button></div>`; }
+ else { const sec=T.clock; const shut=sec<=0;
+  body=`${hmCoach(t('tut2.s4.h'),t('tut2.s4.p'))}<div class="hmdd" data-act="hmTutClockSkip"><div class="ddh"><span class="d4">${esc(t('tut2.ddTitle'))}</span><span class="clock ${sec<=3&&!shut?'alarm':'warn'}" role="timer"><b>${hmNum('0:0'+Math.max(0,sec))}</b></span></div>
+   ${[0,1,2].map(i=>`<div class="ddr"><span class="kit sm" aria-hidden="true"></span><span class="nm"></span><span class="tag">${esc(t('tut2.uncalled'))}</span></div>`).join('')}
+   ${shut?`<div class="shut"><span class="stamp slam bad">${esc(t('tut2.shut'))}</span></div>`:''}</div>
+   ${shut?`<p class="hmthat">${esc(t('tut2.thats'))}</p><div class="hmstack"><button class="btn primary xl" data-act="hmTutDone" data-v="start">${uiIcon('play')}${esc(t('tut2.playDaily'))}</button><button class="btn" data-act="hmTutDone" data-v="practice">${esc(t('tut2.practice'))}</button></div>`:`<p class="hmnext">${esc(t('tut2.tapSkip'))}</p>`}`; }
+ d.innerHTML=`<div class="hmin">${hmTutHead()}${body}</div>`; }
+function showIntro(then){ introStep=0; introThen=then; HM.tut={step:1,asked:{},pick:{},posted:null,clock:5,typing:false,last:null,fly:null}; closeIntro(); renderIntro(); try{ Analytics.track('tutorial_begin',{}); }catch(e){} }
+function closeIntro(){ const d=document.querySelector('.big.tut'); if(d) d.remove(); clearInterval(HM.clk); clearTimeout(HM.tt); }
+function hmTutEnd(choice){ const th=introThen; introThen=null; HM.tut=null; closeIntro(); save.tutorial.intro=true; persist(); if(choice!=='skip') try{ Analytics.track('tutorial_complete',{}); }catch(e){} if(th) th(choice); }
+LANE_ACTS.hmTutSkip=()=>hmTutEnd('skip');
+LANE_ACTS.hmTutDone=(el,v)=>hmTutEnd(v);
+LANE_ACTS.hmTutAsk=(el,v)=>{ const T=HM.tut; if(!T||T.typing||T.step>2) return; const tgt=T.step===1?'agent':'airport'; if(v!==tgt){ toast(t('tut2.notThis',{s:t('tut2.src.'+tgt)})); return; }
+ const out=v==='agent'?'DONE':'HIJACK'; T.asked[v]=out; T.last={k:v,o:out}; T.typing=true; T.fly=null; if(typeof sfxCue==='function') sfxCue('call'); else beep('pop'); renderIntro();
+ HM.tt=setTimeout(()=>{ if(HM.tut!==T) return; T.typing=false; T.fly=v; beep('pop'); buzzPhone(12); T.step=v==='agent'?2:3; renderIntro(); },motionReduced()?150:800); };
+LANE_ACTS.hmTutPick=(el,v)=>{ const T=HM.tut; if(!T) return; const [k,x]=v.split(':'); T.pick[k]=x; beep('tap'); renderIntro(); };
+LANE_ACTS.hmTutPost=()=>{ const T=HM.tut; if(!T) return; if(!T.pick.o||!T.pick.c){ toast(t('toast.pickFirst')); return; } T.posted={o:T.pick.o,c:T.pick.c}; const ok=T.posted.o===HM_TUT.truth; beep(ok?'star':'bad'); buzzPhone(ok?[20,30,40]:120); renderIntro(); };
+LANE_ACTS.hmTutNext=()=>{ const T=HM.tut; if(!T) return; T.step=4; T.clock=5; renderIntro(); clearInterval(HM.clk); HM.clk=setInterval(()=>{ if(HM.tut!==T){ clearInterval(HM.clk); return; } T.clock--; if(T.clock<=0){ clearInterval(HM.clk); beep('bad'); } else beep('tap'); renderIntro(); },1000); };
+LANE_ACTS.hmTutClockSkip=()=>{ const T=HM.tut; if(!T||T.clock<=0) return; clearInterval(HM.clk); T.clock=0; renderIntro(); };
+LANE_ACTS.hmSetM=(el,v)=>LANE_ACTS.hmSet(el,'motion:'+v);
 /* @@LANE JS:home END */
 /* ─ */
 /* @@LANE JS:board BEGIN (lane-owned; insert only between BEGIN and END) */
