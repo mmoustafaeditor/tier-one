@@ -948,6 +948,141 @@ html.lt body{ zoom:1.12; }
 /* @@LANE CSS:career END */
 /* ─ */
 /* @@LANE CSS:online BEGIN (lane-owned; insert only between BEGIN and END) */
+.screen.onl{ padding-top:0; }
+.app:not(.tabs) > .screen.onl{ padding-bottom:calc(var(--tabbar) + 32px + env(safe-area-inset-bottom,0px)); }
+.onl > * + *{ margin-top:12px; }
+.onl > .appbar + *{ margin-top:6px; }
+.onl .sechead{ margin:24px 2px 12px; }
+.onl-bar .ttl{ font:800 var(--ital) 21px/1 var(--display); text-transform:var(--caps); letter-spacing:var(--track); }
+.onl-hero .d3{ font-size:30px; margin-top:6px; }
+.onl-hero p{ margin-top:6px; font-size:var(--fs-md); line-height:1.4; }
+.onl-foot{ text-align:center; font-size:var(--fs-xs); line-height:1.45; padding:8px 12px 0; }
+.onl-off b{ color:var(--accent-text); }
+/* hub: room cards */
+.onl-rooms{ display:flex; flex-direction:column; gap:8px; }
+.onl-rcard{ display:flex; align-items:center; gap:12px; width:100%; padding:12px 14px; border-radius:var(--r-lg); border:1px solid var(--line); background:var(--panel); color:var(--text); text-align:start; cursor:pointer; box-shadow:var(--e1); transition:transform var(--t-press) ease-out; }
+.onl-rcard:active{ transform:scale(.98); }
+.onl-rico{ flex:0 0 48px; height:48px; border-radius:14px; display:grid; place-items:center; font-size:26px; background:var(--panel2); border:1px solid var(--line); }
+.onl-rmain{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+.onl-rtop{ display:flex; align-items:center; gap:8px; justify-content:space-between; }
+.onl-rtop .d4{ font-size:19px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.onl-rmeta{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font:600 var(--fs-sm)/1.2 var(--body); color:var(--muted); }
+.onl-chipcode{ font:800 var(--ital) 15px/1 var(--display); letter-spacing:.12em; padding:3px 7px; border-radius:6px; background:var(--panel3); color:var(--accent-text); }
+.onl-how ol{ list-style:none; margin:10px 0 0; padding:0; display:grid; gap:10px; }
+.onl-how li{ display:flex; align-items:center; gap:12px; font:600 var(--fs-md)/1.3 var(--body); }
+.onl-how li b{ flex:0 0 30px; height:30px; border-radius:50%; display:grid; place-items:center; background:var(--panel3); font:800 var(--ital) 18px/1 var(--display); color:var(--accent-text); }
+.onl-tabs{ margin-top:20px !important; }
+.onl-tabs button{ min-height:42px; font-size:var(--fs-md); }
+.onl-form .fld:first-child{ margin-top:0; }
+.onl-form .btn.primary{ margin-top:6px; }
+.onl-form .seg button{ min-height:40px; }
+/* 5 code boxes over one input */
+.onl-codebox{ position:relative; display:block; }
+.onl-codein{ position:absolute; inset:0; width:100%; height:100%; opacity:0; border:0; font-size:16px; z-index:1; cursor:text; }
+.onl-cells{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+.onl-cells i{ height:60px; border-radius:12px; border:1.5px solid var(--line2); background:var(--panel2); display:grid; place-items:center; font:800 italic 32px/1 var(--display); color:var(--text); text-transform:uppercase; transition:border-color var(--t-fast); }
+.onl-cells i.on{ border-color:color-mix(in srgb,var(--text) 45%,var(--line2)); }
+.onl-codebox:focus-within .onl-cells i.cur{ border-color:var(--info); box-shadow:0 0 0 3px color-mix(in srgb,var(--info) 30%,transparent); }
+/* room head */
+.onl-head{ text-align:center; padding:8px 0 4px; }
+.onl-code{ display:inline-flex; align-items:center; gap:6px; margin:8px auto 0; padding:6px 8px; border:0; background:transparent; cursor:pointer; direction:ltr; color:var(--accent-text); }
+.onl-code i{ display:grid; place-items:center; width:44px; height:62px; border-radius:10px; background:linear-gradient(180deg,var(--panel2) 50%,var(--panel3) 50%); border:1px solid var(--line2); font:800 italic 54px/1 var(--display); font-style:italic; box-shadow:var(--e1); }
+.onl-cp{ display:grid; place-items:center; width:32px; height:32px; margin-inline-start:4px; color:var(--muted); }
+.onl-cp svg{ width:20px; height:20px; }
+.onl-head .d3{ margin-top:10px; font-size:28px; overflow-wrap:anywhere; }
+.onl-meta{ display:block; margin-top:6px; font:600 var(--fs-sm) var(--body); }
+.onl-rail{ display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:12px; direction:ltr; }
+[dir="rtl"] .onl-rail{ direction:rtl; }
+.onl-rail i{ width:22px; height:6px; border-radius:3px; background:var(--panel3); }
+.onl-rail i.done{ background:var(--cta); }
+.onl-rail i.now{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--cta); }
+.onl-ahead{ text-align:center; font-size:var(--fs-sm); line-height:1.4; }
+.onl-done b{ font-size:var(--fs-md); }
+/* podium */
+.onl-podium{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:end; gap:8px; margin-top:20px !important; }
+.onl-pod{ display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; text-align:center; }
+.onl-pod .onl-pn{ max-width:100%; font:700 var(--fs-sm)/1.2 var(--body); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.onl-pp{ font:800 var(--ital) 17px/1 var(--display); color:var(--muted); }
+.onl-step{ display:grid; place-items:start center; width:100%; margin-top:4px; padding-top:8px; border-radius:12px 12px 4px 4px; background:linear-gradient(180deg,color-mix(in srgb,var(--pc) 30%,var(--panel2)),var(--panel)); border:1px solid color-mix(in srgb,var(--pc) 45%,var(--line)); font-size:22px; }
+.onl-pod.p1{ --pc:var(--t1); } .onl-pod.p2{ --pc:var(--t2); } .onl-pod.p3{ --pc:var(--t3); }
+.onl-pod.p1 .onl-step{ height:78px; } .onl-pod.p2 .onl-step{ height:56px; } .onl-pod.p3 .onl-step{ height:40px; }
+.onl-pod.p1 .onl-pp{ color:var(--text); }
+.onl-pod.me .onl-pn{ color:var(--accent-text); }
+/* avatars */
+.onl-av{ flex:0 0 36px; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font:800 13px/1 var(--body); color:#fff; background:hsl(var(--h) 55% 38%); box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.14); }
+.onl-av.me{ background:var(--you); }
+.onl-av.lg{ width:52px; height:52px; flex-basis:52px; font-size:17px; }
+.onl-pod.p1 .onl-av.lg{ width:60px; height:60px; font-size:19px; box-shadow:0 0 0 3px var(--t1); }
+/* league table */
+.onl-table{ list-style:none; margin:0; padding:0; }
+.onl-lrow{ position:relative; display:flex; align-items:center; gap:10px; min-height:64px; padding:10px 14px; background:var(--panel); }
+.onl-lrow + .onl-lrow{ border-top:1px solid var(--line); }
+.onl-lrow.me{ background:color-mix(in srgb,var(--accent) 10%,var(--panel)); }
+.onl-lrow.me::before{ content:""; position:absolute; inset-block:0; inset-inline-start:0; width:4px; background:var(--cta); }
+.onl-rk{ flex:0 0 26px; text-align:center; font:800 var(--ital) 20px/1 var(--display); color:var(--muted); }
+.onl-mv{ flex:0 0 24px; margin-inline-start:-8px; font:800 11px/1 var(--body); text-align:center; }
+.onl-mv.up{ color:var(--ok); } .onl-mv.down{ color:var(--bad); }
+.onl-ln{ flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
+.onl-nm{ display:flex; align-items:center; gap:6px; min-width:0; }
+.onl-nm b{ font:700 15px/1.2 var(--body); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.onl-title{ flex-shrink:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; height:20px; padding:0 7px; border-radius:6px; font:800 10.5px/20px var(--body); letter-spacing:.04em; text-transform:var(--caps); background:color-mix(in srgb,var(--r-epic) 18%,transparent); color:color-mix(in srgb,var(--r-epic) 70%,var(--text)); }
+.onl-sub{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:var(--fs-xs); }
+.onl-hid{ color:var(--muted); font:600 var(--fs-xs) var(--body); }
+.onl-tot{ display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+.onl-tot b{ font:800 var(--ital) 24px/1 var(--display); }
+.onl-tot small{ font:600 11px/1 var(--body); color:var(--muted); white-space:nowrap; }
+/* result squares */
+.onl-sq{ display:inline-flex; gap:3px; direction:ltr; }
+.onl-sq i{ width:16px; height:16px; border-radius:4px; display:grid; place-items:center; font:900 10px/1 var(--body); font-style:normal; color:var(--o-ink); background:var(--panel3); }
+.onl-sq i.ok{ background:var(--ok); } .onl-sq i.bad{ background:var(--bad); } .onl-sq i.ex{ background:var(--ex); color:var(--ex-ink); }
+.onl-sq i.non{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--line2); }
+.onl-ins{ display:flex; align-items:center; gap:12px; }
+.onl-insic{ font-size:26px; }
+.onl-ins b{ display:block; margin-top:3px; font:700 var(--fs-md)/1.3 var(--body); }
+.onl-2{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.onl-2 .btn{ font-size:var(--fs-sm); padding:10px; }
+.onl-2 .btn svg{ width:20px; height:20px; }
+.onl-ptr{ height:0; display:grid; place-items:center; overflow:visible; opacity:var(--pull,0); color:var(--muted); transform:translateY(calc(var(--pull,0) * 18px)) rotate(calc(var(--pull,0) * 300deg)); margin:0 !important; }
+.onl-ptr{ visibility:hidden; } .onl-ptr.show{ visibility:visible; } .onl-head .over{ display:block; }
+.onl-ptr svg{ width:22px; height:22px; } .onl-ptr.arm{ color:var(--accent-text); }
+/* past dailies */
+.onl-stats{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); padding:14px 6px; }
+.onl-stats div{ display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0; }
+.onl-stats div + div{ border-inline-start:1px solid var(--line); }
+.onl-stats b{ font:800 var(--ital) 26px/1 var(--display); white-space:nowrap; }
+.onl-stats span{ font:600 var(--fs-xs)/1.2 var(--body); color:var(--muted); text-align:center; }
+.onl-cal{ padding:10px 12px 14px; touch-action:pan-y; }
+.onl-calh{ display:grid; grid-template-columns:44px 1fr 44px; align-items:center; text-align:center; }
+.onl-calh .d4{ font-size:20px; }
+.onl-calh .iconbtn[disabled]{ opacity:.3; }
+.onl-fwd{ transform:scaleX(-1); } [dir="rtl"] .onl-fwd{ transform:none; }
+.onl-wd,.onl-grid{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; }
+.onl-wd{ margin:6px 0 6px; } .onl-wd span{ text-align:center; font:700 11px/1 var(--body); color:var(--dim); text-transform:var(--caps); }
+.onl-cd{ --tc:transparent; position:relative; aspect-ratio:1; min-height:36px; border-radius:9px; border:0; padding:0; display:grid; place-items:center; background:var(--panel2); color:var(--dim); font:inherit; }
+.onl-cd b{ font:700 13px/1 var(--body); }
+.onl-cd.pad{ background:transparent; }
+.onl-cd.fut{ background:transparent; opacity:.55; }
+.onl-cd.miss{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--line2); }
+button.onl-cd{ cursor:pointer; background:var(--tc); color:var(--o-ink); transition:transform var(--t-press) ease-out; }
+button.onl-cd:active{ transform:scale(.92); }
+button.onl-cd b{ font-weight:800; }
+.onl-cd.t1{ --tc:var(--t1); } .onl-cd.t2{ --tc:var(--t2); } .onl-cd.t3{ --tc:var(--t3); } .onl-cd.t4{ --tc:var(--t4); } .onl-cd.t5{ --tc:var(--t5); } .onl-cd.clown{ --tc:var(--tclown); }
+.onl-cd.t4,.onl-cd.t5{ color:#fff; }
+.onl-cd em{ position:absolute; inset-block-end:-3px; inset-inline-end:-3px; font-size:13px; font-style:normal; line-height:1; }
+.onl-cd.today{ box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--cta); }
+.onl-leg{ display:flex; flex-wrap:wrap; justify-content:center; gap:6px 12px; margin-top:12px; font:600 11px/1 var(--body); color:var(--muted); }
+.onl-leg span{ display:inline-flex; align-items:center; gap:5px; }
+.onl-leg i{ width:12px; height:12px; border-radius:3px; background:var(--tc); }
+.onl-leg i.t1{ --tc:var(--t1); } .onl-leg i.t2{ --tc:var(--t2); } .onl-leg i.t3{ --tc:var(--t3); } .onl-leg i.t4{ --tc:var(--t4); } .onl-leg i.clown{ --tc:var(--tclown); } .onl-leg i.miss{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--line2); }
+.onl-drow .cmain{ gap:6px !important; }
+.onl-dn{ flex:0 0 42px; font:800 var(--ital) 20px/1 var(--display); color:var(--muted); }
+.onl-dt{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.onl-dt b{ font:800 var(--ital) 20px/1 var(--display); }
+.onl-tier{ --tc:var(--t5); height:20px; padding:0 7px; border-radius:6px; font:800 var(--ital) 13px/20px var(--display); text-transform:var(--caps); white-space:nowrap; background:color-mix(in srgb,var(--tc) 22%,transparent); color:color-mix(in srgb,var(--tc) 75%,var(--text)); }
+.onl-tier.t1{ --tc:var(--t1); } .onl-tier.t2{ --tc:var(--t2); } .onl-tier.t3{ --tc:var(--t3); } .onl-tier.t4{ --tc:var(--t4); } .onl-tier.clown{ --tc:var(--tclown); }
+.onl-empty{ display:flex; flex-direction:column; align-items:center; gap:14px; padding:28px 18px; text-align:center; margin-top:24px !important; }
+.onl-emic{ font-size:44px; }
+.onl-empty .d4{ font-size:22px; line-height:1.15; }
 /* @@LANE CSS:online END */
 /* ─ */
 </style>
@@ -2838,6 +2973,11 @@ deepMerge(I18N,{
 /* @@LANE I18N:career END */
 /* ─ */
 /* @@LANE I18N:online BEGIN (lane-owned; insert only between BEGIN and END) */
+deepMerge(I18N,{
+en:{onl:{hubTitle:'Friends',over:'Play with friends',lead:'Private rooms',leadSub:'Same sagas for everyone each season. Best career wins.',offTitle:'Online play needs a connection.',howTitle:'How rooms work',how1:'Create a room and pick the seasons',how2:'Share the 5-letter code',how3:'Everyone plays the same sagas. Best total wins.',tab:{join:'Join',create:'Create'},codeLbl:'5-letter room code',yourGo:'Your go',finished:'Finished',dayN:'Day {d}',seasonOf:'Season {s}/{n}',rankLine:"You're {o}",room:'Room',back:'Back',copyCode:'tap to copy',codeCopied:'Code copied',resume:'Resume · Day {d}',ahead1:'{a} has played it',ahead2:'{a} and {b} have played it',aheadN:'{a}, {b} and {n} more have played it',hiddenTill:'results stay hidden until you play',hiddenN:'{n} hidden',noSeason:'No season yet',you:'You',sN:'{s}/{n} played',podium:'Top three',up:'up {n}',down:'down {n}',insight:'Where you stand',behind:'{n} pts behind {a}',clear:'{n} pts clear of {a}',level:'Level with {a}',alone:'Invite friends. The table starts at 2 players.',offRoom:'Offline · showing the last saved table',pendTitle:'Uploading your last season',pending:'It retries automatically.',pull:'Pull or tap ↻ to refresh',sqLbl:'{r} right, {w} wrong, {x} exclusive',arcTitle:'Past dailies',arcEmpty:"No dailies yet. Play today's and it lands here.",playToday:'Play today',local:'Saved on this device only.',prevM:'Previous month',nextM:'Next month',missed:'Missed',monthN:'{n} played',monthNone:'No dailies this month.'}},
+es:{onl:{hubTitle:'Amigos',over:'Jugar con amigos',lead:'Salas privadas',leadSub:'Los mismos culebrones para todos cada temporada. Gana la mejor carrera.',offTitle:'El juego online necesita conexión.',howTitle:'Cómo funcionan las salas',how1:'Crea una sala y elige las temporadas',how2:'Comparte el código de 5 letras',how3:'Todos juegan lo mismo. Gana el mejor total.',tab:{join:'Unirse',create:'Crear'},codeLbl:'Código de 5 letras',yourGo:'Te toca',finished:'Terminada',dayN:'Día {d}',seasonOf:'Temporada {s}/{n}',rankLine:'Vas {o}',room:'Sala',back:'Atrás',copyCode:'toca para copiar',codeCopied:'Código copiado',resume:'Seguir · Día {d}',ahead1:'{a} ya la jugó',ahead2:'{a} y {b} ya la jugaron',aheadN:'{a}, {b} y {n} más ya la jugaron',hiddenTill:'sus resultados se ocultan hasta que juegues',hiddenN:'{n} oculta(s)',noSeason:'Aún sin temporada',you:'Tú',sN:'{s}/{n} jugadas',podium:'Los tres primeros',up:'sube {n}',down:'baja {n}',insight:'Cómo vas',behind:'A {n} pts de {a}',clear:'{n} pts por delante de {a}',level:'Empatado con {a}',alone:'Invita a tus amigos. La tabla empieza con 2.',offRoom:'Sin conexión · última tabla guardada',pendTitle:'Subiendo tu última temporada',pending:'Se reintenta sola.',pull:'Desliza o toca ↻ para actualizar',sqLbl:'{r} aciertos, {w} fallos, {x} exclusivas',arcTitle:'Diarios anteriores',arcEmpty:'Aún no hay diarios. Juega el de hoy y aparecerá aquí.',playToday:'Jugar hoy',local:'Guardado solo en este dispositivo.',prevM:'Mes anterior',nextM:'Mes siguiente',missed:'Perdido',monthN:'{n} jugados',monthNone:'Ningún diario este mes.'}},
+ar:{onl:{hubTitle:'الصحاب',over:'العب مع صحابك',lead:'أوض خاصة',leadSub:'نفس القصص للكل كل موسم. واللي مسيرته أحسن يكسب.',offTitle:'اللعب أونلاين محتاج نت.',howTitle:'الأوض بتشتغل إزاي',how1:'اعمل أوضة واختار عدد المواسم',how2:'ابعت الكود اللي فيه 5 حروف',how3:'الكل بيلعب نفس القصص. أعلى مجموع يكسب.',tab:{join:'ادخل',create:'اعمل'},codeLbl:'كود الأوضة (5 حروف)',yourGo:'دورك',finished:'خلصت',dayN:'يوم {d}',seasonOf:'موسم {s}/{n}',rankLine:'ترتيبك {o}',room:'الأوضة',back:'رجوع',copyCode:'دوس عشان تنسخ',codeCopied:'الكود اتنسخ',resume:'كمّل · يوم {d}',ahead1:'{a} لعبه خلاص',ahead2:'{a} و{b} لعبوه خلاص',aheadN:'{a} و{b} و{n} كمان لعبوه خلاص',hiddenTill:'النتايج مستخبية لحد ما تلعب',hiddenN:'{n} مستخبي',noSeason:'لسه مفيش موسم',you:'انت',sN:'لعب {s}/{n}',podium:'التلاتة الأوائل',up:'طلع {n}',down:'نزل {n}',insight:'انت فين',behind:'ورا {a} بـ{n} نقطة',clear:'قدّام {a} بـ{n} نقطة',level:'متعادل مع {a}',alone:'اعزم صحابك. الترتيب بيبدأ من 2.',offRoom:'مفيش نت · ده آخر ترتيب متسيّف',pendTitle:'بنرفع آخر موسم ليك',pending:'هيحاول تاني لوحده.',pull:'اسحب أو دوس ↻ عشان تحدّث',sqLbl:'{r} صح، {w} غلط، {x} انفراد',arcTitle:'اليوميات اللي فاتت',arcEmpty:'لسه مفيش يوميات. العب بتاع النهارده وهيظهر هنا.',playToday:'العب النهارده',local:'متسيّف على الجهاز ده بس.',prevM:'الشهر اللي فات',nextM:'الشهر اللي جاي',missed:'فاتك',monthN:'لعبت {n}',monthNone:'مفيش يوميات الشهر ده.'}}
+});
 /* @@LANE I18N:online END */
 /* ─ */
 /* @@LANE I18N:content BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -3805,46 +3945,77 @@ function exportLight(){ const o=JSON.parse(JSON.stringify(save)); if(o.daily) de
 async function getTransfer(){ toast(t('transfer.working')); const j=await Online.call('save.put',{data:exportLight()}); if(!j.ok){ toast(onlineErr(j.error)); return; } xferCode=j.code; beep('ding'); renderSettings(); }
 async function enterTransfer(){ const code=prompt(t('transfer.prompt')); if(!code) return; const j=await Online.call('save.get',{code}); if(!j.ok){ toast(j.error==='offline'||j.error==='net'?onlineErr(j.error):t('transfer.bad')); return; }
  if(!confirm(t('transfer.confirm'))) return; if(importSave(j.data)){ toast(t('transfer.ok')); closeModalQuiet(); applyTheme(); go('home'); } else toast(t('transfer.bad')); }
-function renderOnline(){ if(onlineForm.status==null) checkOnline(); const nick=onlineForm.nick||save.online.nick||''; const rooms=Object.keys(save.rooms||{}); const off=onlineForm.status==='offline';
- return `<div class="topbar"><div class="wordmark">TIER <b>ONE</b></div><button class="btn sm ghost" data-act="home">${esc(t('res.home'))}</button></div><div class="screen stack">
-  <div><h2>${esc(t('online.title'))}</h2><p class="muted small" style="margin-top:8px">${esc(t('online.sub'))}</p></div>
-  ${off?`<div class="card warncard">📡 ${esc(t('online.offline'))}</div>`:''}
-  ${rooms.length?`<div class="card"><h3>${esc(t('online.mine'))}</h3><div class="stack" style="margin-top:10px">${rooms.map(c=>{ const R=save.rooms[c]; return `<button class="archrow" data-act="openRoom" data-v="${esc(c)}"><span class="an">🏟️</span><span class="ai"><b>${esc((R.room&&R.room.name)||c)}</b><span class="muted small"><bdi dir="ltr">${esc(c)}</bdi> · ${esc(t('online.played',{s:R.career.windows,n:roomSeasons(c)}))}</span></span><span class="chev">›</span></button>`; }).join('')}</div></div>`:''}
-  <div class="card"><h3>${esc(t('online.join'))}</h3>
-   <label class="fld"><span>${esc(t('online.code'))}</span><input id="onCode" class="inp code" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" dir="ltr" value="${esc(onlineForm.code||'')}" placeholder="K7QM2"></label>
+function renderOnline(){ if(onlineForm.status==null) checkOnline(); const nick=onlineForm.nick||save.online.nick||''; const rooms=Object.keys(save.rooms||{}); const off=onlineForm.status==='offline'||onlineForm.status==='net'; const busy=onlineForm.busy;
+ const tab=typeof onlTab!=='undefined'?onlTab:'join'; const code=onlineForm.code||'';
+ const cards=rooms.map(c=>{ const R=save.rooms[c], T=onlTable(R), me=T.rows.find(x=>x.me), ip=save.inProgress&&save.inProgress.room===c;
+  const tag=ip?`<span class="tag dd">▶ ${esc(t('onl.dayN',{d:save.inProgress.day||1}))}</span>`:T.mine<T.tot?`<span class="tag new">${esc(t('onl.yourGo'))}</span>`:`<span class="tag">🏁 ${esc(t('onl.finished'))}</span>`;
+  return `<button class="onl-rcard" data-act="openRoom" data-v="${esc(c)}"><span class="onl-rico" aria-hidden="true">🏟️</span><span class="onl-rmain"><span class="onl-rtop"><b class="d4">${esc((R.room&&R.room.name)||c)}</b>${tag}</span><span class="onl-rmeta"><span class="onl-chipcode" dir="ltr">${esc(c)}</span><span>${esc(t('onl.seasonOf',{s:Math.min(T.mine+1,T.tot),n:T.tot}))}</span>${me&&T.rows.length>1?`<span>· ${esc(t('onl.rankLine',{o:onlOrd(me.rank)}))}</span>`:''}</span></span><span class="chev" aria-hidden="true">›</span></button>`; }).join('');
+ const cells=Array.from({length:5},(_,i)=>`<i class="${i===Math.min(code.length,4)?'cur':''}${code[i]?' on':''}">${esc(code[i]||'')}</i>`).join('');
+ const join=`<div class="card onl-form"><label class="fld"><span>${esc(t('onl.codeLbl'))}</span><span class="onl-codebox"><input id="onCode" class="onl-codein" maxlength="5" autocapitalize="characters" autocomplete="off" spellcheck="false" dir="ltr" value="${esc(code)}" aria-label="${esc(t('online.code'))}"><span class="onl-cells" dir="ltr" aria-hidden="true">${cells}</span></span></label>
    <label class="fld"><span>${esc(t('online.nick'))}</span><input id="onNick2" class="inp" maxlength="16" autocomplete="nickname" value="${esc(onlineForm.nick2||nick)}"></label>
-   <button class="btn primary" data-act="joinRoom" ${onlineForm.busy||off?'disabled':''}>${esc(t('online.joinBtn'))}</button></div>
-  <div class="card"><h3>${esc(t('online.create'))}</h3>
-   <label class="fld"><span>${esc(t('online.nick'))}</span><input id="onNick" class="inp" maxlength="16" autocomplete="nickname" value="${esc(nick)}"></label>
+   <button class="btn primary${busy?' loading':''}" data-act="joinRoom" ${busy||off?'disabled':''}>${esc(t('online.joinBtn'))}</button></div>`;
+ const create=`<div class="card onl-form"><label class="fld"><span>${esc(t('online.nick'))}</span><input id="onNick" class="inp" maxlength="16" autocomplete="nickname" value="${esc(nick)}"></label>
    <label class="fld"><span>${esc(t('online.roomName'))}</span><input id="onName" class="inp" maxlength="28" value="${esc(onlineForm.name||'')}" placeholder="${esc(t('online.namePh'))}"></label>
-   <div class="fld"><span>${esc(t('online.seasons'))}</span><div class="choice">${[3,5,10].map(n=>`<button class="${onlineForm.seasons===n?'on':''}" data-act="roomSeasons" data-v="${n}">${esc(t('online.seasonsN',{n}))}</button>`).join('')}</div></div>
-   <button class="btn gold" data-act="createRoom" ${onlineForm.busy||off?'disabled':''}>${esc(t('online.createBtn'))}</button></div>
-  <p class="muted tiny" style="text-align:center">${esc(t('online.same'))}</p></div>`; }
+   <div class="fld"><span>${esc(t('online.seasons'))}</span><div class="seg" role="radiogroup">${[3,5,10].map(n=>`<button role="radio" aria-checked="${onlineForm.seasons===n}" class="${onlineForm.seasons===n?'on':''}" data-act="roomSeasons" data-v="${n}">${esc(t('online.seasonsN',{n}))}</button>`).join('')}</div></div>
+   <button class="btn primary${busy?' loading':''}" data-act="createRoom" ${busy||off?'disabled':''}>${esc(t('online.createBtn'))}</button></div>`;
+ return `<div class="screen onl">${onlBar(t('onl.hubTitle'),typeof tabbarHtml==='function'?'':'home')}
+  <div class="onl-hero"><span class="over">${esc(t('onl.over'))}</span><h2 class="d3">${esc(t('onl.lead'))}</h2><p class="muted">${esc(t('onl.leadSub'))}</p></div>
+  ${off?`<div class="banner warn onl-off" role="status"><span class="bic" aria-hidden="true">📡</span><div><b>${esc(t('onl.offTitle'))}</b><p>${esc(t(onlineForm.status==='offline'?'online.offline':'online.netErr'))}</p></div></div>`:''}
+  ${rooms.length?`<div class="sechead"><span class="d4">${esc(t('online.mine'))}</span><span class="aux">${rooms.length}</span></div><div class="onl-rooms">${cards}</div>`:`<div class="card onl-how"><span class="over">${esc(t('onl.howTitle'))}</span><ol>${['how1','how2','how3'].map((k,i)=>`<li><b class="num">${i+1}</b><span>${esc(t('onl.'+k))}</span></li>`).join('')}</ol></div>`}
+  <div class="seg onl-tabs" role="tablist">${['join','create'].map(k=>`<button role="tab" aria-selected="${tab===k}" class="${tab===k?'on':''}" data-act="onlTab" data-v="${k}">${esc(t('onl.tab.'+k))}</button>`).join('')}</div>
+  ${tab==='create'?create:join}
+  <p class="muted onl-foot">${esc(t('online.same'))}</p></div>`; }
 function renderRoom(){ const c=roomView, R=save.rooms&&save.rooms[c]; if(!R) return '';
- const room=R.room||{name:c,seasons:R.seasons,players:[]}, tot=room.seasons, mine=R.career.windows;
- const rows=(room.players||[]).map(p=>{ const rs=p.results||[]; return {p,rs,sum:rs.reduce((a,x)=>a+x.score,0),best:rs.length?Math.min(...rs.map(x=>x.tier)):null,last:rs[rs.length-1]}; }).sort((a,b)=>b.sum-a.sum||b.rs.length-a.rs.length);
- const medal=i=>['🥇','🥈','🥉'][i]||String(i+1);
- const board=rows.map((x,i)=>`<div class="lbrow ${x.p.pid===R.pid?'me':''}"><span class="lbr">${medal(i)}</span><span class="lbn"><b>${esc(x.p.nick)}${x.p.pid===R.pid?` <span class="muted small">· ${esc(t('online.you'))}</span>`:''}</b><span class="muted small">${esc(t('online.played',{s:x.rs.length,n:tot}))}${x.best?` · ${esc(t('online.best',{t:tierName(tierOf(x.best))}))}`:''}${x.last?` · 👥 ${fmtK(x.last.followers)} · $${x.last.cash}`:''}</span>${x.last&&x.last.row?`<span class="lbrow-e">${esc(x.last.row)}</span>`:''}</span><span class="lbs">${x.sum}<small>${esc(t('app.ptsShort'))}</small></span></div>`).join('');
- const next=mine<tot?`<button class="btn primary" data-act="playRoom" data-v="${esc(c)}">${esc(t('online.play',{s:mine+1}))}</button>`:`<div class="card donecard">🏁 ${esc(t('online.done'))}</div>`;
- return `<div class="topbar"><div class="wordmark">TIER <b>ONE</b></div><button class="btn sm ghost" data-act="openOnline">${esc(t('online.allRooms'))}</button></div><div class="screen stack">
-  <div class="roomhead"><span class="muted small">${esc(t('online.roomCode'))}</span><b class="roomcode" dir="ltr">${esc(c)}</b><h2>${esc(room.name||c)}</h2><span class="muted small">${esc(t('online.members',{n:(room.players||[]).length}))} · ${esc(t('online.season',{s:Math.min(mine+1,tot),n:tot}))}</span></div>
-  ${R.offline?`<div class="card warncard">📡 ${esc(t('online.netErr'))}</div>`:''}
-  ${R.pending?`<div class="card warncard">⏳ ${esc(t('online.pending'))}</div>`:''}
+ const room=R.room||{name:c,seasons:R.seasons,players:[]}, T=onlTable(R), tot=T.tot, mine=T.mine, rows=T.rows;
+ const base=onlVisit(c,R,rows); const me=rows.find(x=>x.me); const ip=save.inProgress&&save.inProgress.room===c;
+ const medal=r=>['🥇','🥈','🥉'][r-1]||`<bdi dir="ltr">${r}</bdi>`;
+ const trow=x=>{ const d=base[x.p.pid]?base[x.p.pid]-x.rank:0; return `<li class="onl-lrow${x.me?' me':''}" data-pid="${esc(x.p.pid)}" data-d="${d}"><span class="onl-rk">${medal(x.rank)}</span><span class="onl-mv ${d>0?'up':d<0?'down':''}" aria-label="${d?esc(t(d>0?'onl.up':'onl.down',{n:Math.abs(d)})):''}">${d>0?'▲'+d:d<0?'▼'+(-d):''}</span>${onlAv(x.p.nick,x.me)}<span class="onl-ln"><span class="onl-nm"><b>${esc(x.p.nick)}</b>${x.me?`<span class="tag ut">${esc(t('onl.you'))}</span>`:''}${onlTitle(x)}</span><span class="onl-sub">${x.last?onlSq(x.last.row):`<span class="muted">${esc(t('onl.noSeason'))}</span>`}${x.hid>0?`<span class="onl-hid">🔒 ${esc(t('onl.hiddenN',{n:x.hid}))}</span>`:''}</span></span><span class="onl-tot"><b class="num" dir="ltr">${x.sum}</b><small>${esc(t('onl.sN',{s:x.vis.length,n:tot}))}</small></span></li>`; };
+ const pod=rows.length>=2&&rows.some(x=>x.vis.length)?`<div class="onl-podium" aria-label="${esc(t('onl.podium'))}">${[1,0,2].map(i=>{ const x=rows[i]; if(!x) return '<span class="onl-pod empty"></span>'; return `<div class="onl-pod p${i+1}${x.me?' me':''}">${onlAv(x.p.nick,x.me,'lg')}<b class="onl-pn">${esc(x.p.nick)}</b><span class="onl-pp num"><bdi dir="ltr">${x.sum}</bdi> ${esc(t('app.ptsShort'))}</span><span class="onl-step"><span>${['🥇','🥈','🥉'][x.rank-1]||x.rank}</span></span></div>`; }).join('')}</div>`:'';
+ const ahead=mine<tot?rows.filter(x=>!x.me&&x.rs.length>mine).map(x=>x.p.nick):[];
+ const aheadTxt=ahead.length?t(ahead.length===1?'onl.ahead1':ahead.length===2?'onl.ahead2':'onl.aheadN',{a:ahead[0],b:ahead[1],n:ahead.length-2})+' · '+t('onl.hiddenTill'):'';
+ let ins=''; if(me){ const i=rows.indexOf(me); if(rows.length<2) ins=t('onl.alone'); else if(i===0){ const b=rows[1], n=me.sum-b.sum; ins=n>0?t('onl.clear',{n,a:b.p.nick}):t('onl.level',{a:b.p.nick}); } else { const a=rows[i-1], n=a.sum-me.sum; ins=n>0?t('onl.behind',{n,a:a.p.nick}):t('onl.level',{a:a.p.nick}); } }
+ const rail=`<div class="onl-rail" role="img" aria-label="${esc(t('online.season',{s:Math.min(mine+1,tot),n:tot}))}">${Array.from({length:tot},(_,i)=>`<i class="${i<mine?'done':i===mine?'now':''}"></i>`).join('')}</div>`;
+ const next=mine<tot?`<button class="btn primary xl" data-act="playRoom" data-v="${esc(c)}">${uiIcon('play','flip')}<span>${esc(ip?t('onl.resume',{d:save.inProgress.day||1}):t('online.play',{s:mine+1}))}</span></button>`:`<div class="banner onl-done"><span class="bic" aria-hidden="true">🏁</span><div><b>${esc(t('online.done'))}</b></div></div>`;
+ return `<div class="screen onl onl-room">${onlBar(t('onl.room'),'online',`<button class="iconbtn" data-act="refreshRoom" data-v="${esc(c)}" aria-label="${esc(t('online.refresh'))}">${uiIcon('refresh')}</button>`)}
+  <div class="onl-ptr" aria-hidden="true">${uiIcon('refresh')}</div>
+  <div class="onl-head"><span class="over">${esc(t('online.roomCode'))}</span><button class="onl-code" data-act="onlCopy" data-v="${esc(c)}" dir="ltr" aria-label="${esc(t('online.roomCode')+' '+c.split('').join(' ')+' · '+t('onl.copyCode'))}">${c.split('').map(ch=>`<i>${esc(ch)}</i>`).join('')}<span class="onl-cp">${uiIcon('copy')}</span></button><h2 class="d3">${esc(room.name||c)}</h2><span class="muted onl-meta">${esc(t('online.members',{n:(room.players||[]).length}))} · ${esc(t('online.season',{s:Math.min(mine+1,tot),n:tot}))}</span>${rail}</div>
+  ${R.offline?`<div class="banner warn" role="status"><span class="bic" aria-hidden="true">📡</span><div><b>${esc(t('onl.offRoom'))}</b><p>${esc(t('online.netErr'))}</p></div></div>`:''}
+  ${R.pending?`<div class="banner warn" role="status"><span class="bic" aria-hidden="true">⏳</span><div><b>${esc(t('onl.pendTitle'))}</b><p>${esc(t('onl.pending'))}</p></div></div>`:''}
   ${next}
-  <div class="row"><button class="btn" data-act="shareRoom" data-v="${esc(c)}">📨 ${esc(t('online.invite'))}</button><button class="btn" data-act="roomCareer" data-v="${esc(c)}">💼 ${esc(t('online.shop'))}</button></div>
-  <div class="card"><div class="lbhead"><h3>${esc(t('online.board'))}</h3><button class="btn sm ghost" data-act="refreshRoom" data-v="${esc(c)}">↻ ${esc(t('online.refresh'))}</button></div>${board||`<p class="muted small">…</p>`}</div>
-  <p class="muted tiny" style="text-align:center">${esc(t('online.same'))}</p></div>`; }
+  ${aheadTxt?`<p class="onl-ahead muted">👀 ${esc(aheadTxt)}</p>`:''}
+  ${pod}
+  <div class="sechead"><span class="d4">${esc(t('online.board'))}</span><span class="aux">${esc(t('online.members',{n:rows.length}))}</span></div>
+  <ol class="list onl-table">${rows.map(trow).join('')||`<li class="onl-lrow"><span class="muted">…</span></li>`}</ol>
+  ${ins?`<div class="card onl-ins"><span class="onl-insic" aria-hidden="true">📊</span><div><span class="over">${esc(t('onl.insight'))}</span><b>${esc(ins)}</b></div></div>`:''}
+  <div class="onl-2"><button class="btn" data-act="shareRoom" data-v="${esc(c)}">${uiIcon('share')}<span>${esc(t('online.invite'))}</span></button><button class="btn" data-act="roomCareer" data-v="${esc(c)}">${uiIcon('career')}<span>${esc(t('online.shop'))}</span></button></div>
+  <p class="muted onl-foot">${esc(t('onl.pull'))} · ${esc(t('online.same'))}</p></div>`; }
 
 // ----- daily archive -----
 function renderArchive(){
- const d=save.daily; const keys=Object.keys(d.history).sort().reverse();
- const hs=keys.map(k=>d.history[k]); const best=hs.length?Math.min(...hs.map(h=>h.tier===9?99:h.tier)):null;
+ const d=save.daily, H=d.history||{}; const keys=Object.keys(H).sort().reverse();
+ const hs=keys.map(k=>H[k]); const best=hs.length?Math.min(...hs.map(h=>h.tier===9?99:h.tier)):null;
  const avg=hs.length?Math.round(hs.reduce((a,h)=>a+(h.score||0),0)/hs.length):0;
- const list=keys.map(k=>{ const h=d.history[k]; const tr=tierOf(h.tier); return `<button class="archrow" data-act="openDay" data-v="${esc(k)}"><span class="an">#${h.num||'—'}</span><span class="ai"><b>${esc(fmtDay(k))}</b><span class="ar">${esc(h.row||'')}</span></span><span class="at"><b class="tierchip ${tr.key}">${esc(tierName(tr))}</b><span>${h.score} ${esc(t('app.ptsShort'))}</span></span><span class="chev">›</span></button>`; }).join('');
- return `<div class="topbar"><div class="wordmark">TIER <b>ONE</b></div><button class="btn sm ghost" data-act="home">${esc(t('res.home'))}</button></div><div class="screen stack">
-  <div><h2>${esc(t('arch.title'))}</h2><p class="muted small" style="margin-top:8px">${esc(t('arch.sub'))}</p></div>
-  ${hs.length?`<div class="archstats"><div><b>${hs.length}</b><span>${esc(t('arch.played'))}</span></div><div><b>${best===99?'🤡':best}</b><span>${esc(t('arch.best'))}</span></div><div><b>${avg}</b><span>${esc(t('arch.avg'))}</span></div><div><b>🔥 ${d.streak}</b><span>${esc(t('arch.streak'))}</span></div></div><div class="stack">${list}</div>`:`<div class="card"><p class="muted" style="margin:0">${esc(t('arch.empty'))}</p></div>`}
-  <p class="muted tiny" style="text-align:center">🔒 ${esc(t('arch.local'))}</p></div>`;
+ const back=typeof SCREENS!=='undefined'&&SCREENS.more?'more':'home';
+ if(!hs.length) return `<div class="screen onl onl-arch">${onlBar(t('onl.arcTitle'),back)}<div class="card onl-empty"><span class="onl-emic" aria-hidden="true">📅</span><b class="d4">${esc(t('onl.arcEmpty'))}</b><button class="btn primary" data-act="startDaily">${uiIcon('play','flip')}<span>${esc(t('onl.playToday'))}</span></button></div><p class="muted onl-foot">🔒 ${esc(t('onl.local'))}</p></div>`;
+ const tk=todayKey(), ym=typeof onlMonth!=='undefined'&&onlMonth?onlMonth:tk.slice(0,7), firstK=keys[keys.length-1];
+ const [y,m]=ym.split('-').map(Number), dim=new Date(y,m,0).getDate(), st=lang==='ar'?6:1, lead=(new Date(y,m-1,1).getDay()-st+7)%7;
+ const pad=n=>String(n).padStart(2,'0'); const wd=Array.from({length:7},(_,i)=>{ const dt=new Date(2026,0,4+((st+i)%7)); let s=''; try{ s=dt.toLocaleDateString(lang,{weekday:'narrow'}); }catch(e){ s='MTWTFSS'[i]; } return `<span>${esc(s)}</span>`; }).join('');
+ let cells=''; for(let i=0;i<lead;i++) cells+='<span class="onl-cd pad"></span>';
+ for(let dd=1;dd<=dim;dd++){ const k=`${y}-${pad(m)}-${pad(dd)}`, h=H[k], today=k===tk;
+  if(h){ const tr=tierOf(h.tier); cells+=`<button class="onl-cd ${tr.key}${today?' today':''}" data-act="openDay" data-v="${esc(k)}" aria-label="${esc(fmtDay(k)+' · '+tierName(tr)+' · '+h.score+' '+t('app.ptsShort'))}"><b class="num">${dd}</b>${tr.key==='clown'?'<em>🤡</em>':''}</button>`; }
+  else cells+=`<span class="onl-cd ${k<tk&&k>=firstK?'miss':k>tk?'fut':''}${today?' today':''}"><b class="num">${dd}</b></span>`; }
+ let title=ym; try{ title=new Date(y,m-1,1).toLocaleDateString(lang,{month:'long',year:'numeric'}); }catch(e){}
+ const mk=keys.filter(k=>k.slice(0,7)===ym);
+ const list=mk.map(k=>{ const h=H[k], tr=tierOf(h.tier); let ds=k; try{ ds=new Date(k+'T12:00:00').toLocaleDateString(lang,{weekday:'short',day:'numeric',month:'short'}); }catch(e){} return `<button class="cell onl-drow" data-act="openDay" data-v="${esc(k)}"><span class="onl-dn num">#${h.num||'—'}</span><span class="cmain"><b>${esc(ds)}</b>${onlSq(h.row)}</span><span class="onl-dt"><span class="onl-tier ${tr.key}">${esc(tierName(tr))}</span><b class="num" dir="ltr">${h.score}</b></span><span class="chev" aria-hidden="true">›</span></button>`; }).join('');
+ const prevOk=ym>firstK.slice(0,7), nextOk=ym<tk.slice(0,7);
+ return `<div class="screen onl onl-arch">${onlBar(t('onl.arcTitle'),back)}
+  <div class="card onl-stats"><div><b class="num">${hs.length}</b><span>${esc(t('arch.played'))}</span></div><div><b class="num">${best===99?'🤡':best==null?'—':'T'+best}</b><span>${esc(t('arch.best'))}</span></div><div><b class="num" dir="ltr">${avg}</b><span>${esc(t('arch.avg'))}</span></div><div><b class="num">🔥 ${d.streak||0}</b><span>${esc(t('arch.streak'))}</span></div></div>
+  <div class="card onl-cal" data-ym="${esc(ym)}"><div class="onl-calh"><button class="iconbtn" data-act="onlMonth" data-v="-1" ${prevOk?'':'disabled'} aria-label="${esc(t('onl.prevM'))}">${uiIcon('back')}</button><b class="d4">${esc(title)}</b><button class="iconbtn" data-act="onlMonth" data-v="1" ${nextOk?'':'disabled'} aria-label="${esc(t('onl.nextM'))}">${uiIcon('back','onl-fwd')}</button></div>
+   <div class="onl-wd" aria-hidden="true">${wd}</div><div class="onl-grid">${cells}</div>
+   <div class="onl-leg" aria-hidden="true"><span><i class="t1"></i>T1</span><span><i class="t2"></i>T2</span><span><i class="t3"></i>T3</span><span><i class="t4"></i>T4–5</span><span><i class="clown"></i>🤡</span><span><i class="miss"></i>${esc(t('onl.missed'))}</span></div></div>
+  <div class="sechead"><span class="d4">${esc(title)}</span><span class="aux">${esc(t('onl.monthN',{n:mk.length}))}</span></div>
+  ${mk.length?`<div class="list">${list}</div>`:`<p class="muted onl-foot">${esc(t('onl.monthNone'))}</p>`}
+  <p class="muted onl-foot">🔒 ${esc(t('onl.local'))}</p></div>`;
 }
 
 // ----- career hub -----
@@ -4020,6 +4191,54 @@ function gearEffect(key){ const s=k=>Math.round(SOURCES[k].rel*100), g=k=>{ cons
 /* @@LANE JS:career END */
 /* ─ */
 /* @@LANE JS:online BEGIN (lane-owned; insert only between BEGIN and END) */
+/* online lane: Friends hub, room page (podium, league table, rank moves), Past dailies calendar */
+let onlTab='join', onlMonth=null, onlVisitRoom=null, onlFlip=false;
+function onlBar(title,back,right){ return `<div class="appbar onl-bar">${back?`<button class="iconbtn" data-act="onlGo" data-v="${esc(back)}" aria-label="${esc(t('onl.back'))}">${uiIcon(back==='home'?'home':'back')}</button>`:'<span></span>'}<div class="ttl">${esc(title)}</div><div class="right">${right||''}</div></div>`; }
+function onlOrd(n){ if(lang==='en'){ const s=n%100>10&&n%100<14?'th':({1:'st',2:'nd',3:'rd'}[n%10]||'th'); return n+s; } return lang==='es'?n+'º':String(n); }
+function onlHash(s){ let h=0; for(const ch of String(s)) h=(h*31+ch.codePointAt(0))>>>0; return h; }
+function onlAv(nick,me,cls){ const w=String(nick||'?').trim().split(/\s+/); const ini=(w.length>1?w[0][0]+w[1][0]:Array.from(w[0]).slice(0,2).join('')).toUpperCase();
+ return `<span class="onl-av${me?' me':''}${cls?' '+cls:''}" style="--h:${onlHash(nick)%360}" aria-hidden="true">${esc(ini)}</span>`; }
+function onlSq(row){ const m={'🔵':['ex','★'],'🟢':['ok','✓'],'🔴':['bad','✕'],'⚪':['non','']}; const a=Array.from(String(row||'')).filter(e=>m[e]); if(!a.length) return '';
+ const n=k=>a.filter(e=>m[e][0]===k).length; const lbl=t('onl.sqLbl',{r:n('ok')+n('ex'),w:n('bad'),x:n('ex')});
+ return `<span class="onl-sq" dir="ltr" role="img" aria-label="${esc(lbl)}">${a.map(e=>`<i class="${m[e][0]}">${m[e][1]}</i>`).join('')}</span>`; }
+function onlTitle(x){ let tl=x.p.title||'';
+ if(!tl&&x.me&&save.ach&&save.ach.title&&typeof ACH!=='undefined'&&Array.isArray(ACH)){ const a=ACH.find(q=>q.id===save.ach.title); if(a) tl=(a.reward&&a.reward.title)||a[lang]||a.en||''; }
+ return tl?`<span class="onl-title">${esc(tl)}</span>`:''; }
+/* Standings. Seasons you have not played yet stay hidden (no spoilers): others count only up to your played seasons. */
+function onlTable(R){ const room=R.room||{players:[]}, tot=room.seasons||R.seasons||1, mine=R.career.windows, lim=mine>=tot?tot:mine;
+ const rows=(room.players||[]).map(p=>{ const rs=p.results||[], me=p.pid===R.pid, vis=me?rs:rs.slice(0,lim); return {p,me,rs,vis,hid:rs.length-vis.length,sum:vis.reduce((a,x)=>a+(x.score||0),0),last:vis[vis.length-1]||null}; });
+ rows.sort((a,b)=>b.sum-a.sum||b.vis.length-a.vis.length||String(a.p.nick).localeCompare(String(b.p.nick)));
+ rows.forEach((x,i)=>{ const p=rows[i-1]; x.rank=p&&p.sum===x.sum&&p.vis.length===x.vis.length?p.rank:i+1; });
+ return {rows,tot,mine}; }
+/* ▲▼ since your last visit + rank history per room (for room_escape / room_top / room_champ). Client-side only. */
+function onlVisit(c,R,rows){ const cur={}; rows.forEach(x=>cur[x.p.pid]=x.rank);
+ if(onlVisitRoom!==c){ onlVisitRoom=c; onlFlip=true; R.rkBase=R.rkLast||{}; }
+ const base=R.rkBase||{}; const changed=JSON.stringify(R.rkLast||{})!==JSON.stringify(cur); R.rkLast=cur;
+ const me=rows.find(x=>x.me); if(me&&rows.some(x=>x.vis.length)){ const h=R.rankHist||(R.rankHist=[]), l=h[h.length-1], s=me.vis.length;
+  if(!l||l.r!==me.rank||l.n!==rows.length||l.s!==s){ h.push({r:me.rank,n:rows.length,s,at:Date.now()}); if(h.length>60) h.splice(0,h.length-60); persist(); return base; } }
+ if(changed) persist(); return base; }
+LANE_ACTS.onlTab=(el,v)=>{ readForm(); onlTab=v==='create'?'create':'join'; if(typeof SFX!=='undefined') beep('select'); render(); };
+LANE_ACTS.onlGo=(el,v)=>{ go(v||'home'); };
+LANE_ACTS.onlCopy=(el,v)=>{ copyText(v,t('onl.codeCopied')); };
+LANE_ACTS.onlMonth=(el,v)=>{ if(el&&el.disabled) return; const tk=todayKey().slice(0,7), cur=onlMonth||tk; let [y,m]=cur.split('-').map(Number); m+=(+v||0); if(m<1){ m=12; y--; } if(m>12){ m=1; y++; }
+ const nx=y+'-'+String(m).padStart(2,'0'); const ks=Object.keys((save.daily&&save.daily.history)||{}).sort(); if(nx>tk||(ks.length&&nx<ks[0].slice(0,7))) return; onlMonth=nx; render(); };
+/* code boxes: one real input under five cells (auto-advance and paste come for free) */
+document.addEventListener('input',e=>{ const el=e.target; if(!el||el.id!=='onCode') return; const v=el.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5); if(el.value!==v) el.value=v; onlineForm.code=v;
+ const cs=el.parentNode&&el.parentNode.querySelectorAll('.onl-cells i'); if(cs) cs.forEach((c,i)=>{ c.textContent=v[i]||''; c.classList.toggle('on',!!v[i]); c.classList.toggle('cur',i===Math.min(v.length,4)); });
+ if(v.length===5){ const n=$('onNick2'); if(n&&!n.value) n.focus(); } });
+onHook('rendered',scr=>{
+ if(scr!=='room'){ onlVisitRoom=null; }
+ if(scr!=='archive') onlMonth=scr==='results'?onlMonth:null;
+ if(scr==='room'&&onlFlip){ onlFlip=false; const rm=typeof motionReduced==='function'&&motionReduced(); const rows=[...document.querySelectorAll('.onl-lrow[data-d]')].filter(r=>+r.dataset.d);
+  if(!rm&&rows.length){ rows.forEach(r=>{ const h=r.getBoundingClientRect().height||60; r.style.transition='none'; r.style.transform=`translateY(${(+r.dataset.d)*h}px)`; });
+   requestAnimationFrame(()=>requestAnimationFrame(()=>rows.forEach(r=>{ r.style.transition='transform 420ms var(--ease-spring)'; r.style.transform=''; }))); } }
+ if(scr==='archive'){ const cal=document.querySelector('.onl-cal'); if(cal){ let x0=null; cal.addEventListener('pointerdown',e=>{ x0=e.clientX; });
+  cal.addEventListener('pointerup',e=>{ if(x0==null) return; const dx=e.clientX-x0; x0=null; if(Math.abs(dx)<50) return; const rtl=document.documentElement.dir==='rtl'; const dir=(dx<0)!==rtl?1:-1; const b=cal.querySelector(`[data-act="onlMonth"][data-v="${dir}"]`); if(b&&!b.disabled) LANE_ACTS.onlMonth(b,String(dir)); }); } }
+});
+/* pull to refresh on the room page */
+(function(){ let y0=null; document.addEventListener('touchstart',e=>{ y0=screen==='room'&&window.scrollY<=0&&e.touches.length===1?e.touches[0].clientY:null; },{passive:true});
+ document.addEventListener('touchmove',e=>{ if(y0==null) return; const dy=e.touches[0].clientY-y0, p=document.querySelector('.onl-ptr'); if(p){ p.classList.add('show'); p.style.setProperty('--pull',Math.max(0,Math.min(1,dy/90))); p.classList.toggle('arm',dy>90); } },{passive:true});
+ document.addEventListener('touchend',()=>{ if(y0==null) return; y0=null; const p=document.querySelector('.onl-ptr'); if(p&&p.classList.contains('arm')&&roomView){ p.classList.add('spin'); refreshRoom(roomView,true); } if(p){ p.classList.remove('arm'); p.style.setProperty('--pull',0); setTimeout(()=>p.classList.remove('show','spin'),600); } },{passive:true}); })();
 /* @@LANE JS:online END */
 /* ─ */
 /* @@LANE JS:content BEGIN (lane-owned; insert only between BEGIN and END) */
