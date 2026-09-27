@@ -1409,6 +1409,172 @@ html.rm .pp{ animation:none; }
 /* @@LANE CSS:player END */
 /* ─ */
 /* @@LANE CSS:results BEGIN (lane-owned; insert only between BEGIN and END) */
+.rhero{ position:relative; isolation:isolate; text-align:center; padding:4px 0 2px; }
+.rhero::before{ content:""; position:absolute; z-index:-1; left:50%; top:78px; width:560px; height:560px; margin:-280px 0 0 -280px; background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--tc) 14%,transparent) 0 7deg,transparent 7deg 20deg); -webkit-mask:radial-gradient(circle,#000 0,transparent 55%); mask:radial-gradient(circle,#000 0,transparent 55%); }
+.rscore{ margin-top:10px; font:800 var(--ital) 34px/1 var(--display); font-variant-numeric:tabular-nums; }
+.rscore small{ font:600 15px var(--body); color:var(--muted); font-style:normal; }
+.rgrid{ display:flex; justify-content:center; gap:8px; margin-top:14px; direction:ltr; }
+.rt{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+.rt .sq{ width:54px; height:54px; border-radius:12px; display:grid; place-items:center; color:#0B0F1A; box-shadow:inset 0 -3px 0 rgba(0,0,0,.2); }
+.rt .sq svg{ width:24px; height:24px; }
+.rt.right .sq{ background:var(--ok); } .rt.wrong .sq{ background:var(--bad); color:#fff; } .rt.ex .sq{ background:linear-gradient(160deg,#FFE27A,#FFB020); color:#241800; } .rt.none .sq{ background:var(--panel3); color:var(--dim); }
+.rt small{ font:800 11px/1 var(--body); color:var(--muted); letter-spacing:.04em; }
+.rt small.dd{ color:#FF6B7D; } .rt small .ut{ color:var(--text); }
+.ladder{ position:relative; margin:18px 4px 0; }
+.ladder .trk{ position:relative; height:8px; border-radius:4px; background:var(--panel3); }
+.ladder .fill{ position:absolute; inset-block:0; inset-inline-start:0; border-radius:4px; background:linear-gradient(var(--gdir),var(--t4),var(--tc)); }
+.ladder .tk{ position:absolute; top:-3px; width:2px; height:14px; background:var(--line2); }
+.ladder .tk.pass{ background:var(--text); }
+.ladder .lb{ position:absolute; top:16px; transform:translateX(-50%); font:800 var(--ital) 13px/1 var(--display); color:var(--dim); }
+.ladder .lb.pass{ color:var(--muted); }
+[dir="rtl"] .ladder .lb{ transform:translateX(50%); }
+.ladder .you{ position:absolute; top:-30px; transform:translateX(-50%); padding:3px 7px 2px; border-radius:6px; background:var(--text); color:var(--bg); font:800 var(--ital) 12px/1 var(--display); }
+.ladder .you::after{ content:""; position:absolute; left:50%; bottom:-5px; margin-left:-5px; border:5px solid transparent; border-bottom:0; border-top-color:var(--text); }
+.gap{ margin-top:30px; font:600 var(--fs-sm)/1.35 var(--body); color:var(--muted); text-align:center; }
+.gap b{ color:var(--text); }
+.rstats{ display:flex; justify-content:center; flex-wrap:wrap; gap:6px 14px; margin-top:12px; font:600 var(--fs-sm) var(--body); color:var(--muted); }
+.rstats b{ color:var(--text); }
+.unl{ display:flex; gap:10px; overflow-x:auto; margin:0 calc(var(--gutter) * -1); padding:0 var(--gutter) 4px; scrollbar-width:none; }
+.unl::-webkit-scrollbar{ display:none; }
+.ucard{ --rc:var(--r-common); flex:0 0 auto; width:236px; display:flex; gap:12px; align-items:center; padding:11px 12px; border-radius:16px; background:linear-gradient(135deg,color-mix(in srgb,var(--rc) 16%,var(--panel)),var(--panel) 70%); border:1px solid color-mix(in srgb,var(--rc) 50%,var(--line)); }
+.ucard .ut{ min-width:0; } .ucard b{ display:block; font:700 14.5px/1.2 var(--body); } .ucard small{ display:block; margin-top:2px; font:600 var(--fs-xs)/1.3 var(--body); color:var(--muted); }
+.ucard .rw{ display:block; font:800 10.5px/1 var(--body); letter-spacing:.07em; text-transform:var(--caps); color:var(--rc); margin-bottom:4px; }
+
+/* scoreboard: your call → what happened → points */
+.sb{ padding:0; overflow:hidden; }
+.sb .sbh{ display:grid; grid-template-columns:34px minmax(0,1fr) 72px; gap:10px; padding:10px 14px 8px; font:800 10.5px/1 var(--body); letter-spacing:.07em; text-transform:var(--caps); color:var(--dim); border-bottom:1px solid var(--line); }
+.sb .sbh span:last-child{ text-align:end; }
+.srow{ display:grid; grid-template-columns:34px minmax(0,1fr) 72px; gap:10px; align-items:center; width:100%; min-height:64px; padding:9px 14px; border:0; background:transparent; color:var(--text); text-align:start; cursor:pointer; }
+.srow + .srow{ border-top:1px solid var(--line); }
+.srow .kit{ width:34px; height:34px; }
+.srow .sn{ display:block; font:800 var(--ital) 17px/1 var(--display); text-transform:var(--caps); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.srow .sc{ display:flex; align-items:center; gap:5px; margin-top:6px; flex-wrap:nowrap; }
+.srow .sc .oc{ height:22px; font-size:10.5px; padding:0 6px 0 5px; }
+.srow .sc .arr{ font-size:12px; }
+.srow .sc .res{ width:18px; height:18px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; }
+.srow .sc .res svg{ width:11px; height:11px; }
+.srow .sc .res.r{ background:var(--ok); color:#06220F; } .srow .sc .res.w{ background:var(--bad); color:#fff; }
+.srow .sp{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.srow .sp b{ font:800 var(--ital) 24px/1 var(--display); font-variant-numeric:tabular-nums; }
+.srow .sp b.up{ color:var(--ok); } .srow .sp b.dn{ color:var(--bad); } .srow .sp b.zero{ color:var(--dim); }
+.vt{ display:inline-flex; align-items:center; height:18px; padding:0 6px; border-radius:5px; font:800 9.5px/1 var(--body); letter-spacing:.06em; text-transform:var(--caps); white-space:nowrap; background:var(--panel3); color:var(--muted); }
+.vt.ex{ background:var(--ex); color:var(--ex-ink); } .vt.ok{ background:color-mix(in srgb,var(--ok) 16%,transparent); color:var(--ok); } .vt.bad{ background:color-mix(in srgb,var(--bad) 16%,transparent); color:var(--bad); }
+.sbf{ display:flex; justify-content:space-between; gap:10px; align-items:center; padding:10px 14px; border-top:1px solid var(--line); font:600 var(--fs-xs)/1.35 var(--body); color:var(--muted); }
+.sbf b{ font:800 var(--ital) 22px/1 var(--display); color:var(--text); }
+
+.thread{ --c:var(--line2); position:relative; overflow:hidden; border-radius:18px; background:var(--panel); border:1px solid var(--line); box-shadow:var(--e1); }
+.thread::before{ content:""; position:absolute; inset-block:0; inset-inline-start:0; width:4px; background:var(--c); }
+.thread.right{ --c:var(--ok); } .thread.wrong{ --c:var(--bad); } .thread.ex{ --c:var(--ex); }
+.thh{ display:grid; grid-template-columns:34px minmax(0,1fr) auto; gap:10px; align-items:center; padding:11px 14px 9px 16px; }
+.thh .kit{ width:34px; height:34px; }
+.thh b.n{ display:block; font:800 var(--ital) 17px/1.05 var(--display); text-transform:var(--caps); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.thh .route{ font-size:12px; margin-top:2px; }
+.thb{ padding:0 14px 12px 16px; }
+.thb .tw{ padding:9px 0; border-top:1px solid var(--line); }
+.mixed{ display:flex; align-items:center; gap:6px; margin:10px 0 0; padding-top:9px; border-top:1px solid var(--line); font:800 10.5px/1 var(--body); letter-spacing:.07em; text-transform:var(--caps); color:var(--muted); }
+.why{ display:flex; align-items:center; gap:6px; margin-top:9px; font:600 var(--fs-xs)/1.3 var(--body); color:var(--muted); }
+.threads{ display:flex; flex-direction:column; gap:10px; }
+
+/* truth matrix: a real <table> */
+.mx{ padding:12px 12px 12px 14px; }
+.mxt{ width:100%; border-collapse:collapse; table-layout:fixed; }
+.mxt th,.mxt td{ padding:0; height:34px; text-align:center; vertical-align:middle; font-weight:inherit; }
+.mxt thead th{ height:40px; }
+.mxt thead th:first-child{ text-align:start; }
+.mxt thead th:not(:first-child):not(:last-child){ width:36px; }
+.mxt thead th:last-child{ width:44px; text-align:end; }
+.mxt thead th b{ display:block; font:800 10.5px/1 var(--body); letter-spacing:.04em; color:var(--text); }
+.mxt thead th i{ display:block; width:18px; height:3px; margin:4px auto 0; border-radius:2px; }
+.mxt tbody th{ text-align:start; }
+.mxt .sn{ display:flex; align-items:center; gap:7px; font:700 13.5px/1.1 var(--body); white-space:nowrap; overflow:hidden; }
+.mxt .sn .e{ width:20px; flex-shrink:0; text-align:center; font-size:15px; }
+.mxt td.sc2{ text-align:end; font:800 var(--ital) 17px/1 var(--display); }
+.mxt tbody.riv tr:first-child > *{ height:44px; padding-top:8px; border-top:1px solid var(--line); }
+.dotc{ width:22px; height:22px; margin:0 auto; border-radius:50%; display:grid; place-items:center; }
+.dotc svg{ width:12px; height:12px; }
+.dotc.t{ background:var(--ok); color:#06220F; } .dotc.f{ background:var(--bad); color:#fff; } .dotc.o{ background:transparent; box-shadow:inset 0 0 0 2px var(--twist); color:var(--twist); } .dotc.n{ width:5px; height:5px; background:var(--line2); }
+.mxleg{ display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; font:600 11.5px/1.3 var(--body); color:var(--muted); }
+.mxleg span{ display:inline-flex; align-items:center; gap:6px; } .mxleg .dotc{ width:16px; height:16px; margin:0; } .mxleg .dotc svg{ width:9px; height:9px; } .mxleg .dotc.n{ width:5px; height:5px; }
+.insight{ display:flex; gap:10px; align-items:center; margin-top:11px; padding:10px 12px; border-radius:12px; background:var(--panel2); font:600 var(--fs-sm)/1.35 var(--body); }
+.statrow{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.statrow > div{ padding:12px 8px; border-radius:14px; background:var(--panel); border:1px solid var(--line); text-align:center; }
+.statrow b{ display:block; font:800 var(--ital) 26px/1 var(--display); font-variant-numeric:tabular-nums; }
+.statrow span{ display:block; margin-top:4px; font:600 11.5px/1.2 var(--body); color:var(--muted); }
+/* ================= share card ================= */
+.shcard{ border-radius:18px; overflow:hidden; background:#0A0F1E; color:#F3F5FA; border:1px solid rgba(255,255,255,.1); box-shadow:var(--e2); }
+.shcard .shb{ padding:14px 16px; }
+.shgrid{ margin-top:8px; font-size:24px; line-height:1.25; letter-spacing:2px; direction:ltr; }
+/* results lane: page glue + reveal overlay */
+.rsx .rhero{ margin-top:6px; }
+.rsx .rscore small{ margin-inline-start:4px; }
+.rsx .ladder .fill{ transition:width .7s var(--ease-out,ease-out); }
+.rsx .ladder .you{ transition:inset-inline-start .7s var(--ease-out,ease-out); }
+.rsx .ladder.inst .fill,.rsx .ladder.inst .you{ transition:none; }
+.rsx .gap .nb{ color:var(--ok); font-weight:800; letter-spacing:.04em; }
+.rsx .srow .sc .oc.none{ background:var(--panel3); color:var(--dim); border-color:transparent; }
+.rsx .thread[hidden]{ display:none; }
+.rsx .thh .vt{ align-self:start; margin-top:2px; }
+.rsx .thb .tw .meta .stamp{ margin-inline-start:auto; flex-shrink:0; }
+.rsx .thb .tw .meta{ overflow:visible; }
+.rsx .thb .tw .metrics{ gap:12px; }
+.rsx .reply .likes{ margin-inline-start:auto; }
+.rsx .thb .sys{ padding:10px 0 0; font:600 var(--fs-sm)/1.35 var(--body); color:var(--muted); border-top:1px solid var(--line); }
+.rsx .mxt thead th.over{ font-size:10.5px; letter-spacing:.07em; }
+.rsx .mxt th.over.sc2{ text-align:end; }
+.rsx .mxt tbody.riv th.over{ height:30px; padding-top:10px; border-top:1px solid var(--line); }
+.rsx .mxt tbody.riv tr:first-child > *{ height:auto; }
+.rsx .insight{ align-items:flex-start; }
+.rsx .insight b{ color:var(--text); }
+.rsx .modebox{ margin-top:10px; }
+.rsx .modebox .stat{ display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); }
+.rsx .modebox .stat:last-child{ border-bottom:0; }
+.rsx .lvup{ margin:8px 0 2px; padding:10px 12px; border-radius:12px; background:color-mix(in srgb,var(--ex) 14%,var(--panel2)); font:800 var(--ital) 20px/1.1 var(--display); text-transform:var(--caps); color:var(--text); }
+.rsx .rsmore{ width:100%; justify-content:center; }
+.rsx .rt{ opacity:1; }
+.rsx .rt.pop{ animation:rsFlip .32s var(--ease-pop,ease-out) both; }
+.rsx .rsnote{ margin-top:10px; font:600 var(--fs-sm)/1.4 var(--body); color:var(--muted); text-align:center; }
+.shcard .shh{ font:800 italic 22px/1.1 "Barlow Condensed",Impact,sans-serif; letter-spacing:.02em; }
+.shcard .shs{ margin-top:6px; font:600 14px/1.3 Barlow,system-ui,sans-serif; color:#B8C0D6; }
+.shcard .shu{ margin-top:6px; font:600 12px/1.3 Barlow,system-ui,sans-serif; color:#8C96B2; }
+.shbtns{ display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+
+/* reveal overlay */
+.rvl{ position:fixed; inset:0; z-index:85; background:var(--bg); overflow:auto; cursor:pointer; animation:rsIn .2s ease-out both; }
+.rvl.out{ animation:rsOut .28s ease-in both; pointer-events:none; }
+.rvl .rvin{ max-width:430px; margin:0 auto; padding:10px var(--gutter,16px) 40px; }
+.rvl .rvtop{ display:flex; align-items:center; gap:8px; min-height:44px; }
+.rvl .rvtop .over{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rvl .rvskip{ background:transparent; border:0; color:var(--muted); font:700 var(--fs-sm) var(--body); padding:10px 4px; cursor:pointer; }
+.rvl .rvslam{ margin:10px 0 0; text-align:center; font:800 var(--ital) 40px/1 var(--display); text-transform:var(--caps); letter-spacing:.02em; color:var(--text); animation:rsSlam .5s var(--ease-pop,ease-out) both; }
+.rvl .rvrun{ margin-top:14px; text-align:center; }
+.rvl .rvn{ margin:4px 0 0; text-align:center; font:800 var(--ital) 96px/.95 var(--display); font-variant-numeric:tabular-nums; }
+.rvl .rvn small{ font:600 18px var(--body); color:var(--muted); font-style:normal; }
+.rvl .rvrows{ display:flex; flex-direction:column; gap:8px; margin-top:18px; perspective:800px; opacity:0; transition:opacity .25s; }
+.rvl.rows .rvrows{ opacity:1; }
+.rvr{ --oc:var(--line2); display:grid; grid-template-columns:34px minmax(0,1fr) auto; gap:10px; align-items:center; min-height:58px; padding:8px 12px; border-radius:14px; border:1px solid var(--line); border-inline-start:4px solid var(--oc); background:repeating-linear-gradient(135deg,var(--panel) 0 10px,var(--panel2) 10px 20px); }
+.rvr .kit{ width:34px; height:34px; }
+.rvr .pn{ display:block; font:800 var(--ital) 16px/1.05 var(--display); text-transform:var(--caps); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rvr .wy{ display:flex; align-items:center; gap:6px; margin-top:4px; font:600 12px/1.25 var(--body); color:var(--muted); min-width:0; }
+.rvr .wy .oc{ height:20px; font-size:10px; flex-shrink:0; }
+.rvr .wy span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rvr .pp{ font:800 var(--ital) 24px/1 var(--display); color:var(--dim); font-variant-numeric:tabular-nums; }
+.rvr.open{ background:var(--panel); animation:rsFlip .28s ease-out both; }
+.rvr.open.right{ --oc:var(--ok); } .rvr.open.ex{ --oc:var(--ex); } .rvr.open.wrong{ --oc:var(--bad); } .rvr.open.none{ --oc:var(--line2); }
+.rvr.open.right .pp{ color:var(--ok); } .rvr.open.ex .pp{ color:var(--ex); } .rvr.open.wrong .pp{ color:var(--bad); }
+.rvl .rvstreak{ min-height:30px; margin-top:12px; text-align:center; }
+.rvl .rvstreak span{ display:inline-block; padding:5px 12px; border-radius:999px; background:color-mix(in srgb,var(--ex) 18%,var(--panel)); font:800 13px var(--body); animation:rsSlam .3s var(--ease-pop,ease-out) both; }
+.rvl .rvtier{ display:flex; flex-direction:column; align-items:center; gap:8px; min-height:0; }
+.rvl .rvtier.on .tmedal{ animation:rsDrop .65s var(--ease-pop,cubic-bezier(.3,1.6,.5,1)) both; }
+.rvl .rvtier b{ font:800 var(--ital) 28px/1 var(--display); text-transform:var(--caps); }
+.rvl .rvhint{ margin-top:16px; text-align:center; font:600 var(--fs-xs) var(--body); color:var(--dim); }
+@keyframes rsIn{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes rsOut{ from{ opacity:1; } to{ opacity:0; } }
+@keyframes rsFlip{ from{ transform:rotateX(90deg); opacity:.3; } to{ transform:none; opacity:1; } }
+@keyframes rsSlam{ from{ transform:scale(1.8); opacity:0; } to{ transform:none; opacity:1; } }
+@keyframes rsDrop{ from{ transform:scale(1.6) rotate(-12deg); opacity:0; } to{ transform:none; opacity:1; } }
+html.rm .rvl *,html.rm .rsx *{ animation:none!important; transition:none!important; }
+.rsx .link{ background:none; border:0; padding:0; cursor:pointer; }
+.rsx .rsnote .link{ font:700 var(--fs-sm) var(--body); color:var(--accent-text); }
 /* @@LANE CSS:results END */
 /* ─ */
 /* @@LANE CSS:career BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -3630,6 +3796,53 @@ ar:{pp:{back:'ارجع للوحة',close:'اقفل',dayOf:'اليوم {d} من 7
 /* @@LANE I18N:player END */
 /* ─ */
 /* @@LANE I18N:results BEGIN (lane-owned; insert only between BEGIN and END) */
+deepMerge(I18N,{
+ en:{rs:{results:'Results',stDel:'Deleted',closed:'Window closed',shut:'Window shut',skip:'Skip ›',running:'Running score',sealed:'sealed…',tapHint:'Tap to speed up · your tier lands after the last card',
+  dd:'Deadline Day',ddShort:'DD',dayShort:'D{d}',whyCalled:'you called it · {day}',whyEx:'★ Exclusive · {day}',whyHalf:'right after a U-turn · ½',whyWrong:'wrong · you said {o}',whyNone:'no call',streak:'🔥 {n} in a row',
+  pts:'pts',nRight:'{n} right',nEx:'{n} exclusives',nWrong:'{n} wrong',short:'{n} pts short of {t}',best:'your best: {n}',newBest:'NEW PERSONAL BEST',top:'Top tier. Front page.',
+  calls:'The calls',callsAux:'tap a row for replies',sbCall:'Your call → what happened',sbPts:'Points',sbFoot:'Early bonus, exclusives and star multipliers included',
+  vtCalled:'Called it',vtEx:'★ Exclusive',vtHalf:'↺ U-turn ½',vtWrong:'Wrong',vtNone:'No call',
+  unlocked:'Unlocked today',allAch:'All achievements ›',isNew:'{r} · new',
+  replies:'The replies',repliesAux:'U-turns first',showMore:'Show {list} ›',official:'· official',deleted:'· deleted',left:'{s} left',mixed:'↺ Mixed reactions',praise:'Praise',roast:'Roast',
+  stCalled:'Called it',stEx:'Exclusive',stHalf:'Right · ½',stWrong:'Wrong',stRatio:"Ratio'd",silence:'No take on {p}. The replies noticed.',
+  truth:'Who told the truth',truthAux:'today only',cap:'Which sources and rivals told the truth about each player in this window',sources:'Sources',rivals:'Rivals',score:'Score',
+  lgT:'truth',lgF:'lie',lgO:'outdated by a twist',lgN:'not asked',planted1:'{n} of {m} wire stories was planted:',plantedN:'{n} of {m} wire stories were planted:',straight:'Straightest today:',noReads:'You didn’t ask anyone today.',
+  fresh:'Nobody’s honesty carries over — tomorrow is a fresh board.',
+  yourDaily:'Your Daily',pastDailies:'Past dailies ›',dayStreak:'day streak',played:'dailies played',until:'until Daily #{n}',archived:'An old Daily. It doesn’t change your streak.',
+  yourCareer:'Your career',level:'Level {n} · {t}',cash:'+${n} cash',cashBonus:'incl. ${n} tier bonus',room:'Posted to {c}',seeTable:'See the table ›',practice:'Practice doesn’t count — the Daily does →',
+  share:'Share result',shareTitle:'Share your result',copy:'Copy text',native:'Share…',saveImg:'Save image',saved:'Image saved',
+  shareHead:'Tier One · {label} — {tier}',shareLine:'{pts} pts · {e} exclusives · {u} U-turns',grid:'Your calls',close:'Close results'}},
+ es:{rs:{results:'Resultados',stDel:'Borrado',closed:'Mercado cerrado',shut:'Se cerró el mercado',skip:'Saltar ›',running:'Puntuación',sealed:'sellado…',tapHint:'Toca para acelerar · tu tier llega tras la última carta',
+  dd:'Día límite',ddShort:'DL',dayShort:'D{d}',whyCalled:'lo clavaste · {day}',whyEx:'★ Exclusiva · {day}',whyHalf:'acierto tras rectificar · ½',whyWrong:'fallo · dijiste {o}',whyNone:'sin apuesta',streak:'🔥 {n} seguidas',
+  pts:'pts',nRight:'{n} aciertos',nEx:'{n} exclusivas',nWrong:'{n} fallos',short:'Te faltan {n} pts para {t}',best:'tu récord: {n}',newBest:'NUEVO RÉCORD PERSONAL',top:'Tier máximo. Portada.',
+  calls:'Tus apuestas',callsAux:'toca una fila para ver respuestas',sbCall:'Tu apuesta → lo que pasó',sbPts:'Puntos',sbFoot:'Incluye bonus por madrugar, exclusivas y estrellas',
+  vtCalled:'Clavada',vtEx:'★ Exclusiva',vtHalf:'↺ Rectificó ½',vtWrong:'Fallo',vtNone:'Sin apuesta',
+  unlocked:'Desbloqueado hoy',allAch:'Todos los logros ›',isNew:'{r} · nuevo',
+  replies:'Las respuestas',repliesAux:'rectificaciones primero',showMore:'Ver {list} ›',official:'· oficial',deleted:'· borrado',left:'quedaban {s}',mixed:'↺ Reacciones mixtas',praise:'Elogio',roast:'Burla',
+  stCalled:'La clavó',stEx:'Exclusiva',stHalf:'Acierto · ½',stWrong:'Fallo',stRatio:'Ratio',silence:'Ni una palabra sobre {p}. Las respuestas lo notaron.',
+  truth:'Quién dijo la verdad',truthAux:'solo hoy',cap:'Qué fuentes y rivales dijeron la verdad sobre cada jugador en este mercado',sources:'Fuentes',rivals:'Rivales',score:'Nota',
+  lgT:'verdad',lgF:'mentira',lgO:'desfasado por un giro',lgN:'no preguntado',planted1:'{n} de {m} noticias de agencia era falsa:',plantedN:'{n} de {m} noticias de agencia eran falsas:',straight:'El más honesto hoy:',noReads:'Hoy no preguntaste a nadie.',
+  fresh:'La honestidad de nadie se arrastra: mañana es un tablero nuevo.',
+  yourDaily:'Tu diario',pastDailies:'Diarios anteriores ›',dayStreak:'días seguidos',played:'diarios jugados',until:'para el Diario #{n}',archived:'Un diario antiguo. No cambia tu racha.',
+  yourCareer:'Tu carrera',level:'Nivel {n} · {t}',cash:'+${n} de caja',cashBonus:'incl. ${n} de bonus por tier',room:'Publicado en {c}',seeTable:'Ver la tabla ›',practice:'La práctica no cuenta, el diario sí →',
+  share:'Compartir resultado',shareTitle:'Comparte tu resultado',copy:'Copiar texto',native:'Compartir…',saveImg:'Guardar imagen',saved:'Imagen guardada',
+  shareHead:'Tier One · {label} — {tier}',shareLine:'{pts} pts · {e} exclusivas · {u} rectificaciones',grid:'Tus apuestas',close:'Cerrar resultados'}},
+ ar:{rs:{results:'النتيجة',stDel:'اتمسح',closed:'الميركاتو قفل',shut:'الميركاتو قفل خلاص',skip:'تخطّي ›',running:'النقط لحد دلوقتي',sealed:'مقفول…',tapHint:'دوس عشان تسرّع · التير بتاعك هيبان بعد آخر كارت',
+  dd:'يوم الحسم',ddShort:'حسم',dayShort:'ي{d}',whyCalled:'جبتها · {day}',whyEx:'★ انفراد · {day}',whyHalf:'صح بعد ما رجعت في كلامك · ½',whyWrong:'غلط · إنت قلت {o}',whyNone:'ماقلتش حاجة',streak:'🔥 {n} ورا بعض',
+  pts:'نقطة',nRight:'{n} صح',nEx:'{n} انفراد',nWrong:'{n} غلط',short:'ناقصك {n} نقطة وتوصل {t}',best:'أحسن حاجة ليك: {n}',newBest:'رقم قياسي جديد ليك',top:'أعلى تير. الصفحة الأولى.',
+  calls:'توقعاتك',callsAux:'دوس على أي سطر تشوف الردود',sbCall:'توقعك ← اللي حصل',sbPts:'النقط',sbFoot:'محسوب فيها بونص البدري والانفرادات ونجوم اللاعيبة',
+  vtCalled:'جابها',vtEx:'★ انفراد',vtHalf:'↺ رجوع ½',vtWrong:'غلط',vtNone:'ماقالش',
+  unlocked:'اتفتح النهارده',allAch:'كل الإنجازات ›',isNew:'{r} · جديد',
+  replies:'الردود',repliesAux:'اللي رجعت فيها الأول',showMore:'اعرض {list} ›',official:'· رسمي',deleted:'· اتمسحت',left:'فاضل {s}',mixed:'↺ ردود متلخبطة',praise:'مدح',roast:'تريقة',
+  stCalled:'جابها',stEx:'انفراد',stHalf:'صح · ½',stWrong:'غلط',stRatio:'اتبهدل',silence:'ولا كلمة عن {p}؟ الناس لاحظت.',
+  truth:'مين قال الحقيقة',truthAux:'النهارده بس',cap:'أنهي مصادر ومنافسين قالوا الحقيقة عن كل لاعيب في الميركاتو ده',sources:'المصادر',rivals:'المنافسين',score:'النتيجة',
+  lgT:'صدق',lgF:'كدب',lgO:'قديم بسبب مفاجأة',lgN:'ماسألتوش',planted1:'{n} من {m} أخبار الوكالة كان مزروع:',plantedN:'{n} من {m} أخبار الوكالة كانوا مزروعين:',straight:'أصدق واحد النهارده:',noReads:'ماسألتش حد النهارده.',
+  fresh:'محدش صدقه بيتنقل لبكرة — بكرة لوحة جديدة.',
+  yourDaily:'اليومي بتاعك',pastDailies:'الأيام اللي فاتت ›',dayStreak:'يوم ورا بعض',played:'يومي لعبته',until:'لحد اليومي رقم {n}',archived:'يومي قديم. مش هيغيّر الستريك بتاعك.',
+  yourCareer:'مسيرتك',level:'ليفل {n} · {t}',cash:'+${n} كاش',cashBonus:'منهم ${n} بونص التير',room:'اتنشرت في {c}',seeTable:'شوف الجدول ›',practice:'التمرين مش محسوب — اليومي هو اللي بيتحسب ←',
+  share:'شير النتيجة',shareTitle:'شير نتيجتك',copy:'انسخ الكلام',native:'شير…',saveImg:'احفظ صورة',saved:'الصورة اتحفظت',
+  shareHead:'Tier One · {label} — {tier}',shareLine:'{pts} نقطة · {e} انفراد · {u} رجوع',grid:'توقعاتك',close:'اقفل النتيجة'}}
+});
 /* @@LANE I18N:results END */
 /* ─ */
 /* @@LANE I18N:career BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -3918,7 +4131,10 @@ function feedText(f){
  if(f.type==='you') return tweetText(f.outcome,f.conf,game.sagas[f.sagaId]);
  return '';
 }
-function replyText(x,rp,ctx){ if(typeof rp==='number') return fill(pickVar(tt(x.correct?'praise':'roast'),rp),ctx); return fill(pickVar(tt(rp.k)||[],rp.i||0),ctx); }
+function replyText(x,rp,ctx){ const L=v=>typeof v==='string'?v:v&&typeof v==='object'?String(v.t||v.text||v.s||v.en||''):''; let line='';
+ if(typeof rp==='number') line=L(pickVar(tt(x.correct?'praise':'roast'),rp));
+ else if(rp&&rp.k){ const pool=tt(rp.k); line=L(pickVar(Array.isArray(pool)&&pool.length?pool:tt(x.correct?'praise':'roast'),rp.i||0)); }
+ return line?fill(line,ctx):''; }
 function tweetText(outcome,conf,s){ return fill(tt('tweet')[outcome][conf],ctxOf(s)); }
 function officialText(s){ return fill(pickVar(tt('official')[s.truth],s.ov!=null?s.ov:s.id),ctxOf(s)); }
 function getPlayerType(followers){ const m=MATH.FMULT;
@@ -4492,46 +4708,52 @@ function runBoost(id,key){
 
 // ----- results -----
 function renderResults(){
- const r=game.result; const tr=r.tier; const label=game.mode==='daily'?t('win.daily',{n:game.archived&&game.num?game.num:dailyNumber()})+(game.archived?' · '+fmtDay(game.dateKey):''):game.mode==='career'?(game.room?t('online.label',{c:game.room,s:game.season+1,n:roomSeasons(game.room)}):t('win.career')+' #'+C().windows):t('win.practice');
- const row=r.per.map(x=>x.emoji).join('');
- const share=t('res.shareTitle',{label:game.mode==='daily'?t('win.daily',{n:game.archived&&game.num?game.num:dailyNumber()}):label})+'\n'+row+'\n'+t('res.shareLine',{tier:tierName(tr),pts:r.total,e:r.exclusives,w:r.wrongs})+'\n'+CONFIG.SITE_URL;
- const step=0.55; const roasts=tt('roast'), praise=tt('praise');
- const rows=r.per.map((x,i)=>{ const s=game.sagas[x.sagaId]; const ctx=ctxOf(s);
-  const stamp=!x.called?'':x.correct?`<div class="stamp late ${x.exclusive?'ex':'ok'}" style="animation-delay:${(i*step+.35).toFixed(2)}s">${esc(t(x.exclusive?'res.exclusive':'res.called'))}</div>`:`<div class="stamp late" style="animation-delay:${(i*step+.35).toFixed(2)}s">${esc(t('res.deletedTweet'))}</div>`;
-  const replies=x.called?(x.replies||[]).map(rp=>replyText(x,rp,ctx)):[];
-  const handles=replies.map((_,j)=>HANDLES[((x.handles&&x.handles[j]!=null)?x.handles[j]:j)%HANDLES.length]);
-  return `<div class="card flat reveal" style="padding:0;overflow:hidden;animation-delay:${(i*step).toFixed(2)}s">
-   <div class="tweet event" style="border:none;border-radius:0"><div class="av">${kitSVG(s.truth==='HIJACK'?s.hijack:s.truth==='DONE'?s.dest:s.club,initials(s.player.name))}</div><div class="body"><div class="meta"><b>${esc(t('win.wire'))}</b><span class="h">${esc(t('res.closed'))}</span></div><div class="txt">${esc(officialText(s))}</div></div></div>
-   ${x.called&&!s.call?`<div class="tweet ${x.correct?'right':'wrong'}" style="border-radius:0;border-left:none;border-right:none;border-bottom:none"><div class="av you">✍️</div><div class="body"><div class="meta"><b>${esc(t('win.you'))}</b><span class="h">${x.emoji}${x.exclusive?' '+esc(t('res.first')):''}${x.pts!=null?` · ${x.pts>0?'+':''}${x.pts} ${esc(t('app.ptsShort'))}`:''}</span></div><div class="txt muted small">${esc(t('arch.noDetail'))}</div>${replies.map((rp,j)=>`<div class="reply"><b>${esc(handles[j])}</b>${esc(rp)}</div>`).join('')}</div></div>`
-   :x.called?`<div class="tweet ${x.correct?'right':'wrong'}" style="border-radius:0;border-left:none;border-right:none;border-bottom:none"><div class="av you">✍️</div><div class="body">${stamp}<div class="meta"><b>${esc(t('win.you'))}</b><span class="h">${esc(t('win.dayN',{d:s.call.day}))}</span></div><div class="txt">${esc(tweetText(s.call.outcome,s.call.conf,s))}</div><div class="foot"><span style="color:${x.correct?'var(--green)':'var(--red)'};font-weight:700">${x.pts>0?'+':''}${x.pts} ${esc(t('app.ptsShort'))}</span>${x.fans!=null?`<span style="color:${x.fans>=0?'var(--green)':'var(--red)'};font-weight:700">👥 ${x.fans>=0?'+':'−'}${fmtK(Math.abs(x.fans))}</span>`:''}${ptBadge(s.player)}</div>${scoopBar(s,x)}<div class="foot" style="display:none">${x.exclusive?`<span style="color:var(--gold);font-weight:700">${esc(t('res.first'))}</span>`:''}${x.uturn?`<span class="utag">${esc(t('uturn.half'))}</span>`:''}</div>
-     ${replies.map((rp,j)=>`<div class="reply"><b>${esc(handles[j])}</b>${esc(rp)}</div>`).join('')}${x.srcReply?`<div class="reply src"><b>${SOURCES[x.srcReply.src].ic} ${esc(t('src.'+x.srcReply.src+'.name'))}</b>${esc(fill(pickVar(tt('sreply')[x.srcReply.src][x.srcReply.cs],x.srcReply.v),ctx))}</div>`:''}</div></div>`
-   :`<div class="tweet sys">${esc(t('res.silence'))}</div>`}
-  </div>`; }).join('');
- const audit=game.sagas.flatMap(s=>s.clues.filter(c=>c.source!=='tipoff').map(c=>`<div class="stat"><span class="small">${c.source==='paid'?esc(t('res.paid')):SOURCES[c.source].ic+' '+esc(t('src.'+c.source+'.name'))} ${esc(t('res.on',{p:pName(s.player)}))}</span><span>${esc(t(c.truthful?'res.truth':'res.lied'))}</span></div>`)).join('');
- const careerBits=game.mode==='career'?`<div class="card"><h3>${esc(t('res.careerBox'))}</h3><div class="stat"><span>${esc(t('res.xp'))}</span><b>+${r.xpGain}</b></div><div class="stat"><span>${esc(t('res.credits'))}${r.payBonus?`<br><span class="tiny muted">${esc(t('econ.bonusIncl',{n:r.payBonus}))}</span>`:''}</span><b>+$${r.creditGain}</b></div>${r.legend?`<div class="legendbar">${esc(t('econ.legend'))}</div>`:''}<div class="stat"><span>${esc(t('res.rep'))}</span><b>${r.repDelta>=0?'+':''}${r.repDelta} → ${C().rep}</b></div>${r.levelUp?`<div class="stat"><span>${esc(t('res.levelUp'))}</span><b>${r.levelUp.n} · ${esc(levelInfo(C().xp).title)}</b></div>`:''}
-   ${r.newBadges.length||r.newCatch.length?`<div class="divider"></div><div class="stack">${r.newBadges.map(k=>{const b=BADGE_KEYS.find(x=>x[0]===k);return `<div class="badge new"><div class="ic">${b[1]}</div><div><b>${esc(t('badge.'+k+'.name'))}</b><span>${esc(t('badge.'+k+'.desc'))}</span></div></div>`;}).join('')}${r.newCatch.map(k=>`<div class="badge new"><div class="ic">💬</div><div><b>${esc(t('res.newCatch'))}</b><span>${esc(t('res.setIn',{k:tt('catch')[k]}))}</span></div></div>`).join('')}</div>`:''}</div>`:'';
- const dailyBits=game.mode==='daily'&&!game.archived?`<div class="card"><div class="stat"><span>${esc(t('res.streak'))}</span><b>🔥 ${save.daily.streak}</b></div><p class="muted small" style="margin:8px 0 0">${esc(t('res.midnight'))}</p></div>`:'';
- const practiceBits=game.mode==='practice'?`<div class="card"><p class="muted small" style="margin:0">${esc(t('res.practiceNote'))}</p></div>`:'';
- const total=r.per.length*step+0.4;
- return `<div class="screen${game.archived?' instant':''}">
-  <div class="hero-tier" style="--td:${total.toFixed(2)}s"><div class="s">${esc(label)}</div><div class="t tierpop ${tr.key}" style="animation-delay:${total.toFixed(2)}s">${esc(tierName(tr))}</div><div class="s">${esc(t('res.pts',{pts:'',r:r.corrects,w:r.wrongs,e:r.exclusives})).replace(/^\s*/,'<span id="scoreNum">0</span> ')}</div>${game.followers!=null&&r.fDelta!=null?`<div class="s">${esc(t('res.followers',{f:fmtK(game.followers),d:(r.fDelta>=0?'+'+fmtK(r.fDelta):t('res.lost',{n:fmtK(Math.abs(r.fDelta))}))}))}</div>`:''}</div>
-  <div class="emoji-row">${r.per.map((x,i)=>`<span class="reveal" style="display:inline-block;animation-delay:${(i*step+.35).toFixed(2)}s">${x.emoji}</span>`).join('')}</div>
-  <p class="tiny muted" style="text-align:center">${esc(t('res.legend'))}</p>
-  <div class="stack">
-   <h2 style="margin-top:8px">${esc(t('res.how'))}</h2>
-   ${rows}
-   <div class="sharecard reveal" style="animation-delay:${total.toFixed(2)}s"><div class="w">${esc(t('res.share'))}</div><pre id="shareText">${esc(share)}</pre></div>
-   <button class="btn primary" data-act="copyShare">${esc(t('res.copy'))}</button>${navigator.share?`<button class="btn center" data-act="nativeShare">${esc(t('prod.shareNative'))}</button>`:''}${Ads.slot('results')}
-   ${careerBits}${dailyBits}${practiceBits}
-   ${audit?`<div class="card"><h3>${esc(t('res.audit'))}</h3><p class="muted small">${esc(t('res.auditSub'))}</p>${audit}</div>`:''}
-   <div class="row">${game.archived?`<button class="btn primary" data-act="archive">${esc(t('arch.back'))}</button>`:''}${game.mode==='career'&&game.room?`<button class="btn primary" data-act="openRoom" data-v="${esc(game.room)}">${esc(t('online.back'))}</button>`:game.mode==='career'?`<button class="btn primary" data-act="startCareer">${esc(t('res.next'))}</button>`:game.mode==='practice'?`<button class="btn primary" data-act="startPractice">${esc(t('res.again'))}</button>`:''}<button class="btn center" data-act="home">${esc(t('res.home'))}</button></div>
-  </div></div>`;
+ const r=game.result, tr=r.tier, sg=game.sagas; const label=rsLabel();
+ const sub=game.mode==='daily'?fmtDay(game.dateKey||todayKey()):'';
+ const share=rsShareText();
+ const tiles=r.per.map(x=>{ const s=sg[x.sagaId]; const k=rsKind(x); const d=rsCallDay(x,s); const ic=k==='ex'?uiIcon('star'):k==='right'?uiIcon('check'):k==='wrong'?uiIcon('x'):'—';
+  const dl=!x.called?'—':d===7?t('rs.ddShort'):d?t('rs.dayShort',{d}):'';
+  const aria=(s&&s.player?pName(s.player)+': ':'')+t(k==='ex'?'rs.vtEx':k==='right'?(x.uturn?'rs.vtHalf':'rs.vtCalled'):k==='wrong'?'rs.vtWrong':'rs.vtNone')+(d?' · '+rsDayLabel(d):'');
+  return `<div class="rt ${k}" role="listitem" aria-label="${esc(aria)}"><span class="sq">${ic}</span><small class="${d===7?'dd':''}">${x.uturn&&x.called?'<span class="ut">↺</span> ':''}${esc(dl)}</small></div>`; }).join('');
+ const stats=`<p class="rstats"><span>${esc(t('rs.nRight',{n:r.corrects||0}))}</span><span>${esc(t('rs.nEx',{n:r.exclusives||0}))}</span><span>${esc(t('rs.nWrong',{n:r.wrongs||0}))}</span>${r.fDelta!=null?`<span>👥 <b><bdi dir="ltr">${r.fDelta>=0?'+':'−'}${fmtK(Math.abs(r.fDelta))}</bdi></b></span>`:''}</p>`;
+ const arr=lang==='ar'?'←':'→';
+ const sbRows=r.per.map(x=>{ const s=sg[x.sagaId]; if(!s||!s.player) return ''; const k=rsKind(x); const c=s.call;
+  const you=x.called&&c?ocHtml(c.outcome):`<span class="oc none">—</span>`;
+  const disc=!x.called?'':x.correct?`<span class="res r">${uiIcon('check')}</span>`:`<span class="res w">${uiIcon('x')}</span>`;
+  const pcls=!x.called||x.pts==null?'zero':x.pts>0?'up':x.pts<0?'dn':'zero';
+  const vt=k==='none'?`<span class="vt">${esc(t('rs.vtNone'))}</span>`:k==='ex'?`<span class="vt ex">${esc(t('rs.vtEx'))}</span>`:k==='right'?(x.uturn?`<span class="vt">${esc(t('rs.vtHalf'))}</span>`:`<span class="vt ok">${esc(t('rs.vtCalled'))}</span>`):`<span class="vt bad">${esc(t('rs.vtWrong'))}</span>`;
+  return `<button class="srow" data-act="rsRow" data-id="${s.id}">${kitSVG(s.club,initials(s.player.name))}<span style="min-width:0"><span class="sn">${esc(pName(s.player))}</span><span class="sc">${you}<span class="arr">${arr}</span>${ocHtml(s.truth,'solid')}${disc}</span></span><span class="sp"><b class="${pcls}"><bdi dir="ltr">${x.called?rsPtsStr(x.pts):'0'}</bdi></b>${vt}</span></button>`; }).join('');
+ const ach=(r.achUnlocked||[]).map(id=>{ const a=rsAch(id); let rr=String(a.r).toLowerCase(); if(rr==='legendary') rr='legend';
+  return `<div class="ucard" style="--rc:var(--r-${esc(rr)})">${medalHtml(a.ic,rr)}<span class="ut"><span class="rw">${esc(t('rs.isNew',{r:t('ds.rar.'+rr)}))}</span><b>${esc(a.name)}</b>${a.how?`<small>${esc(a.how)}</small>`:''}</span></div>`; }).join('');
+ const order=r.per.map((x,i)=>({x,i})).sort((a,b)=>((b.x.uturn&&b.x.called?1:0)-(a.x.uturn&&a.x.called?1:0))||(Math.abs(b.x.pts||0)-Math.abs(a.x.pts||0))||(a.i-b.i));
+ const thr=order.map((o,j)=>rsThreadHtml(o.x,j>=2)).join('');
+ const hiddenNames=order.slice(2).map(o=>sg[o.x.sagaId]&&sg[o.x.sagaId].player?pName(sg[o.x.sagaId].player):'').filter(Boolean);
+ const dock=game.mode==='career'&&game.room?`<button class="btn primary" data-act="openRoom" data-v="${esc(game.room)}">${esc(t('online.back'))}</button>`:game.mode==='career'?`<button class="btn primary" data-act="startCareer">${esc(t('res.next'))}</button>`:game.mode==='practice'?`<button class="btn primary" data-act="startPractice">${esc(t('res.again'))}</button>`:`<button class="btn primary" data-act="rsShare">${uiIcon('share')} ${esc(t('rs.share'))}</button>`;
+ return `<div class="rsx">
+ <header class="appbar"><button class="iconbtn" data-act="home" aria-label="${esc(t('rs.close'))}">${uiIcon('close')}</button><div class="ttl">${esc(label)} · ${esc(t('rs.results'))}${sub?`<small>${esc(sub)}</small>`:''}</div><div class="right"><button class="iconbtn" data-act="rsShare" aria-label="${esc(t('rs.share'))}">${uiIcon('share')}</button></div></header>
+ <section class="rhero" style="--tc:${rsTierVar(tr)}" aria-label="${esc(tierName(tr)+', '+r.total+' '+t('rs.pts'))}">
+  ${tmedalHtml(tr)}
+  <p class="rscore num"><bdi dir="ltr" id="scoreNum">${r.total}</bdi><small>${esc(t('rs.pts'))}</small></p>
+  <div class="rgrid" role="list" aria-label="${esc(t('rs.grid'))}">${tiles}</div>
+  ${stats}
+ </section>
+ ${rsLadderHtml()}
+ <div class="sechead"><h2 class="d4">${esc(t('rs.calls'))}</h2><span class="aux">${esc(t('rs.callsAux'))}</span></div>
+ <section class="card sb"><div class="sbh"><span></span><span>${esc(t('rs.sbCall'))}</span><span>${esc(t('rs.sbPts'))}</span></div>${sbRows}<div class="sbf"><span>${esc(t('rs.sbFoot'))}</span><b class="num"><bdi dir="ltr">${r.total}</bdi></b></div></section>
+ ${ach?`<div class="sechead"><h2 class="d4">${esc(t('rs.unlocked'))}</h2>${SCREENS.achievements?`<button class="link" data-act="rsAch">${esc(t('rs.allAch'))}</button>`:''}</div><div class="unl">${ach}</div>`:''}
+ <div class="sechead"><h2 class="d4">${esc(t('rs.replies'))}</h2><span class="aux">${esc(t('rs.repliesAux'))}</span></div>
+ <div class="threads">${thr}${hiddenNames.length?`<button class="btn ghost rsmore" id="rsMore" data-act="rsMore">${esc(t('rs.showMore',{list:hiddenNames.join(', ')}))}</button>`:''}</div>
+ ${rsTruthHtml()}
+ ${Ads.slot('results')}
+ ${rsModeHtml()}
+ <pre id="shareText" hidden>${esc(share)}</pre>
+ </div>
+ <div class="dock"><div class="row"><button class="btn fixed" data-act="home" aria-label="${esc(t('res.home'))}">${uiIcon('home')}</button>${dock}</div></div>`;
 }
 function afterResults(){
- const r=game.result; if(!r) return; if(r._played){ const el=$('scoreNum'); if(el) el.textContent=r.total; return; }
- r._played=true; const step=550;
- r.per.forEach((x,i)=>{ setTimeout(()=>{ if(screen!=='results'||!x.called) return; if(x.correct) beep(x.exclusive?'star':'good'); else { beep('bad'); buzzPhone(120); shakeScreen(); } },i*step+350); });
- setTimeout(()=>{ if(screen!=='results') return; const el=$('scoreNum'); if(el) countUp(el,r.total,900); if(r.tier.n<=2){ confetti(); beep('fanfare'); } else if(r.tier.n===9){ shakeScreen(); beep('sad'); buzzPhone([100,60,100]); } else beep('reveal'); },r.per.length*step+400);
+ const r=game.result; if(!r) return;
+ if(r._played||game.archived||motionReduced()){ r._played=true; rsLadder(false); return; }
+ r._played=true; rsReveal();
 }
 
 // ----- online: career transfer codes + private rooms (server: /api/online) -----
@@ -5275,6 +5497,176 @@ window.quickCall=id=>{ if(!game||game.result) return; ppCompose(+id); };
 /* @@LANE JS:player END */
 /* ─ */
 /* @@LANE JS:results BEGIN (lane-owned; insert only between BEGIN and END) */
+/* ---- results lane: helpers, reply cases, reveal, share ---- */
+function rsLine(v){ return typeof v==='string'?v:v&&typeof v==='object'?String(v.t||v.text||v.s||v.en||''):''; }
+function rsHash(s){ let h=2166136261; s=String(s); for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function rsPool(k){ const v=tt(k); return Array.isArray(v)&&v.length?v:null; }
+const RS_POS=['praise','praiseExclusive','ddClutch','uturnPraise','pity','twistCalled','twistUpdated'], RS_NEG=['roast','lateJab','uturnJab','uturnWrong','softJab','silence','loudWrong','twistCaught'];
+function rsTone(x,rp){ if(typeof rp==='number') return x.correct?'pos':'neg'; const k=String(rp&&rp.k||''); return RS_POS.includes(k)?'pos':RS_NEG.includes(k)?'neg':''; }
+const RS_CASES={ ex:['praiseExclusive','praise'], dd:['praise','ddClutch'], late:['praise','lateJab'], right:['praise','praise'], rightU:['uturnPraise','uturnJab','praise'], wrongU:['uturnWrong','roast','pity'], wrongLow:['softJab','roast'], wrongMed:['roast','roast'], wrongHigh:['loudWrong','roast'], none:['silence'], twistCalled:['twistCalled','praise'], twistCalledEx:['praiseExclusive','twistCalled'], twistUpdated:['twistUpdated','uturnPraise','praise'], twistCaught:['twistCaught','roast'] };
+const RS_FALLBACK={ praiseExclusive:'praise', ddClutch:'praise', lateJab:'praise', uturnPraise:'ureply.right', uturnJab:'ureply.right', uturnWrong:'ureply.wrong', pity:'ureply.wrong', softJab:'roast', loudWrong:'roast', twistCalled:'praise', twistUpdated:'ureply.right', twistCaught:'roast' };
+function rsCallDay(x,s){ return x.callDay||(s&&s.call&&s.call.day)||null; }
+function rsLate(x,s){ if(x.late) return x.late; if(!s||!s.call) return null; const rp=(s.rivalPosts||[]).filter(p=>p.correct&&p.day<=s.call.day).sort((a,b)=>a.day-b.day)[0]; return rp?{rival:rp.rival,day:rp.day}:null; }
+function rsCase(x,s){ if(!x.called) return 'none'; const c=(s&&s.call)||{}; const td=(s&&s.twist&&s.twist.day)||x.twistDay, cd=rsCallDay(x,s);
+ if(td&&cd){ if(x.correct&&x.uturn&&cd>=td) return 'twistUpdated'; if(!x.uturn&&cd<td) return x.correct?(x.exclusive?'twistCalledEx':'twistCalled'):'twistCaught'; }
+ if(x.correct){ if(x.uturn) return 'rightU'; if(x.exclusive) return 'ex'; if(rsCallDay(x,s)===7) return 'dd'; if(rsLate(x,s)) return 'late'; return 'right'; }
+ if(x.uturn) return 'wrongU'; return c.conf==='low'?'wrongLow':c.conf==='high'?'wrongHigh':'wrongMed'; }
+function rsStale(s,c,ci,x){ if(x&&Array.isArray(x.stale)) return !!x.stale[ci]; if(c.outdated) return true;
+ try{ if(typeof clueStale==='function') return !!clueStale(s,c); }catch(e){}
+ const td=(s.twist&&s.twist.day)||(x&&x.twistDay); return !!(td&&c.day!=null&&c.day<td); }
+function rsUturnFrom(x,s){ if(x.uturnFrom) return x.uturnFrom; if(s&&s.call&&s.call.uturnFrom) return s.call.uturnFrom; const f=((game&&game.feed)||[]).filter(f=>f.type==='you'&&f.sagaId===x.sagaId&&f.deleted).pop(); return f?{out:f.outcome,conf:f.conf,day:f.day}:null; }
+onHook('resolved',res=>{
+ const seed=String(game.seed||''), used=new Set();
+ (res.per||[]).forEach(x=>{ const s=game.sagas[x.sagaId]; if(!s) return;
+  if(x.callDay==null&&s.call) x.callDay=s.call.day;
+  if(x.uturn){ const u=rsUturnFrom(x,s); if(u) x.uturnFrom=u; }
+  const l=rsLate(x,s); if(l) x.late=l;
+  if(s.twist&&x.twistDay==null) x.twistDay=s.twist.day;
+  x.stale=(s.clues||[]).map((c,ci)=>rsStale(s,c,ci,null)?1:0);
+  x.rivals=(s.rivalPosts||[]).map(p=>({rival:p.rival,day:p.day,correct:!!p.correct,outdated:!!p.outdated}));
+  try{ if(x.called&&!x.correct){ const ci=(s.clues||[]).map((c,i)=>i).filter(i=>s.clues[i].source!=='paid'&&s.clues[i].source!=='tipoff').pop(); const cl=ci!=null?s.clues[ci]:null; const pool=cl&&((tt('sreply')||{})[cl.source]||{}).outdated; if(cl&&x.stale[ci]&&Array.isArray(pool)&&pool.length) x.srcReply={src:cl.source,cs:'outdated',v:rsHash(seed+'|o|'+s.id)%pool.length}; } }catch(e){}
+  const cs=rsCase(x,s), out=[];
+  (RS_CASES[cs]||[]).forEach((k0,j)=>{ let k=k0; if(!rsPool(k)) k=RS_FALLBACK[k]; if(!k||!rsPool(k)) return; const n=rsPool(k).length;
+   let cand=[...Array(n).keys()]; try{ if(save.settings&&save.settings.clean&&typeof cleanIdx==='function'){ const ci=cleanIdx(k); if(Array.isArray(ci)&&ci.length) cand=ci; } }catch(e){}
+   let q0=rsHash(seed+'|'+s.id+'|'+cs+'|'+s.truth+'|'+j)%cand.length, i=cand[q0]; for(let q=1;q<=cand.length&&used.has(k+':'+i);q++) i=cand[(q0+q)%cand.length]; used.add(k+':'+i); out.push({k,i}); });
+  if(out.length||cs==='none'){ x.replies=out; const hs=new Set(); x.handles=out.map((_,j)=>{ let h=rsHash(seed+'|h|'+s.id+'|'+j)%HANDLES.length; for(let q=0;q<HANDLES.length&&hs.has(h);q++) h=(h+1)%HANDLES.length; hs.add(h); return h; }); }
+ });
+ if(!res.plantedWire){ res.plantedWire=[]; game.sagas.forEach(s=>(s.events||[]).forEach(e=>{ if(e.o&&e.o!==s.truth) res.plantedWire.push({sagaId:s.id,day:e.day}); })); }
+ if(res.wireTotal==null) res.wireTotal=game.sagas.reduce((a,s)=>a+((s.events||[]).length),0);
+ res.fromDD=game.day>=7;
+ if(game.mode==='daily'){ const k=todayKey(); setTimeout(()=>{ try{ const a=save.daily&&save.daily.archive&&save.daily.archive[k], g=game&&game.result; if(a&&a.result&&g){ ['per','achUnlocked','plantedWire','wireTotal','fromDD'].forEach(f=>{ if(g[f]!==undefined) a.result[f]=JSON.parse(JSON.stringify(g[f])); }); persist(); } }catch(e){} },0); }
+});
+function rsLikes(x,s,j){ const f=Math.max(100,(game&&game.followers)||1000); const conf={low:.6,med:1,high:1.6}[(s&&s.call||{}).conf]||1; const k=.02+(rsHash(String(game.seed||'')+'|l|'+x.sagaId+'|'+j)%1000)/1000*.28; let n=Math.round(f*k*conf); if(x.exclusive) n*=3; return Math.max(3,n); }
+function rsTierVar(tr){ return tr&&tr.key&&/^t[1-5]$/.test(tr.key)?`var(--${tr.key})`:'var(--bad)'; }
+function rsCuts(){ const cuts=[]; let prev=tierFor(0).n; for(let v=1;v<=2000;v++){ const n=tierFor(v).n; if(n!==prev){ cuts.push({n,v}); prev=n; } } return cuts; }
+function rsDest(s){ return s.truth==='DONE'?s.dest:s.truth==='HIJACK'?s.hijack:s.club; }
+function rsKind(x){ return !x.called?'none':x.correct?(x.exclusive?'ex':'right'):'wrong'; }
+function rsDayLabel(d){ return d===7?t('rs.dd'):t('win.dayN',{d}); }
+function rsPtsStr(p){ return p==null?'—':(p>0?'+':p<0?'−':'')+Math.abs(p); }
+function rsBest(){ try{ const r=game.result; if(game.mode==='daily'){ const h=save.daily.history||{}; const k=game.archived?game.dateKey:todayKey(); const v=Object.keys(h).filter(q=>q!==k).map(q=>({s:h[q].score,n:h[q].num})).filter(o=>typeof o.s==='number'); if(!v.length) return null; return v.sort((a,b)=>b.s-a.s)[0]; }
+  if(game.mode==='career'&&!game.room){ const hs=(C().history||[]).slice(1).filter(o=>typeof o.score==='number'); if(!hs.length) return null; return {s:Math.max(...hs.map(o=>o.score))}; } }catch(e){} return null; }
+function rsAch(id){ let a=null; try{ const A=typeof ACH!=='undefined'?ACH:null; if(Array.isArray(A)) a=A.find(o=>o&&o.id===id); else if(A&&typeof A==='object') a=A[id]||(Array.isArray(A.list)?A.list.find(o=>o&&o.id===id):null); }catch(e){}
+ const nm=a&&(a[lang]||a.en||a.name)||(tt('ach.'+id+'.name')||id); const how=a&&(a['how_'+lang]||(typeof a.how==='object'?a.how[lang]||a.how.en:a.how))||tt('ach.'+id+'.how')||''; return {ic:a&&a.ic||'🏅',r:a&&(a.r||a.rarity)||'common',name:String(nm),how:String(how)}; }
+function rsLabel(){ const n=game.archived&&game.num?game.num:dailyNumber(); return game.mode==='daily'?t('win.daily',{n}):game.mode==='career'?(game.room?t('online.label',{c:game.room,s:(game.season||0)+1,n:roomSeasons(game.room)}):t('win.career')+' #'+C().windows):t('win.practice'); }
+function rsShareText(){ const r=game.result, tr=r.tier; const medal={t1:'🥇',t2:'🥈',t3:'🥉',clown:'🤡'}[tr.key]||'';
+ const sq=r.per.map(x=>({ex:'🟨',right:'🟩',wrong:'🟥',none:'⬛'})[rsKind(x)]).join('');
+ const keys=['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣'];
+ const hasDays=r.per.some(x=>x.called&&rsCallDay(x,game.sagas[x.sagaId]));
+ const days=hasDays?r.per.map(x=>!x.called?'➖':x.uturn?'🔄':keys[rsCallDay(x,game.sagas[x.sagaId])||0]||'➖').join(''):'';
+ const u=r.per.filter(x=>x.uturn).length;
+ return [t('rs.shareHead',{label:rsLabel(),tier:tierName(tr)})+(medal?' '+medal:''),sq,days,t('rs.shareLine',{pts:r.total,e:r.exclusives||0,u}),CONFIG.SITE_URL].filter(Boolean).join('\n'); }
+function rsThreadHtml(x,hidden){ const s=game.sagas[x.sagaId]; if(!s||!s.player) return ''; const k=rsKind(x); const ctx=ctxOf(s); const late=rsLate(x,s); const uf=x.uturn?rsUturnFrom(x,s):null;
+ Object.assign(ctx,{d:(uf&&uf.day)||(late&&late.day)||rsCallDay(x,s)||'',r:late?t('rival.'+late.rival):'',rival:late?t('rival.'+late.rival):''});
+ const c=s.call; const cs=rsCase(x,s); const ratio=cs==='wrongHigh'||(x.called&&!x.correct&&c&&c.conf==='high');
+ const vt=!x.called?`<span class="vt">${esc(t('rs.vtNone'))}</span>`:x.correct?(x.uturn?`<span class="vt">${esc(t('rs.vtHalf'))} · ${rsPtsStr(x.pts)}</span>`:x.exclusive?`<span class="vt ex">${esc(t('rs.vtEx'))} · ${rsPtsStr(x.pts)}</span>`:`<span class="vt ok">${esc(t('rs.vtCalled'))} · ${rsPtsStr(x.pts)}</span>`):`<span class="vt bad">${esc(t('rs.vtWrong'))} · ${rsPtsStr(x.pts)}</span>`;
+ const stamp=!x.called?'':x.correct?(x.uturn?`<span class="stamp half">${esc(t('rs.stHalf'))}</span>`:x.exclusive?`<span class="stamp ex">${esc(t('rs.stEx'))}</span>`:`<span class="stamp ok">${esc(t('rs.stCalled'))}</span>`):`<span class="stamp bad">${esc(t(ratio?'rs.stRatio':'rs.stWrong'))}</span>`;
+ const youLikes=rsLikes(x,s,'you');
+ const wire=`<div class="tw"><span class="av wire">📡</span><div class="tb"><div class="meta"><b>${esc(t('win.wire'))}</b><span class="tick">✓</span><span>${esc(t('rs.official'))}</span></div><p class="txt">${esc(officialText(s))}</p></div></div>`;
+ const del=uf&&uf.out&&uf.conf?`<div class="tw del"><span class="av you">YOU</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(rsDayLabel(uf.day))} ${esc(t('rs.deleted'))}</span><span class="stamp bad" style="font-size:11px">${esc(t('rs.stDel'))}</span></div><p class="txt">${esc(tweetText(uf.out,uf.conf,s))}</p></div></div>`:'';
+ let you='';
+ if(x.called&&c){ const secs=x.secsLeft!=null?x.secsLeft:c.secsLeft; const dl=rsDayLabel(c.day)+(c.day===7&&secs!=null?' · '+t('rs.left',{s:'0:'+String(Math.max(0,secs|0)).padStart(2,'0')}):'');
+  you=`<div class="tw"><span class="av you">YOU</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(dl)}</span>${stamp}</div><p class="txt">${esc(tweetText(c.outcome,c.conf,s))}</p><div class="metrics"><span>♥ <bdi dir="ltr">${fmtK(youLikes)}</bdi></span>${x.fans!=null?`<span style="color:${x.fans>=0?'var(--ok)':'var(--bad)'}">👥 <bdi dir="ltr">${x.fans>=0?'+':'−'}${fmtK(Math.abs(x.fans))}</bdi></span>`:''}</div></div></div>`; }
+ else if(x.called) you=`<div class="tw"><span class="av you">YOU</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b>${stamp}</div><p class="txt" style="color:var(--muted)">${esc(t('arch.noDetail'))}</p></div></div>`;
+ const reps=(x.replies||[]).map((rp,j)=>{ const txt=replyText(x,rp,ctx); if(!txt) return ''; const tone=rsTone(x,rp); const h=HANDLES[((x.handles&&x.handles[j]!=null)?x.handles[j]:j)%HANDLES.length];
+  let likes=rsLikes(x,s,j); if(ratio&&j===0) likes=Math.max(likes,Math.round(youLikes*2.3)+1);
+  const hc=['#2F7DD1','#C2410C','#15803D','#7C3AED','#0E7490','#B91C1C','#A16207'][rsHash(h)%7];
+  return `<div class="reply"><span class="rav" style="--hc:${hc}">${esc(h.replace(/^@/,'').slice(0,2).toUpperCase())}</span><span class="rb">${tone?`<span class="tone ${tone}">${esc(t(tone==='pos'?'rs.praise':'rs.roast'))}</span>`:''}<b>${esc(h)}</b>${esc(txt)}</span><span class="likes">♥ <bdi dir="ltr">${fmtK(likes)}</bdi></span></div>`; }).join('');
+ let src=''; try{ if(x.srcReply&&SOURCES[x.srcReply.src]){ const pool=((tt('sreply')||{})[x.srcReply.src]||{})[x.srcReply.cs]; const line=rsLine(pickVar(pool,x.srcReply.v||0)); if(line) src=`<div class="reply src"><span class="rav">${SOURCES[x.srcReply.src].ic}</span><span class="rb"><b>${esc(t('src.'+x.srcReply.src+'.name'))}</b>${esc(fill(line,ctx))}</span></div>`; } }catch(e){}
+ const noCall=!x.called&&!reps?`<p class="sys">${esc(t('res.silence'))}</p>`:'';
+ return `<article class="thread ${k==='none'?'':k}" id="rsth${s.id}" data-n="${esc(pName(s.player))}"${hidden?' hidden':''}>
+  <div class="thh">${kitSVG(s.club,initials(s.player.name))}<div style="min-width:0"><b class="n">${esc(pName(s.player))}</b><span class="route"><i style="--c:${s.club.kit}"></i><span class="from">${esc(cName(s.club))}</span><span class="arr">${lang==='ar'?'←':'→'}</span><i style="--c:${s.dest.kit}"></i><b>${esc(cName(s.dest))}</b></span></div>${vt}</div>
+  <div class="thb">${wire}${del}${you}${x.uturn&&reps?`<p class="mixed">${esc(t('rs.mixed'))}</p>`:''}${reps}${src}${noCall}</div></article>`; }
+function rsTruthHtml(){ const r=game.result, sg=game.sagas; const perBy={}; r.per.forEach(x=>perBy[x.sagaId]=x);
+ const rows={}; const order=Object.keys(SOURCES);
+ sg.forEach((s,si)=>(s.clues||[]).forEach((c,ci)=>{ if(c.source==='tipoff') return; const key=c.source==='paid'?'leak':c.source; if(!SOURCES[key]) return; const R=rows[key]||(rows[key]={cells:{},t:0,n:0});
+  const st=rsStale(s,c,ci,perBy[s.id])?'o':c.truthful?'t':'f'; R.cells[si]=st; if(st!=='o'){ R.n++; if(st==='t') R.t++; } }));
+ const rv={}; sg.forEach((s,si)=>{ const x=perBy[s.id]||{}; (x.rivals||s.rivalPosts||[]).forEach(p=>{ if(!RIVALS.find(q=>q.key===p.rival)) return; const R=rv[p.rival]||(rv[p.rival]={cells:{},t:0,n:0}); const st=p.outdated?'o':p.correct?'t':'f'; R.cells[si]=st; if(st!=='o'){ R.n++; if(st==='t') R.t++; } }); });
+ const srcKeys=order.filter(k=>rows[k]), rvKeys=RIVALS.map(q=>q.key).filter(k=>rv[k]).slice(0,3);
+ const dot=st=>st==='t'?`<span class="dotc t" role="img" aria-label="${esc(t('rs.lgT'))}">${uiIcon('check')}</span>`:st==='f'?`<span class="dotc f" role="img" aria-label="${esc(t('rs.lgF'))}">${uiIcon('x')}</span>`:st==='o'?`<span class="dotc o" role="img" aria-label="${esc(t('rs.lgO'))}">${uiIcon('refresh')}</span>`:`<span class="dotc n" role="img" aria-label="${esc(t('rs.lgN'))}"></span>`;
+ const row=(ic,name,R)=>`<tr><th scope="row"><span class="sn"><span class="e" aria-hidden="true">${ic}</span>${esc(name)}</span></th>${sg.map((s,si)=>`<td>${dot(R.cells[si])}</td>`).join('')}<td class="sc2"><bdi dir="ltr">${R.t}/${R.n}</bdi></td></tr>`;
+ const code=s=>{ const n=pName(s.player).split(/\s+/).filter(Boolean); const w=(n.length>1?n[n.length-1]:n[0])||'?'; return w.replace(/[^\p{L}]/gu,'').slice(0,3).toUpperCase(); };
+ const srcName=k=>String(t('src.'+k+'.name')).replace(/^(The |El |La )/,'');
+ let insight='';
+ const pw=(r.plantedWire||[]).filter(p=>sg[p.sagaId]);
+ if(pw.length){ const m=Math.max(pw.length,r.wireTotal||pw.length); insight=`📡 <span>${esc(t(pw.length===1?'rs.planted1':'rs.plantedN',{n:pw.length,m}))} <b>${pw.map(p=>esc(pName(sg[p.sagaId].player).split(' ').pop()+', '+rsDayLabel(p.day))).join(' · ')}</b>. ${esc(t('rs.fresh'))}</span>`; }
+ else { const all=srcKeys.map(k=>({k,ic:SOURCES[k].ic,nm:srcName(k),R:rows[k]})).filter(o=>o.R.n>0).sort((a,b)=>(b.R.t/b.R.n)-(a.R.t/a.R.n)||b.R.n-a.R.n);
+  insight=all.length?`${all[0].ic} <span>${esc(t('rs.straight'))} <b>${esc(all[0].nm)} <bdi dir="ltr">${all[0].R.t}/${all[0].R.n}</bdi></b>. ${esc(t('rs.fresh'))}</span>`:`💬 <span>${esc(t('rs.noReads'))} ${esc(t('rs.fresh'))}</span>`; }
+ if(!srcKeys.length&&!rvKeys.length) return `<div class="sechead"><h2 class="d4">${esc(t('rs.truth'))}</h2><span class="aux">${esc(t('rs.truthAux'))}</span></div><section class="card mx"><p class="insight">${insight}</p></section>`;
+ return `<div class="sechead"><h2 class="d4">${esc(t('rs.truth'))}</h2><span class="aux">${esc(t('rs.truthAux'))}</span></div>
+ <section class="card mx"><table class="mxt"><caption class="sr">${esc(t('rs.cap'))}</caption>
+  <thead><tr><th scope="col" class="over">${esc(t('rs.sources'))}</th>${sg.map(s=>`<th scope="col"><b>${esc(code(s))}</b><i style="background:${s.club.kit}"></i></th>`).join('')}<th scope="col" class="over sc2">${esc(t('rs.score'))}</th></tr></thead>
+  <tbody>${srcKeys.map(k=>row(SOURCES[k].ic,srcName(k),rows[k])).join('')}</tbody>
+  ${rvKeys.length?`<tbody class="riv"><tr><th scope="rowgroup" colspan="${sg.length+2}" class="over" style="text-align:start">${esc(t('rs.rivals'))}</th></tr>${rvKeys.map(k=>{ const q=RIVALS.find(o=>o.key===k); return row(q.ic,t('rival.'+k),rv[k]); }).join('')}</tbody>`:''}
+ </table>
+ <div class="mxleg"><span>${dot('t')} ${esc(t('rs.lgT'))}</span><span>${dot('f')} ${esc(t('rs.lgF'))}</span><span>${dot('o')} ${esc(t('rs.lgO'))}</span><span>${dot('n')} ${esc(t('rs.lgN'))}</span></div>
+ <p class="insight">${insight}</p></section>`; }
+function rsModeHtml(){ const r=game.result;
+ if(game.mode==='daily'){ if(game.archived) return `<div class="sechead"><h2 class="d4">${esc(t('rs.yourDaily'))}</h2><button class="link" data-act="archive">${esc(t('rs.pastDailies'))}</button></div><p class="rsnote">${esc(t('rs.archived'))}</p>`;
+  const ms=msToMidnight(), hh=Math.floor(ms/3600000), mm=Math.floor(ms%3600000/60000);
+  return `<div class="sechead"><h2 class="d4">${esc(t('rs.yourDaily'))}</h2><button class="link" data-act="archive">${esc(t('rs.pastDailies'))}</button></div>
+  <div class="statrow"><div><b>🔥 <bdi dir="ltr">${save.daily.streak||0}</bdi></b><span>${esc(t('rs.dayStreak'))}</span></div><div><b><bdi dir="ltr">${Object.keys(save.daily.history||{}).length}</bdi></b><span>${esc(t('rs.played'))}</span></div><div><b><bdi dir="ltr">${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}</bdi></b><span>${esc(t('rs.until',{n:dailyNumber()+1}))}</span></div></div>`; }
+ if(game.mode==='career'&&game.room) return `<div class="sechead"><h2 class="d4">${esc(t('rs.room',{c:game.room}))}</h2><button class="link" data-act="openRoom" data-v="${esc(game.room)}">${esc(t('rs.seeTable'))}</button></div>`;
+ if(game.mode==='career'){ const c=C(); let lv=''; try{ if(r.levelUp) lv=`<div class="lvup">${esc(t('rs.level',{n:r.levelUp.n,t:levelInfo(c.xp).title}))}</div>`; }catch(e){}
+  const bits=[].concat((r.newBadges||[]).map(k=>{ const b=BADGE_KEYS.find(q=>q[0]===k); return b?`<div class="stat"><span>${b[1]} ${esc(t('badge.'+k+'.name'))}</span><b class="small">${esc(t('badge.'+k+'.desc'))}</b></div>`:''; }),(r.newCatch||[]).map(k=>`<div class="stat"><span>💬 ${esc(t('res.newCatch'))}</span><b class="small">${esc(t('res.setIn',{k:tt('catch')[k]}))}</b></div>`)).join('');
+  return `<div class="sechead"><h2 class="d4">${esc(t('rs.yourCareer'))}</h2></div><section class="card modebox">${lv}
+   <div class="stat"><span>${esc(t('res.xp'))}</span><b><bdi dir="ltr">+${r.xpGain||0}</bdi></b></div>
+   <div class="stat"><span>${esc(t('rs.cash',{n:r.creditGain||0}))}${r.payBonus?` <span class="muted small">(${esc(t('rs.cashBonus',{n:r.payBonus}))})</span>`:''}</span><b>💵</b></div>
+   <div class="stat"><span>${esc(t('res.rep'))}</span><b><bdi dir="ltr">${(r.repDelta||0)>=0?'+':''}${r.repDelta||0} → ${c.rep}</bdi></b></div>${r.legend?`<div class="legendbar">${esc(t('econ.legend'))}</div>`:''}${bits}</section>`; }
+ return `<p class="rsnote"><button class="link" data-act="startDaily">${esc(t('rs.practice'))}</button></p>`; }
+function rsLadderHtml(){ const r=game.result, tr=r.tier, cuts=rsCuts(); const top=cuts.length?cuts[cuts.length-1].v:350; const max=Math.max(400,top+50);
+ const pct=v=>Math.max(0,Math.min(100,v/max*100)).toFixed(2); const score=r.total;
+ const ticks=cuts.map(c=>{ const p=score>=c.v?'pass':''; return `<span class="tk ${p}" style="inset-inline-start:${pct(c.v)}%"></span><span class="lb ${p}" style="inset-inline-start:${pct(c.v)}%">T${c.n}</span>`; }).join('');
+ const next=cuts.filter(c=>c.v>score).sort((a,b)=>a.v-b.v)[0]; const best=rsBest();
+ let gap; if(tr.n===1) gap=`<b>${esc(t('rs.top'))}</b>`; else gap=next?`<b>${esc(t('rs.short',{n:next.v-score,t:tierName(tierOf(next.n))}))}</b>`:'';
+ if(best&&score>best.s) gap+=(gap?' · ':'')+`<span class="nb">${esc(t('rs.newBest'))}</span>`; else if(best) gap+=(gap?' · ':'')+esc(t('rs.best',{n:best.s}))+(best.n?' ('+esc(t('win.daily',{n:best.n}))+')':'');
+ return `<div style="--tc:${rsTierVar(tr)};margin-top:34px"><div class="ladder" id="rsLadder" role="img" aria-label="${esc(score+' '+t('rs.pts'))}"><div class="trk"><span class="fill" style="width:0%" data-w="${pct(score)}"></span>${ticks}<span class="you" style="inset-inline-start:0%" data-w="${pct(score)}">YOU</span></div></div></div><p class="gap">${gap}</p>`; }
+function rsLadder(anim){ const L=$('rsLadder'); if(!L) return; if(!anim) L.classList.add('inst'); else L.classList.remove('inst'); L.querySelectorAll('[data-w]').forEach(el=>{ if(el.classList.contains('fill')) el.style.width=el.dataset.w+'%'; else el.style.insetInlineStart=el.dataset.w+'%'; }); }
+/* reveal */
+const RV={el:null,speed:1,tm:null};
+function rsRevealEnd(){ clearTimeout(RV.tm); const el=RV.el; RV.el=null; if(el){ el.classList.add('out'); setTimeout(()=>el.remove(),300); } if(screen==='results') setTimeout(()=>rsLadder(true),60); }
+function rsReveal(){ const r=game.result, sg=game.sagas; const fromDD=!!r.fromDD||(game.day>=7);
+ const rows=r.per.map((x,i)=>{ const s=sg[x.sagaId]; return `<div class="rvr" id="rvr${i}">${kitSVG(s.club,'?')}<span style="min-width:0"><span class="pn">${esc(pName(s.player))}</span><span class="wy"><span>${esc(t('rs.sealed'))}</span></span></span><b class="pp">?</b></div>`; }).join('');
+ const el=document.createElement('div'); el.className='rvl'; el.setAttribute('role','dialog'); el.setAttribute('aria-label',t('rs.results'));
+ el.innerHTML=`<div class="rvin"><div class="rvtop"><span class="over">${esc(rsLabel())}</span><button class="rvskip" data-rvskip>${esc(t('rs.skip'))}</button></div><p class="rvslam">${esc(t(fromDD?'rs.shut':'rs.closed'))}</p><p class="over rvrun">${esc(t('rs.running'))}</p><p class="rvn num"><span id="rvScore">0</span><small> ${esc(t('rs.pts'))}</small></p><div class="rvrows">${rows}</div><div class="rvstreak" id="rvStreak"></div><div class="rvtier" id="rvTier"></div><p class="rvhint">${esc(t('rs.tapHint'))}</p></div>`;
+ document.body.appendChild(el); RV.el=el; RV.speed=1;
+ el.addEventListener('click',e=>{ if(e.target.closest('[data-rvskip]')){ rsRevealEnd(); return; } RV.speed=3; });
+ sfxCue('shut'); let run=0, streak=0;
+ const flip=i=>{ const x=r.per[i], s=sg[x.sagaId], row=$('rvr'+i); if(!row) return; const k=rsKind(x); const d=rsCallDay(x,s);
+  const why=!x.called?t('rs.whyNone'):x.correct?(x.uturn?t('rs.whyHalf'):x.exclusive?t('rs.whyEx',{day:d?rsDayLabel(d):''}):t('rs.whyCalled',{day:d?rsDayLabel(d):''})):t('rs.whyWrong',{o:s.call?t('ds.oc.'+s.call.outcome):'?'});
+  row.className='rvr open '+k; row.innerHTML=`${kitSVG(rsDest(s),initials(s.player.name))}<span style="min-width:0"><span class="pn">${esc(pName(s.player))} ${lang==='ar'?'←':'→'} ${esc(cName(rsDest(s)))}</span><span class="wy">${ocHtml(s.truth,'solid')}<span>${esc(why)}</span></span></span><b class="pp">${x.called?rsPtsStr(x.pts):'—'}</b>`;
+  const prev=run; run+=(x.pts||0); countUp($('rvScore'),run,400,{from:prev}); sfxCue('flip'); setTimeout(()=>{ if(x.called) sfxCue(k==='ex'?'exclusive':k==='right'?'right':'wrong'); },120);
+  streak=x.correct?streak+1:0; const sk=$('rvStreak'); if(sk) sk.innerHTML=streak>=2?`<span>${esc(t('rs.streak',{n:streak}))}</span>`:''; };
+ const slam=()=>{ const tv=$('rvTier'); if(!tv) return; const sc=$('rvScore'); if(sc) sc.textContent=r.total; tv.classList.add('on'); tv.innerHTML=tmedalHtml(r.tier)+`<b>${esc(tierName(r.tier))}</b>`; sfxCue('tier',r.tier); if(r.tier.n<=2) confetti(); else if(r.tier.n===9) shakeScreen(); tv.scrollIntoView&&tv.scrollIntoView({block:'nearest'}); };
+ const steps=[[600,()=>el.classList.add('rows')]]; r.per.forEach((x,i)=>steps.push([i?800:400,()=>flip(i)])); steps.push([700,slam]); steps.push([1700,rsRevealEnd]);
+ const next=()=>{ if(!RV.el||RV.el!==el) return; if(screen!=='results'){ rsRevealEnd(); return; } const st=steps.shift(); if(!st) return; RV.tm=setTimeout(()=>{ if(RV.el!==el) return; st[1](); next(); },st[0]/RV.speed); }; next(); }
+BACK.push(()=>{ if(RV.el){ rsRevealEnd(); return true; } return false; });
+onHook('rendered',sc=>{ if(sc!=='results'&&RV.el) rsRevealEnd(); });
+/* share */
+function rsImage(){ const r=game.result, tr=r.tier; const c=document.createElement('canvas'); c.width=1080; c.height=1350; const g=c.getContext('2d'); if(!g) return null;
+ const css=v=>{ try{ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }catch(e){ return ''; } };
+ const tc=(/^t[1-5]$/.test(tr.key)&&css('--'+tr.key))||'#FF4D63'; const D='800 italic {s}px "Barlow Condensed", Impact, sans-serif', B='600 {s}px Barlow, system-ui, sans-serif';
+ g.fillStyle='#0A0F1E'; g.fillRect(0,0,1080,1350); g.textAlign='center'; g.fillStyle='#F3F5FA';
+ g.font=D.replace('{s}',64); g.fillText('TIER ONE',540,130); g.fillStyle='#B8C0D6'; g.font=B.replace('{s}',40); g.fillText(rsLabel(),540,195);
+ const hx=(cx,cy,w,h)=>{ g.beginPath(); g.moveTo(cx,cy-h/2); g.lineTo(cx+w/2,cy-h/4); g.lineTo(cx+w/2,cy+h/4); g.lineTo(cx,cy+h/2); g.lineTo(cx-w/2,cy+h/4); g.lineTo(cx-w/2,cy-h/4); g.closePath(); };
+ g.fillStyle=tc; hx(540,430,300,336); g.fill(); g.fillStyle='#121A30'; hx(540,430,270,306); g.fill();
+ g.fillStyle=tc; g.font=D.replace('{s}',40); g.fillText(tr.key==='clown'?'ITK':'TIER',540,360); g.fillStyle='#F3F5FA'; g.font=D.replace('{s}',tr.key==='clown'?150:190); g.fillText(tr.key==='clown'?'🤡':tr.key.slice(1),540,530);
+ g.font=D.replace('{s}',96); g.fillText(r.total+' pts',540,720);
+ const n=r.per.length, sz=150, gp=24, x0=540-(n*sz+(n-1)*gp)/2; const col={right:'#27E08A',ex:'#FFB020',wrong:'#FF4D63',none:'#2A3350'}, mark={right:'✓',ex:'★',wrong:'✕',none:'—'};
+ r.per.forEach((x,i)=>{ const k=rsKind(x), X=x0+i*(sz+gp), Y=800; g.fillStyle=col[k]; if(g.roundRect){ g.beginPath(); g.roundRect(X,Y,sz,sz,28); g.fill(); } else g.fillRect(X,Y,sz,sz);
+  g.fillStyle=k==='wrong'?'#fff':k==='none'?'#76819F':'#0B0F1A'; g.font='900 84px system-ui, sans-serif'; g.fillText(mark[k],X+sz/2,Y+sz/2+30);
+  const d=rsCallDay(x,game.sagas[x.sagaId]); g.fillStyle=d===7?'#FF6B7D':'#B8C0D6'; g.font=B.replace('{s}',34); g.fillText(!x.called?'—':(x.uturn?'↺ ':'')+(d===7?t('rs.ddShort'):d?t('rs.dayShort',{d}):''),X+sz/2,Y+sz+52); });
+ g.fillStyle='#F3F5FA'; g.font=B.replace('{s}',42); g.fillText([t('rs.nRight',{n:r.corrects||0}),t('rs.nEx',{n:r.exclusives||0}),t('rs.nWrong',{n:r.wrongs||0})].join(' · '),540,1120);
+ g.fillStyle='#8C96B2'; g.font=B.replace('{s}',36); g.fillText(String(CONFIG.SITE_URL||'').replace(/^https?:\/\//,''),540,1270); return c; }
+function rsShareSheet(){ const txt=rsShareText(); const lines=txt.split('\n');
+ openModal(`<div class="shcard" dir="ltr"><div class="shb"><div class="shh">${esc(lines[0])}</div><div class="shgrid">${esc(lines[1]||'')}${lines.length>4?'<br>'+esc(lines[2]):''}</div><div class="shs">${esc(lines[lines.length-2]||'')}</div><div class="shu">${esc(lines[lines.length-1]||'')}</div></div></div>
+  <div class="shbtns"><button class="btn primary" data-act="copyShare">${uiIcon('copy')} ${esc(t('rs.copy'))}</button>${navigator.share?`<button class="btn" data-act="nativeShare">${uiIcon('share')} ${esc(t('rs.native'))}</button>`:''}<button class="btn ghost" data-act="rsSaveImg">${esc(t('rs.saveImg'))}</button></div>`,t('rs.shareTitle')); }
+LANE_ACTS.rsShare=()=>{ sfxCue('tap'); rsShareSheet(); };
+LANE_ACTS.rsSaveImg=()=>{ try{ const c=rsImage(); if(!c) return; const done=u=>{ const a=document.createElement('a'); a.href=u; a.download='tier-one-'+(game.dateKey||todayKey())+'.png'; document.body.appendChild(a); a.click(); a.remove(); toast(t('rs.saved')); };
+ if(c.toBlob) c.toBlob(b=>{ if(!b){ done(c.toDataURL('image/png')); return; } const u=URL.createObjectURL(b); done(u); setTimeout(()=>URL.revokeObjectURL(u),4000); },'image/png'); else done(c.toDataURL('image/png')); }catch(e){ toast(t('rs.saveImg')+' ✕'); } };
+LANE_ACTS.rsRow=(el,v,id)=>{ const th=$('rsth'+id); if(!th) return; if(th.hidden){ th.hidden=false; rsMoreSync(); } th.scrollIntoView({behavior:motionReduced()?'auto':'smooth',block:'start'}); };
+LANE_ACTS.rsMore=()=>{ document.querySelectorAll('.rsx .thread[hidden]').forEach(el=>el.hidden=false); rsMoreSync(); };
+LANE_ACTS.rsAch=()=>{ if(SCREENS.achievements) go('achievements'); };
+function rsMoreSync(){ const b=$('rsMore'); if(!b) return; const hid=[...document.querySelectorAll('.rsx .thread[hidden]')].map(el=>el.dataset.n); if(!hid.length){ b.remove(); return; } b.innerHTML=`${esc(t('rs.showMore',{list:hid.join(', ')}))}`; }
 /* @@LANE JS:results END */
 /* ─ */
 /* @@LANE JS:career BEGIN (lane-owned; insert only between BEGIN and END) */
