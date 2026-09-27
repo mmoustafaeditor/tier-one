@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-27 · mmoustafaeditor · Plot twists and crunch-time rules (web 1.10.0)
+- **What changed:** New game math in every mode. 3 contacts a day (DD 3, 60 s). Sources open over the week: airport spotter from day 4, physio only on day 6 and Deadline Day, so one high-reliability read per player early no longer works. Exactly 2 real deals twist per window (seeded, same for everyone in the Daily and rooms): the wire posts 🚨 TWIST, earlier reads go out of date, that player's sources can be asked again, and updating a call after a twist is free. Scoring: Sure −12 / Confirmed −45 when wrong, exclusive +20 (before any rival posts), +10 for a right call after a twist. Career: gear effects rewritten (twist warnings, extra contacts on set days, sharper sources), no follower multiplier, pay retuned (~17 windows to full gear). Simulated: strong player in crunch on days 6–7 in ~78% of Daily windows, T1 ~19%; career crunch 78% → 41% from new to maxed.
+- **Files:** `tier-one/index.html`, `UPDATES.md`
+- **Heads-up for the team:** In-progress windows from older versions are discarded (save version 3). Redesigned board/player/results screens are still coming. APK not rebuilt yet.
+
 ## 2026-09-27 · mmoustafaeditor · New look, Android Back fix, mixed U-turn replies (web 1.9.0)
 - **What changed:** First part of the big overhaul. New "Deadline Night" design system (tokens, all 5 skins, a working Daylight light theme, stronger red Deadline Day takeover, offline-safe fonts, new sound cues). Android Back now closes the open sheet / goes up a screen instead of quitting the app (the APK calls `window.__tierBack`, which never existed). Fan replies after a U-turn are now mixed praise + call-outs even when the final call is right. Adds lane scaffolding (CSS/I18N/JS slots, `LANE_ACTS`, `SCREENS`, `onHook`) used by the rest of the overhaul: new game math (plot twists), new screens and a Trophies tab are coming next.
 - **Files:** `tier-one/index.html`, `UPDATES.md`
