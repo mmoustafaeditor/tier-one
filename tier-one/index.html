@@ -1834,6 +1834,8 @@ html[lang="ar"] .pcard .pn b{ font-size:17px; }
 .mxleg{ align-items:center; } .mxleg span{ line-height:1; }
 [dir="rtl"] .mxd[open] > summary .chev{ transform:rotate(-90deg); }
 .rt small.dd{ color:var(--bad); }
+.modebox .stat b.small{ font:700 var(--fs-sm)/1.3 var(--body); text-align:end; max-width:62%; }
+.modebox .stat b small{ font:700 13px var(--body); } .modebox .stat b small.up{ color:var(--ok); } .modebox .stat b small.dn{ color:var(--bad); }
 /* one app-bar title style on every screen (Friends/Room used a display face) */
 .onl-bar .ttl{ font:700 var(--fs-md)/1.1 var(--body); text-transform:none; letter-spacing:0; }
 html.ad-anchored .appbar{ top:var(--ad-top,0px); } html.ad-anchored .pp .appbar{ top:0; }
@@ -3951,7 +3953,7 @@ deepMerge(I18N,{
   lgT:'truth',lgF:'lie',lgO:'outdated by a twist',lgN:'not asked',planted1:'{n} of {m} wire stories was planted:',plantedN:'{n} of {m} wire stories were planted:',straight:'Straightest today:',noReads:'You didn’t ask anyone today.',
   fresh:'Nobody’s honesty carries over — tomorrow is a fresh board.',
   yourDaily:'Your Daily',pastDailies:'Past dailies ›',dayStreak:'day streak',played:'dailies played',until:'until Daily #{n}',archived:'An old Daily. It doesn’t change your streak.',
-  yourCareer:'Your career',level:'Level {n} · {t}',cash:'+${n} cash',cashBonus:'incl. ${n} tier bonus',room:'Posted to {c}',seeTable:'See the table ›',practice:'Practice doesn’t count — the Daily does →',
+  yourCareer:'Your career',level:'⬆️ Level up! Level {n} · {t}',cash:'+${n} cash',cashBonus:'incl. ${n} tier bonus',room:'Posted to {c}',seeTable:'See the table ›',practice:'Practice doesn’t count — the Daily does →',
   share:'Share result',shareTitle:'Share your result',copy:'Copy text',native:'Share…',saveImg:'Save image',saved:'Image saved',
   shareHead:'Tier One · {label} — {tier}',shareLine:'{pts} pts · {e} exclusives · {u} U-turns',grid:'Your calls',close:'Close results'}},
  es:{rs:{results:'Resultados',stDel:'Borrado',closed:'Mercado cerrado',shut:'Se cerró el mercado',skip:'Saltar ›',running:'Puntuación',sealed:'sellado…',tapHint:'Toca para acelerar · tu tier llega tras la última carta',
@@ -3966,7 +3968,7 @@ deepMerge(I18N,{
   lgT:'verdad',lgF:'mentira',lgO:'desfasado por un giro',lgN:'no preguntado',planted1:'{n} de {m} noticias de agencia era falsa:',plantedN:'{n} de {m} noticias de agencia eran falsas:',straight:'El más honesto hoy:',noReads:'Hoy no preguntaste a nadie.',
   fresh:'La honestidad de nadie se arrastra: mañana es un tablero nuevo.',
   yourDaily:'Tu diario',pastDailies:'Diarios anteriores ›',dayStreak:'días seguidos',played:'diarios jugados',until:'para el Diario #{n}',archived:'Un diario antiguo. No cambia tu racha.',
-  yourCareer:'Tu carrera',level:'Nivel {n} · {t}',cash:'+${n} de caja',cashBonus:'incl. ${n} de bonus por tier',room:'Publicado en {c}',seeTable:'Ver la tabla ›',practice:'La práctica no cuenta, el diario sí →',
+  yourCareer:'Tu carrera',level:'⬆️ ¡Subes de nivel! Nivel {n} · {t}',cash:'+${n} de caja',cashBonus:'incl. ${n} de bonus por tier',room:'Publicado en {c}',seeTable:'Ver la tabla ›',practice:'La práctica no cuenta, el diario sí →',
   share:'Compartir resultado',shareTitle:'Comparte tu resultado',copy:'Copiar texto',native:'Compartir…',saveImg:'Guardar imagen',saved:'Imagen guardada',
   shareHead:'Tier One · {label} — {tier}',shareLine:'{pts} pts · {e} exclusivas · {u} rectificaciones',grid:'Tus apuestas',close:'Cerrar resultados'}},
  ar:{rs:{results:'النتيجة',stDel:'اتمسح',closed:'الميركاتو قفل',shut:'الميركاتو قفل خلاص',skip:'تخطّي ›',running:'النقط لحد دلوقتي',sealed:'مقفول…',tapHint:'دوس عشان تسرّع · التير بتاعك هيبان بعد آخر كارت',
@@ -3981,7 +3983,7 @@ deepMerge(I18N,{
   lgT:'صدق',lgF:'كدب',lgO:'قديم بسبب مفاجأة',lgN:'ماسألتوش',planted1:'{n} من {m} أخبار الوكالة كان مزروع:',plantedN:'{n} من {m} أخبار الوكالة كانوا مزروعين:',straight:'أصدق واحد النهارده:',noReads:'ماسألتش حد النهارده.',
   fresh:'محدش صدقه بيتنقل لبكرة — بكرة لوحة جديدة.',
   yourDaily:'اليومي بتاعك',pastDailies:'الأيام اللي فاتت ›',dayStreak:'يوم ورا بعض',played:'يومي لعبته',until:'لحد اليومي رقم {n}',archived:'يومي قديم. مش هيغيّر الستريك بتاعك.',
-  yourCareer:'مسيرتك',level:'ليفل {n} · {t}',cash:'+${n} كاش',cashBonus:'منهم ${n} بونص التير',room:'اتنشرت في {c}',seeTable:'شوف الجدول ›',practice:'التمرين مش محسوب — اليومي هو اللي بيتحسب ←',
+  yourCareer:'مسيرتك',level:'⬆️ ليفل جديد! ليفل {n} · {t}',cash:'+${n} كاش',cashBonus:'منهم ${n} بونص التير',room:'اتنشرت في {c}',seeTable:'شوف الجدول ›',practice:'التمرين مش محسوب — اليومي هو اللي بيتحسب ←',
   share:'شير النتيجة',shareTitle:'شير نتيجتك',copy:'انسخ الكلام',native:'شير…',saveImg:'احفظ صورة',saved:'الصورة اتحفظت',
   shareHead:'Tier One · {label} — {tier}',shareLine:'{pts} نقطة · {e} انفراد · {u} رجوع',grid:'توقعاتك',close:'اقفل النتيجة'}}
 });
@@ -5813,7 +5815,7 @@ function rsModeHtml(){ const r=game.result;
   return `<div class="sechead"><h2 class="d4">${esc(t('rs.yourCareer'))}</h2></div><section class="card modebox">${lv}
    <div class="stat"><span>${esc(t('res.xp'))}</span><b><bdi dir="ltr">+${r.xpGain||0}</bdi></b></div>
    <div class="stat"><span>${esc(t('rs.cash',{n:r.creditGain||0}))}${r.payBonus?` <span class="muted small">(${esc(t('rs.cashBonus',{n:r.payBonus}))})</span>`:''}</span><b>💵</b></div>
-   <div class="stat"><span>${esc(t('res.rep'))}</span><b><bdi dir="ltr">${(r.repDelta||0)>=0?'+':''}${r.repDelta||0} → ${c.rep}</bdi></b></div>${r.legend?`<div class="legendbar">${esc(t('econ.legend'))}</div>`:''}${bits}</section>`; }
+   <div class="stat"><span>${esc(t('res.rep'))}</span><b><bdi dir="ltr">${c.rep} <small class="${(r.repDelta||0)>=0?'up':'dn'}">(${(r.repDelta||0)>=0?'+':'−'}${Math.abs(r.repDelta||0)})</small></bdi></b></div>${r.legend?`<div class="legendbar">${esc(t('econ.legend'))}</div>`:''}${bits}</section>`; }
  return `<p class="rsnote"><button class="link" data-act="startDaily">${esc(t('rs.practice'))}</button></p>`; }
 function rsLadderHtml(){ const r=game.result, tr=r.tier, cuts=rsCuts(); const top=cuts.length?cuts[cuts.length-1].v:350; const max=Math.max(400,top+50);
  const pct=v=>Math.max(0,Math.min(100,v/max*100)).toFixed(2); const score=r.total;
