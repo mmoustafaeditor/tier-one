@@ -9,7 +9,7 @@
 <p align="center">
   <a href="https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TierOne.apk"><img alt="Download APK" src="https://img.shields.io/badge/⬇_Download-APK-FFD23F?style=for-the-badge&labelColor=0B1224"></a>
   <a href="https://sembagames.app"><img alt="Play on the web" src="https://img.shields.io/badge/▶_Play-sembagames.app-27E08A?style=for-the-badge&labelColor=0B1224"></a>
-  <img alt="Version" src="https://img.shields.io/badge/version-web%201.7.0%20·%20android%201.9-3D8BFF?style=for-the-badge&labelColor=0B1224">
+  <img alt="Version" src="https://img.shields.io/badge/version-web%201.8.0%20·%20android%202.0-3D8BFF?style=for-the-badge&labelColor=0B1224">
   <img alt="Languages" src="https://img.shields.io/badge/lang-EN%20·%20ES%20·%20AR-A07BFF?style=for-the-badge&labelColor=0B1224">
 </p>
 
@@ -85,7 +85,8 @@ In Career, the kitman and the physio are locked until you buy the **Press pass**
 4. **Changing your mind** is allowed, but it's public: you lose 4–8% of your followers, the Tabloid
    mocks you, a correct re-call scores only half its base points (no early bonus, no exclusive) and a
    wrong one costs an extra 10.
-5. **End the day** when you're done. Rivals post overnight and new events drop.
+5. **End the day** when you're done. Rivals post overnight and new events drop (about 1 in 3 wire stories is planted). A player with fresh news shows a **NEW** chip; open him to see a **BREAKING** banner with only his news.
+   Each source tells you **one story per player**: asking the same source again gets the same answer, so ask someone else.
 6. **Deadline Day.** Day 7 is a 60-second timer with only 3 contacts. Anything you haven't called scores zero.
    Then everything is announced, the replies roll in and you get your tier.
 
@@ -93,11 +94,11 @@ In Career, the kitman and the physio are locked until you buy the **Press pass**
 
 | Tier | Score |
 |---|---|
-| 🥇 **Tier 1** | 300+ |
-| **Tier 2** | 200–299 |
-| **Tier 3** | 110–199 |
-| **Tier 4** | 45–109 |
-| **Tier 5** | 0–44 |
+| 🥇 **Tier 1** | 350+ |
+| **Tier 2** | 250–349 |
+| **Tier 3** | 160–249 |
+| **Tier 4** | 70–159 |
+| **Tier 5** | 0–69 |
 | 🤡 **ITK Clown** | below 0 |
 
 ### Your rivals
@@ -116,7 +117,7 @@ In Career, the kitman and the physio are locked until you buy the **Press pass**
   *Local blogger* to *Global insider*, and spend credits on:
   - **Gear:** Faster Wi‑Fi (+1 contact a day), Second phone (+1 more), Press pass, Medical contact.
   - **Boosts:** Burner phone (+1 contact today), Tip‑off (is the rumor real at all?), Bribe a source
-    (a guaranteed true clue, with a 25% chance it leaks).
+    ($150, once per player: a guaranteed true clue, with a 25% chance it leaks).
   - **Catchphrases** for your posts, from *CONFIRMED 🔒* to *TIER ONE 🥇*.
 - **Practice window** that doesn't count, for learning the ropes.
 - **11 achievements**, such as *Scoop king*, *Clean sheet*, *Deadline Day hero*, *Fumbled the bag* and *Flip-flopper*.
@@ -152,7 +153,7 @@ launch checklist are covered in [`LAUNCH.md`](LAUNCH.md).
 |---|---|
 | [`tier-one/index.html`](../../tier-one/index.html) | The entire game (HTML + CSS + JS, EN/ES/AR), served at sembagames.app/tier-one |
 | [`api/tier-one/latest.js`](../../api/tier-one/latest.js) | Update feed the Android app polls at `https://sembagames.app/api/tier-one/latest` |
-| [`downloads/TierOne.apk`](../../downloads/TierOne.apk) | Published APK (1.9, versionCode 10) |
+| [`downloads/TierOne.apk`](../../downloads/TierOne.apk) | Published APK (2.0, versionCode 11) |
 | [`api/verify-purchase.js`](../../api/verify-purchase.js) | Optional Stripe purchase verification, served at `/api/verify-purchase` |
 
 These stay where they are because the site and installed apps load them from there.

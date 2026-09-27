@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '1.9',
-  versionCode: 10,
+  version: '2.0',
+  versionCode: 11,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'Tighter windows (5 players, 4 contacts), no repeated lines, a red Deadline Day, overnight headlines, clearer exclusives and planes that match the airport spotter.',
+  changelog: 'Harder Tier 1, sources that stick to their story, planted news-wire stories, breaking news per player and much harsher banter in every language.',
 };
 
 export default function handler(req, res) {

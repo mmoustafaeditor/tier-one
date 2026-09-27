@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-27 · mmoustafaeditor · Harder Tier 1, sticky sources, planted wire stories, per-player breaking news, harsher banter (web 1.8.0, Android 2.0)
+- **What changed:** Rebalanced the game by simulation. Tier cutoffs are now T1 350 / T2 250 / T3 160 / T4 70 (a perfect-play bot went from 92% to 29% T1, a decent casual bot from 51% to 14%). Each source can be asked once per player per window and sticks to its story, so you have to ask around. About 1 in 3 telling news-wire events is a planted red herring (the wire now gives the answer away free in 66% of sagas by day 5, down from 85%). Bribe is $150 and once per player. Career pay trimmed to $40 + half the points + $20 per exclusive + tier bonus (120/60/30/10) so the full gear set takes about 15 windows. The overnight "headlines" popup is gone: a player with new rival/wire news gets a NEW chip, and opening him shows a BREAKING banner with only his news. New voice pack v5 (EN/ES/AR) with much harsher, reckless banter, still PG-13.
+- **Files:** `tier-one/index.html`, `games/tier-one/app/build.gradle`, `api/tier-one/latest.js`, `downloads/TierOne.apk`, `games/tier-one/README.md`, `CLAUDE.md`
+- **Heads-up for the team:** Web 1.8.0, Android 2.0 (versionCode 11). Old boards for the same seed are unchanged except for the red herrings, but anyone mid-season in a room scores against the new tier cutoffs. `CONFIG.DAILY_REPLAY` is still `true` (testing only).
+
 ## 2026-09-27 · mmoustafaeditor · 5 players/4 contacts, no repeated lines, red Deadline Day, clearer exclusives and headlines
 - **What changed:** Every mode is now 5 players, 4 contacts a day, 7 days (tier cutoffs and pay rescaled). No line ever
   repeats within a window (source clues, source DMs, rival posts, news wire, official lines, DM openers) and recently
