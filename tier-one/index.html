@@ -1823,6 +1823,13 @@ html.ad-anchored .dock,html.ad-anchored .tabbar{ bottom:var(--ad-bot,0px); }
 html.ad-anchored body.has-tabs .consent{ bottom:calc(var(--tabbar) + var(--ad-bot,0px) + env(safe-area-inset-bottom,0px)); }
 html.ad-anchored .app{ padding-top:var(--ad-top,0px); padding-bottom:calc(var(--dock) + 24px + var(--ad-bot,0px)); }
 html.ad-anchored .pp{ top:var(--ad-top,0px); } html.ad-anchored .pp .ppin{ padding-bottom:calc(150px + var(--ad-bot,0px)); }
+/* stinger band text always fits the phone width (was clipped at 360 px, e.g. "THE WINDOW'S OPEN") */
+.stinger .st-big{ display:block; max-width:min(92vw,560px); margin:0 auto; font-size:clamp(30px,10.5vw,78px); overflow-wrap:break-word; }
+/* Deadline-Day cards: a slimmer Call button leaves room for the player's name */
+.pcard .quickcall{ min-width:0; padding:0 14px; height:42px; font-size:18px; }
+html[lang="ar"] .pcard .pn b{ font-size:17px; }
+/* one app-bar title style on every screen (Friends/Room used a display face) */
+.onl-bar .ttl{ font:700 var(--fs-md)/1.1 var(--body); text-transform:none; letter-spacing:0; }
 html.ad-anchored .appbar{ top:var(--ad-top,0px); } html.ad-anchored .pp .appbar{ top:0; }
 html.ad-anchored .overlay,html.ad-anchored .rvl{ top:var(--ad-top,0px); bottom:var(--ad-bot,0px); } html.ad-anchored .sheet{ bottom:var(--ad-bot,0px); max-height:calc(94vh - var(--ad-bot,0px) - var(--ad-top,0px)); }
 /* trophy pop-ups (PS5-style) */
@@ -4006,15 +4013,15 @@ function cleanIdx(k,l){ l=l||lang; const L=getPath(I18N[l],k)||getPath(I18N.en,k
 /* ─ */
 /* QA: no cryptic abbreviations (D3, DD, ½, ×1.2) — spell things out; one name per concept */
 deepMerge(I18N,{
- en:{qa:{seeTable:'See every source and rival',ptsX:'×{p} points',nContacts:'{n} contacts'},tut2:{d1:'Day 1'},
+ en:{qa:{youAv:'YOU',player1:'1 player',seeTable:'See every source and rival',ptsX:'×{p} points',nContacts:'{n} contacts'},tut2:{d1:'Day 1'},
   board:{dShort:'Day {d}',ddShort:'Deadline'},
   pp:{dShort:'Day {d}',ddShort:'Deadline Day',yourCallTag:'Your call · Day {d}',twistTag:'Twist · Day {d}'},
   rs:{dayShort:'Day {d}',ddShort:'Deadline',whyHalf:'right after a U-turn · half points',vtHalf:'↺ Half points',stHalf:'Right · half points'}},
- es:{qa:{seeTable:'Ver todas las fuentes y rivales',ptsX:'×{p} puntos',nContacts:'{n} contactos'},tut2:{d1:'Día 1'},
+ es:{qa:{youAv:'TÚ',player1:'1 jugador',seeTable:'Ver todas las fuentes y rivales',ptsX:'×{p} puntos',nContacts:'{n} contactos'},tut2:{d1:'Día 1'},
   board:{dShort:'Día {d}',ddShort:'Límite',ddFull:'Día límite'},
   pp:{dShort:'Día {d}',ddShort:'Día límite',yourCallTag:'Tu apuesta · Día {d}',twistTag:'Giro · Día {d}'},
   rs:{dayShort:'Día {d}',ddShort:'Límite',dd:'Día límite',whyHalf:'acierto tras rectificar · mitad de puntos',vtHalf:'↺ Mitad de puntos',stHalf:'Acierto · mitad de puntos'}},
- ar:{qa:{seeTable:'شوف كل المصادر والمنافسين',ptsX:'×{p} نقط',nContacts:'{n} اتصالات'},tut2:{d1:'يوم 1'},
+ ar:{qa:{youAv:'إنت',player1:'لاعب واحد',seeTable:'شوف كل المصادر والمنافسين',ptsX:'×{p} نقط',nContacts:'{n} اتصالات'},tut2:{d1:'يوم 1'},
   board:{dShort:'يوم {d}',ddShort:'القفلة'},
   pp:{dShort:'يوم {d}',ddShort:'يوم القفلة',yourCallTag:'توقعك · يوم {d}',twistTag:'قلبة · يوم {d}'},
   rs:{dayShort:'يوم {d}',ddShort:'القفلة',dd:'يوم القفلة',whyHalf:'صح بعد ما رجعت في كلامك · نص النقط',vtHalf:'↺ نص النقط',stHalf:'صح · نص النقط'}}
@@ -4994,13 +5001,13 @@ function renderRoom(){ const c=roomView, R=save.rooms&&save.rooms[c]; if(!R) ret
  const next=mine<tot?`<button class="btn primary xl" data-act="playRoom" data-v="${esc(c)}">${uiIcon('play','flip')}<span>${esc(ip?t('onl.resume',{d:save.inProgress.day||1}):t('online.play',{s:mine+1}))}</span></button>`:`<div class="banner onl-done"><span class="bic" aria-hidden="true">🏁</span><div><b>${esc(t('online.done'))}</b></div></div>`;
  return `<div class="screen onl onl-room">${onlBar(t('onl.room'),'online',`<button class="iconbtn" data-act="refreshRoom" data-v="${esc(c)}" aria-label="${esc(t('online.refresh'))}">${uiIcon('refresh')}</button>`)}
   <div class="onl-ptr" aria-hidden="true">${uiIcon('refresh')}</div>
-  <div class="onl-head"><span class="over">${esc(t('online.roomCode'))}</span><button class="onl-code" data-act="onlCopy" data-v="${esc(c)}" dir="ltr" aria-label="${esc(t('online.roomCode')+' '+c.split('').join(' ')+' · '+t('onl.copyCode'))}">${c.split('').map(ch=>`<i>${esc(ch)}</i>`).join('')}<span class="onl-cp">${uiIcon('copy')}</span></button><h2 class="d3">${esc(room.name||c)}</h2><span class="muted onl-meta">${esc(t('online.members',{n:(room.players||[]).length}))} · ${esc(t('online.season',{s:Math.min(mine+1,tot),n:tot}))}</span>${rail}</div>
+  <div class="onl-head"><span class="over">${esc(t('online.roomCode'))}</span><button class="onl-code" data-act="onlCopy" data-v="${esc(c)}" dir="ltr" aria-label="${esc(t('online.roomCode')+' '+c.split('').join(' ')+' · '+t('onl.copyCode'))}">${c.split('').map(ch=>`<i>${esc(ch)}</i>`).join('')}<span class="onl-cp">${uiIcon('copy')}</span></button><h2 class="d3">${esc(room.name||c)}</h2><span class="muted onl-meta">${esc(t((room.players||[]).length===1?'qa.player1':'online.members',{n:(room.players||[]).length}))} · ${esc(t('online.season',{s:Math.min(mine+1,tot),n:tot}))}</span>${rail}</div>
   ${R.offline?`<div class="banner warn" role="status"><span class="bic" aria-hidden="true">📡</span><div><b>${esc(t('onl.offRoom'))}</b><p>${esc(t('online.netErr'))}</p></div></div>`:''}
   ${R.pending?`<div class="banner warn" role="status"><span class="bic" aria-hidden="true">⏳</span><div><b>${esc(t('onl.pendTitle'))}</b><p>${esc(t('onl.pending'))}</p></div></div>`:''}
   ${next}
   ${aheadTxt?`<p class="onl-ahead muted">👀 ${esc(aheadTxt)}</p>`:''}
   ${pod}
-  <div class="sechead"><span class="d4">${esc(t('online.board'))}</span><span class="aux">${esc(t('online.members',{n:rows.length}))}</span></div>
+  <div class="sechead"><span class="d4">${esc(t('online.board'))}</span><span class="aux">${esc(t(rows.length===1?'qa.player1':'online.members',{n:rows.length}))}</span></div>
   <ol class="list onl-table">${rows.map(trow).join('')||`<li class="onl-lrow"><span class="muted">…</span></li>`}</ol>
   ${ins?`<div class="card onl-ins"><span class="onl-insic" aria-hidden="true">📊</span><div><span class="over">${esc(t('onl.insight'))}</span><b>${esc(ins)}</b></div></div>`:''}
   <div class="onl-2"><button class="btn" data-act="shareRoom" data-v="${esc(c)}">${uiIcon('share')}<span>${esc(t('online.invite'))}</span></button><button class="btn" data-act="roomCareer" data-v="${esc(c)}">${uiIcon('career')}<span>${esc(t('online.shop'))}</span></button></div>
@@ -5752,11 +5759,11 @@ function rsThreadHtml(x,hidden){ const s=game.sagas[x.sagaId]; if(!s||!s.player)
  const stamp=!x.called?'':x.correct?(x.uturn?`<span class="stamp half">${esc(t('rs.stHalf'))}</span>`:x.exclusive?`<span class="stamp ex">${esc(t('rs.stEx'))}</span>`:`<span class="stamp ok">${esc(t('rs.stCalled'))}</span>`):`<span class="stamp bad">${esc(t(ratio?'rs.stRatio':'rs.stWrong'))}</span>`;
  const youLikes=rsLikes(x,s,'you');
  const wire=`<div class="tw"><span class="av wire">📡</span><div class="tb"><div class="meta"><b>${esc(t('win.wire'))}</b><span class="tick">✓</span><span>${esc(t('rs.official'))}</span></div><p class="txt">${esc(officialText(s))}</p></div></div>`;
- const del=uf&&uf.out&&uf.conf?`<div class="tw del"><span class="av you">YOU</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(rsDayLabel(uf.day))} ${esc(t('rs.deleted'))}</span><span class="stamp bad" style="font-size:11px">${esc(t('rs.stDel'))}</span></div><p class="txt">${esc(tweetText(uf.out,uf.conf,s))}</p></div></div>`:'';
+ const del=uf&&uf.out&&uf.conf?`<div class="tw del"><span class="av you">${esc(t('qa.youAv'))}</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(rsDayLabel(uf.day))} ${esc(t('rs.deleted'))}</span><span class="stamp bad" style="font-size:11px">${esc(t('rs.stDel'))}</span></div><p class="txt">${esc(tweetText(uf.out,uf.conf,s))}</p></div></div>`:'';
  let you='';
  if(x.called&&c){ const secs=x.secsLeft!=null?x.secsLeft:c.secsLeft; const dl=rsDayLabel(c.day)+(c.day===7&&secs!=null?' · '+t('rs.left',{s:'0:'+String(Math.max(0,secs|0)).padStart(2,'0')}):'');
-  you=`<div class="tw"><span class="av you">YOU</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(dl)}</span>${stamp}</div><p class="txt">${esc(tweetText(c.outcome,c.conf,s))}</p><div class="metrics"><span>♥ <bdi dir="ltr">${fmtK(youLikes)}</bdi></span>${x.fans!=null?`<span style="color:${x.fans>=0?'var(--ok)':'var(--bad)'}">👥 <bdi dir="ltr">${x.fans>=0?'+':'−'}${fmtK(Math.abs(x.fans))}</bdi></span>`:''}</div></div></div>`; }
- else if(x.called) you=`<div class="tw"><span class="av you">YOU</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b>${stamp}</div><p class="txt" style="color:var(--muted)">${esc(t('arch.noDetail'))}</p></div></div>`;
+  you=`<div class="tw"><span class="av you">${esc(t('qa.youAv'))}</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(dl)}</span>${stamp}</div><p class="txt">${esc(tweetText(c.outcome,c.conf,s))}</p><div class="metrics"><span>♥ <bdi dir="ltr">${fmtK(youLikes)}</bdi></span>${x.fans!=null?`<span style="color:${x.fans>=0?'var(--ok)':'var(--bad)'}">👥 <bdi dir="ltr">${x.fans>=0?'+':'−'}${fmtK(Math.abs(x.fans))}</bdi></span>`:''}</div></div></div>`; }
+ else if(x.called) you=`<div class="tw"><span class="av you">${esc(t('qa.youAv'))}</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b>${stamp}</div><p class="txt" style="color:var(--muted)">${esc(t('arch.noDetail'))}</p></div></div>`;
  const reps=(x.replies||[]).map((rp,j)=>{ const txt=replyText(x,rp,ctx); if(!txt) return ''; const tone=rsTone(x,rp); const h=HANDLES[((x.handles&&x.handles[j]!=null)?x.handles[j]:j)%HANDLES.length];
   let likes=rsLikes(x,s,j); if(ratio&&j===0) likes=Math.max(likes,Math.round(youLikes*2.3)+1);
   const hc=['#2F7DD1','#C2410C','#15803D','#7C3AED','#0E7490','#B91C1C','#A16207'][rsHash(h)%7];
@@ -5808,7 +5815,7 @@ function rsLadderHtml(){ const r=game.result, tr=r.tier, cuts=rsCuts(); const to
  const next=cuts.filter(c=>c.v>score).sort((a,b)=>a.v-b.v)[0]; const best=rsBest();
  let gap; if(tr.n===1) gap=`<b>${esc(t('rs.top'))}</b>`; else gap=next?`<b>${esc(t('rs.short',{n:next.v-score,t:tierName(tierOf(next.n))}))}</b>`:'';
  if(best&&score>best.s) gap+=(gap?' · ':'')+`<span class="nb">${esc(t('rs.newBest'))}</span>`; else if(best) gap+=(gap?' · ':'')+esc(t('rs.best',{n:best.s}))+(best.n?' ('+esc(t('win.daily',{n:best.n}))+')':'');
- return `<div style="--tc:${rsTierVar(tr)};margin-top:34px"><div class="ladder" id="rsLadder" role="img" aria-label="${esc(score+' '+t('rs.pts'))}"><div class="trk"><span class="fill" style="width:0%" data-w="${pct(score)}"></span>${ticks}<span class="you" style="inset-inline-start:0%" data-w="${pct(score)}">YOU</span></div></div></div><p class="gap">${gap}</p>`; }
+ return `<div style="--tc:${rsTierVar(tr)};margin-top:34px"><div class="ladder" id="rsLadder" role="img" aria-label="${esc(score+' '+t('rs.pts'))}"><div class="trk"><span class="fill" style="width:0%" data-w="${pct(score)}"></span>${ticks}<span class="you" style="inset-inline-start:0%" data-w="${pct(score)}">${esc(t('qa.youAv'))}</span></div></div></div><p class="gap">${gap}</p>`; }
 function rsLadder(anim){ const L=$('rsLadder'); if(!L) return; if(!anim) L.classList.add('inst'); else L.classList.remove('inst'); L.querySelectorAll('[data-w]').forEach(el=>{ if(el.classList.contains('fill')) el.style.width=el.dataset.w+'%'; else el.style.insetInlineStart=el.dataset.w+'%'; }); }
 /* reveal */
 const RV={el:null,speed:1,tm:null};
