@@ -1010,7 +1010,10 @@ const CONFIG={
  SITE_URL:'https://sembagames.app/tier-one',
  DAILY_REPLAY:true,
  SAGAS:5,                                        // players per window, every mode
- CONTACTS:4,                                     // source contacts per day (gear adds more)                              // TESTING ONLY: lets the Daily Challenge be replayed. Set to false to make it one-go-a-day again.                 // your live URL — printed at the bottom of every share card
+ CONTACTS:3,                                     // source contacts per day, days 1-6 (Career gear adds more)
+ DD_SECONDS:60,                                  // Deadline-Day timer (seconds)
+ DD_CONTACTS:3,                                  // Deadline-Day contacts (Power bank gear +1)
+ TIERS:[350,250,160,70],                         // tier cut-offs T1..T4 (T5 >= 0, Clown < 0)                              // TESTING ONLY: lets the Daily Challenge be replayed. Set to false to make it one-go-a-day again.                 // your live URL — printed at the bottom of every share card
  CONTACT_EMAIL:'hello@sembastudios.com',         // support + legal contact shown in Terms / Privacy / Contact
  JURISDICTION:'',                                // e.g. 'the State of Florida, USA' — used in the Terms. '' = generic wording
  LEGAL_EFFECTIVE:'September 25, 2026',          // effective date printed on Terms & Privacy — update when you edit them
@@ -2751,6 +2754,63 @@ deepMerge(I18N,{
 /* @@LANE I18N:core END */
 /* ─ */
 /* @@LANE I18N:math BEGIN (lane-owned; insert only between BEGIN and END) */
+/* math lane: Plot Twists strings (twist wire lines, warnings, source opening reasons, outdated labels, gear one-liners, rules). */
+deepMerge(I18N,{
+ en:{math:{
+  twist:{meeting:'🚨 TWIST in the {p} saga! Emergency meetings all night. The story has changed: everything you heard before today is out of date, and his sources will talk again.',statement:'🚨 TWIST in the {p} saga! A surprise statement has torn up the script. Old reads are out of date. Ask again.',silence:'🚨 TWIST in the {p} saga! Everyone involved has gone quiet overnight, and that never means nothing. Old reads are out of date. Ask again.',scramble:'🚨 TWIST in the {p} saga! Phones ringing off the hook. The story has moved: everything from before today is out of date.'},
+  warn:'⚠️ Rumblings around {p}. Something could break tomorrow.',updated:'🔁 You updated your {p} call after the twist. Nobody blames you for that.',
+  reason:{physio:'The physio only knows once a medical is booked. Opens on Day {d}.',airport:'Flights get filed from Day {d}. The airport spotter has nothing before that.',agent:'The agent picks up from Day {d}.',kitman:'The kitman talks from Day {d}.',barber:'The barber gossips from Day {d}.',leak:'The leak talks from Day {d}.',asked:'Already asked. Sources stick to their story until a twist.',reopened:'🌀 Twist! Ask again: the old answer is out of date.',short:'Out of contacts. End the day for more.',gear:'Buy the gear in the shop first.'},
+  opens:'Opens Day {d}',askAgain:'Ask again',outdated:'Before the twist',outdatedLong:'out of date: asked before the twist',resOutdated:'outdated by a twist',twistTag:'Twist',twistOn:'Twist on Day {d}',twists:'Twists {n}/{m}',
+  updateFree:'Twisted! Update your call. It\'s free.',rescue:'Twist rescue: this U-turn is free',tracker:'Twist tracker +{n}',
+  gear:{rel:'{src} tells the truth: {a}% → {b}%',wifi:'Contacts on days 1–3: {a} → {b}',phone2:'Contacts on days 5–6: {a} → {b}',bank:'Deadline-Day contacts: {a} → {b}',radar:'Tip-off the day before a twist: {a}% → {b}% of twists',laptop:'Twist tip-offs: {a} day → {b} days early (with Flight-tracker Pro: every twist)'},
+  rules:{summary:'Five sagas, seven days, three contacts a day, and two real deals will TWIST before the window shuts: the wire shouts 🚨, the old answer becomes wrong and his sources talk again. Call early for bonus points and exclusives, or wait for the physio on day 6 and Deadline Day, but only go loud when you\'re really sure.',
+   twists:'Two real deals flip every window (a fake story never does). Twist 1 lands on day 3–5, twist 2 on day 5 to Deadline Day.',
+   sources:'Barber and leak cost 1, agent and kitman 2, all from day 1. Airport spotter (3) from day 4, physio (3) only on day 6 and Deadline Day.',
+   scoring:'Quiet +10/−5 · Sure +20/−12 · Confirmed +40/−45 · +3 per day left · 👑 Exclusive +20 (before any rival posts on him) · 🌀 Twist tracker +10.',
+   uturn:'A U-turn scores half, no exclusive, −10 more if wrong. If a twist hit your call, updating it is free.'}}},
+ es:{math:{
+  twist:{meeting:'🚨 ¡GIRO en el culebrón de {p}! Reuniones de urgencia toda la noche. La historia ha cambiado: todo lo que oíste antes de hoy está desfasado y sus fuentes vuelven a hablar.',statement:'🚨 ¡GIRO en el culebrón de {p}! Un comunicado sorpresa rompe el guion. Lo de antes está desfasado. Vuelve a preguntar.',silence:'🚨 ¡GIRO en el culebrón de {p}! Todos los implicados se han callado de golpe, y eso nunca es nada. Lo de antes está desfasado. Vuelve a preguntar.',scramble:'🚨 ¡GIRO en el culebrón de {p}! Los teléfonos no paran. La historia se ha movido: todo lo de antes de hoy está desfasado.'},
+  warn:'⚠️ Movimientos raros alrededor de {p}. Mañana puede saltar algo.',updated:'🔁 Actualizaste tu apuesta de {p} tras el giro. Nadie te lo reprocha.',
+  reason:{physio:'El fisio solo sabe algo cuando hay reconocimiento médico. Disponible desde el día {d}.',airport:'Los vuelos se registran desde el día {d}. Antes, el vigía del aeropuerto no tiene nada.',agent:'El agente contesta desde el día {d}.',kitman:'El utillero habla desde el día {d}.',barber:'El barbero cotillea desde el día {d}.',leak:'El topo habla desde el día {d}.',asked:'Ya le preguntaste. Las fuentes mantienen su versión hasta que hay un giro.',reopened:'🌀 ¡Giro! Vuelve a preguntar: la respuesta de antes está desfasada.',short:'Sin contactos. Termina el día para tener más.',gear:'Primero compra el equipo en la tienda.'},
+  opens:'Desde el día {d}',askAgain:'Pregunta otra vez',outdated:'Antes del giro',outdatedLong:'desfasado: lo preguntaste antes del giro',resOutdated:'desfasado por un giro',twistTag:'Giro',twistOn:'Giro el día {d}',twists:'Giros {n}/{m}',
+  updateFree:'¡Giro! Actualiza tu apuesta. Es gratis.',rescue:'Rescate por giro: este cambio es gratis',tracker:'Giro cazado +{n}',
+  gear:{rel:'{src} dice la verdad: {a}% → {b}%',wifi:'Contactos los días 1–3: {a} → {b}',phone2:'Contactos los días 5–6: {a} → {b}',bank:'Contactos el día límite: {a} → {b}',radar:'Aviso el día antes de un giro: {a}% → {b}% de los giros',laptop:'Avisos de giro: {a} día → {b} días antes (con Flightradar Pro: todos los giros)'},
+  rules:{summary:'Cinco culebrones, siete días, tres contactos al día, y dos operaciones reales darán un GIRO antes del cierre: la agencia avisa con 🚨, la respuesta de antes pasa a ser falsa y sus fuentes vuelven a hablar. Apuesta pronto para sumar bonus y exclusivas, o espera al fisio del día 6 y al día límite, pero grita solo si estás muy seguro.',
+   twists:'Dos operaciones reales giran en cada mercado (un bulo nunca gira). El giro 1 cae entre el día 3 y el 5; el giro 2, entre el día 5 y el día límite.',
+   sources:'Barbero y topo cuestan 1, agente y utillero 2, todos desde el día 1. Vigía del aeropuerto (3) desde el día 4, fisio (3) solo el día 6 y el día límite.',
+   scoring:'Suave +10/−5 · Seguro +20/−12 · Confirmado +40/−45 · +3 por día que falte · 👑 Exclusiva +20 (antes de que ningún rival hable de él) · 🌀 Giro cazado +10.',
+   uturn:'Cambiar de apuesta puntúa la mitad, sin exclusiva, y −10 más si fallas. Si un giro tumbó tu apuesta, actualizarla es gratis.'}}},
+ ar:{math:{
+  twist:{meeting:'🚨 قلبة في قصة {p}! اجتماعات طوارئ طول الليل. القصة اتغيرت: كل اللي سمعته قبل النهارده بقى قديم، ومصادره هتتكلم تاني.',statement:'🚨 قلبة في قصة {p}! بيان مفاجئ قلب الترابيزة. الكلام القديم خلاص مبقاش ينفع. اسأل تاني.',silence:'🚨 قلبة في قصة {p}! كل اللي ليهم علاقة سكتوا مرة واحدة، والسكوت ده عمره ما بيبقى على الفاضي. الكلام القديم بقى قديم. اسأل تاني.',scramble:'🚨 قلبة في قصة {p}! التليفونات مبطلتش رن. القصة اتحركت: كل اللي قبل النهارده بقى قديم.'},
+  warn:'⚠️ في حاجة بتتطبخ حوالين {p}. ممكن تنفجر بكرة.',updated:'🔁 عدلت توقعك عن {p} بعد القلبة. محدش هيلومك.',
+  reason:{physio:'دكتور الفريق مبيعرفش حاجة غير لما الكشف الطبي يتحجز. متاح من يوم {d}.',airport:'الرحلات بتتسجل من يوم {d}. قبلها الواد بتاع المطار معندوش حاجة.',agent:'السمسار بيرد من يوم {d}.',kitman:'عم سيد بيتكلم من يوم {d}.',barber:'الحلاق بيرغي من يوم {d}.',leak:'المسرّب بيتكلم من يوم {d}.',asked:'سألته خلاص. المصادر بتفضل على كلامها لحد ما تحصل قلبة.',reopened:'🌀 قلبة! اسأل تاني: الإجابة القديمة بقت قديمة.',short:'الاتصالات خلصت. قفّل اليوم عشان تاخد تاني.',gear:'اشتري العدّة من المحل الأول.'},
+  opens:'من يوم {d}',askAgain:'اسأل تاني',outdated:'قبل القلبة',outdatedLong:'قديم: اتسأل قبل القلبة',resOutdated:'القلبة خلته قديم',twistTag:'قلبة',twistOn:'قلبة يوم {d}',twists:'القلبات {n}/{m}',
+  updateFree:'اتقلبت! عدّل توقعك. ببلاش.',rescue:'إنقاذ القلبة: اللفّة دي ببلاش',tracker:'صياد القلبة +{n}',
+  gear:{rel:'{src} بيقول الصدق: {a}% ← {b}%',wifi:'الاتصالات في أيام 1–3: {a} ← {b}',phone2:'الاتصالات في أيام 5–6: {a} ← {b}',bank:'اتصالات يوم القفلة: {a} ← {b}',radar:'تنبيه قبل القلبة بيوم: {a}% ← {b}% من القلبات',laptop:'تنبيه القلبة: قبلها بيوم ← قبلها بـ{b} أيام (ومع الرادار: كل القلبات)'},
+  rules:{summary:'خمس قصص، سبع أيام، تلات اتصالات في اليوم، وصفقتين حقيقيين هيتقلبوا قبل ما النافذة تقفل: الأخبار بتصرخ 🚨، الإجابة القديمة بتبقى غلط ومصادره بتتكلم تاني. قول بدري عشان البونص والانفراد، أو استنى دكتور الفريق يوم 6 ويوم القفلة، بس متعليش صوتك إلا وانت متأكد بجد.',
+   twists:'صفقتين حقيقيين بيتقلبوا في كل نافذة (الإشاعة الفشنك عمرها ما بتتقلب). القلبة الأولى بين يوم 3 و5، والتانية بين يوم 5 ويوم القفلة.',
+   sources:'الحلاق والمسرّب بـ1، السمسار وعم سيد بـ2، كلهم من أول يوم. الواد بتاع المطار (3) من يوم 4، ودكتور الفريق (3) يوم 6 ويوم القفلة بس.',
+   scoring:'هادي +10/−5 · متأكد +20/−12 · خلصانة +40/−45 · +3 عن كل يوم فاضل · 👑 انفراد +20 (قبل ما أي منافس ينشر عنه) · 🌀 صياد القلبة +10.',
+   uturn:'اللفّة بتاخد النص ومن غير انفراد، و−10 زيادة لو غلط. ولو القلبة ضربت توقعك، التعديل ببلاش.'}}}
+});
+/* rewritten gear/source descriptions and How-to rules for the Plot Twists math */
+deepMerge(I18N,{
+ en:{equip:{wifi:{desc:'+1 contact on days 1–3 (3 → 4)'},phone2:{desc:'+1 contact on days 5–6 (3 → 4)'},press:{desc:'The airport spotter tells the truth more often (75% → 81%)'},medical:{desc:'The physio tells the truth more often (80% → 85%)'},radar:{desc:'⚠️ Tipped off the day before most plot twists (0 → 3 in 5)'},lunch:{desc:'The agent lies less over a steak (60% → 66% truth)'},locker:{desc:'The kitman tells the truth more often (57% → 63%)'},chair:{desc:'Your barber gossips straighter (40% → 48% truth)'},coffee:{desc:'The rival leak owes you one (45% → 53% truth)'},bank:{desc:'+1 contact on Deadline Day (3 → 4)'},mic:{desc:'+25% followers from every right call'},tick:{desc:'Exclusives bring double followers'},coat:{desc:'Your first wrong call each window costs half'},laptop:{desc:'⚠️ Twist tip-offs come 2 days early (and, with Flight-tracker Pro, for every twist)'}},
+  src:{agent:{desc:"Medium. When he lies, it's usually 'done deal'."},kitman:{desc:"Medium. Knows IF he's leaving better than WHERE."},physio:{desc:'Best source. Medicals only happen on day 6 and Deadline Day.'},airport:{desc:'High. Flights get filed from day 4.'},barber:{desc:'Low. Cheap, chaotic, occasionally gold.'},leak:{desc:'Low. Decent for the price.'}},
+  scoop:{exSub:'You beat every rival to it: +20 pts and a follower surge'},
+  sheet:{uturnNote:'This re-call scores half if right, no exclusive, and −10 extra if wrong. After a twist hit your call, updating it is free.'},
+  howto:{cards:[['The window','5 real players, 5 rumoured moves, 7 days. Each saga ends one of 4 ways: the deal happens, he goes somewhere else, it collapses, or it was never real.'],['🌀 Two plot twists','Every window, two real deals flip before the deadline (a fake story never twists). The wire shouts 🚨 TWIST: the old answer is now wrong, everything you heard about him before is out of date, and his sources talk again. Twist 1 lands on day 3–5, twist 2 on day 5–Deadline Day.'],['3 contacts a day',"Spend 3 contacts a day. Barber and rival leak cost 1, agent and kitman 2, all from day 1. The airport spotter (3) only works from day 4, when flights get filed; the physio (3), the best source, only on day 6 and Deadline Day, when medicals happen. Everyone lies sometimes."],['Player types','★★★ Superstars count ×1.5 points and ×2 followers, ★★ Stars ×1.2 and ×1.4, ★ Squad players ×1. Right or wrong: big names, big swings.'],['Post your call','Pick what happens and how loud. Quiet +10 / −5, Sure +20 / −12, Confirmed +40 / −45: only go loud when you are really sure. +3 for every day left. 👑 Exclusive +20: right AND posted before any rival posts about him (after a twist the race restarts). 🌀 Twist tracker +10: right on a twisted player, posted after the twist. Tier 1 takes 350+.'],['Changing your mind',"Delete and re-call any time: the new call scores half and can't be an exclusive, and a wrong re-call costs 10 more. If a twist hit your call, updating it is free: no follower hit, no mockery."],['Deadline Day',"Day 7: 60 seconds, 3 contacts, and maybe the second twist. Whatever you haven't called scores zero. Then everything is announced and you get your tier."],['Daily vs Career','The Daily is identical for everyone: same players, same twists, no gear, nothing carries over. Career is your long game: earn dollars, buy gear (more contacts, straighter sources, twist warnings), grow your followers.'],['Rivals',"The Tabloid posts early and is usually wrong. The ITK is a coin flip. The Insider posts late and is right more often than not. But once any rival has posted about a player, your exclusive on him is gone."]]}},
+ es:{equip:{wifi:{desc:'+1 contacto los días 1–3 (3 → 4)'},phone2:{desc:'+1 contacto los días 5–6 (3 → 4)'},press:{desc:'El vigía del aeropuerto acierta más (75% → 81%)'},medical:{desc:'El fisio acierta más (80% → 85%)'},radar:{desc:'⚠️ Te avisan el día antes de la mayoría de los giros (0 → 3 de cada 5)'},lunch:{desc:'El agente miente menos con un chuletón delante (60% → 66%)'},locker:{desc:'El utillero acierta más (57% → 63%)'},chair:{desc:'Tu barbero cotillea más fino (40% → 48%)'},coffee:{desc:'El topo de la redacción rival te debe una (45% → 53%)'},bank:{desc:'+1 contacto el día límite (3 → 4)'},mic:{desc:'+25% de seguidores en cada acierto'},tick:{desc:'Las exclusivas traen el doble de seguidores'},coat:{desc:'Tu primer fallo de cada mercado cuesta la mitad'},laptop:{desc:'⚠️ Los avisos de giro llegan 2 días antes (y, con Flightradar Pro, de todos los giros)'}},
+  src:{agent:{desc:'Media. Cuando miente, suele decir que está hecho.'},kitman:{desc:'Media. Sabe mejor SI se va que ADÓNDE.'},physio:{desc:'La mejor fuente. Solo hay reconocimientos el día 6 y el día límite.'},airport:{desc:'Alta. Los vuelos se registran desde el día 4.'},barber:{desc:'Baja. Barato, caótico y a veces oro puro.'},leak:{desc:'Baja. Decente para lo que cuesta.'}},
+  scoop:{exSub:'Te adelantaste a todos los rivales: +20 pts y avalancha de seguidores'},
+  sheet:{uturnNote:'Esta nueva apuesta puntúa la mitad si aciertas, sin exclusiva, y −10 extra si fallas. Si un giro tumbó tu apuesta, actualizarla es gratis.'},
+  howto:{cards:[['El mercado','5 jugadores reales, 5 rumores, 7 días. Cada culebrón acaba de 4 formas: se hace, se va a otro sitio, se cae o nunca fue real.'],['🌀 Dos giros','En cada mercado, dos operaciones reales dan un giro antes del cierre (un bulo nunca gira). La agencia avisa con 🚨 GIRO: la respuesta de antes ya es falsa, todo lo que oíste de él está desfasado y sus fuentes vuelven a hablar. El giro 1 cae entre el día 3 y el 5; el giro 2 entre el día 5 y el día límite.'],['3 contactos al día','Tienes 3 contactos al día. Barbero y topo cuestan 1, agente y utillero 2, todos desde el día 1. El vigía del aeropuerto (3) solo desde el día 4, cuando se registran los vuelos; el fisio (3), la mejor fuente, solo el día 6 y el día límite, cuando hay reconocimientos. Todos mienten a veces.'],['Tipos de jugador','★★★ Las superestrellas cuentan ×1,5 puntos y ×2 seguidores, ★★ las estrellas ×1,2 y ×1,4, ★ los de plantilla ×1. Aciertes o falles: nombres grandes, golpes grandes.'],['Publica tu apuesta','Elige qué pasa y con cuánta fuerza. Suave +10 / −5, Seguro +20 / −12, Confirmado +40 / −45: grita solo si estás muy seguro. +3 por cada día que falte. 👑 Exclusiva +20: aciertas Y publicas antes de que cualquier rival hable de él (tras un giro, la carrera empieza de nuevo). 🌀 Giro cazado +10: aciertas con un jugador que giró, publicando después del giro. Tier 1 exige 350+.'],['Cambiar de opinión','Borra y vuelve a apostar cuando quieras: la nueva apuesta puntúa la mitad, no puede ser exclusiva y si fallas cuesta 10 más. Si un giro tumbó tu apuesta, actualizarla es gratis: sin perder seguidores ni burlas.'],['Día límite','Día 7: 60 segundos, 3 contactos y quizá el segundo giro. Lo que no hayas apostado puntúa cero. Luego se anuncia todo y recibes tu tier.'],['Diario vs Carrera','El diario es idéntico para todos: mismos jugadores, mismos giros, sin equipo, nada se arrastra. La carrera es tu partida larga: gana dólares, compra equipo (más contactos, fuentes más fiables, avisos de giro), suma seguidores.'],['Rivales','El Tabloide publica pronto y suele fallar. La cuenta ITK es cara o cruz. El Insider publica tarde y acierta más de lo que falla. Pero en cuanto un rival publica sobre un jugador, tu exclusiva se esfuma.']]}},
+ ar:{equip:{wifi:{desc:'+1 اتصال في أيام 1–3 (3 ← 4)'},phone2:{desc:'+1 اتصال في أيام 5–6 (3 ← 4)'},press:{desc:'الواد بتاع المطار بيصدق أكتر (75% ← 81%)'},medical:{desc:'دكتور الفريق بيصدق أكتر (80% ← 85%)'},radar:{desc:'⚠️ بينبهك قبلها بيوم لأغلب القلبات (0 ← 3 من كل 5)'},lunch:{desc:'السمسار بيكدب أقل قدام طبق كباب (60% ← 66%)'},locker:{desc:'عم سيد بيصدق أكتر (57% ← 63%)'},chair:{desc:'الحلاق بيجيب الكلام أدق (40% ← 48%)'},coffee:{desc:'المسرّب شايلك جميلة (45% ← 53%)'},bank:{desc:'+1 اتصال يوم القفلة (3 ← 4)'},mic:{desc:'+25% متابعين من كل توقّع صح'},tick:{desc:'الانفراد بيجيب ضعف المتابعين'},coat:{desc:'أول غلطة في كل نافذة بتتحسب بالنص'},laptop:{desc:'⚠️ تنبيه القلبة بيوصل قبلها بيومين (ومع الرادار: لكل القلبات)'}},
+  src:{agent:{desc:'متوسط. لما بيكدب، غالبًا بيقول "خلصت".'},kitman:{desc:'متوسط. عارف هو ماشي ولا لأ أحسن ما يعرف رايح فين.'},physio:{desc:'أحسن مصدر. الكشف الطبي بيحصل يوم 6 ويوم القفلة بس.'},airport:{desc:'عالي. الرحلات بتتسجل من يوم 4.'},barber:{desc:'ضعيف. رخيص وفوضى، وساعات بيقول دهب.'},leak:{desc:'ضعيف. كويس بالنسبة لسعره.'}},
+  scoop:{exSub:'سبقت كل المنافسين: +20 نقطة وموجة متابعين'},
+  sheet:{uturnNote:'التوقّع الجديد بياخد النص لو صح، ومن غير انفراد، و−10 زيادة لو غلط. ولو القلبة ضربت توقعك، التعديل ببلاش.'},
+  howto:{cards:[['النافذة','5 لعيبة حقيقيين، 5 إشاعات، 7 أيام. كل قصة بتخلص بواحدة من 4: الصفقة بتتم، يروح حتة تانية، تبوظ، أو كانت هري من الأول.'],['🌀 قلبتين','في كل نافذة، صفقتين حقيقيين بيتقلبوا قبل القفلة (الإشاعة الفشنك عمرها ما بتتقلب). الأخبار بتصرخ 🚨 قلبة: الإجابة القديمة بقت غلط، كل اللي سمعته عنه قبل كده بقى قديم، ومصادره بتتكلم تاني. القلبة الأولى بين يوم 3 و5، والتانية بين يوم 5 ويوم القفلة.'],['3 اتصالات في اليوم','معاك 3 اتصالات كل يوم. الحلاق والمسرّب بـ1، السمسار وعم سيد بـ2، كلهم من أول يوم. الواد بتاع المطار (3) من يوم 4 بس لما الرحلات تتسجل، ودكتور الفريق (3)، أحسن مصدر، يوم 6 ويوم القفلة بس لما الكشف الطبي يحصل. الكل بيكدب ساعات.'],['أنواع اللعيبة','★★★ السوبر ستار بيتحسب ×1.5 نقط و×2 متابعين، ★★ النجم ×1.2 و×1.4، ★ اللعيب العادي ×1. صح ولا غلط: الاسم الكبير يكسّب كتير ويخسّر كتير.'],['انزل بتوقّعك','اختار إيه اللي هيحصل وبصوت قد إيه. هادي +10 / −5، متأكد +20 / −12، "خلصانة" +40 / −45: متعليش صوتك إلا وانت متأكد بجد. +3 عن كل يوم فاضل. 👑 انفراد +20: صح وقلتها قبل ما أي منافس ينشر عنه (بعد القلبة السباق بيبدأ من الأول). 🌀 صياد القلبة +10: صح في لعيب اتقلب وقلتها بعد القلبة. تير 1 محتاج 350+.'],['غيّرت رأيك؟','امسح وقول تاني وقت ما تحب: التوقّع الجديد بياخد النص ومفيهوش انفراد، ولو غلط بتخسر 10 زيادة. ولو القلبة ضربت توقّعك، التعديل ببلاش: لا متابعين بتقع ولا تريقة.'],['يوم القفلة','اليوم السابع: 60 ثانية، 3 اتصالات، وممكن القلبة التانية. اللي ماقلتهوش بياخد صفر. وبعدين كل حاجة بتتعلن وتعرف انت تير كام.'],['اليومية ولا المسيرة','اليومية واحدة للكل: نفس اللعيبة، نفس القلبات، من غير عدّة، ومفيش حاجة بتترحّل. المسيرة لعبتك الطويلة: اكسب دولار، اشتري عدّة (اتصالات أكتر، مصادر أصدق، تنبيه القلبات)، وكبّر متابعينك.'],['المنافسين','جرنال الفضايح بينشر بدري وغالبًا غلط. حساب مصادري ملك وكتابة. ابن النادي بينشر متأخر وصح أكتر ما هو غلط. بس أول ما أي منافس ينشر عن لعيب، الانفراد بتاعه راح عليك.']]}}
+});
 /* @@LANE I18N:math END */
 /* ─ */
 /* @@LANE I18N:ds BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -2830,7 +2890,7 @@ const PLAYERS=[
 ].map(p=>({name:p[0],club:p[1],pos:p[2],tier:p[3]}));
 const clubByName=n=>CLUBS.find(c=>c.name===n);
 const OUTCOMES=['DONE','HIJACK','OFF','FAKE'];
-const SOURCES={ physio:{ic:'🩺',rel:0.85,cost:3,tier:'high',lock:'medical'}, airport:{ic:'🛩️',rel:0.80,cost:3,tier:'high'}, agent:{ic:'🕴️',rel:0.65,cost:2,tier:'med',bias:'DONE'}, kitman:{ic:'🧺',rel:0.62,cost:2,tier:'med',lock:'press'}, barber:{ic:'💈',rel:0.45,cost:1,tier:'low'}, leak:{ic:'📰',rel:0.50,cost:1,tier:'low'} };
+const SOURCES={ physio:{ic:'🩺',rel:0.80,cost:3,tier:'high'}, airport:{ic:'🛩️',rel:0.75,cost:3,tier:'high'}, agent:{ic:'🕴️',rel:0.60,cost:2,tier:'med',bias:'DONE'}, kitman:{ic:'🧺',rel:0.57,cost:2,tier:'med'}, barber:{ic:'💈',rel:0.40,cost:1,tier:'low'}, leak:{ic:'📰',rel:0.45,cost:1,tier:'low'} };
 const TIER_BARS={high:3,med:2,low:1};
 const PTYPE={1:{key:'super',pts:1.5,fans:2,stars:3},2:{key:'star',pts:1.2,fans:1.4,stars:2},3:{key:'squad',pts:1,fans:1,stars:1}};
 function ptype(p){ return PTYPE[p&&p.tier]||PTYPE[3]; }
@@ -2839,12 +2899,12 @@ function ptBadge(p){ const pt=ptype(p); return `<span class="ptb ptb-${pt.key}">
 function repBar(src,extra,noCost){ const n=TIER_BARS[src.tier]||1; return `<span class="rep rep-${src.tier}" title="${esc(t('rep.title'))}">${sigHtml(n,false,null,{hidden:true})}<span class="rl">${esc(t('rep.'+src.tier))}</span>${noCost?'':`<span class="rc" dir="ltr" aria-label="${esc(t('rep.cost',{n:src.cost}))}">📞 ${src.cost}</span>`}${extra||''}</span>`; }
 /* ─ lane boundary: shared ui | engine ─ */
 const EVENT_DAYS={DONE:[2,4,5],HIJACK:[2,4,5],OFF:[2,4,5],FAKE:[3,5]};
-const RIVALS=[ {key:'tabloid',handle:'@BackPageBants',ic:'🗞️',rel:0.40,dmin:2,dmax:3,style:'high'}, {key:'itk',handle:'@TransferITK_',ic:'🕵️',rel:0.55,dmin:3,dmax:5,style:'med'}, {key:'insider',handle:'@PressBoxPete',ic:'🎙️',rel:0.85,dmin:5,dmax:7,style:'med'} ];
+const RIVALS=[ {key:'tabloid',handle:'@BackPageBants',ic:'🗞️',rel:0.30,dmin:2,dmax:3,style:'high'}, {key:'itk',handle:'@TransferITK_',ic:'🕵️',rel:0.45,dmin:3,dmax:5,style:'med'}, {key:'insider',handle:'@PressBoxPete',ic:'🎙️',rel:0.60,dmin:5,dmax:7,style:'med'} ];
 const CATCH_KEYS=['confirmed','sources','allegedly','barber','myman','scoop','trust','tier1'];
 const BADGE_KEYS=[['legend','👑'],['first','📝'],['clean','🧼'],['ddhero','⏱️'],['scoop','👑'],['tier1','🥇'],['fumble','💼',1],['ratio','🤡',1],['blocked','🚫',1],['barber','💈'],['wrong10','🧢',1],['flip','🔄',1]];
 const LEVEL_XP=[0,100,250,450,700,1000,1400];
 const EQUIP=[{key:'wifi',ic:'📶',cost:120,lvl:1},{key:'press',ic:'🎫',cost:150,lvl:1},{key:'chair',ic:'💺',cost:140,lvl:1},{key:'coffee',ic:'☕',cost:140,lvl:1},{key:'medical',ic:'🏥',cost:200,lvl:2},{key:'locker',ic:'🔑',cost:160,lvl:2},{key:'radar',ic:'📡',cost:180,lvl:2},{key:'lunch',ic:'🍽️',cost:220,lvl:2},{key:'phone2',ic:'📱',cost:250,lvl:3},{key:'bank',ic:'🔋',cost:260,lvl:3},{key:'mic',ic:'🎙️',cost:320,lvl:3},{key:'tick',ic:'☑️',cost:400,lvl:4},{key:'coat',ic:'🧥',cost:450,lvl:5},{key:'laptop',ic:'💻',cost:600,lvl:5}];
-const GEAR_REL={airport:['radar',.10],agent:['lunch',.10],kitman:['locker',.10],barber:['chair',.12],leak:['coffee',.12]};
+const GEAR_REL={physio:['medical',.05],airport:['press',.06],agent:['lunch',.06],kitman:['locker',.06],barber:['chair',.08],leak:['coffee',.08]};
 /* ─ lane boundary: engine | career ─ */
 function goalsHtml(c){ const gs=careerGoals(c), all=gs.every(g=>g.cur>=g.max);
  return `<div class="card goals ${all?'done':''}"><h3>${esc(t('econ.goalsTitle'))}</h3><p class="muted small" style="margin:4px 0 8px">${esc(all?t('econ.legend'):t('econ.goalsSub'))}</p>${gs.map(g=>{ const pct=Math.round(g.cur/g.max*100), ok=g.cur>=g.max; return `<div class="goal ${ok?'ok':''}"><div class="gl"><span>${ok?'✅':'◻️'} ${esc(t('econ.goal.'+g.k))}</span><b>${g.k==='fans'?fmtK(g.cur)+' / 100K':g.cur+' / '+g.max}</b></div><div class="bar"><i style="width:${pct}%"></i></div></div>`; }).join('')}</div>`; }
@@ -2853,7 +2913,36 @@ function careerGoals(c){ return [{k:'lvl',cur:Math.min(levelInfo(c.xp).n,7),max:
 function gearOwned(k){ return isCareer()&&C().equip.includes(k); }
 const BOOSTS=[{key:'burner',ic:'☎️',cost:40,lvl:1},{key:'tipoff',ic:'💡',cost:60,lvl:2},{key:'bribe',ic:'💸',cost:150,lvl:3}];
 const SKINS=[{key:'default',cost:0},{key:'stadium',cost:100},{key:'tabloid',cost:80},{key:'broadsheet',cost:80},{key:'neon',cost:120}];
-const PTS={low:[10,-5],med:[20,-15],high:[40,-35]};
+const PTS={low:[10,-5],med:[20,-12],high:[40,-45]};
+/* ---- GAME MATH ("Plot Twists"). Every tuned number lives here (see ot/math/final/MATH_NOTES.md).
+   TWISTS real deals (never a FAKE story) flip their truth each window; TW_D1/TW_D2 = day weights of twist 1/2 (announced on the
+   wire at the start of that day: pre-twist reads go out of date, the player's sources re-open). TW_M = where a flipped deal goes.
+   SRC_FROM = first day a source can be asked. EARLY = pts per day left on a right call. EXCL = exclusive bonus (right AND posted
+   before ANY rival post in the current era). UT_FRAC = share of base a U-turned right call keeps; UT_WRONG = extra loss when a
+   U-turned call is wrong (waived for a free post-twist update). TW_BONUS = right call on a twisted player posted on/after the twist.
+   KIT_SIDE = share of the kitman's lies that stay on the right side of "is he leaving?". WARN_GEAR/LEAD_GEAR = Career twist tip-offs. */
+const MATH={
+ TWISTS:2, TW_D1:{3:.4,4:.4,5:.2}, TW_D2:{5:.6,6:.25,7:.15},
+ TW_M:{DONE:{HIJACK:.5,OFF:.5},OFF:{DONE:.6,HIJACK:.4},HIJACK:{DONE:.5,OFF:.5}},
+ TW_KINDS:['meeting','statement','silence','scramble'],
+ WARN:0, EV_P:.5, EV_RH:.5, RIV_P:.6,
+ SRC_FROM:{physio:6,airport:4,agent:1,kitman:1,barber:1,leak:1},
+ EARLY:3, EXCL:20, EX_RULE:'first', UT_FRAC:.5, UT_WRONG:10, TW_BONUS:10, KIT_SIDE:.5, TW_UT_FRAC:.5,
+ CONTACTS:CONFIG.CONTACTS, DD_CONTACTS:CONFIG.DD_CONTACTS, DD_TIMER:CONFIG.DD_SECONDS, FMULT:[1,1,1,1], REP_REL:0, TICK:0,
+ WARN_GEAR:{radar:.6,laptop:.4}, LEAD_GEAR:'laptop', LEAD_DAYS:2, WIFI_DAYS:[1,3], PHONE_DAYS:[5,6], EARLY_GEAR:{},
+ PAY:{base:25,perPt:.3,perEx:15,tier:{1:80,2:40,3:20,4:5},repAt:70,repMult:1.25},
+ TIERS:CONFIG.TIERS, BARS:[.55,.75]
+};
+function wpick(r,w){ const ks=Object.keys(w); let x=r.next()*ks.reduce((a,k)=>a+w[k],0); for(const k of ks){ x-=w[k]; if(x<=0) return k; } return ks[ks.length-1]; }
+const SIDE_OF={DONE:'HIJACK',HIJACK:'DONE',OFF:'FAKE',FAKE:'OFF'}; // same side of "is he leaving?" (the kitman's near-miss lies)
+function barsOf(rel){ return rel>=MATH.BARS[1]?3:rel>=MATH.BARS[0]?2:1; }
+function truthAt(s,d){ return s.tw&&d>=s.tw?s.truth:(s.pre||s.truth); }
+function twistSeen(s,d){ return !!(s&&s.tw&&(d==null?game.day:d)>=s.tw); }
+function clueStale(s,c,d){ d=d==null?game.day:d; return !!(s.tw&&d>=s.tw&&c.day<s.tw); }
+function srcFrom(key){ const g=MATH.EARLY_GEAR&&MATH.EARLY_GEAR[key]; return Math.max(1,(MATH.SRC_FROM[key]||1)-(g&&isCareer()&&C().equip.includes(g)?1:0)); }
+function srcOpen(key,d){ return (d==null?game.day:d)>=srcFrom(key); }
+function askedFresh(s,key){ return s.clues.some(c=>c.source===key&&!clueStale(s,c)); }
+function twistedSinceCall(s){ return !!(s.call&&s.tw&&s.call.day<s.tw&&game.day>=s.tw); }
 const ROAST_N=Math.max(...Object.values(I18N).map(l=>(l.roast||[]).length)), PRAISE_N=Math.max(...Object.values(I18N).map(l=>(l.praise||[]).length));
 const HANDLES=['@deadlinedan','@windowwatcher','@itk_tommy','@ratio_king','@delete_this','@sofa_scout','@xg_merchant','@fm_legend99','@bench_warmer','@var_victim','@tifo_guy','@ultras_nana','@3am_transfers','@medical_leaks','@parked_the_bus','@stats_nerd','@kit_collector','@offside_trap','@backpost_bev','@group_chat_capo','@taxi_driver_fc','@halfway_liner','@injury_time','@loanee_larry'];
 function shuffleRand(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -2880,7 +2969,7 @@ function loadSave(){
   save=Object.assign(f,s); save.career=Object.assign(f.career,s.career||{}); save.daily=Object.assign(f.daily,s.daily||{}); save.settings=Object.assign(f.settings,s.settings||{}); save.tutorial=Object.assign({intro:false,steps:{}},s.tutorial||{}); save.purchases=Object.assign({removeAds:false,sessions:[],credits:0,device:null},s.purchases||{}); if(!Array.isArray(save.purchases.sessions)) save.purchases.sessions=[]; save.consent=s.consent||null;
   save.career.catch=(save.career.catch||['confirmed']).map(migrateCatch); if(!save.career.catch.includes('confirmed')) save.career.catch.unshift('confirmed');
   save.settings.catch=migrateCatch(save.settings.catch);
-  if(save.inProgress&&save.inProgress.v!==2) save.inProgress=null; save.v=2; } }catch(e){}
+  if(save.inProgress&&save.inProgress.v!==3) save.inProgress=null; save.v=2; } }catch(e){}
  if(!save.settings.lang){ const n=(navigator.language||'en').slice(0,2).toLowerCase(); save.settings.lang=I18N[n]?n:'en'; }
  lang=save.settings.lang;
 }
@@ -2897,9 +2986,12 @@ let roomCtx=null;
 function C(){ const R=roomCtx&&save.rooms&&save.rooms[roomCtx]; return R&&R.career?R.career:save.career; }
 function ctxOf(s){ return {p:pName(s.player),c:cName(s.club),d:cName(s.dest),dc:cityName(s.dest),h:cName(s.hijack),hc:cityName(s.hijack),country:tt('country')[s.dest.country],cp:catchphrase()}; }
 function isCareer(){ return game&&game.mode==='career'; }
-function baseActions(){ if(!isCareer()) return CONFIG.CONTACTS; let a=CONFIG.CONTACTS; ['wifi','phone2','laptop'].forEach(k=>{ if(C().equip.includes(k)) a++; }); return a; }
-function relAdj(base,key){ if(!isCareer()) return base; const g=GEAR_REL[key]; const bonus=g&&C().equip.includes(g[0])?g[1]:0; return Math.min(0.97,Math.max(0.1,base+bonus+(C().rep-50)/500)); }
-function buildBoard(seed,n){
+function baseActions(d){ d=d||(game&&game.day)||1; if(d>=7) return ddActions(); if(!isCareer()) return MATH.CONTACTS; const e=C().equip; let a=MATH.CONTACTS; if(e.includes('wifi')&&d>=MATH.WIFI_DAYS[0]&&d<=MATH.WIFI_DAYS[1]) a++; if(e.includes('phone2')&&d>=MATH.PHONE_DAYS[0]&&d<=MATH.PHONE_DAYS[1]) a++; return a; }
+function ddActions(){ return MATH.DD_CONTACTS+(gearOwned('bank')?1:0); }
+function warnChance(mode){ return Math.min(1,MATH.WARN+(mode==='career'&&MATH.WARN_GEAR?Object.keys(MATH.WARN_GEAR).reduce((a,k)=>a+(C().equip.includes(k)?MATH.WARN_GEAR[k]:0),0):0)); }
+function warnLead(mode){ return mode==='career'&&MATH.LEAD_GEAR&&C().equip.includes(MATH.LEAD_GEAR)?(MATH.LEAD_DAYS||2):1; }
+function relAdj(base,key){ if(!isCareer()) return base; const g=GEAR_REL[key]; const bonus=g&&C().equip.includes(g[0])?g[1]:0; return Math.min(0.97,Math.max(0.1,base+bonus+(C().rep-50)*MATH.REP_REL)); }
+function buildBoard(seed,n,wc,wl){
  const rng=new RNG(seed);
  const picks=rng.shuffle(PLAYERS.slice()).slice(0,n||CONFIG.SAGAS);
  const sagas=picks.map((p,i)=>{
@@ -2907,23 +2999,29 @@ function buildBoard(seed,n){
   const dest=rng.pick(CLUBS.filter(c=>c.name!==club.name && c.tier<=p.tier+1));
   const hijack=rng.pick(CLUBS.filter(c=>c.name!==club.name&&c.name!==dest.name&&Math.abs(c.tier-dest.tier)<=1));
   const r=rng.next(); const truth=r<0.40?'DONE':r<0.65?'OFF':r<0.85?'HIJACK':'FAKE';
-  const s={id:i,player:p,club,dest,hijack,truth,events:[],clues:[],rivalPosts:[],call:null};
-  s.events=EVENT_DAYS[truth].map((day,idx)=>({day,idx})).filter(()=>rng.chance(0.6));
+  const s={id:i,player:p,club,dest,hijack,truth,pre:truth,tw:0,warn:0,twist:null,events:[],clues:[],rivalPosts:[],call:null};
+  s.events=EVENT_DAYS[truth].map((day,idx)=>({day,idx})).filter(()=>rng.chance(MATH.EV_P));
   return s;
  });
- const rh=new RNG(String(seed)+':rh'); sagas.forEach(s=>s.events.forEach(e=>{ if(e.idx>=1&&rh.chance(1/3)) e.o=rh.pick(OUTCOMES.filter(o=>o!==s.truth&&(e.idx<2||o!=='FAKE'))); }));
- RIVALS.forEach(rv=>{ sagas.forEach(s=>{ if(rng.chance(0.5)){ const day=rv.dmin+rng.int(rv.dmax-rv.dmin+1); const correct=rng.chance(rv.rel); const claim=correct?s.truth:rng.pick(OUTCOMES.filter(o=>o!==s.truth)); s.rivalPosts.push({rival:rv.key,day,claim,correct}); } }); });
+ // plot twists: own seeded streams (identical boards for everyone); only real deals (never FAKE) flip, at most once. s.pre = starting truth, s.truth = FINAL truth, s.tw = twist day
+ const tw=new RNG(String(seed)+':tw'); const real=tw.shuffle(sagas.filter(s=>s.pre!=='FAKE')); const k=Math.min(MATH.TWISTS,real.length);
+ const days=[+wpick(tw,MATH.TW_D1),+wpick(tw,MATH.TW_D2)].sort((a,b)=>a-b); const wu=sagas.map(()=>tw.next());
+ const tk=new RNG(String(seed)+':twk');
+ real.slice(0,k).forEach((s,j)=>{ s.tw=days[j]; s.truth=wpick(tw,MATH.TW_M[s.pre]); s.twk=tk.pick(MATH.TW_KINDS); if(wu[s.id]<(wc||0)) s.warn=Math.max(1,s.tw-(wl||1)); });
+ const rh=new RNG(String(seed)+':rh'); sagas.forEach(s=>s.events.forEach(e=>{ const z=truthAt(s,e.day); if(e.idx>=1&&rh.chance(MATH.EV_RH)) e.o=rh.pick(OUTCOMES.filter(o=>o!==z&&(e.idx<2||o!=='FAKE'))); e.sh=e.o||z; }));
+ RIVALS.forEach(rv=>{ sagas.forEach(s=>{ if(rng.chance(MATH.RIV_P)){ const day=rv.dmin+rng.int(rv.dmax-rv.dmin+1); const z=truthAt(s,day); const was=rng.chance(rv.rel); const claim=was?z:rng.pick(OUTCOMES.filter(o=>o!==z)); s.rivalPosts.push({rival:rv.key,day,claim,out:claim,bars:barsOf(rv.rel),was,correct:claim===s.truth&&(!s.tw||day>=s.tw),outdated:false}); } }); });
  return {rng,sagas};
 }
 function newGame(mode,seed){
- const {rng,sagas}=buildBoard(seed);
+ const {rng,sagas}=buildBoard(seed,null,warnChance(mode),warnLead(mode));
  game={usedLines:{}};
- sagas.forEach(s=>{ s.ov=freshPick('official.'+s.truth,(tt('official')[s.truth]||[]).length); s.events.forEach(e=>{ const eo=e.o||s.truth; e.v=freshPick('evt.'+(e.idx===0&&eo!=='FAKE'?'bid':eo+e.idx),evtPool(eo,e.idx).length); }); s.rivalPosts.forEach(rp=>{ const st=RIVALS.find(x=>x.key===rp.rival).style; rp.v=freshPick('rline.'+rp.claim+'.'+st,(tt('rline')[rp.claim][st]||[]).length); }); });
+ sagas.forEach(s=>{ s.ov=freshPick('official.'+s.truth,(tt('official')[s.truth]||[]).length); s.events.forEach(e=>{ const eo=e.sh||e.o||s.truth; e.v=freshPick('evt.'+(e.idx===0&&eo!=='FAKE'?'bid':eo+e.idx),evtPool(eo,e.idx).length); }); s.rivalPosts.forEach(rp=>{ const st=RIVALS.find(x=>x.key===rp.rival).style; rp.v=freshPick('rline.'+rp.claim+'.'+st,(tt('rline')[rp.claim][st]||[]).length); }); });
  const usedLines=game.usedLines;
- game={v:2,usedLines,mode,seed,rngState:rng.state,day:1,actions:0,feed:[],sagas,tab:'sagas',result:null,timer:60,followers:mode==='career'?(C().followers||1200):1000+rng.int(400)};
- game.actions=baseActions();
+ game={v:3,usedLines,mode,seed,rngState:rng.state,day:1,actions:0,feed:[],sagas,tab:'sagas',result:null,timer:MATH.DD_TIMER,timerMax:MATH.DD_TIMER,followers:mode==='career'?(C().followers||1200):1000+rng.int(400)};
+ game.actions=baseActions(1);
  game.feed.push({day:1,type:'sys',k:'sys.open'});
  sagas.forEach(s=>game.feed.push({day:1,type:'event',sagaId:s.id,k:'sys.report'}));
+ sagas.forEach(s=>{ if(s.warn===1) game.feed.push({day:1,type:'event',warn:1,sagaId:s.id,k:'math.warn'}); });
  saveGame();
 }
 const TIER_KEYS={1:'t1',2:'t2',3:'t3',4:'t4',5:'t5',9:'clown'};
@@ -2994,72 +3092,79 @@ function saveGame(){ if(!game) return; if(game.mode==='practice'){ save.inProgre
 function catchphrase(){ return tt('catch')[save.settings.catch]||tt('catch').confirmed; }
 function clueText(s,cl){ const ctx=ctxOf(s); if(cl.source==='tipoff') return t(cl.out==='FAKE'?'sheet.tipFake':'sheet.tipReal'); const src=cl.source==='paid'?'leak':cl.source; return fill(pickVar(tt('line')[src][cl.out],cl.v||0),ctx); }
 function clueWho(cl){ if(cl.source==='paid') return t('sheet.paid'); if(cl.source==='tipoff') return t('sheet.tip'); return SOURCES[cl.source].ic+' '+t('src.'+cl.source+'.name'); }
-function eventText(s,e){ const pool=evtPool(e.o||s.truth,e.idx); return fill(pickVar(pool,e.v||0),ctxOf(s)); }
+function eventText(s,e){ const pool=evtPool(e.sh||e.o||s.truth,e.idx); return fill(pickVar(pool,e.v||0),ctxOf(s)); }
 function rivalText(s,rp){ const ri=RIVALS.findIndex(r=>r.key===rp.rival); const rv=RIVALS[ri]; return fill(pickVar(tt('rline')[rp.claim][rv.style],rp.v!=null?rp.v:s.id+ri*3),ctxOf(s)); }
 function feedText(f){
  if(f.k==='sys.report'||f.k==='sys.open'||f.k==='sys.dd') return f.sagaId!=null?t(f.k,ctxOf(game.sagas[f.sagaId])):t(f.k);
  if(f.k) return t(f.k,Object.assign({},f.ctx||{},f.sagaId!=null?ctxOf(game.sagas[f.sagaId]):{}));
  if(f.type==='rival'&&f.claim) return rivalText(game.sagas[f.sagaId],{rival:f.rival,claim:f.claim,v:f.v});
- if(f.type==='event'&&f.idx!=null) return eventText(game.sagas[f.sagaId],{idx:f.idx,v:f.v,o:f.o});
+ if(f.type==='event'&&f.idx!=null) return eventText(game.sagas[f.sagaId],{idx:f.idx,v:f.v,o:f.o,sh:f.sh});
  if(f.type==='you') return tweetText(f.outcome,f.conf,game.sagas[f.sagaId]);
  return '';
 }
 function replyText(x,rp,ctx){ if(typeof rp==='number') return fill(pickVar(tt(x.correct?'praise':'roast'),rp),ctx); return fill(pickVar(tt(rp.k)||[],rp.i||0),ctx); }
 function tweetText(outcome,conf,s){ return fill(tt('tweet')[outcome][conf],ctxOf(s)); }
 function officialText(s){ return fill(pickVar(tt('official')[s.truth],s.ov!=null?s.ov:s.id),ctxOf(s)); }
-function getPlayerType(followers){
- if(followers<400) return {key:'nobody',mult:1.0};
- if(followers<1500) return {key:'rising',mult:1.1};
- if(followers<4000) return {key:'celebrity',mult:1.2};
- return {key:'superstar',mult:1.25};
+function getPlayerType(followers){ const m=MATH.FMULT;
+ if(followers<400) return {key:'nobody',mult:m[0]};
+ if(followers<1500) return {key:'rising',mult:m[1]};
+ if(followers<4000) return {key:'celebrity',mult:m[2]};
+ return {key:'superstar',mult:m[3]};
 }
 function applyScoreMultiplier(baseScore,isCareerMode){
  if(!isCareerMode) return baseScore;
  const playerType=getPlayerType(C().followers||1200);
  return Math.round(baseScore*playerType.mult);
 }
-function tierFor(score){ if(score<0) return {n:9,key:'clown'}; if(score>=350) return {n:1,key:'t1'}; if(score>=250) return {n:2,key:'t2'}; if(score>=160) return {n:3,key:'t3'}; if(score>=70) return {n:4,key:'t4'}; return {n:5,key:'t5'}; }
+function tierFor(score){ const T=CONFIG.TIERS||MATH.TIERS; if(score<0) return {n:9,key:'clown'}; if(score>=T[0]) return {n:1,key:'t1'}; if(score>=T[1]) return {n:2,key:'t2'}; if(score>=T[2]) return {n:3,key:'t3'}; if(score>=T[3]) return {n:4,key:'t4'}; return {n:5,key:'t5'}; }
 function tierName(tr){ return t('tier.'+tr.key); }
 
 // ---------- actions ----------
 function contactSource(sagaId,key,opts){
- const s=game.sagas[sagaId]; const src=SOURCES[key]; if(!(opts&&opts.paid)&&s.clues.some(c=>c.source===key)) return; const r=rng();
- let truthful, out=s.truth, paid=!!(opts&&opts.paid);
+ const s=game.sagas[sagaId]; const src=SOURCES[key]; if(!(opts&&opts.paid)&&(!src||askedFresh(s,key)||!srcOpen(key))) return false; const r=rng();
+ const z=truthAt(s,game.day); let truthful, out=z, paid=!!(opts&&opts.paid); const rel=paid?1:relAdj(src.rel,key);
  if(paid){ truthful=true; }
  else{
-  truthful=r.chance(relAdj(src.rel,key));
-  if(!truthful){ const wrong=OUTCOMES.filter(o=>o!==s.truth); out=(src.bias&&wrong.includes(src.bias)&&r.chance(0.7))?src.bias:pickLie(r,s.truth); }
+  truthful=r.chance(rel);
+  if(!truthful){ const wrong=OUTCOMES.filter(o=>o!==z); out=(src.bias&&wrong.includes(src.bias)&&r.chance(0.7))?src.bias:pickLie(r,z); if(key==='kitman'&&MATH.KIT_SIDE&&r.chance(MATH.KIT_SIDE)) out=SIDE_OF[z]; }
   game.actions-=src.cost||1;
   if(isCareer()){ const st=C().sources[key]||(C().sources[key]={n:0,ok:0}); st.n++; if(truthful) st.ok++; if(key==='barber') C().barber++; }
  }
- const lk=paid?'leak':key; s.clues.push({source:paid?'paid':key,out,truthful,day:game.day,v:freshPick('line.'+lk+'.'+out,((tt('line')[lk]||{})[out]||[]).length),a:freshPick('ask',(tt('ask')||[]).length),revealAt:Date.now()+2100+Math.floor(Math.random()*500)});
- commitRng(r); saveGame(); fireHook('contact',sagaId,key,s.clues[s.clues.length-1]);
+ const lk=paid?'leak':key; s.clues.push({source:paid?'paid':key,out,truthful,day:game.day,bars:barsOf(rel),outdated:false,v:freshPick('line.'+lk+'.'+out,((tt('line')[lk]||{})[out]||[]).length),a:freshPick('ask',(tt('ask')||[]).length),revealAt:Date.now()+2100+Math.floor(Math.random()*500)});
+ commitRng(r); saveGame(); fireHook('contact',sagaId,key,s.clues[s.clues.length-1]); return true;
 }
 function endDay(){
  if(game.day>=7) return;
  game.day++; game.actions=baseActions(); game.adActionUsed=false;
  game.sagas.forEach(s=>{
-  s.events.filter(e=>e.day===game.day).forEach(e=>game.feed.push({day:game.day,type:'event',sagaId:s.id,idx:e.idx,v:e.v,o:e.o}));
-  s.rivalPosts.filter(rp=>rp.day===game.day).forEach(rp=>game.feed.push({day:game.day,type:'rival',sagaId:s.id,rival:rp.rival,claim:rp.claim,v:rp.v}));
+  if(s.tw===game.day){ // plot twist lands: everything heard before today goes out of date, sources re-open
+   const kind=s.twk||MATH.TW_KINDS[0]; s.twist={day:s.tw,kind,text:'math.twist.'+kind};
+   s.clues.forEach(c=>{ if(c.day<s.tw) c.outdated=true; }); s.rivalPosts.forEach(rp=>{ if(rp.day<s.tw) rp.outdated=true; });
+   game.feed.forEach(f=>{ if(f.sagaId===s.id&&f.day<s.tw&&(f.type==='rival'||f.type==='event')&&f.k!=='sys.report') f.outdated=true; });
+   game.feed.push({day:game.day,type:'twist',twist:1,kind,sagaId:s.id,k:'math.twist.'+kind,called:!!s.call});
+  }
+  if(s.warn===game.day) game.feed.push({day:game.day,type:'event',warn:1,sagaId:s.id,k:'math.warn'});
+  s.events.filter(e=>e.day===game.day).forEach(e=>game.feed.push({day:game.day,type:'event',sagaId:s.id,idx:e.idx,v:e.v,o:e.o,sh:e.sh}));
+  s.rivalPosts.filter(rp=>rp.day===game.day).forEach(rp=>game.feed.push({day:game.day,type:'rival',sagaId:s.id,rival:rp.rival,claim:rp.claim,out:rp.claim,bars:rp.bars,v:rp.v}));
  });
- if(game.day===7){ game.actions=3+(gearOwned('bank')?1:0); game.timer=60; game.feed.push({day:7,type:'sys',k:'sys.dd'}); }
+ if(game.day===7){ game.actions=ddActions(); game.timer=MATH.DD_TIMER; game.timerMax=MATH.DD_TIMER; game.feed.push({day:7,type:'sys',k:'sys.dd'}); }
  else game.feed.push({day:game.day,type:'sys',k:'sys.day',ctx:{d:game.day}});
  saveGame(); fireHook('day',game.day);
 }
 function publishCall(sagaId,outcome,conf){
  const s=game.sagas[sagaId]; if(s.call) return 0;
- s.call={outcome,conf,day:game.day,uturn:!!s.uturns};
+ s.call={outcome,conf,day:game.day,uturn:!!s.uturns,twu:!!s.twUturn};
  const r=rng(); const gain=Math.round((15+r.int(40))*({low:1,med:1.6,high:2.4}[conf])*ptype(s.player).fans); game.followers+=gain; commitRng(r);
  game.feed.push({day:game.day,type:'you',sagaId,outcome,conf});
  saveGame(); fireHook('call',sagaId,s.call); return gain;
 }
 function uturnCall(sagaId){
  const s=game.sagas[sagaId]; if(!s.call) return 0;
- s.uturns=(s.uturns||0)+1;
+ s.uturns=(s.uturns||0)+1; const moved=twistedSinceCall(s); s.twUturn=moved; s.uturnFrom={out:s.call.outcome,conf:s.call.conf,day:s.call.day,free:moved};
  game.feed.forEach(f=>{ if(f.type==='you'&&f.sagaId===sagaId&&!f.deleted) f.deleted=true; });
- const r=rng(); const loss=Math.max(20,Math.round(game.followers*(0.04+r.next()*0.04))); game.followers=Math.max(100,game.followers-loss); commitRng(r);
- game.feed.push({day:game.day,type:'sys',k:'sys.deleted',sagaId,ctx:{n:loss}});
- game.feed.push({day:game.day,type:'rival',rival:'tabloid',sagaId,k:'rivalmsg.uturn'});
+ const r=rng(); const loss=moved?0:Math.max(20,Math.round(game.followers*(0.04+r.next()*0.04))); game.followers=Math.max(100,game.followers-loss); commitRng(r);
+ game.feed.push({day:game.day,type:'sys',k:moved?'math.updated':'sys.deleted',sagaId,ctx:{n:loss}});
+ if(!moved) game.feed.push({day:game.day,type:'rival',rival:'tabloid',sagaId,k:'rivalmsg.uturn'});
  s.call=null; if(isCareer()&&!C().badges.includes('flip')) C().badges.push('flip');
  saveGame(); fireHook('uturn',sagaId); return loss;
 }
@@ -3070,31 +3175,36 @@ function resolveWindow(){
  const draw=(k,n,used)=>{ for(let q=0;q<4;q++){ if(!deck[k]||!deck[k].length) deck[k]=shuffleRand([...Array(n).keys()]).filter(i=>!used.has(i)); const i=deck[k].pop(); if(i!=null&&!used.has(i)){ used.add(i); return i; } } for(let i=0;i<n;i++) if(!used.has(i)){ used.add(i); return i; } return 0; };
  const hdeck=shuffleRand([...Array(HANDLES.length).keys()]);
  const per=game.sagas.map(s=>{
-  const out={sagaId:s.id,called:!!s.call,correct:false,exclusive:false,uturn:false,pts:0,replies:[],emoji:'⚪'};
+  const out={sagaId:s.id,called:!!s.call,correct:false,exclusive:false,uturn:false,pts:0,replies:[],emoji:'⚪',twistDay:s.tw||0,twistKind:s.tw?(s.twk||null):null,twist:false,late:null,uturnFrom:s.call&&s.call.uturn&&s.uturnFrom?s.uturnFrom:null,callDay:s.call?s.call.day:null,conf:s.call?s.call.conf:null,out:s.call?s.call.outcome:null};
   if(s.call){
+   if(s.call.secsLeft!=null) out.secsLeft=s.call.secsLeft;
    out.uturn=!!s.call.uturn; out.correct=s.call.outcome===s.truth;
    if(out.correct){
-    corrects++; out.pts=PTS[s.call.conf][0]+(7-s.call.day)*3;
-    const firstRival=s.rivalPosts.filter(rp=>rp.correct).map(rp=>rp.day).sort((a,b)=>a-b)[0];
+    corrects++; const base=PTS[s.call.conf][0]; out.pts=base+(7-s.call.day)*MATH.EARLY;
+    const firstRival=s.rivalPosts.filter(rp=>MATH.EX_RULE==='first'?(!s.tw||rp.day>=s.tw):rp.correct).map(rp=>rp.day).sort((a,b)=>a-b)[0];
     out.exclusive=!out.uturn&&((firstRival==null)||(s.call.day<firstRival));
-    if(out.uturn) out.pts=Math.round(PTS[s.call.conf][0]*0.5);
-    if(out.exclusive){ out.pts+=15+(gearOwned('tick')?10:0); exclusives++; }
+    if(out.uturn) out.pts=Math.round(base*(s.call.twu?MATH.TW_UT_FRAC:MATH.UT_FRAC));
+    if(s.tw&&s.call.day>=s.tw&&MATH.TW_BONUS){ out.pts+=MATH.TW_BONUS; out.twist=true; }
+    if(out.exclusive){ out.pts+=MATH.EXCL+(gearOwned('tick')?MATH.TICK:0); exclusives++; }
+    else if(!out.uturn){ const lr=s.rivalPosts.filter(rp=>rp.correct&&rp.day<=s.call.day).sort((a,b)=>a.day-b.day)[0]; if(lr) out.late={rival:lr.rival,day:lr.day}; }
     if(s.call.day===7) ddCorrect=true; out.emoji=out.exclusive?'🔵':'🟢';
     out.replies=out.uturn?shuffleRand([{k:'praise',i:draw('p',PRAISE_N,usedP)},{k:'ureply.right',i:freshPick('ureply.right',(tt('ureply.right')||[]).length)},{k:'ureply.right',i:freshPick('ureply.right',(tt('ureply.right')||[]).length)}]):[{k:'praise',i:draw('p',PRAISE_N,usedP)},{k:'praise',i:draw('p',PRAISE_N,usedP)}];
-   }else{ wrongs++; out.pts=PTS[s.call.conf][1]-(out.uturn?10:0); if(!coatUsed&&gearOwned('coat')){ out.pts=Math.round(out.pts/2); coatUsed=true; } if(s.call.conf==='high') highWrong=true; out.emoji='🔴'; out.replies=out.uturn?shuffleRand([{k:'roast',i:draw('r',ROAST_N,usedR)},{k:'ureply.wrong',i:freshPick('ureply.wrong',(tt('ureply.wrong')||[]).length)},{k:'roast',i:draw('r',ROAST_N,usedR)}]):[{k:'roast',i:draw('r',ROAST_N,usedR)},{k:'roast',i:draw('r',ROAST_N,usedR)}]; }
+   }else{ wrongs++; out.pts=PTS[s.call.conf][1]-(out.uturn&&!s.call.twu?MATH.UT_WRONG:0); if(!coatUsed&&gearOwned('coat')){ out.pts=Math.round(out.pts/2); coatUsed=true; } if(s.call.conf==='high') highWrong=true; out.emoji='🔴'; out.replies=out.uturn?shuffleRand([{k:'roast',i:draw('r',ROAST_N,usedR)},{k:'ureply.wrong',i:freshPick('ureply.wrong',(tt('ureply.wrong')||[]).length)},{k:'roast',i:draw('r',ROAST_N,usedR)}]):[{k:'roast',i:draw('r',ROAST_N,usedR)},{k:'roast',i:draw('r',ROAST_N,usedR)}]; }
    out.pts=Math.round(out.pts*ptype(s.player).pts);
    total+=out.pts;
    out.handles=out.replies.map(()=>hdeck.pop()||0);
-   const cl=[...s.clues].reverse().find(c=>c.source!=='paid'&&c.source!=='tipoff');
+   const cl=[...s.clues].reverse().find(c=>c.source!=='paid'&&c.source!=='tipoff'&&!clueStale(s,c,7));
    if(cl){ const cs=cl.truthful?(out.correct?'toldYou':'ignored'):(out.correct?'dodged':'lied'); const k0=cl.source+'.'+cs+'.'; const pool=((tt('sreply')||{})[cl.source]||{})[cs]; const v=freshPick('sreply.'+cl.source+'.'+cs,Array.isArray(pool)?pool.length:1); usedS.add(k0+v); out.srcReply={src:cl.source,cs,v}; }
   }
   return out;
  });
- let fDelta=0; per.forEach(x=>{ if(!x.called) return; const fm=ptype(game.sagas[x.sagaId].player).fans; x.fans=Math.round((x.correct?(200+r.int(400)+(x.exclusive?800:0))*(gearOwned('mic')?1.25:1):-(120+r.int(300)))*fm); fDelta+=x.fans; });
+ let fDelta=0; per.forEach(x=>{ if(!x.called) return; const fm=ptype(game.sagas[x.sagaId].player).fans; x.fans=Math.round((x.correct?(200+r.int(400)+(x.exclusive?800*(gearOwned('tick')?2:1):0))*(gearOwned('mic')?1.25:1):-(120+r.int(300)))*fm); fDelta+=x.fans; });
  game.followers=Math.max(100,game.followers+fDelta); commitRng(r);
  const multipliedTotal=applyScoreMultiplier(total,game.mode==='career');
  const tier=tierFor(multipliedTotal);
- const res={per,total:multipliedTotal,baseTotal:total,tier,exclusives,wrongs,corrects,newBadges:[],newCatch:[],achUnlocked:[],xpGain:0,creditGain:0,repDelta:0,levelUp:null,fDelta};
+ const res={per,total:multipliedTotal,baseTotal:total,tier,exclusives,wrongs,corrects,newBadges:[],newCatch:[],achUnlocked:[],xpGain:0,creditGain:0,repDelta:0,levelUp:null,fDelta,
+  plantedWire:game.sagas.flatMap(s=>(s.events||[]).filter(e=>e.o).map(e=>({sagaId:s.id,day:e.day}))),twists:game.sagas.filter(s=>s.tw).map(s=>({sagaId:s.id,day:s.tw,kind:s.twk||null})),
+  closedWithSecs:game.day===7?(game.ddEndsAt?Math.max(0,Math.ceil((game.ddEndsAt-Date.now())/1000)):Math.max(0,game.timer||0)):null};
  if(game.mode==='daily'){
   const k=todayKey(); const d=save.daily;
   if(!d.history[k]){ const y=new Date(); y.setDate(y.getDate()-1); const yk=y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
@@ -3104,7 +3214,7 @@ function resolveWindow(){
  }else if(game.mode==='career'){
   const c=C(); const before=levelInfo(c.xp); c.followers=game.followers;
   res.xpGain=Math.max(0,multipliedTotal)+20; c.xp+=res.xpGain;
-  const payBonus=exclusives*20+({1:120,2:60,3:30,4:10}[tier.n]||0); res.payBonus=payBonus; res.creditGain=Math.round((40+Math.max(0,multipliedTotal)*0.5+payBonus)*(c.rep>=70?1.25:1)); c.credits+=res.creditGain;
+  const PY=MATH.PAY; const payBonus=exclusives*PY.perEx+(PY.tier[tier.n]||0); res.payBonus=payBonus; res.creditGain=Math.round((PY.base+Math.max(0,multipliedTotal)*PY.perPt+payBonus)*(c.rep>=PY.repAt?PY.repMult:1)); c.credits+=res.creditGain;
   res.repDelta=corrects*3-wrongs*4; c.rep=Math.max(0,Math.min(100,c.rep+res.repDelta));
   c.windows++; c.exclusives+=exclusives; c.wrong+=wrongs; c.correct+=corrects; c.bestTier=Math.min(c.bestTier,tier.n);
   c.history.unshift({when:todayKey(),score:multipliedTotal,tier:tier.n,row:per.map(x=>x.emoji).join('')}); c.history=c.history.slice(0,20);
@@ -3851,6 +3961,47 @@ function fallbackCopy(tx,done){ const ta=document.createElement('textarea'); ta.
 
 
 /* @@LANE JS:math BEGIN (lane-owned; insert only between BEGIN and END) */
+/* math lane: UI data contract (UX_SPEC §10). Pure reads of game state; never reveal hidden truth (s.truth/s.pre/s.tw before it lands). */
+function srcRel(key,day){ const src=SOURCES[key]; if(!src) return 0; return relAdj(src.rel,key); } // no clarity curve in this model: day-independent
+function srcOpenDay(key){ return srcFrom(key); }
+function whatOpensTomorrow(day){ day=day==null?(game?game.day:1):day; if(day>=7) return []; return Object.keys(SOURCES).filter(k=>srcFrom(k)===day+1); }
+function sourceState(sagaId,key){
+ const s=game&&game.sagas&&game.sagas[sagaId], src=SOURCES[key]; if(!s||!src) return null;
+ const day=game.day, rel=srcRel(key,day), bars=barsOf(rel), opensDay=srcFrom(key), cost=src.cost||1;
+ const o={state:'open',opensDay,bars,rel,sharper:false,openedToday:day>1&&opensDay===day,atMax:false,cost,reasonKey:null,gearKey:null,clue:null,reopened:false,short:game.actions<cost};
+ const fresh=[...s.clues].reverse().find(c=>c.source===key&&!clueStale(s,c)); const old=[...s.clues].reverse().find(c=>c.source===key&&clueStale(s,c));
+ if(isCareer()&&src.lock&&!C().equip.includes(src.lock)){ o.state='gear'; o.gearKey=src.lock; o.reasonKey='math.reason.gear'; return o; }
+ if(!srcOpen(key)){ o.state='later'; o.reasonKey='math.reason.'+key; return o; }
+ if(fresh){ o.state='asked'; o.clue=fresh; o.reasonKey='math.reason.asked'; return o; }
+ if(old){ o.reopened=true; o.clue=old; }
+ if(o.short){ o.state='short'; o.reasonKey='math.reason.short'; return o; }
+ if(old){ o.state='reopened'; o.reasonKey='math.reason.reopened'; }
+ return o;
+}
+function rivalPostsOf(sagaId,day){ const s=game.sagas[sagaId]; day=day==null?game.day:day; return (s.rivalPosts||[]).filter(rp=>rp.day<=day).map(rp=>({rival:rp.rival,out:rp.claim,day:rp.day,bars:rp.bars||barsOf((RIVALS.find(r=>r.key===rp.rival)||{}).rel||.3),outdated:!!(s.tw&&day>=s.tw&&rp.day<s.tw)})); }
+function rivalsPostedOn(sagaId,all){ const s=game.sagas[sagaId]; if(!s) return 0; const era=(s.tw&&game.day>=s.tw)?s.tw:0; return (s.rivalPosts||[]).filter(rp=>rp.day<=game.day&&(all||rp.day>=era)).length; }
+function exclusiveOpen(sagaId){ return rivalsPostedOn(sagaId)===0; }
+/* previewPoints: what posting (outcome, conf) on this player TODAY scores. Includes early bonus, exclusive (if no rival has posted in
+   the current era), twist-tracker bonus, U-turn halving / free post-twist update, player type and the career follower multiplier.
+   Not included: the Lucky trench coat (halves your first wrong call at resolve; order-dependent). */
+function previewPoints(sagaId,outcome,conf){
+ const s=game.sagas[sagaId]; if(!s||!PTS[conf]) return {win:0,lose:0,early:0,exclusive:0,twist:0,base:0};
+ const mult=ptype(s.player).pts*(game.mode==='career'?getPlayerType(C().followers||1200).mult:1); const R=v=>Math.round(v*mult);
+ const re=!!s.uturns||!!s.call, twu=s.call?twistedSinceCall(s):!!s.twUturn; const base=PTS[conf][0];
+ const twist=(s.tw&&game.day>=s.tw&&MATH.TW_BONUS)?MATH.TW_BONUS:0;
+ let win, lose=PTS[conf][1], early=0, ex=0;
+ if(re){ win=base*(twu?MATH.TW_UT_FRAC:MATH.UT_FRAC)+twist; if(!twu) lose-=MATH.UT_WRONG; }
+ else { early=(7-game.day)*MATH.EARLY; ex=exclusiveOpen(sagaId)?MATH.EXCL+(gearOwned('tick')?MATH.TICK:0):0; win=base+early+ex+twist; }
+ return {win:R(win),lose:R(lose),early:R(early),exclusive:R(ex),twist:R(twist),base:R(re?base*(twu?MATH.TW_UT_FRAC:MATH.UT_FRAC):base),uturn:re,free:re&&twu};
+}
+function twistsSeen(){ return game?game.sagas.filter(s=>twistSeen(s)).length:0; } // HUD "🌀 Twists N/2"
+function twistsTotal(){ return game?Math.min(MATH.TWISTS,game.sagas.filter(s=>s.tw).length):0; }
+/* one-line effect per gear with before→after numbers (i18n key + vars), for Career › Shop */
+function gearEffect(key){ const s=k=>Math.round(SOURCES[k].rel*100), g=k=>{ const e=Object.keys(GEAR_REL).find(x=>GEAR_REL[x][0]===key); return e; };
+ const e=g(); if(e) return {k:'math.gear.rel',v:{src:t('src.'+e+'.name'),a:s(e),b:Math.round((SOURCES[e].rel+GEAR_REL[e][1])*100)}};
+ if(key==='wifi') return {k:'math.gear.wifi',v:{a:MATH.CONTACTS,b:MATH.CONTACTS+1}}; if(key==='phone2') return {k:'math.gear.phone2',v:{a:MATH.CONTACTS,b:MATH.CONTACTS+1}};
+ if(key==='bank') return {k:'math.gear.bank',v:{a:MATH.DD_CONTACTS,b:MATH.DD_CONTACTS+1}}; if(key==='radar') return {k:'math.gear.radar',v:{a:0,b:Math.round(MATH.WARN_GEAR.radar*100)}};
+ if(key==='laptop') return {k:'math.gear.laptop',v:{a:1,b:MATH.LEAD_DAYS}}; return {k:'equip.'+key+'.desc',v:{}}; }
 /* @@LANE JS:math END */
 /* ─ */
 /* @@LANE JS:home BEGIN (lane-owned; insert only between BEGIN and END) */
