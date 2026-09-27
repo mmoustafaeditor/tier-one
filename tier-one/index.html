@@ -651,6 +651,7 @@ body.has-consent .home{ padding-bottom:190px; }
 </script>
 <div class="app" id="app"></div>
 <div id="hudRoot"></div>
+<div id="tabRoot"></div>
 <div id="modalRoot"></div>
 <div id="consentRoot"></div>
 <div class="toast" id="toast"></div>
@@ -2785,6 +2786,9 @@ let screen='home', careerTab='profile', timerHandle=null, currentSaga=null, draf
 const LANE_ACTS={}, SCREENS={}, HOOKS={};
 function onHook(k,f){ (HOOKS[k]=HOOKS[k]||[]).push(f); }
 function fireHook(k,...a){ (HOOKS[k]||[]).forEach(f=>{ try{ f(...a); }catch(err){ console.error('hook '+k,err); } }); }
+/* Back (Android hardware Back calls window.__tierBack(); returns 'exit' to close the app). Lanes may push handlers into BACK that return true when they handled it. */
+const BACK=[];
+window.__tierBack=function(){ try{ for(let i=BACK.length-1;i>=0;i--){ if(BACK[i]()) return 'stay'; } if(document.querySelector('.big')) return 'stay'; if($('modalRoot').innerHTML){ closeModal(); return 'stay'; } if(screen==='home') return 'exit'; if(screen==='window'){ if(game&&game.day===7&&!game.result) return 'stay'; stopTimer(); go('home'); return 'stay'; } if(screen==='room'){ go('online'); return 'stay'; } if(screen==='results'&&game&&game.archived){ go('archive'); return 'stay'; } go('home'); return 'stay'; }catch(e){ return 'exit'; } };
 function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(el._h); el._h=setTimeout(()=>el.classList.remove('show'),1800); }
 function go(s){ if(s!=='room') stopRoomPoll(); if(s==='home'||s==='online') roomCtx=null; screen=s; closeModal(); render(); window.scrollTo(0,0); animateEnter(); }
 function sheetHead(title){ return `<div class="sheethead"><button class="back" data-act="closeSheet"><span class="chev">‹</span>${esc(t('sheet.back'))}</button><span class="ttl">${esc(title||'')}</span></div>`; }
