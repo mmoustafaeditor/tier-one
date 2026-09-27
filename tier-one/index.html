@@ -38,7 +38,7 @@
 :root{
  /* ---- palette: Deadline Night (default, dark) ---- */
  --bg:#070B16; --bg2:#0B1224; --panel:#0F1729; --panel2:#16213A; --panel3:#1F2C4A; --line:#22304F; --line2:#31426A;
- --text:#F3F5FA; --muted:#98A3BF; --dim:#76819F;
+ --text:#F3F5FA; --muted:#98A3BF; --dim:#7D88A6; /* dim: AA on --panel2 too (4.5:1), still clearly below --muted */
  --accent:#FFD23F; --accent-ink:#1A1400; --accent-text:#FFD23F;
  --blue:#3D8BFF; --red:#FF3D55; --green:#27E08A; --gold:#FFB020; --purple:#A98BFF; --cyan:#2FD6F0; --stamp:#FF3D55;
  --display:"Barlow Condensed","sans-serif-condensed","Roboto Condensed","Arial Narrow",Impact,sans-serif;
@@ -52,7 +52,9 @@
  /* ---- semantic: results, events ---- */
  --ok:#27E08A; --bad:#FF4D63; --ex:#FFC933; --ex-ink:#241800;
  --twist:#2FD6F0; --news:#FF3D55; --sharp:var(--accent); --info:#3D8BFF; --you:#3D8BFF;
- --you-fill:color-mix(in srgb,var(--you) 70%,#000); /* --you as a fill under white text (AA) */
+ --news-fill:#C8102E; /* --news as a fill under white TEXT that carries information (AA 5.9:1); --news stays for dots, badges, NEW tags */
+ --you-fill:color-mix(in srgb,var(--you) 70%,#000); /* --you as a fill under white text (AA); literal fallback for old engines below */
+ --stars:#FFB020;
  --clock-bg:#FFFFFF; --clock-ink:#D0142A; --clock-alarm:#FF3D55;
  /* ---- achievements / tiers ---- */
  --r-common:#A9B6D3; --r-rare:#4C9BFF; --r-epic:#B07BFF; --r-legend:#FFC933; --r-shame:#FF5A6E;
@@ -81,7 +83,8 @@
    Light palettes also darken the raw --green/--red/--gold/--purple/--stamp: older markup still uses them as text. */
 :root[data-skin="stadium"]{ --bg:#05231A; --bg2:#072C21; --panel:#0A3427; --panel2:#0E4131; --panel3:#14503D; --line:#1A5C46; --line2:#23735A; --text:#EFFFF6; --muted:#A3D2BD; --dim:#86B8A2;
  --accent:#E8FF5A; --accent-ink:#0E1800; --accent-text:#E8FF5A; --cta-glow:0 0 0 1px rgba(232,255,90,.35),0 12px 30px -12px rgba(232,255,90,.5);
- --o-done:#6FF5C8; --ok:#6FF5C8; --o-off:#FF8795; --bad:#FF8795; --o-fake:#C4A8FF; --o-hijack:#FFAE5C; --ex:#FFD23F; --green:#6FF5C8; --stamp:#FF8795; }
+ --o-done:#6FF5C8; --ok:#6FF5C8; --o-off:#FF8795; --bad:#FF8795; --o-fake:#C4A8FF; --o-hijack:#FFAE5C; --ex:#FFD23F; --green:#6FF5C8; --red:#FF8795; --stamp:#FF8795;
+ --info:#6FA8FF; --t4:#A8B4D0; --t5:#95A1BE; --tclown:#FF8795; }
 :root[data-skin="neon"]{ --bg:#0D0724; --bg2:#120A31; --panel:#170D3A; --panel2:#21134F; --panel3:#2C1B66; --line:#382480; --line2:#4A33A0; --text:#F6F2FF; --muted:#B7ABE3; --dim:#9486C9;
  --accent:#33E6FF; --accent-ink:#021219; --accent-text:#33E6FF; --cta-glow:0 0 0 1px rgba(51,230,255,.4),0 12px 34px -10px rgba(51,230,255,.6);
  --o-done:#9CFF57; --ok:#9CFF57; --o-off:#FF5A5F; --bad:#FF5A5F; --o-fake:#C9A8FF; --twist:#FF6AD5; --you:#B36BFF; --info:#B36BFF; --green:#9CFF57; --purple:#C9A8FF; }
@@ -92,7 +95,7 @@
  --twist:#076A88; --news:#C8102E; --you:#1D5FD6; --info:#1D5FD6; --blue:#1D5FD6;
  --green:#07703C; --red:#C8102E; --gold:#8A5A00; --purple:#6E3FD1; --stamp:#B50C28;
  --r-common:#5D6B8A; --r-rare:#1D5FD6; --r-epic:#6E3FD1; --r-legend:#8A5A00; --r-shame:#C8102E;
- --t1:#B8860B; --t2:#6B7894; --t3:#9C5B22; --t4:#5D6B8A; --t5:#6B7280;
+ --t1:#B8860B; --t2:#6B7894; --t3:#9C5B22; --t4:#5D6B8A; --t5:#6B7280; --tclown:#C8102E; --news-fill:var(--news); --stars:#A55F00;
  --e1:0 1px 0 #fff inset,0 10px 24px -14px rgba(120,30,20,.3); --e2:0 1px 0 #fff inset,0 16px 36px -16px rgba(120,30,20,.35); --e3:0 -16px 50px rgba(80,20,10,.25); --scrim:rgba(40,10,6,.45); color-scheme:light; }
 :root[data-skin="broadsheet"]{ --bg:#F1EBDD; --bg2:#F6F1E6; --panel:#FBF8F0; --panel2:#EFE7D4; --panel3:#E4D9C0; --line:#D8CCB0; --line2:#BFAE86; --text:#1E1A12; --muted:#5E5542; --dim:#6A604F;
  --accent:#1E1A12; --accent-ink:#F6F1E6; --accent-text:#1E1A12; --cta-glow:0 10px 26px -12px rgba(30,26,18,.5); --sharp:#9A6200;
@@ -100,13 +103,13 @@
  --twist:#1F6573; --news:#B3261E; --you:#2B4C8C; --info:#2B4C8C; --blue:#2B4C8C;
  --green:#22683B; --red:#B3261E; --gold:#7F5C12; --purple:#5B3E96; --stamp:#B3261E;
  --r-common:#5E5542; --r-rare:#2B4C8C; --r-epic:#5B3E96; --r-legend:#7F5C12; --r-shame:#B3261E;
- --t1:#9A6200; --t2:#6B6452; --t3:#8A4F1F; --t4:#5E5542; --t5:#6A604F; --tclown:#B3261E;
+ --t1:#9A6200; --t2:#6B6452; --t3:#8A4F1F; --t4:#5E5542; --t5:#6A604F; --tclown:#B3261E; --news-fill:var(--news); --stars:#A55F00;
  --e1:0 1px 0 #fff inset,0 10px 24px -16px rgba(60,45,20,.3); --e2:0 1px 0 #fff inset,0 16px 36px -16px rgba(60,45,20,.35); --e3:0 -16px 50px rgba(60,45,20,.22); --scrim:rgba(30,26,18,.45); color-scheme:light; }
 /* "Daylight": the light theme of the house skin. Theme = Light, or Theme = Auto (no data-theme / "auto") + a light OS. */
 :root[data-skin="default"][data-theme="light"]{ --cta-text:#7F5D00; --bg:#F3F5FA; --bg2:#FFFFFF; --panel:#FFFFFF; --panel2:#EEF1F7; --panel3:#E1E6F0; --line:#DCE2EE; --line2:#BCC6DA; --text:#0B1224; --muted:#4F5B78; --dim:#5F6A87;
  --accent-text:#7F5D00; --sharp:#B8860B;
  --o-done:#07703C; --ok:#07703C; --o-hijack:#9A4400; --o-off:#B50C28; --bad:#B50C28; --o-fake:#6E3FD1; --o-ink:#FFFFFF; --ex:#8A5A00; --ex-ink:#FFFFFF;
- --twist:#076A88; --news:#D81E3A; --you:#1F6FEB; --info:#1F6FEB; --blue:#1F6FEB;
+ --twist:#076A88; --news:#D81E3A; --you:#1F6FEB; --info:#1A5FD0; --blue:#1F6FEB; --news-fill:var(--news); --stars:#A55F00;
  --green:#07703C; --red:#C8102E; --gold:#8A5A00; --purple:#6E3FD1; --stamp:#B50C28;
  --r-common:#5D6B8A; --r-rare:#1F6FEB; --r-epic:#6E3FD1; --r-legend:#8A5A00; --r-shame:#C8102E;
  --t1:#B8860B; --t2:#6B7894; --t3:#9C5B22; --t4:#5D6B8A; --t5:#6B7280; --tclown:#C8102E;
@@ -116,7 +119,7 @@
 :root[data-skin="default"]:is(:not([data-theme]),[data-theme="auto"]){ --cta-text:#7F5D00; --bg:#F3F5FA; --bg2:#FFFFFF; --panel:#FFFFFF; --panel2:#EEF1F7; --panel3:#E1E6F0; --line:#DCE2EE; --line2:#BCC6DA; --text:#0B1224; --muted:#4F5B78; --dim:#5F6A87;
  --accent-text:#7F5D00; --sharp:#B8860B;
  --o-done:#07703C; --ok:#07703C; --o-hijack:#9A4400; --o-off:#B50C28; --bad:#B50C28; --o-fake:#6E3FD1; --o-ink:#FFFFFF; --ex:#8A5A00; --ex-ink:#FFFFFF;
- --twist:#076A88; --news:#D81E3A; --you:#1F6FEB; --info:#1F6FEB; --blue:#1F6FEB;
+ --twist:#076A88; --news:#D81E3A; --you:#1F6FEB; --info:#1A5FD0; --blue:#1F6FEB; --news-fill:var(--news); --stars:#A55F00;
  --green:#07703C; --red:#C8102E; --gold:#8A5A00; --purple:#6E3FD1; --stamp:#B50C28;
  --r-common:#5D6B8A; --r-rare:#1F6FEB; --r-epic:#6E3FD1; --r-legend:#8A5A00; --r-shame:#C8102E;
  --t1:#B8860B; --t2:#6B7894; --t3:#9C5B22; --t4:#5D6B8A; --t5:#6B7280; --tclown:#C8102E;
@@ -128,11 +131,12 @@
  --accent:#FF3D55; --accent-ink:#FFFFFF; --accent-text:#FFC2CB;
  --cta:#FFFFFF; --cta-ink:#C8102E; --cta-glow:0 0 0 1px rgba(255,255,255,.4),0 14px 34px -10px rgba(255,61,85,.9); --sharp:#FFFFFF;
  --o-done:#3BEA9B; --ok:#3BEA9B; --o-hijack:#FFA24D; --o-off:#FF7A8A; --bad:#FF7A8A; --o-fake:#C3A6FF; --o-ink:#14040A; --ex:#FFC933; --ex-ink:#241800;
- --twist:#5CE1F5; --news:#FF3D55; --you:#6FA8FF; --info:#6FA8FF; --blue:#6FA8FF;
+ --twist:#5CE1F5; --news:#FF3D55; --news-fill:#C8102E; --you:#6FA8FF; --info:#6FA8FF; --blue:#6FA8FF; --stars:#FFC933;
  --green:#3BEA9B; --red:#FF3D55; --gold:#FFC933; --purple:#C3A6FF; --stamp:#FF7A8A;
  --r-common:#A9B6D3; --r-rare:#6FA8FF; --r-epic:#C3A6FF; --r-legend:#FFC933; --r-shame:#FF7A8A;
  --t1:#FFD23F; --t2:#C9D3E6; --t3:#D8975A; --t4:#8390AE; --t5:#66728F; --tclown:#FF3D55;
  --e1:0 1px 0 rgba(255,255,255,.05) inset,0 10px 24px -16px rgba(0,0,0,.85); --e2:0 18px 40px -18px rgba(0,0,0,.9); --e3:0 -20px 60px rgba(0,0,0,.6); --scrim:rgba(10,2,5,.72); color-scheme:dark; }
+@supports not (color:color-mix(in srgb,red 50%,blue)){ :root,:root[data-skin],:root[data-skin][data-dd="1"]{ --you-fill:#1F4E9E; } }
 html[lang="ar"]{ --display:Cairo,Tajawal,"Segoe UI",sans-serif; --body:Tajawal,Cairo,"Segoe UI",sans-serif; --ital:normal; --caps:none; --track:0; }
 [dir="rtl"]{ --gdir:270deg; }
 
@@ -148,7 +152,7 @@ body::before{ content:""; position:fixed; inset:0; z-index:-1; pointer-events:no
 :root[data-skin="neon"] body::before{ background:radial-gradient(70% 40% at 100% 0%,rgba(51,230,255,.16),transparent 70%),radial-gradient(70% 40% at 0% 10%,rgba(179,107,255,.2),transparent 70%),linear-gradient(180deg,var(--bg2),var(--bg) 60%); }
 :root[data-skin="tabloid"] body::before,:root[data-skin="broadsheet"] body::before,:root[data-skin="default"][data-theme="light"] body::before{ background:var(--bg); }
 @media (prefers-color-scheme:light){ :root[data-skin="default"]:is(:not([data-theme]),[data-theme="auto"]) body::before{ background:var(--bg); } }
-:root[data-dd="1"] body::before{ background:radial-gradient(80% 40% at 0% 0%,rgba(255,40,70,.30),transparent 70%),radial-gradient(70% 40% at 100% 0%,rgba(255,90,40,.16),transparent 70%),linear-gradient(180deg,#240810,#12050A 65%); }
+:root[data-skin][data-dd="1"] body::before,:root[data-dd="1"]:not([data-skin]) body::before{ background:radial-gradient(80% 40% at 0% 0%,rgba(255,40,70,.30),transparent 70%),radial-gradient(70% 40% at 100% 0%,rgba(255,90,40,.16),transparent 70%),linear-gradient(180deg,#240810,#12050A 65%); }
 /* DD edge vignette: opacity-only loop on a pseudo layer (never box-shadow / filter loops); static unless html.dd-alarm */
 :root[data-dd="1"] body::after{ content:""; position:fixed; inset:0; z-index:90; pointer-events:none; box-shadow:inset 0 0 0 2px rgba(255,61,85,.55),inset 0 0 60px rgba(255,61,85,.28); opacity:.55; }
 :root[data-dd="1"].dd-alarm body::after{ animation:vign 1s ease-in-out infinite; }
@@ -197,6 +201,8 @@ html[lang="ar"] .over{ letter-spacing:0; }
 /* ---------------- wordmark (always LTR, always italic caps: it is a logo) ---------------- */
 .wordmark{ display:inline-flex; align-items:center; gap:6px; margin:0; font:800 italic 26px/1 "Barlow Condensed",Impact,sans-serif; text-transform:uppercase; letter-spacing:-.01em; direction:ltr; }
 .wordmark b{ background:var(--accent); color:var(--accent-ink); padding:3px 10px 1px 8px; clip-path:polygon(8% 0,100% 0,92% 100%,0 100%); font-weight:800; }
+/* a text label inside the old top-bar logo (e.g. the Career tag) is body text: no italic/caps (Arabic), its own direction. The logo's own <span>TIER</span> has no class and stays the logo. */
+.wordmark > span.muted{ font-style:normal; text-transform:none; letter-spacing:0; unicode-bidi:plaintext; }
 .wordmark.lg{ font-size:clamp(52px,15vw,62px); gap:10px; line-height:.82; }
 .wordmark.lg b{ padding:8px 18px 3px 14px; }
 
@@ -241,10 +247,7 @@ html[lang="ar"] .tag{ letter-spacing:0; font-size:11.5px; }
 .tag.dd{ background:var(--accent); color:var(--accent-ink); }
 .tag.star{ background:linear-gradient(90deg,#DCE6FF,#9FB4E6); color:#101B33; }
 .tag.super{ background:linear-gradient(90deg,#FFD23F,#FFB020); color:#241800; }
-.stars{ font-size:12px; letter-spacing:-1px; color:#FFB020; white-space:nowrap; }
-:root[data-skin="tabloid"] .stars,:root[data-skin="broadsheet"] .stars,:root[data-skin="default"][data-theme="light"] .stars{ color:#A55F00; }
-@media (prefers-color-scheme:light){ :root[data-skin="default"]:is(:not([data-theme]),[data-theme="auto"]) .stars{ color:#A55F00; } }
-:root[data-dd="1"] .stars{ color:#FFC933; }
+.stars{ font-size:12px; letter-spacing:-1px; color:var(--stars); white-space:nowrap; }
 
 /* outcome chip: glyph + word + colour, never colour alone */
 .oc{ --c:var(--muted); display:inline-flex; align-items:center; gap:5px; height:24px; padding:0 8px 0 6px; border-radius:var(--r-xs); background:color-mix(in srgb,var(--c) 16%,transparent); color:var(--c); font:800 11.5px/1 var(--body); letter-spacing:.05em; text-transform:var(--caps); white-space:nowrap; }
@@ -418,20 +421,22 @@ html[lang="ar"] .tmedal .tv small{ letter-spacing:0; font-size:14px; line-height
    career, rooms, overlays). Re-tokenised so today's screens stay coherent on every palette. Each screen lane ships
    its own CSS in its slot; once a screen's old markup is gone, the integrator can delete the matching rules here.
    ===================================================================== */
-.app:has(> .screen){ padding:0; }
-.app.tabs:has(> .screen){ padding:0 0 calc(var(--tabbar) + 8px + env(safe-area-inset-bottom,0px)); }
+.app:has(> .screen){ padding:0; } .app.legacy{ padding:0; } /* separate rules: an engine without :has() drops the whole selector list */
+.app.tabs:has(> .screen){ padding:0 0 calc(var(--tabbar) + 8px + env(safe-area-inset-bottom,0px)); } .app.tabs.legacy{ padding:0 0 calc(var(--tabbar) + 8px + env(safe-area-inset-bottom,0px)); }
 .screen{ padding:16px 16px 40px; }
 :where(.screen,.tutcard) p,:where(.modal) > p,:where(.modal .card) > p{ margin:0 0 10px; }
 .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px 16px 4px; }
 .topbar + .screen{ padding-top:8px; }
 @media (max-width:600px){ .screen{ padding-top:66px; } .topbar{ padding-top:66px; } }
-h1,h2,h3,.disp{ font-family:var(--display); font-weight:800; font-style:var(--ital); text-transform:var(--caps); letter-spacing:-.005em; line-height:.95; margin:0; }
-h1{ font-size:56px; } h2{ font-size:34px; } h3{ font-size:21px; letter-spacing:.01em; }
-html[lang="ar"] :is(h1,h2,h3,.disp){ line-height:1.25; letter-spacing:0; }
+/* old bare headings: scoped to the old containers (same specificity as before via :where) so they never leak into new screen markup */
+:where(.screen,.topbar,.modal,.tutcard) :is(h1,h2,h3),.disp{ font-family:var(--display); font-weight:800; font-style:var(--ital); text-transform:var(--caps); letter-spacing:-.005em; line-height:.95; margin:0; }
+:where(.screen,.topbar,.modal,.tutcard) h1{ font-size:56px; } :where(.screen,.topbar,.modal,.tutcard) h2{ font-size:34px; } :where(.screen,.topbar,.modal,.tutcard) h3{ font-size:21px; letter-spacing:.01em; }
+html[lang="ar"] :is(:where(.screen,.topbar,.modal,.tutcard) :is(h1,h2,h3),.disp){ line-height:1.25; letter-spacing:0; }
+@supports not selector(:where(*)){ h1,h2,h3{ font-family:var(--display); font-weight:800; font-style:var(--ital); text-transform:var(--caps); letter-spacing:-.005em; line-height:.95; margin:0; } h1{ font-size:56px; } h2{ font-size:34px; } h3{ font-size:21px; letter-spacing:.01em; } .tagline{ font-size:18px; line-height:1.35; color:var(--muted); margin-top:16px; max-width:30ch; } }
 .small{ font-size:13px; } .tiny{ font-size:12px; }
 .row{ display:flex; gap:8px; } .row > *{ flex:1; } .stack{ display:flex; flex-direction:column; gap:10px; }
 .divider{ height:1px; background:var(--line); margin:18px 0; }
-.btn.gold{ background:var(--accent); color:var(--accent-ink); border-color:transparent; }
+.btn.gold{ background:var(--cta); color:var(--cta-ink); border-color:transparent; }
 .btn.center{ justify-content:center; }
 .gamehead .iconbtn{ width:42px; height:42px; border:1px solid var(--line2); background:var(--panel2); font-size:17px; }
 .pill{ display:inline-flex; align-items:center; gap:5px; height:28px; padding:0 10px; border-radius:var(--r-pill); background:color-mix(in srgb,var(--panel3) 80%,transparent); color:var(--text); font-size:12.5px; font-weight:600; white-space:nowrap; }
@@ -449,13 +454,13 @@ html[lang="ar"] :is(h1,h2,h3,.disp){ line-height:1.25; letter-spacing:0; }
 /* ----- legacy HOME ----- */
 .homebar{ display:flex; justify-content:space-between; align-items:center; }
 .home .hero{ padding:22px 2px 16px; }
-.livebug{ display:inline-flex; align-items:center; gap:8px; height:28px; padding:0 11px 0 9px; border-radius:6px; background:var(--news); color:#fff; font:800 var(--ital) 14px/1 var(--display); letter-spacing:.08em; text-transform:var(--caps); }
+.livebug{ display:inline-flex; align-items:center; gap:8px; height:28px; padding:0 11px 0 9px; border-radius:6px; background:var(--news-fill); color:#fff; font:800 var(--ital) 14px/1 var(--display); letter-spacing:.08em; text-transform:var(--caps); }
 html[lang="ar"] .livebug{ letter-spacing:0; }
 .livebug i{ width:8px; height:8px; border-radius:50%; background:#fff; animation:blip 1.2s infinite; }
 @keyframes blip{ 50%{ opacity:.2; } }
 .logo{ display:flex; align-items:flex-end; gap:10px; margin-top:14px; font:800 italic clamp(54px,17vw,88px)/.8 "Barlow Condensed",Impact,sans-serif; text-transform:uppercase; letter-spacing:-.02em; direction:ltr; }
 .logo span,.logo b{ white-space:nowrap; } .logo b{ font-weight:800; background:var(--accent); color:var(--accent-ink); padding:10px 22px 4px 16px; clip-path:polygon(7% 0,100% 0,93% 100%,0 100%); }
-.tagline{ font-size:18px; line-height:1.35; color:var(--muted); margin-top:16px; max-width:30ch; }
+:where(.screen) .tagline{ font-size:18px; line-height:1.35; color:var(--muted); margin-top:16px; max-width:30ch; }
 .nstack{ position:relative; height:96px; margin:4px 0 18px; }
 .notif{ position:absolute; inset-inline:0; top:0; display:flex; gap:12px; align-items:center; min-height:68px; padding:12px 14px; border-radius:18px; background:var(--panel2); border:1px solid var(--line2); box-shadow:var(--e2); transition:transform .55s var(--ease-out),opacity .55s; transform-origin:50% 0; }
 .notif .ic{ width:40px; height:40px; border-radius:12px; background:var(--panel3); display:grid; place-items:center; font-size:22px; flex-shrink:0; }
@@ -502,7 +507,7 @@ html[lang="ar"] .tile .t-title{ line-height:1.25; }
 .archrow .an{ font:800 var(--ital) 22px/1 var(--display); color:var(--muted); min-width:38px; }
 .archrow .ai{ flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; } .archrow .ai b{ font-size:14px; } .archrow .ar{ font-size:15px; letter-spacing:1px; white-space:nowrap; overflow:hidden; }
 .archrow .at{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; font-size:12px; color:var(--muted); } .archrow .chev{ color:var(--muted); font-size:22px; }
-.tierchip{ font:800 var(--ital) 13px/1 var(--display); text-transform:var(--caps); padding:4px 7px; border-radius:6px; background:var(--panel3); color:var(--text); white-space:nowrap; } .tierchip.t1{ background:var(--accent); color:var(--accent-ink); } .tierchip.clown{ background:var(--news); color:#fff; }
+.tierchip{ font:800 var(--ital) 13px/1 var(--display); text-transform:var(--caps); padding:4px 7px; border-radius:6px; background:var(--panel3); color:var(--text); white-space:nowrap; } .tierchip.t1{ background:var(--accent); color:var(--accent-ink); } .tierchip.clown{ background:var(--news-fill); color:#fff; }
 .studiolink{ display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 12px; border-radius:var(--r-pill); border:1px solid var(--line); background:var(--panel); color:var(--text); font:700 13px var(--body); text-decoration:none; }
 .screen > .foot{ text-align:center; color:var(--dim); font-size:12px; padding:22px 12px 0; }
 
@@ -517,12 +522,14 @@ html[lang="ar"] .tile .t-title{ line-height:1.25; }
 .daytrack i.dd{ background:color-mix(in srgb,var(--red) 45%,var(--panel3)); }
 .daytrack i.dd.now{ background:#FF3D55; box-shadow:0 0 14px #FF3D55; }
 .ticker{ margin:0 -16px 14px; overflow:hidden; white-space:nowrap; background:var(--accent); color:var(--accent-ink); font:700 13px var(--body); padding:8px 0; }
-.ticker.dd{ background:var(--news); color:#fff; }
+.ticker.dd{ background:var(--news-fill); color:#fff; }
 .ticker .track{ display:inline-block; padding-inline-start:100%; animation:ticker 30s linear infinite; }
 [dir="rtl"] .ticker .track{ animation-name:tickerRtl; }
 .ticker b{ background:var(--accent-ink); color:var(--accent); padding:2px 7px; border-radius:4px; margin-inline-end:8px; font:800 var(--ital) 13px var(--display); letter-spacing:.05em; }
 .ticker.dd b{ background:#fff; color:#C8102E; }
 @keyframes ticker{ to{ transform:translateX(-100%); } } @keyframes tickerRtl{ to{ transform:translateX(100%); } }
+html.rm .ticker .track{ animation:none; display:block; padding:0 16px; overflow:hidden; text-overflow:ellipsis; }
+@media (prefers-reduced-motion:reduce){ .ticker .track{ animation:none; display:block; padding:0 16px; overflow:hidden; text-overflow:ellipsis; } }
 .saga{ display:flex; align-items:center; gap:12px; width:100%; text-align:start; padding:12px; border-radius:18px; border:1px solid var(--line); background:var(--panel); color:var(--text); cursor:pointer; box-shadow:var(--e1); transition:transform .18s var(--ease-spring); }
 .saga:active{ transform:scale(.975); }
 .saga .who{ flex:1; min-width:0; }
@@ -657,6 +664,7 @@ html[lang="ar"] .state{ letter-spacing:0; }
 .coach:has(> .tx) .ic{ font-size:22px; } .coach:has(> .tx) .tx{ flex:1; font-size:14px; font-weight:700; line-height:1.35; }
 .coach:has(> .tx) button{ border:1.5px solid currentColor; background:transparent; color:inherit; border-radius:var(--r-pill); padding:7px 13px; font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap; min-height:36px; }
 @keyframes coachin{ from{ transform:translateY(-8px); opacity:0;} to{ transform:none; opacity:1;} }
+@supports not selector(:has(*)){ .coach{ display:flex; gap:10px; align-items:center; background:var(--accent); color:var(--accent-ink); border-radius:16px; padding:12px 14px; margin:0 0 12px; } .coach .ic{ font-size:22px; } .coach .tx{ flex:1; font-size:14px; font-weight:700; line-height:1.35; } .coach button{ border:1.5px solid currentColor; background:transparent; color:inherit; border-radius:999px; padding:7px 13px; font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap; min-height:36px; } }
 .modal .coach{ margin:8px 0; }
 .fld{ display:flex; flex-direction:column; gap:6px; margin:12px 0; } .fld > span{ font:700 13px var(--body); color:var(--muted); }
 .inp{ width:100%; height:48px; padding:0 14px; border-radius:12px; border:1px solid var(--line2); background:var(--panel2); color:var(--text); font:600 16px var(--body); outline:none; }
@@ -690,7 +698,7 @@ html[lang="ar"] .state{ letter-spacing:0; }
 .scoophint{ margin-top:10px; padding:10px 12px; border-radius:12px; font-size:12.5px; font-weight:600; background:color-mix(in srgb,var(--ex) 12%,var(--panel)); border:1px solid color-mix(in srgb,var(--ex) 45%,var(--line)); }
 /* rival news: NEW chips + per-player BREAKING banner */
 .breaking{ margin:12px 0 4px; padding:10px 12px 9px; border-radius:14px; background:color-mix(in srgb,var(--news) 12%,var(--panel2)); border:1px solid color-mix(in srgb,var(--news) 55%,var(--line)); animation:brk .45s var(--ease-out) both; }
-.breaking .bl{ display:inline-block; padding:3px 8px; border-radius:6px; background:var(--news); color:#fff; font:800 12px/1.2 var(--body); letter-spacing:.04em; text-transform:var(--caps); }
+.breaking .bl{ display:inline-block; padding:3px 8px; border-radius:6px; background:var(--news-fill); color:#fff; font:800 12px/1.2 var(--body); letter-spacing:.04em; text-transform:var(--caps); }
 html[lang="ar"] .breaking .bl{ letter-spacing:0; }
 .breaking .bi{ margin-top:8px; font:500 13px/1.4 var(--body); color:var(--muted); } .breaking .bi b{ color:var(--text); } .breaking .bi div{ color:var(--text); margin-top:2px; }
 .breaking .bs{ margin-top:8px; font:500 11.5px/1.35 var(--body); color:var(--muted); }
@@ -792,6 +800,8 @@ html[lang="ar"] .stinger .st-big{ line-height:1.35; letter-spacing:0; }
 .stinger.out .st-band{ animation:stWipeOut .45s var(--ease-io) forwards; }
 .stinger.out .st-sub,.stinger.out .st-track{ animation:fadeUpOut .35s ease-in forwards; }
 .stinger.out .st-scrim,.stinger.out .st-rays{ animation:stScrimOut .5s ease-in .1s forwards; }
+.stinger.pass{ pointer-events:none; cursor:auto; } /* splash() without {then}/{skip}: never eats a tap (old call sites) */
+.stinger.red.out .st-band,.stinger.red.out .st-scrim,.stinger.red.out .st-rays{ animation-duration:.24s; animation-delay:0s; } .stinger.red.out .st-sub,.stinger.red.out .st-track{ animation-duration:.2s; } /* DD: gone in 250 ms */
 @keyframes stScrim{ from{ opacity:0; } }
 @keyframes stScrimOut{ to{ opacity:0; } }
 @keyframes stRays{ from{ transform:rotate(0) scale(.6); opacity:0; } 30%{ opacity:1; } to{ transform:rotate(40deg) scale(1); opacity:1; } }
@@ -897,8 +907,8 @@ body.has-consent .home{ padding-bottom:190px; }
    html.lowfx = low effects (≤4 CPU cores or the user's choice): no backdrop blur, no rays/sheen, fewer particles.
    html.paused = the tab is hidden: every loop stops.
    ===================================================================== */
-@media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important; scroll-behavior:auto !important; } }
-html.rm *,html.rm *::before,html.rm *::after{ animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important; scroll-behavior:auto !important; }
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation-duration:1ms !important; animation-delay:0s !important; animation-iteration-count:1 !important; transition-duration:1ms !important; transition-delay:0s !important; scroll-behavior:auto !important; } }
+html.rm *,html.rm *::before,html.rm *::after{ animation-duration:1ms !important; animation-delay:0s !important; animation-iteration-count:1 !important; transition-duration:1ms !important; transition-delay:0s !important; scroll-behavior:auto !important; }
 html.rm .stinger .st-band{ clip-path:none; }
 html.rm .shake{ animation:none !important; }
 html.rm .stinger .st-rays,html.rm .hero-tier::before,html.rm #confetti{ display:none; }
@@ -908,6 +918,17 @@ html.lowfx :is(.appbar,.tabbar){ backdrop-filter:none; -webkit-backdrop-filter:n
 html.lowfx #boot .bstart{ backdrop-filter:none; -webkit-backdrop-filter:none; }
 html.lowfx .stinger .st-rays,html.lowfx .hero-tier::before,html.lowfx .medal.legend .hx::before{ display:none; }
 html.lowfx .kit{ filter:none; }
+/* Settings › Larger text (spec §5.17/§8: root +12%). Sizes are px, so this scales the page, not html font-size. Set by fxSync() from save.settings.largeText. */
+html.lt body{ zoom:1.12; }
+/* Old engines without color-mix() (WebView < Chrome 111): the tints below would resolve to transparent. Plain fallbacks keep scales and fills readable. */
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+ .sig i{ background:rgba(128,140,170,.35); }
+ .oc{ background:transparent; box-shadow:inset 0 0 0 1px currentColor; } .oc.solid{ box-shadow:none; } .oc.ghost{ box-shadow:inset 0 0 0 1.5px currentColor; }
+ .tag.twist,.tag.sharp{ background:transparent; box-shadow:inset 0 0 0 1px currentColor; }
+ .appbar,.tabbar{ background:var(--bg); }
+ .days i.past,.daytrack i.past{ background:var(--muted); } .days i.dd,.daytrack i.dd{ background:var(--line2); }
+ .medal .hx{ background:var(--rc); } .medal .hx::after{ background:var(--panel); } .tmedal .hx{ background:var(--tc); } .tmedal .hx::after{ background:var(--panel2); } .tmedal .tv small{ color:var(--text); }
+}
 /* @@LANE CSS:ds BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE CSS:ds END */
 /* ─ */
@@ -2735,9 +2756,9 @@ deepMerge(I18N,{
 /* @@LANE I18N:ds BEGIN (lane-owned; insert only between BEGIN and END) */
 /* ds lane: chip words, trust/rarity labels for the shared helpers (glyph/ocHtml/sigHtml/medalHtml/tmedalHtml) */
 deepMerge(I18N,{
- en:{ds:{oc:{DONE:'Done',HIJACK:'Hijack',OFF:'Off',FAKE:'Fake'},trust:{1:'Trust low',2:'Trust medium',3:'Trust high',up:', sharper today'},rar:{common:'Common',rare:'Rare',epic:'Epic',legend:'Legendary',shame:'Shame'},tier:'Tier',clown:'Clown',locked:'Locked'}},
- es:{ds:{oc:{DONE:'Hecho',HIJACK:'Robo',OFF:'Se cae',FAKE:'Humo'},trust:{1:'Fiabilidad baja',2:'Fiabilidad media',3:'Fiabilidad alta',up:', más fino hoy'},rar:{common:'Común',rare:'Raro',epic:'Épico',legend:'Legendario',shame:'Vergüenza'},tier:'Tier',clown:'Payaso',locked:'Bloqueado'}},
- ar:{ds:{oc:{DONE:'هتتم',HIJACK:'اتخطف',OFF:'باظت',FAKE:'هري'},trust:{1:'الثقة ضعيفة',2:'الثقة متوسطة',3:'الثقة عالية',up:'، أدق النهارده'},rar:{common:'عادي',rare:'نادر',epic:'ملحمي',legend:'أسطوري',shame:'فضيحة'},tier:'تير',clown:'هبّاد',locked:'مقفول'}}
+ en:{ds:{oc:{DONE:'Done',HIJACK:'Hijack',OFF:'Off',FAKE:'Fake'},trust:{0:'Trust unknown',1:'Trust low',2:'Trust medium',3:'Trust high',up:', sharper today'},rar:{common:'Common',rare:'Rare',epic:'Epic',legend:'Legendary',shame:'Shame'},tier:'Tier',clown:'Clown',locked:'Locked'}},
+ es:{ds:{oc:{DONE:'Hecho',HIJACK:'Robo',OFF:'Se cae',FAKE:'Humo'},trust:{0:'Fiabilidad desconocida',1:'Fiabilidad baja',2:'Fiabilidad media',3:'Fiabilidad alta',up:', más fino hoy'},rar:{common:'Común',rare:'Raro',epic:'Épico',legend:'Legendario',shame:'Vergüenza'},tier:'Tier',clown:'Payaso',locked:'Bloqueado'}},
+ ar:{ds:{oc:{DONE:'هتتم',HIJACK:'اتخطف',OFF:'باظت',FAKE:'هري'},trust:{0:'الثقة مش معروفة',1:'الثقة ضعيفة',2:'الثقة متوسطة',3:'الثقة عالية',up:'، أدق النهارده'},rar:{common:'عادي',rare:'نادر',epic:'ملحمي',legend:'أسطوري',shame:'فضيحة'},tier:'تير',clown:'هبّاد',locked:'مقفول'}}
 });
 /* @@LANE I18N:ds END */
 /* ─ */
@@ -2815,7 +2836,7 @@ const PTYPE={1:{key:'super',pts:1.5,fans:2,stars:3},2:{key:'star',pts:1.2,fans:1
 function ptype(p){ return PTYPE[p&&p.tier]||PTYPE[3]; }
 /* ─ lane boundary: engine | shared ui ─ */
 function ptBadge(p){ const pt=ptype(p); return `<span class="ptb ptb-${pt.key}"><span class="st" aria-hidden="true">${'★'.repeat(pt.stars)}</span>${esc(t('ptype.'+pt.key))}</span>`; }
-function repBar(src,extra,noCost){ const n=TIER_BARS[src.tier]||1; return `<span class="rep rep-${src.tier}" title="${esc(t('rep.title'))}">${sigHtml(n)}<span class="rl">${esc(t('rep.'+src.tier))}</span>${noCost?'':`<span class="rc" dir="ltr" aria-label="${esc(t('rep.cost',{n:src.cost}))}">📞 ${src.cost}</span>`}${extra||''}</span>`; }
+function repBar(src,extra,noCost){ const n=TIER_BARS[src.tier]||1; return `<span class="rep rep-${src.tier}" title="${esc(t('rep.title'))}">${sigHtml(n,false,null,{hidden:true})}<span class="rl">${esc(t('rep.'+src.tier))}</span>${noCost?'':`<span class="rc" dir="ltr" aria-label="${esc(t('rep.cost',{n:src.cost}))}">📞 ${src.cost}</span>`}${extra||''}</span>`; }
 /* ─ lane boundary: shared ui | engine ─ */
 const EVENT_DAYS={DONE:[2,4,5],HIJACK:[2,4,5],OFF:[2,4,5],FAKE:[3,5]};
 const RIVALS=[ {key:'tabloid',handle:'@BackPageBants',ic:'🗞️',rel:0.40,dmin:2,dmax:3,style:'high'}, {key:'itk',handle:'@TransferITK_',ic:'🕵️',rel:0.55,dmin:3,dmax:5,style:'med'}, {key:'insider',handle:'@PressBoxPete',ic:'🎙️',rel:0.85,dmin:5,dmax:7,style:'med'} ];
@@ -3292,8 +3313,8 @@ const OUT_GLYPH={
  fake:'<path d="M12 3a7 7 0 0 0-7 7v11l2.3-1.8L9.7 21 12 19.2l2.3 1.8 2.4-1.8L19 21V10a7 7 0 0 0-7-7z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><circle cx="9.3" cy="10.5" r="1.5" fill="currentColor"/><circle cx="14.7" cy="10.5" r="1.5" fill="currentColor"/>' };
 function glyph(o,cls){ const k=String(o||'').toLowerCase(), p=OUT_GLYPH[k]; return p?`<svg class="og ${k}${cls?' '+cls:''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${p}</svg>`:''; }
 function ocHtml(o,cls,word){ const k=String(o||'').toLowerCase(); if(!OUT_GLYPH[k]) return ''; return `<span class="oc ${k}${cls?' '+cls:''}">${glyph(k)}${esc(word!=null?word:t('ds.oc.'+k.toUpperCase()))}</span>`; }
-function sigHtml(bars,up,label){ const n=Math.max(0,Math.min(3,Math.round(+bars||0))), u=!!up&&n>0; const lab=label||(t('ds.trust.'+Math.max(1,n))+(u?t('ds.trust.up'):''));
- return `<span class="sig" role="img" aria-label="${esc(lab)}">${[1,2,3].map(i=>`<i class="${i<=n?'on':''}${u&&i===n?' up':''}"></i>`).join('')}</span>`; }
+function sigHtml(bars,up,label,opts){ const n=Math.max(0,Math.min(3,Math.round(+bars||0))), u=!!up&&n>0; const lab=label||(t('ds.trust.'+n)+(u?t('ds.trust.up'):''));
+ return `<span class="sig" ${opts&&opts.hidden?'aria-hidden="true"':`role="img" aria-label="${esc(lab)}"`}>${[1,2,3].map(i=>`<i class="${i<=n?'on':''}${u&&i===n?' up':''}"></i>`).join('')}</span>`; }
 function pipsHtml(n,total){ const tot=Math.max(0,total|0), k=Math.max(0,Math.min(tot,n|0)); return `<span class="pips" aria-hidden="true">${Array.from({length:tot},(_,i)=>`<i class="${i<k?'on':''}"></i>`).join('')}</span>`; }
 const UI_ICON={gear:[2,'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'],
  close:[2.4,'<path d="M6 6l12 12M18 6L6 18"/>'],
@@ -3337,20 +3358,26 @@ function motionReduced(){ return document.documentElement.classList.contains('rm
 function lowFx(){ return document.documentElement.classList.contains('lowfx'); }
 function fxSync(){ const r=document.documentElement, st=(typeof save!=='undefined'&&save&&save.settings)||{}; let os=false;
  try{ os=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
- r.classList.toggle('rm',st.motion==='reduced'||(st.motion!=='full'&&os));
+ r.classList.toggle('rm',st.motion==='reduced'||os); /* Motion = System | Reduced (spec §5.17): an OS preference always applies, as in the CSS media rule */
  r.classList.toggle('lowfx',st.lowfx===true||(st.lowfx!==false&&(navigator.hardwareConcurrency||8)<=4));
+ r.classList.toggle('lt',!!st.largeText); /* Settings › Larger text */
+ const a=document.getElementById('app'); if(a) a.classList.toggle('legacy',!!a.querySelector(':scope > .screen')); /* old .screen markup brings its own padding (no :has() needed) */
  try{ const m=document.querySelector('meta[name="theme-color"]'), bg=getComputedStyle(r).getPropertyValue('--bg').trim(); if(m&&bg&&m.content!==bg) m.content=bg; }catch(e){} }
 fxSync(); onHook('rendered',()=>fxSync());
+/* theme/skin/DD switches that skip render() (Settings sheet) still refresh the status-bar colour. 'class' is not observed, so fxSync cannot loop. */
+try{ new MutationObserver(ms=>{ if(ms.some(m=>m.oldValue!==m.target.getAttribute(m.attributeName))) fxSync(); }).observe(document.documentElement,{attributes:true,attributeOldValue:true,attributeFilter:['data-theme','data-skin','data-dd']}); }catch(e){}
 try{ ['(prefers-reduced-motion: reduce)','(prefers-color-scheme: light)'].forEach(q=>{ const mq=matchMedia(q); if(mq.addEventListener) mq.addEventListener('change',fxSync); else if(mq.addListener) mq.addListener(fxSync); }); }catch(e){}
 document.addEventListener('visibilitychange',()=>document.documentElement.classList.toggle('paused',document.hidden));
 function splash(big,sub,red,opts){
  document.querySelectorAll('.stinger').forEach(x=>x.remove());
- const o=opts||{}, rm=motionReduced(); const day=game&&game.day?game.day:1; const d=document.createElement('div'); d.className='stinger'+(red?' red':'')+(o.cls?' '+o.cls:''); d.setAttribute('role','status');
+ /* spec M2: hold ≤1.2 s (≤0.6 s on DD / reduced motion). Tap-to-skip only for callers that opt in with {then} or {skip:true};
+    older call sites get a pass-through stinger that never eats a tap. */
+ const o=opts||{}, rm=motionReduced(), skip=!!(o.then||o.skip); const day=game&&game.day?game.day:1; const d=document.createElement('div'); d.className='stinger'+(red?' red':'')+(o.cls?' '+o.cls:'')+(skip?'':' pass'); d.setAttribute('role','status');
  d.innerHTML=`<div class="st-scrim"></div><div class="st-rays"></div><div class="st-band"><div class="st-big">${esc(big)}</div></div>${sub?`<div class="st-sub">${esc(sub)}</div>`:''}<div class="st-track">${[1,2,3,4,5,6,7].map(i=>`<i class="${i<day?'past':i===day?'now':''}${i===7?' dd':''}" style="--i:${i}"></i>`).join('')}</div>`;
  document.body.appendChild(d); let gone=false;
- const out=()=>{ if(gone) return; gone=true; d.classList.add('out'); setTimeout(()=>{ d.remove(); if(o.then) o.then(); },rm?0:550); };
- d.addEventListener('click',e=>{ e.stopPropagation(); out(); }); /* tap to skip */
- setTimeout(out,o.ms||(rm?600:1350)); return d;
+ const out=()=>{ if(gone) return; gone=true; d.classList.add('out'); setTimeout(()=>{ d.remove(); if(o.then) o.then(); },rm?0:(red?250:550)); };
+ if(skip) d.addEventListener('click',e=>{ e.stopPropagation(); out(); }); /* tap to skip */
+ d.skip=out; setTimeout(out,o.ms||(rm||red?600:1200)); return d;
 }
 function confetti(opts){ if(motionReduced()) return; const o=opts||{}; const c=document.createElement('canvas'); c.id='confetti'; document.body.appendChild(c); const ctx=c.getContext('2d'); if(!ctx){ c.remove(); return; }
  const W=innerWidth, H=innerHeight, dpr=Math.min(2,window.devicePixelRatio||1); c.width=Math.round(W*dpr); c.height=Math.round(H*dpr); c.style.width=W+'px'; c.style.height=H+'px'; ctx.scale(dpr,dpr);
