@@ -1568,12 +1568,7 @@ html[lang="ar"] .rtag,html[lang="ar"] .mathtag{ letter-spacing:0; font-size:11px
 .adrw b{ color:var(--accent-text); } .adrw small{ display:block; margin-top:2px; font-weight:600; color:var(--muted); }
 .achdet .list{ text-align:start; }
 /* toast */
-.achtoast{ position:fixed; z-index:96; left:50%; top:calc(10px + env(safe-area-inset-top,0px)); display:flex; align-items:center; gap:12px; width:max-content; max-width:min(92vw,398px); padding:8px 16px 8px 10px; border-radius:18px; border:1px solid color-mix(in srgb,var(--rc) 50%,transparent); background:var(--text); color:var(--bg); text-align:start; box-shadow:0 18px 40px -12px rgba(0,0,0,.6); opacity:0; transform:translate(-50%,-14px); transition:opacity var(--t-base,240ms) ease-out,transform var(--t-base,240ms) ease-out; cursor:pointer; font:inherit; }
-.achtoast.show{ opacity:1; transform:translate(-50%,0); }
-.achtoast .medal .hx::after{ background:radial-gradient(90% 70% at 50% 25%,color-mix(in srgb,var(--rc) 30%,#1F2C4A),#0F1729 85%); }
-.achtoast small{ display:block; font:800 10.5px/1.2 var(--body); letter-spacing:.06em; text-transform:var(--caps); opacity:.7; }
-.achtoast b{ display:block; font:800 var(--ital) 19px/1.1 var(--display); text-transform:var(--caps); }
-html.rm .achtoast{ transition:opacity 120ms linear; transform:translate(-50%,0); }
+.trophy .medal .hx::after{ background:radial-gradient(90% 70% at 50% 25%,color-mix(in srgb,var(--tc) 35%,#1F2C4A),#0F1729 85%); }
 /* celebration */
 .celebrate{ position:fixed; inset:0; z-index:97; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; overflow:hidden; text-align:center; color:#F3F5FA; background:radial-gradient(60% 45% at 50% 38%,color-mix(in srgb,var(--rc) 30%,transparent),transparent 70%),#03060E; background-color:#03060E; animation:celIn var(--t-base,240ms) ease-out both; }
 .celebrate::before{ content:""; position:absolute; left:50%; top:38%; width:900px; height:900px; margin:-450px 0 0 -450px; background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--rc) 22%,transparent) 0 6deg,transparent 6deg 18deg); -webkit-mask:radial-gradient(circle,#000 0,transparent 52%); mask:radial-gradient(circle,#000 0,transparent 52%); animation:celSpin 30s linear infinite; }
@@ -1819,6 +1814,22 @@ button.onl-cd b{ font-weight:800; }
 .frow.warn,.onrow.warn{ border-color:color-mix(in srgb,var(--ex) 50%,var(--line)); }
 .pptwdock .hint b{ color:var(--twist); }
 .mxt .sn{ white-space:normal; line-height:1.15; }
+/* trophy pop-ups (PS5-style) */
+#trophyRoot{ position:fixed; z-index:97; top:calc(62px + env(safe-area-inset-top,0px)); left:0; right:0; display:flex; justify-content:center; pointer-events:none; padding:0 12px; }
+.trophy{ --tc:#CD7F32; pointer-events:auto; display:flex; align-items:center; gap:12px; max-width:min(100%,360px); padding:8px 16px 8px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(14,18,30,.86); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); color:#F3F5FA; text-align:start; box-shadow:0 14px 34px -10px rgba(0,0,0,.6),inset 0 0 0 1px color-mix(in srgb,var(--tc) 30%,transparent); cursor:pointer; opacity:0; transform:translateY(-130%); transition:transform .38s cubic-bezier(.2,1.2,.4,1),opacity .25s; }
+.trophy.show{ opacity:1; transform:none; } .trophy.hide{ opacity:0; transform:translateY(-130%); transition:transform .3s ease-in,opacity .3s; }
+.trophy.dd{ pointer-events:none; }
+@media (min-width:700px){ #trophyRoot{ top:calc(16px + env(safe-area-inset-top,0px)); } }
+html[data-dd="1"] #trophyRoot{ top:auto; bottom:calc(132px + env(safe-area-inset-bottom,0px)); justify-content:center; padding:0 12px; } /* the DD clock lives at the top: never cover it */
+html[data-dd="1"] .trophy{ transform:translateY(130%); } html[data-dd="1"] .trophy.show{ transform:none; } html[data-dd="1"] .trophy.hide{ transform:translateY(130%); }
+.trophy .medal{ flex-shrink:0; filter:drop-shadow(0 0 10px color-mix(in srgb,var(--tc) 55%,transparent)); }
+.trophy .tx{ min-width:0; display:flex; flex-direction:column; gap:2px; }
+.trophy small{ font:700 11px/1.2 var(--body); letter-spacing:.02em; color:var(--tc); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.trophy b{ font:800 16px/1.15 var(--body); color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.trophy.tr-common{ --tc:#E0A26A; } .trophy.tr-rare{ --tc:#D5DEEA; } .trophy.tr-epic{ --tc:#FFC933; } .trophy.tr-legend{ --tc:#9FE8FF; } .trophy.tr-shame{ --tc:#FF7A8A; }
+@media (min-width:700px){ #trophyRoot{ justify-content:flex-end; padding-inline-end:20px; } }
+html.rm .trophy,html.rm .trophy.hide{ transform:none; transition:opacity .15s linear; }
+@media (prefers-reduced-motion:reduce){ .trophy,.trophy.hide{ transform:none; transition:opacity .15s linear; } }
 /* ─ */
 </style>
 </head>
@@ -3978,12 +3989,12 @@ function cleanIdx(k,l){ l=l||lang; const L=getPath(I18N[l],k)||getPath(I18N.en,k
 /* ─ */
 /* QA integration: copy that must follow the live rules (CONFIG / MATH), terminology fixes (EN/ES/AR) */
 deepMerge(I18N,{
- en:{qa:{update:'Update call',updated:'Updated.',stampUpd:'UPDATED 🌀'},sys:{dd:"🚨 DEADLINE DAY. {s} seconds. Whatever you haven't called, call it now."},
+ en:{qa:{trophy:'Trophy unlocked',update:'Update call',updated:'Updated.',stampUpd:'UPDATED 🌀'},sys:{dd:"🚨 DEADLINE DAY. {s} seconds. Whatever you haven't called, call it now."},
   howto2:{ask3:'The airport spotter opens on day {a} and the physio on day {p}. A twist re-opens every source on that player.',
    ut:'U-turn: delete and re-call. The new call scores half, no exclusive, and −{w} more if wrong. If a twist hit your call, updating it is free.'},
   board:{rulesTw:'Two real deals **twist** every window: the wire shouts 🌀, old reads go out of date and his sources talk again.'},
   scoop:{exSub:'You beat every rival to it: +{n} pts and a follower surge'}},
- es:{qa:{update:'Actualizar',updated:'Actualizada.',stampUpd:'ACTUALIZADA 🌀'},sys:{dd:'🚨 DÍA LÍMITE. {s} segundos. Lo que no hayas apostado, apuéstalo ya.'},
+ es:{qa:{trophy:'Trofeo desbloqueado',update:'Actualizar',updated:'Actualizada.',stampUpd:'ACTUALIZADA 🌀'},sys:{dd:'🚨 DÍA LÍMITE. {s} segundos. Lo que no hayas apostado, apuéstalo ya.'},
   howto2:{ask3:'El vigía del aeropuerto abre el día {a} y el fisio el día {p}. Un giro reabre todas las fuentes de ese jugador.',
    ut:'Rectificar: borra y vuelve a apostar. La nueva apuesta vale la mitad, sin exclusiva, y −{w} más si fallas. Si un giro tumbó tu apuesta, actualizarla es gratis.',
    twist:'Dos fichajes dan un giro en cada mercado: el teletipo grita 🌀, lo anterior queda desfasado y sus fuentes vuelven a hablar.'},
@@ -3993,7 +4004,7 @@ deepMerge(I18N,{
    rulesB:['Cinco culebrones de fichajes. Siete días. Apuesta en cada uno: **Hecho, Robo, Se cae o Humo**.','Cada día tienes unos pocos **contactos**. Úsalos con tus fuentes: no se acumulan.','Las fuentes mienten. Las mejores cuestan más y algunas solo se abren más tarde.','Apuesta pronto para sumar más, sube el tono para arriesgar más. El **día límite** es contra el reloj.']},
   scoop:{exSub:'Te adelantaste a todos los rivales: +{n} pts y avalancha de seguidores'},
   ach:{how:{redemption:'*Rectifica* y acaba acertando.',called_turn:'*Rectifica* un jugador *tras su giro* y acierta.'}}},
- ar:{qa:{update:'عدّل التوقّع',updated:'اتعدّلت.',stampUpd:'اتعدّلت 🌀'},sys:{dd:'🚨 يوم القفلة. {s} ثانية. أي حاجة ماقلتهاش، قولها دلوقتي حالًا.'},
+ ar:{qa:{trophy:'كاس جديد',update:'عدّل التوقّع',updated:'اتعدّلت.',stampUpd:'اتعدّلت 🌀'},sys:{dd:'🚨 يوم القفلة. {s} ثانية. أي حاجة ماقلتهاش، قولها دلوقتي حالًا.'},
   howto2:{ask3:'بتاع المطار بيفتح يوم {a} والدكتور يوم {p}. القلبة بتفتح كل مصادر اللعيب ده تاني.',
    ut:'اللفّة: امسح وقول تاني. التوقّع الجديد بنص النقط، من غير انفراد، و−{w} زيادة لو غلط. لو قلبة ضربت توقّعك، تعديله ببلاش.'},
   board:{rulesTw:'صفقتين حقيقيين بيحصل فيهم **قلبة** كل نافذة: الخبر العاجل بيصرّخ 🌀، الكلام القديم بيبقى قديم، ومصادره بتتكلم تاني.'},
@@ -5879,7 +5890,7 @@ function achProg(a){ const S=save.stats||{}, B=S.best||{}, c=save.career||{}; le
 function achDaily(){ return game&&game.mode==='daily'?(game.num||achTry(()=>dailyNumber(),1)):null; }
 function achCtx(extra){ const m=achMode(); const c={m:m||'practice'}; if(m==='daily') c.n=achDaily(); else if(m==='career') c.n=(save.career.windows||0); else if(m==='rooms'){ c.r=game.room; c.n=game.season||(C().windows||0); } return Object.assign(c,extra||{}); }
 function achReward(a){ if(a.rw&&a.rw.catch){ achCareers().forEach(c=>{ c.catch=c.catch||['confirmed']; if(!c.catch.includes(a.rw.catch)) c.catch.push(a.rw.catch); }); } }
-let achQueue=[], achToastBusy=false, achPendingToasts=[];
+let achQueue=[], achToastBusy=false;
 function achUnlock(id,ctx){ const A=achEnsure(), a=ACH_BY[id]; if(!a||A.got[id]||!achVisible(a)) return false;
  A.got[id]={at:todayKey(),ts:Date.now(),c:ctx||achCtx()}; achReward(a);
  if(game&&!game.result&&!game.archived){ (game.achPending=game.achPending||[]).push(id); }
@@ -5887,17 +5898,22 @@ function achUnlock(id,ctx){ const A=achEnsure(), a=ACH_BY[id]; if(!a||A.got[id]|
 /* generic progress check (all progress entries read data that is only ever counted in their modes) */
 function achEval(ctx){ const out=[]; achList().forEach(a=>{ if(save.ach.got[a.id]) return; if(a.id==='room_host'&&!(save.stats.best.host>=a.t)) return; const p=achProg(a); if(p&&p.cur>=p.tgt&&achUnlock(a.id,ctx)) out.push(a.id); }); return out; }
 /* live unlocks mid-window: toast now, except during the Deadline-Day clock (deferred to Results) */
-function achLive(ids){ if(!ids||!ids.length) return; persist(); if(game&&game.day===7&&!game.result) return; ids.forEach(id=>achToast(id)); }
-function achToast(id){ achQueue.push(id); if(!achToastBusy) achToastNext(); }
+/* trophy pop-ups (PS5-style): compact dark pill from the top (top-right on wide screens), queued, ~4 s each, tap = details.
+   Shown mid-game too (Deadline Day included) but never blocking: during the DD clock they sit below the header and ignore taps. */
+function achLive(ids){ if(!ids||!ids.length) return; persist(); ids.forEach(id=>achToast(id)); }
+function achToast(id){ const A=achEnsure(), g=A.got[id]; if(!ACH_BY[id]||(g&&g.pop)||achQueue.includes(id)) return; achQueue.push(id); if(!achToastBusy) achToastNext(); }
+function achTrophyRoot(){ let r=$('trophyRoot'); if(!r){ r=document.createElement('div'); r.id='trophyRoot'; r.setAttribute('aria-live','polite'); document.body.appendChild(r); } return r; }
 function achToastNext(){ if(!achQueue.length){ achToastBusy=false; return; } achToastBusy=true;
- const shown=achQueue.length>3?2:achQueue.length; const id=achQueue.shift(); const a=ACH_BY[id]; if(!a){ achToastNext(); return; }
- const more=achQueue.length>=3?achQueue.length:0; if(more) achQueue=[];
- const el=document.createElement('button'); el.className='achtoast'; el.type='button'; el.setAttribute('role','status'); el.setAttribute('aria-live','polite'); el.style.setProperty('--rc','var(--r-'+a.r+')');
- el.innerHTML=`${medalHtml(a.ic,a.r,{size:'sm'})}<span class="tx"><small>${esc(t('ach.toast'))}${more?` · ${esc(t('ach.more',{n:more}))}`:''}</small><b>${esc(achName(a))}</b></span>`;
- el.addEventListener('click',()=>{ el.remove(); achDetail(id); });
- document.body.appendChild(el); achTry(()=>sfxCue('unlock',a.r)); requestAnimationFrame(()=>el.classList.add('show'));
- setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),300); },2600);
- setTimeout(achToastNext,shown>1?1200:2900); }
+ const id=achQueue.shift(), a=ACH_BY[id]; if(!a){ achToastNext(); return; }
+ const g=save.ach.got[id]; if(g){ g.pop=1; persist(); }
+ const dd=!!(game&&game.day===7&&!game.result&&screen==='window');
+ const el=document.createElement('button'); el.type='button'; el.className='trophy tr-'+a.r+(dd?' dd':''); el.setAttribute('role','status');
+ el.innerHTML=`${medalHtml(a.ic,a.r,{size:'sm'})}<span class="tx"><small>🏆 ${esc(t('qa.trophy'))} · ${esc(t('ds.rar.'+a.r))}</small><b>${esc(achName(a))}</b></span>`;
+ if(!dd) el.addEventListener('click',()=>{ el.remove(); achDetail(id); });
+ achTrophyRoot().appendChild(el); achTry(()=>sfxCue('unlock',a.r));
+ requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+ const ms=achQueue.length>=3?2200:4000;
+ setTimeout(()=>{ el.classList.remove('show'); el.classList.add('hide'); setTimeout(()=>el.remove(),350); setTimeout(achToastNext,250); },ms); }
 function achName(a){ return a[lang]||a.en; }
 function achHowRaw(a,secret){ return t((secret?'ach.hint.':'ach.how.')+a.id); }
 function achRich(s){ return esc(s).replace(/\*([^*]+)\*/g,'<strong>$1</strong>'); }
@@ -5985,8 +6001,8 @@ function achAutoCelebrate(){ const r=game&&game.result; if(!r||r.achShown||game.
  let n=0; const tick=()=>{ if(screen!=='results') return; const busy=document.querySelector('.rvl,.reveal:not(.done),[data-revealing],.revealing,.stinger,.big'); if(busy&&n++<40){ setTimeout(tick,400); return; } achCelebrate(r.achUnlocked); };
  setTimeout(tick,1600); }
 let achCel=null;
-function achCelebrate(ids){ const big=(ids||[]).map(id=>ACH_BY[id]).filter(a=>a&&a.r!=='common'&&a.r!=='shame');
- const sh=(ids||[]).map(id=>ACH_BY[id]).filter(a=>a&&a.r==='shame'); if(!big.length){ if(sh.length) achTry(()=>sfxCue('unlock','shame')); return; }
+function achCelebrate(ids){ const big=(ids||[]).map(id=>ACH_BY[id]).filter(a=>a&&a.r==='legend');
+ (ids||[]).map(id=>ACH_BY[id]).filter(a=>a&&a.r!=='legend').sort((a,b)=>ACH_RANK[b.r]-ACH_RANK[a.r]).forEach(a=>achToast(a.id)); if(!big.length) return;
  big.sort((a,b)=>ACH_RANK[b.r]-ACH_RANK[a.r]); const a=big[0], g=save.ach.got[a.id]||{}; const cnt=achCount(); const others=(ids||[]).length-1;
  achCelClose(true); const d=document.createElement('div'); d.className='celebrate'+(motionReduced()?' rm':''); d.setAttribute('role','dialog'); d.setAttribute('aria-modal','true'); d.style.setProperty('--rc','var(--r-'+a.r+')');
  d.setAttribute('aria-label',t('ach.toast')+': '+achName(a)+', '+t('ds.rar.'+a.r));
