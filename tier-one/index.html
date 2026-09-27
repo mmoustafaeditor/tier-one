@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#070B16">
 <title>Tier One — the transfer journalist game</title>
-<meta name="description" content="Tier One: the football transfer journalist game. Work your sources, break the deal first, or get ratio'd trying. Same 8 sagas for everyone, every day. Free, from Semba Studios.">
+<meta name="description" content="Tier One: the football transfer journalist game. Work your sources, break the deal first, or get ratio'd trying. Same 5 sagas for everyone, every day. Free, from Semba Studios.">
 <meta property="og:title" content="Tier One — the transfer journalist game">
-<meta property="og:description" content="Break the transfer first. Or get ratio'd trying. Same 8 sagas for everyone, every day.">
+<meta property="og:description" content="Break the transfer first. Or get ratio'd trying. Same 5 sagas for everyone, every day.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Tier One — the transfer journalist game">
@@ -263,6 +263,42 @@ html[lang="ar"] .saga .who b{ font-style:normal; line-height:1.4; }
 .shopitem.pack{ position:relative; } .shopitem.pack .cash{ font:800 italic 20px/1.1 "Barlow Condensed",Impact,sans-serif; color:var(--green); }
 .shopitem.pack.popular,.shopitem.pack.best{ border-color:color-mix(in srgb,var(--accent) 55%,var(--line)); }
 .packtag{ position:absolute; top:-9px; inset-inline-end:12px; padding:3px 8px; border-radius:6px; background:var(--accent); color:var(--accent-ink); font:800 10.5px/1 var(--body); text-transform:uppercase; letter-spacing:.04em; }
+/* airport plane follows the clue */
+.jetline .to{ white-space:nowrap; } .jetline .to s{ opacity:.55; } .jetline .to b{ color:var(--accent); }
+.jetline.go .track i{ animation:jetGo 2.4s ease-in-out infinite; }
+.jetline.divert .track i{ animation:jetDivert 2.6s ease-in-out infinite; }
+.jetline.back .track i{ animation:jetBack 2.8s ease-in-out infinite; }
+.jetline.none .track{ opacity:.25; border-top-style:dashed; }
+.jetcap{ font-size:11px; font-weight:700; opacity:.85; margin-top:4px; }
+@keyframes jetGo{ 0%{ left:0; opacity:0; } 10%{ opacity:1; } 85%{ left:calc(100% - 16px); opacity:1; } 100%{ left:calc(100% - 16px); opacity:0; } }
+@keyframes jetDivert{ 0%{ left:0; top:-12px; transform:none; opacity:0; } 10%{ opacity:1; } 45%{ left:48%; top:-12px; transform:none; } 60%{ left:58%; top:-22px; transform:rotate(-35deg); } 90%{ left:calc(100% - 16px); top:-12px; transform:none; opacity:1; } 100%{ left:calc(100% - 16px); opacity:0; } }
+@keyframes jetBack{ 0%{ left:0; transform:none; opacity:0; } 10%{ opacity:1; } 42%{ left:40%; transform:none; } 52%{ left:40%; transform:scaleX(-1); } 90%{ left:0; transform:scaleX(-1); opacity:1; } 100%{ left:0; transform:scaleX(-1); opacity:0; } }
+/* Deadline Day: the whole app turns red */
+:root[data-dd="1"]{ --bg:#15060A; --bg2:#1C070D; --panel:#230A11; --panel2:#2E0E17; --panel3:#3C131F; --line:#4D1826; --line2:#662134; --text:#FFF1F3; --muted:#E7A6B1; --dim:#B06B78; --accent:#FF3D55; --accent-ink:#FFFFFF; --gold:#FF8A3D; --glow:0 0 0 1px rgba(255,61,85,.55),0 10px 34px -8px rgba(255,61,85,.8); color-scheme:dark; }
+:root[data-dd="1"] body::before{ background:radial-gradient(70% 45% at 0% 0%,rgba(255,40,70,.35),transparent 70%),radial-gradient(70% 45% at 100% 0%,rgba(255,90,40,.25),transparent 70%),radial-gradient(90% 60% at 50% 110%,rgba(255,30,60,.3),transparent 70%),linear-gradient(180deg,#240810,#12050A 65%); animation:ddPulse 2.4s ease-in-out infinite alternate; }
+:root[data-dd="1"] body::after{ content:""; position:fixed; inset:0; pointer-events:none; z-index:60; box-shadow:inset 0 0 90px rgba(255,30,60,.45); animation:ddEdge 1.2s ease-in-out infinite alternate; }
+@keyframes ddPulse{ to{ filter:brightness(1.25) saturate(1.2); } } @keyframes ddEdge{ from{ opacity:.45; } to{ opacity:1; } }
+:root[data-dd="1"] .saga{ border-color:rgba(255,61,85,.35); } :root[data-dd="1"] .saga:not(.called){ animation:ddCard 1.6s ease-in-out infinite alternate; }
+@keyframes ddCard{ to{ box-shadow:var(--lift),0 0 0 1px rgba(255,61,85,.55),0 0 24px -6px rgba(255,61,85,.7); } }
+:root[data-dd="1"] .hud{ background:color-mix(in srgb,#3A0A14 88%,transparent); border-top-color:rgba(255,61,85,.6); }
+/* exclusive vs right */
+.scoopbar{ display:flex; flex-direction:column; gap:2px; margin:10px 0 2px; padding:10px 12px; border-radius:12px; }
+.scoopbar b{ font:800 italic 17px/1 var(--display); letter-spacing:.03em; text-transform:uppercase; } .scoopbar span{ font-size:12.5px; }
+.scoopbar.ex{ background:linear-gradient(90deg,#FFD23F,#FFB020); color:#241800; box-shadow:0 0 26px -6px rgba(255,200,40,.85); animation:exShine 2.2s ease-in-out infinite; }
+.scoopbar.late{ background:color-mix(in srgb,var(--green) 14%,var(--panel2)); border:1px solid color-mix(in srgb,var(--green) 45%,var(--line)); }
+@keyframes exShine{ 50%{ box-shadow:0 0 38px -2px rgba(255,200,40,1); } }
+html[lang="ar"] .scoopbar b{ font-style:normal; }
+.scoophint{ margin-top:10px; padding:10px 12px; border-radius:12px; font-size:12.5px; font-weight:600; background:color-mix(in srgb,#FFD23F 12%,var(--panel)); border:1px solid rgba(255,200,40,.4); }
+/* rival news: NEW chips + overnight headlines */
+.newsnip{ display:inline-flex; align-items:center; gap:6px; margin-top:5px; padding:3px 8px 3px 3px; border-radius:7px; font:700 11.5px/1.2 var(--body); background:color-mix(in srgb,var(--red) 16%,var(--panel2)); border:1px solid color-mix(in srgb,var(--red) 45%,var(--line)); color:var(--text); max-width:100%; }
+.newsnip i{ font-style:normal; font-weight:800; font-size:10px; padding:2px 5px; border-radius:4px; background:var(--red); color:#fff; animation:blip 1.2s infinite; }
+.headline{ display:flex; flex-direction:column; gap:6px; width:100%; text-align:start; padding:12px 14px; border-radius:16px; border:1px solid var(--line); background:var(--panel); color:var(--text); cursor:pointer; box-shadow:var(--lift); }
+.headline.rival{ border-color:color-mix(in srgb,var(--red) 40%,var(--line)); }
+.headline .hl-top{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; font-size:13px; } .headline .hl-txt{ font-size:15px; font-weight:600; line-height:1.4; }
+.headline .hl-p{ font-size:12.5px; color:var(--muted); font-weight:700; }
+.hl-claim{ margin-inline-start:auto; padding:3px 7px; border-radius:6px; font:800 10.5px/1 var(--body); text-transform:uppercase; background:var(--panel3); }
+.hl-claim.c-DONE{ background:rgba(39,224,138,.18); color:var(--green); } .hl-claim.c-HIJACK{ background:rgba(255,176,32,.18); color:var(--gold); } .hl-claim.c-OFF{ background:rgba(255,61,85,.16); color:var(--red); } .hl-claim.c-FAKE{ background:rgba(160,123,255,.18); color:#C9B6FF; }
+@media (prefers-reduced-motion:reduce){ .jetline .track i,:root[data-dd="1"] body::before,:root[data-dd="1"] body::after,:root[data-dd="1"] .saga,.scoopbar.ex,.newsnip i{ animation:none !important; } }
 .ptb{ display:inline-flex; align-items:center; gap:5px; height:21px; padding:0 8px; border-radius:6px; font:800 11px/1 var(--body); letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; background:var(--panel3); color:var(--muted); }
 .ptb .st{ letter-spacing:-1px; }
 .ptb-super{ background:linear-gradient(90deg,#FFD23F,#FFB020); color:#241800; box-shadow:0 0 14px -2px rgba(255,200,40,.7); }
@@ -603,11 +639,13 @@ body.has-consent .home{ padding-bottom:190px; }
    your own domain — not inside the claude.ai preview.
    ============================================================ */
 const CONFIG={
- VERSION:'1.6.0',
+ VERSION:'1.7.0',
  GAME_NAME:'Tier One',
  STUDIO_NAME:'Semba Studios',
  SITE_URL:'https://sembagames.app/tier-one',
- DAILY_REPLAY:true,                              // TESTING ONLY: lets the Daily Challenge be replayed. Set to false to make it one-go-a-day again.                 // your live URL — printed at the bottom of every share card
+ DAILY_REPLAY:true,
+ SAGAS:5,                                        // players per window, every mode
+ CONTACTS:4,                                     // source contacts per day (gear adds more)                              // TESTING ONLY: lets the Daily Challenge be replayed. Set to false to make it one-go-a-day again.                 // your live URL — printed at the bottom of every share card
  CONTACT_EMAIL:'hello@sembastudios.com',         // support + legal contact shown in Terms / Privacy / Contact
  JURISDICTION:'',                                // e.g. 'the State of Florida, USA' — used in the Terms. '' = generic wording
  LEGAL_EFFECTIVE:'September 25, 2026',          // effective date printed on Terms & Privacy — update when you edit them
@@ -638,10 +676,10 @@ const I18N={};
 I18N.en={
  langName:'English',
  app:{ptsShort:'pts',title:'TIER ONE',tagline:"Break the transfer first. Or get ratio'd trying.",live:'LIVE · TRANSFER WINDOW',disclaimer:'Unofficial fan game. Every saga is simulated. Not affiliated with any club, league, player, or journalist.'},
- home:{play:'Play',done:'Done',newIn:'New challenge in {t}',practiceShort:'Practice',daily:'Daily Challenge #{n}',dailyDone:'Done today: {row} · {tier} · {pts} pts',dailySub:'Same 8 sagas for everyone. One go. Share your card.',streak:'🔥 Streak: {n}',career:'Career',careerLine:'Level {n} · {title} · ${c} · 👥 {f}',careerSub:'Build sources, buy gear, unlock catchphrases, climb to Tier 1.',resume:'Resume {mode} (day {d})',practice:'Practice window (doesn\'t count)',howto:'How to play',settings:'Settings',notif1:'Private jet just filed a route to Riyadh…',notif2:'EXCLUSIVE: it\'s DONE. Announcement imminent. 🔥',notif3:'He asked for a trim for a \'presentation photo\'…'},
+ home:{play:'Play',done:'Done',newIn:'New challenge in {t}',practiceShort:'Practice',daily:'Daily Challenge #{n}',dailyDone:'Done today: {row} · {tier} · {pts} pts',dailySub:'Same 5 sagas for everyone. One go. Share your card.',streak:'🔥 Streak: {n}',career:'Career',careerLine:'Level {n} · {title} · ${c} · 👥 {f}',careerSub:'Build sources, buy gear, unlock catchphrases, climb to Tier 1.',resume:'Resume {mode} (day {d})',practice:'Practice window (doesn\'t count)',howto:'How to play',settings:'Settings',notif1:'Private jet just filed a route to Riyadh…',notif2:'EXCLUSIVE: it\'s DONE. Announcement imminent. 🔥',notif3:'He asked for a trim for a \'presentation photo\'…'},
  mode:{daily:'Daily Challenge',career:'career window',practice:'practice window'},
  win:{contactsLbl:'contacts',followersLbl:'followers',finishShort:'Close the window',day:'Day {d} of 7',deadline:'DEADLINE DAY',daily:'Daily Challenge #{n}',career:'Career window',practice:'Practice',cr:'${c}',tabSagas:'Sagas',tabFeed:'Feed ({n})',endDay:'End day {d}',unused:'({n} unused)',finish:'Publish everything and close the window',uncalled:'({n} uncalled)',ad:'▶ Watch an ad for +1 contact',home:'Save and go home',breaking:'BREAKING',ddTicker:'DEADLINE',noCall:'no call',posted:'Posted',dayN:'day {d}',clues:'{n} clues',wire:'Transfer wire',wireHandle:'@wire · day {d}',you:'You',youHandle:'@tierone_you · day {d}',deleted:'DELETED 🗑️'},
- sys:{open:"The window is open. 7 days. 8 sagas. Break it first, or get ratio'd.",day:'Day {d}. New whispers overnight.',dd:"🚨 DEADLINE DAY. 60 seconds. Whatever you haven't called, call it now.",deleted:'🗑️ You deleted your {p} tweet. −{n} followers. People noticed.',report:'Reports in {country} link {p} ({c}) with a move to {d}.'},
+ sys:{open:"The window is open. 7 days. 5 sagas. Break it first, or get ratio'd.",day:'Day {d}. New whispers overnight.',dd:"🚨 DEADLINE DAY. 60 seconds. Whatever you haven't called, call it now.",deleted:'🗑️ You deleted your {p} tweet. −{n} followers. People noticed.',report:'Reports in {country} link {p} ({c}) with a move to {d}.'},
  rivalmsg:{uturn:'Someone just deleted a {p} tweet 👀 Screenshots exist, pal. They always exist.',bribe:'📸 Screenshots doing the rounds of a "journalist" offering money for {p} info. Tier One standards, folks.'},
  sheet:{back:'Back',tierS:'superstar',tierM:'star',tierR:'rising',rumored:'rumored to {d}',dms:'Your DMs',dmsEmpty:"Nothing yet. Everyone's guessing. Slide into a source's DMs.",contact:'Contact a source',left:'{n} left today',lockedGear:'Buy {g} in the shop',boosts:'Boosts',credits:'${n}',unlockLvl:'Unlocks at level {n}',yourCall:'Your call',lockedNote:'🔒 Locked in. You can still change it — but deleting a posted call is public: followers drop, the Tabloid mocks you, and the new call scores half with no exclusive.',change:'🔄 Change my call (U-turn)',uturnNote:'This re-call scores half if right, no exclusive, and −10 extra if wrong.',step1:'1. What happens?',step2:'2. How loud?',pickFirst:'(pick step 1 first)',scoreHint:'+{a} right · {b} wrong',bothHint:'Pick both and the compose screen opens. Earlier calls score more. Wrong loud calls hurt more.',paid:'💸 Paid source',tip:'💡 Tip-off',tipReal:'There is genuine interest here. Something is moving.',tipFake:'There is nothing behind this rumor. Nobody is bidding.'},
  ask:['Anything on {p}?','What are you hearing on {p} → {d}?','Quick one — {p}. Real or not?','Is the {d} thing happening?','Give me something on {p}, off record.'],
@@ -681,11 +719,14 @@ I18N.en={
  evt:{DONE:['{d} have submitted an opening bid for {p}.','{p} liked a {d} fan page post 👀',"{p}'s agent seen entering {d}'s offices."],HIJACK:['{d} have submitted an opening bid for {p}.','🚨 {h} enter the race for {p}.','{p} spotted at {hc} airport.'],OFF:['{d} have submitted an opening bid for {p}.',"{c} reject {d}'s bid. They want more.","{p} posts a training photo: 'Focused 💪'"],FAKE:["A fan account claims {p} → {d} is 'confirmed'. No source given.","{c} source: 'nothing in it'."]},
  roast:['{p} to {d}?? bro really said that with his chest 💀','delete this and log off 😭',"my uncle works at {c} and he said you're capping",'screenshotting this for when it ages like milk 🥛','tier 9 behaviour honestly','the confidence… the wrongness… iconic','ratio + you fell off + {p} is laughing at you','this tweet has aged like a banana in a sauna 🍌'],
  praise:['ONE OF THE BEST ✍️','called it days ago, respect 🫡','this is why we follow you','{d} fans are SCREAMING rn','tier one behaviour 🥇','never doubted you (I doubted you)','the man never misses 🎯'],
- howto:{title:'How to play',cards:[['The window','8 real players, 8 rumored moves. Every saga has a hidden truth: the deal happens, he leaves somewhere else, it collapses, or it was never real.'],['10 contacts',"Each day you get 10 contacts to spend. Every source shows a reliability bar. High (Physio, Airport spotter) costs 3 contacts, Medium (Agent, Kitman) costs 2, Low (Barber, Rival newsroom leak) costs 1. Even the best ones lie sometimes."],['Player types','★★★ Superstars count ×1.5 points and ×2 followers, ★★ Stars ×1.2 and ×1.4, ★ Squad players ×1. Right or wrong: big names, big swings.'],['Post your call','Pick what happens and how loud you say it. Quiet call: +10 right, −5 wrong. Loud "Confirmed" call: +40 right, −35 wrong. Earlier calls earn a bonus. Beat every rival to a correct call and it\'s an exclusive: +15. Tier 1 now takes 375+ pts.'],['Changing your mind',"You can delete a posted call and re-call it, but it's public: followers drop, the Tabloid mocks you, and the new call scores half with no exclusive."],['Deadline Day',"Day 7 is a 60-second timer with 3 contacts. Whatever you haven't called gets ⚪ and zero points. Then everything is announced, the replies roll in, and you get your tier."],['Daily vs Career','The daily window is identical for everyone, no gear, no boosts — just skill and nerve. Career is your own long game: earn dollars, buy gear, bribe sources, unlock catchphrases, grow your followers.'],['Rivals',"The Tabloid posts early and loud and is wrong more than half the time. The ITK account is a coin flip. The Club Insider posts late and is nearly always right — by then it's not an exclusive."]]},
+ howto:{title:'How to play',cards:[['The window','5 real players, 5 rumored moves. Every saga has a hidden truth: the deal happens, he leaves somewhere else, it collapses, or it was never real.'],['4 contacts',"Each day you get 4 contacts to spend. Every source shows a reliability bar. High (Physio, Airport spotter) costs 3 contacts, Medium (Agent, Kitman) costs 2, Low (Barber, Rival newsroom leak) costs 1. Even the best ones lie sometimes."],['Player types','★★★ Superstars count ×1.5 points and ×2 followers, ★★ Stars ×1.2 and ×1.4, ★ Squad players ×1. Right or wrong: big names, big swings.'],['Post your call','Pick what happens and how loud you say it. Quiet call: +10 right, −5 wrong. Loud "Confirmed" call: +40 right, −35 wrong. Earlier calls earn a bonus. Beat every rival to a correct call and it\'s an exclusive: +15. Tier 1 now takes 235+ pts.'],['Changing your mind',"You can delete a posted call and re-call it, but it's public: followers drop, the Tabloid mocks you, and the new call scores half with no exclusive."],['Deadline Day',"Day 7 is a 60-second timer with 3 contacts. Whatever you haven't called gets ⚪ and zero points. Then everything is announced, the replies roll in, and you get your tier."],['Daily vs Career','The daily window is identical for everyone, no gear, no boosts — just skill and nerve. Career is your own long game: earn dollars, buy gear, bribe sources, unlock catchphrases, grow your followers.'],['Rivals',"The Tabloid posts early and loud and is wrong more than half the time. The ITK account is a coin flip. The Club Insider posts late and is nearly always right — by then it's not an exclusive."]]},
  settings:{title:'Settings',theme:'Theme',auto:'Auto',light:'Light',dark:'Dark',language:'Language',look:'Look',lookNote:'Buy more in Career › Style.',sound:'Sound',on:'On',off:'Off',wipe:'Wipe all progress',saved:'Progress is saved in this browser only.',confirm:'Wipe every window, badge and dollar?',tutorial:'Replay the tutorial',close:'Close'},
- tut:{cards:[['🎙️',"You're a transfer journalist",'8 real players are linked with moves. Each rumor hides a truth. Your job: find it and post it before the rivals.'],['💬','DM your sources','Tap a player, then message a source. You get 10 contacts a day. High-reliability sources cost 3, Medium 2, Low 1. Check the bar under each one.'],['🚀','Post your call',"Pick what happens and how loud you say it. Loud and right = big points. Loud and wrong = ratio'd. Earlier calls score more. Tier 1 takes 375+ pts."],['⏱️','Deadline Day','End each day when you\'re done. Day 7 is a 60-second timer with only 3 contacts, then everything is announced and you get your tier.']],next:'Next',skip:'Skip',practice:'Play a practice window first',start:'Start',gotit:'Got it',coach:{c1:'Tap a player to open his saga.',c2:'Message a source. The bar shows how reliable they are: High 📞3, Medium 📞2, Low 📞1.',c3:'Got a clue? Scroll down and make your call.',c4:'Out of contacts? End the day. Rivals post overnight.',c5:"60 seconds left, 3 contacts. Call everything you haven't."}},
+ tut:{cards:[['🎙️',"You're a transfer journalist",'5 real players are linked with moves. Each rumor hides a truth. Your job: find it and post it before the rivals.'],['💬','DM your sources','Tap a player, then message a source. You get 4 contacts a day. High-reliability sources cost 3, Medium 2, Low 1. Check the bar under each one.'],['🚀','Post your call',"Pick what happens and how loud you say it. Loud and right = big points. Loud and wrong = ratio'd. Earlier calls score more. Tier 1 takes 235+ pts."],['⏱️','Deadline Day','End each day when you\'re done. Day 7 is a 60-second timer with only 3 contacts, then everything is announced and you get your tier.']],next:'Next',skip:'Skip',practice:'Play a practice window first',start:'Start',gotit:'Got it',coach:{c1:'Tap a player to open his saga.',c2:'Message a source. The bar shows how reliable they are: High 📞3, Medium 📞2, Low 📞1.',c3:'Got a clue? Scroll down and make your call.',c4:'Out of contacts? End the day. Rivals post overnight.',c5:"60 seconds left, 3 contacts. Call everything you haven't."}},
 online:{tile:'Play with friends',tileSub:'Private rooms. Same sagas for everyone. Best career wins.',title:'Play with friends',sub:'Create a private room, share the code, and race your friends through a whole career. Every season, everyone in the room gets exactly the same sagas.',create:'Create a room',nick:'Your name',roomName:'Room name',namePh:'The group chat',seasons:'Seasons',seasonsN:'{n} seasons',createBtn:'Create room',join:'Join a room',code:'Room code',joinBtn:'Join room',mine:'Your rooms',offline:'Online play is switching on soon. Check back shortly.',netErr:"Couldn't reach the server. Check your connection.",notFound:'No room with that code.',full:'That room is full.',needNick:'Pick a name first.',roomCode:'Room code',invite:'Invite',copied:'Invite copied. Send it to your friends.',season:'Season {s} of {n}',play:'Play season {s}',done:'Your career in this room is complete.',shop:'Career & shop',board:'Leaderboard',you:'you',played:'{s}/{n} seasons',best:'best {t}',same:'Everyone plays the same sagas each season. Scores post when you finish a season.',pending:'Your last season is waiting to upload. It will retry automatically.',back:'Back to the room',backShort:'Room',label:'Room {c} · Season {s}/{n}',roomTag:'Room {c}',inviteText:'Join my Tier One room {c} and let us see who has the better career: {u}',members:'{n} players',refresh:'Refresh',updated:'Leaderboard updated',allRooms:'All rooms'},
  transfer:{title:'Move to another device',note:'Get a short code and enter it on your other phone or laptop within 30 days. Your career, rooms and settings come with you.',get:'Get transfer code',enter:'Enter a code',your:'Your transfer code',expires:'Works for {d} days',prompt:'Enter your transfer code',confirm:'Replace everything on this device with that save?',bad:"That code didn't work.",ok:'Save loaded. Welcome back.',working:'Creating your code…'},
+ jet:{divert:'Flight plan changed mid-air',cancel:'Flight cancelled. Plane back at the stand.',none:'No flight plan filed. Nothing on the radar.'},
+ scoop:{exTitle:'EXCLUSIVE',exSub:'You beat every rival to it: +15 pts and a follower surge',rightTitle:'RIGHT',beaten:'{r} had it first (day {d}), so no exclusive bonus',late:'A rival got there before you, so no exclusive bonus',uturn:'Right after a U-turn: half points, no exclusive',hint:'Right AND before every rival = EXCLUSIVE: +15 pts and a follower surge. Right but late = normal points.'},
+ news:{new:'NEW',title:'Overnight headlines · day {d}',short:'Headlines',sub:'Rivals posted overnight. Some are right, some are guessing. Tap one to open that saga.',ok:'Back to work',claim:{DONE:'says DONE',HIJACK:'says HIJACK',OFF:'says COLLAPSED',FAKE:'says FAKE'}},
  econ:{payday:'💵 Payday! +${n} for showing up today.',bonusIncl:'incl. ${n} bonus',short:'You need ${n} more. Grab a cash pack below, or keep calling to earn it.',shortEarn:'You need ${n} more. Nail a few calls and it is yours.',need:'need ${n}',goalsTitle:'Career goals',goalsSub:'Complete all four to become a Tier One Legend.',goal:{lvl:'Reach level 7',t1:'Land Tier 1 three times',gear:'Own every piece of gear',fans:'Hit 100K followers'},legend:'👑 Tier One Legend. Career complete!',adCash:'Watch an ad',adCashDesc:'+$40 cash, once a day',adDone:'+$40 added. See you tomorrow.',packNote:'Everything can be earned by playing. Cash just gets you there faster.',popular:'Most popular',best:'Best value',buy:'Buy · {p}',cash:'${n} cash'},
  ptype:{super:'Superstar',star:'Star',squad:'Squad player',note:'Right or wrong, this story counts ×{p} points and ×{f} followers.'},
  wallet:{left:'contacts left today',none:'Out of contacts. End the day for more.',one:'contact',many:'contacts'},
@@ -696,10 +737,10 @@ online:{tile:'Play with friends',tileSub:'Private rooms. Same sagas for everyone
 I18N.es={
  langName:'Español',
  app:{ptsShort:'pts',title:'TIER ONE',tagline:'Da la exclusiva primero. O que te hagan ratio intentándolo.',live:'EN VIVO · MERCADO DE FICHAJES',disclaimer:'Juego no oficial hecho por aficionados. Cada culebrón es simulado. Sin relación con ningún club, liga, jugador o periodista.'},
- home:{play:'Jugar',done:'Hecho',newIn:'Nuevo reto en {t}',practiceShort:'Práctica',daily:'Reto diario #{n}',dailyDone:'Hecho hoy: {row} · {tier} · {pts} pts',dailySub:'Los mismos 8 culebrones para todos. Un intento. Comparte tu tarjeta.',streak:'🔥 Racha: {n}',career:'Carrera',careerLine:'Nivel {n} · {title} · ${c} · 👥 {f}',careerSub:'Cultiva fuentes, compra equipo, desbloquea coletillas, sube a Tier 1.',resume:'Continuar {mode} (día {d})',practice:'Mercado de práctica (no cuenta)',howto:'Cómo se juega',settings:'Ajustes',notif1:'Un jet privado acaba de registrar ruta a Riad…',notif2:'EXCLUSIVA: está HECHO. Anuncio inminente. 🔥',notif3:'Pidió un corte para la \'foto de presentación\'…'},
+ home:{play:'Jugar',done:'Hecho',newIn:'Nuevo reto en {t}',practiceShort:'Práctica',daily:'Reto diario #{n}',dailyDone:'Hecho hoy: {row} · {tier} · {pts} pts',dailySub:'Los mismos 5 culebrones para todos. Un intento. Comparte tu tarjeta.',streak:'🔥 Racha: {n}',career:'Carrera',careerLine:'Nivel {n} · {title} · ${c} · 👥 {f}',careerSub:'Cultiva fuentes, compra equipo, desbloquea coletillas, sube a Tier 1.',resume:'Continuar {mode} (día {d})',practice:'Mercado de práctica (no cuenta)',howto:'Cómo se juega',settings:'Ajustes',notif1:'Un jet privado acaba de registrar ruta a Riad…',notif2:'EXCLUSIVA: está HECHO. Anuncio inminente. 🔥',notif3:'Pidió un corte para la \'foto de presentación\'…'},
  mode:{daily:'reto diario',career:'mercado de carrera',practice:'mercado de práctica'},
  win:{contactsLbl:'contactos',followersLbl:'seguidores',finishShort:'Cerrar el mercado',day:'Día {d} de 7',deadline:'DÍA LÍMITE',daily:'Reto diario #{n}',career:'Mercado de carrera',practice:'Práctica',cr:'${c}',tabSagas:'Culebrones',tabFeed:'Muro ({n})',endDay:'Terminar día {d}',unused:'({n} sin usar)',finish:'Publicar todo y cerrar el mercado',uncalled:'({n} sin apuesta)',ad:'▶ Ver un anuncio por +1 contacto',home:'Guardar y volver al inicio',breaking:'ÚLTIMA HORA',ddTicker:'LÍMITE',noCall:'sin apuesta',posted:'Publicado',dayN:'día {d}',clues:'{n} pistas',wire:'Cable de fichajes',wireHandle:'@cable · día {d}',you:'Tú',youHandle:'@tierone_tu · día {d}',deleted:'BORRADO 🗑️'},
- sys:{open:'El mercado está abierto. 7 días. 8 culebrones. Da la exclusiva o cómete el ratio.',day:'Día {d}. Nuevos rumores de madrugada.',dd:'🚨 DÍA LÍMITE. 60 segundos. Lo que no hayas apostado, apuéstalo ya.',deleted:'🗑️ Borraste tu tuit de {p}. −{n} seguidores. La gente se dio cuenta.',report:'Medios en {country} vinculan a {p} ({c}) con {d}.'},
+ sys:{open:'El mercado está abierto. 7 días. 5 culebrones. Da la exclusiva o cómete el ratio.',day:'Día {d}. Nuevos rumores de madrugada.',dd:'🚨 DÍA LÍMITE. 60 segundos. Lo que no hayas apostado, apuéstalo ya.',deleted:'🗑️ Borraste tu tuit de {p}. −{n} seguidores. La gente se dio cuenta.',report:'Medios en {country} vinculan a {p} ({c}) con {d}.'},
  rivalmsg:{uturn:'Alguien acaba de borrar un tuit sobre {p} 👀 Hay capturas, amigo. Siempre las hay.',bribe:'📸 Circulan capturas de un "periodista" ofreciendo dinero por info de {p}. Nivel Tier One, señores.'},
  sheet:{back:'Volver',tierS:'superestrella',tierM:'estrella',tierR:'promesa',rumored:'rumor: {d}',dms:'Tus mensajes',dmsEmpty:'Nada aún. Todos adivinan. Escríbele a una fuente.',contact:'Contacta una fuente',left:'{n} restantes hoy',lockedGear:'Compra {g} en la tienda',boosts:'Mejoras',credits:'${n}',unlockLvl:'Se desbloquea al nivel {n}',yourCall:'Tu apuesta',lockedNote:'🔒 Fijado. Puedes cambiarlo, pero borrar una apuesta publicada es público: pierdes seguidores, el Tabloide se burla y la nueva apuesta puntúa la mitad y sin exclusiva.',change:'🔄 Cambiar mi apuesta (giro)',uturnNote:'Esta nueva apuesta puntúa la mitad si aciertas, sin exclusiva, y −10 extra si fallas.',step1:'1. ¿Qué pasa?',step2:'2. ¿Con cuánta fuerza?',pickFirst:'(elige primero el paso 1)',scoreHint:'+{a} acierto · {b} fallo',bothHint:'Elige ambas y se abre la pantalla de redacción. Apostar antes da más puntos. Fallar a lo grande duele más.',paid:'💸 Fuente pagada',tip:'💡 Soplo',tipReal:'Hay interés real. Algo se mueve.',tipFake:'No hay nada detrás de este rumor. Nadie puja.'},
  ask:['¿Algo de {p}?','¿Qué se oye de {p} → {d}?','Rápido: {p}. ¿Real o no?','¿Lo de {d} va en serio?','Dame algo de {p}, off the record.'],
@@ -739,11 +780,14 @@ I18N.es={
  evt:{DONE:['{d} ha presentado una primera oferta por {p}.','{p} dio like a una publicación de una cuenta fan de {d} 👀','El agente de {p}, visto entrando en las oficinas de {d}.'],HIJACK:['{d} ha presentado una primera oferta por {p}.','🚨 {h} entra en la carrera por {p}.','{p} visto en el aeropuerto de {hc}.'],OFF:['{d} ha presentado una primera oferta por {p}.','{c} rechaza la oferta de {d}. Quieren más.',"{p} publica una foto entrenando: 'Enfocado 💪'"],FAKE:["Una cuenta fan asegura que {p} → {d} está 'confirmado'. Sin fuente.","Fuente de {c}: 'no hay nada'."]},
  roast:['¿{p} a {d}?? el tío lo dijo con el pecho fuera 💀','borra esto y desconecta 😭','mi tío trabaja en {c} y dice que es mentira','guardo captura para cuando envejezca como la leche 🥛','comportamiento de tier 9 sinceramente','la confianza… el fallo… icónico','ratio + caíste + {p} se está riendo de ti','este tuit envejeció como un plátano en una sauna 🍌'],
  praise:['DE LOS MEJORES ✍️','lo dijiste hace días, respeto 🫡','por esto te seguimos','los de {d} están GRITANDO ahora mismo','comportamiento tier one 🥇','nunca dudé de ti (dudé de ti)','este hombre nunca falla 🎯'],
- howto:{title:'Cómo se juega',cards:[['El mercado','8 jugadores reales, 8 rumores. Cada culebrón esconde una verdad: se hace, se va a otro sitio, se cae o nunca fue real.'],['10 contactos','Cada día tienes 10 contactos. Cada fuente muestra una barra de fiabilidad. Alta (Fisio, Vigía del aeropuerto) cuesta 3 contactos, Media (Agente, Utillero) cuesta 2, Baja (Barbero, Topo de la redacción rival) cuesta 1. Hasta las mejores mienten a veces.'],['Tipos de jugador','★★★ Las superestrellas cuentan ×1,5 puntos y ×2 seguidores, ★★ las estrellas ×1,2 y ×1,4, ★ los de plantilla ×1. Aciertes o falles: nombres grandes, golpes grandes.'],['Publica tu apuesta','Elige qué pasa y con cuánta fuerza lo dices. Apuesta suave: +10 acierto, −5 fallo. Apuesta "Confirmado" a gritos: +40 acierto, −35 fallo. Apostar antes suma bonus. Si le ganas a todos los rivales con un acierto, es exclusiva: +15. Tier 1 ahora exige 375+ pts.'],['Cambiar de opinión','Puedes borrar una apuesta publicada y volver a apostar, pero es público: pierdes seguidores, el Tabloide se burla y la nueva apuesta puntúa la mitad sin exclusiva.'],['Día límite','El día 7 es un temporizador de 60 segundos con solo 3 contactos. Lo que no hayas apostado recibe ⚪ y cero puntos. Luego se anuncia todo, llegan las respuestas y recibes tu tier.'],['Diario vs Carrera','El mercado diario es idéntico para todos, sin equipo ni mejoras: solo habilidad y valor. Carrera es tu partida larga: gana dólares, compra equipo, soborna fuentes, desbloquea coletillas, suma seguidores.'],['Rivales','El Tabloide publica pronto y a gritos, y falla más de la mitad de las veces. La cuenta ITK es cara o cruz. El Insider del club publica tarde y casi siempre acierta… pero para entonces ya no es exclusiva.']]},
+ howto:{title:'Cómo se juega',cards:[['El mercado','5 jugadores reales, 5 rumores. Cada culebrón esconde una verdad: se hace, se va a otro sitio, se cae o nunca fue real.'],['4 contactos','Cada día tienes 4 contactos. Cada fuente muestra una barra de fiabilidad. Alta (Fisio, Vigía del aeropuerto) cuesta 3 contactos, Media (Agente, Utillero) cuesta 2, Baja (Barbero, Topo de la redacción rival) cuesta 1. Hasta las mejores mienten a veces.'],['Tipos de jugador','★★★ Las superestrellas cuentan ×1,5 puntos y ×2 seguidores, ★★ las estrellas ×1,2 y ×1,4, ★ los de plantilla ×1. Aciertes o falles: nombres grandes, golpes grandes.'],['Publica tu apuesta','Elige qué pasa y con cuánta fuerza lo dices. Apuesta suave: +10 acierto, −5 fallo. Apuesta "Confirmado" a gritos: +40 acierto, −35 fallo. Apostar antes suma bonus. Si le ganas a todos los rivales con un acierto, es exclusiva: +15. Tier 1 ahora exige 235+ pts.'],['Cambiar de opinión','Puedes borrar una apuesta publicada y volver a apostar, pero es público: pierdes seguidores, el Tabloide se burla y la nueva apuesta puntúa la mitad sin exclusiva.'],['Día límite','El día 7 es un temporizador de 60 segundos con solo 3 contactos. Lo que no hayas apostado recibe ⚪ y cero puntos. Luego se anuncia todo, llegan las respuestas y recibes tu tier.'],['Diario vs Carrera','El mercado diario es idéntico para todos, sin equipo ni mejoras: solo habilidad y valor. Carrera es tu partida larga: gana dólares, compra equipo, soborna fuentes, desbloquea coletillas, suma seguidores.'],['Rivales','El Tabloide publica pronto y a gritos, y falla más de la mitad de las veces. La cuenta ITK es cara o cruz. El Insider del club publica tarde y casi siempre acierta… pero para entonces ya no es exclusiva.']]},
  settings:{title:'Ajustes',theme:'Tema',auto:'Auto',light:'Claro',dark:'Oscuro',language:'Idioma',look:'Estilo visual',lookNote:'Compra más en Carrera › Estilo.',sound:'Sonido',on:'Sí',off:'No',wipe:'Borrar todo el progreso',saved:'El progreso se guarda solo en este navegador.',confirm:'¿Borrar todos los mercados, insignias y dólares?',tutorial:'Repetir el tutorial',close:'Cerrar'},
- tut:{cards:[['🎙️','Eres periodista de fichajes','8 jugadores reales suenan para irse. Cada rumor esconde una verdad. Tu trabajo: descubrirla y publicarla antes que los rivales.'],['💬','Escribe a tus fuentes','Toca un jugador y escribe a una fuente. Tienes 10 contactos al día. Las de fiabilidad alta cuestan 3, media 2 y baja 1. Mira la barra debajo de cada una.'],['🚀','Publica tu apuesta','Elige qué pasa y con cuánta fuerza lo dices. A gritos y acertar = muchos puntos. A gritos y fallar = ratio. Apostar antes suma más. Tier 1 exige 375+ pts.'],['⏱️','Día límite','Termina cada día cuando acabes. El día 7 es un temporizador de 60 segundos con solo 3 contactos; luego se anuncia todo y recibes tu tier.']],next:'Siguiente',skip:'Saltar',practice:'Jugar un mercado de práctica primero',start:'Empezar',gotit:'Entendido',coach:{c1:'Toca un jugador para abrir su culebrón.',c2:'Escribe a una fuente. La barra dice cuánto te puedes fiar: Alta 📞3, Media 📞2, Baja 📞1.',c3:'¿Ya tienes una pista? Baja y apuesta.',c4:'¿Sin contactos? Termina el día. Los rivales publican de madrugada.',c5:'60 segundos, 3 contactos. Apuesta todo lo que falte.'}},
+ tut:{cards:[['🎙️','Eres periodista de fichajes','5 jugadores reales suenan para irse. Cada rumor esconde una verdad. Tu trabajo: descubrirla y publicarla antes que los rivales.'],['💬','Escribe a tus fuentes','Toca un jugador y escribe a una fuente. Tienes 4 contactos al día. Las de fiabilidad alta cuestan 3, media 2 y baja 1. Mira la barra debajo de cada una.'],['🚀','Publica tu apuesta','Elige qué pasa y con cuánta fuerza lo dices. A gritos y acertar = muchos puntos. A gritos y fallar = ratio. Apostar antes suma más. Tier 1 exige 235+ pts.'],['⏱️','Día límite','Termina cada día cuando acabes. El día 7 es un temporizador de 60 segundos con solo 3 contactos; luego se anuncia todo y recibes tu tier.']],next:'Siguiente',skip:'Saltar',practice:'Jugar un mercado de práctica primero',start:'Empezar',gotit:'Entendido',coach:{c1:'Toca un jugador para abrir su culebrón.',c2:'Escribe a una fuente. La barra dice cuánto te puedes fiar: Alta 📞3, Media 📞2, Baja 📞1.',c3:'¿Ya tienes una pista? Baja y apuesta.',c4:'¿Sin contactos? Termina el día. Los rivales publican de madrugada.',c5:'60 segundos, 3 contactos. Apuesta todo lo que falte.'}},
 online:{tile:'Jugar con amigos',tileSub:'Salas privadas. Los mismos culebrones para todos. Gana la mejor carrera.',title:'Jugar con amigos',sub:'Crea una sala privada, comparte el código y compite con tus amigos durante toda una carrera. Cada temporada, todos en la sala reciben exactamente los mismos culebrones.',create:'Crear una sala',nick:'Tu nombre',roomName:'Nombre de la sala',namePh:'El grupo de WhatsApp',seasons:'Temporadas',seasonsN:'{n} temporadas',createBtn:'Crear sala',join:'Unirse a una sala',code:'Código de sala',joinBtn:'Entrar',mine:'Tus salas',offline:'El juego online se activa muy pronto. Vuelve en un rato.',netErr:'No hay conexión con el servidor. Revisa tu conexión.',notFound:'No hay ninguna sala con ese código.',full:'Esa sala está llena.',needNick:'Primero elige un nombre.',roomCode:'Código de sala',invite:'Invitar',copied:'Invitación copiada. Mándasela a tus amigos.',season:'Temporada {s} de {n}',play:'Jugar temporada {s}',done:'Tu carrera en esta sala está completa.',shop:'Carrera y tienda',board:'Clasificación',you:'tú',played:'{s}/{n} temporadas',best:'mejor {t}',same:'Todos juegan los mismos culebrones cada temporada. Las puntuaciones se publican al terminar cada temporada.',pending:'Tu última temporada está pendiente de subir. Se reintentará sola.',back:'Volver a la sala',backShort:'Sala',label:'Sala {c} · Temporada {s}/{n}',roomTag:'Sala {c}',inviteText:'Únete a mi sala de Tier One {c} y a ver quién tiene mejor carrera: {u}',members:'{n} jugadores',refresh:'Actualizar',updated:'Clasificación actualizada',allRooms:'Todas las salas'},
  transfer:{title:'Pasar a otro dispositivo',note:'Pide un código corto y escríbelo en tu otro móvil o portátil en menos de 30 días. Tu carrera, tus salas y tus ajustes se vienen contigo.',get:'Obtener código',enter:'Introducir código',your:'Tu código de traspaso',expires:'Válido {d} días',prompt:'Escribe tu código de traspaso',confirm:'¿Reemplazar todo lo de este dispositivo con esa partida?',bad:'Ese código no funciona.',ok:'Partida cargada. Bienvenido de vuelta.',working:'Creando tu código…'},
+ jet:{divert:'Plan de vuelo cambiado en el aire',cancel:'Vuelo cancelado. El avión, de vuelta a la puerta.',none:'Ningún plan de vuelo. Nada en el radar.'},
+ scoop:{exTitle:'EXCLUSIVA',exSub:'Te adelantaste a todos los rivales: +15 pts y avalancha de seguidores',rightTitle:'ACIERTO',beaten:'{r} lo dio antes (día {d}), así que sin bonus de exclusiva',late:'Un rival llegó antes, así que sin bonus de exclusiva',uturn:'Acierto tras rectificar: mitad de puntos, sin exclusiva',hint:'Acertar Y antes que todos los rivales = EXCLUSIVA: +15 pts y avalancha de seguidores. Acertar tarde = puntos normales.'},
+ news:{new:'NUEVO',title:'Titulares de la noche · día {d}',short:'Titulares',sub:'Los rivales han publicado esta noche. Unos aciertan, otros se la juegan. Toca uno para abrir ese culebrón.',ok:'A trabajar',claim:{DONE:'dice HECHO',HIJACK:'dice GIRO',OFF:'dice SE CAE',FAKE:'dice HUMO'}},
  econ:{payday:'💵 ¡Día de paga! +${n} por pasarte hoy.',bonusIncl:'incl. ${n} de bonus',short:'Te faltan ${n}. Pilla un pack de dinero abajo o sigue acertando para ganarlo.',shortEarn:'Te faltan ${n}. Acierta unas cuantas y es tuyo.',need:'faltan ${n}',goalsTitle:'Objetivos de carrera',goalsSub:'Completa los cuatro para ser Leyenda Tier One.',goal:{lvl:'Llega al nivel 7',t1:'Consigue Tier 1 tres veces',gear:'Ten todo el equipo',fans:'Llega a 100K seguidores'},legend:'👑 Leyenda Tier One. ¡Carrera completada!',adCash:'Ver un anuncio',adCashDesc:'+$40, una vez al día',adDone:'+$40 añadidos. Hasta mañana.',packNote:'Todo se puede ganar jugando. El dinero solo te lleva más rápido.',popular:'El más popular',best:'Mejor precio',buy:'Comprar · {p}',cash:'${n} en efectivo'},
  ptype:{super:'Superestrella',star:'Estrella',squad:'De plantilla',note:'Aciertes o falles, esta historia cuenta ×{p} puntos y ×{f} seguidores.'},
  wallet:{left:'contactos para hoy',none:'Sin contactos. Termina el día para recargar.',one:'contacto',many:'contactos'},
@@ -754,10 +798,10 @@ online:{tile:'Jugar con amigos',tileSub:'Salas privadas. Los mismos culebrones p
 I18N.ar={
  langName:'العربية',
  app:{ptsShort:'نقطة',title:'TIER ONE',tagline:'اخبط الخبر الأول… يا إما تاكل راتيو وانت بتحاول.',live:'على الهوا · سوق الانتقالات',disclaimer:'لعبة مشجعين مش رسمية. كل القصص تمثيل في تمثيل. ملهاش علاقة بأي نادي أو دوري أو لعيب أو صحفي.'},
- home:{play:'يلا',done:'خلصت',newIn:'تحدي جديد بعد {t}',practiceShort:'تسخين',daily:'تحدي النهارده #{n}',dailyDone:'لعبتها النهارده: {row} · {tier} · {pts} نقطة',dailySub:'نفس الـ8 قصص للكل. فرصة واحدة. وبعدين اتباهى بالكارت.',streak:'🔥 السلسلة: {n}',career:'المسيرة',careerLine:'مستوى {n} · {title} · ${c} · 👥 {f}',careerSub:'كوّن مصادرك، اشتري عدّتك، افتح الإفيهات، واطلع لحد تير 1.',resume:'كمّل {mode} (يوم {d})',practice:'نافذة تسخين (مش بتتحسب)',howto:'إزاي تلعب',settings:'الإعدادات',notif1:'طيارة خاصة لسه مسجلة رحلة للرياض…',notif2:'انفراد: خلصانة. الإعلان قرّب 🔥',notif3:'طلب حلاقة عشان "صورة التقديم"…'},
+ home:{play:'يلا',done:'خلصت',newIn:'تحدي جديد بعد {t}',practiceShort:'تسخين',daily:'تحدي النهارده #{n}',dailyDone:'لعبتها النهارده: {row} · {tier} · {pts} نقطة',dailySub:'نفس الـ5 قصص للكل. فرصة واحدة. وبعدين اتباهى بالكارت.',streak:'🔥 السلسلة: {n}',career:'المسيرة',careerLine:'مستوى {n} · {title} · ${c} · 👥 {f}',careerSub:'كوّن مصادرك، اشتري عدّتك، افتح الإفيهات، واطلع لحد تير 1.',resume:'كمّل {mode} (يوم {d})',practice:'نافذة تسخين (مش بتتحسب)',howto:'إزاي تلعب',settings:'الإعدادات',notif1:'طيارة خاصة لسه مسجلة رحلة للرياض…',notif2:'انفراد: خلصانة. الإعلان قرّب 🔥',notif3:'طلب حلاقة عشان "صورة التقديم"…'},
  mode:{daily:'تحدي النهارده',career:'نافذة المسيرة',practice:'نافذة التسخين'},
  win:{contactsLbl:'اتصالات',followersLbl:'متابع',finishShort:'اقفل النافذة',day:'يوم {d} من 7',deadline:'يوم القفلة',daily:'تحدي اليوم #{n}',career:'نافذة المسيرة',practice:'تسخين',cr:'${c}',tabSagas:'القصص',tabFeed:'التايملاين ({n})',endDay:'خلّص يوم {d}',unused:'({n} ماستخدمتهاش)',finish:'انشر كل حاجة واقفل النافذة',uncalled:'({n} من غير توقّع)',ad:'▶ اتفرج على إعلان وخد اتصال زيادة',home:'احفظ واطلع',breaking:'عاجل',ddTicker:'القفلة',noCall:'لسه',posted:'اتنشر',dayN:'يوم {d}',clues:'{n} دلائل',wire:'وكالة الانتقالات',wireHandle:'@wire · يوم {d}',you:'انت',youHandle:'@tierone_you · يوم {d}',deleted:'اتمسحت 🗑️'},
- sys:{open:'النافذة اتفتحت. 7 أيام. 8 قصص. اخبط الخبر الأول، يا إما تاكل راتيو.',day:'يوم {d}. في كلام جديد طالع بالليل.',dd:'🚨 يوم القفلة. 60 ثانية. أي حاجة ماقلتهاش، قولها دلوقتي حالًا.',deleted:'🗑️ مسحت تويتتك عن {p}. −{n} متابع. الناس خدت بالها يا نجم.',report:'أخبار في {country} بتربط {p} ({c}) بالانتقال لـ{d}.'},
+ sys:{open:'النافذة اتفتحت. 7 أيام. 5 قصص. اخبط الخبر الأول، يا إما تاكل راتيو.',day:'يوم {d}. في كلام جديد طالع بالليل.',dd:'🚨 يوم القفلة. 60 ثانية. أي حاجة ماقلتهاش، قولها دلوقتي حالًا.',deleted:'🗑️ مسحت تويتتك عن {p}. −{n} متابع. الناس خدت بالها يا نجم.',report:'أخبار في {country} بتربط {p} ({c}) بالانتقال لـ{d}.'},
  rivalmsg:{uturn:'في حد لسه ماسح تويتة عن {p} 👀 السكرينات موجودة يا حلو. دايمًا موجودة.',bribe:'📸 في سكرينات لـ"صحفي" بيدفع فلوس عشان معلومات عن {p}. صحافة تير 1 بقى 😂'},
  sheet:{back:'ارجع',tierS:'سوبر ستار',tierM:'نجم',tierR:'طالع',rumored:'الكلام إنه رايح {d}',dms:'الخاص بتاعك',dmsEmpty:'مفيش حاجة لسه. الكل بيخمّن. ادخل على خاص مصدر.',contact:'كلّم مصدر',left:'فاضلك {n} النهارده',lockedGear:'اشتري {g} من المحل',boosts:'مساعدات',credits:'${n}',unlockLvl:'بتتفتح في مستوى {n}',yourCall:'هتقول إيه؟',lockedNote:'🔒 اتقفلت. تقدر تغيّرها — بس مسح توقّع منشور بيبان للكل: هتخسر متابعين، وجرنال الفضايح هيتريق عليك، والتوقّع الجديد بياخد نص النقط ومن غير انفراد.',change:'🔄 غيّر رأيك (لفّة)',uturnNote:'التوقّع ده بياخد نص النقط لو صح، من غير انفراد، و−10 زيادة لو غلط.',step1:'1. إيه اللي هيحصل؟',step2:'2. هتقولها بصوت قد إيه؟',pickFirst:'(اختار خطوة 1 الأول)',scoreHint:'+{a} لو صح · {b} لو غلط',bothHint:'اختار الاتنين وشاشة الكتابة هتفتح. كل ما تقول بدري تاخد أكتر. والصوت العالي الغلط بيوجع أكتر.',paid:'💸 مصدر مدفوع',tip:'💡 همسة',tipReal:'في اهتمام بجد. في حاجة بتتحرك.',tipFake:'الإشاعة دي فاضية. محدش قدّم عرض أصلًا.'},
  ask:['عندك حاجة عن {p}؟','إيه اللي سامعه عن {p} لـ{d}؟','بسرعة: {p}. بجد ولا هري؟','موضوع {d} ده حقيقي؟','قولي أي حاجة عن {p}، بيني وبينك.','يا باشا فكّني، {p} رايح فين؟'],
@@ -797,11 +841,14 @@ I18N.ar={
  evt:{DONE:['{d} قدّموا أول عرض لـ{p}.','{p} عمل لايك لبوست صفحة مشجعين {d} 👀','وكيل {p} اتشاف داخل مكاتب {d}.'],HIJACK:['{d} قدّموا أول عرض لـ{p}.','🚨 {h} دخلوا السباق على {p}.','{p} اتشاف في مطار {hc}.'],OFF:['{d} قدّموا أول عرض لـ{p}.','{c} رفضوا عرض {d}. عايزين أكتر.','{p} نزّل صورة من التمرين: "فوكس 💪"'],FAKE:['حساب مشجعين بيقول إن {p} لـ{d} "مؤكدة". من غير مصدر طبعًا.','مصدر من {c}: "مفيش أي حاجة".']},
  roast:['{p} لـ{d}؟؟ ده انت عامل نفسك من بنها 💀','امسح التويتة دي واقفل النت يا حبيبي 😭','خالي شغال في {c} وبيقول إنك بتهبد','مصادرك: عم عبده بتاع الفول 🫘','هبد على الصبح كده؟ طب افطر الأول','الثقة… والغلط… أيقونة والله','راتيو + وقعت + {p} بيضحك عليك دلوقتي','التويتة دي بايظة زي موزة في ساونا 🍌','يخرب بيت الهري، ده انت أستاذ الفتّايين','يا عم روح نام، {d} نفسهم مايعرفوش الكلام ده','ده انت لو قلت الشمس طالعة هطلع أتأكد بنفسي','اللي يصدقك يبقى أهبل رسمي','كلام قهاوي ده يا معلم ☕','يا ابن الإيه، جبت الكلام ده منين؟ من جروب العيلة؟','بلاها صحافة يا باشا، شوفلك صنعة 😂','السكرين متحفظ عندي يا فتّاي 📸'],
  praise:['يا عم انت جامد ✍️','قالها من أيام، احترامي 🫡','عشان كده بنتابعك يا كبير','جمهور {d} بيصرخ دلوقتي 😭','ده تير 1 وربنا 🥇','عمري ما شكيت فيك (شكيت فيك)','الراجل ده مابيغلطش 🎯','فخم يا وحش 🔥','إيه يا عم الخبطة دي؟!','ابن اللذينة جابها قبل الكل 😂','سيبوا الراجل يشتغل','حد يديله برنامج في التلفزيون بقى 📺'],
- howto:{title:'إزاي تلعب',cards:[['النافذة','8 لعيبة حقيقيين، و8 إشاعات انتقال. كل قصة وراها حقيقة مستخبية: الصفقة هتتم، أو هيروح حتة تانية، أو هتبوظ، أو كانت هري من الأول.'],['10 اتصالات','كل يوم معاك 10 اتصالات. تحت كل مصدر شريط بيقولك مصداقيته. العالية (الفسيو والواد بتاع المطار) بتاكل 3 اتصالات، المتوسطة (السمسار وعم سيد) بتاكل 2، والضعيفة (الحلاق والمسرّب) بتاكل 1. وحتى الكويسين بيكدبوا ساعات.'],['أنواع اللعيبة','★★★ السوبر ستار بيتحسب ×1.5 نقط و×2 متابعين، ★★ النجم ×1.2 و×1.4، ★ اللعيب العادي ×1. صح ولا غلط: الاسم الكبير يكسّب كتير ويخسّر كتير.'],['انزل بتوقّعك','اختار إيه اللي هيحصل وهتقولها بصوت قد إيه. توقّع هادي: +10 لو صح، −5 لو غلط. "خلصانة" بصوت عالي: +40 لو صح، −35 لو غلط. كل ما تقول بدري تاخد بونص. ولو سبقت كل المنافسين بتوقّع صح يبقى انفراد: +15. تير 1 بقى محتاج 375+ نقطة.'],['غيّرت رأيك؟','تقدر تمسح توقّعك المنشور وتقول تاني، بس ده بيبان للكل: هتخسر متابعين، وجرنال الفضايح هيتريق عليك، والتوقّع الجديد بياخد نص النقط من غير انفراد.'],['يوم القفلة','اليوم السابع عداد 60 ثانية وفيه 3 اتصالات بس. أي حاجة ماقلتهاش بتاخد ⚪ وصفر نقط. وبعدين كل حاجة بتتعلن، والردود بتنزل ترف، وتعرف انت تير كام.'],['اليومية ولا المسيرة','اليومية واحدة للكل، من غير عدّة ولا مساعدات — شطارة وجرأة بس. المسيرة لعبتك الطويلة: اكسب دولار، اشتري عدّة، ارشي مصادر، افتح إفيهات، وكبّر متابعينك.'],['المنافسين','جرنال الفضايح بينشر بدري وبصوت عالي وبيغلط أكتر من نص الوقت. حساب مصادري ملك وكتابة. ابن النادي بينشر متأخر وغالبًا صح — بس ساعتها مابقاش انفراد.']]},
+ howto:{title:'إزاي تلعب',cards:[['النافذة','5 لعيبة حقيقيين، و5 إشاعات انتقال. كل قصة وراها حقيقة مستخبية: الصفقة هتتم، أو هيروح حتة تانية، أو هتبوظ، أو كانت هري من الأول.'],['4 اتصالات','كل يوم معاك 4 اتصالات. تحت كل مصدر شريط بيقولك مصداقيته. العالية (الفسيو والواد بتاع المطار) بتاكل 3 اتصالات، المتوسطة (السمسار وعم سيد) بتاكل 2، والضعيفة (الحلاق والمسرّب) بتاكل 1. وحتى الكويسين بيكدبوا ساعات.'],['أنواع اللعيبة','★★★ السوبر ستار بيتحسب ×1.5 نقط و×2 متابعين، ★★ النجم ×1.2 و×1.4، ★ اللعيب العادي ×1. صح ولا غلط: الاسم الكبير يكسّب كتير ويخسّر كتير.'],['انزل بتوقّعك','اختار إيه اللي هيحصل وهتقولها بصوت قد إيه. توقّع هادي: +10 لو صح، −5 لو غلط. "خلصانة" بصوت عالي: +40 لو صح، −35 لو غلط. كل ما تقول بدري تاخد بونص. ولو سبقت كل المنافسين بتوقّع صح يبقى انفراد: +15. تير 1 بقى محتاج 235+ نقطة.'],['غيّرت رأيك؟','تقدر تمسح توقّعك المنشور وتقول تاني، بس ده بيبان للكل: هتخسر متابعين، وجرنال الفضايح هيتريق عليك، والتوقّع الجديد بياخد نص النقط من غير انفراد.'],['يوم القفلة','اليوم السابع عداد 60 ثانية وفيه 3 اتصالات بس. أي حاجة ماقلتهاش بتاخد ⚪ وصفر نقط. وبعدين كل حاجة بتتعلن، والردود بتنزل ترف، وتعرف انت تير كام.'],['اليومية ولا المسيرة','اليومية واحدة للكل، من غير عدّة ولا مساعدات — شطارة وجرأة بس. المسيرة لعبتك الطويلة: اكسب دولار، اشتري عدّة، ارشي مصادر، افتح إفيهات، وكبّر متابعينك.'],['المنافسين','جرنال الفضايح بينشر بدري وبصوت عالي وبيغلط أكتر من نص الوقت. حساب مصادري ملك وكتابة. ابن النادي بينشر متأخر وغالبًا صح — بس ساعتها مابقاش انفراد.']]},
  settings:{title:'الإعدادات',theme:'الثيم',auto:'أوتوماتيك',light:'فاتح',dark:'غامق',language:'اللغة',look:'الشكل',lookNote:'اشتري أشكال أكتر من المسيرة › الستايل.',sound:'الصوت',on:'شغّال',off:'مقفول',wipe:'امسح كل حاجة',saved:'التقدم متسيّف على المتصفح ده بس.',confirm:'تمسح كل النوافذ والشارات والفلوس؟',tutorial:'اشرحلي تاني',close:'اقفل'},
- tut:{cards:[['🎙️','انت صحفي انتقالات','8 لعيبة حقيقيين في كلام عن انتقالهم. كل إشاعة وراها حقيقة. شغلتك: تعرفها وتنشرها قبل المنافسين.'],['💬','كلّم مصادرك في الخاص','دوس على لعيب وبعدين كلّم مصدر. معاك 10 اتصالات في اليوم. المصدر العالي بياكل 3، المتوسط 2، والضعيف 1. بص على الشريط اللي تحت كل واحد.'],['🚀','انزل بتوقّعك','اختار إيه اللي هيحصل وهتقولها بصوت قد إيه. عالي وصح = نقط كتير. عالي وغلط = راتيو. كل ما تقول بدري تاخد أكتر. تير 1 محتاج 375+ نقطة.'],['⏱️','يوم القفلة','خلّص كل يوم لما تخلص. اليوم السابع عداد 60 ثانية وفيه 3 اتصالات بس، وبعدين كل حاجة بتتعلن وتعرف انت تير كام.']],next:'اللي بعده',skip:'فكّك',practice:'سخّن الأول بنافذة تجريبية',start:'يلا بينا',gotit:'تمام',coach:{c1:'دوس على لعيب عشان تفتح قصته.',c2:'كلّم مصدر. الشريط بيقولك تصدقه قد إيه: عالي 📞3، متوسط 📞2، ضعيف 📞1.',c3:'معاك دليل؟ انزل تحت وقول توقّعك.',c4:'خلصت اتصالاتك؟ خلّص اليوم. المنافسين بينشروا بالليل.',c5:'60 ثانية، 3 اتصالات. قول أي حاجة ماقلتهاش.'}},
+ tut:{cards:[['🎙️','انت صحفي انتقالات','5 لعيبة حقيقيين في كلام عن انتقالهم. كل إشاعة وراها حقيقة. شغلتك: تعرفها وتنشرها قبل المنافسين.'],['💬','كلّم مصادرك في الخاص','دوس على لعيب وبعدين كلّم مصدر. معاك 4 اتصالات في اليوم. المصدر العالي بياكل 3، المتوسط 2، والضعيف 1. بص على الشريط اللي تحت كل واحد.'],['🚀','انزل بتوقّعك','اختار إيه اللي هيحصل وهتقولها بصوت قد إيه. عالي وصح = نقط كتير. عالي وغلط = راتيو. كل ما تقول بدري تاخد أكتر. تير 1 محتاج 235+ نقطة.'],['⏱️','يوم القفلة','خلّص كل يوم لما تخلص. اليوم السابع عداد 60 ثانية وفيه 3 اتصالات بس، وبعدين كل حاجة بتتعلن وتعرف انت تير كام.']],next:'اللي بعده',skip:'فكّك',practice:'سخّن الأول بنافذة تجريبية',start:'يلا بينا',gotit:'تمام',coach:{c1:'دوس على لعيب عشان تفتح قصته.',c2:'كلّم مصدر. الشريط بيقولك تصدقه قد إيه: عالي 📞3، متوسط 📞2، ضعيف 📞1.',c3:'معاك دليل؟ انزل تحت وقول توقّعك.',c4:'خلصت اتصالاتك؟ خلّص اليوم. المنافسين بينشروا بالليل.',c5:'60 ثانية، 3 اتصالات. قول أي حاجة ماقلتهاش.'}},
 online:{tile:'العب مع صحابك',tileSub:'أوض خاصة. نفس القصص للكل. واللي مسيرته أحسن يكسب.',title:'العب مع صحابك',sub:'اعمل أوضة خاصة، ابعت الكود، ونافس صحابك على مسيرة كاملة. كل موسم، كل اللي في الأوضة بياخدوا نفس القصص بالظبط.',create:'اعمل أوضة',nick:'اسمك',roomName:'اسم الأوضة',namePh:'جروب الشلة',seasons:'المواسم',seasonsN:'{n} مواسم',createBtn:'اعمل الأوضة',join:'ادخل أوضة',code:'كود الأوضة',joinBtn:'ادخل',mine:'أوضك',offline:'اللعب أونلاين هيشتغل قريب جدًا. ارجع كمان شوية.',netErr:'مش عارفين نوصل للسيرفر. شوف النت عندك.',notFound:'مفيش أوضة بالكود ده.',full:'الأوضة دي مليانة.',needNick:'اختار اسم الأول.',roomCode:'كود الأوضة',invite:'اعزم',copied:'الدعوة اتنسخت. ابعتها لصحابك.',season:'موسم {s} من {n}',play:'العب موسم {s}',done:'مسيرتك في الأوضة دي خلصت.',shop:'المسيرة والمحل',board:'الترتيب',you:'انت',played:'{s}/{n} مواسم',best:'أحسن {t}',same:'الكل بيلعب نفس القصص كل موسم. النتيجة بتتنشر لما تخلّص الموسم.',pending:'آخر موسم ليك مستني يترفع. هيحاول تاني لوحده.',back:'ارجع للأوضة',backShort:'الأوضة',label:'أوضة {c} · موسم {s}/{n}',roomTag:'أوضة {c}',inviteText:'تعالى أوضة Tier One بتاعتي {c} ونشوف مين مسيرته أحسن: {u}',members:'{n} لاعبين',refresh:'حدّث',updated:'الترتيب اتحدّث',allRooms:'كل الأوض'},
  transfer:{title:'انقل لجهاز تاني',note:'خد كود قصير واكتبه على موبايلك أو اللابتوب التاني خلال 30 يوم. مسيرتك وأوضك وإعداداتك هتيجي معاك.',get:'هات كود النقل',enter:'اكتب كود',your:'كود النقل بتاعك',expires:'شغال {d} يوم',prompt:'اكتب كود النقل',confirm:'تستبدل كل حاجة على الجهاز ده بالحفظة دي؟',bad:'الكود ده مش شغال.',ok:'الحفظة اتحمّلت. نورت تاني.',working:'بنعملك الكود…'},
+ jet:{divert:'خط الرحلة اتغيّر في الجو',cancel:'الرحلة اتلغت. الطيارة رجعت مكانها.',none:'مفيش خط رحلة متسجّل. الرادار فاضي.'},
+ scoop:{exTitle:'انفراد',exSub:'سبقت كل المنافسين: +15 نقطة وموجة متابعين',rightTitle:'صح',beaten:'{r} قالها قبلك (يوم {d})، فمفيش بونص انفراد',late:'في منافس سبقك، فمفيش بونص انفراد',uturn:'صح بعد ما غيّرت رأيك: نص النقط ومن غير انفراد',hint:'صح وقبل كل المنافسين = انفراد: +15 نقطة وموجة متابعين. صح بس متأخر = نقط عادية.'},
+ news:{new:'جديد',title:'عناوين بالليل · يوم {d}',short:'العناوين',sub:'المنافسين نشروا بالليل. في اللي صح وفي اللي بيهبد. دوس على واحد يفتحلك القصة.',ok:'يلا نشتغل',claim:{DONE:'بيقول خلصانة',HIJACK:'بيقول خطفوه',OFF:'بيقول وقعت',FAKE:'بيقول فشنك'}},
  econ:{payday:'💵 يوم القبض! +${n} عشان جيت النهارده.',bonusIncl:'منهم ${n} بونص',short:'ناقصك ${n}. خد باكة فلوس تحت، أو كمّل توقّعات وهتجمعهم.',shortEarn:'ناقصك ${n}. صيب كام توقّع وهيبقوا معاك.',need:'ناقص ${n}',goalsTitle:'أهداف المسيرة',goalsSub:'خلّص الأربعة عشان تبقى أسطورة تير 1.',goal:{lvl:'وصّل لمستوى 7',t1:'اطلع تير 1 تلات مرات',gear:'اشتري كل العدّة',fans:'وصّل 100 ألف متابع'},legend:'👑 أسطورة تير 1. المسيرة خلصت!',adCash:'اتفرج على إعلان',adCashDesc:'+$40، مرة في اليوم',adDone:'اتضاف $40. نشوفك بكرة.',packNote:'كل حاجة ممكن تكسبها باللعب. الفلوس بس بتختصر الطريق.',popular:'الأكثر طلبًا',best:'أحسن قيمة',buy:'اشتري · {p}',cash:'${n} كاش'},
  ptype:{super:'سوبر ستار',star:'نجم',squad:'لعيب عادي',note:'صح ولا غلط، الخبر ده بيتحسب ×{p} نقط و×{f} متابعين.'},
  wallet:{left:'اتصالات فاضلة النهارده',none:'خلصت اتصالاتك. خلّص اليوم عشان تاخد تاني.',one:'اتصال',many:'اتصالات'},
@@ -821,7 +868,7 @@ const NAMES={
 function deepMerge(a,b){ for(const k in b){ if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])){ a[k]=a[k]||{}; deepMerge(a[k],b[k]); } else a[k]=b[k]; } return a; }
 deepMerge(I18N.en,{
  home:{notif1:"Private jet just filed a route to Riyadh… 👀",notif2:"EXCLUSIVE: it's DONE. Announcement imminent. 🔥",notif3:"He asked for a trim for a 'presentation photo'… 💈"},
- sys:{open:"The window's open. 7 days. 8 sagas. Break it first or get ratio'd into orbit.",day:"Day {d}. The rumour mill never sleeps.",dd:"🚨 DEADLINE DAY. 60 seconds. Call it now or forever hold your peace.",deleted:"🗑️ You deleted your {p} tweet. −{n} followers. The internet never forgets."},
+ sys:{open:"The window's open. 7 days. 5 sagas. Break it first or get ratio'd into orbit.",day:"Day {d}. The rumour mill never sleeps.",dd:"🚨 DEADLINE DAY. 60 seconds. Call it now or forever hold your peace.",deleted:"🗑️ You deleted your {p} tweet. −{n} followers. The internet never forgets."},
  rivalmsg:{uturn:"Someone just deleted a {p} tweet 👀 Screenshots exist, pal. They always exist.",bribe:"📸 Screenshots going round of a 'journalist' paying for {p} info. Tier One standards, lads. 😂"},
  res:{silence:"You didn't call this one. Silence is safe. Silence is also Tier 5, coward."},
  ask:["Oi. Anything on {p}?","What you hearing on {p} → {d}? Don't mug me off.","Quick one — {p}. Real or bollocks?","Be honest. Is the {d} thing actually happening?","Give me something on {p}. I'll owe you a pint.","Mate. Where is {p} going. Just tell me.","Need a crumb on {p}. Anything. Please.","You've gone quiet on {p}. Why've you gone quiet?"],
@@ -851,7 +898,7 @@ deepMerge(I18N.en,{
 });
 deepMerge(I18N.es,{
  home:{notif1:"Un jet privado acaba de registrar ruta a Riad… 👀",notif2:"EXCLUSIVA: está HECHO. Anuncio inminente. 🔥",notif3:"Pidió un corte para la 'foto de presentación'… 💈"},
- sys:{open:"El mercado está abierto. 7 días. 8 culebrones. Da la exclusiva o cómete un ratio que te manda a la luna.",day:"Día {d}. La fábrica de rumores no duerme.",dd:"🚨 DÍA LÍMITE. 60 segundos. Apuesta ahora o calla para siempre.",deleted:"🗑️ Has borrado tu tuit de {p}. −{n} seguidores. Internet nunca olvida."},
+ sys:{open:"El mercado está abierto. 7 días. 5 culebrones. Da la exclusiva o cómete un ratio que te manda a la luna.",day:"Día {d}. La fábrica de rumores no duerme.",dd:"🚨 DÍA LÍMITE. 60 segundos. Apuesta ahora o calla para siempre.",deleted:"🗑️ Has borrado tu tuit de {p}. −{n} seguidores. Internet nunca olvida."},
  rivalmsg:{uturn:"Alguien acaba de borrar un tuit sobre {p} 👀 Hay capturas, colega. Siempre las hay.",bribe:"📸 Circulan capturas de un 'periodista' pagando por info de {p}. Nivel Tier One, señores 😂"},
  res:{silence:"No apostaste en esta. El silencio es seguro. El silencio también es Tier 5, cobarde."},
  tier:{clown:"VENDEHUMOS 🤡"},
@@ -883,7 +930,7 @@ deepMerge(I18N.es,{
  }
 });
 deepMerge(I18N.ar,{
- sys:{open:'النافذة اتفتحت. 7 أيام. 8 قصص. اخبط الخبر الأول، يا إما تاكل راتيو يوديك في داهية.',day:'يوم {d}. مصنع الإشاعات مابينامش.',dd:'🚨 يوم القفلة. 60 ثانية. قول دلوقتي يا إما اسكت للأبد.',deleted:'🗑️ مسحت تويتتك عن {p}. −{n} متابع. النت مابينساش يا حبيبي.'},
+ sys:{open:'النافذة اتفتحت. 7 أيام. 5 قصص. اخبط الخبر الأول، يا إما تاكل راتيو يوديك في داهية.',day:'يوم {d}. مصنع الإشاعات مابينامش.',dd:'🚨 يوم القفلة. 60 ثانية. قول دلوقتي يا إما اسكت للأبد.',deleted:'🗑️ مسحت تويتتك عن {p}. −{n} متابع. النت مابينساش يا حبيبي.'},
  res:{silence:'ماقلتش حاجة في دي. السكوت أمان. والسكوت برضه تير 5 يا جبان.'},
  ask:['يا باشا، عندك حاجة عن {p}؟','إيه الكلام في {p} لـ{d}؟ وماتبيعليش هوا.','بسرعة: {p}. بجد ولا اشتغالة؟','بصراحة كده، موضوع {d} هيحصل ولا لأ؟','قولي أي حاجة عن {p}، والقهوة عليا.','يا عم خلّصني، {p} رايح فين؟','أي فتفوتة عن {p}. أي حاجة. أبوس إيدك.','مالك ساكت كده في موضوع {p}؟ في إيه؟'],
  after:['الردود بتحمّل…','الكوتات جاية في السكة. استعد.','الخاص ولّع دلوقتي.','في وكيل في حتة دلوقتي هيطق.','اتاخدت سكرينات خلاص. دايمًا بتتاخد.','الناس بدأت تعمل منشن لبعض 👀','جروبات الواتساب هتولّع.','استنى بقى واتفرج ع الهري 🍿','مامتك عملت لايك. شكرًا يا ماما.','الحسابات المنافسة بتعمل ريفرش على بروفايلك دلوقتي.'],
@@ -1809,6 +1856,523 @@ VOICE3.ar={
  }
 };
 for(const l in VOICE3){ if(I18N[l]) appendMerge(I18N[l],VOICE3[l]); }
+/* Voice pack v4: more rival posts, news-wire alternates, official announcements and DM openers, so a window never repeats a line */
+const VOICE4={};
+VOICE4.en={
+ rline:{
+  DONE:{
+   high:[
+    "🚨🚨 {p} TO {d}. HERE WE GO (probably, definitely, 100%). Pen's out, ink's wet. 🔥",
+    "EXCLUSIVE: {p} has already picked a flat in {dc}. Council tax sorted. It's ON. ✈️",
+    "BREAKING: {p} → {d} AGREED. Tell your nan. Tell your postman. 🔥🔥",
+    "{p} to {d}? LOCKED IN. Bolted. Welded shut. Book the unveiling photographer. 📸",
+    "🚨 MASSIVE: {p} has said YES to {d}. Personal terms signed on a napkin. 🔥",
+    "IT'S HAPPENING. {p} lands in {dc} this week. {d} fans, get the bunting out. 🎉"
+   ],
+   med:[
+    "I'm told {p} has given {d} the green light. Clubs finalising the paperwork.",
+    "Understand {d} and {c} are closing in on an agreement for {p}. Structure largely done.",
+    "{p} has informed those close to him he wants {d}. Final details being ironed out.",
+    "Sources indicate {p}'s medical with {d} is being scheduled. Expect movement soon.",
+    "Positive noises from {dc} regarding {p}. Understand the fee gap has been bridged.",
+    "Told {d} are confident on {p}. Documents being exchanged as we speak."
+   ]
+  },
+  HIJACK:{
+   high:[
+    "🚨 SMASH AND GRAB: {h} have swooped for {p}. {d} left staring at an empty table. 💣",
+    "EXCLUSIVE: {p} is off to {hc}! {d} have been done like a kipper. 💣💣",
+    "PLOT TWIST OF THE SUMMER: {h} have hijacked {p}. Scriptwriters in shambles. 🎬",
+    "{d} thought they had {p}. {h} said 'lol no'. 💣 HIJACK CONFIRMED (by me).",
+    "🚨🚨 {p} → {h}. Nobody saw it coming. Except me. Obviously. 💣",
+    "BREAKING: {p} has swapped the {d} dream for {hc}. Wild window, this. ✈️💣"
+   ]
+  ,
+   med:[
+    "Understand {h} have made a late, significant move for {p}. Now in pole position.",
+    "I'm told {p}'s camp have opened talks with {h}. {d} increasingly concerned.",
+    "{h} have lodged a proposal for {p} that exceeds what was previously on the table.",
+    "Sources suggest {p} is now leaning towards {hc}. Late shift in the saga.",
+    "Told {h} have been working quietly on {p} for weeks. Now pushing hard.",
+    "Growing sense {p} ends up at {h} rather than the club most expected."
+   ]
+  },
+  OFF:{
+   high:[
+    "❌❌ {p} → {d}: FLATLINED. Stick a fork in it. It's done. Well, not DONE. Dead. ❌",
+    "EXCLUSIVE: {c} have told {d} where to go over {p}. Deal in the bin. 🗑️",
+    "{p} → {d} is DEADER THAN A PRE-SEASON FRIENDLY. Nothing doing. ❌",
+    "🚨 COLLAPSE: {d} pull the plug on {p}. Someone tell the kit printers. ❌",
+    "BREAKING: {p} ISN'T GOING ANYWHERE. {c} have slammed the door shut. 🚪❌",
+    "{d} fans, cancel the {p} shirt order. It's OFF. Refund's on its way. ❌"
+   ],
+   med:[
+    "Understand talks between {c} and {d} over {p} have broken down.",
+    "I'm told {d} have moved on from {p} after {c} refused to lower their price.",
+    "{c} consider {p} non-negotiable this window. {d} informed, per sources.",
+    "Sense is {p} to {d} will not happen this summer. Fee remains the sticking point.",
+    "Told {d} have ended their pursuit of {p}. Focus shifting to alternatives.",
+    "{p} expected to remain at {c}. Discussions with {d} have not progressed."
+   ]
+  },
+  FAKE:{
+   high:[
+    "🧢 {p} to {d}? More cap than a hat shop. Nobody's rung anybody. 🧢",
+    "EXCLUSIVE: the {p} → {d} story has ZERO sources. I checked. Twice. 🧢",
+    "Imagine believing {p} to {d}. Couldn't be me. Pure fan fiction. 📚🧢",
+    "🚨 FAKE NEWS ALERT: {p} → {d} was made up by someone's cousin's mate. 🧢",
+    "{p} to {d} has the same credibility as a tenner in Monopoly money. 🧢💸",
+    "WHO wrote the {p} → {d} story?? Show yourselves. It's rubbish. 🧢"
+   ],
+   med:[
+    "Can say with some confidence there's no live interest from {d} in {p}.",
+    "Checked with multiple sources on {p} → {d}. None aware of any contact.",
+    "I'm told {p}'s representatives haven't spoken to {d}. Story appears baseless.",
+    "No talks, no bid, no contact. Understand {p} → {d} is not a real situation.",
+    "Those close to {p} bemused by the {d} links. Nothing to it, per sources.",
+    "Understand {c} have received no approach of any kind for {p}."
+   ]
+  }
+ },
+ evtAlt:{
+  bid:[
+   "{d} have made a first approach to {c} for {p}.",
+   "Report: {d} lodge an opening offer for {p}. Talks at an early stage.",
+   "{d} officials make formal contact with {c} over {p}.",
+   "📨 {d} send an opening proposal for {p}. The dance begins.",
+   "{d} test the waters with an initial bid for {p}.",
+   "Wires: {d} table a first offer for {p}. {c} yet to respond."
+  ],
+  DONE:{
+   '1':[
+    "{p} follows {d}'s official account. Coincidence? 👀",
+    "{p} posts a story with a {dc} skyline filter 👀",
+    "{p} drops a single emoji in the colours of {d} 👀"
+   ],
+   '2':[
+    "{p}'s representatives spotted leaving a meeting with {d} officials.",
+    "{p}'s lawyers reportedly in {dc} for talks with {d}.",
+    "{p}'s agent photographed having lunch with {d}'s sporting director."
+   ]
+  },
+  HIJACK:{
+   '1':[
+    "🚨 {h} make contact over {p}. A new player in the race.",
+    "Report: {h} register interest in {p}. Plot thickens.",
+    "{h} ask {c} to be kept informed on {p}'s situation."
+   ],
+   '2':[
+    "Private jet linked to {p}'s camp lands in {hc} ✈️",
+    "{p} reportedly seen in a {hc} restaurant last night 👀",
+    "Fans claim to have spotted {p} at a hotel in {hc}."
+   ]
+  },
+  OFF:{
+   '1':[
+    "{c} turn down {d}'s offer for {p}. Valuation gap remains.",
+    "Talks over {p} stall as {c} and {d} disagree on the fee.",
+    "{d}'s bid for {p} knocked back. {c} unimpressed."
+   ],
+   '2':[
+    "{p} wears the captain's armband in {c} training 💪",
+    "{p} posts: 'Proud to wear this badge.' {c} fans delighted.",
+    "{p} spotted signing autographs outside {c}'s training ground, all smiles."
+   ]
+  },
+  FAKE:{
+   '0':[
+    "An account called 'TransferGod99' says {p} → {d} is 'basically done'. No source.",
+    "Viral post claims {p} has 'agreed terms' with {d}. Account created last Tuesday.",
+    "Anonymous forum post says {p} to {d} is 'sealed'. Zero evidence given."
+   ],
+   '1':[
+    "{c} insider on {p} links: 'First we've heard of it.'",
+    "Source at {c}: 'No bid, no call, nothing on {p}.'",
+    "{c} camp on {p} rumours: 'Complete fiction.'"
+   ]
+  }
+ },
+ official:{
+  DONE:[
+   "OFFICIAL: {d} complete the signing of {p}. Welcome to {dc}. ✍️",
+   "✅ {p} is a {d} player. Contract signed, photos taken, awkward keepy-ups filmed.",
+   "{d} announce {p} with a video that took three weeks to make. Worth it. 🎬",
+   "CONFIRMED: {p} joins {d} from {c}. Medical passed, pen found, job done. ✍️"
+  ],
+  HIJACK:[
+   "OFFICIAL: {p} signs for {h}. {d} beaten to it at the final whistle.",
+   "✅ {h} announce {p}. {d} left refreshing their inbox.",
+   "{p} is unveiled in {hc}. {d}, meanwhile, are 'exploring alternatives'.",
+   "CONFIRMED: {p} completes a move to {h}. The {d} deal never got over the line."
+  ],
+  OFF:[
+   "OFFICIAL: {c} confirm {p} will stay. Talks with {d} have ended.",
+   "{c} statement: {p} remains part of our plans. No agreement with {d}.",
+   "✅ {p} is going nowhere. {c} and {d} couldn't agree a fee.",
+   "{p} commits his future to {c} after the {d} move falls through."
+  ],
+  FAKE:[
+   "{c} statement: there have been no talks with any club regarding {p}.",
+   "OFFICIAL: {c} say {p} links were 'completely unfounded'.",
+   "{c} confirm they received no offer for {p}. Rumour dismissed.",
+   "{c} on {p}: 'Nobody has called. Nobody has asked. There were never any talks.'"
+  ]
+ },
+ ask:[
+  "Alright? What's the latest on {p}?",
+  "Hearing whispers on {p}. You got anything solid?",
+  "Straight answer please: is {p} leaving {c}?",
+  "{p} to {d}. Warm, cold, or absolutely freezing?",
+  "Not asking for much. Just the truth about {p}. Go on.",
+  "Mate, my editor is breathing down my neck about {p}. Help.",
+  "Scale of 1 to 10, how real is {p} → {d}?",
+  "You know something about {p}. I can tell. Spill.",
+  "Is {d} actually in for {p} or is it just noise?",
+  "Coffee's on me if you give me a steer on {p}.",
+  "What's {p}'s camp saying? Anything moving?",
+  "Level with me. Has anyone actually bid for {p}?",
+  "Don't leave me on read. {p}. What's the story?"
+ ]
+};
+VOICE4.es={
+ rline:{
+  DONE:{
+   high:[
+    "🚨🚨 BOMBAZO: {p} YA ES DE {d}. Solo falta la foto con la bufanda. ¡AGÁRRATE {dc}! 🔥",
+    "EXCLUSIVA MUNDIAL: {p} ha dicho SÍ a {d}. Maletas hechas rumbo a {dc}. ✈️🔥",
+    "ATENTOS: {p} → {d}. Contratos firmados, abrazos dados. HECHO. 🤝🔥",
+    "🔴 ÚLTIMA HORA: {d} cierra a {p}. Que alguien avise a {dc}, que viene un crack. 🔥",
+    "SE ACABÓ EL CULEBRÓN: {p} jugará en {d}. Os lo dije. Bueno, casi. 😎🔥",
+    "{p} A {d}. ¡¡YA!! Reconocimiento médico en {dc} mañana a primera hora. 🏥🔥"
+   ],
+   med:[
+    "Me cuentan que {p} ya tiene el sí dado a {d}. Faltan flecos menores.",
+    "Entiendo que {d} y {c} han encontrado la fórmula por {p}. Buen ambiente.",
+    "Según mis informaciones, {p} ya busca casa en {dc}. Ojo a los próximos días.",
+    "Todo apunta a {d} para {p}. Acuerdo personal hecho, me confirman.",
+    "Atentos a {p}: {d} lo tiene muy encarrilado. Paciencia, que queda poco.",
+    "Por lo que sé, {p} solo tiene cabeza para {d}. La operación va por buen camino."
+   ]
+  },
+  HIJACK:{
+   high:[
+    "💣💣 GIRO DE GUION: {p} se va a {h}. Sí, a {h}. {d} ni lo ha visto venir. 😱",
+    "EXCLUSIVA: {h} le ROBA a {p} a {d} en el último minuto. ¡Menudo atraco! 🕵️💣",
+    "🚨 {p} rumbo a {hc}. Repito: {hc}. Que alguien despierte a los de {d}. 💣",
+    "BOMBAZO TOTAL: {h} mete la cabeza y se lleva a {p}. Culebrón de temporada. 💣🍿",
+    "¡¡{p} A {h}!! Nadie lo tenía. Bueno, yo sí. Ahora lo sabéis. 💣🔥"
+   ],
+   med:[
+    "Me cuentan que {h} se ha metido fuerte por {p}. {d} ya no está sola.",
+    "Entiendo que {p} valora seriamente la propuesta de {h}. Ojo a este giro.",
+    "Movimientos en {hc}: {h} prepara una oferta por {p} que puede cambiarlo todo.",
+    "Según mis fuentes, {p} se inclina ahora por {h}. {d} tendrá que mejorar.",
+    "Atentos a {h} con {p}. No es ruido, hay contactos reales."
+   ]
+  },
+  OFF:{
+   high:[
+    "❌❌ SE ACABÓ: {p} NO se mueve de {c}. Que {d} se busque otro. ❌",
+    "EXCLUSIVA: {d} tira la toalla con {p}. Fin del culebrón. 🪦",
+    "🚨 NI DE BROMA: {c} manda a paseo a {d} por {p}. Operación ENTERRADA. ❌",
+    "{p} a {d}: CANCELADO. Ya podéis borrar los montajes con la camiseta. 🗑️❌",
+    "BOMBAZO AL REVÉS: {p} se queda en {c}. {d}, hasta nunca. ❌🔒"
+   ],
+   med:[
+    "Me cuentan que lo de {p} con {d} está prácticamente muerto. {c} no cede.",
+    "Entiendo que {d} ha dejado de insistir por {p}. Las cifras no cuadran.",
+    "Según mis informaciones, {p} seguirá en {c} la próxima temporada.",
+    "Operación {p} congelada. {d} busca alternativas, me confirman.",
+    "Atentos: {c} considera a {p} intransferible. Así no hay manera."
+   ]
+  },
+  FAKE:{
+   high:[
+    "🧢🧢 ¿{p} a {d}? Más falso que un billete de 30 euros. 🧢",
+    "EXCLUSIVA: lo de {p} → {d} NUNCA existió. Os han colado un gol por la escuadra. 🧢",
+    "🚨 BULO ALERTA: {p} ni conoce a nadie de {d}. Dejad de compartir. 🧢",
+    "{p} a {d} = HUMO DEL BUENO. Ni oferta, ni llamada, ni nada. 🧢💨",
+    "JAJAJA ¿{p} a {d}? Eso sale del FIFA de alguien, no de una fuente. 🧢🎮"
+   ],
+   med:[
+    "Me cuentan desde dentro que {d} nunca ha preguntado por {p}.",
+    "Entiendo que lo de {p} es un globo sonda. No hay nada detrás.",
+    "Según mis fuentes, {p} → {d} no tiene ninguna base. Calma.",
+    "He preguntado por {p} en varios sitios. Nadie sabe nada de {d}.",
+    "Ojo con lo de {p}: huele a interés de intermediarios, no a operación real."
+   ]
+  }
+ },
+ evtAlt:{
+  bid:[
+   "{d} mueve ficha: primera propuesta formal por {p} sobre la mesa.",
+   "Primer contacto oficial de {d} con {c} para preguntar por {p}.",
+   "{d} lanza su primera oferta por {p}. Ahora le toca responder a {c}.",
+   "Se abre el melón: {d} envía una propuesta por escrito por {p}.",
+   "{d} pregunta por las condiciones de {p} y deja caer una primera cifra.",
+   "Primera aproximación de {d} por {p}. Arranca el culebrón."
+  ],
+  DONE:{
+   '1':[
+    "{p} empieza a seguir a {d} en Instagram. Casualidades, ¿eh? 👀",
+    "{p} sube una historia con una canción que suena mucho a {dc}. Sospechoso. 👀",
+    "{p} responde con un emoji al tuit de bienvenida de un aficionado de {d}. 👀"
+   ],
+   '2':[
+    "Los abogados de {p}, reunidos durante horas en la sede de {d}.",
+    "El padre de {p} fotografiado comiendo con directivos de {d} en {dc}.",
+    "El representante de {p} aterriza en {dc} para verse con {d}."
+   ]
+  },
+  HIJACK:{
+   '1':[
+    "{h} pregunta por {p} y complica la operación. La puja se calienta.",
+    "Atentos: {h} se suma a la pelea por {p}.",
+    "{h} contacta con el entorno de {p}. Hay nuevo pretendiente."
+   ],
+   '2':[
+    "{p} cazado subiendo a un jet privado con destino {hc}. 🛩️",
+    "Un aficionado asegura haber visto a {p} cenando en {hc}.",
+    "{p} aterriza en {hc} con gorra y gafas de sol. Discreción cero."
+   ]
+  },
+  OFF:{
+   '1':[
+    "{c} dice no a la propuesta de {d} por {p}. Insuficiente.",
+    "Choque de cifras: {c} pide mucho más por {p} de lo que ofrece {d}.",
+    "Negociación encallada entre {c} y {d} por {p}. Nadie mueve ficha."
+   ],
+   '2':[
+    "{p} celebra su gol besando el escudo de {c}. Mensaje claro.",
+    "{p}, en rueda de prensa: 'Estoy muy feliz en {c}'.",
+    "{p} publica un vídeo con la afición de {c}: 'Mi casa' ❤️"
+   ]
+  },
+  FAKE:{
+   '0':[
+    "Una cuenta con 300 seguidores da por hecho {p} → {d}. Fuentes: 'confía'.",
+    "Un perfil anónimo jura que {p} ya ha firmado con {d}. Cero pruebas.",
+    "Circula un montaje de {p} con la camiseta de {d}. Nadie sabe de dónde sale."
+   ],
+   '1':[
+    "Desde {c} lo cortan de raíz: 'Lo de {p} es mentira'.",
+    "Un portavoz de {c} sobre {p}: 'Ninguna oferta, ningún contacto'.",
+    "En {c} se ríen del rumor de {p}: 'No hay nada, cero'."
+   ]
+  }
+ },
+ official:{
+  DONE:[
+   "🚨 OFICIAL: {p} es nuevo jugador de {d}. Bienvenido a {dc}. ✍️",
+   "{d} anuncia a {p} con vídeo épico y música dramática. Ya es suyo. 🎬",
+   "¡HECHO! {p} firma con {d} y posa con la camiseta en {dc}. 📸",
+   "{p} ya es de {d}. Contrato firmado y primer 'hola' a la afición. 👋"
+  ],
+  HIJACK:[
+   "OFICIAL: {p} jugará en {h}. {d} se queda compuesto y sin novio. 💔",
+   "Golpe en el último segundo: {h} anuncia a {p}. {d}, a llorar a la llorería.",
+   "{p} aparece en {hc} con la camiseta de {h}. {d} no entiende nada.",
+   "Confirmado: {h} cierra a {p} por sorpresa. En {d}, caras largas."
+  ],
+  OFF:[
+   "Comunicado de {c}: {p} continuará en el club. Fin de las conversaciones con {d}.",
+   "OFICIAL: {c} corta las negociaciones con {d}. {p} no está en venta.",
+   "{p} se queda en {c}. {d} no llegó a lo que pedían.",
+   "{c} da por cerrada la puerta a {d}: {p} seguirá con ellos."
+  ],
+  FAKE:[
+   "{c}, tajante: 'Nunca ha habido negociaciones por {p}'.",
+   "Comunicado de {c}: 'Ninguna oferta por {p}. Ni de {d} ni de nadie'.",
+   "{c} desmiente todo sobre {p}. El rumor se evapora.",
+   "Oficial de {c}: {p} no se mueve y nadie ha llamado. Todo era humo."
+  ]
+ },
+ ask:[
+  "Buenas, tío. ¿Qué sabes de {p}? Que no me entero de nada.",
+  "Atento: {p}. ¿Hay algo real o es ruido?",
+  "Oye, lo de {p} con {d}... ¿me lo confirmas o me lo desmientes?",
+  "Me estoy volviendo loco con {p}. Échame un cable.",
+  "¿Tú qué has oído de {p}? Aunque sea off the record.",
+  "Una preguntita rápida: {p}, ¿se mueve o no se mueve?",
+  "Tío, ¿{p} a {d} es humo o hay tomate?",
+  "Dame algo de {p} y te debo una. Palabra.",
+  "¿Cómo está el tema {p}? Aquí todos preguntan.",
+  "Sin rodeos: ¿{d} va en serio por {p}?",
+  "¿Algo nuevo de {p}? Aunque sea una pista pequeñita.",
+  "Te leo en silencio, pero ahora necesito saber de {p}. ¿Qué hay?",
+  "Oye, ¿tu gente sabe algo de {p}? Me juego mucho con esto."
+ ]
+};
+VOICE4.ar={
+ rline:{
+  DONE:{
+   high:[
+    "🚨🚨 انفراد حصري: {p} في {dc} الليلة والكشف الطبي الصبح. اللي يقول غير كده يقابلني 🔥",
+    "خلاااص يا جماعة! {p} لعيب {d} رسمي من غير ورق. اكتبوها عندكم ✍️🔥",
+    "{p} ➡️ {d}. الموضوع اتقفل والشنطة اتجهزت. يا {c} سلملي عالترتر 😂🔥",
+    "انفراد مدوّي 💥 {p} وافق على كل حاجة و{d} دفعوا. فاضل البوست بس 📸",
+    "مبروك لجمهور {d}: {p} جايلكم وهيلعب بالرقم اللي بتحبوه. صدقوني المرة دي 🔥🔥",
+    "آخر الأخبار ولا حد عارفها غيري: {p} نازل مطار {dc} خلال ساعات ✈️🚨"
+   ],
+   med:[
+    "اللي وصلني إن {p} اتفق على الشروط الشخصية مع {d}، والباقي تفاصيل.",
+    "بيقولوا إن {c} و{d} قربوا جدًا من رقم يرضي الطرفين في {p}.",
+    "من كلام ناس قريبة: {p} مش شايف نفسه غير في {d} الصيف ده.",
+    "اللي فهمته إن الورق بتاع {p} بيتراجع في {dc} دلوقتي، ومفيش عطلة.",
+    "مصادري مرتاحة لصفقة {p} و{d}. مش هقول خلصت، بس قربت أوي.",
+    "هادي كده: {p} لـ{d} ماشية في طريقها الطبيعي، والتوقيت هو اللي فاضل."
+   ]
+  },
+  HIJACK:{
+   high:[
+    "🚨 قلبة ترابيزة! {h} خطفوا {p} من بوق {d} في آخر ثانية 💣💣",
+    "انفراد: {p} مسافر {hc} مش {dc}. ركّزوا في التذكرة كويس ✈️💣",
+    "يا جمهور {d} آسفين: {h} دفعوا أكتر و{p} قال «معلش» 💣😂",
+    "خطف رسمي يا رجالة 🚨 {p} لـ{h}. و{d} لسه بيكتبوا العرض 💣",
+    "مشهد مش طبيعي: {p} غيّر الوجهة لـ{hc} والكل اتصدم 💥💣"
+   ],
+   med:[
+    "اللي وصلني إن {h} دخلوا بعرض أحسن لـ{p}، والكفة بتميل ليهم.",
+    "بيقولوا إن {p} بيفكر جديًا في مشروع {h} أكتر من أي حاجة تانية.",
+    "مصادر قريبة من اللعيب: {h} اتكلموا مع وكيل {p} الأسبوع ده.",
+    "خلّي بالكم من {hc}. في كلام كتير عن {p} هناك اليومين دول.",
+    "اللي فهمته إن {h} مستعدين يدفعوا الشرط الجزائي لـ{p} كامل."
+   ]
+  },
+  OFF:{
+   high:[
+    "🚨 وقفت! صفقة {p} اتدفنت ومحدش هيصحيها. قروا الفاتحة ❌",
+    "{p} قاعد يا حبايبي. {c} قفلوا الباب بالترباس 🔒❌",
+    "انفراد: {d} قالوا «مش هندفع مليم زيادة» في {p}». خلاص الحكاية خلصت ❌",
+    "الوكيل زعلان، النادي زعلان، والصفقة ماتت. {p} مش متحرك ❌💀",
+    "اللي مستني {p} يمشي من {c} يروّح. الموضوع اتقفل ❌🔥"
+   ],
+   med:[
+    "اللي وصلني إن مفاوضات {p} متجمدة تمامًا، ومفيش اجتماعات جاية.",
+    "بيقولوا إن {c} حطوا رقم في {p} محدش هيوصله.",
+    "من الواضح إن {d} بيدوروا على بديل لـ{p} دلوقتي.",
+    "مصادر من {c}: {p} مش للبيع الصيف ده، والإدارة مصممة.",
+    "اللي فهمته إن الفجوة في سعر {p} كبيرة، وكل طرف راكب دماغه."
+   ]
+  },
+  FAKE:{
+   high:[
+    "🚨 كدب في كدب! {p} عمره ما اتعرض على {d}. حد يوقف المهزلة دي 🧢🧢",
+    "{p} لـ{d}؟ ده ولا في الأحلام يا معلم 😂🧢",
+    "اصحوا يا جماعة: حكاية {p} متألفة من صفحة عندها 200 فولور 🧢",
+    "إشاعة {p} دي معمولة في الفوتوشوب بالظبط 🧢🤡",
+    "خلّصونا من سيرة {p} و{d}. مفيش حاجة، ومحصلش حاجة 🧢❌"
+   ],
+   med:[
+    "سألت ناس جوه {c}، ومحدش سمع أصلًا عن اهتمام بـ{p}.",
+    "بيقولولي إن اسم {p} مش على أي لستة في {d} دلوقتي.",
+    "خبر {p} ده طالع من حساب مالوش مصادر، خدوه بحذر.",
+    "اللي أعرفه إن وكيل {p} ماتكلمش مع حد الصيف ده.",
+    "ماعنديش أي حاجة تأكد كلام {p} لـ{d}. غالبًا تسخين ميديا."
+   ]
+  }
+ },
+ evtAlt:{
+  bid:[
+    "{d} بعتوا عرض رسمي أول لـ{p}. والتليفونات مابطلتش.",
+    "أول خطوة: {d} فتحوا الكلام رسمي مع {c} على {p}.",
+    "📩 عرض من {d} وصل مكاتب {c} بخصوص {p}. الرقم لسه سر.",
+    "{d} دخلوا الماركت ورموا أول عرض على {p}. نشوف الرد.",
+    "مسؤولين {d} اتصلوا بـ{c} يسألوا على سعر {p}. البداية كده.",
+    "رسمي: في عرض أولي من {d} لـ{p} على الترابيزة."
+  ],
+  DONE:{
+   '1':[
+    "{p} نزّل ستوري فيها أغنية مشهورة في {dc}. صدفة؟ مافيش صدف 👀",
+    "{p} عمل فولو لحساب {d} الرسمي. والجمهور اتجنن 👀",
+    "{p} كتب «بداية جديدة» وحط إيموجي بلون {d}. مش محتاجة شرح."
+   ],
+   '2':[
+    "محامين {p} اتشافوا طالعين من مقر {d} بعد اجتماع طويل.",
+    "أخو {p} ووكيله اتصوروا في مطعم مع مسؤولين من {d}.",
+    "عربية وكيل {p} راكنة قدام مكاتب {d} من الصبح 🚗"
+   ]
+  },
+  HIJACK:{
+   '1':[
+    "🚨 {h} اتصلوا بوكيل {p}. السباق بقى فيه طرف تالت.",
+    "{h} دخلوا فجأة على صفقة {p} وعايزين يلحقوا.",
+    "مفاجأة: {h} عملوا استفسار رسمي عن {p}. الحكاية اتلخبطت."
+   ],
+   '2':[
+    "{p} اتصوّر في فندق في {hc} ومعاه وكيله. إيه اللي بيحصل؟",
+    "طيارة خاصة طالعة لـ{hc} وفيها {p} حسب ناس في المطار ✈️",
+    "مشجع نزّل فيديو لـ{p} في شارع في {hc}. والكومنتات ولعت."
+   ]
+  },
+  OFF:{
+   '1':[
+    "{c} ردّوا عرض {d} في {p}: «الرقم ده مايفتحش كلام».",
+    "مفاوضات {p} واقفة عند الفلوس. {c} عايزين أكتر و{d} مش راضيين.",
+    "عرض {d} لـ{p} اترفض. {c} شايفين إن التقييم قليل."
+   ],
+   '2':[
+    "{p} بعد الماتش: «أنا مبسوط هنا في {c}». حد فاهم حاجة؟",
+    "{p} نزّل صورة بتيشيرت {c} وكتب «بيتي» 🏠",
+    "{p} باس الشعار قدام جمهور {c}. الرسالة وصلت؟"
+   ]
+  },
+  FAKE:{
+   '0':[
+    "صفحة اسمها «أخبار الانتقالات الحصرية» كتبت إن {p} لـ{d} «في الجيب». مصدر؟ لأ.",
+    "حساب جديد بيقول إن {p} خلاص مع {d}. من غير دليل ولا لينك.",
+    "بوست متشيّر كتير: {p} لـ{d} «مؤكد 100%». كاتبه مجهول."
+   ],
+   '1':[
+    "واحد من إدارة {c}: «موضوع {p} ده محصلش، ولا في عرض ولا كلام».",
+    "مصدر في {c} ضحك لما سألوه عن {p}: «مين قال الكلام ده؟»",
+    "{c} نفوا تمامًا أي مفاوضات على {p}. «ركّزوا في الكورة»."
+   ]
+  }
+ },
+ official:{
+  DONE:[
+    "بيان رسمي: {d} بيرحبوا بـ{p}. والفيديو بتاع الإعلان يستاهل 🎬",
+    "{p} لعيب {d} رسميًا. الورق اتمضى والصور اتاخدت ✍️",
+    "خلاص يا جماعة: {p} في {dc} ومضى لـ{d}. مبروك للي صدّق من الأول.",
+    "{d} أعلنوا ضم {p}. و{c} شكروه على كل حاجة 👋"
+  ],
+  HIJACK:[
+    "رسمي: {p} مضى لـ{h}. و{d} بيقولوا «مكانش مكتوب».",
+    "{h} خطفوا {p} رسمي. جمهور {d} مش مصدق لحد دلوقتي.",
+    "{p} اتقدّم في {hc} بتيشيرت {h}. و{d} رجعوا بإيد فاضية.",
+    "الإعلان نزل: {p} لـ{h}. ودي أكبر قلبة في الميركاتو."
+  ],
+  OFF:[
+    "{c} رسميًا: {p} مكمّل معانا. ومفاوضات {d} انتهت.",
+    "بيان من {c}: {p} مش للبيع. و{d} اتبلغوا بالرد النهائي.",
+    "{p} باقي في {c}. و{d} قفلوا الملف بعد ما الأرقام ماتقابلتش.",
+    "رسمي: مفيش انتقال. {p} مكمل مع {c} والكلام مع {d} خلص."
+  ],
+  FAKE:[
+    "{c} في بيان: «ماكانش فيه أي مفاوضات بخصوص {p} خالص».",
+    "المتحدث باسم {c}: «{p} ماحدش سأل عليه أصلًا. الكلام ده كله تأليف».",
+    "{c} بيأكدوا إن ولا نادي كلمهم عن {p}. الحكاية كانت هري من الأول.",
+    "رسمي من {c}: مفيش عرض، مفيش اتصال، مفيش حاجة في موضوع {p}."
+  ]
+ },
+ ask:[
+  "صباح الفل يا غالي، سامع حاجة عن {p}؟",
+  "إزيك يا ريس، حكاية {p} و{d} دي ليها أصل؟",
+  "معلش هزعجك، بس {p} ده في كلام بجد ولا تسخين؟",
+  "طمنّي بس، {p} هيتحرك الصيف ده ولا قاعد؟",
+  "كلمة واحدة وأسيبك: {p}. آه ولا لأ؟",
+  "يا معلم إنت أدرى الناس، {d} فعلًا عايزين {p}؟",
+  "بقالي يومين بدور ورا {p}، عندك طرف خيط؟",
+  "أنا مش هنشر اسمك، بس قولي: {p} في إيه؟",
+  "سؤال على الماشي: وكيل {p} بيكلم حد؟",
+  "الناس كلها بتسأل على {p}، إنت سامع إيه؟",
+  "بلاش لف ودوران، {p} لـ{d} فيها كلام ولا لأ؟",
+  "حبيبي، لو في حاجة عن {p} ماتنسانيش.",
+  "إيه الأخبار يا كبير؟ {p} ليه اسمه في كل حتة؟"
+ ]
+};
+for(const l in VOICE4){ if(I18N[l]) appendMerge(I18N[l],VOICE4[l]); }
 /* =========================================================
    Engine. Game objects store keys (outcomes, indices, sources), never text —
    every line is rendered through i18n, so switching language works mid-window.
@@ -1919,11 +2483,11 @@ let roomCtx=null;
 function C(){ const R=roomCtx&&save.rooms&&save.rooms[roomCtx]; return R&&R.career?R.career:save.career; }
 function ctxOf(s){ return {p:pName(s.player),c:cName(s.club),d:cName(s.dest),dc:cityName(s.dest),h:cName(s.hijack),hc:cityName(s.hijack),country:tt('country')[s.dest.country],cp:catchphrase()}; }
 function isCareer(){ return game&&game.mode==='career'; }
-function baseActions(){ if(!isCareer()) return 10; let a=10; ['wifi','phone2','laptop'].forEach(k=>{ if(C().equip.includes(k)) a++; }); return a; }
+function baseActions(){ if(!isCareer()) return CONFIG.CONTACTS; let a=CONFIG.CONTACTS; ['wifi','phone2','laptop'].forEach(k=>{ if(C().equip.includes(k)) a++; }); return a; }
 function relAdj(base,key){ if(!isCareer()) return base; const g=GEAR_REL[key]; const bonus=g&&C().equip.includes(g[0])?g[1]:0; return Math.min(0.97,Math.max(0.1,base+bonus+(C().rep-50)/500)); }
-function buildBoard(seed){
+function buildBoard(seed,n){
  const rng=new RNG(seed);
- const picks=rng.shuffle(PLAYERS.slice()).slice(0,8);
+ const picks=rng.shuffle(PLAYERS.slice()).slice(0,n||CONFIG.SAGAS);
  const sagas=picks.map((p,i)=>{
   const club=clubByName(p.club);
   const dest=rng.pick(CLUBS.filter(c=>c.name!==club.name && c.tier<=p.tier+1));
@@ -1938,7 +2502,10 @@ function buildBoard(seed){
 }
 function newGame(mode,seed){
  const {rng,sagas}=buildBoard(seed);
- game={v:2,mode,seed,rngState:rng.state,day:1,actions:0,feed:[],sagas,tab:'sagas',result:null,timer:60,followers:mode==='career'?(C().followers||1200):1000+rng.int(400)};
+ game={usedLines:{}};
+ sagas.forEach(s=>{ s.ov=freshPick('official.'+s.truth,(tt('official')[s.truth]||[]).length); s.events.forEach(e=>{ e.v=freshPick('evt.'+(e.idx===0&&s.truth!=='FAKE'?'bid':s.truth+e.idx),evtPool(s.truth,e.idx).length); }); s.rivalPosts.forEach(rp=>{ const st=RIVALS.find(x=>x.key===rp.rival).style; rp.v=freshPick('rline.'+rp.claim+'.'+st,(tt('rline')[rp.claim][st]||[]).length); }); });
+ const usedLines=game.usedLines;
+ game={v:2,usedLines,mode,seed,rngState:rng.state,day:1,actions:0,feed:[],sagas,tab:'sagas',result:null,timer:60,followers:mode==='career'?(C().followers||1200):1000+rng.int(400)};
  game.actions=baseActions();
  game.feed.push({day:1,type:'sys',k:'sys.open'});
  sagas.forEach(s=>game.feed.push({day:1,type:'event',sagaId:s.id,k:'sys.report'}));
@@ -1965,7 +2532,7 @@ function openDaily(k){
   sagas=a.sagas.map((x,i)=>({id:i,player:PLAYERS.find(p=>p.name===x.p),club:clubByName(x.c),dest:clubByName(x.d),hijack:clubByName(x.h),truth:x.truth,call:x.call,clues:x.clues||[],rivalPosts:[],events:[]}));
   result=a.result; followers=a.followers;
  }else{
-  sagas=buildBoard('daily-'+k).sagas;
+  sagas=buildBoard('daily-'+k,Array.from(h.row||'').filter(e=>/[\u26AA\u{1F534}\u{1F535}\u{1F7E2}]/u.test(e)).length||CONFIG.SAGAS).sagas;
   const legacy=d.results&&d.results[k];
   result=legacy?Object.assign({},legacy,{fDelta:null}):rowToResult(h);
  }
@@ -1974,6 +2541,31 @@ function openDaily(k){
  go('results'); return true;
 }
 function fmtDay(k){ try{ return new Date(k+'T12:00:00').toLocaleDateString(lang,{weekday:'short',day:'numeric',month:'short',year:'numeric'}); }catch(e){ return k; } }
+const LIE_W={DONE:.45,HIJACK:.3,OFF:.15,FAKE:.1};
+function pickLie(r,truth){ const o=OUTCOMES.filter(x=>x!==truth); let x=r.next()*o.reduce((a,k)=>a+LIE_W[k],0); for(const k of o){ x-=LIE_W[k]; if(x<=0) return k; } return o[o.length-1]; }
+function jetHtml(s,out){ const from=esc(cityName(s.club)), dc=esc(cityName(s.dest)), hc=esc(cityName(s.hijack));
+ if(out==='DONE') return `<div class="jetline go"><span>${from}</span><div class="track"><i>✈️</i></div><span class="to">${dc} 🛬</span></div>`;
+ if(out==='HIJACK') return `<div class="jetline divert"><span>${from}</span><div class="track"><i>✈️</i></div><span class="to"><s>${dc}</s> ↪ <b>${hc}</b></span></div><div class="jetcap">${esc(t('jet.divert'))}</div>`;
+ if(out==='OFF') return `<div class="jetline back"><span>${from}</span><div class="track"><i>✈️</i></div><span class="to"><s>${dc}</s></span></div><div class="jetcap">${esc(t('jet.cancel'))}</div>`;
+ return `<div class="jetline none"><span>${from}</span><div class="track"></div><span class="to">?</span></div><div class="jetcap">${esc(t('jet.none'))}</div>`; }
+function scoopBar(s,x){ if(!x.called||!x.correct||!s.call) return '';
+ if(x.exclusive) return `<div class="scoopbar ex"><b>👑 ${esc(t('scoop.exTitle'))}</b><span>${esc(t('scoop.exSub'))}</span></div>`;
+ if(x.uturn) return `<div class="scoopbar late"><b>✅ ${esc(t('scoop.rightTitle'))}</b><span>${esc(t('scoop.uturn'))}</span></div>`;
+ const rp=(s.rivalPosts||[]).filter(p=>p.correct&&p.day<=s.call.day).sort((a,b)=>a.day-b.day)[0];
+ return `<div class="scoopbar late"><b>✅ ${esc(t('scoop.rightTitle'))}</b><span>${esc(rp?t('scoop.beaten',{r:t('rival.'+rp.rival),d:rp.day}):t('scoop.late'))}</span></div>`; }
+function newsChip(s){ const rp=(s.rivalPosts||[]).filter(p=>p.day===game.day).slice(-1)[0]; if(!rp) return ''; return `<span class="newsnip"><i>${esc(t('news.new'))}</i>${RIVALS.find(r=>r.key===rp.rival).ic} ${esc(t('news.claim.'+rp.claim))}</span>`; }
+function headlinesSheet(){ if(!game||game.day<2||game.day>=7) return; const items=game.feed.filter(f=>f.day===game.day&&(f.type==='rival'||f.type==='event')&&f.sagaId!=null); if(!items.length) return;
+ const cards=items.map(f=>{ const sg=game.sagas[f.sagaId]; const rv=f.type==='rival'?RIVALS.find(r=>r.key===f.rival):null;
+  return `<button class="headline ${rv?'rival':'wire'}" data-act="openSaga" data-id="${sg.id}"><span class="hl-top">${rv?`${rv.ic} <b>${esc(t('rival.'+rv.key))}</b> <span class="muted">${esc(rv.handle)}</span>${f.claim?`<span class="hl-claim c-${f.claim}">${esc(t('news.claim.'+f.claim))}</span>`:''}`:`📡 <b>${esc(t('win.wire'))}</b>`}</span><span class="hl-txt">${esc(feedText(f))}</span><span class="hl-p">${esc(pName(sg.player))} ›</span></button>`; }).join('');
+ openModal(`<h2>🗞️ ${esc(t('news.title',{d:game.day}))}</h2><p class="muted small" style="margin:6px 0 12px">${esc(t('news.sub'))}</p><div class="stack">${cards}</div><button class="btn primary" style="margin-top:14px" data-act="closeSheet">${esc(t('news.ok'))}</button>`,t('news.short')); beep('whoosh'); }
+function freshPick(key,len){
+ if(!len||len<2) return 0;
+ const used=(game.usedLines=game.usedLines||{})[key]||(game.usedLines[key]=[]);
+ const age=(save.lineAge=save.lineAge||{})[key]||(save.lineAge[key]={});
+ let c=[...Array(len).keys()].filter(i=>!used.includes(i)); if(!c.length){ used.length=0; c=[...Array(len).keys()]; }
+ const m=Math.min(...c.map(i=>age[i]||0)); const best=c.filter(i=>(age[i]||0)===m); const k=best[Math.floor(Math.random()*best.length)];
+ used.push(k); age[k]=(save.lineSeq=(save.lineSeq||0)+1); return k; }
+function evtPool(truth,idx){ const base=tt('evt')[truth]||[]; const alt=tt('evtAlt')||{}; const extra=idx===0&&truth!=='FAKE'?(alt.bid||[]):((alt[truth]||{})[idx]||[]); return [base[idx]].concat(extra).filter(Boolean); }
 function rng(){ return new RNG(null,game.rngState); }
 function commitRng(r){ game.rngState=r.state; }
 function saveGame(){ if(!game) return; if(game.mode==='practice'){ save.inProgress=null; persist(); return; } save.inProgress=JSON.parse(JSON.stringify(game)); persist(); }
@@ -1982,18 +2574,18 @@ function saveGame(){ if(!game) return; if(game.mode==='practice'){ save.inProgre
 function catchphrase(){ return tt('catch')[save.settings.catch]||tt('catch').confirmed; }
 function clueText(s,cl){ const ctx=ctxOf(s); if(cl.source==='tipoff') return t(cl.out==='FAKE'?'sheet.tipFake':'sheet.tipReal'); const src=cl.source==='paid'?'leak':cl.source; return fill(pickVar(tt('line')[src][cl.out],cl.v||0),ctx); }
 function clueWho(cl){ if(cl.source==='paid') return t('sheet.paid'); if(cl.source==='tipoff') return t('sheet.tip'); return SOURCES[cl.source].ic+' '+t('src.'+cl.source+'.name'); }
-function eventText(s,e){ return fill(tt('evt')[s.truth][e.idx],ctxOf(s)); }
-function rivalText(s,rp){ const ri=RIVALS.findIndex(r=>r.key===rp.rival); const rv=RIVALS[ri]; return fill(pickVar(tt('rline')[rp.claim][rv.style],s.id+ri*3),ctxOf(s)); }
+function eventText(s,e){ const pool=evtPool(s.truth,e.idx); return fill(pickVar(pool,e.v||0),ctxOf(s)); }
+function rivalText(s,rp){ const ri=RIVALS.findIndex(r=>r.key===rp.rival); const rv=RIVALS[ri]; return fill(pickVar(tt('rline')[rp.claim][rv.style],rp.v!=null?rp.v:s.id+ri*3),ctxOf(s)); }
 function feedText(f){
  if(f.k==='sys.report'||f.k==='sys.open'||f.k==='sys.dd') return f.sagaId!=null?t(f.k,ctxOf(game.sagas[f.sagaId])):t(f.k);
  if(f.k) return t(f.k,Object.assign({},f.ctx||{},f.sagaId!=null?ctxOf(game.sagas[f.sagaId]):{}));
- if(f.type==='rival'&&f.claim) return rivalText(game.sagas[f.sagaId],{rival:f.rival,claim:f.claim});
- if(f.type==='event'&&f.idx!=null) return eventText(game.sagas[f.sagaId],{idx:f.idx});
+ if(f.type==='rival'&&f.claim) return rivalText(game.sagas[f.sagaId],{rival:f.rival,claim:f.claim,v:f.v});
+ if(f.type==='event'&&f.idx!=null) return eventText(game.sagas[f.sagaId],{idx:f.idx,v:f.v});
  if(f.type==='you') return tweetText(f.outcome,f.conf,game.sagas[f.sagaId]);
  return '';
 }
 function tweetText(outcome,conf,s){ return fill(tt('tweet')[outcome][conf],ctxOf(s)); }
-function officialText(s){ return fill(pickVar(tt('official')[s.truth],s.id),ctxOf(s)); }
+function officialText(s){ return fill(pickVar(tt('official')[s.truth],s.ov!=null?s.ov:s.id),ctxOf(s)); }
 function getPlayerType(followers){
  if(followers<400) return {key:'nobody',mult:1.0};
  if(followers<1500) return {key:'rising',mult:1.1};
@@ -2005,7 +2597,7 @@ function applyScoreMultiplier(baseScore,isCareerMode){
  const playerType=getPlayerType(C().followers||1200);
  return Math.round(baseScore*playerType.mult);
 }
-function tierFor(score){ if(score<0) return {n:9,key:'clown'}; if(score>=375) return {n:1,key:'t1'}; if(score>=250) return {n:2,key:'t2'}; if(score>=140) return {n:3,key:'t3'}; if(score>=55) return {n:4,key:'t4'}; return {n:5,key:'t5'}; }
+function tierFor(score){ if(score<0) return {n:9,key:'clown'}; if(score>=235) return {n:1,key:'t1'}; if(score>=155) return {n:2,key:'t2'}; if(score>=90) return {n:3,key:'t3'}; if(score>=35) return {n:4,key:'t4'}; return {n:5,key:'t5'}; }
 function tierName(tr){ return t('tier.'+tr.key); }
 
 // ---------- actions ----------
@@ -2015,19 +2607,19 @@ function contactSource(sagaId,key,opts){
  if(paid){ truthful=true; }
  else{
   truthful=r.chance(relAdj(src.rel,key));
-  if(!truthful){ const wrong=OUTCOMES.filter(o=>o!==s.truth); out=(src.bias&&wrong.includes(src.bias)&&r.chance(0.7))?src.bias:r.pick(wrong); }
+  if(!truthful){ const wrong=OUTCOMES.filter(o=>o!==s.truth); out=(src.bias&&wrong.includes(src.bias)&&r.chance(0.7))?src.bias:pickLie(r,s.truth); }
   game.actions-=src.cost||1;
   if(isCareer()){ const st=C().sources[key]||(C().sources[key]={n:0,ok:0}); st.n++; if(truthful) st.ok++; if(key==='barber') C().barber++; }
  }
- s.clues.push({source:paid?'paid':key,out,truthful,day:game.day,v:Math.floor(Math.random()*999),revealAt:Date.now()+2100+Math.floor(Math.random()*500)});
+ const lk=paid?'leak':key; s.clues.push({source:paid?'paid':key,out,truthful,day:game.day,v:freshPick('line.'+lk+'.'+out,((tt('line')[lk]||{})[out]||[]).length),a:freshPick('ask',(tt('ask')||[]).length),revealAt:Date.now()+2100+Math.floor(Math.random()*500)});
  commitRng(r); saveGame();
 }
 function endDay(){
  if(game.day>=7) return;
  game.day++; game.actions=baseActions(); game.adActionUsed=false;
  game.sagas.forEach(s=>{
-  s.events.filter(e=>e.day===game.day).forEach(e=>game.feed.push({day:game.day,type:'event',sagaId:s.id,idx:e.idx}));
-  s.rivalPosts.filter(rp=>rp.day===game.day).forEach(rp=>game.feed.push({day:game.day,type:'rival',sagaId:s.id,rival:rp.rival,claim:rp.claim}));
+  s.events.filter(e=>e.day===game.day).forEach(e=>game.feed.push({day:game.day,type:'event',sagaId:s.id,idx:e.idx,v:e.v}));
+  s.rivalPosts.filter(rp=>rp.day===game.day).forEach(rp=>game.feed.push({day:game.day,type:'rival',sagaId:s.id,rival:rp.rival,claim:rp.claim,v:rp.v}));
  });
  if(game.day===7){ game.actions=3+(gearOwned('bank')?1:0); game.timer=60; game.feed.push({day:7,type:'sys',k:'sys.dd'}); }
  else game.feed.push({day:game.day,type:'sys',k:'sys.day',ctx:{d:game.day}});
@@ -2073,7 +2665,7 @@ function resolveWindow(){
    total+=out.pts;
    out.handles=[hdeck.pop()||0,hdeck.pop()||0];
    const cl=[...s.clues].reverse().find(c=>c.source!=='paid'&&c.source!=='tipoff');
-   if(cl){ const cs=cl.truthful?(out.correct?'toldYou':'ignored'):(out.correct?'dodged':'lied'); const k0=cl.source+'.'+cs+'.'; const pool=((tt('sreply')||{})[cl.source]||{})[cs]; const len=Array.isArray(pool)?pool.length:1; const start=Math.floor(Math.random()*len); for(let j=0;j<len;j++){ const v=(start+j)%len; if(!usedS.has(k0+v)){ usedS.add(k0+v); out.srcReply={src:cl.source,cs,v}; break; } } }
+   if(cl){ const cs=cl.truthful?(out.correct?'toldYou':'ignored'):(out.correct?'dodged':'lied'); const k0=cl.source+'.'+cs+'.'; const pool=((tt('sreply')||{})[cl.source]||{})[cs]; const v=freshPick('sreply.'+cl.source+'.'+cs,Array.isArray(pool)?pool.length:1); usedS.add(k0+v); out.srcReply={src:cl.source,cs,v}; }
   }
   return out;
  });
@@ -2091,7 +2683,7 @@ function resolveWindow(){
  }else if(game.mode==='career'){
   const c=C(); const before=levelInfo(c.xp); c.followers=game.followers;
   res.xpGain=Math.max(0,multipliedTotal)+20; c.xp+=res.xpGain;
-  const payBonus=exclusives*25+({1:150,2:80,3:40,4:15}[tier.n]||0); res.payBonus=payBonus; res.creditGain=Math.round((40+Math.max(0,multipliedTotal)/2+payBonus)*(c.rep>=70?1.25:1)); c.credits+=res.creditGain;
+  const payBonus=exclusives*25+({1:150,2:80,3:40,4:15}[tier.n]||0); res.payBonus=payBonus; res.creditGain=Math.round((60+Math.max(0,multipliedTotal)*0.7+payBonus)*(c.rep>=70?1.25:1)); c.credits+=res.creditGain;
   res.repDelta=corrects*3-wrongs*4; c.rep=Math.max(0,Math.min(100,c.rep+res.repDelta));
   c.windows++; c.exclusives+=exclusives; c.wrong+=wrongs; c.correct+=corrects; c.bestTier=Math.min(c.bestTier,tier.n);
   c.history.unshift({when:todayKey(),score:multipliedTotal,tier:tier.n,row:per.map(x=>x.emoji).join('')}); c.history=c.history.slice(0,20);
@@ -2306,7 +2898,7 @@ function finishWindow(){ stopTimer(); dismissCoach('c5'); resolveWindow(); try{ 
 
 // ----- root -----
 function render(){
- applyTheme(); const app=$('app');
+ applyTheme(); document.documentElement.setAttribute('data-dd',screen==='window'&&game&&game.day===7&&!game.result?'1':''); const app=$('app');
  if(screen==='home') app.innerHTML=renderHome();
  else if(screen==='window') app.innerHTML=renderWindow();
  else if(screen==='results'){ app.innerHTML=renderResults(); afterResults(); }
@@ -2375,7 +2967,7 @@ function renderHome(){
 
 // ----- window -----
 function sagaStatus(s){ const n=Math.min(5,s.clues.length); const pips=`<span class="pips">${[0,1,2,3,4].map(i=>`<i class="${i<n?'on':''}"></i>`).join('')}</span>`; return pips+(s.call?`<span class="state">🔒 ${esc(t('win.posted'))}</span>`:`<span class="state">${esc(t('win.noCall'))}</span>`); }
-function sagaListHtml(){ return game.sagas.map(s=>`<button class="saga pt-${ptype(s.player).key} ${s.call?'called':''}" data-act="openSaga" data-id="${s.id}">${kitSVG(s.club,initials(s.player.name))}<span class="who">${ptBadge(s.player)}<b>${esc(pName(s.player))}</b><span class="route"><i style="background:${s.club.kit}"></i>${esc(cName(s.club))}<span class="arr">→</span><i style="background:${s.dest.kit}"></i><span class="to">${esc(cName(s.dest))}</span></span>${s.call?`<span class="snip">✍️ ${esc(tweetText(s.call.outcome,s.call.conf,s))}</span>`:''}</span><span class="status">${sagaStatus(s)}</span></button>`).join(''); }
+function sagaListHtml(){ return game.sagas.map(s=>`<button class="saga pt-${ptype(s.player).key} ${s.call?'called':''}" data-act="openSaga" data-id="${s.id}">${kitSVG(s.club,initials(s.player.name))}<span class="who">${ptBadge(s.player)}<b>${esc(pName(s.player))}</b>${newsChip(s)}<span class="route"><i style="background:${s.club.kit}"></i>${esc(cName(s.club))}<span class="arr">→</span><i style="background:${s.dest.kit}"></i><span class="to">${esc(cName(s.dest))}</span></span>${s.call?`<span class="snip">✍️ ${esc(tweetText(s.call.outcome,s.call.conf,s))}</span>`:''}</span><span class="status">${sagaStatus(s)}</span></button>`).join(''); }
 function tickerHtml(){ const items=game.feed.filter(f=>f.type==='rival'||f.type==='event').slice(-6).map(f=>esc(feedText(f))); if(!items.length) return ''; const body=items.map(x=>`<b>${esc(t(game.day===7?'win.ddTicker':'win.breaking'))}</b>${x}`).join('&nbsp;&nbsp;&nbsp;&nbsp;'); const chars=items.join(' ').length*2+items.length*20; const dur=Math.max(50,Math.round((420+chars*7)/34)); return `<div class="ticker ${game.day===7?'dd':''}"><div class="track" style="animation-duration:${dur}s">${body}&nbsp;&nbsp;&nbsp;&nbsp;${body}</div></div>`; }
 function modeLabel(){ return game.mode==='daily'?t('win.daily',{n:dailyNumber()}):game.mode==='career'?(game.room?t('online.label',{c:game.room,s:game.season+1,n:roomSeasons(game.room)}):t('win.career')):t('win.practice'); }
 function hudHtml(){
@@ -2422,7 +3014,7 @@ function renderSagaModal(id){
  const pending=s.clues.some(cl=>cl.revealAt&&cl.revealAt>now);
  const asks=tt('ask');
  const items=[
-  ...s.clues.map((cl,i)=>({k:'clue',cl,day:cl.day,ask:fill(asks[(id+i)%asks.length],ctx),wait:cl.revealAt&&cl.revealAt>now,seq:i})),
+  ...s.clues.map((cl,i)=>({k:'clue',cl,day:cl.day,ask:fill(asks[(cl.a!=null?cl.a:id+i)%asks.length],ctx),wait:cl.revealAt&&cl.revealAt>now,seq:i})),
   ...game.feed.filter(f=>f.sagaId===id&&f.type==='rival').map(f=>({k:'rival',rv:RIVALS.find(r=>r.key===f.rival),day:f.day,text:feedText(f),seq:-1})),
   ...game.feed.filter(f=>f.sagaId===id&&f.type==='event'&&f.day>1).map(f=>({k:'evt',day:f.day,text:feedText(f),seq:-1}))
  ].sort((a,b)=>a.day-b.day||a.seq-b.seq);
@@ -2432,7 +3024,7 @@ function renderSagaModal(id){
   const cl=it.cl; const who=clueWho(cl); const me=cl.source==='tipoff'?'':`<div class="bub me">${esc(it.ask)}</div>`;
   if(it.wait) return me+`<div class="bub them"><span class="who">${esc(who)}</span><span class="typing"><i></i><i></i><i></i></span></div>`;
   let extra='';
-  if(cl.source==='airport'){ const to=(cl.out==='HIJACK')?cityName(s.hijack):cityName(s.dest); extra=`<div class="jetline"><span>${esc(cityName(s.club))}</span><div class="track"><i>✈️</i></div><span>${esc(to)}</span></div>`; }
+  if(cl.source==='airport') extra=jetHtml(s,cl.out);
   if(cl.source==='physio') extra=ecgSVG();
   return me+`<div class="bub them ${cl.source==='paid'||cl.source==='tipoff'?'paid':''}"><span class="who">${esc(who)} · ${esc(t('win.dayN',{d:cl.day}))}</span>${esc(clueText(s,cl))}${extra}</div>`;
  }).join('');
@@ -2452,7 +3044,7 @@ function renderSagaModal(id){
    <div class="choice step" id="outcomeStep">${OUTCOMES.map(k=>`<button class="${o===k?'on':''}" data-act="pickOutcome" data-v="${k}">${esc(fill(tt('outcome')[k],ctx))}</button>`).join('')}</div>
    <p class="small muted step" id="confStep" style="margin:12px 0 6px">${esc(t('sheet.step2'))} ${o?'':'<span class="tiny">'+esc(t('sheet.pickFirst'))+'</span>'}</p>
    <div class="choice">${['low','med','high'].map(k=>`<button class="${cf===k?'on':''}" data-act="pickConf" data-v="${k}" ${o?'':'disabled'}>${esc(t('conf.'+k))}<br><span class="tiny muted">${esc(t('sheet.scoreHint',{a:Math.round(PTS[k][0]*ptype(s.player).pts),b:Math.round(PTS[k][1]*ptype(s.player).pts)}))}</span></button>`).join('')}</div>
-   <p class="muted small" style="margin-top:10px">${esc(t('sheet.bothHint'))}</p>`;
+   <div class="scoophint">👑 ${esc(t('scoop.hint'))}</div><p class="muted small" style="margin-top:10px">${esc(t('sheet.bothHint'))}</p>`;
  }
  const keep=$('modalRoot').querySelector('.modal'); const scrollY=keep?keep.scrollTop:0;
  openModal(`<h2>${esc(pName(s.player))}</h2><p class="muted">${esc(s.player.pos)} · ${esc(t('sheet.rumored',{d:ctx.d}))}</p><div class="ptnote ptn-${ptype(s.player).key}">${ptBadge(s.player)}<span>${esc(t('ptype.note',{p:ptype(s.player).pts,f:ptype(s.player).fans}))}</span></div>
@@ -2486,7 +3078,7 @@ function renderResults(){
   return `<div class="card flat reveal" style="padding:0;overflow:hidden;animation-delay:${(i*step).toFixed(2)}s">
    <div class="tweet event" style="border:none;border-radius:0"><div class="av">${kitSVG(s.truth==='HIJACK'?s.hijack:s.truth==='DONE'?s.dest:s.club,initials(s.player.name))}</div><div class="body"><div class="meta"><b>${esc(t('win.wire'))}</b><span class="h">${esc(t('res.closed'))}</span></div><div class="txt">${esc(officialText(s))}</div></div></div>
    ${x.called&&!s.call?`<div class="tweet ${x.correct?'right':'wrong'}" style="border-radius:0;border-left:none;border-right:none;border-bottom:none"><div class="av you">✍️</div><div class="body"><div class="meta"><b>${esc(t('win.you'))}</b><span class="h">${x.emoji}${x.exclusive?' '+esc(t('res.first')):''}${x.pts!=null?` · ${x.pts>0?'+':''}${x.pts} ${esc(t('app.ptsShort'))}`:''}</span></div><div class="txt muted small">${esc(t('arch.noDetail'))}</div>${replies.map((rp,j)=>`<div class="reply"><b>${esc(handles[j])}</b>${esc(rp)}</div>`).join('')}</div></div>`
-   :x.called?`<div class="tweet ${x.correct?'right':'wrong'}" style="border-radius:0;border-left:none;border-right:none;border-bottom:none"><div class="av you">✍️</div><div class="body">${stamp}<div class="meta"><b>${esc(t('win.you'))}</b><span class="h">${esc(t('win.dayN',{d:s.call.day}))}</span></div><div class="txt">${esc(tweetText(s.call.outcome,s.call.conf,s))}</div><div class="foot"><span style="color:${x.correct?'var(--green)':'var(--red)'};font-weight:700">${x.pts>0?'+':''}${x.pts} ${esc(t('app.ptsShort'))}</span>${x.fans!=null?`<span style="color:${x.fans>=0?'var(--green)':'var(--red)'};font-weight:700">👥 ${x.fans>=0?'+':'−'}${fmtK(Math.abs(x.fans))}</span>`:''}${ptBadge(s.player)}${x.exclusive?`<span style="color:var(--gold);font-weight:700">${esc(t('res.first'))}</span>`:''}${x.uturn?`<span class="utag">${esc(t('uturn.half'))}</span>`:''}</div>
+   :x.called?`<div class="tweet ${x.correct?'right':'wrong'}" style="border-radius:0;border-left:none;border-right:none;border-bottom:none"><div class="av you">✍️</div><div class="body">${stamp}<div class="meta"><b>${esc(t('win.you'))}</b><span class="h">${esc(t('win.dayN',{d:s.call.day}))}</span></div><div class="txt">${esc(tweetText(s.call.outcome,s.call.conf,s))}</div><div class="foot"><span style="color:${x.correct?'var(--green)':'var(--red)'};font-weight:700">${x.pts>0?'+':''}${x.pts} ${esc(t('app.ptsShort'))}</span>${x.fans!=null?`<span style="color:${x.fans>=0?'var(--green)':'var(--red)'};font-weight:700">👥 ${x.fans>=0?'+':'−'}${fmtK(Math.abs(x.fans))}</span>`:''}${ptBadge(s.player)}</div>${scoopBar(s,x)}<div class="foot" style="display:none">${x.exclusive?`<span style="color:var(--gold);font-weight:700">${esc(t('res.first'))}</span>`:''}${x.uturn?`<span class="utag">${esc(t('uturn.half'))}</span>`:''}</div>
      ${replies.map((rp,j)=>`<div class="reply"><b>${esc(handles[j])}</b>${esc(rp)}</div>`).join('')}${x.srcReply?`<div class="reply src"><b>${SOURCES[x.srcReply.src].ic} ${esc(t('src.'+x.srcReply.src+'.name'))}</b>${esc(fill(pickVar(tt('sreply')[x.srcReply.src][x.srcReply.cs],x.srcReply.v),ctx))}</div>`:''}</div></div>`
    :`<div class="tweet sys">${esc(t('res.silence'))}</div>`}
   </div>`; }).join('');
@@ -2701,7 +3293,7 @@ document.addEventListener('click',(e)=>{
  if(a==='uturnGo'){ closeModalQuiet(); uturnOverlay(id,()=>{ draft={outcome:null,conf:null}; render(); renderSagaModal(id); }); return; }
  if(a==='boost'){ runBoost(id,el.dataset.b); return; }
  if(a==='adAction'){ showAd(()=>{ game.actions++; game.adActionUsed=true; saveGame(); toast(t('ad.plus')); render(); }); return; }
- if(a==='endDay'){ endDay(); dismissCoach('c4'); const dd=game.day===7; beep(dd?'siren':'dayhit'); if(dd) buzzPhone([80,40,80]); splash(dd?t('win.deadline'):t('win.day',{d:game.day}), dd?t('tut.coach.c5'):t('sys.day',{d:game.day}).split('.').slice(1).join('.').trim(), dd); render(); if(dd) startTimer(); return; }
+ if(a==='endDay'){ endDay(); dismissCoach('c4'); const dd=game.day===7; beep(dd?'siren':'dayhit'); if(dd) buzzPhone([80,40,80]); splash(dd?t('win.deadline'):t('win.day',{d:game.day}), dd?t('tut.coach.c5'):t('sys.day',{d:game.day}).split('.').slice(1).join('.').trim(), dd); render(); if(dd) startTimer(); if(game.day<7) setTimeout(()=>{ if(screen==='window'&&game&&!$('modalRoot').innerHTML) headlinesSheet(); },1900); return; }
  if(a==='finish'){ finishWindow(); return; }
  if(a==='copyShare'){ const tx=$('shareText').textContent; const done=()=>{ toast(t('toast.copied')); Analytics.track('share',{method:'copy',content_type:'result_card'}); }; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(tx).then(done,()=>fallbackCopy(tx,done)); else fallbackCopy(tx,done); return; }
  if(a==='buyEquip'){ const eq=EQUIP.find(x=>x.key===v); const cc=C(); if(cc.credits>=eq.cost&&!cc.equip.includes(v)&&levelInfo(cc.xp).n>=(eq.lvl||1)){ cc.credits-=eq.cost; cc.equip.push(v); persist(); Analytics.track('spend_virtual_currency',{value:eq.cost,virtual_currency_name:'credits',item_name:v}); beep('ding'); toast(t('toast.bought',{x:t('equip.'+v+'.name')})); render(); } return; }

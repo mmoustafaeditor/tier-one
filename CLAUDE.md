@@ -87,7 +87,9 @@ signed with it or installed apps refuse the update.
   APK from the run and replace `downloads/TierOne.apk`; bump `version`,
   `versionCode` and `changelog` in `api/tier-one/latest.js`; update the version badge in
   `games/tier-one/README.md`. Say in `UPDATES.md` if the APK is not rebuilt yet.
-- Current versions: web game `1.6.0`, Android `1.8` (versionCode 9).
+- Current versions: web game `1.7.0`, Android `1.9` (versionCode 10).
+- Game shape lives in `CONFIG`: `SAGAS` (players per window, 5) and `CONTACTS` (per day, 4); 7 days. Tier cutoffs: T1 235, T2 155, T3 90, T4 35.
+- Text freshness: every source line, source DM, rival post, news-wire item, official line and DM opener is chosen with `freshPick()`, so nothing repeats within a window and recently seen lines are avoided. New text goes in a voice pack (v2–v4 blocks) as appended arrays.
 - Career economy: pay per window = $40 + half the points + $25 per exclusive + tier bonus (T1 150, T2 80, T3 40, T4 15), ×1.25 at 70+ rep; daily Payday +$60 and one ad +$40 per day (solo only). Career goals (level 7, Tier 1 ×3, all gear, 100K followers) unlock the Tier One Legend badge. Cash packs ($400/$1,400/$3,500) need `STRIPE_LINKS` filled in `CONFIG`.
 - In-game currency is shown as dollars (`$`), but the save field is still `career.credits`.
 - Multiplayer rooms: each room has its own career in `save.rooms[code].career`; game code reads the active career through `C()` (solo career unless `roomCtx` is set). Use `C()`, not `save.career`, in anything that runs during a window.

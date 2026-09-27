@@ -17,6 +17,18 @@ together with your change.
 
 ---
 
+## 2026-09-27 · mmoustafaeditor · 5 players/4 contacts, no repeated lines, red Deadline Day, clearer exclusives and headlines
+- **What changed:** Every mode is now 5 players, 4 contacts a day, 7 days (tier cutoffs and pay rescaled). No line ever
+  repeats within a window (source clues, source DMs, rival posts, news wire, official lines, DM openers) and recently
+  seen lines are avoided; ~310 new lines (EN/ES/AR) widen the rival/news pools. Lying sources now lean towards "it's
+  happening" (~70% of lies), for more intrigue. The airport spotter's plane follows the clue: lands (done), diverts
+  (hijack), turns back (collapsed), or no plane (fake). Deadline Day turns the whole app red. Results show a gold
+  EXCLUSIVE banner vs a green RIGHT banner that names the rival who beat you. New "Overnight headlines" sheet after each
+  day and NEW rumour tags on saga cards. Web 1.7.0, Android 1.9.
+- **Files:** `tier-one/index.html`, `games/tier-one/app/build.gradle`, `downloads/TierOne.apk`, `api/tier-one/latest.js`, docs.
+- **Heads-up for the team:** Boards changed shape (5 sagas), so rooms created before this update will get 5-player
+  seasons from now on. `DAILY_REPLAY` still `true`. Next Android release is versionCode 11.
+
 ## 2026-09-26 · mmoustafaeditor · Career cash economy: goals, payday, bigger packs; online store connected
 - **What changed:** Career pay now rewards good windows ($40 + half the points + $25/exclusive + tier bonus, about
   $150–$600 a window). Boosts cost $40/$60/$90. New **Career goals** card (level 7, Tier 1 three times, all 14 gear,
