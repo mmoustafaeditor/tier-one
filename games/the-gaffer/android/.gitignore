@@ -1,0 +1,7 @@
+.gradle/
+build/
+app/build/
+local.properties
+# Copied from ../build (release web build) at build time
+app/src/main/assets/index.html
+app/src/main/assets/version.json

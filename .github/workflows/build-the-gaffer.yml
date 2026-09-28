@@ -1,0 +1,162 @@
+name: Build and publish The Gaffer
+
+# On every push to main that touches The Gaffer:
+#   1. builds the web game (release build → /the-gaffer/index.html + version.json) and the APK;
+#   2. commits the fresh web build back to main (and a new APK + update feed when the Android app changed);
+#   3. asks Vercel to deploy, so sembagames.app/the-gaffer is live within minutes.
+# Players with the game open see "Update now"; installed apps download the new web build by themselves and show the
+# same message. A new APK is only published when games/the-gaffer/android/ changed (or when you ask for one below).
+# Pull requests and other branches only build and check; the APK is attached to the run as TheGaffer-apk.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'games/the-gaffer/**'
+      - 'design/**'
+      - '.github/workflows/build-the-gaffer.yml'
+  pull_request:
+    paths:
+      - 'games/the-gaffer/**'
+      - 'design/**'
+      - '.github/workflows/build-the-gaffer.yml'
+  workflow_dispatch:
+    inputs:
+      apk:
+        description: 'Also publish a new APK (installed apps will be asked to download it)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: the-gaffer-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: games/the-gaffer/web/package-lock.json
+
+      - name: Reject legacy project branding
+        run: |
+          set -e
+          for encoded in \
+            2KPZhtiqINin2YTZhdiv2LHYqA== \
+            QW50YSBFbCBNb2RhcmVi \
+            YW50YS1lbC1tb2RhcmVi \
+            bW9kYXJlYi5haS5zdHVkaW8= \
+            YW50YV9lbF9tb2RhcmVi \
+            QW50YUVsTW9kYXJlYg==
+          do
+            term="$(printf '%s' "$encoded" | base64 -d)"
+            if grep -R -F -n "$term" games/the-gaffer/web/src games/the-gaffer/web/index.html games/the-gaffer/android api/the-gaffer; then
+              echo "Legacy project branding found in The Gaffer source/deploy surface."
+              exit 1
+            fi
+          done
+
+      - name: Build the web game (typecheck + release build)
+        working-directory: games/the-gaffer/web
+        run: |
+          npm ci
+          npm run build:min
+          test -s ../build/index.html
+          test -s ../build/version.json
+          ! grep -q 'fonts.googleapis' ../build/index.html
+          cmp ../build/index.html ../../../the-gaffer/index.html
+          cmp ../build/version.json ../../../the-gaffer/version.json
+          node -e "const v=require('../build/version.json'); const h=require('crypto').createHash('sha256').update(require('fs').readFileSync('../build/index.html')).digest('hex'); if (v.sha256!==h) { console.error('version.json sha256 mismatch'); process.exit(1) } console.log('web build', v.version, v.build)"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Build the APK
+        working-directory: games/the-gaffer/android
+        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Check the APK
+        run: |
+          set -e
+          APK=games/the-gaffer/android/app/build/outputs/apk/debug/app-debug.apk
+          unzip -l "$APK" | grep -q 'assets/index.html'
+          unzip -l "$APK" | grep -q 'assets/version.json'
+          unzip -p "$APK" assets/index.html | cmp - games/the-gaffer/build/index.html
+          CODE=$("$ANDROID_HOME"/build-tools/34.0.0/aapt dump badging "$APK" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p")
+          BUILD=$(node -p "require('./games/the-gaffer/build/version.json').build")
+          test "$CODE" = "$BUILD"
+          "$ANDROID_HOME"/build-tools/34.0.0/apksigner verify "$APK"
+          echo "APK versionCode $CODE, signed"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TheGaffer-apk
+          path: games/the-gaffer/android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Publish to main
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        env:
+          BEFORE: ${{ github.event.before }}
+          WANT_APK: ${{ inputs.apk }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          set -e
+          # A new APK only when the Android app itself changed, when asked, or when there is none yet.
+          APK=false
+          if [ "$WANT_APK" = "true" ] || [ ! -f downloads/TheGaffer.apk ]; then APK=true
+          elif [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then APK=true
+          elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -q '^games/the-gaffer/android/'; then APK=true
+          fi
+          VERSION=$(node -p "require('./games/the-gaffer/build/version.json').version")
+          BUILD=$(node -p "require('./games/the-gaffer/build/version.json').build")
+          FILES="the-gaffer/index.html the-gaffer/version.json games/the-gaffer/build/index.html games/the-gaffer/build/version.json"
+          if [ "$APK" = "true" ]; then
+            node games/the-gaffer/scripts/publish-apk.mjs games/the-gaffer/android/app/build/outputs/apk/debug/app-debug.apk "$BUILD" "$VERSION" "$(printf '%s' "$MESSAGE" | head -n 1)"
+            FILES="$FILES downloads/TheGaffer.apk api/the-gaffer/latest.js"
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add $FILES
+          if git diff --cached --quiet; then echo "Nothing new to publish"; exit 0; fi
+          git commit -m "chore(gaffer): publish web build $BUILD$( [ "$APK" = true ] && echo ' and APK' ) [skip ci]"
+          for i in 1 2 3 4; do
+            git pull --rebase origin main && git push origin HEAD:main && break
+            sleep $((i * 5))
+          done
+          {
+            echo "### The Gaffer $VERSION · build $BUILD"
+            echo "- Web: https://www.sembagames.app/the-gaffer"
+            [ "$APK" = true ] && echo "- New APK published (versionCode $BUILD): installed apps will offer the download" || echo "- No new APK: installed apps pick up the web build by themselves"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy the site (Vercel)
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          # Vercel only auto-deploys commits by members of the Vercel team, so the bot's commit needs a deploy hook.
+          if [ -z "$HOOK" ]; then
+            echo "::warning::VERCEL_DEPLOY_HOOK is not set: the site updates on mmoustafaeditor's next push (see games/the-gaffer/README.md › Live updates)."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK" > /dev/null && echo "Vercel deploy started"

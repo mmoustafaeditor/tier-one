@@ -1,0 +1,63 @@
+plugins { id 'com.android.application' }
+
+// The game is the release build of ../web (npm run build:min → games/the-gaffer/build/index.html + version.json),
+// the same file sembagames.app serves. It is copied into src/main/assets/ before every build. The version name comes
+// from web/package.json; the versionCode is the web build number from build/version.json (minutes since 1970), so every
+// new APK is automatically higher than the last one and nobody has to bump it by hand.
+def webDir = file('../../web')
+def buildDir0 = file('../../build')
+def webVersion = new groovy.json.JsonSlurper().parse(new File(webDir, 'package.json')).version
+def infoFile = new File(buildDir0, 'version.json')
+def webBuild = infoFile.exists() ? (new groovy.json.JsonSlurper().parse(infoFile).build as Integer) : 5
+
+android {
+    namespace 'com.sembagames.thegaffer'
+    compileSdk 34
+
+    buildFeatures { buildConfig true }
+
+    defaultConfig {
+        applicationId "com.sembagames.thegaffer"
+        minSdk 24
+        targetSdk 34
+        versionCode((project.findProperty('versionCode') ?: webBuild) as Integer)
+        versionName webVersion
+    }
+
+    // The Gaffer's own key (not Tier One's). Keep this file: every build must be signed with it so updates install over old versions.
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'gafferkey'
+            keyPassword 'android'
+            storeType 'pkcs12'
+        }
+    }
+
+    buildTypes {
+        debug { signingConfig signingConfigs.debug }
+        release { minifyEnabled false }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.13.1' // FileProvider, to share images and save files
+}
+
+tasks.register('copyGame', Copy) {
+    def built = new File(buildDir0, 'index.html')
+    def info = new File(buildDir0, 'version.json')
+    doFirst {
+        if (!built.exists() || !info.exists()) throw new GradleException("Build the game first: cd games/the-gaffer/web && npm ci && npm run build:min")
+    }
+    from(built)
+    from(info)
+    into 'src/main/assets'
+}
+preBuild.dependsOn copyGame

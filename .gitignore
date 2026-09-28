@@ -1,6 +1,8 @@
 # Android / Gradle build output (games/tier-one). The APK we publish lives in downloads/ and stays tracked.
 .gradle/
 build/
+# The Gaffer: the committed minified release build (games/the-gaffer/build/index.html) is not a build cache
+!games/the-gaffer/build/
 local.properties
 captures/
 .externalNativeBuild/
