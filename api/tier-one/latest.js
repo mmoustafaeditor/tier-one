@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '2.2',
-  versionCode: 13,
+  version: '2.3',
+  versionCode: 14,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'The big one: plot twists, sources that open late, a brand-new look, a Trophies cabinet with PS5-style pop-ups, a cleaner player page with the Deadline Day clock, new results with a who-told-the-truth table, and the Back button now works.',
+  changelog: 'New epic Semba intro, Career source upgrade tree with tier bars that rise as you upgrade, Go louder on your calls, clearer rival journalists, a compact Trophies page and calmer trophy pop-ups.',
 };
 
 export default function handler(req, res) {

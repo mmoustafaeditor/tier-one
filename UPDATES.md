@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-28 · mmoustafaeditor · Epic intro, Career source tree, Go louder, rivals, trophies (web 2.3.0, Android 2.3)
+- **What changed:** Live-drawn full-screen Semba intro with a trailer-style soundtrack. iPhone/browser Back walks up the menus. Daily/Practice: all sources open Day 1 with early hunches, 4 contacts (web 2.1.0). Career/Rooms: gated sources again, source upgrade tree (reliability levels + earlier physio/airport), Career-only tier bars that rise with upgrades, pay ×2.25, boosts repriced. Go louder on a posted call; U-turn is a draft until the new call posts; results compare "You called | What happened". Rival journalists clearly labelled, "Beaten by @X on Day N" on results. Compact Trophies grid, Rare+ pop-ups by default with a setting.
+- **Files:** `tier-one/index.html`, `games/tier-one/intro-sound/*`, `games/tier-one/app/build.gradle`, `api/tier-one/latest.js`, `downloads/TierOne.apk`, `games/tier-one/README.md`, `CLAUDE.md`, `UPDATES.md`
+- **Heads-up for the team:** Android versionCode 14. `semba-intro.*` video files are unused but still bundled in the APK.
+
 ## 2026-09-28 · mmoustafaeditor · Tier 1 capped at ~20% everywhere; owner UI fixes (web 2.0.2, Android 2.2)
 - **What changed:** Tier 1 now needs 385; gear is gentler (reliability +2, Wi-Fi +1 contact on day 6, Second phone on day 5, twist warnings 20%/+10%); boosts cost $200/$500/$800 and still double per repeat. Simulated strong play: Daily ~12% T1, fully geared career ~17–19%. UI (2.0.1): classic-speed tweet typing with sounds, source calls play the full animation then show the chat, simpler "What we know" list, "Decide later" button, no ad banners during play (Career-only "Watch ad · +1 contact" pill), Arabic names wrap instead of truncating.
 - **Files:** `tier-one/index.html`, `games/tier-one/app/build.gradle`, `api/tier-one/latest.js`, `downloads/TierOne.apk`, `games/tier-one/README.md`, `CLAUDE.md`, `UPDATES.md`
