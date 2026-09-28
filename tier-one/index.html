@@ -1955,6 +1955,75 @@ html[lang="ar"] .rvtag{ letter-spacing:0; font-size:11px; }
 .rvhow .rvhx{ margin-top:8px; padding-top:10px; border-top:1px solid var(--line); font:700 var(--fs-sm)/1.4 var(--body); }
 /* @@LANE CSS:rivals END */
 /* @@LANE CSS:lb BEGIN (lane-owned; insert only between BEGIN and END) */
+/* ===== lb: Daily/weekly leaderboards ===== */
+.screen.lb{ padding-top:0; }
+.lb-hero{ text-align:center; padding:14px 0 4px; }
+.lb-hero .lbcup{ display:block; font-size:42px; line-height:1; }
+.lb-hero .d3{ margin-top:8px; font-size:28px; }
+.lb-hero .lbsub{ margin-top:4px; font:600 var(--fs-sm)/1.35 var(--body); color:var(--muted); }
+.lb-tabs{ margin-top:14px; }
+.lb-tabs button{ min-height:44px; font-size:var(--fs-md); }
+.lb-tabs button[aria-selected="true"]{ background:var(--panel3); color:var(--text); }
+.lb-note{ margin:10px 4px 0; font:600 var(--fs-xs)/1.4 var(--body); color:var(--muted); text-align:center; }
+/* your own row: always visible, even outside the top 25 */
+.lb-me{ position:relative; margin-top:12px; padding:12px 14px; border-radius:var(--r-lg); border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line)); background:linear-gradient(var(--gdir),color-mix(in srgb,var(--accent) 14%,var(--panel)),var(--panel) 72%); box-shadow:var(--e1); display:flex; align-items:center; gap:12px; }
+.lb-me .lbrk{ flex:0 0 auto; min-width:56px; text-align:center; font:800 var(--ital) 34px/1 var(--display); color:var(--accent-text); letter-spacing:var(--track); white-space:nowrap; }
+.lb-me .lbrk small{ display:block; margin-top:5px; font:700 10.5px/1 var(--body); font-style:normal; letter-spacing:.06em; text-transform:var(--caps); color:var(--muted); }
+.lb-me .lbmm{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+.lb-me .lbmm .onl-nm b{ font-size:16px; }
+.lb-me .lbmm .onl-sub{ gap:8px; }
+.lb-me .lbmm .lbdim{ font:600 var(--fs-xs)/1.35 var(--body); color:var(--muted); }
+.lb-me .onl-tot b{ font-size:26px; }
+.lb-me.cta{ flex-direction:column; align-items:stretch; gap:10px; }
+.lb-me.cta .lbcta-t{ display:flex; align-items:center; gap:10px; font:700 var(--fs-md)/1.3 var(--body); }
+.lb-me.cta .lbcta-t .lbi{ font-size:24px; line-height:1; }
+.lb-me.cta .btn.primary{ min-height:54px; }
+.lb-me.soft{ border-color:var(--line); background:var(--panel); }
+.lb-me.soft .lbrk{ color:var(--muted); }
+.lb-me .lbmini{ align-self:stretch; display:flex; align-items:center; }
+.lb-me .lbmini .btn.sm{ min-height:40px; }
+.lbdays{ color:var(--muted); font:600 var(--fs-xs) var(--body); white-space:nowrap; }
+/* list */
+.lb-list{ list-style:none; margin:12px 0 0; padding:0; }
+.lb-list .onl-lrow{ min-height:60px; padding:9px 12px; }
+.lb-list .onl-rk{ flex-basis:32px; }
+.lb-list .onl-rk .lbmed{ font-size:22px; font-style:normal; }
+.lb-list .onl-tot b{ font-size:22px; }
+.lb-list .onl-lrow.me .onl-rk{ color:var(--accent-text); }
+.lb-list .onl-tier{ flex-shrink:0; }
+/* states */
+.lb-state{ margin-top:12px; padding:22px 16px; text-align:center; }
+.lb-state .lbi{ display:block; font-size:34px; line-height:1; margin-bottom:8px; }
+.lb-state b{ display:block; font:700 var(--fs-md)/1.3 var(--body); }
+.lb-state p{ margin-top:4px; font-size:var(--fs-sm); line-height:1.45; color:var(--muted); }
+.lb-state .btn{ margin-top:12px; width:auto; min-height:44px; padding:10px 20px; }
+.lb-sk{ list-style:none; margin:12px 0 0; padding:0; }
+.lb-sk li{ display:flex; align-items:center; gap:10px; min-height:60px; padding:9px 12px; background:var(--panel); }
+.lb-sk li + li{ border-top:1px solid var(--line); }
+.lb-sk i{ display:block; border-radius:8px; background:var(--panel3); animation:lbsk 1.2s ease-in-out infinite; }
+.lb-sk .a{ width:22px; height:22px; } .lb-sk .b{ width:36px; height:36px; border-radius:50%; } .lb-sk .c{ flex:1; height:14px; } .lb-sk .d{ width:44px; height:22px; }
+@keyframes lbsk{ 50%{ opacity:.45; } }
+@media (prefers-reduced-motion:reduce){ .lb-sk i{ animation:none; } }
+html.rm .lb-sk i,html.lowfx .lb-sk i{ animation:none; }
+/* nickname */
+.lb-nick{ margin-top:16px; }
+.lb-nick .fld{ margin:0; }
+.lb-nick .lbnrow{ display:flex; gap:8px; }
+.lb-nick .lbnrow .inp{ flex:1; min-width:0; }
+.lb-nick .lbnrow .btn{ flex:0 0 auto; width:auto; min-width:84px; min-height:48px; padding:0 18px; }
+.lb-nick .hmnote{ margin-top:8px; line-height:1.4; }
+.lb-foot{ text-align:center; font-size:var(--fs-xs); line-height:1.45; color:var(--dim); padding:16px 12px 0; }
+/* home entry: a compact row inside the Daily card */
+.lbhome{ margin-top:10px; }
+.lbhome .lbpill{ display:flex; align-items:center; gap:10px; width:100%; min-height:46px; padding:8px 12px; border-radius:var(--r-md); border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line)); background:color-mix(in srgb,var(--panel) 72%,transparent); color:var(--text); text-align:start; cursor:pointer; transition:transform var(--t-press) ease-out; }
+.lbhome .lbpill:active{ transform:scale(.985); }
+.lbhome .lbpill .lbi{ font-size:20px; line-height:1; }
+.lbhome .lbpill .lbt{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.lbhome .lbpill .lbt b{ font:700 var(--fs-sm)/1.2 var(--body); }
+.lbhome .lbpill .lbt span{ font:600 var(--fs-xs)/1.2 var(--body); color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lbhome .lbpill .lbt span.hot{ color:var(--accent-text); }
+.lbhome .lbpill .chev{ font-size:20px; }
+[dir="rtl"] .lbhome .lbpill .chev,[dir="rtl"] .lb-list .chev{ transform:scaleX(-1); }
 /* @@LANE CSS:lb END */
 /* @@LANE CSS:results2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE CSS:results2 END */
@@ -4535,6 +4604,35 @@ deepMerge(I18N,{
 });
 /* @@LANE I18N:rivals END */
 /* @@LANE I18N:lb BEGIN (lane-owned; insert only between BEGIN and END) */
+deepMerge(I18N,{
+ en:{lb:{title:'Leaderboard',tabDaily:'Today',tabWeekly:'This week',dailyHead:'Daily #{n}',weekHead:'Week {n}',weekRange:'{a} – {b}',playersN:'{n} players',
+  you:'You',rankOf:'#{r} of {n}',ofN:'of {n} players',yourRank:'Your rank',yourWeek:'Your week',notPlayed:'You haven’t played today’s Daily yet. Play it and claim your spot.',play:'Play today’s Daily',
+  pending:'Your score is saved here. Your rank posts as soon as you are back online.',pendingWeek:'Your weekly rank posts once today’s score goes through.',consent:'Accept the essentials on the home screen to post your score.',
+  notOnBoard:'No Daily on the board this week yet.',daysN:'{n} dailies',dayN1:'1 daily',
+  empty:'No scores yet. Finish today’s Daily and be first on the board.',emptyWeek:'Nothing on the board this week yet.',offline:'Can’t reach the leaderboard right now. Your scores are safe on this phone.',retry:'Try again',refresh:'Refresh',loading:'Loading the board…',
+  dailyNote:'Everyone gets the same five stories. Top 25 by points.',weekNote:'Your Dailies added up, Monday to Sunday. Top 25.',
+  nickLbl:'Your name on the board',nickSave:'Save',nickNote:'Up to 16 characters. Applies from your next Daily; today’s entry keeps the name it was posted with.',nickSaved:'Name saved. Applies from your next Daily.',nickCleared:'Name cleared. You’ll post as {n} from your next Daily.',
+  anon:'Anonymous: only a random device id, your name and your score are sent.',
+  homeRank:'#{r} of {n} today',homePending:'Rank posts when you’re online',homePlaying:'{n} on the board today',homeSub:'See who’s on top today'}},
+ es:{lb:{title:'Clasificación',tabDaily:'Hoy',tabWeekly:'Esta semana',dailyHead:'Diario #{n}',weekHead:'Semana {n}',weekRange:'{a} – {b}',playersN:'{n} jugadores',
+  you:'Tú',rankOf:'#{r} de {n}',ofN:'de {n} jugadores',yourRank:'Tu puesto',yourWeek:'Tu semana',notPlayed:'Todavía no has jugado el Diario de hoy. Juégalo y reclama tu sitio.',play:'Jugar el Diario de hoy',
+  pending:'Tu puntuación está guardada aquí. Tu puesto se publica en cuanto vuelvas a tener conexión.',pendingWeek:'Tu puesto semanal se publica cuando entre la puntuación de hoy.',consent:'Acepta lo esencial en la pantalla de inicio para publicar tu puntuación.',
+  notOnBoard:'Aún no tienes ningún Diario en la tabla esta semana.',daysN:'{n} diarios',dayN1:'1 diario',
+  empty:'Todavía no hay puntuaciones. Termina el Diario de hoy y sé el primero en la tabla.',emptyWeek:'Todavía no hay nada en la tabla esta semana.',offline:'Ahora mismo no llegamos a la clasificación. Tus puntuaciones están a salvo en este móvil.',retry:'Reintentar',refresh:'Actualizar',loading:'Cargando la tabla…',
+  dailyNote:'Todos reciben los mismos cinco culebrones. Top 25 por puntos.',weekNote:'La suma de tus Diarios, de lunes a domingo. Top 25.',
+  nickLbl:'Tu nombre en la tabla',nickSave:'Guardar',nickNote:'Hasta 16 caracteres. Se aplica desde tu próximo Diario; la entrada de hoy conserva el nombre con el que se publicó.',nickSaved:'Nombre guardado. Se aplica desde tu próximo Diario.',nickCleared:'Nombre borrado. Aparecerás como {n} desde tu próximo Diario.',
+  anon:'Anónimo: solo se envían un id aleatorio del dispositivo, tu nombre y tu puntuación.',
+  homeRank:'#{r} de {n} hoy',homePending:'Tu puesto se publica cuando tengas conexión',homePlaying:'{n} en la tabla hoy',homeSub:'Mira quién va arriba hoy'}},
+ ar:{lb:{title:'الترتيب',tabDaily:'النهارده',tabWeekly:'الأسبوع ده',dailyHead:'اليومي رقم {n}',weekHead:'أسبوع {n}',weekRange:'{a} – {b}',playersN:'{n} لاعب',
+  you:'انت',rankOf:'رقم {r} من {n}',ofN:'من {n} لاعب',yourRank:'مركزك',yourWeek:'أسبوعك',notPlayed:'لسه ملعبتش يومي النهارده. العبه وخد مكانك في الترتيب.',play:'العب يومي النهارده',
+  pending:'نتيجتك متسجلة هنا. مركزك هيتنشر أول ما النت يرجع.',pendingWeek:'مركزك الأسبوعي هيظهر أول ما نتيجة النهارده توصل.',consent:'وافق على الأساسيات في الشاشة الرئيسية عشان نتيجتك تتنشر.',
+  notOnBoard:'لسه معندكش يومي في الترتيب الأسبوع ده.',daysN:'{n} يومي',dayN1:'يومي واحد',
+  empty:'لسه مفيش نتايج. خلّص يومي النهارده وكون أول واحد في الترتيب.',emptyWeek:'لسه مفيش حاجة في الترتيب الأسبوع ده.',offline:'مش عارفين نوصل للترتيب دلوقتي. نتايجك محفوظة على الموبايل ده.',retry:'جرّب تاني',refresh:'حدّث',loading:'بنحمّل الترتيب…',
+  dailyNote:'الكل بياخد نفس الخمس قصص. أحسن ٢٥ بالنقط.',weekNote:'مجموع اليومي بتوعك من الاتنين للحد. أحسن ٢٥.',
+  nickLbl:'اسمك في الترتيب',nickSave:'احفظ',nickNote:'لحد ١٦ حرف. بيتطبق من اليومي الجاي؛ نتيجة النهارده هتفضل بالاسم اللي اتنشرت بيه.',nickSaved:'الاسم اتحفظ. هيتطبق من اليومي الجاي.',nickCleared:'الاسم اتمسح. هتظهر باسم {n} من اليومي الجاي.',
+  anon:'مجهول: بنبعت بس رقم عشوائي للجهاز واسمك ونتيجتك.',
+  homeRank:'رقم {r} من {n} النهارده',homePending:'مركزك هيتنشر لما النت يرجع',homePlaying:'{n} في الترتيب النهارده',homeSub:'شوف مين فوق النهارده'}}
+});
 /* @@LANE I18N:lb END */
 /* @@LANE I18N:results2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE I18N:results2 END */
@@ -7001,6 +7099,124 @@ onHook('rendered',sc=>{
 })();
 /* @@LANE JS:rivals END */
 /* @@LANE JS:lb BEGIN (lane-owned; insert only between BEGIN and END) */
+/* ---------- lb: Daily Challenge leaderboards (daily + weekly) ----------
+   Contract (LANES2.md): window.LB.submitDaily(key,payload) / LB.rank(key) / LB.top(period,key); event 'lb:rank'.
+   Server: POST /api/online actions lb.submit / lb.top / lb.me (api/online.js). One entry per device per day. */
+const LBS={tab:'daily',cache:{},busy:{},err:{},poll:null,flushAt:0,prefetchAt:0};
+const LB_TTL=45000, LB_ID_ALPHA='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+function lbRandId(n){ let s=''; try{ const b=new Uint8Array(n); crypto.getRandomValues(b); for(const x of b) s+=LB_ID_ALPHA[x%LB_ID_ALPHA.length]; }catch(e){ for(let i=0;i<n;i++) s+=LB_ID_ALPHA[Math.floor(Math.random()*LB_ID_ALPHA.length)]; } return s; }
+function lbDev(){ if(!save.online||typeof save.online!=='object') save.online={nick:''}; let d=save.online.dev; if(typeof d!=='string'||!/^[A-Za-z0-9]{8,24}$/.test(d)){ d=lbRandId(12); save.online.dev=d; persist(); } return d; }
+function lbConsent(){ return !!save.consent||!CONFIG.CONSENT_REQUIRED; }
+function lbKeyOk(k){ return /^\d{4}-\d{2}-\d{2}$/.test(String(k||'')); }
+function lbCleanNick(s){ return String(s==null?'':s).replace(/[\u0000-\u001f\u007f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16); }
+function lbNick(){ return lbCleanNick(save.online&&save.online.nick||''); }
+function lbFallbackNick(){ return 'Journo-'+lbDev().slice(0,4).toUpperCase(); }
+function lbDate(k){ const p=String(k).split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function lbWeekOf(k){ const p=String(k).split('-').map(Number); const d=new Date(Date.UTC(p[0],p[1]-1,p[2])); const dow=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-dow); const y=d.getUTCFullYear(); return y+'-W'+String(Math.ceil(((d-Date.UTC(y,0,1))/86400000+1)/7)).padStart(2,'0'); }
+function lbWeekDays(k){ const d=lbDate(k); const dow=d.getDay()||7; const mon=new Date(d); mon.setDate(d.getDate()-(dow-1)); return Array.from({length:7},(_,i)=>{ const x=new Date(mon); x.setDate(mon.getDate()+i); return hmKey(x); }); }
+function lbFmtDay(k,opts){ try{ return lbDate(k).toLocaleDateString(hmLoc(),opts||{weekday:'long',day:'numeric',month:'short'}); }catch(e){ return k; } }
+function lbMedal(r){ const m=['🥇','🥈','🥉'][r-1]; return m?`<span class="lbmed" role="img" aria-label="#${r}">${m}</span>`:`<bdi dir="ltr">${r}</bdi>`; }
+function lbTierChip(n){ const tr=tierOf(Math.max(1,Math.min(9,+n||5))); return `<span class="onl-tier ${tr.key}">${esc(tierName(tr))}</span>`; }
+function lbRankOf(rows,i){ const s=rows[i].score; let n=0; for(const x of rows) if(x.score>s) n++; return n+1; }
+function lbStoreRank(key,j){ const h=save.daily.history&&save.daily.history[key];
+ if(h){ h.rank=j.rank; h.total=j.total; if(j.weekRank) h.weekRank=j.weekRank; if(j.weekTotal!=null) h.weekTotal=j.weekTotal; if(j.nick) h.lbNick=j.nick; }
+ if(save.daily.pendingLb&&save.daily.pendingLb.key===key) save.daily.pendingLb=null; persist(); LBS.cache={};
+ try{ document.dispatchEvent(new CustomEvent('lb:rank',{detail:{key,rank:j.rank,total:j.total,weekRank:j.weekRank||null,weekTotal:j.weekTotal||null}})); }catch(e){}
+ if(screen==='leaderboard') render(); else if(screen==='home') lbHomeInject(); }
+window.LB={
+ rank(key){ const h=save.daily&&save.daily.history&&save.daily.history[key]; return h&&h.rank?{rank:h.rank,total:h.total||0,weekRank:h.weekRank||null,weekTotal:h.weekTotal||null}:null; },
+ // Idempotent per device+day: the server keeps the first entry and answers with its rank on any re-send.
+ async submitDaily(key,p){ p=p||{}; key=String(key||''); if(!lbKeyOk(key)) return {ok:false,error:'day'};
+  const have=LB.rank(key); if(have) return Object.assign({ok:true,already:true,nick:(save.daily.history[key].lbNick||'')},have);
+  const pend=save.daily.pendingLb; let body=pend&&pend.key===key&&pend.body?pend.body:null;
+  if(!body) body={day:key,dev:lbDev(),nick:lbCleanNick(p.nick!=null?p.nick:lbNick()),score:Math.round(Number(p.score)||0),tier:Math.round(Number(p.tier)||5),row:String(p.row||'').slice(0,40),ex:Math.round(Number(p.ex)||0),right:Math.round(Number(p.right)||0),wrong:Math.round(Number(p.wrong)||0)};
+  save.daily.pendingLb={key,body,tries:((pend&&pend.key===key&&pend.tries)||0)+1,at:Date.now()}; persist();
+  if(!lbConsent()) return {ok:false,error:'consent'};
+  if(LBS.busy['s:'+key]) return LBS.busy['s:'+key];
+  LBS.busy['s:'+key]=(async()=>{ let j=null; try{ j=await Online.call('lb.submit',body); }catch(e){ j=null; } delete LBS.busy['s:'+key]; if(!j) j={ok:false,error:'net'};
+   if(j.ok&&j.rank){ lbStoreRank(key,j); return {ok:true,rank:j.rank,total:j.total||0,nick:j.nick||'',weekRank:j.weekRank||null,weekTotal:j.weekTotal||null,already:!!j.already}; }
+   // Rejected for good (e.g. the day fell out of the server window): stop retrying. Network/store trouble keeps the pending entry.
+   if(j.error&&!['net','offline','store'].includes(j.error)&&save.daily.pendingLb&&save.daily.pendingLb.key===key){ save.daily.pendingLb=null; persist(); }
+   return {ok:false,error:j.error||'net'}; })();
+  return LBS.busy['s:'+key]; },
+ async top(period,dateKey){ period=period==='weekly'?'weekly':'daily'; const day=lbKeyOk(dateKey)?String(dateKey):todayKey(); const ck=period+':'+day;
+  const c=LBS.cache[ck]; if(c&&Date.now()-c.at<LB_TTL) return c.j;
+  if(LBS.busy[ck]) return LBS.busy[ck];
+  LBS.busy[ck]=(async()=>{ let j=null; const body={period,day}; if(lbConsent()) body.dev=lbDev(); try{ j=await Online.call('lb.top',body); }catch(e){ j=null; } delete LBS.busy[ck]; if(!j) j={ok:false,error:'net'};
+   if(j.ok){ j.rows=(Array.isArray(j.rows)?j.rows:[]).map(x=>({nick:lbCleanNick(x.nick)||'Journo',score:Math.round(Number(x.score)||0),tier:Math.round(Number(x.tier)||5),row:String(x.row||'').slice(0,40),days:x.days!=null?+x.days:undefined,me:!!x.me})); j.players=Math.max(0,Math.round(Number(j.players)||0)); LBS.cache[ck]={at:Date.now(),j}; delete LBS.err[ck]; } else LBS.err[ck]={e:j.error||'net',at:Date.now()};
+   return j; })();
+  return LBS.busy[ck]; }
+};
+// Re-send a pending submit (network failed at the time). Called after the save persists, and again on the Home screen.
+function lbFlush(force){ const pend=save.daily&&save.daily.pendingLb; if(!pend||!pend.key||!lbKeyOk(pend.key)||!lbConsent()) return;
+ if(LB.rank(pend.key)){ save.daily.pendingLb=null; persist(); return; }
+ if((Date.now()-lbDate(pend.key))>4*86400000||(pend.tries||0)>40){ save.daily.pendingLb=null; persist(); return; }
+ if(!force&&Date.now()-LBS.flushAt<30000) return; LBS.flushAt=Date.now();
+ LB.submitDaily(pend.key,pend.body).catch(()=>{}); }
+// Engine hook: queue today's Daily result the moment it resolves; the request goes out after the save has persisted.
+onHook('resolved',res=>{ try{
+ if(!game||game.mode!=='daily'||game.archived||!res||!res.tier) return;
+ const k=todayKey(); if(game.seed!=='daily-'+k) return;
+ if(LB.rank(k)) return; const pend=save.daily.pendingLb; if(pend&&pend.key===k&&pend.body) return;
+ const body={day:k,dev:lbDev(),nick:lbNick(),score:Math.round(Number(res.total)||0),tier:res.tier.n,row:(res.per||[]).map(x=>x.emoji).join(''),ex:res.exclusives||0,right:res.corrects||0,wrong:res.wrongs||0};
+ save.daily.pendingLb={key:k,body,tries:0,at:Date.now()};
+ setTimeout(()=>{ try{ lbFlush(true); }catch(e){} },0);
+}catch(e){} });
+/* ----- leaderboard screen ----- */
+function lbPollStop(){ if(LBS.poll){ clearInterval(LBS.poll); LBS.poll=null; } }
+function lbPollStart(){ lbPollStop(); LBS.poll=setInterval(()=>{ if(screen!=='leaderboard'){ lbPollStop(); return; } if(document.hidden) return; const ae=document.activeElement; if(ae&&ae.id==='lbNick') return; const ck=LBS.tab+':'+todayKey(); const c=LBS.cache[ck]; if(c&&Date.now()-c.at<LB_TTL) return; lbEnsure(); },LB_TTL+5000); }
+function lbEnsure(){ const period=LBS.tab, k=todayKey(), ck=period+':'+k; const c=LBS.cache[ck]; if(c&&Date.now()-c.at<LB_TTL) return; if(LBS.busy[ck]) return; const er=LBS.err[ck]; if(er&&Date.now()-er.at<15000) return;
+ LB.top(period,k).then(()=>{ if(screen!=='leaderboard') return; const ae=document.activeElement; if(ae&&ae.id==='lbNick'&&ae.value!==lbNick()) return; render(); }); }
+function lbMyWeek(k){ const H=save.daily.history||{}; let sum=0, n=0, best=9, row=''; for(const d of lbWeekDays(k)){ const h=H[d]; if(h&&typeof h.score==='number'){ sum+=h.score; n++; best=Math.min(best,h.tier||9); row=h.row||row; } } return {sum,n,best,row}; }
+function lbMeHtml(period,j){ const k=todayKey(), h=save.daily.history&&save.daily.history[k], r=LB.rank(k), live=j&&j.ok&&j.me&&j.me.rank?j.me:null;
+ const wk=lbMyWeek(k); const nick=(h&&h.lbNick)||lbNick()||lbFallbackNick();
+ if(!h&&(period==='daily'||!wk.n)) return `<div class="card lb-me cta"><div class="lbcta-t"><span class="lbi" aria-hidden="true">📰</span><span>${esc(t('lb.notPlayed'))}</span></div><button class="btn primary" data-act="startDaily">${uiIcon('play')}${esc(t('lb.play'))}</button></div>`;
+ const rank=live?live.rank:(period==='daily'?(r&&r.rank):(r&&r.weekRank)), total=live?live.total:(period==='daily'?(r&&r.total):(r&&r.weekTotal));
+ const score=period==='daily'?h.score:wk.sum, tier=period==='daily'?h.tier:wk.best, row=period==='daily'?h.row:wk.row;
+ const sub=period==='weekly'?`<span class="lbdays">${esc(wk.n===1?t('lb.dayN1'):t('lb.daysN',{n:wk.n}))}</span>`:'';
+ if(!rank){ const why=!lbConsent()?t('lb.consent'):(period==='weekly'&&r?t('lb.pendingWeek'):t('lb.pending'));
+  return `<div class="card lb-me soft"><span class="lbrk">—<small>${esc(t('lb.you'))}</small></span><span class="lbmm"><span class="onl-nm"><b>${esc(nick)}</b>${lbTierChip(tier)}</span><span class="onl-sub">${onlSq(row)}${sub}</span><span class="lbdim">${esc(why)}</span></span><span class="onl-tot"><b class="num" dir="ltr">${esc(score)}</b><small>${esc(t('app.ptsShort'))}</small></span></div>`; }
+ return `<div class="card lb-me" aria-label="${esc(t(period==='daily'?'lb.yourRank':'lb.yourWeek'))}"><span class="lbrk"><bdi dir="ltr">#${esc(rank)}</bdi><small>${esc(t('lb.you'))}</small></span><span class="lbmm"><span class="onl-nm"><b>${esc(nick)}</b>${lbTierChip(tier)}</span><span class="onl-sub">${onlSq(row)}${sub}</span><span class="lbdim">${t('lb.ofN',{n:hmNum(total||rank)})}</span></span><span class="onl-tot"><b class="num" dir="ltr">${esc(score)}</b><small>${esc(t('app.ptsShort'))}</small></span></div>`; }
+function lbListHtml(period,j,ck){ const er=LBS.err[ck];
+ if(!j&&!er) return `<ol class="list lb-sk" aria-label="${esc(t('lb.loading'))}" aria-busy="true">${'<li><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></li>'.repeat(6)}</ol>`;
+ if(!j||!j.ok) return `<div class="card lb-state" role="status"><span class="lbi" aria-hidden="true">📡</span><b>${esc(t('lb.offline'))}</b><button class="btn" data-act="lbRefresh">${uiIcon('refresh')}${esc(t('lb.retry'))}</button></div>`;
+ if(!j.rows.length) return `<div class="card lb-state"><span class="lbi" aria-hidden="true">🏆</span><b>${esc(t(period==='daily'?'lb.empty':'lb.emptyWeek'))}</b></div>`;
+ const rows=j.rows.map((x,i)=>{ const rk=lbRankOf(j.rows,i);
+  return `<li class="onl-lrow${x.me?' me':''}"><span class="onl-rk">${lbMedal(rk)}</span>${onlAv(x.nick,x.me)}<span class="onl-ln"><span class="onl-nm"><b>${esc(x.nick)}</b>${x.me?`<span class="tag ut">${esc(t('onl.you'))}</span>`:''}${lbTierChip(x.tier)}</span><span class="onl-sub">${onlSq(x.row)}${period==='weekly'&&x.days>1?`<span class="lbdays">${esc(t('lb.daysN',{n:x.days}))}</span>`:''}</span></span><span class="onl-tot"><b class="num" dir="ltr">${esc(x.score)}</b><small>${esc(t('app.ptsShort'))}</small></span></li>`; }).join('');
+ return `<ol class="list lb-list">${rows}</ol>`; }
+function lbNickHtml(){ return `<div class="card lb-nick"><div class="fld"><span id="lbNickL">${esc(t('lb.nickLbl'))}</span><div class="lbnrow"><input id="lbNick" class="inp" maxlength="16" autocomplete="nickname" autocapitalize="words" spellcheck="false" enterkeyhint="done" value="${esc(lbNick())}" placeholder="${esc(lbFallbackNick())}" aria-labelledby="lbNickL"><button class="btn" data-act="lbNickSave">${esc(t('lb.nickSave'))}</button></div></div><p class="hmnote">${esc(t('lb.nickNote'))}</p></div>`; }
+SCREENS.leaderboard=()=>{ const period=LBS.tab, k=todayKey(), ck=period+':'+k, c=LBS.cache[ck], j=c?c.j:null;
+ const h=save.daily.history&&save.daily.history[k]; const num=(h&&h.num)||dailyNumber();
+ let head, sub; if(period==='daily'){ head=t('lb.dailyHead',{n:num}); sub=lbFmtDay(k); } else { const w=lbWeekOf(k), days=lbWeekDays(k); head=t('lb.weekHead',{n:parseInt(w.split('W')[1],10)}); sub=t('lb.weekRange',{a:lbFmtDay(days[0],{day:'numeric',month:'short'}),b:lbFmtDay(days[6],{day:'numeric',month:'short'})}); }
+ const players=j&&j.ok?j.players:null;
+ const tabs=`<div class="seg lb-tabs" role="tablist">${['daily','weekly'].map(x=>`<button role="tab" aria-selected="${period===x}" class="${period===x?'on':''}" data-act="lbTab" data-v="${x}">${esc(t(x==='daily'?'lb.tabDaily':'lb.tabWeekly'))}</button>`).join('')}</div>`;
+ return `<div class="screen lb">${onlBar(t('lb.title'),'home',`<button class="iconbtn" data-act="lbRefresh" aria-label="${esc(t('lb.refresh'))}">${uiIcon('refresh')}</button>`)}
+  <div class="lb-hero"><span class="lbcup" aria-hidden="true">🏆</span><h2 class="d3">${esc(head)}</h2><p class="lbsub"><bdi>${esc(sub)}</bdi>${players!=null?` · ${t('lb.playersN',{n:hmNum(players)})}`:''}</p></div>
+  ${tabs}
+  ${lbMeHtml(period,j)}
+  ${h?'':lbNickHtml()}
+  <p class="lb-note">${esc(t(period==='daily'?'lb.dailyNote':'lb.weekNote'))}</p>
+  ${lbListHtml(period,j,ck)}
+  ${h?lbNickHtml():''}
+  <p class="lb-foot">${esc(t('lb.anon'))}</p></div>`; };
+LANE_ACTS.lbOpen=()=>{ beep('tap'); stopTimer(); go('leaderboard'); };
+LANE_ACTS.lbTab=(el,v)=>{ if(LBS.tab===v) return; LBS.tab=v==='weekly'?'weekly':'daily'; beep('tap'); render(); };
+LANE_ACTS.lbRefresh=()=>{ const ck=LBS.tab+':'+todayKey(); delete LBS.cache[ck]; delete LBS.err[ck]; beep('tap'); lbFlush(true); render(); };
+LANE_ACTS.lbNickSave=()=>{ const el=$('lbNick'); if(!el) return; const v=lbCleanNick(el.value); if(!save.online) save.online={nick:''}; save.online.nick=v; persist(); beep('tap'); toast(v?t('lb.nickSaved'):t('lb.nickCleared',{n:lbFallbackNick()})); el.blur(); render(); };
+BACK.push(()=>{ if(screen==='leaderboard'){ go('home'); return true; } return false; });
+/* ----- Home entry: compact row inside the Daily card ----- */
+function lbHomeHtml(){ const k=todayKey(), h=save.daily.history&&save.daily.history[k], r=LB.rank(k); let sub='', hot=false;
+ if(r){ sub=t('lb.homeRank',{r:hmNum(r.rank),n:hmNum(r.total)}); hot=true; }
+ else if(h&&save.daily.pendingLb&&save.daily.pendingLb.key===k) sub=esc(t('lb.homePending'));
+ else { const c=LBS.cache['daily:'+k]; sub=c&&c.j.players?t('lb.homePlaying',{n:hmNum(c.j.players)}):esc(t('lb.homeSub')); }
+ return `<button class="lbpill" data-act="lbOpen"><span class="lbi" aria-hidden="true">🏆</span><span class="lbt"><b>${esc(t('lb.title'))}</b><span class="${hot?'hot':''}">${sub}</span></span><span class="chev" aria-hidden="true">›</span></button>`; }
+function lbHomeInject(){ const sec=document.querySelector('#app .today section.daily'); if(!sec) return; const html=`<div class="lbhome">${lbHomeHtml()}</div>`; const old=sec.querySelector('.lbhome'); if(old) old.outerHTML=html; else sec.insertAdjacentHTML('beforeend',html); }
+function lbPrefetch(){ if(!lbConsent()||Date.now()-LBS.prefetchAt<5*60000) return; const k=todayKey(); if(LBS.cache['daily:'+k]) return; LBS.prefetchAt=Date.now(); LB.top('daily',k).then(j=>{ if(j&&j.ok&&screen==='home') lbHomeInject(); }).catch(()=>{}); }
+onHook('rendered',s=>{ try{
+ if(s==='leaderboard'){ lbEnsure(); lbPollStart(); const el=$('lbNick'); if(el&&!el._lb){ el._lb=true; el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); LANE_ACTS.lbNickSave(); } }); } }
+ else lbPollStop();
+ if(s==='home'){ lbHomeInject(); lbFlush(); lbPrefetch(); }
+}catch(e){ console.error('lb',e); } });
 /* @@LANE JS:lb END */
 /* @@LANE JS:results2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:results2 END */

@@ -29,6 +29,35 @@ const clean = (s, max) => String(s == null ? '' : s).replace(/[\u0000-\u001f\u00
 const int = (v, lo, hi) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : lo; };
 const roomCode = c => clean(c, 8).toUpperCase().replace(/[^A-Z0-9]/g, '');
 
+// ---- leaderboards (Daily Challenge): one entry per device per day, weekly = sum of that week's dailies ----
+const LB_DAY_TTL = 40 * DAY, LB_WEEK_TTL = 60 * DAY, LB_TOP = 25, LB_WINDOW = 2 * DAY * 1000;
+const devId = d => { const s = String(d == null ? '' : d); return /^[A-Za-z0-9]{8,24}$/.test(s) ? s : ''; };
+const ymd = ms => new Date(ms).toISOString().slice(0, 10);
+// The day is the player's LOCAL calendar date; accept it as sent when it is within two days of the server's UTC date.
+function lbDay(day) {
+  const s = clean(day, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return '';
+  const t = Date.parse(s + 'T00:00:00Z');
+  if (!Number.isFinite(t) || ymd(t) !== s) return '';
+  const now = Date.now(), today = Date.parse(ymd(now) + 'T00:00:00Z');
+  return Math.abs(t - today) <= LB_WINDOW ? s : '';
+}
+function isoWeek(day) { // 'YYYY-Www' (ISO 8601, weeks start Monday)
+  const d = new Date(day + 'T00:00:00Z'); const dow = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dow);
+  const y = d.getUTCFullYear(), w = Math.ceil(((d - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7);
+  return y + '-W' + String(w).padStart(2, '0');
+}
+const lbNick = (nick, dev) => clean(nick, 16) || 'Journo-' + dev.slice(0, 4).toUpperCase();
+const lbKeys = (period, day) => ({ week: isoWeek(day), key: period === 'weekly' ? 'lb:w:' + isoWeek(day) : 'lb:d:' + day });
+// rank = 1 + number of strictly higher scores (ties share the better rank); null when the device is not on the board
+async function lbRank(key, dev) {
+  const [sc, total] = await redis([['ZSCORE', key, dev], ['ZCARD', key]]);
+  if (sc == null) return { rank: null, total: Number(total) || 0 };
+  const higher = await one('ZCOUNT', key, '(' + Number(sc), '+inf');
+  return { rank: 1 + (Number(higher) || 0), total: Number(total) || 0, score: Number(sc) };
+}
+
 async function readRoom(c) {
   const [meta, ids] = await redis([['GET', 'room:' + c], ['SMEMBERS', 'room:' + c + ':players']]);
   if (!meta) return null;
@@ -113,6 +142,63 @@ const actions = {
     });
     await one('SET', key, JSON.stringify(p), 'EX', ROOM_TTL);
     return { room: await readRoom(c) };
+  },
+
+  // ---- Daily Challenge leaderboards ----
+  // { day:'YYYY-MM-DD', dev, nick?, score, tier, row, ex, right, wrong } -> { rank, total, nick, weekRank, weekTotal, week, already? }
+  async 'lb.submit'(b) {
+    const dev = devId(b.dev), day = lbDay(b.day);
+    if (!dev) return { error: 'dev' };
+    if (!day) return { error: 'day' };
+    const nick = lbNick(b.nick, dev);
+    const e = { nick, score: int(b.score, -2000, 5000), tier: int(b.tier, 1, 9), row: clean(b.row, 40), ex: int(b.ex, 0, 8), right: int(b.right, 0, 8), wrong: int(b.wrong, 0, 8), at: Date.now() };
+    const dk = 'lb:d:' + day, ek = dk + ':e:' + dev, week = isoWeek(day), wk = 'lb:w:' + week, wek = wk + ':e:' + dev;
+    let already = false;
+    if (await one('SET', ek, JSON.stringify(e), 'EX', LB_DAY_TTL, 'NX')) {
+      // First submit for this device+day: rank it and add it to the week.
+      const wdoc = await one('GET', wek); let w = null; try { w = wdoc ? JSON.parse(wdoc) : null; } catch (x) { w = null; }
+      const wnew = { nick, tier: w ? Math.min(w.tier || 9, e.tier) : e.tier, row: e.row, days: (w && w.days || 0) + 1, at: e.at };
+      await redis([
+        ['ZADD', dk, e.score, dev], ['EXPIRE', dk, LB_DAY_TTL],
+        ['ZINCRBY', wk, e.score, dev], ['EXPIRE', wk, LB_WEEK_TTL],
+        ['SET', wek, JSON.stringify(wnew), 'EX', LB_WEEK_TTL]
+      ]);
+    } else {
+      // Already on the board for this day: never overwrite, just report the existing rank.
+      already = true;
+      try { const prev = JSON.parse(await one('GET', ek)); if (prev && prev.nick) e.nick = prev.nick; } catch (x) {}
+    }
+    const [d, w] = await Promise.all([lbRank(dk, dev), lbRank(wk, dev)]);
+    return { rank: d.rank, total: d.total, nick: e.nick, weekRank: w.rank, weekTotal: w.total, week, day, already };
+  },
+  // { period:'daily'|'weekly', day?, dev? } -> { rows:[{nick,score,tier,row,days?,me?}], day, week, players, me? }
+  async 'lb.top'(b) {
+    const period = b.period === 'weekly' ? 'weekly' : 'daily';
+    const day = lbDay(b.day) || ymd(Date.now()), dev = devId(b.dev);
+    const { key, week } = lbKeys(period, day);
+    const [z, total] = await redis([['ZREVRANGE', key, 0, LB_TOP - 1, 'WITHSCORES'], ['ZCARD', key]]);
+    const devs = []; for (let i = 0; i < (z || []).length; i += 2) devs.push(z[i]);
+    const docs = devs.length ? await one('MGET', ...devs.map(d => key + ':e:' + d)) : [];
+    const rows = devs.map((d, i) => {
+      let doc = null; try { doc = docs[i] ? JSON.parse(docs[i]) : null; } catch (x) { doc = null; }
+      const r = { nick: (doc && doc.nick) || 'Journo-' + d.slice(0, 4).toUpperCase(), score: Number(z[2 * i + 1]) || 0, tier: doc ? int(doc.tier, 1, 9) : 5, row: (doc && doc.row) || '' };
+      if (period === 'weekly') r.days = (doc && doc.days) || 1;
+      if (dev && d === dev) r.me = true;
+      return r;
+    });
+    const out = { period, rows, day, week, players: Number(total) || 0 };
+    if (dev) { const me = await lbRank(key, dev); if (me.rank) out.me = { rank: me.rank, total: me.total }; }
+    return out;
+  },
+  // { period, day, dev } -> { rank (null when not on the board), total }
+  async 'lb.me'(b) {
+    const period = b.period === 'weekly' ? 'weekly' : 'daily';
+    const day = lbDay(b.day), dev = devId(b.dev);
+    if (!dev) return { error: 'dev' };
+    if (!day) return { error: 'day' };
+    const { key, week } = lbKeys(period, day);
+    const me = await lbRank(key, dev);
+    return { period, day, week, rank: me.rank, total: me.total };
   }
 };
 
