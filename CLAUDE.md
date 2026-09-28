@@ -26,6 +26,27 @@ Then, **before doing the task**:
   request for a teammate (something only they can do), add one there using its template.
 - If the hook says the latest `main` is **not live on the site** (Vercel blocked it), tell the user. See section 2.
 
+## 1b. Who decides what (owner policy)
+
+mmoustafaeditor owns **Tier One, the game**. The **sembagames.app site** is shared. The rule for every session,
+whoever it is working for:
+
+| Area | Paths | saifsaber / moemsacod may… |
+|---|---|---|
+| **Site** (sembagames.app) | `index.html`, `assets/`, `README.md` | change and push to `main` freely — no approval needed |
+| **Game** (Tier One) | `tier-one/**`, `games/tier-one/**`, `api/**`, `downloads/**` | **not push to `main` without mmoustafaeditor's OK first** |
+
+- Working for **saifsaber or moemsacod** and the change touches a **game** path: do the work on a branch, then add a request in
+  `.claude/requests.md` (`from <you> → for mmoustafaeditor`, what/why, the branch) and stop there. Don't merge or push it to
+  `main` until mmoustafaeditor says yes. Site-only changes go straight to `main` as usual (with an `UPDATES.md` entry).
+- Working for **mmoustafaeditor**: at the start of every session (the hook lists them) tell him about **every** teammate
+  commit, open request and open PR — site changes too, even though they need no approval — and say for each whether it's a
+  site change (allowed) or a game change (needs his OK). A game change already pushed to `main` without his OK must be
+  flagged, not silently merged; ask him whether to keep or revert it.
+- GitHub side: `.github/CODEOWNERS` marks the game paths as mmoustafaeditor's. It only blocks merges once branch protection
+  on `main` has "Require review from Code Owners" turned on (repo Settings → Branches); until then the rule is a team
+  agreement enforced by the hook and this file.
+
 ## 2. At the end of every change: log it
 
 Every commit that changes something real (game, build, docs, config) must come with a new entry

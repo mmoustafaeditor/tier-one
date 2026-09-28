@@ -22,6 +22,43 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
       echo "  → Pull/merge these before editing, and tell the user what changed."
     fi
   done
+  # Owner policy (CLAUDE.md §1b): the site is shared, the game is mmoustafaeditor's. Classify what teammates changed.
+  if git rev-parse --verify --quiet origin/main >/dev/null; then
+    since=$(git merge-base HEAD origin/main 2>/dev/null)
+    # Everyone's Claude sessions commit as "Claude", so don't filter by author: anything not in this checkout is a teammate's.
+    mates=$(git log --format='%h|%an|%ae|%s' --date=short "${since:-HEAD}..origin/main" 2>/dev/null)
+    if [ -n "$mates" ]; then
+      echo ""
+      echo "👥 TEAMMATE CHANGES ON origin/main — tell the user about EVERY one of these, site changes included:"
+      printf '%s\n' "$mates" | while IFS='|' read -r h an ae s; do
+        files=$(git diff-tree --no-commit-id --name-only -r "$h" 2>/dev/null)
+        if printf '%s\n' "$files" | grep -qE '^(tier-one/|games/tier-one/|api/|downloads/)'; then
+          kind="🎮 GAME change — needs mmoustafaeditor's OK (was it approved? if not, ask him: keep or revert)"
+        else
+          kind="🌐 site change — allowed, no approval needed"
+        fi
+        echo "  $h $an: $s"
+        echo "     $kind"
+        printf '%s\n' "$files" | sed 's/^/     - /' | head -12
+      done
+    fi
+    # Teammate branches on origin that are ahead of main (work in progress / waiting for approval).
+    for b in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin 2>/dev/null | grep -vE '^origin/(main|HEAD)$'); do
+      ahead=$(git rev-list --count "origin/main..$b" 2>/dev/null); [ "${ahead:-0}" -gt 0 ] || continue
+      [ "$b" = "origin/$branch" ] && continue
+      who=$(git log -1 --format='%an' "$b" 2>/dev/null)
+      touched=$(git diff --name-only "origin/main...$b" 2>/dev/null)
+      if printf '%s\n' "$touched" | grep -qE '^(tier-one/|games/tier-one/|api/|downloads/)'; then k="🎮 GAME (needs approval before main)"; else k="🌐 site (free to merge)"; fi
+      echo "  ⤷ branch $b by $who: $ahead commit(s) ahead of main — $k"
+    done
+  fi
+  # Open pull requests (public API; silent if it fails).
+  prs=$(timeout 8 curl -fsS "https://api.github.com/repos/mmoustafaeditor/tier-one/pulls?state=open&per_page=10" 2>/dev/null | grep -E '"(title|login|html_url)"' | sed 's/^ *//' | paste - - - 2>/dev/null)
+  if [ -n "$prs" ]; then
+    echo ""
+    echo "🔀 OPEN PULL REQUESTS — tell the user; a PR touching tier-one/, games/tier-one/, api/ or downloads/ needs mmoustafaeditor's OK:"
+    printf '%s\n' "$prs" | head -10 | sed 's/^/  /'
+  fi
   # Is the latest main live on the site? Vercel blocks commits from accounts outside its team.
   main_sha=$(git rev-parse --verify --quiet origin/main 2>/dev/null)
   if [ -n "$main_sha" ]; then

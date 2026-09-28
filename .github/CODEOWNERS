@@ -1,0 +1,7 @@
+# Tier One, the game, is mmoustafaeditor's call: changes here need his approval before they land on main.
+# (Enforced by GitHub only when branch protection on main has "Require review from Code Owners" enabled.)
+# The sembagames.app site (index.html, assets/, README.md) is shared and needs no approval.
+/tier-one/        @mmoustafaeditor
+/games/tier-one/  @mmoustafaeditor
+/api/             @mmoustafaeditor
+/downloads/       @mmoustafaeditor
