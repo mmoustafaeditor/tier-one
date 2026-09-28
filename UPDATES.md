@@ -19,7 +19,7 @@ together with your change.
 
 ## 2026-09-28 · saifsaber · The Gaffer moved into the team repo (web 0.11.0, Android 0.11.0 / versionCode 4)
 - **What changed:** Brought The Gaffer (game 02, football manager) over from the retired `saifsaber/tier-one`: web source, minified build, Android project, update feed and APK. Once merged it's served at sembagames.app/the-gaffer, with the APK at `/downloads/TheGaffer.apk` and the feed at `/api/the-gaffer/latest`. Added a README card. The build workflow now only builds and uploads the APK; the old step that pushed bot commits straight to `main` is gone.
-- **Files:** `the-gaffer/index.html`, `games/the-gaffer/**`, `api/the-gaffer/*`, `downloads/TheGaffer.apk`, `.github/workflows/build-the-gaffer.yml`, `vercel.json` (new: `/the-gaffer` rewrite + APK download headers), `design/` (11 shared files the source imports), `.gitignore`, `.vercelignore` (+`/design`), `README.md`, `CLAUDE.md`, `.claude/requests.md`
+- **Files:** `the-gaffer/index.html`, `games/the-gaffer/**`, `api/the-gaffer/*`, `downloads/TheGaffer.apk`, `.github/workflows/build-the-gaffer.yml`, `vercel.json` (new: `/the-gaffer` rewrite + APK download headers), `design/` (17 shared files the source imports: tokens, components, fonts, 8 icons, logo), `.gitignore`, `.vercelignore` (+`/design`), `README.md`, `CLAUDE.md`, `.claude/requests.md`
 - **Heads-up for the team:** It touches `api/` and `downloads/`, so it waits on branch `ccr-dc1851aa-6gusor` for mmoustafaeditor's OK (see `.claude/requests.md`). No Tier One files changed. `index.html` (the Tier One landing page) has no Gaffer link yet.
 
 ## 2026-09-28 · mmoustafaeditor · Launch polish: leaderboards, share card, snap calls, rival race, Career journey, new landing page (web 2.4.0, Android 2.4)
