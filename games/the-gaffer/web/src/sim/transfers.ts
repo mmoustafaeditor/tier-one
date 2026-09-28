@@ -6,6 +6,7 @@ import { freeShirt, squadOf, wageOf, type World } from './world';
 import { roundFee } from './season';
 import { addNews, hijacked } from './news';
 import { balanceOf } from './balance';
+import { recordDeal } from './records';
 
 export const SQUAD_MAX = 32;
 export const SQUAD_SELL_MIN = 16;
@@ -87,7 +88,7 @@ function move(w: World, c: Career, p: Player, to: string, fee: number, wage: num
   }
   return {
     world: { ...w, clubs, players },
-    career: { ...c, deals: [deal, ...c.deals], offers: c.offers.filter((o) => o.playerId !== p.id), ...(ledger ? { ops: { ...c.ops, ledger } } : {}) },
+    career: recordDeal({ ...c, deals: [deal, ...c.deals], offers: c.offers.filter((o) => o.playerId !== p.id), ...(ledger ? { ops: { ...c.ops, ledger } } : {}) }, deal),
   };
 }
 

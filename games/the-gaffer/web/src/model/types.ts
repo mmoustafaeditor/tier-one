@@ -102,6 +102,34 @@ export interface Career {
   balance?: Balance;                              // realism settings (missing = all normal)
   worldVersion?: number;                          // goes up every time the world editor saves
   pendingSwaps?: [string, string][];              // clubs swapping leagues at the end of this season (world editor)
+  // v0.12
+  shortlist?: string[];                           // players the user is watching
+  watch?: Record<string, number>;                 // when each shortlisted player was added (season * 100 + matchday)
+  loans?: Loan[];                                 // loans in and out of the user's club this season
+  delegate?: Partial<Record<Duty, boolean>>;      // duties the staff handle (true) instead of the user
+  staffLog?: StaffLog[];                          // what the staff did, newest first (last 40)
+  ratings?: Record<string, [number, number, number]>; // this season: rating sum, games rated, man of the match awards
+  records?: Records;                              // club and manager records across the career
+  grads?: string[];                               // academy graduates promoted by the user (their story is tracked)
+  seenMilestones?: number;                        // milestones already shown in a pop-up
+}
+
+// Loans last until the end of the season. `share`: part of the wage the borrowing club pays (0-1).
+export interface Loan { playerId: string; pn: LocalizedName; from: string; to: string; fee: number; share: number; season: number }
+
+export type Duty = 'lineup' | 'tactics' | 'scouting' | 'training' | 'medical' | 'morale' | 'academy' | 'contracts' | 'selling' | 'signing' | 'loans' | 'sponsors' | 'tickets';
+export interface StaffLog { season: number; round: number; duty: Duty; key: string; pn?: LocalizedName; n?: number; s?: string }
+
+export interface RecordEntry { v: number; season: number; s?: string; pn?: LocalizedName; club?: string }
+export interface Records {
+  bigWin?: RecordEntry;       // goal difference, s = score "5-0", club = opponent
+  mostPoints?: RecordEntry;   // league points in a season
+  mostGoals?: RecordEntry;    // league goals scored in a season
+  unbeaten?: RecordEntry;     // longest unbeaten run
+  scorer?: RecordEntry;       // most league goals by one player in a season
+  bestFinish?: RecordEntry;   // best league position (lower is better), s = league id
+  bestBuy?: RecordEntry;      // biggest fee paid
+  bestSale?: RecordEntry;     // biggest fee received
 }
 
 // Realism / balance settings, chosen in Settings and saved with the career. 1 = normal.
@@ -119,7 +147,7 @@ export interface NewsItem { id: string; season: number; round: number; cat: News
 export interface Rumour { id: string; playerId: string; pn: LocalizedName; from: string; to: string; fee: number; chance: number; until: number }
 
 export type Facility = 'stadium' | 'medical' | 'training' | 'academy' | 'scouting';
-export type StaffRole = 'assistant' | 'fitness' | 'doctor' | 'psychologist' | 'scout';
+export type StaffRole = 'assistant' | 'fitness' | 'doctor' | 'psychologist' | 'scout' | 'director';
 export type SponsorSlot = 'shirt' | 'kit' | 'stadium' | 'sleeve' | 'commercial';
 
 export interface Staff { id: string; role: StaffRole; name: LocalizedName; quality: number; wage: number }

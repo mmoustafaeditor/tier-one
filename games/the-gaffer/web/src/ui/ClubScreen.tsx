@@ -12,10 +12,10 @@ import { AppBar, Stepper } from './parts';
 
 type Done = (w: World, c: Career, msg?: string) => void;
 
-export function ClubScreen({ world, career, lang, t, onBack, onChange }: {
-  world: World; career: Career; lang: Lang; t: Strings; onBack: () => void; onChange: Done;
+export function ClubScreen({ world, career, lang, t, onBack, onChange, tab0 = 0 }: {
+  world: World; career: Career; lang: Lang; t: Strings; onBack: () => void; onChange: Done; tab0?: number;
 }) {
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(tab0);
   const club = world.clubs.find((x) => x.id === career.clubId)!;
   const ops = career.ops;
   const ref = refPrice(world, club);

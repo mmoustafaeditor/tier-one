@@ -6,11 +6,13 @@ import { ageOf, money, type World } from '../sim/world';
 import { askingPrices, clubOf } from '../sim/transfers';
 import { AppBar, GROUP, PlayerRow } from './parts';
 import { balanceOf } from '../sim/balance';
+import { estimate } from '../sim/estimate';
+import { loanOf } from '../sim/loans';
 
 const LIMIT = 60;
 
-export function Market({ world, career, lang, t, onBack, onPick }: {
-  world: World; career: Career; lang: Lang; t: Strings; onBack: () => void; onPick: (p: Player) => void;
+export function Market({ world, career, lang, t, onBack, onPick, embedded = false }: {
+  world: World; career: Career; lang: Lang; t: Strings; onBack?: () => void; onPick: (p: Player) => void; embedded?: boolean;
 }) {
   const [group, setGroup] = useState(-1);
   const [league, setLeague] = useState('all');
@@ -30,7 +32,7 @@ export function Market({ world, career, lang, t, onBack, onPick }: {
   const list = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const out = world.players
-      .filter((p) => p.clubId !== career.clubId)
+      .filter((p) => p.clubId !== career.clubId && !loanOf(career, p.id))
       .filter((p) => (freeOnly ? p.clubId === FREE_AGENT : true))
       .filter((p) => group < 0 || GROUP[p.position] === group)
       .filter((p) => league === 'all' || leagueOf.get(p.clubId) === league)
@@ -44,7 +46,7 @@ export function Market({ world, career, lang, t, onBack, onPick }: {
 
   return (
     <>
-      <AppBar back={onBack} backLabel={t.back} title={t.market} sub={`${t.budget} ${money(budget)}`} />
+      {!embedded && <AppBar back={onBack} backLabel={t.back} title={t.market} sub={`${t.budget} ${money(budget)}`} />}
       {(career.rumours ?? []).length > 0 && (
         <>
           <div className="sechead"><span className="over">{t.rumoursT}</span></div>
@@ -62,7 +64,7 @@ export function Market({ world, career, lang, t, onBack, onPick }: {
           </div>
         </>
       )}
-      <input className="g-input" style={{ width: '100%', marginTop: 'var(--s4)' }} placeholder="🔍" value={q} onChange={(e) => setQ(e.target.value)} />
+      <input className="g-input" style={{ width: '100%', marginTop: 'var(--s4)' }} placeholder="🔍" aria-label={t.findPlayers} value={q} onChange={(e) => setQ(e.target.value)} />
       <div className="seg" style={{ margin: 'var(--s3) 0' }}>
         {[t.all, ...t.groups].map((g, i) => (
           <button key={g} className={group === i - 1 ? 'on' : ''} onClick={() => setGroup(i - 1)}>{g}</button>
@@ -85,13 +87,15 @@ export function Market({ world, career, lang, t, onBack, onPick }: {
       <div className="list">
         {list.map((p) => {
           const ask = prices.get(p.id) ?? 0;
+          const est = estimate(world, career, p);
           return (
             <PlayerRow key={p.id} p={p} lang={lang} t={t} season={career.season} onClick={() => onPick(p)}
+              right={est.exact ? undefined : <span className="g-rating num g-est" title={t.estimateT}>{est.lo}–{est.hi}</span>}
               sub={<>{p.position} · {ageOf(p, career.season)} · {nameOf(p.clubId)} · <span className="num ltr">{ask ? money(ask) : t.free}</span></>} />
           );
         })}
       </div>
-      {career.deals.length > 0 && (
+      {!embedded && career.deals.length > 0 && (
         <>
           <div className="sechead"><span className="over">{t.deals}</span></div>
           <div className="list">

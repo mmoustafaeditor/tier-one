@@ -10,6 +10,7 @@ import { SUBS_MAX, isUserSide, simulate, stepMinute, userSub, type LiveMatch, ty
 import { Kit } from '../components/Kit';
 import { Pitch2D, type Camera } from './Pitch2D';
 import { Radar } from './Radar';
+import { matchRatings } from '../sim/ratings';
 
 const CAM_NAMES = ['2D', '2.5D', '3D'];
 import { Sheet } from './parts';
@@ -65,14 +66,18 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
   const name = (id: string) => (id ? get(id).name[lang] : '');
 
   const lines: { min: number; at: number; text: string; cls: string }[] = [{ min: 0, at: 0, text: t.ev.kickoff, cls: '' }];
+  // Each kind of event cycles through its lines (starting at a point set by the match), so nothing repeats back to back.
+  const seen: Record<string, number> = {};
+  const start = [...m.key].reduce((s, ch) => s + ch.charCodeAt(0), 0);
+  const line = <T,>(list: T[], kind: string): T => { const n = seen[kind] ?? 0; seen[kind] = n + 1; return list[(start + n) % list.length]; };
   for (const e of m.events) {
     const club = e.side === 0 ? h : a;
     const how = e.how ? ` ${t.ev.how[e.how]}` : '';
     const text = {
-      goal: `${t.ev.goal(name(e.playerId), club.name[lang])}${how}${e.assistId ? ` ${t.ev.assist(name(e.assistId))}` : ''}`,
-      miss: t.ev.miss(name(e.playerId)), save: t.ev.save(name(e.playerId)), yellow: t.ev.yellow(name(e.playerId)),
-      red: t.ev.red(name(e.playerId)), injury: t.ev.injury(name(e.playerId)), sub: t.ev.sub(name(e.playerId), name(e.inId ?? '')),
-    }[e.kind];
+      goal: () => `${line(t.ev2.goal, 'goal')(name(e.playerId), club.name[lang])}${how}${e.assistId ? ` ${t.ev.assist(name(e.assistId))}` : ''}`,
+      miss: () => line(t.ev2.miss, 'miss')(name(e.playerId)), save: () => line(t.ev2.save, 'save')(name(e.playerId)), yellow: () => line(t.ev2.yellow, 'yellow')(name(e.playerId)),
+      red: () => line(t.ev2.red, 'red')(name(e.playerId)), injury: () => line(t.ev2.injury, 'injury')(name(e.playerId)), sub: () => line(t.ev2.sub, 'sub')(name(e.playerId), name(e.inId ?? '')),
+    }[e.kind]();
     lines.push({ min: e.min, at: e.min, text, cls: e.kind === 'goal' ? ' goal' : e.kind === 'red' || e.kind === 'injury' ? ' bad' : e.kind === 'sub' ? ' sub' : '' });
   }
   if (m.minute >= 45) lines.push({ min: 45, at: 45.5, text: t.ev.half, cls: '' });
@@ -85,6 +90,8 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
 
   const s = m.sides[me];
   const slots = FORMATIONS[s.tactics.formation].slots;
+  const rt = m.minute >= 10 ? matchRatings(m, get) : null;
+  const rate = (id: string) => (rt?.rating[id] !== undefined ? rt.rating[id].toFixed(1) : '–');
 
   return (
     <>
@@ -106,6 +113,9 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
           <button className="chip g-toggle g-cam" aria-label={t.cameraT} onClick={() => { const c = ((camera + 1) % 3) as Camera; setCamera(c); onCamera?.(c); }}>🎥 {CAM_NAMES[camera]}</button>
         )}
       </div>
+      {done && rt?.motm && (
+        <div className="banner g-motm"><span className="bic">⭐</span><div><b>{t.motm}: {name(rt.motm)}</b><p className="num">{t.ratingT} {rate(rt.motm)}{m.xg ? ` · xG ${m.xg[0].toFixed(1)}–${m.xg[1].toFixed(1)}` : ''}</p></div></div>
+      )}
       {tab === 0 && (
         <>
           <Pitch2D m={m} world={world} goalWord={t.goalWord} camera={camera} msPerMinute={SPEEDS[speed]} running={!paused && !done && !changes && !talk && !locked} />
@@ -130,9 +140,16 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
           ))}
         </div>
       )}
-      {tab === 2 && <Radar world={world} m={m} t={t} />}
+      {tab === 2 && <Radar world={world} m={m} t={t} lang={lang} />}
       {tab === 2 && (
         <div className="list">
+          {m.xg && (
+            <div className="g-statrow">
+              <b className="num">{m.xg[0].toFixed(1)}</b>
+              <span><small>{t.xgT}</small><span className="g-split" dir="ltr"><i style={{ width: `${(m.xg[0] / Math.max(0.01, m.xg[0] + m.xg[1])) * 100}%` }} /></span></span>
+              <b className="num">{m.xg[1].toFixed(1)}</b>
+            </div>
+          )}
           {t.statNames.map((label, k) => {
             const [x, y] = [m.stats[0][k], m.stats[1][k]];
             const share = x + y ? (x / (x + y)) * 100 : 50;
@@ -154,8 +171,8 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
               {m.sides[i].onPitch.map((id, k) => id && (
                 <div key={id} className="cell g-row g-lu">
                   <span className="tag">{FORMATIONS[m.sides[i].tactics.formation].slots[k].pos}</span>
-                  <span className="cmain"><b>{name(id)}</b></span>
-                  <span className="num muted">{Math.round(m.fit[id] ?? 0)}</span>
+                  <span className="cmain"><b>{rt?.motm === id && done ? '⭐ ' : ''}{name(id)}</b><small className="muted num">{Math.round(m.fit[id] ?? 0)}%</small></span>
+                  <span className={`g-rating num${rt && Number(rate(id)) >= 7.5 ? ' g-hot' : ''}`} title={t.ratingT}>{rate(id)}</span>
                 </div>
               ))}
             </div>

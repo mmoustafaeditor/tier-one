@@ -71,7 +71,8 @@ export function advice(w: World, c: Career, report: ScoutReport | undefined, los
   const tired = xi.filter((p) => p.fitness < 80).length;
   if (tired >= 3) tips.push({ k: 'tired', n: tired });
   const slots = FORMATIONS[tac?.formation ?? '4-3-3'].slots;
-  const off = xi.filter((p, i) => slots[i] && fitPenalty(p.position, slots[i].pos) > 0).length;
+  // A neighbouring position (a CB at CDM) is fine; only real mismatches count.
+  const off = xi.filter((p, i) => slots[i] && fitPenalty(p.position, slots[i].pos) > 4).length;
   if (off) tips.push({ k: 'outOfPos', n: off });
   if (lossChance > 0.5 && (tac?.mentality ?? 0) >= 0) tips.push({ k: 'underdog' });
   return tips.slice(0, 4);

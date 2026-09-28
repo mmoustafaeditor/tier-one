@@ -7,44 +7,46 @@ import { QuickMatch } from './ui/QuickMatch';
 import { COUNTRIES, leaguesOf } from './data/leagues';
 import type { Career, Club, CountryCode, League, Player, SaveFile } from './model/types';
 import {
-  endSeason, seasonOver, table, leaders, zones, available, newCareer, nextUserMatch, playDay,
-  objectiveMet, type LiveMatch, type SeasonSummary,
+  endSeason, seasonOver, newCareer, nextUserMatch, playDay, type LiveMatch, type SeasonSummary,
 } from './sim/season';
 import {
   FIRST_SEASON, clubsOf, generateWorld, money, playerOf, objectiveOf, sortSquad, squadOf, starsOf, strengthOf, wageBill, type World,
 } from './sim/world';
 import { clearStored, loadStored, store } from './sim/save';
 import { Kit } from './components/Kit';
-import { AppBar, Empty, GROUP, Icon, PlayerRow, Score, Stars, Stat } from './ui/parts';
+import { AppBar, Empty, GROUP, Icon, PlayerRow, Stars, Stat } from './ui/parts';
 import { PlayerSheet } from './ui/PlayerSheet';
 import { BidSheet, OffersSheet, RenewSheet, SaveSheet } from './ui/Deals';
-import { Market } from './ui/Market';
-import { expiring, setListed } from './sim/transfers';
-import { DEFAULT_TACTICS, FORMATIONS, fmt, xiFor } from './sim/tactics';
-import { predict, sideLevel } from './sim/match';
+import { setListed } from './sim/transfers';
+import { DEFAULT_TACTICS, fmt } from './sim/tactics';
 import { Tactics } from './ui/Tactics';
 import { Live } from './ui/Live';
 import { Inbox } from './ui/Inbox';
 import { CoachScreen } from './ui/CoachScreen';
-import { Cups } from './ui/Cups';
 import { ClubScreen } from './ui/ClubScreen';
-import { ScoutPanel } from './ui/Scouting';
-import { Radar } from './ui/Radar';
 import { Rankings } from './ui/Rankings';
-import { News, newsText } from './ui/News';
-import { myWorldRank } from './sim/rankings';
+import { News } from './ui/News';
 import { AcademyScreen, HospitalScreen, TrainingScreen } from './ui/Development';
-import { SLOTS } from './sim/economy';
 import { EditName, renameIn, type NameTarget } from './ui/EditName';
-import { cupAimMet, moveTo, objectivesOf, youthApps } from './sim/coach';
-import bellIcon from '../../../../design/assets/icons/ui/mega.svg?raw';
+import { moveTo } from './sim/coach';
+import { Home, type Go } from './ui/Home';
+import { MatchHub } from './ui/MatchHub';
+import { Transfers } from './ui/Transfers';
+import { ClubHub, type ClubDoor } from './ui/ClubHub';
+import { StaffRoom } from './ui/StaffRoom';
+import { History } from './ui/History';
+import { FullTime } from './ui/FullTime';
+import { SupportCard, applyLook } from './ui/Support';
+import { ICONS } from './ui/icons';
+import { aftermath, type Aftermath } from './sim/aftermath';
+import { staffPrep } from './sim/staff';
+import { checkPurchase, loadAds } from './monet';
+import { avgRating } from './sim/ratings';
+import gearIcon from '../../../../design/assets/icons/ui/gear.svg?raw';
 import homeIcon from '../../../../design/assets/icons/ui/home.svg?raw';
 import friendsIcon from '../../../../design/assets/icons/ui/friends.svg?raw';
 import playIcon from '../../../../design/assets/icons/ui/play.svg?raw';
-import trophyIcon from '../../../../design/assets/icons/ui/trophy.svg?raw';
-import moreIcon from '../../../../design/assets/icons/ui/more.svg?raw';
 import globeIcon from '../../../../design/assets/icons/ui/globe.svg?raw';
-import backIcon from '../../../../design/assets/icons/ui/back.svg?raw';
 import sembaLogo from '../../../../design/assets/logos/semba-logo-192.png';
 
 type Screen =
@@ -54,13 +56,15 @@ type Screen =
   | { id: 'clubs'; league: string }
   | { id: 'confirm'; club: string }
   | { id: 'squad' }
-  | { id: 'table' }
   | { id: 'match' }
   | { id: 'live' }
-  | { id: 'market' }
+  | { id: 'transfers' }
   | { id: 'tactics' }
   | { id: 'inbox' }
   | { id: 'club' }
+  | { id: 'finances'; tab: number }
+  | { id: 'staff' }
+  | { id: 'history' }
   | { id: 'rankings' }
   | { id: 'news' }
   | { id: 'training' }
@@ -75,8 +79,8 @@ type Screen =
   | { id: 'quick' };
 
 const SEMBA_URL = 'https://sembagames.app';
-const TAB_SCREENS: Screen['id'][] = ['home', 'squad', 'match', 'table', 'more'];
-const HUBS: Screen['id'][] = ['home', 'squad', 'match', 'table', 'more'];
+const TAB_SCREENS: Screen['id'][] = ['home', 'squad', 'match', 'transfers', 'club'];
+const HUBS: Screen['id'][] = TAB_SCREENS;
 // Interface languages that are ready; the globe button cycles through them.
 const READY: UiLang[] = ['en', 'ar', 'es', 'fr'];
 const nextLang = (l: UiLang) => READY[(READY.indexOf(l) + 1) % READY.length];
@@ -108,8 +112,10 @@ export function App() {
   const [live, setLive] = useState<LiveMatch | null>(null);
   const [liveLocked, setLiveLocked] = useState(false);
   const [summary, setSummary] = useState<SeasonSummary | null>(null);
-  const [tableTab, setTableTab] = useState(0);
-  const [resultsRound, setResultsRound] = useState<number | null>(null);
+  const [matchTab, setMatchTab] = useState(0);
+  const [trTab, setTrTab] = useState(0);
+  const [squadView, setSquadView] = useState(0);
+  const [ft, setFt] = useState<Aftermath | null>(null);
   const [bid, setBid] = useState<Player | null>(null);
   const [renewing, setRenewing] = useState<Player | null>(null);
   const [showOffers, setShowOffers] = useState(false);
@@ -123,6 +129,18 @@ export function App() {
     html.lang = prefs.lang;
     html.dir = prefs.lang === 'ar' ? 'rtl' : 'ltr';
   }, [prefs.lang]);
+  // Club look (Supporter pack) and web ads (only when configured, never for supporters).
+  useEffect(() => { applyLook(prefs); loadAds(prefs.supporter); }, [prefs.look, prefs.supporter]);
+  // Back from a Stripe payment: our server confirms it before anything unlocks.
+  useEffect(() => {
+    checkPurchase(prefs.paid ?? []).then((r) => {
+      if (!r) return;
+      const p = loadPrefs();
+      setPrefs({ ...p, paid: [...(p.paid ?? []), r.session], ...(r.ok ? { supporter: true } : {}) });
+      if (r.ok) setToast(UI[p.lang].supportThanks);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Look for a saved career once. A save that fails its checksum or world check is refused (E2E #41), and we say so.
   useEffect(() => {
@@ -180,21 +198,25 @@ export function App() {
   // Quick result: the whole matchday is played and saved before the score is shown.
   const commitMsg = async (w: World, c: Career, msg?: string) => { await commit(w, c); if (msg) setToast(msg); };
 
+  // Quick results are counted before they're shown; this keeps the before/after for the full-time card.
+  const [pending, setPending] = useState<Aftermath | null>(null);
   const playNext = async (watch: boolean) => {
     if (!world || !career || busy) return;
     setBusy(true);
+    // Delegated duties (line-up, tactics, opponent report) are done right before kick-off.
+    const prep = staffPrep(world, career, nextUserMatch(world, career));
     if (watch) {
-      const m = nextUserMatch(world, career);
+      const m = nextUserMatch(prep.world, prep.career);
       if (m) {
-        await commit(world, { ...career, live: m });
+        await commit(prep.world, { ...prep.career, live: m });
         setLive(m);
         setLiveLocked(false);
         setScreen({ id: 'live' });
       }
     } else {
-      const { world: nw, career: next, mine } = playDay(world, career);
+      const { world: nw, career: next, mine } = playDay(prep.world, prep.career);
       await commit(nw, next);
-      if (mine) { setLive(mine); setLiveLocked(true); setScreen({ id: 'live' }); }
+      if (mine) { setPending(aftermath(prep.world, prep.career, nw, next, mine)); setLive(mine); setLiveLocked(true); setScreen({ id: 'live' }); }
     }
     setBusy(false);
   };
@@ -204,7 +226,9 @@ export function App() {
     if (!liveLocked) {
       const { world: nw, career: next } = playDay(world, career, live);
       await commit(nw, next);
-    }
+      setFt(aftermath(world, career, nw, next, live));
+    } else setFt(pending);
+    setPending(null);
     setLive(null);
     setScreen({ id: 'home' });
   };
@@ -302,6 +326,24 @@ export function App() {
     setToast(t.importOk);
     setScreen({ id: 'home' });
   };
+  const resumeLive = () => { if (career?.live) { setLive(career.live); setLiveLocked(false); setScreen({ id: 'live' }); } };
+  const goFromHome = (g: Go) => {
+    switch (g) {
+      case 'offers': setShowOffers(true); break;
+      case 'contracts': setSquadView(2); setScreen({ id: 'squad' }); break;
+      case 'tactics': setTacticsBack('match'); setScreen({ id: 'tactics' }); break;
+      case 'transfers': setTrTab(0); setScreen({ id: 'transfers' }); break;
+      case 'sponsors': setScreen({ id: 'finances', tab: 2 }); break;
+      case 'finances': setScreen({ id: 'finances', tab: 0 }); break;
+      case 'match': setMatchTab(0); setScreen({ id: 'match' }); break;
+      default: setScreen({ id: g } as Screen);
+    }
+  };
+  const goFromClub = (d: ClubDoor) => {
+    const tabs: Partial<Record<ClubDoor, number>> = { finances: 0, tickets: 1, sponsors: 2, facilities: 3, hire: 4 };
+    if (tabs[d] !== undefined) setScreen({ id: 'finances', tab: tabs[d]! });
+    else setScreen({ id: d } as Screen);
+  };
   const onTab = Math.max(0, TAB_SCREENS.indexOf(screen.id));
   const hub = HUBS.includes(screen.id);
   // Screens reachable from more than one hub (News, Inbox, Career, Quick match) go back to the hub they were opened from.
@@ -368,193 +410,10 @@ export function App() {
       )}
 
       {screen.id === 'home' && career && world && myClub && myLeague && (
-        <>
-          <div className="g-top">
-            <span className="g-live">{t.season(career.season)}</span>
-            <span style={{ display: 'flex', gap: 'var(--s2)' }}>
-              <button className="iconbtn g-bell" aria-label={t.inbox} onClick={() => setScreen({ id: 'inbox' })}>
-                <Icon svg={bellIcon} />
-                {career.inbox.some((m) => !m.read) && <span className="badge">{career.inbox.filter((m) => !m.read).length}</span>}
-              </button>
-              <LangButton lang={prefs.lang} label={t.lang} onClick={() => setLang(nextLang(prefs.lang))} />
-            </span>
-          </div>
-          <section className="g-club">
-            <Kit colors={myClub.colors} size="lg" />
-            <div>
-              <div className="over">{myLeague.name[lang]}</div>
-              <h1 className="d2">{clubName(myClub)}</h1>
-              <Stars n={starsOf(world, myClub)} />
-            </div>
-          </section>
-          <button className="g-tagline g-linkish" style={{ marginTop: 0 }} onClick={() => setScreen({ id: 'coach' })}>{t.welcome(career.managerName)} <b>{t.career} ›</b></button>
-          {(() => {
-            const kit = career.ops.sponsors.find((d) => d.slot === 'kit')?.brand;
-            const shirt = career.ops.sponsors.find((d) => d.slot === 'shirt')?.brand;
-            return (
-              <div className="g-leagues">
-                <span className="chip">👕 {t.kit}: <b>{kit?.[lang] ?? '—'}</b></span>
-                <span className="chip">🏷️ {t.shirt}: <b>{shirt?.[lang] ?? '—'}</b></span>
-              </div>
-            );
-          })()}
-
-          <section className="card g-hero">
-            <div className="over">{t.boardWants}</div>
-            <h2 className="d2">{t.objective[objectiveOf(world, myClub)]}</h2>
-            <div className="g-stats">
-              <Stat label={t.strength} value={String(strengthOf(world, myClub.id))} />
-              <Stat label={t.budget} value={money(myClub.budget)} />
-              <Stat label={t.wageBill} value={money(wageBill(world, myClub.id))} unit={t.perMonth} />
-            </div>
-          </section>
-
-          {(() => {
-            const aims = objectivesOf(world, career);
-            const cupOk = cupAimMet(world, career, aims.cup);
-            const yApps = youthApps(world, career);
-            return (
-              <section className="card" style={{ marginTop: 'var(--s3)' }}>
-                <div className="over">{t.boardFans}</div>
-                {([[t.confidence, career.board.confidence], [t.fansT, career.board.fans]] as const).map(([k, v]) => (
-                  <div key={k} className="g-barrow" style={{ marginTop: 8 }}>
-                    <span>{k}</span><div className={`bar${v < 30 ? ' low' : ''}`}><i style={{ width: `${v}%` }} /></div><b className="num">{Math.round(v)}</b>
-                  </div>
-                ))}
-                <div className="over" style={{ marginTop: 'var(--s3)' }}>{t.objectivesT}</div>
-                <ul className="g-aims">
-                  <li>{t.objective[aims.league]}</li>
-                  <li className={cupOk === true ? 'g-ok' : cupOk === false ? 'g-bad' : ''}>{t.cupAim[aims.cup]}</li>
-                  <li className={yApps >= aims.youth ? 'g-ok' : ''}>{t.youthAim(aims.youth, yApps)}</li>
-                  <li className={myClub.budget < 0 ? 'g-bad' : ''}>{t.financeAim}</li>
-                </ul>
-              </section>
-            );
-          })()}
-
-          {career.jobs.length > 0 && !career.sacked && (
-            <button className="banner g-alert" style={{ marginTop: 'var(--s3)' }} onClick={() => setScreen({ id: 'coach' })}>
-              <span className="bic">✉️</span><div><b>{t.jobsT} · {career.jobs.length}</b></div>
-            </button>
-          )}
-
-          {(() => {
-            const rows = table(world, career, myLeague.id);
-            const pos = rows.findIndex((x) => x.clubId === myClub.id) + 1;
-            const me = rows[pos - 1];
-            const nf = career.sacked ? null : nextUserMatch(world, career);
-            const over = seasonOver(career);
-            const last = [...career.fixtures[myLeague.id]].reverse().flat().find((f) => f[2] >= 0 && (f[0] === myClub.id || f[1] === myClub.id));
-            const club = (id: string) => world.clubs.find((x) => x.id === id)!;
-            return (
-              <>
-                {me.p > 0 && (
-                  <div className="g-leagues" style={{ marginTop: 'var(--s4)' }}>
-                    <span className="chip">{t.position} <b className="num">{t.ordinal(pos)}</b> · <span className="num">{me.pts}</span> {t.points}</span>
-                    {last && <span className="chip">{t.lastResult} <Score f={last} me={myClub.id} /> {t.vs} {clubName(club(last[0] === myClub.id ? last[1] : last[0]))}</span>}
-                  </div>
-                )}
-                {(() => {
-                  const exp = over ? [] : expiring(world, career);
-                  const out = squad.filter((p) => !available(p));
-                  const alerts = [
-                    career.offers.length > 0 && (
-                      <button key="o" className="banner g-alert" onClick={() => setShowOffers(true)}>
-                        <span className="bic">💰</span><div><b>{t.offersN(career.offers.length)}</b></div>
-                      </button>
-                    ),
-                    exp.length > 0 && (
-                      <button key="e" className="banner warn g-alert" onClick={() => { setSquadSort(0); setScreen({ id: 'squad' }); }}>
-                        <span className="bic">⏳</span><div><b>{t.expiringN(exp.length)}</b><p>{t.expiringHint}</p></div>
-                      </button>
-                    ),
-                    SLOTS.filter((sl) => !career.ops.sponsors.some((d) => d.slot === sl)).length > 0 && career.ops.sponsorOffers.length > 0 && (
-                      <button key="sp" className="banner g-alert" onClick={() => setScreen({ id: 'club' })}>
-                        <span className="bic">🤝</span>
-                        <div><b>{t.emptySlots(SLOTS.filter((sl) => !career.ops.sponsors.some((d) => d.slot === sl)).length)}</b><p>{t.emptySlotsHint}</p></div>
-                      </button>
-                    ),
-                    myClub.budget < 0 && (
-                      <button key="red" className="banner warn g-alert" onClick={() => setScreen({ id: 'club' })}>
-                        <span className="bic">📉</span><div><b>{t.inTheRed}</b></div>
-                      </button>
-                    ),
-                    squad.length < 18 && (
-                      <button key="s" className="banner warn g-alert" onClick={() => setScreen({ id: 'market' })}>
-                        <span className="bic">⚠️</span><div><b>{t.thinSquad(squad.length)}</b></div>
-                      </button>
-                    ),
-                    out.length > 0 && (
-                      <div key="i" className="banner g-alert">
-                        <span className="bic">🩹</span>
-                        <div><b>{[out.filter((p) => p.injured > 0).length && t.injuredN(out.filter((p) => p.injured > 0).length), out.filter((p) => p.banned > 0).length && t.bannedN(out.filter((p) => p.banned > 0).length)].filter(Boolean).join(' · ')}</b></div>
-                      </div>
-                    ),
-                  ].filter(Boolean);
-                  return alerts.length ? <div className="g-alerts">{alerts}</div> : null;
-                })()}
-                <div className="sechead"><span className="over">{over ? t.seasonOver : t.nextUp}</span></div>
-                {career.sacked && (
-                  <button className="card g-hero g-next" onClick={() => setScreen({ id: 'coach' })}>
-                    <h2 className="d3" style={{ margin: 0 }}>{t.sackedTitle}</h2>
-                    <p className="muted" style={{ margin: 0 }}>{t.sackedBody}</p>
-                    <span className="btn primary">{t.jobsT}</span>
-                  </button>
-                )}
-                {nf && (
-                  <button className="card g-next" onClick={() => setScreen({ id: 'match' })}>
-                    <div className="over">{matchLabel(nf)} · {nf.sides[0].clubId === myClub.id ? t.home : t.away}</div>
-                    <div className="g-vs">
-                      <span><Kit colors={club(nf.sides[0].clubId).colors} size="md" /><b>{clubName(club(nf.sides[0].clubId))}</b></span>
-                      <i>{t.vs}</i>
-                      <span><Kit colors={club(nf.sides[1].clubId).colors} size="md" /><b>{clubName(club(nf.sides[1].clubId))}</b></span>
-                    </div>
-                    <span className="btn primary">{career.live ? t.resumeMatch : t.watch}</span>
-                  </button>
-                )}
-                {!nf && !over && !career.sacked && (
-                  <div className="card">
-                    <p className="muted" style={{ marginTop: 0 }}>{t.leagueOver}</p>
-                    <button className="btn primary" style={{ width: '100%' }} onClick={finishSeason}>{t.finishSeason}</button>
-                  </div>
-                )}
-                {over && (
-                  <div className="card g-hero">
-                    <h2 className="d3" style={{ margin: 0 }}>{t.finished(t.ordinal(pos))}</h2>
-                    <p className={objectiveMet(objectiveOf(world, myClub), pos, rows.length) ? 'g-ok' : 'g-bad'}>
-                      {objectiveMet(objectiveOf(world, myClub), pos, rows.length) ? t.met : t.missed}
-                    </p>
-                    <div className="list" style={{ marginBottom: 'var(--s4)' }}>
-                      <div className="cell"><Kit colors={club(rows[0].clubId).colors} size="sm" /><span className="cmain"><span>{t.champion}</span><b>{clubName(club(rows[0].clubId))}</b></span></div>
-                      {(() => {
-                        const ts = leaders(world, career, myLeague.id, 1, 1)[0];
-                        return ts ? <div className="cell"><span className="g-shirt num">{ts.value}</span><span className="cmain"><span>{t.topScorer}</span><b>{ts.player.name[lang]} · {clubName(club(ts.player.clubId))}</b></span></div> : null;
-                      })()}
-                    </div>
-                    <button className={`btn primary${busy ? ' loading' : ''}`} style={{ width: '100%' }} disabled={busy} onClick={startNextSeason}>{t.nextSeason(career.season + 1)}</button>
-                  </div>
-                )}
-              </>
-            );
-          })()}
-
-          {(career.news ?? []).length > 0 && (
-            <>
-              <div className="sechead"><span className="over">{t.newsT}</span></div>
-              <button className="card g-news g-next" onClick={() => setScreen({ id: 'news' })}>
-                {(career.news ?? []).slice(0, 2).map((n) => { const [h, b] = newsText(t, lang, world, career, n); return <span key={n.id} className="g-news"><b>{h}</b><span className="muted">{b}</span></span>; })}
-              </button>
-            </>
-          )}
-
-          <div className="sechead"><span className="over">{t.keyPlayers}</span></div>
-          <div className="list">
-            {[...squad].sort((a, b) => b.rating - a.rating).slice(0, 3).map((p) => (
-              <PlayerRow key={p.id} p={p} lang={lang} t={t} season={career.season} onClick={() => setPlayer(p)} />
-            ))}
-          </div>
-          <button className="btn" style={{ width: '100%', marginTop: 'var(--s3)' }} onClick={() => setScreen({ id: 'squad' })}>{t.seeSquad}</button>
-        </>
+        <Home world={world} career={career} lang={lang} t={t} ui={prefs.lang} myClub={myClub} myLeague={myLeague} busy={busy} matchLabel={matchLabel}
+          langButton={<LangButton lang={prefs.lang} label={t.lang} onClick={() => setLang(nextLang(prefs.lang))} />}
+          onGo={goFromHome} onPlay={() => (career.live ? resumeLive() : playNext(true))} onFinishSeason={finishSeason} onNextSeason={startNextSeason}
+          onPlayer={(id) => { const p = playerOf(world, id); if (p) setPlayer(p); }} />
       )}
 
       {/* ---------- New career: country → league → club → contract ---------- */}
@@ -704,19 +563,16 @@ export function App() {
                   <Stat label={t.wageCap} value={`${Math.round((wageBill(world, myClub.id) / myClub.wageCap) * 100)}%`} />
                 </div>
               )}
-              <div className="g-tiles g-tiles-2">
+              <div className="g-links">
                 {([
-                  ['⚙️', t.tactics, `${fmt((career.tactics ?? DEFAULT_TACTICS).formation)} · ${t.mentalities[(career.tactics ?? DEFAULT_TACTICS).mentality + 2]}`, () => { setTacticsBack('squad'); setScreen({ id: 'tactics' }); }],
-                  ['🏋️', t.trainingT, `${t.loads[career.ops.training.load]} · ⚡ ${career.ops.devPoints}`, () => setScreen({ id: 'training' })],
-                  ['🔁', t.market, career.offers.length ? t.offersN(career.offers.length) : t.marketSub, () => setScreen({ id: 'market' })],
-                  ['🏟️', t.clubScreen, `${t.budget} ${money(myClub!.budget)}`, () => setScreen({ id: 'club' })],
-                  ['🩺', t.hospitalT, t.hospitalSub(squad.filter((p) => p.injured > 0).length), () => setScreen({ id: 'hospital' })],
-                  ['🌱', t.academyT, t.academySub(career.ops.academy.length), () => setScreen({ id: 'academy' })],
+                  [ICONS.tactics, t.tactics, `${fmt((career.tactics ?? DEFAULT_TACTICS).formation)}`, () => { setTacticsBack('squad'); setScreen({ id: 'tactics' }); }],
+                  [ICONS.training, t.trainingT, `${t.loads[career.ops.training.load]} · ⚡${career.ops.devPoints}`, () => setScreen({ id: 'training' })],
+                  [ICONS.medical, t.hospitalT, t.hospitalSub(squad.filter((p) => p.injured > 0).length), () => setScreen({ id: 'hospital' })],
+                  [ICONS.academy, t.academyT, t.academySub(career.ops.academy.length), () => setScreen({ id: 'academy' })],
                 ] as [string, string, string, () => void][]).map(([ico, title, sub, go]) => (
-                  <button key={title} className="g-tile" onClick={go}>
-                    <span className="ico">{ico}</span>
-                    <span className="d5">{title}</span>
-                    <small>{sub}</small>
+                  <button key={title} className="g-link" onClick={go}>
+                    <span className="g-duty-ico"><Icon svg={ico} /></span>
+                    <span className="cmain"><b>{title}</b><small>{sub}</small></span>
                   </button>
                 ))}
               </div>
@@ -725,13 +581,24 @@ export function App() {
                   <button key={g} className={group === i - 1 ? 'on' : ''} onClick={() => setGroup(i - 1)}>{g}</button>
                 ))}
               </div>
-              <select className="g-input g-select" style={{ width: '100%', marginBottom: 'var(--s3)' }} value={squadSort} onChange={(e) => setSquadSort(Number(e.target.value))} aria-label={t.sorts[0]}>
-                {t.sorts.map((label, i) => <option key={label} value={i}>{label}</option>)}
-              </select>
+              <div className="g-filters" style={{ marginBottom: 'var(--s3)' }}>
+                <select className="g-input g-select" value={squadSort} onChange={(e) => setSquadSort(Number(e.target.value))} aria-label={t.sorts[0]}>
+                  {t.sorts.map((label, i) => <option key={label} value={i}>{label}</option>)}
+                </select>
+                <select className="g-input g-select" value={squadView} onChange={(e) => setSquadView(Number(e.target.value))} aria-label={t.showT}>
+                  {t.squadViews.map((label, i) => <option key={label} value={i}>{t.showT}: {label}</option>)}
+                </select>
+              </div>
               <div className="list">
-                {squad.filter((p) => group < 0 || GROUP[p.position] === group).map((p) => (
-                  <PlayerRow key={p.id} p={p} lang={lang} t={t} season={career.season} onClick={() => setPlayer(p)} />
-                ))}
+                {(squadView === 2 ? [...squad].sort((a, b) => a.contractUntil - b.contractUntil) : squad)
+                  .filter((p) => group < 0 || GROUP[p.position] === group).map((p) => {
+                    const right = squadView === 1 ? <span className={`g-rating num${p.fitness < 75 ? ' g-low' : ''}`}>{p.fitness}%</span>
+                      : squadView === 2 ? <span className={`g-rating num${p.contractUntil <= career.season + 1 ? ' g-low' : ''}`}>{p.contractUntil}</span>
+                      : squadView === 3 ? <span className="g-rating num ltr">{money(p.marketValue)}</span>
+                      : squadView === 4 ? <span className="g-rating num">{avgRating(career.ratings?.[p.id]) ? avgRating(career.ratings?.[p.id]).toFixed(1) : '–'}</span>
+                      : undefined;
+                    return <PlayerRow key={p.id} p={p} lang={lang} t={t} season={career.season} onClick={() => setPlayer(p)} right={right} />;
+                  })}
               </div>
             </>
           )}
@@ -739,73 +606,14 @@ export function App() {
       )}
 
       {/* ---------- Match ---------- */}
-      {screen.id === 'match' && (
-        <>
-          <AppBar title={t.match} sub={myLeague ? myLeague.name[lang] : undefined} />
-          {!career || !world || !myClub ? (
-            <Empty text={t.noCareer} action={{ label: t.newCareer, onClick: startNewCareer }} />
-          ) : career.live ? (
-            <button className="btn primary" style={{ width: '100%', marginTop: 'var(--s5)' }} onClick={() => { setLive(career.live!); setLiveLocked(false); setScreen({ id: 'live' }); }}>{t.resumeMatch}</button>
-          ) : (() => {
-            if (career.sacked) return <Empty text={t.sackedBody} />;
-            const m = nextUserMatch(world, career);
-            // Same as the home screen: once your league is done, finish the season from here too.
-            if (!m) return seasonOver(career) || career.sacked ? <Empty text={t.seasonOver} /> : (
-              <>
-                <Empty text={t.leagueOver} />
-                <button className="btn primary" style={{ width: '100%' }} disabled={busy} onClick={finishSeason}>{t.finishSeason}</button>
-              </>
-            );
-            const [h, a] = [m.sides[0].clubId, m.sides[1].clubId].map((id) => world.clubs.find((x) => x.id === id)!);
-            const get = (id: string) => playerOf(world, id)!;
-            const p = predict(m, get);
-            const mineIdx = m.sides[0].clubId === myClub.id ? 0 : 1;
-            const pr = mineIdx === 0 ? p : [p[2], p[1], p[0]];
-            const { xi, replaced } = xiFor(world, career);
-            const tac = career.tactics ?? DEFAULT_TACTICS;
-            const slots = FORMATIONS[tac.formation].slots;
-            return (
-              <>
-                <section className="card g-hero" style={{ marginTop: 'var(--s4)' }}>
-                  <div className="over">{matchLabel(m)} · {h.id === myClub.id ? t.home : t.away}</div>
-                  <div className="g-vs lg">
-                    <span><Kit colors={h.colors} size="lg" /><b>{clubName(h)}</b><small className="num">{Math.round(sideLevel(m, 0, get))}</small></span>
-                    <i>{t.vs}</i>
-                    <span><Kit colors={a.colors} size="lg" /><b>{clubName(a)}</b><small className="num">{Math.round(sideLevel(m, 1, get))}</small></span>
-                  </div>
-                  <div className="g-predbar" dir="ltr" style={{ marginTop: 'var(--s4)' }}>
-                    <i className="w" style={{ width: `${pr[0] * 100}%` }} /><i className="d" style={{ width: `${pr[1] * 100}%` }} /><i className="l" style={{ width: `${pr[2] * 100}%` }} />
-                  </div>
-                  <div className="g-predlbl">
-                    <span>{t.win} <b className="num">{Math.round(pr[0] * 100)}%</b></span>
-                    <span>{t.draw} <b className="num">{Math.round(pr[1] * 100)}%</b></span>
-                    <span>{t.loss} <b className="num">{Math.round(pr[2] * 100)}%</b></span>
-                  </div>
-                </section>
-                <div className="sechead"><span className="over">{t.radarT}</span></div>
-                <Radar world={world} m={m} t={t} />
-                <ScoutPanel world={world} career={career} m={m} lossChance={pr[2]} lang={lang} t={t} onChange={commitMsg} />
-                <div className="sechead"><span className="over">{t.yourXI} · {fmt(tac.formation)} · {t.mentalities[tac.mentality + 2]} · {t.philosophies[tac.philosophy ?? 'balanced']}</span></div>
-                {replaced.length > 0 && <p className="g-bad" style={{ marginTop: 0 }}>{t.replacedN(replaced.map((x) => x.name[lang]).join('، '))}</p>}
-                <div className="list g-xi">
-                  {xi.map((pl, i) => (
-                    <button key={pl.id} className="cell" onClick={() => setPlayer(pl)}>
-                      <span className="tag">{slots[i]?.pos}</span>
-                      <span className="cmain"><b>{pl.name[lang]}</b><i className="g-fit" style={{ ['--f' as string]: `${pl.fitness}%` }} /></span>
-                      <span className="g-rating num">{pl.rating}</span>
-                    </button>
-                  ))}
-                </div>
-                <div style={{ display: 'grid', gap: 'var(--s3)', margin: 'var(--s5) 0' }}>
-                  <button className="btn" onClick={() => { setTacticsBack('match'); setScreen({ id: 'tactics' }); }}>{t.tactics}</button>
-                  <button className={`btn primary${busy ? ' loading' : ''}`} disabled={busy} onClick={() => playNext(true)}>{t.watch}</button>
-                  <button className="btn" disabled={busy} onClick={() => playNext(false)}>{t.quickResult}</button>
-                </div>
-              </>
-            );
-          })()}
-        </>
-      )}
+      {screen.id === 'match' && (!career || !world || !myClub || !myLeague ? (
+        <><AppBar title={t.match} /><Empty text={t.noCareer} action={{ label: t.newCareer, onClick: startNewCareer }} /></>
+      ) : (
+        <MatchHub world={world} career={career} lang={lang} t={t} myClub={myClub} myLeague={myLeague} busy={busy} tab={matchTab} onTab={setMatchTab}
+          matchLabel={matchLabel} onPlay={() => playNext(true)} onQuick={() => playNext(false)} onResume={resumeLive}
+          onTactics={() => { setTacticsBack('match'); setScreen({ id: 'tactics' }); }} onFinishSeason={finishSeason}
+          onPlayer={setPlayer} onRankings={() => setScreen({ id: 'rankings' })} onChange={commitMsg} onToast={setToast} />
+      ))}
 
       {screen.id === 'live' && live && world && career && (
         <Live m={live} world={world} career={career} lang={lang} t={t} locked={liveLocked} speed0={prefs.speed} openOn={prefs.openOn} camera0={prefs.camera} onCamera={(c) => setPrefs({ ...prefs, camera: c })} label={matchLabel(live)} onToast={setToast}
@@ -832,13 +640,13 @@ export function App() {
       {screen.id === 'howto' && <TextPage title={t.howTo} body={t.howToBody} t={t} onBack={() => setScreen({ id: 'more' })} />}
       {screen.id === 'privacy' && <TextPage title={t.privacy} body={t.privacyBody} foot={t.privacyUpdated} t={t} onBack={() => setScreen({ id: 'more' })} />}
       {screen.id === 'rankings' && world && career && (
-        <Rankings world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'more' })} />
+        <Rankings world={world} career={career} lang={lang} t={t} onBack={() => { setMatchTab(1); setScreen({ id: 'match' }); }} />
       )}
       {screen.id === 'news' && world && career && (
         <News world={world} career={career} lang={lang} t={t} onBack={backToHub} onToast={setToast} />
       )}
-      {screen.id === 'club' && world && career && (
-        <ClubScreen world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'squad' })} onChange={commitMsg} />
+      {screen.id === 'finances' && world && career && (
+        <ClubScreen key={screen.tab} world={world} career={career} lang={lang} t={t} tab0={screen.tab} onBack={() => setScreen({ id: 'club' })} onChange={commitMsg} />
       )}
       {screen.id === 'training' && world && career && (
         <TrainingScreen world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'squad' })} onChange={commitMsg} />
@@ -860,102 +668,56 @@ export function App() {
           onJob={async (id) => { const r = moveTo(world, career, id); await commit(r.world, r.career); setScreen({ id: 'home' }); }} onToast={setToast} />
       )}
 
-      {screen.id === 'market' && world && career && (
-        <Market world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'squad' })} onPick={setPlayer} />
+      {/* ---------- Transfers ---------- */}
+      {screen.id === 'transfers' && (!career || !world ? (
+        <><AppBar title={t.transfersT} /><Empty text={t.noCareer} action={{ label: t.newCareer, onClick: startNewCareer }} /></>
+      ) : (
+        <Transfers world={world} career={career} lang={lang} t={t} tab={trTab} onTab={setTrTab} onPick={setPlayer} onOffers={() => setShowOffers(true)} />
+      ))}
+
+      {/* ---------- Club ---------- */}
+      {screen.id === 'club' && (!career || !world ? (
+        <><AppBar title={t.tabs[4]} right={<button className="iconbtn" aria-label={t.settingsMore} onClick={() => setScreen({ id: 'more' })}><Icon svg={gearIcon} /></button>} /><Empty text={t.noCareer} action={{ label: t.newCareer, onClick: startNewCareer }} /></>
+      ) : (
+        <ClubHub world={world} career={career} lang={lang} t={t} onGo={goFromClub} />
+      ))}
+      {screen.id === 'staff' && world && career && (
+        <StaffRoom world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'club' })}
+          onChange={(c, msg) => commitMsg(world, c, msg)} onHire={() => setScreen({ id: 'finances', tab: 4 })} />
+      )}
+      {screen.id === 'history' && world && career && (
+        <History world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'club' })} />
       )}
 
-      {/* ---------- League ---------- */}
-      {screen.id === 'table' && (
-        <>
-          <AppBar title={t.table} sub={myLeague ? myLeague.name[lang] : undefined} />
-          {!career || !world || !myLeague ? (
-            <Empty text={t.noCareer} action={{ label: t.newCareer, onClick: startNewCareer }} />
-          ) : (
-            <>
-              <div className="seg" style={{ margin: 'var(--s4) 0' }}>
-                {[t.tableTab, t.resultsTab, t.scorersTab, t.assistsTab, t.cupsTab].map((g, i) => (
-                  <button key={g} className={tableTab === i ? 'on' : ''} onClick={() => setTableTab(i)}>{g}</button>
-                ))}
-              </div>
-              {tableTab === 0 && (() => {
-                const rows = table(world, career, myLeague.id);
-                const z = zones(world, myLeague.id);
-                return (
-                  <div className="list g-table">
-                    <div className="g-trow head">
-                      <span className="g-rank">#</span><span className="g-tname" />
-                      {t.cols.map((c) => <span key={c} className="g-tnum">{c}</span>)}
-                    </div>
-                    {rows.map((r, i) => {
-                      const c = world.clubs.find((x) => x.id === r.clubId)!;
-                      const zone = i < z.up ? 'up' : i < z.top ? 'top' : i >= rows.length - z.down ? 'down' : '';
-                      return (
-                        <div key={r.clubId} className={`g-trow ${zone}${r.clubId === career.clubId ? ' me' : ''}`}>
-                          <span className="g-rank num">{i + 1}</span>
-                          <span className="g-tname"><Kit colors={c.colors} size="xs" /><b>{clubName(c)}</b></span>
-                          {[r.p, r.w, r.d, r.l, r.gf - r.ga].map((v, k) => <span key={k} className="g-tnum num ltr">{k === 4 && v > 0 ? `+${v}` : v}</span>)}
-                          <span className="g-tnum num"><b>{r.pts}</b></span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-              {tableTab === 1 && (() => {
-                const rounds = career.fixtures[myLeague.id];
-                let lastPlayed = -1; // no findLastIndex: older Android WebViews lack it
-                rounds.forEach((g, i) => { if (g.some((f) => f[2] >= 0)) lastPlayed = i; });
-                if (lastPlayed < 0) return <Empty text={t.noGames} />;
-                const ri = Math.min(resultsRound ?? lastPlayed, lastPlayed);
-                const club = (id: string) => world.clubs.find((x) => x.id === id)!;
-                return (
-                  <>
-                    <div className="g-roundnav">
-                      <button className="iconbtn" disabled={ri === 0} aria-label={t.back} onClick={() => setResultsRound(ri - 1)}><Icon svg={backIcon} /></button>
-                      <b>{t.matchday(ri + 1)}</b>
-                      <button className="iconbtn g-flip" disabled={ri >= lastPlayed} aria-label={t.done} onClick={() => setResultsRound(ri + 1)}><Icon svg={backIcon} /></button>
-                    </div>
-                    <div className="list">
-                      {rounds[ri].map((f) => (
-                        <div key={f[0]} className={`g-res${f[0] === career.clubId || f[1] === career.clubId ? ' me' : ''}`}>
-                          <span className="h">{clubName(club(f[0]))}<Kit colors={club(f[0]).colors} size="xs" /></span>
-                          <span className="num sc">{f[2]}–{f[3]}</span>
-                          <span className="a"><Kit colors={club(f[1]).colors} size="xs" />{clubName(club(f[1]))}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                );
-              })()}
-              {tableTab === 4 && <Cups world={world} career={career} lang={lang} t={t} />}
-              {tableTab >= 2 && tableTab <= 3 && (() => {
-                const list = leaders(world, career, myLeague.id, tableTab === 2 ? 1 : 2, 15);
-                if (!list.length) return <Empty text={t.noGames} />;
-                return (
-                  <div className="list">
-                    {list.map(({ player: p, value }, i) => {
-                      const c = world.clubs.find((x) => x.id === p.clubId)!;
-                      return (
-                        <button key={p.id} className={`cell${p.clubId === career.clubId ? ' g-mine' : ''}`} onClick={() => setPlayer(p)}>
-                          <span className="g-rank num">{i + 1}</span>
-                          <Kit colors={c.colors} size="sm" />
-                          <span className="cmain"><b>{p.name[lang]}</b><span>{clubName(c)} · {p.position}</span></span>
-                          <span className="g-rating num">{value}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </>
-          )}
-        </>
-      )}
-
-      {/* ---------- More ---------- */}
+      {/* ---------- Settings and more (from the Club tab's gear) ---------- */}
       {screen.id === 'more' && (
         <>
-          <AppBar title={t.more} />
+          <AppBar back={() => setScreen({ id: career ? 'club' : 'home' })} backLabel={t.back} title={t.settingsMore} />
+          <div className="sechead" />
+          <SupportCard t={t} prefs={prefs} onPrefs={setPrefs} />
+          <div className="sechead" />
+          <div className="list">
+            <button className="cell" onClick={() => setScreen({ id: 'settings' })}><span className="cmain"><b>{t.settings}</b><span>{t.languageT} · {t.matchPrefs}{career ? ` · ${t.balanceT}` : ''}</span></span></button>
+            <button className="cell" onClick={() => setScreen({ id: 'quick' })}><span className="cmain"><b>{t.quick}</b><span>{t.quickSub}</span></span></button>
+            {career && world && (
+              <>
+                <button className="cell" onClick={() => setScreen({ id: 'editor' })}><span className="cmain"><b>{t.editorT}</b><span>{t.editorMoreSub}</span></span></button>
+                <button className="cell" onClick={() => myClub && setNaming({ kind: 'club', id: myClub.id, name: myClub.name })}><span className="cmain"><b>{t.editName}</b><span>{myClub?.name[lang]}</span></span></button>
+              </>
+            )}
+          </div>
+          <div className="sechead" />
+          <div className="list">
+            {career && world && (
+              <button className="cell" onClick={() => setSaveMode('export')}><span className="cmain"><b>{t.exportSave}</b><span>{t.exportSub}</span></span></button>
+            )}
+            <button className="cell" onClick={() => setSaveMode('import')}><span className="cmain"><b>{t.importSave}</b><span>{t.importSub}</span></span></button>
+          </div>
+          <div className="sechead" />
+          <div className="list">
+            <button className="cell" onClick={() => setScreen({ id: 'howto' })}><span className="cmain"><b>{t.howTo}</b><span>{t.howToSub}</span></span></button>
+            <button className="cell" onClick={() => setScreen({ id: 'privacy' })}><span className="cmain"><b>{t.privacy}</b><span>{t.privacySub}</span></span></button>
+          </div>
           <div className="sechead" />
           {/* Semba Games button: replaces the old game's Facebook button (see games/the-gaffer/README.md). */}
           <a className="card g-semba" href={SEMBA_URL} target="_blank" rel="noopener" style={{ textDecoration: 'none', color: 'var(--text)' }}>
@@ -965,66 +727,6 @@ export function App() {
               <small className="muted">{t.followSembaSub}</small>
             </span>
           </a>
-          <div className="sechead" />
-          {career && world && (
-            <div className="list" style={{ marginBottom: 'var(--s4)' }}>
-              <button className="cell" onClick={() => setScreen({ id: 'coach' })}>
-                <span className="cmain"><b>{t.career}</b><span>{t.careerSub}</span></span>
-              </button>
-              <button className="cell" onClick={() => setScreen({ id: 'rankings' })}>
-                <span className="cmain"><b>{t.rankingsT}</b><span>{t.rankingsSub(myWorldRank(world, career))}</span></span>
-              </button>
-              <button className="cell" onClick={() => setScreen({ id: 'news' })}>
-                <span className="cmain"><b>{t.newsT}</b><span>{t.newsSub}</span></span>
-              </button>
-              <button className="cell" onClick={() => setScreen({ id: 'inbox' })}>
-                <span className="cmain"><b>{t.inbox}</b><span>{career.inbox.filter((m) => !m.read).length} · {t.inboxKinds.all}</span></span>
-              </button>
-              <button className="cell" onClick={() => setScreen({ id: 'quick' })}>
-                <span className="cmain"><b>{t.quick}</b><span>{t.quickSub}</span></span>
-              </button>
-              <button className="cell" onClick={() => setScreen({ id: 'editor' })}>
-                <span className="cmain"><b>{t.editorT}</b><span>{t.editorMoreSub}</span></span>
-              </button>
-              <button className="cell" onClick={() => myClub && setNaming({ kind: 'club', id: myClub.id, name: myClub.name })}>
-                <span className="cmain"><b>{t.editName}</b><span>{myClub?.name[lang]}</span></span>
-              </button>
-            </div>
-          )}
-          <div className="list">
-            {career && world && (
-              <button className="cell" onClick={() => setSaveMode('export')}>
-                <span className="cmain"><b>{t.exportSave}</b><span>{t.exportSub}</span></span>
-              </button>
-            )}
-            <button className="cell" onClick={() => setSaveMode('import')}>
-              <span className="cmain"><b>{t.importSave}</b><span>{t.importSub}</span></span>
-            </button>
-          </div>
-          <div className="sechead" />
-          <div className="list">
-            <button className="cell" onClick={() => setScreen({ id: 'settings' })}><span className="cmain"><b>{t.settings}</b><span>{t.languageT} · {t.matchPrefs}{career ? ` · ${t.balanceT}` : ''}</span></span></button>
-            <button className="cell" onClick={() => setScreen({ id: 'howto' })}><span className="cmain"><b>{t.howTo}</b><span>{t.howToSub}</span></span></button>
-            <button className="cell" onClick={() => setScreen({ id: 'privacy' })}><span className="cmain"><b>{t.privacy}</b><span>{t.privacySub}</span></span></button>
-          </div>
-          {career && world && career.history.length > 0 && (
-            <>
-              <div className="sechead"><span className="over">{t.history}</span></div>
-              <div className="list">
-                {[...career.history].reverse().map((h) => {
-                  const c = world.clubs.find((x) => x.id === h.clubId)!;
-                  const lg = world.leagues.find((l) => l.id === h.leagueId)!;
-                  return (
-                    <div key={h.season} className="cell g-row">
-                      <Kit colors={c.colors} size="sm" />
-                      <span className="cmain"><b>{t.season(h.season)} · {t.ordinal(h.position)}</b><span>{lg.name[lang]} · {t.objective[h.objective]}</span></span>
-                      <span className={h.met ? 'g-ok' : 'g-bad'}>{h.met ? '✓' : '✗'}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
           {career && (
             <>
               <div className="sechead" />
@@ -1035,12 +737,13 @@ export function App() {
               </div>
             </>
           )}
+          <div style={{ height: 24 }} />
         </>
       )}
 
       {hub && (
         <nav className="tabbar">
-          {[homeIcon, friendsIcon, playIcon, trophyIcon, moreIcon].map((svg, i) => (
+          {[homeIcon, friendsIcon, playIcon, ICONS.transfers, ICONS.club].map((svg, i) => (
             <button key={i} className={i === onTab ? 'on' : ''}
               onClick={() => setScreen({ id: TAB_SCREENS[i] } as Screen)}>
               <Icon svg={svg} />
@@ -1055,7 +758,8 @@ export function App() {
         <PlayerSheet p={world.players.find((x) => x.id === player.id) ?? player} world={world} career={career} lang={lang} t={t}
           onClose={() => setPlayer(null)} onOffer={() => setBid(player)} onRenew={() => setRenewing(player)}
           onList={(listed) => afterDeal(setListed(world, player.id, listed), career, '')}
-          onRename={() => { const cur = world.players.find((x) => x.id === player.id) ?? player; setNaming({ kind: 'player', id: player.id, name: cur.name, nick: cur.nick }); }} />
+          onRename={() => { const cur = world.players.find((x) => x.id === player.id) ?? player; setNaming({ kind: 'player', id: player.id, name: cur.name, nick: cur.nick }); }}
+          onApply={async (w, c, msg) => { await commit(w, c); if (msg) { setToast(msg); setPlayer(null); } }} />
       )}
       {bid && world && career && (
         <BidSheet p={bid} world={world} career={career} lang={lang} t={t} onClose={() => setBid(null)} onDone={afterDeal} />
@@ -1074,6 +778,7 @@ export function App() {
         <EditName target={naming} t={t} onClose={() => setNaming(null)}
           onSave={async (n, nick) => { await commit(renameIn(world, naming, n, nick), career); setNaming(null); setPlayer(null); }} />
       )}
+      {ft && world && !player && !summary && <FullTime a={ft} world={world} lang={lang} t={t} onClose={() => setFt(null)} />}
       {toast && <div className="g-toast toast" role="status">{toast}</div>}
 
       {summary && world && career && myClub && myLeague && (

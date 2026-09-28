@@ -12,6 +12,11 @@ import { applyElo } from './rankings';
 import { academyWeek, earnDev, trainingWeek } from './training';
 import { makeAttrs, makeFreeAgents, objectiveOf, playerOf, shiftAttrs, squadOf, valueOf, wageOf, type World } from './world';
 import { playerName } from '../data/names';
+import { matchRatings } from './ratings';
+import { recordMatch, recordSeason } from './records';
+import { returnLoans, loanOf } from './loans';
+import { isDeadlineDay, windowOf } from './windows';
+import { staffWeek } from './staff';
 
 // ---------- fixtures ----------
 
@@ -89,8 +94,10 @@ export function userMatch(w: World, c: Career): LiveMatch | null {
 
 // Applies one finished match to the players: condition, morale, cards, injuries, and (league games only) season stats.
 // `care`: the user's club, where the doctor and medical centre shorten injuries.
+type Rate = (id: string, v: number, motm: boolean) => void;
 function applyMatch(m: LiveMatch, get: (id: string) => Player, byClub: Map<string, Player[]>, stat: ((id: string) => PlayerStats) | null, r: Rng, calm: string | null,
-  care: { clubId: string; cut: number } | null = null) {
+  care: { clubId: string; cut: number } | null = null, rate: Rate | null = null) {
+  if (rate) { const rt = matchRatings(m, get); for (const [id, v] of Object.entries(rt.rating)) rate(id, v, id === rt.motm); }
   for (const id of m.played) { const p = get(id); if (stat) stat(id)[0]++; p.fitness = Math.round(m.fit[id] ?? p.fitness); }
   const on = new Set(m.played);
   m.sides.forEach((sd, k) => {
@@ -134,7 +141,9 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
     if (!touched.has(id)) { stats[id] = stats[id] ? [...stats[id]] as PlayerStats : emptyStats(); touched.add(id); }
     return stats[id];
   };
-  const next: Career = { ...c, fixtures: { ...c.fixtures }, stats, round: c.round + 1, live: null, cupDay: Math.max(c.cupDay ?? -1, c.round) };
+  const ratings = { ...(c.ratings ?? {}) };
+  const rate: Rate = (id, v, motm) => { const o = ratings[id] ?? [0, 0, 0]; ratings[id] = [Math.round((o[0] + v) * 10) / 10, o[1] + 1, o[2] + (motm ? 1 : 0)]; };
+  const next: Career = { ...c, fixtures: { ...c.fixtures }, stats, ratings, round: c.round + 1, live: null, cupDay: Math.max(c.cupDay ?? -1, c.round) };
   const calm = c.coach?.courses.includes('psychology') ? c.clubId : null;
   // The user's squad settles at a higher morale with the psychology course and a good psychologist.
   const moraleTarget = 60 + (calm ? 5 : 0) + Math.round(staffQ(c.ops, 'psychologist') / 20);
@@ -152,7 +161,7 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
         simulate(m, get);
       }
       if (isMine) mine = m;
-      applyMatch(m, get, byClub, stat, r, calm, careOf(c));
+      applyMatch(m, get, byClub, stat, r, calm, careOf(c), rate);
       return [f[0], f[1], m.goals[0], m.goals[1]];
     });
     next.fixtures[lid] = rounds.map((g, i) => (i === c.round ? results : g));
@@ -217,15 +226,18 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
     const r = makeRng((c.seed ^ c.season) + c.round * 31);
     const { players, get, byClub } = mutable(w);
     const calm = c.coach?.courses.includes('psychology') ? c.clubId : null;
-    for (const m of cd.matches) applyMatch(m, get, byClub, null, r, calm, careOf(c));
+    const ratings = { ...(cd.career.ratings ?? {}) };
+    const rate: Rate = (id, v, motm) => { const o = ratings[id] ?? [0, 0, 0]; ratings[id] = [Math.round((o[0] + v) * 10) / 10, o[1] + 1, o[2] + (motm ? 1 : 0)]; };
+    for (const m of cd.matches) applyMatch(m, get, byClub, null, r, calm, careOf(c), rate);
     const clubs = w.clubs.map((x) => (cd.prizes.has(x.id) ? { ...x, budget: x.budget + cd.prizes.get(x.id)! } : x));
     const cupResults = cd.matches.map((m): [string, string, number, number] => [m.sides[0].clubId, m.sides[1].clubId, m.goals[0], m.goals[1]]);
     world = { ...w, players, clubs: applyElo(clubs, cupResults) };
-    career = cd.career;
+    career = { ...cd.career, ratings };
     const mine = cd.matches.find((m) => m.sides.some((s) => s.clubId === c.clubId)) ?? null;
     if (career.ops && cd.prizes.has(c.clubId)) career = { ...career, ops: { ...career.ops, ledger: { ...career.ops.ledger, prizes: (career.ops.ledger.prizes ?? 0) + cd.prizes.get(c.clubId)! } } };
     if (mine) {
       ({ world, career } = userAfter(world, career, mine));
+      career = recordMatch(career, mine);
       career = practise(career);
       const k = mine.sides[0].clubId === c.clubId ? 0 : 1;
       const cup = career.cups[mine.cup!];
@@ -266,8 +278,10 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
   career = res.career;
   // The papers and the rumour mill.
   career = newsRound(before, world, career);
-  ({ world, career } = rumoursRound(world, career));
+  // Other clubs only do business while a window is open.
+  if (windowOf(before)) ({ world, career } = rumoursRound(world, career));
   if (res.mine) ({ world, career } = userAfter(world, career, res.mine));
+  if (res.mine) career = recordMatch(career, res.mine);
   if (res.mine) career = practise(career);
   // The club's week: money, training, academy; development points from the result.
   if (career.ops) {
@@ -275,6 +289,8 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
     ({ world, career } = economyWeek(world, career, home));
     ({ world, career } = trainingWeek(world, career));
     career = academyWeek(career);
+    // Duties handed to the staff.
+    ({ world, career } = staffWeek(world, career));
     if (res.mine) {
       const k = res.mine.sides[0].clubId === career.clubId ? 0 : 1;
       const d = res.mine.goals[k] - res.mine.goals[1 - k];
@@ -308,9 +324,12 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
 }
 
 // Offers for the user's players: often for listed ones, now and then for a star. Offers last 3 matchdays.
+// Bids only arrive while a transfer window is open (more of them on deadline day); open bids lapse when it shuts.
 function makeOffers(w: World, c: Career, r: Rng): Offer[] {
+  if (!windowOf(c)) return [];
   const offers = c.offers.filter((o) => c.round - o.round < 3 && w.players.find((p) => p.id === o.playerId)?.clubId === c.clubId);
-  const squad = w.players.filter((p) => p.clubId === c.clubId);
+  const squad = w.players.filter((p) => p.clubId === c.clubId && !loanOf(c, p.id));
+  const dd = isDeadlineDay(c) ? 2 : 1;
   const buyers = w.clubs.filter((x) => x.id !== c.clubId);
   const country = new Map(w.leagues.map((l) => [l.id, l.country]));
   const myCountry = country.get(w.clubs.find((x) => x.id === c.clubId)!.leagueId);
@@ -330,8 +349,8 @@ function makeOffers(w: World, c: Career, r: Rng): Offer[] {
     const buyer = able[Math.floor(r() * able.length)];
     offers.push({ id: `o${c.season}_${c.round}_${p.id}`, playerId: p.id, clubId: buyer.id, fee, round: c.round });
   };
-  for (const p of squad) if (p.listed && r() < 0.35) tryOffer(p, 0.8, 1.15);
-  if (r() < 0.08 && squad.length) tryOffer([...squad].sort((a, b) => b.rating - a.rating)[int(r, 0, Math.min(4, squad.length - 1))], 1.1, 1.45);
+  for (const p of squad) if (p.listed && r() < 0.35 * dd) tryOffer(p, 0.8, 1.15);
+  if (r() < 0.12 * dd && squad.length) tryOffer([...squad].sort((a, b) => b.rating - a.rating)[int(r, 0, Math.min(4, squad.length - 1))], 1.1, 1.45);
   return offers;
 }
 
@@ -412,7 +431,9 @@ const AI_SQUAD = 22;   // AI clubs sign free agents up to this
 // Closes the season: records the result, moves clubs up and down, ages and develops players, retires veterans,
 // ends contracts (AI clubs renew most; the user's expiring players leave), fills squads from the academy and the
 // free-agent pool, pays prize money and draws next season's fixtures.
-export function endSeason(w: World, c: Career): { world: World; career: Career; summary: SeasonSummary } {
+export function endSeason(w0: World, c0: Career): { world: World; career: Career; summary: SeasonSummary } {
+  // Loaned players go back to their clubs before contracts are looked at.
+  const { world: w, career: c } = returnLoans(w0, c0);
   const r = makeRng(c.seed ^ (c.season * 31337));
   const myLeague = leagueOf(w, c.clubId);
   const tables = new Map(w.leagues.map((l) => [l.id, table(w, c, l.id)]));
@@ -586,9 +607,13 @@ export function endSeason(w: World, c: Career): { world: World; career: Career; 
   const fixtures = seasonFixtures(world, c.seed, season);
   // Continental places come from this season's final tables.
   const finals = new Map([...tables.entries()].map(([lid, t]) => [lid, t.map((x) => x.clubId)]));
-  const base = coachEnd?.career ?? c;
+  const myRow = myTable[position - 1];
+  const clubGoals = Object.entries(c.stats).map(([id, st]) => ({ p: w.players.find((x) => x.id === id), g: st[1] }))
+    .filter((x) => x.p && x.p.clubId === c.clubId).sort((a, b) => b.g - a.g)[0];
+  const base = recordSeason(coachEnd?.career ?? c, myRow, position, myLeague, w.leagues.find((l) => l.id === myLeague)!.tier,
+    clubGoals ? { pn: clubGoals.p!.name, goals: clubGoals.g } : null);
   const career: Career = {
-    ...base, season, round: 0, stats: {}, offers: [], deals: [...deals, ...c.deals], ops: ops!,
+    ...base, season, round: 0, stats: {}, ratings: {}, loans: [], offers: [], deals: [...deals, ...c.deals], ops: ops!,
     fixtures, history: [...c.history, record], cups: makeCups(world, { seed: c.seed, season, fixtures }, finals), cupDay: -1, live: null, pendingSwaps: undefined,
   };
   const cupRuns = Object.values(c.cups ?? {}).map((cup) => ({ cup, run: cupRun(cup, c.clubId) })).filter((x) => x.run)

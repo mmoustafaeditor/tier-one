@@ -141,7 +141,7 @@ export function promote(w: World, c: Career, id: string): { world: World; career
   const kid = c.ops.academy.find((k) => k.id === id);
   if (!kid || squadOf(w, c.clubId).length >= 32) return { world: w, career: c, ok: false };
   const player: Player = { ...kid, clubId: c.clubId, shirtNumber: freeShirt(w, c.clubId, kid.position) };
-  const career = addNews({ ...c, ops: { ...c.ops, academy: c.ops.academy.filter((k) => k.id !== id) } }, 'youth', 'promoted', { player: kid.id, pn: kid.name, club: c.clubId });
+  const career = addNews({ ...c, grads: [...(c.grads ?? []), kid.id], ops: { ...c.ops, academy: c.ops.academy.filter((k) => k.id !== id) } }, 'youth', 'promoted', { player: kid.id, pn: kid.name, club: c.clubId });
   return { world: { ...w, players: [...w.players, player] }, career, ok: true };
 }
 

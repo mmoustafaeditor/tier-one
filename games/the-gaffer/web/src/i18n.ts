@@ -1,5 +1,9 @@
 import { es } from './lang-es';
 import { fr } from './lang-fr';
+import { NEW_EN, type NewStrings } from './lang-new';
+import { NEW_AR } from './lang-new-ar';
+import { NEW_ES } from './lang-new-es';
+import { NEW_FR } from './lang-new-fr';
 
 // UI copy. Voice follows design/DESIGN.md §9: short, punchy, football-Twitter. Arabic is Egyptian Arabic.
 // Lang: the language of names in the data (players, clubs, leagues have EN and AR names).
@@ -1261,9 +1265,19 @@ export const STRINGS = {
   },
 };
 
-export type Strings = (typeof STRINGS)['en'];
+export type BaseStrings = (typeof STRINGS)['en'];
+export type Strings = Omit<BaseStrings, keyof NewStrings> & NewStrings;
+// v0.12 text sits on top of each language's base pack; the merged maps keep the base entries.
+const merge = (b: BaseStrings, n: NewStrings): Strings => ({
+  ...b, ...n,
+  staffNames: { ...b.staffNames, ...n.staffNames2 },
+  staffEffects: { ...b.staffEffects, ...n.staffEffects2 },
+  ledgerKeys: { ...b.ledgerKeys, ...n.ledgerKeys2 },
+  privacyBody: n.privacyBody2,
+  howToBody: n.howToBody2,
+});
 // Every interface language. Spanish and French live in their own files and are type-checked against English.
-export const UI: Record<UiLang, Strings> = { en: STRINGS.en, ar: STRINGS.ar, es, fr };
+export const UI: Record<UiLang, Strings> = { en: merge(STRINGS.en, NEW_EN), ar: merge(STRINGS.ar, NEW_AR), es: merge(es, NEW_ES), fr: merge(fr, NEW_FR) };
 // Arabic must cover every English key.
-const _check: Strings = STRINGS.ar;
+const _check: BaseStrings = STRINGS.ar;
 void _check;

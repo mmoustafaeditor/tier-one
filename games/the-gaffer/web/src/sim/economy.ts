@@ -10,7 +10,7 @@ import { roundFee } from './season';
 import { balanceOf } from './balance';
 
 export const FACILITIES: Facility[] = ['stadium', 'medical', 'training', 'academy', 'scouting'];
-export const STAFF_ROLES: StaffRole[] = ['assistant', 'fitness', 'doctor', 'psychologist', 'scout'];
+export const STAFF_ROLES: StaffRole[] = ['assistant', 'director', 'fitness', 'doctor', 'psychologist', 'scout'];
 export const SLOTS: SponsorSlot[] = ['shirt', 'kit', 'stadium', 'sleeve', 'commercial'];
 const SLOT_SHARE: Record<SponsorSlot, number> = { shirt: 0.4, kit: 0.25, stadium: 0.15, sleeve: 0.1, commercial: 0.1 };
 
@@ -57,7 +57,7 @@ export const capacityOf = (ops: ClubOps) => Math.round(ops.baseCapacity * (1 + 0
 
 // ---------- staff ----------
 
-const STAFF_SHARE: Record<StaffRole, number> = { assistant: 0.025, fitness: 0.015, doctor: 0.015, psychologist: 0.012, scout: 0.012 };
+const STAFF_SHARE: Record<StaffRole, number> = { assistant: 0.025, fitness: 0.015, doctor: 0.015, psychologist: 0.012, scout: 0.012, director: 0.02 };
 
 function makeStaff(r: Rng, club: Club, role: StaffRole, quality: number): Staff {
   const nat = pick(r, ['ENG', 'ESP', 'ITA', 'GER', 'FRA', 'EGY', 'MAR', 'POR', 'BRA']);
@@ -69,6 +69,17 @@ export function staffCandidates(r: Rng, club: Club): Staff[] {
   const out: Staff[] = [];
   for (const role of STAFF_ROLES) for (let i = 0; i < 3; i++) out.push(makeStaff(r, club, role, clamp(Math.round(30 + r() * 65), 20, 98)));
   return out;
+}
+
+// Saves from before v0.12 have no sporting director: give the club an average one, and candidates to replace him.
+export function ensureDirector(w: World, c: Career): Career {
+  if (!c.ops || c.ops.staff.director) return c;
+  const club = w.clubs.find((x) => x.id === c.clubId);
+  if (!club) return c;
+  const r = makeRng(hash(club.id) ^ (c.season * 131));
+  const director = makeStaff(r, club, 'director', clamp(Math.round(35 + club.reputation * 0.35 + (r() - 0.5) * 10), 20, 90));
+  const pool = [0, 1, 2].map(() => makeStaff(r, club, 'director', clamp(Math.round(30 + r() * 65), 20, 98)));
+  return { ...c, ops: { ...c.ops, staff: { ...c.ops.staff, director }, staffPool: [...c.ops.staffPool, ...pool] } };
 }
 
 export const staffWages = (ops: ClubOps) => Object.values(ops.staff).reduce((s, x) => s + (x?.wage ?? 0), 0);

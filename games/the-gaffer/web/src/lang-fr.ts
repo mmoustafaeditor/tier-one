@@ -1,5 +1,5 @@
 // French interface. Names of clubs, players and leagues stay in their English form (the data has EN and AR names).
-import type { MsgP, Strings } from './i18n';
+import type { MsgP, BaseStrings as Strings } from './i18n';
 
 const ord = (n: number) => (n === 1 ? '1er' : `${n}e`);
 

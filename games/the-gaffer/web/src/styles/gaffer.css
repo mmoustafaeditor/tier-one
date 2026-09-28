@@ -316,3 +316,121 @@ select.g-input { width: 100%; box-sizing: border-box; }
 @media (max-width: 420px) { .g-tiles { gap: var(--s2); } .g-tile { padding: var(--s3); } }
 .cell.g-row > select.g-input { width: auto; flex: 0 0 58%; min-width: 0; }
 .cell.g-row > .cmain { flex: 1 1 auto; }
+
+/* =====================================================================
+   v0.12: manager hub, staff room, transfers, history, full-time card, support, design polish.
+   ===================================================================== */
+
+/* Accessibility: visible keyboard focus everywhere, comfortable tap targets, calmer motion when asked. */
+:where(button, a, select, input, [tabindex]):focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; border-radius: 8px; }
+.chip.g-toggle, .seg button { min-height: 40px; }
+.chip.g-toggle { padding-inline: 14px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Shared small pieces */
+.g-intro { margin: var(--s3) 0 0; max-width: 62ch; }
+.g-twobtn { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
+.g-duty-ico { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--panel2); color: var(--accent-text); }
+.g-duty-ico svg { width: 22px; height: 22px; }
+.g-chev { color: var(--dim); display: grid; place-items: center; }
+.g-chev svg { width: 18px; height: 18px; }
+[dir="rtl"] .g-chev svg { transform: scaleX(-1); }
+.g-count { display: inline-grid; place-items: center; min-width: 18px; height: 18px; margin-inline-start: 6px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); font: 800 11px/1 var(--body); }
+.g-est { background: transparent; box-shadow: inset 0 0 0 1px var(--line2); color: var(--muted); min-width: 56px; }
+.g-low { color: var(--bad); }
+.g-hot { color: var(--ok); }
+
+/* Home: club header, Today list, two columns on wide screens */
+.g-clubmeta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); margin-top: 4px; }
+.g-clubmeta .chip { margin: 0; }
+.g-form { display: inline-flex; gap: 3px; direction: ltr; }
+.g-form i { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; font: 800 11px/1 var(--body); font-style: normal; color: #0B1224; }
+.g-form .g-fW { background: var(--ok); } .g-form .g-fD { background: var(--dim); } .g-form .g-fL { background: var(--bad); color: #fff; }
+.g-today { margin-top: var(--s3); display: grid; gap: var(--s3); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.g-today .d4 { font: 800 var(--ital) 22px/1.05 var(--display); text-transform: var(--caps); }
+.g-today-list { margin: 0 calc(var(--s4) * -1) calc(var(--s4) * -1); border-radius: 0 0 var(--r-lg) var(--r-lg); border: 0; border-top: 1px solid var(--line); background: transparent; }
+.g-today-item { min-height: 60px; }
+.g-today-item .cmain b { font-weight: 700; white-space: normal; }
+.g-today-item.warn .g-duty-ico { color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, var(--panel2)); }
+.g-today-act { flex: none; color: var(--accent-text); font: 700 var(--fs-sm) var(--body); white-space: nowrap; }
+.g-next-open { display: grid; gap: var(--s3); width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.g-boardcard { gap: var(--s2); }
+.g-homecols, .g-matchcols { display: grid; gap: 0 var(--s5); }
+.g-ad { margin-top: var(--s4); display: grid; gap: var(--s2); min-height: 120px; }
+
+/* Squad: quick links instead of big emoji tiles */
+.g-links { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); margin-top: var(--s4); }
+.g-link { display: flex; align-items: center; gap: var(--s3); min-height: 60px; padding: var(--s2) var(--s3); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel); color: var(--text); text-align: start; font: inherit; cursor: pointer; min-width: 0; }
+.g-link .cmain { display: flex; flex-direction: column; min-width: 0; }
+.g-link b { font: 700 var(--fs-md) var(--body); }
+.g-link small { color: var(--muted); font-size: var(--fs-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Transfers */
+.g-window { margin-top: var(--s4); }
+.g-window .bic svg { width: 22px; height: 22px; }
+.g-window.dd { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--panel)); }
+.g-window.shut b { color: var(--muted); }
+
+/* Staff room */
+.g-staffgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--s2); }
+.g-staff { display: grid; gap: 6px; padding: var(--s3); align-content: start; min-width: 0; }
+.g-staff b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-staff .g-barrow { grid-template-columns: auto 1fr auto; font-size: var(--fs-xs); }
+.g-duty { flex-wrap: wrap; row-gap: var(--s2); }
+.g-duty .cmain { flex: 1 1 150px; }
+.g-duty .cmain span { white-space: normal; }
+.g-duty-seg { flex: 0 0 auto; min-width: 128px; }
+.g-duty-seg button { padding-inline: 12px; }
+.g-duty-seg button[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* History */
+.g-cabinet { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--s2); }
+.g-trophy { display: grid; gap: 4px; justify-items: start; padding: var(--s3); }
+.g-trophy-ico { font-size: 26px; line-height: 1; }
+
+/* Full-time card */
+.g-ft { display: grid; gap: var(--s2); justify-items: start; margin-top: var(--s3); }
+.g-ft-W h2 { color: var(--ok); } .g-ft-L h2 { color: var(--bad); }
+.g-ft h2 small { font-size: .5em; color: var(--muted); }
+.g-motm { margin: var(--s2) 0 var(--s3); border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+
+/* Club tab */
+.g-doors .cell { min-height: 64px; }
+
+/* Support card and club looks */
+.g-support { display: grid; gap: var(--s2); }
+.g-looks { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s2); }
+.g-look { display: grid; justify-items: center; gap: 6px; min-height: 84px; padding: var(--s2); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel2); color: var(--text); font: 700 var(--fs-xs) var(--body); cursor: pointer; }
+.g-look i { width: 34px; height: 34px; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(255,255,255,.15); }
+.g-look small { color: var(--dim); font-weight: 600; font-size: 10.5px; text-align: center; }
+.g-look.on { border-color: var(--accent); box-shadow: var(--cta-glow); }
+.g-look[disabled] { cursor: not-allowed; opacity: .75; }
+.g-look-default i { background: linear-gradient(135deg, #0B1224 45%, #A07BFF 45%); }
+.g-look-neon i { background: linear-gradient(135deg, #0D0724 45%, #33E6FF 45%); }
+.g-look-stadium i { background: linear-gradient(135deg, #05231A 45%, #E8FF5A 45%); }
+.g-look-derby i { background: linear-gradient(135deg, #1A0709 45%, #FF4D5E 45%); }
+@media (max-width: 380px) { .g-looks { grid-template-columns: repeat(2, 1fr); } }
+
+/* "Derby red" look (Supporter pack) */
+:root[data-skin="derby"] {
+  --bg: #10060A; --bg2: #16080D; --panel: #1D0B11; --panel2: #270F17; --panel3: #33141E; --line: #401A26; --line2: #572334;
+  --text: #FFF1F3; --muted: #E4B3BC; --dim: #BD8B95;
+  --accent: #FF4D5E; --accent-ink: #1A0206; --accent-text: #FF8390; --cta-glow: 0 0 0 1px rgba(255, 77, 94, .38), 0 12px 30px -12px rgba(255, 77, 94, .6);
+}
+
+/* Wide screens: the app grows to two columns and the tab bar becomes a side rail. */
+@media (min-width: 1000px) {
+  .app { max-width: 1080px; }
+  .app.tabs { padding-inline-start: calc(96px + var(--gutter)); }
+  .tabbar { left: max(0px, calc(50% - 540px)); right: auto; bottom: 0; top: 0; transform: none; width: 88px; max-width: none; height: auto;
+    grid-template-columns: 1fr; grid-auto-rows: 76px; align-content: center; padding: 0; border-top: 0; border-inline-end: 1px solid var(--line); }
+  [dir="rtl"] .tabbar { left: auto; right: max(0px, calc(50% - 540px)); }
+  .tabbar .on::before { top: 20%; bottom: 20%; left: 0; right: auto; width: 3px; height: auto; border-radius: 0 3px 3px 0; }
+  [dir="rtl"] .tabbar .on::before { left: auto; right: 0; border-radius: 3px 0 0 3px; }
+  .g-homecols, .g-matchcols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .g-links { grid-template-columns: repeat(4, 1fr); }
+  .dock { max-width: 1080px; }
+  .sheet { max-width: 560px; }
+}

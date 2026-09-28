@@ -1,22 +1,22 @@
 // Small shared pieces used by every screen.
 import type { ReactNode } from 'react';
 import type { Lang, Strings } from '../i18n';
-import type { Player, Position } from '../model/types';
+import type { Player } from '../model/types';
 import { FLAG } from '../data/names';
 import { ageOf, money } from '../sim/world';
 import backIcon from '../../../../../design/assets/icons/ui/back.svg?raw';
 
-export const GROUP: Record<Position, number> = { GK: 0, CB: 1, LB: 1, RB: 1, CDM: 2, CM: 2, CAM: 2, LW: 3, RW: 3, ST: 3 };
+export { GROUP_OF as GROUP } from '../sim/groups';
 
 export const Icon = ({ svg }: { svg: string }) => <span aria-hidden="true" style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: svg }} />;
 export const Stars = ({ n }: { n: number }) => <span className="stars" aria-label={`${n}/5`}>{'★'.repeat(Math.floor(n))}{n % 1 ? '½' : ''}</span>;
 
-export function AppBar({ back, backLabel, title, sub }: { back?: () => void; backLabel?: string; title: string; sub?: string }) {
+export function AppBar({ back, backLabel, title, sub, right }: { back?: () => void; backLabel?: string; title: string; sub?: string; right?: ReactNode }) {
   return (
     <header className="appbar">
       {back ? <button className="iconbtn" aria-label={backLabel} onClick={back}><Icon svg={backIcon} /></button> : <div />}
       <div className="ttl">{title}{sub && <small>{sub}</small>}</div>
-      <div className="right" />
+      <div className="right">{right}</div>
     </header>
   );
 }

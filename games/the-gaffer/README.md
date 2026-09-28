@@ -12,18 +12,26 @@
 
 **Canonical product name:** The Gaffer.
 
-**v0.11.0 — deployment foundation.**
+**v0.12.0: the manager overhaul.** Web 0.12.0; the Android APK in `downloads/` is still 0.11.0 until it's rebuilt from the `build-the-gaffer` workflow.
 
-The full football-management core works locally and on Android. This release adds the production web surface, Android update checks, and the Vercel API namespace used by The Gaffer.
+- **Five tabs:** Home · Squad · Match · Transfers · Club, one door per feature (settings behind the gear in Club).
+- **Home command center:** "Today: n things need you", each with one button; next match, form, board and fans, headlines.
+- **Staff room:** delegate any of 13 duties (line-up, tactics, reports, training, medical, morale, academy, contracts, selling,
+  signings, loans, sponsors, tickets) to your staff, or take control. Everything except playing the match. New sporting director.
+- **Matchday:** player ratings, man of the match, xG, varied commentary, and a full-time card with what the result changed.
+- **Transfers:** summer and winter windows with deadline day, shortlist, scout estimates for unknown players, season loans in and out.
+- **History and records:** seasons, club records, trophy cabinet, academy graduates.
+- **Support:** optional Supporter pack (club looks, no ads), rewarded ad for a free scout report, labelled sponsor card.
+  All off until configured: see [`MONETIZATION.md`](MONETIZATION.md).
+- Desktop: two columns and a side rail; keyboard focus, reduced motion and 44 px targets throughout.
 
 - Web: `https://sembagames.app/the-gaffer`
 - APK in repo: `downloads/TheGaffer.apk`
 - Standalone web file in repo: `the-gaffer/index.html`
-- Update feed: `/api/the-gaffer/latest`
-- Health: `/api/the-gaffer/health`
+- Update feed: `/api/the-gaffer/latest` · Health: `/api/the-gaffer/health` · Purchases: `/api/the-gaffer/verify-purchase`
 - Android app id: `com.sembagames.thegaffer`
 
-Core career data remains device-local. The Android app contacts Semba Games for version checks; future online features will use the dedicated The Gaffer API namespace.
+Core career data stays on the device.
 
 ## Source and builds
 

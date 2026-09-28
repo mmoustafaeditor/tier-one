@@ -1,5 +1,5 @@
 // Formation radar: the two line-ups compared on six attributes (the outfield players on the pitch, averaged).
-import type { Strings } from '../i18n';
+import type { Lang, Strings } from '../i18n';
 import type { LiveMatch } from '../sim/match';
 import { playerOf, type World } from '../sim/world';
 import { awayKit } from './Pitch2D';
@@ -11,7 +11,7 @@ export function profileOf(w: World, m: LiveMatch, side: 0 | 1): number[] {
   return AXES.map((a) => (xi.length ? xi.reduce((s, p) => s + p!.attrs[a], 0) / xi.length : 0));
 }
 
-export function Radar({ world, m, t }: { world: World; m: LiveMatch; t: Strings }) {
+export function Radar({ world, m, t, lang = 'en' }: { world: World; m: LiveMatch; t: Strings; lang?: Lang }) {
   const vals = [profileOf(world, m, 0), profileOf(world, m, 1)];
   const [hc, ac] = m.sides.map((s) => world.clubs.find((x) => x.id === s.clubId)!.colors);
   const colors = [hc[0], awayKit(hc[0], ac)]; // same shirts as on the pitch
@@ -38,7 +38,7 @@ export function Radar({ world, m, t }: { world: World; m: LiveMatch; t: Strings 
       </svg>
       <figcaption className="g-radar-key">
         {m.sides.map((s, i) => (
-          <span key={i}><i style={{ background: colors[i] }} />{world.clubs.find((x) => x.id === s.clubId)!.shortName} <b className="num">{Math.round(vals[i].reduce((x, y) => x + y, 0) / AXES.length)}</b></span>
+          <span key={i}><i style={{ background: colors[i] }} />{world.clubs.find((x) => x.id === s.clubId)!.name[lang]}</span>
         ))}
       </figcaption>
     </figure>

@@ -5,7 +5,7 @@ import { makeRng } from './rng';
 import { seasonFixtures } from './season';
 import { makeCups } from './cups';
 import { newCoach } from './coach';
-import { newOps } from './economy';
+import { ensureDirector, newOps } from './economy';
 import { makeAttrs, makeFreeAgents, seedElo, type World } from './world';
 
 const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7);
@@ -51,6 +51,8 @@ export function upgradeCareer(w: World, c: OldCareer): Career {
   // v0.6: no club operations yet.
   if (!next.ops) next = { ...next, ops: newOps(w, w.clubs.find((x) => x.id === next.clubId)!, next.season) };
   if (!next.mastery) next = { ...next, mastery: { balanced: 100 } };
+  // v0.12: the sporting director (staff delegation).
+  next = ensureDirector(w, next) as OldCareer;
   const { goals: _drop, ...clean } = next;
   void _drop;
   return clean;

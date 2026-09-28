@@ -49,6 +49,7 @@ export interface LiveMatch {
   injuries?: number;   // injury chance × (balance settings, user's matches)
   pens?: [number, number];
   kicks?: [0 | 1, string, boolean][]; // shootout: side, taker, scored
+  xg?: [number, number]; // expected goals so far: the chance rate each side created, minute by minute
 }
 
 export const SUBS_MAX = 5;
@@ -277,6 +278,8 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
     if (!mine.length) continue;
     const x = (i === 0 ? xh : xa) / 90;
     const st = m.stats[i];
+    if (!m.xg) m.xg = [0, 0];
+    m.xg[i] += x;
     // Goals and chances
     if (r() < x) {
       const roll = r();

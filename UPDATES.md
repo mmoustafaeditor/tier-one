@@ -17,6 +17,19 @@ together with your change.
 
 ---
 
+## 2026-09-28 · saifsaber · The Gaffer 0.12.0: manager overhaul (staff room, transfer windows, loans, ratings, new navigation)
+- **What changed:** Built from saifsaber's decisions on the product audit (https://claude.ai/artifact/S5oRNcQG4emVv2RxLxik2n).
+  - **Navigation:** five tabs, Home · Squad · Match · Transfers · Club; settings sit behind the gear in Club; one way into each screen.
+  - **Home:** a "Today: n things need you" list, each item with one button, plus the next match, form, board, fans and headlines.
+  - **Staff room:** 13 duties you can hand to staff or take back, everything except playing the match. Adds a sporting director (old saves get one). Staff log what they did, and in a simulated season a fully delegated career did as well as a hands-on one.
+  - **Matchday:** player ratings, man of the match, xG, commentary that no longer repeats the same line, and a full-time card (table move, board, fans, injuries, records, milestones).
+  - **Transfers:** summer and winter windows with deadline day (AI bids and deals only happen while a window is open; free agents sign any time), a shortlist, scout rating ranges for players outside your league, season loans in and out.
+  - **History and records:** past seasons, club records, a trophy cabinet and academy graduates.
+  - **Support:** Supporter pack (3 club looks, badge, no ads), an optional rewarded ad for a free scout report, and a labelled sponsor card. All off until ids are filled in (`games/the-gaffer/MONETIZATION.md`). Privacy page updated.
+  - **Design:** line icons instead of emoji tiles, visible focus, reduced motion, 40 px+ targets, and on desktop two columns with a side rail. New text in EN/AR/ES/FR.
+- **Files:** `games/the-gaffer/web/src/**` (new: `sim/staff.ts`, `sim/loans.ts`, `sim/windows.ts`, `sim/ratings.ts`, `sim/records.ts`, `sim/estimate.ts`, `sim/aftermath.ts`, `sim/groups.ts`, `monet.ts`, `lang-new*.ts`, `ui/Home.tsx`, `ui/MatchHub.tsx`, `ui/Transfers.tsx`, `ui/ClubHub.tsx`, `ui/StaffRoom.tsx`, `ui/History.tsx`, `ui/FullTime.tsx`, `ui/Support.tsx`, `ui/icons.ts`, `ui/staffText.ts`), `games/the-gaffer/build/index.html`, `the-gaffer/index.html`, `api/the-gaffer/verify-purchase.js` (new), `design/assets/icons/ui/*`, `games/the-gaffer/{README,MONETIZATION}.md`, `web/package.json` (0.12.0), `android/app/build.gradle` (versionCode 5)
+- **Heads-up for the team:** Web 0.12.0; the Android build is set to versionCode 5 but `downloads/TheGaffer.apk` is **still 0.11.0**. Once the workflow builds it, replace the APK and then bump `api/the-gaffer/latest.js` to 0.12.0 / 5 (left at 0.11.0 on purpose). Ads and the Supporter pack stay off until the ids in `web/src/monet.ts` are set. Existing balance, not changed here: in one test seed the board sacked a top club's manager in 3rd place by matchday 27, delegated or not.
+
 ## 2026-09-28 · saifsaber · The Gaffer: phone UI fixes from the product audit (web 0.11.0)
 - **What changed:** Fixed defects found in a browser run of every screen: the THE GAFFER logo and the Quick match tile ran off the right edge on phones; set-piece pickers (Tactics) covered their labels; Squad/Match/League with no career now offer a New career button instead of a dead end; News, Inbox, Your career and Quick match go Back to the tab you came from (not always Home); "1 players out of position" / "1 starters are tired" plurals fixed in EN/AR/ES/FR.
 - **Files:** `games/the-gaffer/web/src/App.tsx`, `ui/parts.tsx`, `styles/gaffer.css`, `i18n.ts`, `lang-es.ts`, `lang-fr.ts`, `games/the-gaffer/build/index.html`, `the-gaffer/index.html`
