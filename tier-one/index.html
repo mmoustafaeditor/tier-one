@@ -1868,6 +1868,13 @@ html.rm .trophy,html.rm .trophy.hide{ transform:none; transition:opacity .15s li
 @keyframes tweetsent{ 0%{ transform:none; } 40%{ transform:translateY(-14px) scale(1.02); } 100%{ transform:none; } }
 @media (prefers-reduced-motion:reduce){ .big .tweetbig .nc,.big .tweetbig.sent,.big .tweetbig.ready .sendb{ animation:none; } }
 html.rm .big .tweetbig .nc,html.rm .big .tweetbig.sent,html.rm .big .tweetbig.ready .sendb{ animation:none; }
+.pp.still{ animation:none; } /* re-rendering the open page must not replay its entry animation */
+/* player page: the latest call's chat exchange (question, typing dots, reply) */
+.pp .ppchat{ padding:12px; margin-top:12px; }
+.pp .ppchat .chat{ display:flex; flex-direction:column; gap:8px; }
+.pp .ppchat .bub .who{ opacity:.75; }
+.pp .ppchat .ppadded{ display:flex; align-items:center; gap:8px; font:700 var(--fs-xs) var(--body); color:var(--muted); animation:bubin .25s var(--ease-out) .15s both; }
+.big.ppcall .conn{ margin-top:14px; }
 /* names and clubs never ellipsize on player cards: wrap to 2 lines instead (Arabic names are long at 360 px) */
 .pcard .pn{ align-items:flex-start; }
 .pcard .pn b{ white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; }
@@ -4738,20 +4745,22 @@ function bigOverlayPersistent(html,cls){ const d=document.createElement('div'); 
 function dismissBig(d,then){ if(!d||d._gone) return; d._gone=true; if(d._typing) clearInterval(d._typing); d.classList.add('out'); setTimeout(()=>{ d.remove(); if(then) then(); },motionReduced()?0:280); }
 function bigOverlay(html,cls,ms,then){ const d=bigOverlayPersistent(html,cls); const fin=()=>dismissBig(d,then); setTimeout(fin,ms); d.addEventListener('click',fin); /* tap to skip (never block input) */ return d; }
 function contactOverlay(kind,then,o){
+ /* pre-overhaul call animation: the whole scene plays, and NO answer is shown here; the player page then plays the chat (question, typing dots, reply) */
  const dd=!!game&&game.day===7; const fx=tt('fx')[kind]||tt('fx').leak; const ic={agent:'📞',kitman:'🧺',physio:'🩺',airport:'✈️',barber:'💈',leak:'📰',paid:'💸',tipoff:'💡'}[kind]||'📰'; let art='';
- if(dd) art=`<div class="icon">${ic}</div>`;
- else if(kind==='agent') art=`<div class="rings"><div class="icon">${ic}</div></div><div class="voice" aria-hidden="true">${[0,1,2,3,4,5,6,7,8].map(i=>`<i style="animation-delay:${(i*.07).toFixed(2)}s"></i>`).join('')}</div>`;
+ if(kind==='agent') art=`<div class="rings"><div class="icon">${ic}</div></div><div class="voice" aria-hidden="true"${dd?' style="animation-delay:.35s"':''}>${[0,1,2,3,4,5,6,7,8].map(i=>`<i style="animation-delay:${(i*.07).toFixed(2)}s"></i>`).join('')}</div>`;
  else if(kind==='physio') art=`<div class="icon">${ic}</div><svg class="ecgbig" viewBox="0 0 400 70" preserveAspectRatio="none"><path d="M0 35 H90 L100 35 L110 8 L122 62 L134 35 H220 L230 26 L240 48 L250 35 H400"/></svg>`;
- else if(kind==='airport') art=`<div class="radar"></div>`;
+ else if(kind==='airport') art=`<div class="radar"></div><div class="runway"><div class="plane">✈️</div></div>`;
  else if(kind==='barber') art=`<div class="icon">${ic}</div><div class="scissors">✂️</div>`;
  else if(kind==='paid') art=`<div class="icon">${ic}</div>${Array.from({length:12},(_,i)=>`<div class="money" style="left:${5+i*8}%;animation-delay:${(i*.12).toFixed(2)}s">💵</div>`).join('')}`;
  else art=`<div class="icon">${ic}</div>`;
  const first=kind==='agent'&&!!game&&!game.ppRang; if(first) game.ppRang=true;
- beep({agent:'agentcall',barber:'salon',airport:'airport',physio:'monitor',kitman:'kitman',leak:'fax',paid:'register',tipoff:'sparkle'}[kind]||'pop'); if(first) buzzPhone([60,120,60,500,60,120,60]);
- let body=`${art}<div class="label">${esc(fx.label)}</div><div class="sub">${esc(fx.sub)}</div>`;
- if(o&&o.clue&&game&&game.sagas[o.id]){ const s=game.sagas[o.id], cl=o.clue, ctx=ctxOf(s), asks=tt('ask'), i=s.clues.indexOf(cl), bars=ppClueBars(cl); const oc=cl.source==='tipoff'?(cl.out==='FAKE'?'FAKE':null):cl.out;
-  body=`<div class="ppcallh">${esc(pName(s.player))} · ${esc(t('pp.dayN',{d:game.day}))}</div>${art}<div class="label">${esc(clueWho(cl))}</div><div class="sub">${sigHtml(bars,false,null,{hidden:true})} ${esc(t('pp.tier.'+bars))}${dd?' · '+esc(t('pp.sharpDD')):''}</div>${cl.source!=='tipoff'&&cl.source!=='paid'?`<div class="bub me">${esc(fill(asks[(cl.a!=null?cl.a:o.id+i)%asks.length],ctx))}</div>`:''}<div class="bub them">${esc(clueText(s,cl))}</div>${oc?`<div class="ppadded">${esc(t('pp.added'))} ${ocHtml(oc)}</div>`:''}<div class="ppskip">${esc(t('pp.tapSkip'))}</div>`; }
- bigOverlay(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}${body}`,kind+' ppcall',dd?600:1200,then);
+ beep({agent:'agentcall',barber:'salon',airport:'airport',physio:'monitor',kitman:'kitman',leak:'fax',paid:'register',tipoff:'sparkle'}[kind]||'pop'); if(kind==='agent'&&!dd) buzzPhone([60,120,60,500,60,120,60]);
+ const ms=dd?900:({agent:3800,airport:2400,barber:2000,leak:2200,kitman:1600}[kind]||1500);
+ const s=o&&game&&game.sagas[o.id]; const cl=o&&o.clue;
+ const head=s?`<div class="ppcallh">${esc(pName(s.player))} · ${esc(t('pp.dayN',{d:game.day}))}</div>`:'';
+ const who=cl?`<div class="sub">${esc(clueWho(cl))}${dd?' · '+esc(t('pp.sharpDD')):''}</div>`:'';
+ const body=`${head}${art}<div class="label">${esc(fx.label)}</div><div class="sub">${esc(fx.sub)}</div>${who}<div class="conn"><i style="animation-duration:${Math.max(.6,(ms-250)/1000).toFixed(2)}s"></i></div>${s?`<div class="ppskip">${esc(t('pp.tapSkip'))}</div>`:''}`;
+ bigOverlay(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}${body}`,kind+(s?' ppcall':''),ms,then);
 }
 function composeOverlay(id,outcome,conf){
  const s=game.sagas[id]; const text=tweetText(outcome,conf,s); const uturn=!!s.uturns; const dd=game.day===7; const rm=motionReduced();
@@ -5566,7 +5575,7 @@ function ppSrcState(s,k){ let st=null; if(typeof sourceState==='function'){ try{
  return {state:last?'reopened':'open',bars,cost,atMax:ppDD()&&bars===3};
 }
 function ppClaims(s){ const out=[], now=Date.now(), tw=ppTwist(s);
- s.clues.forEach((c,i)=>{ if(c.revealAt&&c.revealAt>now&&PP.calling==null) return; const o=c.source==='tipoff'?(c.out==='FAKE'?'FAKE':null):c.out;
+ s.clues.forEach((c,i)=>{ if(c.revealAt&&c.revealAt>now&&PP.calling==null) return; if(PP.chat&&PP.chat.id===s.id&&PP.chat.i===i&&PP.chat.phase!=='done') return; const o=c.source==='tipoff'?(c.out==='FAKE'?'FAKE':null):c.out;
   out.push({id:'c'+i,kind:'src',key:c.source,out:o,day:c.day,bars:ppClueBars(c),old:ppStale(s,c),text:clueText(s,c),clue:c,seq:i}); });
  game.feed.forEach((f,i)=>{ if(f.sagaId!==s.id||f.type!=='rival'||!f.claim) return; const rv=RIVALS.find(r=>r.key===f.rival)||{rel:.5};
   out.push({id:'r'+i,kind:'rival',key:f.rival,out:f.claim,day:f.day,bars:ppBars(rv.rel),old:f.outdated!=null?!!f.outdated:!!tw&&f.day<tw.day,text:feedText(f),seq:1000+i}); });
@@ -5594,6 +5603,12 @@ function ppKnowHtml(s){ const ctx=ctxOf(s), claims=ppClaims(s).filter(c=>c.out),
  const legend=showLegend&&claims.length?`<div class="legend"><span>${sigHtml(3,false,null,{hidden:true})} ${esc(t('pp.lgTrust'))}</span><span><i class="dash"></i> ${esc(t('pp.lgRival'))}</span><span>${esc(t('pp.lgTap'))}</span></div>`:'';
  return `<section class="card know" id="ppKnow" aria-label="${esc(t('pp.know'))}"><div class="kh"><h2 class="over">${esc(t('pp.know'))}</h2><span class="aux">${claims.length?esc(t(claims.length===1?'board.report1':'pp.reports',{n:claims.length})):''}</span></div>${lanes}${zrow}${kwire}${quote}${legend}</section>`;
 }
+function ppChatHtml(s){ const ch=PP.chat; if(!ch||ch.id!==s.id||ch.phase==='call') return ''; const cl=s.clues[ch.i]; if(!cl) return '';
+ const ctx=ctxOf(s), asks=tt('ask'), still=ch.shown?' style="animation:none"':''; const oc=cl.source==='tipoff'?(cl.out==='FAKE'?'FAKE':null):cl.out;
+ const me=cl.source==='tipoff'||cl.source==='paid'?'':`<div class="bub me"${ch.phase==='done'?' style="animation:none"':''}>${esc(fill(asks[(cl.a!=null?cl.a:s.id+ch.i)%asks.length],ctx))}</div>`;
+ const them=ch.phase==='typing'?`<div class="bub them"><span class="who">${esc(clueWho(cl))}</span><span class="typing"><i></i><i></i><i></i></span></div>`
+  :`<div class="bub them${cl.source==='paid'||cl.source==='tipoff'?' paid':''}"${still}><span class="who">${esc(clueWho(cl))} · ${esc(t('pp.justNow'))}</span>${esc(clueText(s,cl))}${cl.source==='airport'&&typeof jetHtml==='function'?jetHtml(s,cl.out):''}</div>${oc?`<div class="ppadded"${still}>${esc(t('pp.added'))} ${ocHtml(oc)}</div>`:''}`;
+ return `<section class="card ppchat" id="ppChat" aria-live="polite"><div class="chat">${me}${them}</div></section>`; }
 function ppTileHtml(s,k){ const src=SOURCES[k], st=ppSrcState(s,k), nm=esc(ppName('src',k)), dd=ppDD();
  const cost=`<span class="cost">📞${st.cost}</span>`, face=`<span class="ic" aria-hidden="true">${src.ic}</span>`;
  const tier=w=>`${sigHtml(st.bars,st.sharper||st.atMax,null,{hidden:true})} ${esc(w)}`; const tw=t('pp.tier.'+st.bars);
@@ -5645,19 +5660,19 @@ function ppPageHtml(id){ const s=game.sagas[id], ctx=ctxOf(s), dd=ppDD(), pt=pty
    <section class="ph">${kitSVG(s.club,initials(s.player.name),'md')}<div style="min-width:0"><h1 class="d3">${esc(pName(s.player))}</h1><div class="pmeta">${route}${ptb}</div></div></section>`;
  const banner=tw&&!s.ppTwSeen?`<div class="pptwist" role="status"><b>🌀 ${esc(t('pp.twistTitle',{d:tw.day}))}</b><span>${esc(tw.text||t('pp.twistBody'))}</span></div>`:'';
  const aux=dd?t('pp.quickAux',{n:game.actions}):game.actions===0?t('pp.none'):t(game.actions===1?'pp.left1':'pp.left',{n:game.actions});
- return `<div class="pp${dd?' ppdd':''}" role="dialog" aria-label="${esc(pName(s.player))}"><div class="ppin">${bar}${banner}${ppKnowHtml(s)}
+ return `<div class="pp${dd?' ppdd':''}" role="dialog" aria-label="${esc(pName(s.player))}"><div class="ppin">${bar}${banner}${ppChatHtml(s)}${ppKnowHtml(s)}
   <div class="sechead"><h2 class="d4">${esc(t(dd?'pp.quick':'pp.ask'))}</h2><span class="aux">${esc(aux)}</span></div>
   <div class="sgrid">${Object.keys(SOURCES).map(k=>ppTileHtml(s,k)).join('')}</div>${ppBoostsHtml(s)}${ppEarlierHtml(s)}</div>${ppDockHtml(s)}</div>`; }
 function ppRender(id){ if(!game||game.result||screen!=='window') return; const s=game.sagas[id]; if(!s) return;
  const root=$('modalRoot'); const old=root.querySelector('.pp'); const y=old&&PP.id===id?old.scrollTop:0;
- if(PP.id!==id){ PP.id=id; PP.sel=null; PP.quoteOpen=false; }
+ if(PP.id!==id){ PP.id=id; PP.sel=null; PP.quoteOpen=false; if(PP.chat&&PP.chat.id!==id) PP.chat=null; }
  currentSaga=id; clearTimeout(pendingTimer);
- root._tok=(root._tok||0)+1; root.innerHTML=ppPageHtml(id); document.body.classList.add('modal-open');
+ root._tok=(root._tok||0)+1; const again=!!old&&PP.id===id&&PP._last===id; PP._last=id; root.innerHTML=again?ppPageHtml(id).replace('<div class="pp','<div class="pp still'):ppPageHtml(id); document.body.classList.add('modal-open');
  const pg=root.querySelector('.pp'); if(pg&&y) pg.scrollTop=y;
  ppMarkSeen(id,ppClaims(s).map(c=>c.id));
 }
 function ppOpen(id){ const s=game.sagas[id]; if(!s) return; if(s.newsSeen!==game.day){ s.newsSeen=game.day; }
- const seen=ppSeenArr(id); PP.fresh=new Set(ppClaims(s).filter(c=>!seen.includes(c.id)).map(c=>c.id)); PP.id=null; PP.calling=null;
+ const seen=ppSeenArr(id); PP.fresh=new Set(ppClaims(s).filter(c=>!seen.includes(c.id)).map(c=>c.id)); PP.id=null; PP.calling=null; PP.chat=null;
  draft={outcome:null,conf:null}; dismissCoach('c1'); ppRender(id);
  if(ppTwist(s)&&!s.ppTwSeen){ s.ppTwSeen=true; beep('twist'); }
  saveGame(); }
@@ -5724,8 +5739,11 @@ LANE_ACTS.contact=(el,v,id)=>{ id=+id; const k=el.dataset.src; const s=game&&gam
  if(st.state==='short'||game.actions<(st.cost||SOURCES[k].cost||1)){ beep('buzz'); toast(t('pp.shortToast')); return; }
  const n=s.clues.length; contactSource(id,k); const cl=s.clues[n];
  if(!cl){ toast(t('pp.cantAsk')); ppRender(id); return; }
- cl.revealAt=0; saveGame(); dismissCoach('c2'); syncWindow(); PP.sel='c'+n; PP.fresh.add('c'+n); PP.calling=k; ppRender(id);
- contactOverlay(k,()=>{ PP.calling=null; ppRender(id); },{id,clue:cl});
+ cl.revealAt=0; saveGame(); dismissCoach('c2'); syncWindow(); PP.sel='c'+n; PP.fresh.add('c'+n); PP.calling=k; const chat=PP.chat={id,i:n,phase:'call'}; ppRender(id);
+ const here=()=>PP.chat===chat&&PP.id===id&&!!$('modalRoot').querySelector('.pp');
+ const done=()=>{ if(PP.chat!==chat) return; chat.phase='done'; PP.calling=null; if(here()){ beep('pop'); buzzPhone(12); ppRender(id); chat.shown=true; } };
+ contactOverlay(k,()=>{ if(PP.chat!==chat) return; if(!here()){ done(); return; } chat.phase='typing'; ppRender(id); const c=$('ppChat'); const pg=$('modalRoot').querySelector('.pp'); if(c&&pg) pg.scrollTop=Math.max(0,c.offsetTop-70);
+  setTimeout(done,motionReduced()?150:ppDD()?450:1100); },{id,clue:cl});
 };
 LANE_ACTS.pickOutcome=(el,v)=>{ const id=currentSaga; if(id==null) return; draft.outcome=v; draft.sid=id; beep('select'); if($('ppSheet')) ppSheetBody(ppComposeHtml(id)); else ppCompose(id); };
 LANE_ACTS.pickConf=(el,v)=>{ const id=currentSaga; if(id==null) return; draft.conf=v; draft.sid=id; beep('select'); if($('ppSheet')) ppSheetBody(ppComposeHtml(id)); else ppCompose(id); };
