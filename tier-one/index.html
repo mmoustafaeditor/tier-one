@@ -1869,10 +1869,11 @@ html[lang="ar"] .rvtag{ letter-spacing:0; font-size:11px; }
 .onrow.rival .ow .rvav{ width:22px; height:22px; font-size:12px; } .onrow.rival .ow .rvn{ font-weight:700; }
 /* board rows: rival guesses are their own dashed chip, never in your tally */
 .pcard .intel .rvchip{ display:inline-flex; align-items:center; gap:4px; height:22px; padding:0 7px; border-radius:11px; border:1.5px dashed var(--line2); color:var(--muted); font:700 11.5px/1 var(--body); white-space:nowrap; }
+.pcard .intel:has(.rvchip){ flex-wrap:wrap; row-gap:4px; white-space:normal; } .pcard .intel:has(.rvchip) > span{ overflow:visible; text-overflow:clip; }
 .pcard .intel .rvchip i{ font-style:normal; font-size:11px; letter-spacing:1px; }
 /* player page: What we know + messages */
 .q2know .krow.rival .kt{ flex-wrap:wrap; row-gap:3px; }
-.q2know .krow.rival .kt .rvh{ order:3; }
+.q2know .krow.rival .kt .rvh{ order:1; } .q2know .krow.rival .kt .tag.new{ order:2; }
 .q2know .krow.rival .kd{ order:4; }
 .q2know .krow.rival .oc.say{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--line2); }
 :is(.pp,.ppsheet) .msg .mh .rvtag{ margin-inline-start:2px; }
@@ -6611,7 +6612,7 @@ function rvHowCard(){ const rows=RIVALS.map(r=>`<div class="rvhrow"><span class=
 /* results: one line per call saying who won the race */
 function rvRaceHtml(x){ const s=game.sagas[x.sagaId]; if(!s||!x.called) return '';
  const ps=(Array.isArray(x.rivals)?x.rivals:(s.rivalPosts||[]).map(p=>({rival:p.rival,day:p.day,correct:!!p.correct,outdated:!!p.outdated}))).filter(p=>RIVALS.some(r=>r.key===p.rival));
- const cd=rsCallDay(x,s), D=d=>rsDayLabel(d);
+ const cd=rsCallDay(x,s), D=d=>d===7?t('rs.dd'):t('pp.dayN',{d});
  const line=(cls,ic,txt)=>`<div class="rvrace ${cls}"><span class="rvav" aria-hidden="true">${ic}</span><span class="rvt">${cls==='ex'?'':`<span class="rvtag">${esc(t('rv.tag'))}</span>`}${esc(txt)}</span></div>`;
  if(x.correct){
   if(x.exclusive) return line('ex','👑',t('rv.ex'));
