@@ -1896,6 +1896,12 @@ html.rm .big .tweetbig .nc,html.rm .big .tweetbig.sent,html.rm .big .tweetbig.re
 .bdock .adchip{ display:flex; align-items:center; justify-content:center; gap:6px; margin:0 auto 8px; height:34px; padding:0 16px; border-radius:999px; border:1px solid color-mix(in srgb,var(--cta) 55%,var(--line)); background:color-mix(in srgb,var(--cta) 12%,var(--panel)); color:var(--text); font:700 var(--fs-sm)/1 var(--body); white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
 .bdock .adchip:active{ transform:scale(.97); }
 .bdock .row .adq{ display:none; }
+.ppdock .btn.later .pz{ width:16px; height:16px; fill:currentColor; flex-shrink:0; }
+:is(.ppdock,.bdock) .hint{ display:block; }
+.ppdock .row.pplater{ display:flex; gap:8px; align-items:stretch; }
+.ppdock .row.pplater .btn.primary{ flex:1 1 auto; min-width:0; }
+@media (max-width:400px){ .ppdock .row.pplater .btn.primary{ font-size:19px; padding-inline:10px; gap:6px; white-space:nowrap; } .ppdock .row.pplater .btn.later{ padding:0 11px; } }
+.ppdock .row.pplater .btn.later{ flex:0 0 auto; width:auto; display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:0 14px; border:1px solid var(--line2); background:var(--panel); color:var(--text); font:700 var(--fs-sm)/1.1 var(--body); text-transform:none; letter-spacing:0; white-space:nowrap; }
 /* player page: the latest call's chat exchange (question, typing dots, reply) */
 .pp .ppchat{ padding:12px; margin-top:12px; }
 .pp .ppchat .chat{ display:flex; flex-direction:column; gap:8px; }
@@ -5681,7 +5687,7 @@ function ppDockHtml(s){ const dd=ppDD(), un=ppUncalled();
  if(s.call&&ppTwFree(s)) return ppTwDock(s);
  if(s.call) return `<div class="dock ppdock"><div class="row"><span class="ppchip">${ocHtml(s.call.outcome,'solid')} <small>${esc(t('conf.'+s.call.conf))} · ${esc(t('pp.dShort',{d:s.call.day}))}</small></span><button class="btn fixedw" data-act="uturnAsk" data-id="${s.id}">↺ ${esc(t('pp.uturn'))}</button></div></div>`;
  const hint=game.actions===0?esc(t('pp.noContactsHint')):`👑 ${t('pp.exHint',{n:'<b>+'+ppPts(s.id,'DONE','med').exclusive+'</b>'}).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}`;
- return `<div class="dock ppdock"><p class="hint">${hint}</p><button class="btn primary" data-act="ppCompose" data-id="${s.id}">${uiIcon('pen')} ${esc(t('pp.makeCall'))}</button></div>`; }
+ return `<div class="dock ppdock"><p class="hint">${hint}</p><div class="row pplater"><button class="btn ghost later" data-act="closeSheet" aria-label="${esc(t('q2.laterAria'))}"><svg class="pz" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>${esc(t('q2.later'))}</button><button class="btn primary" data-act="ppCompose" data-id="${s.id}">${uiIcon('pen')} ${esc(t('pp.makeCall'))}</button></div></div>`; }
 function ppBoostsHtml(s){ if(!isCareer()) return ''; const lv=levelInfo(C().xp).n;
  const tiles=BOOSTS.map(b=>{ const lk=lv<b.lvl; const dis=lk||C().credits<b.cost||(b.key==='tipoff'&&s.clues.some(x=>x.source==='tipoff'))||(b.key==='burner'&&game.day===7)||(b.key==='bribe'&&s.bribed); return `<button class="st ppboost" data-act="boost" data-id="${s.id}" data-b="${b.key}" ${dis?'disabled':''}><span class="top"><span class="ic" aria-hidden="true">${b.ic}</span><span class="cost">$${b.cost}</span></span><span class="nm">${esc(t('boost.'+b.key+'.name'))}</span><span class="ft">${lk?'🔒 '+esc(t('sheet.unlockLvl',{n:b.lvl})):''}</span></button>`; }).join('');
  return `<details class="ppboosts"><summary class="collapse">${esc(t('pp.boosts'))} · $${C().credits} <span class="chev" aria-hidden="true">›</span></summary><div class="boosts">${tiles}</div></details>`; }
