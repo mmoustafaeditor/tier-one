@@ -1854,6 +1854,20 @@ html.ad-anchored .overlay,html.ad-anchored .rvl{ top:var(--ad-top,0px); bottom:v
 .trophy.tr-common{ --tc:#E0A26A; } .trophy.tr-rare{ --tc:#D5DEEA; } .trophy.tr-epic{ --tc:#FFC933; } .trophy.tr-legend{ --tc:#9FE8FF; } .trophy.tr-shame{ --tc:#FF7A8A; }
 @media (min-width:1000px){ #trophyRoot{ top:calc(16px + env(safe-area-inset-top,0px)); bottom:auto!important; justify-items:end; padding-inline-end:20px; } .trophy,.trophy.hide{ transform:translateY(-130%); } .trophy.show{ transform:none; } }
 html.rm .trophy,html.rm .trophy.hide{ transform:none; transition:opacity .15s linear; }
+/* tweet composer: typing animation (pre-overhaul pacing) */
+.big .tweetbig .nc{ display:inline-block; animation:ncpop .16s var(--ease-out,ease-out); } @keyframes ncpop{ from{ opacity:0; transform:translateY(4px) scale(.7); } }
+.big .tweetbig .tst{ font-style:normal; color:var(--accent); }
+.big .tweetbig.typing .tst::after{ content:""; display:inline-block; width:14px; text-align:start; animation:tdots 1s steps(4) infinite; } @keyframes tdots{ 0%{ content:""; } 25%{ content:"."; } 50%{ content:".."; } 75%{ content:"..."; } }
+.big .tweetbig .foot{ align-items:center; gap:16px; } .big .tweetbig .foot > span{ white-space:nowrap; }
+.big .tweetbig .sendb{ margin-inline-start:auto; padding:7px 14px; border-radius:999px; background:var(--panel3,var(--line2)); color:var(--muted); font:800 13px/1 var(--body); transition:background-color .2s,color .2s,transform .12s; white-space:nowrap; }
+.big .tweetbig.ready .sendb{ background:var(--cta); color:var(--cta-ink); box-shadow:0 0 0 0 color-mix(in srgb,var(--cta) 60%,transparent); animation:sendpulse .9s ease-out infinite; }
+.big .tweetbig.press .sendb{ transform:scale(.88); animation:none; }
+.big .tweetbig.sent .sendb{ display:none; }
+.big .tweetbig.sent{ animation:tweetsent .45s var(--ease-out,ease-out); }
+@keyframes sendpulse{ to{ box-shadow:0 0 0 12px transparent; } }
+@keyframes tweetsent{ 0%{ transform:none; } 40%{ transform:translateY(-14px) scale(1.02); } 100%{ transform:none; } }
+@media (prefers-reduced-motion:reduce){ .big .tweetbig .nc,.big .tweetbig.sent,.big .tweetbig.ready .sendb{ animation:none; } }
+html.rm .big .tweetbig .nc,html.rm .big .tweetbig.sent,html.rm .big .tweetbig.ready .sendb{ animation:none; }
 /* names and clubs never ellipsize on player cards: wrap to 2 lines instead (Arabic names are long at 360 px) */
 .pcard .pn{ align-items:flex-start; }
 .pcard .pn b{ white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; }
@@ -4740,21 +4754,34 @@ function contactOverlay(kind,then,o){
  bigOverlay(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}${body}`,kind+' ppcall',dd?600:1200,then);
 }
 function composeOverlay(id,outcome,conf){
- const s=game.sagas[id]; const text=tweetText(outcome,conf,s); const uturn=!!s.uturns; const dd=game.day===7;
+ const s=game.sagas[id]; const text=tweetText(outcome,conf,s); const uturn=!!s.uturns; const dd=game.day===7; const rm=motionReduced();
  const d=bigOverlayPersistent(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}<div class="quirk">${esc(tt('quirk')[outcome][conf])}<small>${esc(pName(s.player))} · ${esc(t('conf.'+conf))}${uturn?' · '+esc(t('uturn.tag')):''}</small></div>
-  <div class="tweetbig ${uturn?'uturn':''}"><div class="av">✍️</div><div style="flex:1;min-width:0"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · ${esc(t('compose.drafting'))}</span></div><div class="txt" id="typed"><span class="cursor"></span></div><div class="foot"><span>💬 0</span><span>🔁 0</span><span>❤️ 0</span><span class="up" id="gain"></span></div></div></div>`,'compose');
- const el=d.querySelector('#typed'); const chars=Array.from(text); const total=dd?300:900; const step=Math.max(1,Math.ceil(chars.length*30/total)); let i=0;
- d._typing=setInterval(()=>{ i+=step; el.innerHTML=esc(chars.slice(0,i).join(''))+'<span class="cursor"></span>'; if(i%4<step) beep('key'); if(i>=chars.length){ clearInterval(d._typing); d._typing=null; el.innerHTML=esc(text); postFromCompose(id,outcome,conf); } },30);
+  <div class="tweetbig typing ${uturn?'uturn':''}"><div class="av">✍️</div><div style="flex:1;min-width:0"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · <em class="tst">${esc(t('compose.typing').replace(/[.…]+$/,''))}</em></span></div><div class="txt" id="typed"><span class="cursor"></span></div><div class="foot"><span>💬 0</span><span>🔁 0</span><span>❤️ 0</span><span class="up" id="gain"></span><span class="sendb" aria-hidden="true">${esc(t(uturn?'compose.postU':'compose.post'))}</span></div></div></div>`,'compose');
+ /* Deadline Day: the call is locked the moment you press Post (the clock may run out while the tweet types) */
+ if(dd){ d._gain=publishCall(id,outcome,conf); render(); }
+ const el=d.querySelector('#typed'); const chars=Array.from(text); let i=0, done=false;
+ const per=dd?Math.max(12,Math.min(22,Math.round(1300/Math.max(1,chars.length)))):34; /* pre-overhaul pace: 34 ms a character */
+ const paint=()=>{ const shown=chars.slice(0,i); const last=shown.length&&!/\s/.test(shown[shown.length-1])?`<span class="nc">${esc(shown[shown.length-1])}</span>`:''; el.innerHTML=esc(shown.slice(0,last?-1:undefined).join(''))+last+'<span class="cursor"></span>'; };
+ const finish=()=>{ if(done||d._gone) return; done=true; clearTimeout(d._typing); d._typing=null; el.innerHTML=esc(text); const tb=d.querySelector('.tweetbig'); tb.classList.remove('typing'); tb.classList.add('ready');
+  const st=d.querySelector('.tst'); if(st) st.textContent=t('compose.drafting');
+  setTimeout(()=>{ if(d._gone) return; tb.classList.add('press'); beep('tap'); setTimeout(()=>{ if(!d._gone) postFromCompose(id,outcome,conf); },dd?90:160); },dd?260:750); };
+ const tick=()=>{ if(d._gone) return; i++; paint(); const ch=chars[i-1]||''; if(!/\s/.test(ch)&&(dd?i%3===0:i%2===0)) beep('key');
+  if(i>=chars.length){ finish(); return; }
+  let wait=per; if(!dd&&!rm){ wait=per*(.7+Math.random()*.6); if(/[.,!?؟،…]/.test(ch)) wait+=140; else if(ch===' '&&Math.random()<.12) wait+=70; }
+  d._typing=setTimeout(tick,wait); };
+ if(rm){ i=chars.length; paint(); finish(); } else d._typing=setTimeout(tick,dd?60:260);
+ d.addEventListener('click',()=>{ if(!done){ i=chars.length; finish(); } }); /* tap to finish typing */
 }
 function postFromCompose(id,outcome,conf){
- const d=document.querySelector('.big.compose'); if(!game||game.result){ if(d) dismissBig(d); return; }
- const gain=publishCall(id,outcome,conf); const s=game.sagas[id]; dismissCoach('c3'); draft={outcome:null,conf:null};
- if(d&&s.call){ const tb=d.querySelector('.tweetbig'); const st=document.createElement('div'); st.className='poststamp'; st.textContent=t(s.call.uturn?'compose.postedU':'compose.posted'); tb.appendChild(st);
+ const d=document.querySelector('.big.compose'); const dd=!!game&&game.day===7;
+ if(!game||(game.result&&!(d&&d._gain!=null))){ if(d) dismissBig(d); return; }
+ const gain=d&&d._gain!=null?d._gain:publishCall(id,outcome,conf); const s=game.sagas[id]; dismissCoach('c3'); draft={outcome:null,conf:null};
+ if(d&&s.call){ const tb=d.querySelector('.tweetbig'); tb.classList.remove('press'); tb.classList.add('sent'); const st=document.createElement('div'); st.className='poststamp'; st.textContent=t(s.call.uturn?'compose.postedU':'compose.posted'); tb.appendChild(st);
   const g=d.querySelector('#gain'); if(g) g.textContent='👥 +'+gain;
   const meta=d.querySelector('.meta span'); if(meta) meta.textContent='@tierone_you · '+t('compose.now');
-  const q=d.querySelector('.quirk'); if(q){ const a=tt('after'); q.innerHTML=esc(a[Math.floor(Math.random()*a.length)])+`<small>${esc(t('compose.lockedDay',{d:game.day}))}</small>`; } }
- beep('send'); buzzPhone(40); render(); bumpFollowers(); if($('modalRoot').querySelector('.pp')) ppRender(id);
- setTimeout(()=>{ if(d) dismissBig(d,()=>toast(t('compose.toast'))); },game.day===7?300:700);
+  const q=d.querySelector('.quirk'); if(q){ const a=tt('after'); q.innerHTML=esc(a[Math.floor(Math.random()*a.length)])+`<small>${esc(t('compose.lockedDay',{d:s.call.day}))}</small>`; } }
+ beep('whoosh'); setTimeout(()=>beep('send'),120); buzzPhone(40); if(!game.result){ render(); bumpFollowers(); if($('modalRoot').querySelector('.pp')) ppRender(id); }
+ setTimeout(()=>{ if(d) dismissBig(d,()=>{ if(!game.result) toast(t('compose.toast')); }); },dd?650:1500);
 }
 function uturnOverlay(id,then){
  const s=game.sagas[id]; const old=tweetText(s.call.outcome,s.call.conf,s); const dd=game.day===7; const free=typeof twistedSinceCall==='function'&&twistedSinceCall(s);
