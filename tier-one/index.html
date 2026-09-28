@@ -2116,7 +2116,7 @@ html[lang="ar"] .rv2 .rv2st{ letter-spacing:0; font-size:11.5px; }
 .pp .rv2wrap .rv2h .over{ font-size:var(--fs-xs); }
 .pp .rv2wrap .rv2 .rv2s{ height:22px; padding:0 8px; font-size:11.5px; } .pp .rv2wrap .rv2 .rv2s i{ font-size:13px; }
 .pp .rv2wrap .rv2 .rv2st{ height:24px; line-height:24px; padding:0 10px; font-size:11.5px; }
-.pp .rv2wrap .rv2 .rv2t{ flex-basis:100%; }
+.pp .rv2wrap .rv2 .rv2t{ flex-basis:100%; flex-wrap:wrap; row-gap:5px; } /* three "Day n–m" segments do not fit one 360 px row */
 .pp .rv2wrap .rv2n{ margin:7px 0 0; font:600 var(--fs-xs)/1.35 var(--body); color:var(--muted); }
 .pp .rv2wrap .rv2n.reset{ color:var(--twist); }
 .ppdd .rv2wrap{ margin-top:8px; }
@@ -2222,6 +2222,7 @@ html.rm[data-dd="1"] .pp .ppclock.alarm b,html.lowfx[data-dd="1"] .pp .ppclock.a
 .dds-clk b{ position:relative; font:800 italic 30px/1 var(--display); color:#fff; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
 html.dd-alarm .dds-clk b{ animation:clockBeat .5s ease-in-out infinite; } html.dd-alarm .dds-clk{ animation:ddShake .42s linear infinite; }
 html.rm .dds-clk b,html.lowfx .dds-clk b,html.rm .dds-clk,html.lowfx .dds-clk{ animation:none; }
+html.rm .clock.alarm b,html.rm .timer.pulse{ animation:none; } /* reduced motion: no infinite clock pulse on the board either */
 .dds-t h2{ font:800 var(--ital) 30px/1 var(--display); text-transform:var(--caps); color:#FF6B7D; letter-spacing:-.01em; } html[lang="ar"] .dds-t h2{ line-height:1.3; font-size:26px; }
 .dds-t p{ margin-top:5px; font:600 var(--fs-sm)/1.3 var(--body); color:#EDB4BE; }
 .dds-rows{ display:block; }
@@ -4909,14 +4910,14 @@ deepMerge(I18N,{
 /* @@LANE I18N:onb END */
 /* @@LANE I18N:rival2 BEGIN (lane-owned; insert only between BEGIN and END) */
 deepMerge(I18N,{
- en:{rv2:{title:'Exclusive race',aria:'Exclusive race: {s}',days:'D{r}',quiet:'quiet',
+ en:{rv2:{title:'Exclusive race',aria:'Exclusive race: {s}',days:'Day {r}',quiet:'quiet',
   st:{open:'Exclusive still open',locked:'★ Exclusive locked in',scooped:'Scooped by {h} on {d}',uturn:'No exclusive after a U-turn'},
   ss:{open:'Exclusive open',locked:'★ Exclusive locked',scooped:'Scooped {d} · {n}',uturn:'No exclusive · U-turn'},
   note:{open:'Post a right call before any rival and it scores +{x}.',locked:'You posted before every rival. If the call is right, it is an exclusive (+{x}).',scooped:'{n} posted first, so a right call here scores without the exclusive bonus.',uturn:'A re-called post can never be an exclusive.',reset:'🌀 The twist restarted the race on {d}: only posts from then on count.'},
   seg:{done:'{n} posted on {d}',old:'{n} posted on {d}, before the twist',due:'{n} posts on {d}',quiet:'{n} stayed quiet'},
   rx:{doubt:'Doubt it 🧢',big:'Big if true 👀',aria:'React to {n}\'s post',you:'Your take: {v}',vdoubt:'doubt it',vbig:'big if true'},
   watch:{title:'Rival watch',tomorrow:'{n} ({h}) starts posting tomorrow, days {r}.'}}},
- es:{rv2:{title:'Carrera por la exclusiva',aria:'Carrera por la exclusiva: {s}',days:'D{r}',quiet:'nada',
+ es:{rv2:{title:'Carrera por la exclusiva',aria:'Carrera por la exclusiva: {s}',days:'Día {r}',quiet:'nada',
   st:{open:'La exclusiva sigue abierta',locked:'★ Exclusiva asegurada',scooped:'Te pisó {h} el {d}',uturn:'Sin exclusiva tras rectificar'},
   ss:{open:'Exclusiva abierta',locked:'★ Exclusiva asegurada',scooped:'Pisada {d} · {n}',uturn:'Sin exclusiva · rectificación'},
   note:{open:'Publica una noticia correcta antes que cualquier rival y suma +{x}.',locked:'Publicaste antes que todos los rivales. Si aciertas, es exclusiva (+{x}).',scooped:'{n} publicó primero: si aciertas, puntúa sin el plus de exclusiva.',uturn:'Una noticia rectificada nunca puede ser exclusiva.',reset:'🌀 El giro reinició la carrera el {d}: solo cuentan las publicaciones desde entonces.'},
@@ -7726,8 +7727,8 @@ window.payoffWindows=payoffWindows;
 /* ---------- 2. "opened early" (Career/Rooms): a source open today only because of the unlock-earlier tree step ---------- */
 function cr2EarlyKeys(){ if(!game||!isCareer()||game.result) return []; const M=cr2M(), c=C(); return Object.keys(SOURCES).filter(k=>{ const base=(M.SRC_FROM||{})[k]||1; if(base<=1) return false; const d=unlockDay(k,c); return d<base&&game.day>=d&&game.day<base; }); }
 function cr2EarlyBadges(){ if(!game||!isCareer()||game.result||screen!=='window') return; const ks=cr2EarlyKeys(); if(!ks.length) return;
- document.querySelectorAll('.st[data-src]').forEach(el=>{ const k=el.dataset.src; if(!ks.includes(k)||el.querySelector('.corner')||/\b(later|locked)\b/.test(el.className)) return;
-  const sp=document.createElement('span'); sp.className='corner cr2e'; sp.innerHTML=`<span class="tag early" title="${esc(t('cr2.earlyAria',{src:t('src.'+k+'.name')}))}">⚡ ${esc(t('cr2.early'))}</span>`; el.prepend(sp); }); }
+ document.querySelectorAll('.st[data-src]').forEach(el=>{ const k=el.dataset.src; if(!ks.includes(k)||el.querySelector('.cr2e')||/\b(later|locked)\b/.test(el.className)) return;
+  const html=`<span class="tag early" title="${esc(t('cr2.earlyAria',{src:t('src.'+k+'.name')}))}">⚡ ${esc(t('cr2.early'))}</span>`; const old=el.querySelector('.corner'); if(old){ old.classList.add('cr2e'); old.innerHTML=html; return; } const sp=document.createElement('span'); sp.className='corner cr2e'; sp.innerHTML=html; el.prepend(sp); }); }
 (function(){ let tm=null; try{ new MutationObserver(()=>{ if(tm) return; tm=setTimeout(()=>{ tm=null; cr2EarlyBadges(); },40); }).observe(document.body,{childList:true,subtree:true}); }catch(e){} })();
 function cr2EarlyToast(){ if(!game||!isCareer()||game.result) return; const c=C(); const ks=cr2EarlyKeys().filter(k=>unlockDay(k,c)===game.day); if(!ks.length) return;
  game.cr2early=game.cr2early||{}; const fresh=ks.filter(k=>!game.cr2early[k]); if(!fresh.length) return; fresh.forEach(k=>game.cr2early[k]=1); saveGame();
