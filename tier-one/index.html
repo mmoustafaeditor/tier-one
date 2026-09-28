@@ -1755,6 +1755,19 @@ button.wal{ display:inline-flex; align-items:center; gap:6px; height:36px; paddi
 .achdet > .medal{ display:grid; }
 #trophyRoot .trophy .tstack{ display:flex; flex-shrink:0; }
 #trophyRoot .trophy .tstack .medal + .medal{ margin-inline-start:-18px; }
+.srcc.tree .trow{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; margin-top:10px; padding:10px; border-radius:12px; background:var(--panel2); }
+.srcc.tree .tmain{ min-width:0; }
+.srcc.tree .tlab{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.srcc.tree .tlab .over{ font-size:10.5px; }
+.srcc.tree .tmain b{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:4px; font:700 13px/1.25 var(--body); }
+.srcc.tree .tmain small{ display:block; margin-top:3px; font:600 11.5px/1.35 var(--body); color:var(--muted); }
+.srcc.tree .tbuy .buy{ width:auto; min-width:76px; }
+.tpips{ display:inline-flex; gap:4px; }
+.tpips i{ width:14px; height:6px; border-radius:3px; background:var(--line2); }
+.tpips i.on{ background:var(--cta); }
+.srcc.tree .trec{ margin:10px 2px 0; font:600 12px var(--body); color:var(--muted); }
+.srcc.tree .trec .over{ font-size:10.5px; margin-inline-end:6px; }
+.srcc.tree .trec b{ color:var(--ink,inherit); }
 /* @@LANE CSS:career END */
 /* ─ */
 /* @@LANE CSS:online BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -3967,6 +3980,60 @@ const OPTB_I18N={
   howtoCard:['4 اتصالات في اليوم','معاك 4 اتصالات كل يوم. كل المصادر بترد من أول يوم. الحلاق والمسرّب بـ1، السمسار وعم سيد بـ2. الواد بتاع المطار (3) ودكتور الفريق (3) أحسن مصادر، بس قبل ما الرحلات تتسجل (يوم 4) والكشف الطبي يتحجز (يوم 6) عندهم إحساس بس (حوالي 55%). لو سألت بدري هتفضل على الإحساس ده: كل مصدر بيرد مرة واحدة على كل لعيب لحد ما تحصل قلبة. الكل بيكدب ساعات.']}
 };
 function optbApplyI18N(){ deepMerge(I18N,OPTB_I18N); ['en','es','ar'].forEach(l=>{ const T=I18N[l], c=OPTB_I18N[l].howtoCard; if(T&&T.howto&&Array.isArray(T.howto.cards)&&T.howto.cards[2]) T.howto.cards[2]=c.slice(); }); }
+/* Career source tree + mode split (Daily/Practice = Option B, Career/Rooms = gated). GATED_I18N is a mode overlay read by tt():
+   while a Career/Rooms window (or the Career screen) is on screen these keys win; {pd}/{ad} = the physio's/airport spotter's
+   opening day for the active career (source tree). */
+const GATED_I18N={
+ en:{math:{opens:'Opens Day {d}',reason:{physio:'No medicals before Day {d}: in Career the physio opens on Day {d}. Upgrade him in Career › Sources.',airport:'No flight plans before Day {d}: in Career the airport spotter opens on Day {d}. Upgrade him in Career › Sources.'},
+   rules:{summary:'Five sagas, seven days, three contacts a day, and two real deals will TWIST before the window shuts: the wire shouts 🚨, the old answer becomes wrong and his sources talk again. Call early for bonus points and exclusives, or wait for the airport spotter (day {ad}) and the physio (day {pd}), but only go loud when you\'re really sure.',
+    sources:'Career & Rooms: barber and leak cost 1, agent and kitman 2, all from day 1. The airport spotter (3) opens on day {ad} and the physio (3) on day {pd}. No hunches. Upgrade reliability and opening days in Career › Sources.'}},
+  src:{physio:{desc:'Best source. Medicals from day {pd} and on Deadline Day.'},airport:{desc:'High. Flights get filed from day {ad}.'}},
+  board:{tmOpen:'Tomorrow: **{x} opens**'},
+  tut:{coach:{opens:'In Career some sources open later: the airport spotter on day {ad}, the physio on day {pd}.'}}},
+ es:{math:{opens:'Abre el día {d}',reason:{physio:'No hay reconocimientos antes del día {d}: en Carrera el fisio abre el día {d}. Mejóralo en Carrera › Fuentes.',airport:'No hay planes de vuelo antes del día {d}: en Carrera el vigía del aeropuerto abre el día {d}. Mejóralo en Carrera › Fuentes.'},
+   rules:{summary:'Cinco culebrones, siete días, tres contactos al día, y dos operaciones reales darán un GIRO antes del cierre: la agencia avisa con 🚨, la respuesta de antes pasa a ser falsa y sus fuentes vuelven a hablar. Apuesta pronto para sumar bonus y exclusivas, o espera al vigía del aeropuerto (día {ad}) y al fisio (día {pd}), pero grita solo si estás muy seguro.',
+    sources:'Carrera y salas: barbero y topo cuestan 1, agente y utillero 2, todos desde el día 1. El vigía del aeropuerto (3) abre el día {ad} y el fisio (3) el día {pd}. Sin corazonadas. Mejora su fiabilidad y adelanta su día en Carrera › Fuentes.'}},
+  src:{physio:{desc:'La mejor fuente. Reconocimientos desde el día {pd} y el día límite.'},airport:{desc:'Alta. Los vuelos se registran desde el día {ad}.'}},
+  board:{tmOpen:'Mañana: **se abre {x}**'},
+  tut:{coach:{opens:'En Carrera algunas fuentes abren más tarde: el vigía del aeropuerto el día {ad} y el fisio el día {pd}.'}}},
+ ar:{math:{opens:'بيفتح يوم {d}',reason:{physio:'مفيش كشف طبي قبل يوم {d}: في المسيرة دكتور الفريق بيفتح يوم {d}. طوّره من المسيرة › المصادر.',airport:'مفيش رحلات بتتسجل قبل يوم {d}: في المسيرة الواد بتاع المطار بيفتح يوم {d}. طوّره من المسيرة › المصادر.'},
+   rules:{summary:'خمس قصص، سبع أيام، تلات اتصالات في اليوم، وصفقتين حقيقيين هيتقلبوا قبل ما النافذة تقفل: الأخبار بتصرخ 🚨، الإجابة القديمة بتبقى غلط ومصادره بتتكلم تاني. قول بدري عشان البونص والانفراد، أو استنى الواد بتاع المطار (يوم {ad}) ودكتور الفريق (يوم {pd})، بس متعليش صوتك إلا وانت متأكد بجد.',
+    sources:'المسيرة والأوض: الحلاق والمسرّب بـ1، السمسار وعم سيد بـ2، كلهم من أول يوم. الواد بتاع المطار (3) بيفتح يوم {ad}، ودكتور الفريق (3) يوم {pd}. مفيش "إحساس" هنا. طوّر صدقهم وقدّم يومهم من المسيرة › المصادر.'}},
+  src:{physio:{desc:'أحسن مصدر. الكشف الطبي من يوم {pd} ويوم القفلة.'},airport:{desc:'عالي. الرحلات بتتسجل من يوم {ad}.'}},
+  board:{tmOpen:'بكرة: **{x} بيفتح**'},
+  tut:{coach:{opens:'في المسيرة فيه مصادر بتفتح متأخر: الواد بتاع المطار يوم {ad}، ودكتور الفريق يوم {pd}.'}}}
+};
+function gatedUI(){ try{ return screen==='career'||(!!game&&game.mode==='career'&&(screen==='window'||screen==='results')); }catch(e){ return false; } }
+function gatedTT(path){ try{ if(!gatedUI()) return undefined; let v=getPath(GATED_I18N[lang]||GATED_I18N.en,path); if(v===undefined) v=getPath(GATED_I18N.en,path); if(typeof v!=='string') return undefined; // objects: base (overlay is per string key)
+ return v.indexOf('{')<0?v:v.replace(/\{pd\}/g,unlockDay('physio')).replace(/\{ad\}/g,unlockDay('airport')); }catch(e){ return undefined; } }
+deepMerge(OPTB_I18N,{
+ en:{equip:{wifi:{desc:'+1 contact on day 6 (3 → 4)'},phone2:{desc:'+1 contact on day 5 (3 → 4)'}},
+  howto2:{ask3:'Daily & Practice: every source answers from day 1, but the airport spotter only has a hunch before day 4 and the physio before day 6, and each source answers once per player until a twist. Career & Rooms: 3 contacts a day, the airport spotter can\'t be asked before day 4 or the physio before day 6 (upgrades open them sooner), no hunches.',
+   m:{dailyT:'Same five for everyone, once a day. 4 contacts a day and every source answers from day 1 (the physio and the airport spotter only hunch early). No gear, nothing carries over.',careerT:'Your long game (Rooms play the same rules): 3 contacts a day, the airport spotter opens on day 4 and the physio on day 6, no hunches. Earn cash to upgrade your sources and gear.'}},
+  howtoCard:['4 contacts a day (Daily)','Daily & Practice: 4 contacts a day and every source answers from day 1. Barber and rival leak cost 1, agent and kitman 2. The airport spotter (3) and the physio (3) are the best sources, but before flights get filed (day 4) and medicals get booked (day 6) they only have a hunch (about 55%), and each source answers once per player until a twist. Career & Rooms: 3 contacts a day, the airport spotter opens on day 4 and the physio on day 6 (upgrades open them sooner), no hunches. Everyone lies sometimes.']},
+ es:{equip:{wifi:{desc:'+1 contacto el día 6 (3 → 4)'},phone2:{desc:'+1 contacto el día 5 (3 → 4)'}},
+  howto2:{ask3:'Diario y Práctica: todas las fuentes contestan desde el día 1, pero el vigía del aeropuerto solo tiene una corazonada antes del día 4 y el fisio antes del día 6, y cada fuente contesta una vez por jugador hasta un giro. Carrera y salas: 3 contactos al día, el vigía no contesta antes del día 4 ni el fisio antes del día 6 (las mejoras los abren antes), sin corazonadas.',
+   m:{dailyT:'Los mismos cinco para todos, una vez al día. 4 contactos al día y todas las fuentes contestan desde el día 1 (el fisio y el vigía solo tienen corazonadas al principio). Sin equipo; nada se arrastra.',careerT:'Tu partida larga (las salas usan las mismas reglas): 3 contactos al día, el vigía del aeropuerto abre el día 4 y el fisio el día 6, sin corazonadas. Gana dinero para mejorar tus fuentes y tu equipo.'}},
+  howtoCard:['4 contactos al día (Diario)','Diario y Práctica: 4 contactos al día y todas las fuentes contestan desde el día 1. Barbero y topo cuestan 1, agente y utillero 2. El vigía del aeropuerto (3) y el fisio (3) son las mejores fuentes, pero antes de que se registren los vuelos (día 4) y haya reconocimientos (día 6) solo tienen una corazonada (un 55%), y cada fuente contesta una vez por jugador hasta un giro. Carrera y salas: 3 contactos al día, el vigía abre el día 4 y el fisio el día 6 (las mejoras los abren antes), sin corazonadas. Todos mienten a veces.']},
+ ar:{equip:{wifi:{desc:'+1 اتصال في يوم 6 (3 ← 4)'},phone2:{desc:'+1 اتصال في يوم 5 (3 ← 4)'}},
+  howto2:{ask3:'اليومي والتمرين: كل المصادر بترد من أول يوم، بس الواد بتاع المطار عنده إحساس بس قبل يوم 4، ودكتور الفريق قبل يوم 6، وكل مصدر بيرد مرة واحدة على كل لعيب لحد القلبة. المسيرة والأوض: 3 اتصالات في اليوم، ومتقدرش تسأل بتاع المطار قبل يوم 4 ولا الدكتور قبل يوم 6 (التطويرات بتفتحهم بدري)، ومفيش إحساس.',
+   m:{dailyT:'نفس الخمسة للكل، مرة في اليوم. 4 اتصالات في اليوم وكل المصادر بترد من أول يوم (الدكتور وبتاع المطار عندهم إحساس بس في الأول). من غير عدّة، ومفيش حاجة بتترحّل.',careerT:'لعبتك الطويلة (والأوض بنفس القواعد): 3 اتصالات في اليوم، بتاع المطار بيفتح يوم 4 والدكتور يوم 6، ومفيش إحساس. اكسب فلوس وطوّر مصادرك وعدّتك.'}},
+  howtoCard:['4 اتصالات في اليوم (اليومي)','اليومي والتمرين: معاك 4 اتصالات كل يوم وكل المصادر بترد من أول يوم. الحلاق والمسرّب بـ1، السمسار وعم سيد بـ2. الواد بتاع المطار (3) ودكتور الفريق (3) أحسن مصادر، بس قبل ما الرحلات تتسجل (يوم 4) والكشف الطبي يتحجز (يوم 6) عندهم إحساس بس (حوالي 55%)، وكل مصدر بيرد مرة واحدة على كل لعيب لحد القلبة. المسيرة والأوض: 3 اتصالات في اليوم، بتاع المطار بيفتح يوم 4 والدكتور يوم 6 (التطويرات بتفتحهم بدري)، ومفيش إحساس. الكل بيكدب ساعات.']}
+});
+deepMerge(I18N,{
+ en:{tree:{intro:'Spend cash to upgrade your sources. Reliability: each level makes their answers true more often. Unlock earlier: the airport spotter and the physio can be asked sooner. Career and Rooms only: the Daily never changes.',
+   rel:'Reliability',open:'Unlock earlier',relNow:'Tells the truth {n} of the time',relNext:'Next level: {a} → {b}',relMax:'Top level reached',opensNow:'Opens Day {d}',openNext:'{src} opens Day {a} → Day {b}',openMax:'Earliest day reached',
+   lvlGate:'Level {n}',lvlN:'Level {n} of {m}',maxed:'Maxed',toastRel:'{src}: tells the truth {n} of the time',toastOpen:'{src} now opens on Day {d}',
+   dailyNote:'Daily and Practice always use the base sources: all open from Day 1, and the physio and the airport spotter only give a hunch early.',shopHint:'Source upgrades',shopHintSub:'Reliability and earlier unlocks are in the Sources tab'}},
+ es:{tree:{intro:'Gasta dinero en mejorar tus fuentes. Fiabilidad: cada nivel hace que digan la verdad más a menudo. Abrir antes: el vigía del aeropuerto y el fisio contestan antes. Solo Carrera y salas: el Diario nunca cambia.',
+   rel:'Fiabilidad',open:'Abrir antes',relNow:'Dice la verdad el {n} de las veces',relNext:'Siguiente nivel: {a} → {b}',relMax:'Nivel máximo',opensNow:'Abre el día {d}',openNext:'{src} abre el día {a} → día {b}',openMax:'Ya abre lo antes posible',
+   lvlGate:'Nivel {n}',lvlN:'Nivel {n} de {m}',maxed:'Al máximo',toastRel:'{src}: dice la verdad el {n} de las veces',toastOpen:'{src} ahora abre el día {d}',
+   dailyNote:'Diario y Práctica siempre usan las fuentes base: todas abren el día 1, y el fisio y el vigía del aeropuerto solo tienen una corazonada al principio.',shopHint:'Mejoras de fuentes',shopHintSub:'Fiabilidad y aperturas antes están en la pestaña Fuentes'}},
+ ar:{tree:{intro:'اصرف فلوس وطوّر مصادرك. الصدق: كل مستوى بيخلي كلامهم يطلع صح أكتر. افتح بدري: الواد بتاع المطار ودكتور الفريق تقدر تسألهم بدري. المسيرة والأوض بس: اليومي عمره ما بيتغيّر.',
+   rel:'الصدق',open:'افتح بدري',relNow:'بيقول الصح {n} من المرات',relNext:'المستوى الجاي: {a} ← {b}',relMax:'وصل لأعلى مستوى',opensNow:'بيفتح يوم {d}',openNext:'{src} بيفتح يوم {a} ← يوم {b}',openMax:'بيفتح في أبدر يوم خلاص',
+   lvlGate:'لفل {n}',lvlN:'مستوى {n} من {m}',maxed:'على الآخر',toastRel:'{src}: بيقول الصح {n} من المرات',toastOpen:'{src} بقى بيفتح يوم {d}',
+   dailyNote:'اليومي والتمرين دايمًا بالمصادر الأساسية: كلها بتفتح من أول يوم، والدكتور وبتاع المطار عندهم إحساس بس في الأول.',shopHint:'تطوير المصادر',shopHintSub:'الصدق والفتح بدري في تاب المصادر'}}
+});
 optbApplyI18N();
 /* @@LANE I18N:math END */
 /* ─ */
@@ -4376,7 +4443,7 @@ deepMerge(I18N,{
    ========================================================= */
 let lang='en';
 function getPath(o,path){ return path.split('.').reduce((a,k)=>a==null?undefined:a[k],o); }
-function tt(path){ const v=getPath(I18N[lang],path); return v!==undefined?v:getPath(I18N.en,path); }
+function tt(path){ const gv=typeof gatedTT==='function'?gatedTT(path):undefined; if(gv!==undefined) return gv; const v=getPath(I18N[lang],path); return v!==undefined?v:getPath(I18N.en,path); }
 function fill(s,ctx){ return String(s).replace(/\{(\w+)\}/g,(m,k)=>ctx&&ctx[k]!=null?ctx[k]:m); }
 function t(path,ctx){ const v=tt(path); return v==null?path:(ctx?fill(v,ctx):v); }
 function pName(p){ const n=NAMES[lang]&&NAMES[lang].players[p.name]; return n||p.name; }
@@ -5440,7 +5507,7 @@ function renderCareer(){
    ${c.history.length?`<div class="sechead"><h2 class="d4">${esc(t('career.recent'))}</h2></div><section class="list">${c.history.slice(0,5).map(h=>`<div class="hrow"><span class="sq" dir="ltr">${esc(h.row||'')}</span><span class="ht">${esc(h.tier===9?t('tier.clown'):t('career.tierN',{n:h.tier}))}</span><b><bdi dir="ltr">${h.score}</bdi></b></div>`).join('')}</section>`:`<p class="muted sm" style="margin:14px 4px 0">${esc(t('cr.noHistory'))}</p>`}
    ${Ads.slot('career')}`;
  }else if(careerTab==='shop'){
-  const bestRel=Object.entries(GEAR_REL).filter(([k,g])=>c.equip.includes(g[0])&&SOURCES[k]).sort((a,b)=>b[1][1]-a[1][1])[0];
+  const bestRel=Object.keys(SOURCES).map(k=>[k,[null,crRel(k)-SOURCES[k].rel]]).filter(x=>x[1][1]>0.001).sort((a,b)=>b[1][1]-a[1][1])[0];
   const pod=crOpens('physio');
   const load=`<section class="card" style="margin-top:12px;padding:12px"><div class="lohead"><span class="over">${esc(t('cr.desk'))}</span><span class="xs muted"><bdi dir="ltr">${esc(t('cr.gearN',{n:c.equip.filter(k=>EQUIP.some(e=>e.key===k)).length,m:EQUIP.length}))}</bdi></span></div>
    <div class="loadout"><div><b>${crContacts()}</b><span>${esc(t('cr.perDay'))}</span></div><div><b>${crDD()}</b><span>${esc(t('cr.onDD'))}</span></div><div><b>${pod==null?'🔒':esc(t('board.dShort',{d:pod}))}</b><span>🩺 ${esc(t('cr.physioOpens'))}</span></div><div><b><bdi dir="ltr">+${bestRel?Math.round(bestRel[1][1]*100):0}%</bdi></b><span>${bestRel?SOURCES[bestRel[0]].ic+' ':''}${esc(t('cr.honesty'))}</span></div></div></section>`;
@@ -5448,7 +5515,8 @@ function renderCareer(){
   const gear=groups.filter(g=>by[g]).map(g=>`<div class="sechead"><h2 class="d4">${esc(t('cr.grp.'+g))}</h2><span class="aux">${esc(t('cr.grpSub.'+g))}</span></div><section class="list">${by[g].map(e=>crGearRow(e,c,lv)).join('')}</section>`).join('');
   const boosts=`<div class="sechead"><h2 class="d4">${esc(t('career.boosts'))}</h2><span class="aux">${esc(t('cr.boostSub'))}</span></div><section class="list">${BOOSTS.map(b=>`<div class="gear ${lv.n<b.lvl?'lockd':''}"><span class="gi" aria-hidden="true">${b.ic}</span><span style="min-width:0"><b>${esc(t('boost.'+b.key+'.name'))}</b><span class="fx">${esc(t('boost.'+b.key+'.desc'))}</span></span><span class="gp">${lv.n<b.lvl?`<span class="buy no">🔒 ${esc(t('cr.lv',{n:b.lvl}))}</span>`:`<span class="buy no"><bdi dir="ltr">$${b.cost}</bdi><small>${esc(t('cr.inWindow'))}</small></span>`}</span></div>`).join('')}</section>`;
   const packs=roomCtx?'':`<div class="sechead" id="packs"><h2 class="d4">${esc(t('career.packs'))}</h2></div><p class="xs muted" style="margin:-4px 4px 10px">${esc(t('econ.packNote'))}</p><section class="list">${CONFIG.REWARDED_ADS!=='off'?`<div class="gear"><span class="gi" aria-hidden="true">▶️</span><span style="min-width:0"><b>${esc(t('econ.adCash'))}</b><span class="gd">${esc(t('econ.adCashDesc'))}</span></span><span class="gp">${save.career.adCash===todayKey()?`<span class="owned-chip">✓</span>`:`<button type="button" class="buy" data-act="adCash">+$40</button>`}</span></div>`:''}${['pack1','pack2','pack3'].map(k=>{ const p=CONFIG.PACKS[k]; const av=Pay.available(k); const tag=k==='pack2'?'popular':k==='pack3'?'best':''; return `<div class="gear"><span class="gi" aria-hidden="true">💵</span><span style="min-width:0"><b>${esc(t('career.'+k))}${tag?` <span class="rtag legend">${esc(t('econ.'+tag))}</span>`:''}</b><span class="gd">${esc(t('econ.cash',{n:p.credits.toLocaleString('en-US')}))}</span></span><span class="gp"><button type="button" class="buy ${av?'':'no'}" data-act="buyPack" data-v="${k}" ${av?'':'disabled'}>${esc(p.price)}</button></span></div>`; }).join('')}<div class="gear"><span class="gi" aria-hidden="true">🚫</span><span style="min-width:0"><b>${esc(t('prod.removeAds'))}</b><span class="gd">${esc(t('prod.removeAdsDesc'))}</span></span><span class="gp">${save.purchases.removeAds?`<span class="owned-chip">✓ ${esc(t('career.owned'))}</span>`:`<button type="button" class="buy ${Pay.available('removeAds')?'':'no'}" data-act="buyPack" data-v="removeAds" ${Pay.available('removeAds')?'':'disabled'}>${esc(CONFIG.PACKS.removeAds.price)}</button>`}</span></div></section><p class="xs dim" style="margin:8px 4px 0">${esc(t('career.packsNote'))}</p>`;
-  body=load+gear+boosts+packs+`<p class="xs muted crnote">${esc(t('cr.fair'))}</p>`;
+  const treeHint=`<button type="button" class="goalcard" data-act="ctab" data-v="sources" style="margin-top:12px"><span class="gi" aria-hidden="true">🧭</span><span style="min-width:0"><b>${esc(t('tree.shopHint'))}</b><small>${esc(t('tree.shopHintSub'))} · <bdi dir="ltr">${treeSteps(c).n}/${treeSteps(c).m}</bdi></small></span><span class="chev" aria-hidden="true">›</span></button>`;
+  body=load+treeHint+gear+boosts+packs+`<p class="xs muted crnote">${esc(t('cr.fair'))}</p>`;
  }else if(careerTab==='style'){
   const th=save.settings.theme||'auto'; const isDef=(save.settings.skin||'default')==='default';
   const skins=`<div class="sechead"><h2 class="d4">${esc(t('career.look'))}</h2></div><div class="skingrid">${SKINS.map(s=>crSkinCard(s,c)).join('')}</div>
@@ -5467,7 +5535,7 @@ function renderCareer(){
 function renderHowTo(){
  const pm=(PTYPE[2]||{pts:1.2}).pts, early=hmEarly(), ex=hmExcl(), dds=hmDDSecs(), ddc=hmDDContacts(), n=hmContacts();
  const lb=['low','med','high'].map(k=>{ const P=PTS[k]; return `<tr><th scope="row">${esc(t('tut2.conf.'+k))}</th><td class="ok">${hmNum('+'+Math.round(P[0]*pm))}</td><td class="bad">${hmNum('−'+Math.abs(Math.round(P[1]*pm)))}</td></tr>`; }).join('');
- const srcs=Object.keys(SOURCES).map(k=>{ const S=SOURCES[k], bars=TIER_BARS[S.tier]||1, od=hmOpenDay(k); return `<div class="hmsrc"><span class="ti" aria-hidden="true">${S.ic}</span><span class="cmain"><b>${esc(t('src.'+k+'.name'))}</b><span>${esc(t('howto2.knows.'+k))}</span></span><span class="meta">${sigHtml(bars,false)}<span>${uiIcon('phone','ic16')}${hmNum(S.cost||1)}</span>${od>1?`<span class="op">🕐 ${esc(t('howto2.opens',{d:od}))}</span>`:''}</span></div>`; }).join('');
+ const srcs=Object.keys(SOURCES).map(k=>{ const S=SOURCES[k], bars=TIER_BARS[S.tier]||1, od=((typeof MATH!=='undefined'&&MATH.SRC_FROM)||{})[k]||1; return `<div class="hmsrc"><span class="ti" aria-hidden="true">${S.ic}</span><span class="cmain"><b>${esc(t('src.'+k+'.name'))}</b><span>${esc(t('howto2.knows.'+k))}</span></span><span class="meta">${sigHtml(bars,false)}<span>${uiIcon('phone','ic16')}${hmNum(S.cost||1)}</span>${od>1?`<span class="op">🕐 ${esc(t('howto2.opens',{d:od}))}</span>`:''}</span></div>`; }).join('');
  const rv=RIVALS.map(r=>`<div class="hmsrc"><span class="ti" aria-hidden="true">${r.ic}</span><span class="cmain"><b>${esc(t('rival.'+r.key))}</b><span>${esc(t('howto2.rival',{a:r.dmin,b:Math.min(7,r.dmax)}))}</span></span><span class="meta">${sigHtml(r.rel>=.75?3:r.rel>=.55?2:1,false)}</span></div>`).join('');
  const tiers=hmTiers().filter(x=>x.key!=='clown').map(x=>`<li>${tmedalHtml(x.key,{size:'sm'})}<span>${esc(tierName(x))}</span><b>${hmNum(x.min+'+')}</b></li>`).join('');
  const card=(i,h,body)=>`<section class="card hmrule"><div class="rh"><span class="rn">${i}</span><h2 class="d4">${esc(h)}</h2></div>${body}</section>`;
@@ -6600,7 +6668,7 @@ let crSkinPreview=null;
 function crSim(fn,day){ const g=game; try{ game={mode:'career',day:day||1,sagas:[],feed:[],room:roomCtx||undefined}; return fn(); }catch(e){ return null; }finally{ game=g; } }
 function crContacts(){ const v=[1,2,3,4,5,6].map(d=>crSim(()=>baseActions(d),d)).filter(x=>typeof x==='number'); if(!v.length) return String(CONFIG.CONTACTS||3); const lo=Math.min(...v), hi=Math.max(...v); return lo===hi?String(lo):lo+'–'+hi; }
 function crDD(){ const v=crSim(()=>typeof ddActions==='function'?ddActions():null,7); if(typeof v==='number') return v; return 3+(C().equip.includes('bank')?1:0); }
-function crRel(k,withAll){ const g=GEAR_REL[k]; const base=SOURCES[k].rel; if(!g) return base; const own=withAll||C().equip.includes(g[0]); return Math.min(.97,base+(own?g[1]:0)); }
+function crRel(k,withAll){ const base=SOURCES[k].rel, up=(MATH.REL_UP&&MATH.REL_UP[k])||[]; const n=withAll?up.length:Math.min(relLvl(k),up.length); return Math.min(MATH.REL_CAP||.97,base+(n?up[n-1]:0)); }
 function crBars(r){ return r<.55?1:r<.75?2:3; }
 function crOpens(k){ const d=crSim(()=>achOpenDay(k),1); if(d) return d; const lk=SOURCES[k].lock; if(lk&&!C().equip.includes(lk)) return null; return 1; }
 function crGroup(k){ const M=achTry(()=>typeof MATH!=='undefined'?MATH:null,null);
@@ -6628,12 +6696,28 @@ function crSkinCard(s,c){ const own=save.settings.skins.includes(s.key), on=save
  const btn=own?(on?`<span class="owned-chip">✓ ${esc(t('cr.inUse'))}</span>`:`<button type="button" class="btn sm" data-act="setSkin" data-v="${s.key}">${esc(t('career.use'))}</button>`):`<button type="button" class="buy ${c.credits>=s.cost?'':'no'}" data-act="${c.credits>=s.cost?'buySkin':'needCash'}" data-v="${c.credits>=s.cost?s.key:s.cost-c.credits}"><bdi dir="ltr">$${s.cost}</bdi></button>`;
  return `<div class="skinpv ${on?'on':''}"><div class="pv" style="background:${p[0]};color:${p[4]}" aria-hidden="true"><span class="wm" dir="ltr">TIER <b style="background:${p[5]||p[2]};color:${p[5]?'#fff':p[3]}">ONE</b></span><span class="pn" style="background:${p[1]}"><i style="background:${p[4]}"></i><i style="background:${p[4]};opacity:.4"></i></span><span class="cta" style="background:${p[2]};color:${p[3]}">▶</span></div><b>${esc(t('skin.'+s.key+'.name'))}</b><span class="sk">${btn}</span></div>`; }
 function crTitles(){ return ACH.filter(a=>a.rw&&a.rw.title); }
-function crSourcesTab(c){ return `<p class="muted sm" style="margin:12px 2px 0">${esc(t('cr.srcIntro'))}</p>`+Object.entries(SOURCES).map(([k,s])=>{ const st=c.sources[k]; const od=crOpens(k); const g=GEAR_REL[k]; const lk=s.lock;
-  const now=crBars(crRel(k)), best=crBars(crRel(k,true));
-  const opens=od==null?`🔒 ${t('cr.needs',{g:t('equip.'+lk+'.name')})}`:od>1?`🕐 ${t('cr.opensDay',{d:od})}`:t('cr.openAll');
-  return `<div class="card srcc"><div class="srch"><span class="se" aria-hidden="true">${s.ic}</span><span style="min-width:0"><b>${esc(t('src.'+k+'.name'))}</b><small>${esc(t('src.'+k+'.desc'))}</small></span><span class="srcost"><bdi dir="ltr">📞 ${s.cost}</bdi></span></div>
-   <div class="srcg"><div><span class="over">${esc(t('cr.opens'))}</span><b>${esc(opens)}</b></div><div><span class="over">${esc(t('cr.trustNow'))}</span><b>${sigHtml(now)} ${esc(t('src.tier.'+now)!=='src.tier.'+now?t('src.tier.'+now):t('cr.tier'+now))}</b>${g&&best>now?`<small>${esc(t('cr.withGear',{g:t('equip.'+g[0]+'.name')}))} ${sigHtml(best)}</small>`:g&&!C().equip.includes(g[0])?`<small>${esc(t('cr.gearHelps',{g:t('equip.'+g[0]+'.name')}))}</small>`:''}</div>
-   <div><span class="over">${esc(t('cr.record'))}</span><b>${st&&st.n?esc(t('cr.recordN',{n:st.ok,m:st.n})):'—'}</b></div></div></div>`; }).join('')+`<p class="xs dim" style="margin:10px 4px 0">${esc(t('cr.history'))}</p>`; }
+/* Career › Sources = the source tree (SRC_TREE / MATH.REL_UP): per source, reliability levels and (elite sources) earlier unlocks */
+function crBdi(k,v){ const ks=Object.keys(v), m={}; ks.forEach((x,i)=>m[x]='\u0001'+i+'\u0002'); return esc(t(k,m)).replace(/\u0001(\d+)\u0002/g,(_,i)=>`<bdi dir="ltr">${esc(v[ks[+i]])}</bdi>`); }
+function crPips(n,m){ return `<span class="tpips" role="img" aria-label="${esc(t('tree.lvlN',{n,m}))}">${Array.from({length:m},(_,i)=>`<i class="${i<n?'on':''}"></i>`).join('')}</span>`; }
+function crTreeBtn(nx,c,lv){ if(!nx) return `<span class="owned-chip">✓ ${esc(t('tree.maxed'))}</span>`;
+ if(lv.n<nx.lvl) return `<span class="buy no">🔒 ${esc(t('cr.lv',{n:nx.lvl}))}</span>`;
+ if(c.credits>=nx.price) return `<button type="button" class="buy" data-act="crUp" data-v="${nx.track}:${nx.key}" aria-label="${esc(t('cr.buyFor',{p:nx.price}))}"><bdi dir="ltr">$${nx.price}</bdi></button>`;
+ return `<button type="button" class="buy no" data-act="needCash" data-v="${nx.price-c.credits}"><bdi dir="ltr">$${nx.price}</bdi><small>${esc(t('econ.need',{n:nx.price-c.credits}))}</small></button>`; }
+function crSourcesTab(c){ const lv=levelInfo(c.xp);
+ return `<p class="muted sm" style="margin:12px 2px 0">${esc(t('tree.intro'))}</p>`+Object.entries(SOURCES).map(([k,s])=>{ const st=c.sources[k], T=SRC_TREE[k]||{}, nm=t('src.'+k+'.name');
+  const rn=relLvl(k,c), rm=(T.rel||[]).length, now=Math.round(crRel(k)*100), rx=treeNext(k,'rel',c);
+  const nxt=rx?Math.round(Math.min(MATH.REL_CAP||.97,s.rel+((MATH.REL_UP[k]||[])[rx.step]||0))*100):null;
+  const row=(lab,n,m,big,sub,nx)=>`<div class="trow"><div class="tmain"><span class="tlab"><span class="over">${esc(lab)}</span>${crPips(n,m)}</span><b>${big}</b><small>${sub}</small></div><div class="tbuy">${crTreeBtn(nx,c,lv)}</div></div>`;
+  const gate=nx=>` · <bdi dir="ltr">$${nx.price}</bdi> · ${esc(t('tree.lvlGate',{n:nx.lvl}))}`;
+  let rows=''; if(T.open){ const on=openLvl(k,c), d=unlockDay(k,c), ox=treeNext(k,'open',c);
+   rows+=row(t('tree.open'),on,T.open.length,`🕐 ${esc(t('tree.opensNow',{d}))}`,ox?esc(t('tree.openNext',{src:nm,a:d,b:d-1}))+gate(ox):esc(t('tree.openMax')),ox); }
+  if(rm) rows+=row(t('tree.rel'),rn,rm,`${sigHtml(crBars(crRel(k)))} ${crBdi('tree.relNow',{n:now+'%'})}`,rx?crBdi('tree.relNext',{a:now+'%',b:nxt+'%'})+gate(rx):esc(t('tree.relMax')),rx);
+  return `<div class="card srcc tree"><div class="srch"><span class="se" aria-hidden="true">${s.ic}</span><span style="min-width:0"><b>${esc(nm)}</b><small>${esc(t('src.'+k+'.desc'))}</small></span><span class="srcost"><bdi dir="ltr">📞 ${s.cost}</bdi></span></div>${rows}
+   <p class="trec"><span class="over">${esc(t('cr.record'))}</span> <b>${st&&st.n?esc(t('cr.recordN',{n:st.ok,m:st.n})):'—'}</b></p></div>`; }).join('')+`<p class="xs dim" style="margin:10px 4px 0">${esc(t('tree.dailyNote'))}</p>`; }
+LANE_ACTS.crUp=(el,v)=>{ const [tr,k]=String(v||'').split(':'); if(!SOURCES[k]||(tr!=='rel'&&tr!=='open')) return; const cc=C(); const nx=buyTree(k,tr,cc); if(!nx) return;
+ achTry(()=>Analytics.track('spend_virtual_currency',{value:nx.price,virtual_currency_name:'credits',item_name:tr+'_'+k+'_'+(nx.step+1)})); achTry(()=>sfxCue('register'),null); beep('register');
+ const out=[]; if(achUnlock('gear1',{m:roomCtx?'rooms':'career',r:roomCtx||undefined})) out.push('gear1'); out.push(...achEval({m:'career'})); persist();
+ render(); toast(tr==='rel'?t('tree.toastRel',{src:t('src.'+k+'.name'),n:Math.round(crRel(k)*100)+'%'}):t('tree.toastOpen',{src:t('src.'+k+'.name'),d:unlockDay(k,cc)})); out.forEach(achToast); };
 LANE_ACTS.crGear=(el,v)=>{ const e=EQUIP.find(x=>x.key===v); if(!e) return; const c=C(), lv=levelInfo(c.xp); const own=c.equip.includes(v); const fx=crFx(v);
  openModal(`<div class="geardet"><span class="gi big" aria-hidden="true">${e.ic}</span><h2 class="d3">${esc(t('equip.'+v+'.name'))}</h2><p>${esc(t('equip.'+v+'.desc'))}</p>${fx?`<span class="fx">${fx}</span>`:''}
   <p class="xs muted" style="margin-top:10px">${esc(t('cr.gearNote'))}</p>
