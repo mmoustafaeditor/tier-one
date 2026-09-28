@@ -1331,6 +1331,39 @@ html.rm .pp{ animation:none; }
 .big.ppcall .ppadded{ display:flex; align-items:center; gap:8px; font:700 var(--fs-sm) var(--body); color:#fff; }
 .big.ppcall .ppskip{ font:600 11px var(--body); color:rgba(255,255,255,.5); }
 .big .ppclk{ position:fixed; top:calc(10px + env(safe-area-inset-top,0px)); left:50%; transform:translateX(-50%); }
+
+/* Go louder */
+.ppdock .hint.ppcallnow2{ display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap; }
+.ppdock .hint .ppcl{ font:700 var(--fs-xs)/1.2 var(--body); color:var(--muted); }
+.ppdock .row.ppescrow{ display:flex; gap:8px; }
+.ppdock .row.ppescrow > .btn{ flex:1 1 0; min-width:0; min-height:52px; padding:0 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ppdock .row.ppescrow > .btn.primary{ font-size:18px; }
+.ppdock .btn.ppesc{ background:color-mix(in srgb,var(--cta) 14%,var(--panel)); border:1.5px solid var(--cta); color:var(--text); }
+.ppsheet .escsub{ margin:6px 0 10px; font:600 var(--fs-sm)/1.35 var(--body); color:var(--muted); }
+.ppsheet .escnow{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:4px 10px; align-items:center; padding:10px 12px; border-radius:14px; background:var(--panel2,var(--panel)); border:1px solid var(--line); }
+.ppsheet .escnow .lb{ grid-column:1/-1; font:800 10.5px/1 var(--body); letter-spacing:.07em; text-transform:var(--caps); color:var(--dim); }
+.ppsheet .escnow .cc{ display:flex; align-items:center; gap:8px; min-width:0; font:700 var(--fs-sm) var(--body); color:var(--text); white-space:nowrap; }
+.ppsheet .escnow .pts{ display:flex; flex-direction:column; align-items:flex-end; font:800 var(--fs-sm) var(--body); }
+.ppsheet .escnow .pts small{ font:600 11px var(--body); color:var(--ex,var(--muted)); }
+.ppsheet .up{ color:var(--ok); } .ppsheet .dn{ color:var(--bad); }
+.ppsheet .escopts{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+.ppsheet .escopt{ position:relative; display:grid; grid-template-columns:30px minmax(0,1fr) auto; gap:10px; align-items:center; width:100%; padding:12px; border-radius:14px; border:1.5px solid var(--line2); background:var(--panel); color:var(--text); text-align:start; cursor:pointer; }
+.ppsheet .escopt.on{ border-color:var(--cta); box-shadow:0 0 0 2px color-mix(in srgb,var(--cta) 35%,transparent); }
+.ppsheet .escopt .ci{ font-size:22px; }
+.ppsheet .escopt b{ display:block; font:800 15px/1.1 var(--body); }
+.ppsheet .escopt .eh{ display:flex; flex-direction:column; gap:3px; margin-top:5px; font:600 12px/1.25 var(--body); color:var(--muted); }
+.ppsheet .escopt .eh .ok{ color:var(--ok); } .ppsheet .escopt .eh .no{ color:var(--dim); }
+.ppsheet .escopt .pts{ font:800 14px var(--body); white-space:nowrap; }
+.ppsheet .escopt .chk{ position:absolute; top:-7px; inset-inline-end:-7px; width:22px; height:22px; border-radius:50%; background:var(--cta); color:var(--cta-ink,#111); display:grid; place-items:center; }
+.ppsheet .escopt .chk svg{ width:13px; height:13px; }
+.ppsheet.ppesc .preview{ margin-top:12px; }
+.ppsheet .escrule{ margin:10px 0 0; font:600 12px/1.35 var(--body); color:var(--muted); }
+.ppsheet .escwarn{ margin:8px 0 0; padding:8px 10px; border-radius:10px; background:color-mix(in srgb,var(--bad) 12%,transparent); font:700 12px/1.35 var(--body); color:var(--text); }
+.ppsheet.ppesc .stakes{ margin:10px 0; }
+.big .tweetbig.loud{ border:3px solid var(--cta); }
+/* board chip: loudness icon (👀 Talks, 📈 Advanced, 📢 Confirmed; ▲ = went louder) */
+.pcard .loudm{ display:inline-flex; align-items:center; gap:1px; font-size:12px; line-height:1; }
+.pcard .loudm b{ font-size:9px; color:var(--ok); }
 /* @@LANE CSS:player END */
 /* ─ */
 /* @@LANE CSS:results BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -1500,6 +1533,25 @@ html.rm .pp{ animation:none; }
 html.rm .rvl *,html.rm .rsx *{ animation:none!important; transition:none!important; }
 .rsx .link{ background:none; border:0; padding:0; cursor:pointer; }
 .rsx .rsnote .link{ font:700 var(--fs-sm) var(--body); color:var(--accent-text); }
+
+/* The calls: a comparison, not a flow. Columns: You called | What happened | Points (verdict ✓/✕ sits with the points) */
+.sb .sbh{ grid-template-columns:34px minmax(0,1fr) minmax(0,1fr) 84px; align-items:end; }
+.sb .sbh span{ line-height:1.15; white-space:nowrap; letter-spacing:.03em; font-size:10px; }
+.rsx .srow{ grid-template-columns:34px minmax(0,1fr) minmax(0,1fr) 84px; grid-template-rows:auto auto; row-gap:7px; align-items:center; }
+.rsx .srow .kit{ grid-row:1 / span 2; grid-column:1; align-self:center; }
+.rsx .srow .sn{ grid-column:2 / 4; grid-row:1; min-width:0; }
+.rsx .srow .sy{ grid-column:2; grid-row:2; min-width:0; display:flex; }
+.rsx .srow .st{ grid-column:3; grid-row:2; min-width:0; display:flex; }
+.rsx .srow .sp{ grid-column:4; grid-row:1 / span 2; }
+.rsx .srow .sy .oc,.rsx .srow .st .oc{ height:22px; font-size:10.5px; padding:0 7px 0 5px; max-width:100%; overflow:hidden; }
+.rsx .srow .sy .oc.none{ background:var(--panel3); color:var(--dim); }
+.rsx .srow .svt{ display:inline-flex; align-items:center; gap:4px; }
+.rsx .srow .svt .res{ width:18px; height:18px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; }
+.rsx .srow .svt .res svg{ width:11px; height:11px; }
+.rsx .srow .svt .res.r{ background:var(--ok); color:#06220F; } .rsx .srow .svt .res.w{ background:var(--bad); color:#fff; }
+.rsx .srow .sesc{ grid-column:2 / 5; grid-row:3; font:700 11.5px/1.2 var(--body); color:var(--muted); }
+.rsx .thread .tw.rsesc0{ opacity:.6; }
+.rsx .thread .rsloud{ font:800 10.5px/1 var(--body); color:var(--accent-text); letter-spacing:.04em; text-transform:var(--caps); }
 /* @@LANE CSS:results END */
 /* ─ */
 /* @@LANE CSS:career BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -2022,13 +2074,13 @@ html[lang="ar"] :is(.srow .sn,.thh b.n,.rvr .pn,.saga .who b,.today .five b){ wh
    your own domain — not inside the claude.ai preview.
    ============================================================ */
 const CONFIG={
- VERSION:'2.0.2',
+ VERSION:'2.1.1',
  GAME_NAME:'Tier One',
  STUDIO_NAME:'Semba Studios',
  SITE_URL:'https://sembagames.app/tier-one',
  DAILY_REPLAY:true,
  SAGAS:5,                                        // players per window, every mode
- CONTACTS:3,                                     // source contacts per day, days 1-6 (Career gear adds more)
+ CONTACTS:4,                                     // source contacts per day, days 1-6 (Career gear adds more)
  DD_SECONDS:60,                                  // Deadline-Day timer (seconds)
  DD_CONTACTS:3,                                  // Deadline-Day contacts (Power bank gear +1)
  TIERS:[385,260,160,70],                         // tier cut-offs T1..T4 (T5 >= 0, Clown < 0)                              // TESTING ONLY: lets the Daily Challenge be replayed. Set to false to make it one-go-a-day again.                 // your live URL — printed at the bottom of every share card
@@ -3837,6 +3889,46 @@ deepMerge(I18N,{
 });
 /* tune2: tutorial cards (base I18N) quote the Tier-1 bar; keep them in sync with CONFIG.TIERS[0] */
 ['en','es','ar'].forEach(l=>{ const T=I18N[l]; if(!T) return; const fx=v=>typeof v==='string'?v.replace(/\b3[5-9]\d\+/g,CONFIG.TIERS[0]+'+'):Array.isArray(v)?v.map(fx):v; ['tut','howto'].forEach(k=>{ if(T[k]&&T[k].cards) T[k].cards=fx(T[k].cards); }); });
+/* Option B (all sources open from day 1; physio/airport give a ~55% hunch before day 6/4). Hard-coded days: MATH.SRC_FROM
+   (physio 6, airport 4) and MATH.HUNCH (.55). Applied here and again from the math JS slot, because some of these keys are
+   (re)defined by later I18N blocks (howto2, tut.coach, board). */
+const OPTB_I18N={
+ en:{math:{hunchUntil:'Hunch until Day {d}',hunchLine:{physio:'(No medical booked yet. Just a hunch.)',airport:'(No flight plan filed yet. Just a hunch.)'},
+   reason:{hunch:'Only a hunch until Day {d}. Ask now and that hunch sticks until a twist.',physio:'No medical booked before Day {d}: until then the physio only has a hunch.',airport:'No flight plans filed before Day {d}: until then the airport spotter only has a hunch.'},
+   opens:'Sharp from Day {d}',
+   rules:{summary:'Five sagas, seven days, four contacts a day, and two real deals will TWIST before the window shuts: the wire shouts 🚨, the old answer becomes wrong and his sources talk again. Call early for bonus points and exclusives, or wait for the physio to get sharp on day 6 and Deadline Day, but only go loud when you\'re really sure.',
+    sources:'Every source answers from day 1. Barber and leak cost 1, agent and kitman 2. Airport spotter (3) and physio (3) only have a hunch (about 55%) before day 4 and day 6, then they\'re the best sources. Ask early and the hunch sticks until a twist.'}},
+  equip:{wifi:{desc:'+1 contact on day 6 (4 → 5)'},phone2:{desc:'+1 contact on day 5 (4 → 5)'}},
+  src:{physio:{desc:'Best source from day 6, when medicals get booked. Before that, just a hunch.'},airport:{desc:'High from day 4, when flights get filed. Before that, just a hunch.'}},
+  howto2:{ask3:'Every source answers from day 1, but the airport spotter only has a hunch before day 4 and the physio before day 6. Ask early and you\'re stuck with it: each source answers once per player until a twist.'},
+  tut:{coach:{opens:'Every source answers from day 1. The physio and the airport spotter only have a hunch until their day.'}},
+  board:{tmOpen:'Tomorrow: **{x} sharpens**'},
+  howtoCard:['4 contacts a day','Spend 4 contacts a day. Every source answers from day 1. Barber and rival leak cost 1, agent and kitman 2. The airport spotter (3) and the physio (3) are the best sources, but before flights get filed (day 4) and medicals get booked (day 6) they only have a hunch (about 55%). Ask early and you\'re stuck with that hunch: each source answers once per player until a twist. Everyone lies sometimes.']},
+ es:{math:{hunchUntil:'Corazonada hasta el día {d}',hunchLine:{physio:'(Aún no hay reconocimiento médico. Es solo una corazonada.)',airport:'(Aún no hay plan de vuelo registrado. Es solo una corazonada.)'},
+   reason:{hunch:'Solo una corazonada hasta el día {d}. Si preguntas ya, esa corazonada se queda hasta que haya un giro.',physio:'No hay reconocimiento antes del día {d}: hasta entonces el fisio solo tiene una corazonada.',airport:'No hay planes de vuelo antes del día {d}: hasta entonces el vigía del aeropuerto solo tiene una corazonada.'},
+   opens:'Fiable desde el día {d}',
+   rules:{summary:'Cinco culebrones, siete días, cuatro contactos al día, y dos operaciones reales darán un GIRO antes del cierre: la agencia avisa con 🚨, la respuesta de antes pasa a ser falsa y sus fuentes vuelven a hablar. Apuesta pronto para sumar bonus y exclusivas, o espera a que el fisio sea fiable el día 6 y al día límite, pero grita solo si estás muy seguro.',
+    sources:'Todas las fuentes contestan desde el día 1. Barbero y topo cuestan 1, agente y utillero 2. El vigía del aeropuerto (3) y el fisio (3) solo tienen una corazonada (un 55%) antes del día 4 y del día 6; después son las mejores fuentes. Si preguntas pronto, la corazonada se queda hasta un giro.'}},
+  equip:{wifi:{desc:'+1 contacto el día 6 (4 → 5)'},phone2:{desc:'+1 contacto el día 5 (4 → 5)'}},
+  src:{physio:{desc:'La mejor fuente desde el día 6, cuando hay reconocimientos. Antes, solo una corazonada.'},airport:{desc:'Alta desde el día 4, cuando se registran los vuelos. Antes, solo una corazonada.'}},
+  howto2:{ask3:'Todas las fuentes contestan desde el día 1, pero el vigía del aeropuerto solo tiene una corazonada antes del día 4 y el fisio antes del día 6. Si preguntas pronto, te quedas con eso: cada fuente contesta una vez por jugador hasta que hay un giro.'},
+  tut:{coach:{opens:'Todas las fuentes contestan desde el día 1. El fisio y el vigía del aeropuerto solo tienen una corazonada hasta su día.'}},
+  board:{tmOpen:'Mañana: **{x} se vuelve fiable**'},
+  howtoCard:['4 contactos al día','Tienes 4 contactos al día. Todas las fuentes contestan desde el día 1. Barbero y topo cuestan 1, agente y utillero 2. El vigía del aeropuerto (3) y el fisio (3) son las mejores fuentes, pero antes de que se registren los vuelos (día 4) y haya reconocimientos (día 6) solo tienen una corazonada (un 55%). Si preguntas pronto, te quedas con esa corazonada: cada fuente contesta una vez por jugador hasta que hay un giro. Todos mienten a veces.']},
+ ar:{math:{hunchUntil:'إحساس لحد يوم {d}',hunchLine:{physio:'(لسه مفيش كشف طبي متحجز. ده مجرد إحساس.)',airport:'(لسه مفيش خطة طيران متسجلة. ده مجرد إحساس.)'},
+   reason:{hunch:'مجرد إحساس لحد يوم {d}. لو سألت دلوقتي، الإحساس ده هيفضل معاك لحد ما تحصل قلبة.',physio:'مفيش كشف طبي قبل يوم {d}: لحد ساعتها دكتور الفريق عنده إحساس بس.',airport:'مفيش رحلات بتتسجل قبل يوم {d}: لحد ساعتها الواد بتاع المطار عنده إحساس بس.'},
+   opens:'مظبوط من يوم {d}',
+   rules:{summary:'خمس قصص، سبع أيام، أربع اتصالات في اليوم، وصفقتين حقيقيين هيتقلبوا قبل ما النافذة تقفل: الأخبار بتصرخ 🚨، الإجابة القديمة بتبقى غلط ومصادره بتتكلم تاني. قول بدري عشان البونص والانفراد، أو استنى دكتور الفريق لما كلامه يتظبط يوم 6 ويوم القفلة، بس متعليش صوتك إلا وانت متأكد بجد.',
+    sources:'كل المصادر بترد من أول يوم. الحلاق والمسرّب بـ1، السمسار وعم سيد بـ2. الواد بتاع المطار (3) ودكتور الفريق (3) عندهم إحساس بس (حوالي 55%) قبل يوم 4 ويوم 6، وبعدها هما أحسن مصادر. لو سألت بدري، الإحساس بيفضل لحد القلبة.'}},
+  equip:{wifi:{desc:'+1 اتصال في يوم 6 (4 ← 5)'},phone2:{desc:'+1 اتصال في يوم 5 (4 ← 5)'}},
+  src:{physio:{desc:'أحسن مصدر من يوم 6 لما الكشف الطبي يتحجز. قبلها مجرد إحساس.'},airport:{desc:'عالي من يوم 4 لما الرحلات تتسجل. قبلها مجرد إحساس.'}},
+  howto2:{ask3:'كل المصادر بترد من أول يوم، بس الواد بتاع المطار عنده إحساس بس قبل يوم 4، ودكتور الفريق قبل يوم 6. لو سألت بدري هتفضل على كده: كل مصدر بيرد مرة واحدة على كل لعيب لحد ما تحصل قلبة.'},
+  tut:{coach:{opens:'كل المصادر بترد من أول يوم. دكتور الفريق والواد بتاع المطار عندهم إحساس بس لحد يومهم.'}},
+  board:{tmOpen:'بكرة: **{x} كلامه بيتظبط**'},
+  howtoCard:['4 اتصالات في اليوم','معاك 4 اتصالات كل يوم. كل المصادر بترد من أول يوم. الحلاق والمسرّب بـ1، السمسار وعم سيد بـ2. الواد بتاع المطار (3) ودكتور الفريق (3) أحسن مصادر، بس قبل ما الرحلات تتسجل (يوم 4) والكشف الطبي يتحجز (يوم 6) عندهم إحساس بس (حوالي 55%). لو سألت بدري هتفضل على الإحساس ده: كل مصدر بيرد مرة واحدة على كل لعيب لحد ما تحصل قلبة. الكل بيكدب ساعات.']}
+};
+function optbApplyI18N(){ deepMerge(I18N,OPTB_I18N); ['en','es','ar'].forEach(l=>{ const T=I18N[l], c=OPTB_I18N[l].howtoCard; if(T&&T.howto&&Array.isArray(T.howto.cards)&&T.howto.cards[2]) T.howto.cards[2]=c.slice(); }); }
+optbApplyI18N();
 /* @@LANE I18N:math END */
 /* ─ */
 /* @@LANE I18N:ds BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -4003,7 +4095,7 @@ en:{pp:{back:'Back to the board',close:'Close',dayOf:'Day {d} of 7',ctxAria:'{n}
  dd:{slab:'Deadline Day',uncalled:'{n} players still uncalled',uncalled1:'1 player still uncalled',zero:'they score 0 at 0:00',callNow:'Call it now',next:'Next uncalled: {p}',board:'Back to the board'},
  conf:{low:'Talks',med:'Advanced',high:'Confirmed'},
  c:{over:'Your call · Day {d}',title:'{p} → {d}?',s1:'What happens?',s2:'How loud?',s2aux:'louder = bigger swing',DONE:'He joins {d}',HIJACK:'He leaves {c} — not for {d}',OFF:'Deal dies. He stays at {c}',FAKE:'It was never real',
-  said:'{n} said',nobody:'Nobody said',oldCall:'your old call',preview:'preview',early:'Early bonus {n} in · drops 3 a day',ex:'Beat every rival: {n} more',rivals:'{n} rivals posted',rivals1:'1 rival posted',
+  said:'{n} said',nobody:'Nobody said',oldCall:'your old call',preview:'preview',early:'Early bonus {n} in · drops 4 a day',ex:'Beat every rival: {n} more',rivals:'{n} rivals posted',rivals1:'1 rival posted',
   ifRight:'If right',ifWrong:'If wrong',post:'Post it →',postU:'Post the U-turn',utStrip:'U-TURN · new call scores half, no exclusive',first:'Posted calls are public. You can U-turn, but it costs.'},
  u:{over:'U-turn · {p}',title:'Delete & re-call?',twistOn:'Twist on Day {d}',reads:'{n} new reads',reads1:'1 new read',posted:'posted',
   r1a:'Followers notice',r1b:'right now, whatever happens',r2a:'New call scores half',r2b:"and can't be an exclusive",r3a:'Wrong again?',r3b:'an extra penalty on top',r4a:'Replies will be mixed',r4b:'some respect it, some never forget',public:'Public',
@@ -4024,7 +4116,7 @@ es:{pp:{back:'Volver al tablero',close:'Cerrar',dayOf:'Día {d} de 7',ctxAria:'T
  dd:{slab:'Día de cierre',uncalled:'{n} jugadores sin apuesta',uncalled1:'1 jugador sin apuesta',zero:'puntúan 0 a las 0:00',callNow:'Apuesta ya',next:'Siguiente sin apuesta: {p}',board:'Volver al tablero'},
  conf:{low:'Charlas',med:'Avanzado',high:'Confirmado'},
  c:{over:'Tu apuesta · Día {d}',title:'¿{p} → {d}?',s1:'¿Qué pasa?',s2:'¿Qué tan fuerte?',s2aux:'más fuerte = más en juego',DONE:'Ficha por el {d}',HIJACK:'Deja el {c} — pero no por el {d}',OFF:'Se cae. Se queda en el {c}',FAKE:'Nunca fue real',
-  said:'{n} lo dijeron',nobody:'Nadie lo dijo',oldCall:'tu apuesta anterior',preview:'vista previa',early:'Bonus por madrugar {n} · baja 3 al día',ex:'Gana a todos los rivales: {n} más',rivals:'{n} rivales publicaron',rivals1:'1 rival publicó',
+  said:'{n} lo dijeron',nobody:'Nadie lo dijo',oldCall:'tu apuesta anterior',preview:'vista previa',early:'Bonus por madrugar {n} · baja 4 al día',ex:'Gana a todos los rivales: {n} más',rivals:'{n} rivales publicaron',rivals1:'1 rival publicó',
   ifRight:'Si aciertas',ifWrong:'Si fallas',post:'Publicar →',postU:'Publicar la rectificación',utStrip:'RECTIFICACIÓN · la nueva apuesta puntúa la mitad, sin exclusiva',first:'Las apuestas son públicas. Puedes rectificar, pero cuesta.'},
  u:{over:'Rectificar · {p}',title:'¿Borrar y volver a apostar?',twistOn:'Giro el día {d}',reads:'{n} datos nuevos',reads1:'1 dato nuevo',posted:'publicado',
   r1a:'Tus seguidores lo notan',r1b:'ahora mismo, pase lo que pase',r2a:'La nueva apuesta puntúa la mitad',r2b:'y no puede ser exclusiva',r3a:'¿Fallas otra vez?',r3b:'penalización extra',r4a:'Respuestas divididas',r4b:'unos lo respetan, otros no olvidan',public:'Público',
@@ -4045,11 +4137,38 @@ ar:{pp:{back:'ارجع للوحة',close:'اقفل',dayOf:'اليوم {d} من 7
  dd:{slab:'آخر يوم',uncalled:'{n} لاعيبة لسه من غير توقع',uncalled1:'لاعب واحد لسه من غير توقع',zero:'هياخدوا صفر عند 0:00',callNow:'اتوقع دلوقتي',next:'اللي بعده: {p}',board:'ارجع للوحة'},
  conf:{low:'كلام',med:'متقدم',high:'مؤكد'},
  c:{over:'توقعك · يوم {d}',title:'{p} ← {d}؟',s1:'إيه اللي هيحصل؟',s2:'بصوت عالي قد إيه؟',s2aux:'أعلى = مكسب وخسارة أكبر',DONE:'هيمضي لـ{d}',HIJACK:'هيسيب {c} — بس مش لـ{d}',OFF:'الصفقة باظت. قاعد في {c}',FAKE:'عمرها ما كانت حقيقية',
-  said:'{n} قالوا',nobody:'محدش قال',oldCall:'توقعك القديم',preview:'معاينة',early:'بونص البدري {n} · بيقل 3 كل يوم',ex:'اسبق كل المنافسين: {n} كمان',rivals:'{n} منافسين نشروا',rivals1:'منافس واحد نشر',
+  said:'{n} قالوا',nobody:'محدش قال',oldCall:'توقعك القديم',preview:'معاينة',early:'بونص البدري {n} · بيقل 4 كل يوم',ex:'اسبق كل المنافسين: {n} كمان',rivals:'{n} منافسين نشروا',rivals1:'منافس واحد نشر',
   ifRight:'لو صح',ifWrong:'لو غلط',post:'انشر ←',postU:'انشر التوقع الجديد',utStrip:'رجوع · التوقع الجديد بنص النقط ومن غير انفراد',first:'التوقعات بتبقى علنية. تقدر ترجع فيها، بس ليها تمن.'},
  u:{over:'رجوع · {p}',title:'تمسح وتتوقع تاني؟',twistOn:'مفاجأة يوم {d}',reads:'{n} أخبار جديدة',reads1:'خبر جديد',posted:'اتنشر',
   r1a:'المتابعين هياخدوا بالهم',r1b:'دلوقتي، مهما حصل',r2a:'التوقع الجديد بنص النقط',r2b:'ومينفعش يبقى انفراد',r3a:'غلطت تاني؟',r3b:'عقوبة زيادة',r4a:'الردود هتبقى متلخبطة',r4b:'ناس هتحترمها وناس مش هتنسى',public:'علني',
   rescue:'إنقاذ المفاجأة: الرجوع ده ببلاش',keep:'خليه',del:'امسح',toast:'−{n} متابع. جرنال الفضايح شاف.',toastFree:'اتمسح. يلا توقع جديد.'}}}
+});
+
+deepMerge(I18N,{
+en:{esc:{btn:'Go louder',next:'Next: {p}',title:'Go louder',over:'Your call · Day {d}',yourCall:'Your call',sub:'Same call, more confidence. Only up: not a U-turn, no follower loss.',now:'Your call now',nowEx:'incl. exclusive',pick:'How loud now?',
+  early:'Early bonus +{n} (from {day})',early0:'No early bonus on Deadline Day',exYes:'Exclusive still open: +{n}',exNo:'No exclusive: {n} rivals already posted',exNo1:'No exclusive: 1 rival already posted',exUt:'U-turned call: half points, no exclusive',
+  rule:'It scores as a {day} call: the early bonus and the exclusive race count from today.',less:'Worth less if right than your call now ({n}).',post:'Post louder',tag:'louder',send:'Post',stamp:'LOUDER',toast:'Louder. Same call, bigger stakes.',
+  tweet:{DONE:{med:'Stepping it up on {p} → {d}: talks now at an advanced stage 📈',high:'{cp} Told you so. {p} to {d}. Agreement reached, medical next. ✅'},
+   HIJACK:{med:"Doubling down on {p}: he's leaving {c}, and {d} are NOT leading 📈",high:"{cp} Told you so. {p} WILL leave {c} — and it's NOT {d}. 🚨"},
+   OFF:{med:'Firming it up: {p} to {d} is stalling badly. Fee gap is real 📉',high:'{cp} Told you so. OFF. {p} to {d} is dead. He stays at {c}.'},
+   FAKE:{med:'Standing by it: {p} → {d} is agent-driven noise 🧢',high:'{cp} Told you so. NOTHING in {p} to {d}. Pure noise. 🧢'}}},
+ rs:{sbYou:'You called',sbTruth:'What happened',escNote:'{a} → {b} on {day}'}},
+es:{esc:{btn:'Subir el tono',next:'Siguiente: {p}',title:'Subir el tono',over:'Tu apuesta · Día {d}',yourCall:'Tu apuesta',sub:'Misma apuesta, más seguridad. Solo hacia arriba: no es una rectificación y no pierdes seguidores.',now:'Tu apuesta ahora',nowEx:'con exclusiva',pick:'¿Cuánto más fuerte?',
+  early:'Bonus por madrugar +{n} (desde {day})',early0:'Sin bonus por madrugar el Día límite',exYes:'La exclusiva sigue abierta: +{n}',exNo:'Sin exclusiva: {n} rivales ya publicaron',exNo1:'Sin exclusiva: 1 rival ya publicó',exUt:'Apuesta rectificada: mitad de puntos, sin exclusiva',
+  rule:'Cuenta como apuesta del {day}: el bonus por madrugar y la carrera por la exclusiva se cuentan desde hoy.',less:'Si aciertas vale menos que tu apuesta actual ({n}).',post:'Publicar más fuerte',tag:'más fuerte',send:'Publicar',stamp:'MÁS FUERTE',toast:'Más fuerte. Misma apuesta, más en juego.',
+  tweet:{DONE:{med:'Subo el tono con {p} → {d}: ya está en fase avanzada 📈',high:'{cp} Os lo dije. {p} a {d}. Acuerdo cerrado, reconocimiento médico en breve. ✅'},
+   HIJACK:{med:'Me reafirmo con {p}: sale de {c} y {d} NO va en cabeza 📈',high:'{cp} Os lo dije. {p} SE VA de {c}… y NO es a {d}. 🚨'},
+   OFF:{med:'Lo confirmo: {p} a {d} está muy atascado. La diferencia en el precio es real 📉',high:'{cp} Os lo dije. SE CAE. {p} a {d} está muerto. Se queda en {c}.'},
+   FAKE:{med:'Me mantengo: {p} → {d} es humo del agente 🧢',high:'{cp} Os lo dije. NADA de {p} a {d}. Puro ruido. 🧢'}}},
+ rs:{sbYou:'Tu apuesta',sbTruth:'Lo que pasó',escNote:'{a} → {b} el {day}'}},
+ar:{esc:{btn:'علّي الصوت',next:'اللي بعده: {p}',title:'علّي الصوت',over:'توقعك · يوم {d}',yourCall:'توقعك',sub:'نفس التوقع بثقة أكتر. لفوق بس: مش رجوع ومش هتخسر متابعين.',now:'توقعك دلوقتي',nowEx:'بالانفراد',pick:'تعلّي لحد فين؟',
+  early:'بونص البدري +{n} (من {day})',early0:'مفيش بونص بدري يوم القفلة',exYes:'الانفراد لسه متاح: +{n}',exNo:'مفيش انفراد: {n} منافسين نشروا خلاص',exNo1:'مفيش انفراد: منافس نشر خلاص',exUt:'توقع بعد رجوع: نص النقط ومن غير انفراد',
+  rule:'هيتحسب كأنك نزّلته {day}: بونص البدري وسباق الانفراد بيتحسبوا من النهارده.',less:'لو طلع صح هيجيب أقل من توقعك دلوقتي ({n}).',post:'انشر بصوت أعلى',tag:'بصوت أعلى',send:'انشر',stamp:'بصوت أعلى',toast:'علّيت الصوت. نفس التوقع والرهان أكبر.',
+  tweet:{DONE:{med:'بعلّي الصوت في {p} لـ{d}: الموضوع بقى في مرحلة متقدمة 📈',high:'{cp} مش قلتلكم؟ {p} لـ{d}. اتفقوا خلاص، والكشف الطبي جاي. ✅'},
+   HIJACK:{med:'بأكد كلامي على {p}: ماشي من {c}، و{d} مش في الصورة 📈',high:'{cp} مش قلتلكم؟ {p} ماشي من {c}… بس مش لـ{d}. 🚨'},
+   OFF:{med:'بأكد أكتر: {p} لـ{d} واقفة خالص. الفلوس مش مظبوطة 📉',high:'{cp} مش قلتلكم؟ اتلغت. {p} لـ{d} ماتت. قاعد في {c}.'},
+   FAKE:{med:'لسه عند كلامي: {p} لـ{d} شغل وكلا ومفيهاش حاجة 🧢',high:'{cp} مش قلتلكم؟ مفيش أي حاجة في {p} لـ{d}. هري. 🧢'}}},
+ rs:{sbYou:'توقعك',sbTruth:'اللي حصل',escNote:'{a} ← {b} {day}'}}
 });
 /* @@LANE I18N:player END */
 /* ─ */
@@ -4279,7 +4398,8 @@ const PTS={low:[10,-5],med:[20,-12],high:[40,-45]};
 /* ---- GAME MATH ("Plot Twists"). Every tuned number lives here (see ot/math/final/MATH_NOTES.md).
    TWISTS real deals (never a FAKE story) flip their truth each window; TW_D1/TW_D2 = day weights of twist 1/2 (announced on the
    wire at the start of that day: pre-twist reads go out of date, the player's sources re-open). TW_M = where a flipped deal goes.
-   SRC_FROM = first day a source can be asked. EARLY = pts per day left on a right call. EXCL = exclusive bonus (right AND posted
+   SRC_FROM = first day a source answers at full reliability (Option B: every source is open from day 1; before its day an elite
+   source only has a hunch, reliability HUNCH). EARLY = pts per day left on a right call. EXCL = exclusive bonus (right AND posted
    before ANY rival post in the current era). UT_FRAC = share of base a U-turned right call keeps; UT_WRONG = extra loss when a
    U-turned call is wrong (waived for a free post-twist update). TW_BONUS = right call on a twisted player posted on/after the twist.
    KIT_SIDE = share of the kitman's lies that stay on the right side of "is he leaving?". WARN_GEAR/LEAD_GEAR = Career twist tip-offs. */
@@ -4288,7 +4408,7 @@ const MATH={
  TW_M:{DONE:{HIJACK:.5,OFF:.5},OFF:{DONE:.6,HIJACK:.4},HIJACK:{DONE:.5,OFF:.5}},
  TW_KINDS:['meeting','statement','silence','scramble'],
  WARN:0, EV_P:.5, EV_RH:.5, RIV_P:.6,
- SRC_FROM:{physio:6,airport:4,agent:1,kitman:1,barber:1,leak:1},
+ SRC_FROM:{physio:6,airport:4,agent:1,kitman:1,barber:1,leak:1}, HUNCH:.55,
  EARLY:4, EXCL:20, EX_RULE:'first', UT_FRAC:.5, UT_WRONG:10, TW_BONUS:10, KIT_SIDE:.5, TW_UT_FRAC:.5,
  CONTACTS:CONFIG.CONTACTS, DD_CONTACTS:CONFIG.DD_CONTACTS, DD_TIMER:CONFIG.DD_SECONDS, FMULT:[1,1,1,1], REP_REL:0, TICK:0,
  WARN_GEAR:{radar:.2,laptop:.1}, LEAD_GEAR:'laptop', LEAD_DAYS:2, WIFI_DAYS:[6,6], PHONE_DAYS:[5,5], EARLY_GEAR:{}, PAID_REL:1,
@@ -4302,9 +4422,14 @@ function truthAt(s,d){ return s.tw&&d>=s.tw?s.truth:(s.pre||s.truth); }
 function twistSeen(s,d){ return !!(s&&s.tw&&(d==null?game.day:d)>=s.tw); }
 function clueStale(s,c,d){ d=d==null?game.day:d; return !!(s.tw&&d>=s.tw&&c.day<s.tw); }
 function srcFrom(key){ const g=MATH.EARLY_GEAR&&MATH.EARLY_GEAR[key]; return Math.max(1,(MATH.SRC_FROM[key]||1)-(g&&isCareer()&&C().equip.includes(g)?1:0)); }
-function srcOpen(key,d){ return (d==null?game.day:d)>=srcFrom(key); }
+function srcOpen(key,d){ return !!SOURCES[key]; } // Option B: every source is askable from day 1 (see srcRel for the early hunch)
+function srcHunch(key,d){ return (d==null?game.day:d)<srcFrom(key); }
 function askedFresh(s,key){ return s.clues.some(c=>c.source===key&&!clueStale(s,c)); }
-function twistedSinceCall(s){ return !!(s.call&&s.tw&&s.call.day<s.tw&&game.day>=s.tw); }
+/* Go louder: a call can be escalated (same outcome, higher confidence). c.day/c.conf are the scoring day/confidence (the
+   escalation's); c.escFrom={conf,day} keeps the ORIGINAL post, which decides the free post-twist update and the twist-tracker bonus. */
+const CONF_UP=['low','med','high'];
+function callDay0(c){ return c?(c.escFrom&&c.escFrom.day!=null?c.escFrom.day:c.day):null; }
+function twistedSinceCall(s){ return !!(s.call&&s.tw&&callDay0(s.call)<s.tw&&game.day>=s.tw); }
 const ROAST_N=Math.max(...Object.values(I18N).map(l=>(l.roast||[]).length)), PRAISE_N=Math.max(...Object.values(I18N).map(l=>(l.praise||[]).length));
 const HANDLES=['@deadlinedan','@windowwatcher','@itk_tommy','@ratio_king','@delete_this','@sofa_scout','@xg_merchant','@fm_legend99','@bench_warmer','@var_victim','@tifo_guy','@ultras_nana','@3am_transfers','@medical_leaks','@parked_the_bus','@stats_nerd','@kit_collector','@offside_trap','@backpost_bev','@group_chat_capo','@taxi_driver_fc','@halfway_liner','@injury_time','@loanee_larry'];
 function shuffleRand(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -4450,7 +4575,7 @@ function saveGame(){ if(!game) return; if(game.mode==='practice'){ save.inProgre
 
 // ---------- text renderers (always current language) ----------
 function catchphrase(){ return tt('catch')[save.settings.catch]||tt('catch').confirmed; }
-function clueText(s,cl){ const ctx=ctxOf(s); if(cl.source==='tipoff') return t(cl.out==='FAKE'?'sheet.tipFake':'sheet.tipReal'); const src=cl.source==='paid'?'leak':cl.source; return fill(pickVar(tt('line')[src][cl.out],cl.v||0),ctx); }
+function clueText(s,cl){ const ctx=ctxOf(s); if(cl.source==='tipoff') return t(cl.out==='FAKE'?'sheet.tipFake':'sheet.tipReal'); const src=cl.source==='paid'?'leak':cl.source; const x=fill(pickVar(tt('line')[src][cl.out],cl.v||0),ctx); return cl.hunch&&tt('math.hunchLine.'+src)?t('math.hunchLine.'+src)+' '+x:x; }
 function clueWho(cl){ if(cl.source==='paid') return t('sheet.paid'); if(cl.source==='tipoff') return t('sheet.tip'); return SOURCES[cl.source].ic+' '+t('src.'+cl.source+'.name'); }
 function eventText(s,e){ const pool=evtPool(e.sh||e.o||s.truth,e.idx); return fill(pickVar(pool,e.v||0),ctxOf(s)); }
 function rivalText(s,rp){ const ri=RIVALS.findIndex(r=>r.key===rp.rival); const rv=RIVALS[ri]; return fill(pickVar(tt('rline')[rp.claim][rv.style],rp.v!=null?rp.v:s.id+ri*3),ctxOf(s)); }
@@ -4459,7 +4584,7 @@ function feedText(f){
  if(f.k) return t(f.k,Object.assign({},f.ctx||{},f.sagaId!=null?ctxOf(game.sagas[f.sagaId]):{}));
  if(f.type==='rival'&&f.claim) return rivalText(game.sagas[f.sagaId],{rival:f.rival,claim:f.claim,v:f.v});
  if(f.type==='event'&&f.idx!=null) return eventText(game.sagas[f.sagaId],{idx:f.idx,v:f.v,o:f.o,sh:f.sh});
- if(f.type==='you') return tweetText(f.outcome,f.conf,game.sagas[f.sagaId]);
+ if(f.type==='you') return f.esc?loudText(f.outcome,f.conf,game.sagas[f.sagaId]):tweetText(f.outcome,f.conf,game.sagas[f.sagaId]);
  return '';
 }
 function replyText(x,rp,ctx){ const L=v=>typeof v==='string'?v:v&&typeof v==='object'?String(v.t||v.text||v.s||v.en||''):''; let line='';
@@ -4467,6 +4592,7 @@ function replyText(x,rp,ctx){ const L=v=>typeof v==='string'?v:v&&typeof v==='ob
  else if(rp&&rp.k){ const pool=tt(rp.k); line=L(pickVar(Array.isArray(pool)&&pool.length?pool:tt(x.correct?'praise':'roast'),rp.i||0)); }
  return line?fill(line,ctx):''; }
 function tweetText(outcome,conf,s){ return fill(tt('tweet')[outcome][conf],ctxOf(s)); }
+function loudText(outcome,conf,s){ const p=tt('esc.tweet'); const v=p&&p[outcome]&&p[outcome][conf]; return v?fill(v,ctxOf(s)):tweetText(outcome,conf,s); }
 function officialText(s){ return fill(pickVar(tt('official')[s.truth],s.ov!=null?s.ov:s.id),ctxOf(s)); }
 function getPlayerType(followers){ const m=MATH.FMULT;
  if(followers<400) return {key:'nobody',mult:m[0]};
@@ -4485,7 +4611,7 @@ function tierName(tr){ return t('tier.'+tr.key); }
 // ---------- actions ----------
 function contactSource(sagaId,key,opts){
  const s=game.sagas[sagaId]; const src=SOURCES[key]; if(!(opts&&opts.paid)&&(!src||askedFresh(s,key)||!srcOpen(key))) return false; const r=rng();
- const z=truthAt(s,game.day); let truthful, out=z, paid=!!(opts&&opts.paid); const rel=paid?(MATH.PAID_REL||1):relAdj(src.rel,key);
+ const z=truthAt(s,game.day); let truthful, out=z, paid=!!(opts&&opts.paid); const rel=paid?(MATH.PAID_REL||1):srcRel(key,game.day); const hunch=!paid&&srcHunch(key);
  if(paid){ truthful=rel>=1||r.chance(rel); if(!truthful) out=pickLie(r,z); }
  else{
   truthful=r.chance(rel);
@@ -4493,7 +4619,7 @@ function contactSource(sagaId,key,opts){
   game.actions-=src.cost||1;
   if(isCareer()){ const st=C().sources[key]||(C().sources[key]={n:0,ok:0}); st.n++; if(truthful) st.ok++; if(key==='barber') C().barber++; }
  }
- const lk=paid?'leak':key; s.clues.push({source:paid?'paid':key,out,truthful,day:game.day,bars:barsOf(rel),outdated:false,v:freshPick('line.'+lk+'.'+out,((tt('line')[lk]||{})[out]||[]).length),a:freshPick('ask',(tt('ask')||[]).length),revealAt:Date.now()+2100+Math.floor(Math.random()*500)});
+ const lk=paid?'leak':key; s.clues.push({source:paid?'paid':key,out,truthful,day:game.day,bars:barsOf(rel),hunch,outdated:false,v:freshPick('line.'+lk+'.'+out,((tt('line')[lk]||{})[out]||[]).length),a:freshPick('ask',(tt('ask')||[]).length),revealAt:Date.now()+2100+Math.floor(Math.random()*500)});
  commitRng(r); saveGame(); fireHook('contact',sagaId,key,s.clues[s.clues.length-1]); return true;
 }
 function endDay(){
@@ -4531,6 +4657,18 @@ function uturnCall(sagaId){
  s.call=null; if(!moved&&isCareer()&&!C().badges.includes('flip')) C().badges.push('flip');
  saveGame(); fireHook('uturn',sagaId); return loss;
 }
+function canEscalate(sagaId,newConf){ const s=game&&!game.result&&game.sagas&&game.sagas[sagaId]; if(!s||!s.call) return false;
+ const a=CONF_UP.indexOf(s.call.conf); if(a<0||a>=CONF_UP.length-1) return false; return newConf==null?true:CONF_UP.indexOf(newConf)>a; }
+/* Go louder: same outcome, strictly higher confidence, any day while the window is open. Not a U-turn: no follower loss, no Tabloid,
+   no flip badge. It scores as a call posted today at the new confidence (early bonus and exclusive race from today). */
+function escalateCall(sagaId,newConf){
+ if(!canEscalate(sagaId,newConf)) return 0; const s=game.sagas[sagaId], c=s.call, from=c.conf;
+ if(!c.escFrom) c.escFrom={conf:c.conf,day:c.day};
+ c.conf=newConf; c.day=game.day; delete c.secsLeft;
+ const M={low:1,med:1.6,high:2.4}; const r=rng(); const gain=Math.max(0,Math.round((15+r.int(40))*(M[newConf]-M[from])*ptype(s.player).fans)); game.followers+=gain; commitRng(r);
+ game.feed.push({day:game.day,type:'you',sagaId,outcome:c.outcome,conf:newConf,esc:from});
+ saveGame(); fireHook('call',sagaId,c); return gain;
+}
 function resolveWindow(){
  if(game.result) return;
  const r=rng(); let coatUsed=false; let total=0, exclusives=0, wrongs=0, corrects=0, highWrong=false, ddCorrect=false;
@@ -4538,7 +4676,7 @@ function resolveWindow(){
  const draw=(k,n,used)=>{ for(let q=0;q<4;q++){ if(!deck[k]||!deck[k].length) deck[k]=shuffleRand([...Array(n).keys()]).filter(i=>!used.has(i)); const i=deck[k].pop(); if(i!=null&&!used.has(i)){ used.add(i); return i; } } for(let i=0;i<n;i++) if(!used.has(i)){ used.add(i); return i; } return 0; };
  const hdeck=shuffleRand([...Array(HANDLES.length).keys()]);
  const per=game.sagas.map(s=>{
-  const out={sagaId:s.id,called:!!s.call,correct:false,exclusive:false,uturn:false,pts:0,replies:[],emoji:'⚪',twistDay:s.tw||0,twistKind:s.tw?(s.twk||null):null,twist:false,late:null,uturnFrom:s.call&&s.call.uturn&&s.uturnFrom?s.uturnFrom:null,callDay:s.call?s.call.day:null,conf:s.call?s.call.conf:null,out:s.call?s.call.outcome:null};
+  const out={sagaId:s.id,called:!!s.call,correct:false,exclusive:false,uturn:false,pts:0,replies:[],emoji:'⚪',twistDay:s.tw||0,twistKind:s.tw?(s.twk||null):null,twist:false,late:null,uturnFrom:s.call&&s.call.uturn&&s.uturnFrom?s.uturnFrom:null,escFrom:s.call&&s.call.escFrom?{conf:s.call.escFrom.conf,day:s.call.escFrom.day}:null,callDay:s.call?s.call.day:null,conf:s.call?s.call.conf:null,out:s.call?s.call.outcome:null};
   if(s.call){
    if(s.call.secsLeft!=null) out.secsLeft=s.call.secsLeft;
    out.uturn=!!s.call.uturn; out.correct=s.call.outcome===s.truth;
@@ -4547,7 +4685,7 @@ function resolveWindow(){
     const firstRival=s.rivalPosts.filter(rp=>MATH.EX_RULE==='first'?(!s.tw||rp.day>=s.tw):rp.correct).map(rp=>rp.day).sort((a,b)=>a-b)[0];
     out.exclusive=!out.uturn&&((firstRival==null)||(s.call.day<firstRival));
     if(out.uturn) out.pts=Math.round(base*(s.call.twu?MATH.TW_UT_FRAC:MATH.UT_FRAC));
-    if(s.tw&&s.call.day>=s.tw&&MATH.TW_BONUS){ out.pts+=MATH.TW_BONUS; out.twist=true; }
+    if(s.tw&&callDay0(s.call)>=s.tw&&MATH.TW_BONUS){ out.pts+=MATH.TW_BONUS; out.twist=true; }
     if(out.exclusive){ out.pts+=MATH.EXCL+(gearOwned('tick')?MATH.TICK:0); exclusives++; }
     else if(!out.uturn){ const lr=s.rivalPosts.filter(rp=>rp.correct&&rp.day<=s.call.day).sort((a,b)=>a.day-b.day)[0]; if(lr) out.late={rival:lr.rival,day:lr.day}; }
     if(s.call.day===7) ddCorrect=true; out.emoji=out.exclusive?'🔵':'🟢';
@@ -4876,18 +5014,18 @@ function contactOverlay(kind,then,o){
  const body=`${head}${art}<div class="label">${esc(fx.label)}</div><div class="sub">${esc(fx.sub)}</div>${who}<div class="conn"><i style="animation-duration:${Math.max(.6,(ms-250)/1000).toFixed(2)}s"></i></div>${s?`<div class="ppskip">${esc(t('pp.tapSkip'))}</div>`:''}`;
  bigOverlay(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}${body}`,kind+(s?' ppcall':''),ms,then);
 }
-function composeOverlay(id,outcome,conf){
- const s=game.sagas[id]; const text=tweetText(outcome,conf,s); const uturn=!!s.uturns; const dd=game.day===7; const rm=motionReduced();
- const d=bigOverlayPersistent(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}<div class="quirk">${esc(tt('quirk')[outcome][conf])}<small>${esc(pName(s.player))} · ${esc(t('conf.'+conf))}${uturn?' · '+esc(t('uturn.tag')):''}</small></div>
-  <div class="tweetbig typing ${uturn?'uturn':''}"><div class="av">✍️</div><div style="flex:1;min-width:0"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · <em class="tst">${esc(t('compose.typing').replace(/[.…]+$/,''))}</em></span></div><div class="txt" id="typed"><span class="cursor"></span></div><div class="foot"><span>💬 0</span><span>🔁 0</span><span>❤️ 0</span><span class="up" id="gain"></span><span class="sendb" aria-hidden="true">${esc(t(uturn?'compose.postU':'compose.post'))}</span></div></div></div>`,'compose');
+function composeOverlay(id,outcome,conf,opt){
+ const loud=!!(opt&&opt.esc); const s=game.sagas[id]; if(loud&&!canEscalate(id,conf)) return; const text=loud?loudText(outcome,conf,s):tweetText(outcome,conf,s); const uturn=!loud&&!!s.uturns; const dd=game.day===7; const rm=motionReduced();
+ const d=bigOverlayPersistent(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}<div class="quirk">${esc(tt('quirk')[outcome][conf])}<small>${esc(pName(s.player))} · ${esc(t('conf.'+conf))}${uturn?' · '+esc(t('uturn.tag')):''}${loud?' · 📢 '+esc(t('esc.tag')):''}</small></div>
+  <div class="tweetbig typing ${uturn?'uturn':''}${loud?' loud':''}"><div class="av">✍️</div><div style="flex:1;min-width:0"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · <em class="tst">${esc(t('compose.typing').replace(/[.…]+$/,''))}</em></span></div><div class="txt" id="typed"><span class="cursor"></span></div><div class="foot"><span>💬 0</span><span>🔁 0</span><span>❤️ 0</span><span class="up" id="gain"></span><span class="sendb" aria-hidden="true">${esc(loud?t('esc.send'):t(uturn?'compose.postU':'compose.post'))}</span></div></div></div>`,'compose');
  /* Deadline Day: the call is locked the moment you press Post (the clock may run out while the tweet types) */
- if(dd){ d._gain=publishCall(id,outcome,conf); render(); }
+ if(dd){ d._gain=loud?escalateCall(id,conf):publishCall(id,outcome,conf); render(); }
  const el=d.querySelector('#typed'); const chars=Array.from(text); let i=0, done=false;
  const per=dd?Math.max(12,Math.min(22,Math.round(1300/Math.max(1,chars.length)))):34; /* pre-overhaul pace: 34 ms a character */
  const paint=()=>{ const shown=chars.slice(0,i); const last=shown.length&&!/\s/.test(shown[shown.length-1])?`<span class="nc">${esc(shown[shown.length-1])}</span>`:''; el.innerHTML=esc(shown.slice(0,last?-1:undefined).join(''))+last+'<span class="cursor"></span>'; };
  const finish=()=>{ if(done||d._gone) return; done=true; clearTimeout(d._typing); d._typing=null; el.innerHTML=esc(text); const tb=d.querySelector('.tweetbig'); tb.classList.remove('typing'); tb.classList.add('ready');
   const st=d.querySelector('.tst'); if(st) st.textContent=t('compose.drafting');
-  setTimeout(()=>{ if(d._gone) return; tb.classList.add('press'); beep('tap'); setTimeout(()=>{ if(!d._gone) postFromCompose(id,outcome,conf); },dd?90:160); },dd?260:750); };
+  setTimeout(()=>{ if(d._gone) return; tb.classList.add('press'); beep('tap'); setTimeout(()=>{ if(!d._gone) postFromCompose(id,outcome,conf,loud); },dd?90:160); },dd?260:750); };
  const tick=()=>{ if(d._gone) return; i++; paint(); const ch=chars[i-1]||''; if(!/\s/.test(ch)&&(dd?i%3===0:i%2===0)) beep('key');
   if(i>=chars.length){ finish(); return; }
   let wait=per; if(!dd&&!rm){ wait=per*(.7+Math.random()*.6); if(/[.,!?؟،…]/.test(ch)) wait+=140; else if(ch===' '&&Math.random()<.12) wait+=70; }
@@ -4895,16 +5033,16 @@ function composeOverlay(id,outcome,conf){
  if(rm){ i=chars.length; paint(); finish(); } else d._typing=setTimeout(tick,dd?60:260);
  d.addEventListener('click',()=>{ if(!done){ i=chars.length; finish(); } }); /* tap to finish typing */
 }
-function postFromCompose(id,outcome,conf){
+function postFromCompose(id,outcome,conf,loud){
  const d=document.querySelector('.big.compose'); const dd=!!game&&game.day===7;
  if(!game||(game.result&&!(d&&d._gain!=null))){ if(d) dismissBig(d); return; }
- const gain=d&&d._gain!=null?d._gain:publishCall(id,outcome,conf); const s=game.sagas[id]; dismissCoach('c3'); draft={outcome:null,conf:null};
- if(d&&s.call){ const tb=d.querySelector('.tweetbig'); tb.classList.remove('press'); tb.classList.add('sent'); const st=document.createElement('div'); st.className='poststamp'; st.textContent=t(s.call.uturn?'compose.postedU':'compose.posted'); tb.appendChild(st);
+ const gain=d&&d._gain!=null?d._gain:(loud?escalateCall(id,conf):publishCall(id,outcome,conf)); const s=game.sagas[id]; dismissCoach('c3'); draft={outcome:null,conf:null};
+ if(d&&s.call){ const tb=d.querySelector('.tweetbig'); tb.classList.remove('press'); tb.classList.add('sent'); const st=document.createElement('div'); st.className='poststamp'; st.textContent=loud?t('esc.stamp'):t(s.call.uturn?'compose.postedU':'compose.posted'); tb.appendChild(st);
   const g=d.querySelector('#gain'); if(g) g.textContent='👥 +'+gain;
   const meta=d.querySelector('.meta span'); if(meta) meta.textContent='@tierone_you · '+t('compose.now');
   const q=d.querySelector('.quirk'); if(q){ const a=tt('after'); q.innerHTML=esc(a[Math.floor(Math.random()*a.length)])+`<small>${esc(t('compose.lockedDay',{d:s.call.day}))}</small>`; } }
  beep('whoosh'); setTimeout(()=>beep('send'),120); buzzPhone(40); if(!game.result){ render(); bumpFollowers(); if($('modalRoot').querySelector('.pp')) ppRender(id); }
- setTimeout(()=>{ if(d) dismissBig(d,()=>{ if(!game.result) toast(t('compose.toast')); }); },dd?650:1500);
+ setTimeout(()=>{ if(d) dismissBig(d,()=>{ if(!game.result) toast(t(loud?'esc.toast':'compose.toast')); }); },dd?650:1500);
 }
 function uturnOverlay(id,then){
  const s=game.sagas[id]; const old=tweetText(s.call.outcome,s.call.conf,s); const dd=game.day===7; const free=typeof twistedSinceCall==='function'&&twistedSinceCall(s);
@@ -4997,7 +5135,7 @@ function renderHome(){
 
 // ----- window -----
 function sagaStatus(s){ const dd=game.day===7;
- if(s.call){ const c=s.call; return `${ocHtml(c.outcome,'solid')}<span class="when">${esc(t('board.dShort',{d:c.day}))}</span>`; }
+ if(s.call){ const c=s.call, lv=Math.max(0,CONF_UP.indexOf(c.conf))+1; return `${ocHtml(c.outcome,'solid')}<span class="when"><span class="loudm${c.escFrom?' up':''}" role="img" aria-label="${esc(t('pp.conf.'+c.conf))}">${c.escFrom?'<b aria-hidden="true">▲</b>':''}${['👀','📈','📢'][lv-1]}</span>${esc(t('board.dShort',{d:c.day}))}</span>`; }
  if(dd) return `<span class="quickcall" role="button" tabindex="0" data-act="ddQuick" data-id="${s.id}">${esc(t('board.call'))}</span>`;
  return `<span class="callpill">${esc(t('board.noCall'))}</span>`; }
 function sagaListHtml(){ const dd=game.day===7, now=Date.now();
@@ -5061,13 +5199,14 @@ function renderResults(){
   const aria=(s&&s.player?pName(s.player)+': ':'')+t(k==='ex'?'rs.vtEx':k==='right'?(x.uturn?'rs.vtHalf':'rs.vtCalled'):k==='wrong'?'rs.vtWrong':'rs.vtNone')+(d?' · '+rsDayLabel(d):'');
   return `<div class="rt ${k}" role="listitem" aria-label="${esc(aria)}"><span class="sq">${ic}</span><small class="${d===7?'dd':''}">${x.uturn&&x.called?'<span class="ut">↺</span> ':''}${esc(dl)}</small></div>`; }).join('');
  const stats=`<p class="rstats"><span>${esc(t('rs.nRight',{n:r.corrects||0}))}</span><span>${esc(t('rs.nEx',{n:r.exclusives||0}))}</span><span>${esc(t('rs.nWrong',{n:r.wrongs||0}))}</span>${r.fDelta!=null?`<span>👥 <b><bdi dir="ltr">${r.fDelta>=0?'+':'−'}${fmtK(Math.abs(r.fDelta))}</bdi></b></span>`:''}</p>`;
- const arr=lang==='ar'?'←':'→';
  const sbRows=r.per.map(x=>{ const s=sg[x.sagaId]; if(!s||!s.player) return ''; const k=rsKind(x); const c=s.call;
   const you=x.called&&c?ocHtml(c.outcome):`<span class="oc none">—</span>`;
   const disc=!x.called?'':x.correct?`<span class="res r">${uiIcon('check')}</span>`:`<span class="res w">${uiIcon('x')}</span>`;
   const pcls=!x.called||x.pts==null?'zero':x.pts>0?'up':x.pts<0?'dn':'zero';
   const vt=k==='none'?`<span class="vt">${esc(t('rs.vtNone'))}</span>`:k==='ex'?`<span class="vt ex">${esc(t('rs.vtEx'))}</span>`:k==='right'?(x.uturn?`<span class="vt">${esc(t('rs.vtHalf'))}</span>`:`<span class="vt ok">${esc(t('rs.vtCalled'))}</span>`):`<span class="vt bad">${esc(t('rs.vtWrong'))}</span>`;
-  return `<button class="srow" data-act="rsRow" data-id="${s.id}">${kitSVG(s.club,initials(s.player.name))}<span style="min-width:0"><span class="sn">${esc(pName(s.player))}</span><span class="sc">${you}<span class="arr">${arr}</span>${ocHtml(s.truth,'solid')}${disc}</span></span><span class="sp"><b class="${pcls}"><bdi dir="ltr">${x.called?rsPtsStr(x.pts):'0'}</bdi></b>${vt}</span></button>`; }).join('');
+  const ef=x.called&&(x.escFrom||(c&&c.escFrom)), cd=rsCallDay(x,s); const escN=ef&&c?`<span class="sesc">📢 ${esc(t('rs.escNote',{a:t('pp.conf.'+ef.conf),b:t('pp.conf.'+c.conf),day:cd===7?t('rs.dd'):t('pp.dayN',{d:cd})}))}</span>`:'';
+  const aria=pName(s.player)+' · '+t('rs.sbYou')+': '+(x.called&&c?t('ds.oc.'+c.outcome):'—')+' · '+t('rs.sbTruth')+': '+t('ds.oc.'+s.truth);
+  return `<button class="srow" data-act="rsRow" data-id="${s.id}" aria-label="${esc(aria)}">${kitSVG(s.club,initials(s.player.name))}<span class="sn">${esc(pName(s.player))}</span><span class="sy">${you}</span><span class="st">${ocHtml(s.truth,'solid')}</span><span class="sp"><b class="${pcls}"><bdi dir="ltr">${x.called?rsPtsStr(x.pts):'0'}</bdi></b><span class="svt">${disc}${vt}</span></span>${escN}</button>`; }).join('');
  const ach=(r.achUnlocked||[]).map(id=>{ const a=rsAch(id); let rr=String(a.r).toLowerCase(); if(rr==='legendary') rr='legend';
   return `<div class="ucard" style="--rc:var(--r-${esc(rr)})">${medalHtml(a.ic,rr)}<span class="ut"><span class="rw">${esc(t('rs.isNew',{r:t('ds.rar.'+rr)}))}</span><b>${esc(a.name)}</b>${a.how?`<small>${esc(a.how)}</small>`:''}</span></div>`; }).join('');
  const order=r.per.map((x,i)=>({x,i})).sort((a,b)=>((b.x.uturn&&b.x.called?1:0)-(a.x.uturn&&a.x.called?1:0))||(Math.abs(b.x.pts||0)-Math.abs(a.x.pts||0))||(a.i-b.i));
@@ -5084,7 +5223,7 @@ function renderResults(){
  </section>
  ${rsLadderHtml()}
  <div class="sechead"><h2 class="d4">${esc(t('rs.calls'))}</h2><span class="aux">${esc(t('rs.callsAux'))}</span></div>
- <section class="card sb"><div class="sbh"><span></span><span>${esc(t('rs.sbCall'))}</span><span>${esc(t('rs.sbPts'))}</span></div>${sbRows}<div class="sbf"><span>${esc(t('rs.sbFoot'))}</span><b class="num"><bdi dir="ltr">${r.total}</bdi></b></div></section>
+ <section class="card sb"><div class="sbh"><span></span><span>${esc(t('rs.sbYou'))}</span><span>${esc(t('rs.sbTruth'))}</span><span>${esc(t('rs.sbPts'))}</span></div>${sbRows}<div class="sbf"><span>${esc(t('rs.sbFoot'))}</span><b class="num"><bdi dir="ltr">${r.total}</bdi></b></div></section>
  ${ach?`<div class="sechead"><h2 class="d4">${esc(t('rs.unlocked'))}</h2>${SCREENS.achievements?`<button class="link" data-act="rsAch">${esc(t('rs.allAch'))}</button>`:''}</div><div class="unl">${ach}</div>`:''}
  <div class="sechead"><h2 class="d4">${esc(t('rs.replies'))}</h2><span class="aux">${esc(t('rs.repliesAux'))}</span></div>
  <div class="threads">${thr}${hiddenNames.length?`<button class="btn ghost rsmore" id="rsMore" data-act="rsMore">${esc(t('rs.showMore',{list:hiddenNames.join(', ')}))}</button>`:''}</div>
@@ -5379,16 +5518,20 @@ function fallbackCopy(tx,done){ const ta=document.createElement('textarea'); ta.
 
 /* @@LANE JS:math BEGIN (lane-owned; insert only between BEGIN and END) */
 /* math lane: UI data contract (UX_SPEC §10). Pure reads of game state; never reveal hidden truth (s.truth/s.pre/s.tw before it lands). */
-function srcRel(key,day){ const src=SOURCES[key]; if(!src) return 0; return relAdj(src.rel,key); } // no clarity curve in this model: day-independent
-function srcOpenDay(key){ return srcFrom(key); }
-function whatOpensTomorrow(day){ day=day==null?(game?game.day:1):day; if(day>=7) return []; return Object.keys(SOURCES).filter(k=>srcFrom(k)===day+1); }
+/* Option B: every source is open from day 1. Elite sources (physio, airport) only give a hunch (MATH.HUNCH) before their day
+   (srcFrom/srcSharpDay), then their full reliability. Sources are sticky per era, so an early hunch is locked in until a twist. */
+function srcRel(key,day){ const src=SOURCES[key]; if(!src) return 0; const full=relAdj(src.rel,key); day=day==null?(game?game.day:1):day; return day<srcFrom(key)?Math.min(full,MATH.HUNCH):full; }
+function srcOpenDay(key){ return 1; }        // everything is askable from day 1
+function srcSharpDay(key){ return srcFrom(key); } // first day at full reliability (1 = always)
+function whatSharpensTomorrow(day){ day=day==null?(game?game.day:1):day; if(day>=7) return []; return Object.keys(SOURCES).filter(k=>srcFrom(k)===day+1); }
+function whatOpensTomorrow(day){ return whatSharpensTomorrow(day); } // legacy name: sources that SHARPEN tomorrow (board.tmOpen reads "… sharpens tomorrow")
 function sourceState(sagaId,key){
  const s=game&&game.sagas&&game.sagas[sagaId], src=SOURCES[key]; if(!s||!src) return null;
  const day=game.day, rel=srcRel(key,day), bars=barsOf(rel), opensDay=srcFrom(key), cost=src.cost||1;
- const o={state:'open',opensDay,bars,rel,sharper:false,openedToday:day>1&&opensDay===day,atMax:false,cost,reasonKey:null,gearKey:null,clue:null,reopened:false,short:game.actions<cost};
+ const sharpDay=opensDay, hunch=day<sharpDay;
+ const o={state:'open',opensDay:1,sharpDay,hunch,bars,rel,sharper:day>1&&sharpDay===day,openedToday:false,atMax:false,cost,reasonKey:hunch?'math.reason.hunch':null,label:hunch?t('math.hunchUntil',{d:sharpDay}):null,gearKey:null,clue:null,reopened:false,short:game.actions<cost};
  const fresh=[...s.clues].reverse().find(c=>c.source===key&&!clueStale(s,c)); const old=[...s.clues].reverse().find(c=>c.source===key&&clueStale(s,c));
  if(isCareer()&&src.lock&&!C().equip.includes(src.lock)){ o.state='gear'; o.gearKey=src.lock; o.reasonKey='math.reason.gear'; return o; }
- if(!srcOpen(key)){ o.state='later'; o.reasonKey='math.reason.'+key; return o; }
  if(fresh){ o.state='asked'; o.clue=fresh; o.reasonKey='math.reason.asked'; return o; }
  if(old){ o.reopened=true; o.clue=old; }
  if(o.short){ o.state='short'; o.reasonKey='math.reason.short'; return o; }
@@ -5403,6 +5546,7 @@ function exclusiveOpen(sagaId){ return rivalsPostedOn(sagaId)===0; }
    Not included: the Lucky trench coat (halves your first wrong call at resolve; order-dependent). */
 function previewPoints(sagaId,outcome,conf){
  const s=game.sagas[sagaId]; if(!s||!PTS[conf]) return {win:0,lose:0,early:0,exclusive:0,twist:0,base:0};
+ if(s.call&&outcome===s.call.outcome&&CONF_UP.indexOf(conf)>CONF_UP.indexOf(s.call.conf)) return escPreview(sagaId,conf);
  const mult=ptype(s.player).pts*(game.mode==='career'?getPlayerType(C().followers||1200).mult:1); const R=v=>Math.round(v*mult);
  const re=!!s.uturns||!!s.call, twu=s.call?twistedSinceCall(s):!!s.twUturn; const base=PTS[conf][0];
  const twist=(s.tw&&game.day>=s.tw&&MATH.TW_BONUS)?MATH.TW_BONUS:0;
@@ -5410,6 +5554,18 @@ function previewPoints(sagaId,outcome,conf){
  if(re){ win=base*(twu?MATH.TW_UT_FRAC:MATH.UT_FRAC)+twist; if(!twu) lose-=MATH.UT_WRONG; }
  else { early=(7-game.day)*MATH.EARLY; ex=exclusiveOpen(sagaId)?MATH.EXCL+(gearOwned('tick')?MATH.TICK:0):0; win=base+early+ex+twist; }
  return {win:R(win),lose:R(lose),early:R(early),exclusive:R(ex),twist:R(twist),base:R(re?base*(twu?MATH.TW_UT_FRAC:MATH.UT_FRAC):base),uturn:re,free:re&&twu};
+}
+/* Go louder preview: the call re-scored as posted TODAY at `conf` (U-turned calls keep the U-turn rules). `now` = what the
+   current call is worth if right/wrong; exclusive for it only as far as visible rival posts tell (a later twist may reopen it). */
+function escPreview(sagaId,conf){
+ const s=game.sagas[sagaId], c=s.call; const mult=ptype(s.player).pts*(game.mode==='career'?getPlayerType(C().followers||1200).mult:1); const R=v=>Math.round(v*mult);
+ const ut=!!c.uturn, twu=!!c.twu, tick=gearOwned('tick')?MATH.TICK:0, twist=(s.tw&&callDay0(c)>=s.tw&&game.day>=s.tw&&MATH.TW_BONUS)?MATH.TW_BONUS:0;
+ const score=(cf,day,exOk)=>{ const base=PTS[cf][0]; let win,lose=PTS[cf][1],early=0,ex=0;
+  if(ut){ win=base*(twu?MATH.TW_UT_FRAC:MATH.UT_FRAC)+twist; if(!twu) lose-=MATH.UT_WRONG; }
+  else { early=(7-day)*MATH.EARLY; ex=exOk?MATH.EXCL+tick:0; win=base+early+ex+twist; }
+  return {win:R(win),lose:R(lose),early:R(early),exclusive:R(ex),twist:R(twist),base:R(base)}; };
+ const exNow=!ut&&exclusiveOpen(sagaId), exOld=!ut&&!rivalPostsOf(sagaId).some(rp=>!rp.outdated&&rp.day<=c.day);
+ return Object.assign(score(conf,game.day,exNow),{escalate:true,exOpen:exNow,uturn:ut,free:ut&&twu,day:game.day,now:Object.assign(score(c.conf,c.day,exOld),{exOpen:exOld,conf:c.conf,day:c.day})});
 }
 function twistsSeen(){ return game?game.sagas.filter(s=>twistSeen(s)).length:0; } // HUD "🌀 Twists N/2"
 function twistsTotal(){ return game?Math.min(MATH.TWISTS,game.sagas.filter(s=>s.tw).length):0; }
@@ -5425,6 +5581,7 @@ LANE_ACTS.boost=(el,v,id)=>{ const k=el.dataset.b, c=C(), before=c.credits, s=ga
  runBoost(id,k);
  if(game&&c.credits<before){ game.boostUses=game.boostUses||{}; game.boostUses[k]=(game.boostUses[k]||0)+1; saveGame();
   if(k==='burner'||(k==='bribe'&&s&&s.clues.length===n0)) renderSagaModal(id); } };
+optbApplyI18N(); // Option B strings win over later I18N blocks (howto2/tut/board)
 /* @@LANE JS:math END */
 /* ─ */
 /* @@LANE JS:home BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -5733,6 +5890,7 @@ function ppTileHtml(s,k){ const src=SOURCES[k], st=ppSrcState(s,k), nm=esc(ppNam
  else if(st.state==='reopened'){ cls='re'; ft=`🌀 ${esc(t('pp.again'))}`; }
  else if(dd&&st.atMax){ cls='sharp'; ft=tier(t('pp.sharpest')); }
  else if(st.sharper){ cls='sharp'; ft=tier(t('pp.sharper')); }
+ else if(st.hunch&&st.label) ft=tier(st.label);
  else ft=tier(tw);
  if(st.openedToday&&st.state==='open') corner=`<span class="corner"><span class="tag new">${esc(t('pp.openedToday'))}</span></span>`;
  const dis=PP.calling!=null&&PP.calling!==k;
@@ -5750,12 +5908,15 @@ function ppPts(id,o,c){ if(typeof previewPoints==='function'){ try{ const p=prev
 function ppRivalsPosted(id){ if(typeof rivalsPostedOn==='function'){ try{ return rivalsPostedOn(id)|0; }catch(e){} } return new Set(game.feed.filter(f=>f.sagaId===id&&f.type==='rival'&&f.claim).map(f=>f.rival)).size; }
 function ppUncalled(){ return game.sagas.filter(x=>!x.call); }
 function ppTwFree(s){ try{ return typeof twistedSinceCall==='function'&&twistedSinceCall(s); }catch(e){ return false; } }
-function ppTwDock(s){ return `<div class="dock ppdock pptwdock"><p class="hint">🌀 <b>${esc(t('math.updateFree'))}</b></p><div class="row"><span class="ppchip">${ocHtml(s.call.outcome,'solid')} <small>${esc(t('conf.'+s.call.conf))} · ${esc(t('pp.dShort',{d:s.call.day}))}</small></span><button class="btn primary fixedw" data-act="uturnAsk" data-id="${s.id}">↺ ${esc(t('qa.update'))}</button></div></div>`; }
+function ppTwDock(s){ if(canEscalate(s.id)) return `<div class="dock ppdock pptwdock"><p class="hint">🌀 <b>${esc(t('math.updateFree'))}</b></p><div class="row ppescrow"><button class="btn ppesc" data-act="escAsk" data-id="${s.id}">📢 ${esc(t('esc.btn'))}</button><button class="btn primary" data-act="uturnAsk" data-id="${s.id}">↺ ${esc(t('qa.update'))}</button></div></div>`;
+ return `<div class="dock ppdock pptwdock"><p class="hint">🌀 <b>${esc(t('math.updateFree'))}</b></p><div class="row"><span class="ppchip">${ocHtml(s.call.outcome,'solid')} <small>${esc(t('conf.'+s.call.conf))} · ${esc(t('pp.dShort',{d:s.call.day}))}</small></span><button class="btn primary fixedw" data-act="uturnAsk" data-id="${s.id}">↺ ${esc(t('qa.update'))}</button></div></div>`; }
 function ppDockHtml(s){ const dd=ppDD(), un=ppUncalled();
  if(dd){ if(!s.call) return `<div class="dock ppdock"><p class="hint">⏱ <b>${esc(t(un.length===1?'pp.dd.uncalled1':'pp.dd.uncalled',{n:un.length}))}</b> · ${esc(t('pp.dd.zero'))}</p><button class="btn primary ppcallnow" data-act="ppCompose" data-id="${s.id}">📢 ${esc(t('pp.dd.callNow'))}</button></div>`;
   if(ppTwFree(s)) return ppTwDock(s);
-  const nx=un[0]; return `<div class="dock ppdock"><div class="row"><span class="ppchip">${ocHtml(s.call.outcome,'solid')} <small>${esc(t('conf.'+s.call.conf))} · ${esc(t('pp.dShort',{d:s.call.day}))}</small></span>${nx?`<button class="btn primary" data-act="openSaga" data-id="${nx.id}">${esc(t('pp.dd.next',{p:pName(nx.player)}))} ›</button>`:`<button class="btn" data-act="closeSheet">${esc(t('pp.dd.board'))}</button>`}</div></div>`; }
+  const nx=un[0]; if(canEscalate(s.id)) return `<div class="dock ppdock"><p class="hint ppcallnow2">${ppCallLine(s)}</p><div class="row ppescrow"><button class="btn ppesc" data-act="escAsk" data-id="${s.id}">📢 ${esc(t('esc.btn'))}</button>${nx?`<button class="btn primary" data-act="openSaga" data-id="${nx.id}" aria-label="${esc(t('pp.dd.next',{p:pName(nx.player)}))}">${esc(t('esc.next',{p:pName(nx.player).split(' ').pop()}))} ›</button>`:`<button class="btn" data-act="closeSheet">${esc(t('pp.dd.board'))}</button>`}</div></div>`;
+  return `<div class="dock ppdock"><div class="row"><span class="ppchip">${ocHtml(s.call.outcome,'solid')} <small>${esc(t('conf.'+s.call.conf))} · ${esc(t('pp.dShort',{d:s.call.day}))}</small></span>${nx?`<button class="btn primary" data-act="openSaga" data-id="${nx.id}">${esc(t('pp.dd.next',{p:pName(nx.player)}))} ›</button>`:`<button class="btn" data-act="closeSheet">${esc(t('pp.dd.board'))}</button>`}</div></div>`; }
  if(s.call&&ppTwFree(s)) return ppTwDock(s);
+ if(s.call&&canEscalate(s.id)) return `<div class="dock ppdock"><p class="hint ppcallnow2">${ppCallLine(s)}</p><div class="row ppescrow"><button class="btn ppesc" data-act="escAsk" data-id="${s.id}">📢 ${esc(t('esc.btn'))}</button><button class="btn" data-act="uturnAsk" data-id="${s.id}">↺ ${esc(t('pp.uturn'))}</button></div></div>`;
  if(s.call) return `<div class="dock ppdock"><div class="row"><span class="ppchip">${ocHtml(s.call.outcome,'solid')} <small>${esc(t('conf.'+s.call.conf))} · ${esc(t('pp.dShort',{d:s.call.day}))}</small></span><button class="btn fixedw" data-act="uturnAsk" data-id="${s.id}">↺ ${esc(t('pp.uturn'))}</button></div></div>`;
  const hint=game.actions===0?esc(t('pp.noContactsHint')):`👑 ${t('pp.exHint',{n:'<b>+'+ppPts(s.id,'DONE','med').exclusive+'</b>'}).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')}`;
  return `<div class="dock ppdock"><p class="hint">${hint}</p><div class="row pplater"><button class="btn ghost later" data-act="closeSheet" aria-label="${esc(t('q2.laterAria'))}"><svg class="pz" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>${esc(t('q2.later'))}</button><button class="btn primary" data-act="ppCompose" data-id="${s.id}">${uiIcon('pen')} ${esc(t('pp.makeCall'))}</button></div></div>`; }
@@ -5872,6 +6033,34 @@ BACK.push(()=>{ if($('ppSheet')){ ppSheetClose(); return true; } return false; }
 onHook('rendered',scr=>{ if(scr!=='window'){ ppSheetClose(true); PP.calling=null; } });
 onHook('call',(id,call)=>{ if(game&&game.day===7&&call) call.secsLeft=ppSecs(); save.ppPosted=true; });
 window.quickCall=id=>{ if(!game||game.result) return; ppCompose(+id); };
+
+/* ----- Go louder (escalate a posted call: same outcome, higher confidence) ----- */
+function escDay(d){ return d===7?t('rs.dd'):t('pp.dayN',{d}); }
+function ppCallLine(s){ const c=s.call; return `<span class="ppcl">${esc(t('esc.yourCall'))}</span>${ocHtml(c.outcome,'solid')}<span class="ppcl">${esc(t('pp.conf.'+c.conf))} · ${esc(t('pp.dShort',{d:c.day}))}</span>`; }
+function ppPtsPair(p){ return `<bdi dir="ltr"><span class="up">+${p.win}</span> · <span class="dn">−${Math.abs(p.lose)}</span></bdi>`; }
+function ppEscHtml(id){ const s=game.sagas[id], c=s.call, dd=ppDD(); const ups=CONF_UP.slice(CONF_UP.indexOf(c.conf)+1);
+ if(!PP.esc||PP.esc.id!==id||!ups.includes(PP.esc.conf)) PP.esc={id,conf:ups[0]};
+ const cf=PP.esc.conf, p=previewPoints(id,c.outcome,cf), now=p.now||{win:0,lose:0}, nr=ppRivalsPosted(id), today=escDay(game.day);
+ const ic={low:'👀',med:'📈',high:'📢'};
+ const opts=ups.map(k=>{ const q=previewPoints(id,c.outcome,k); const on=k===cf;
+  const ex=q.uturn?`<span>${esc(t('esc.exUt'))}</span>`:q.exOpen?`<span class="ok">👑 ${esc(t('esc.exYes',{n:q.exclusive}))}</span>`:`<span class="no">👑 ${esc(t(nr===1?'esc.exNo1':'esc.exNo',{n:nr}))}</span>`;
+  return `<button class="escopt${on?' on':''}" role="radio" aria-checked="${on}" data-act="escPick" data-id="${id}" data-v="${k}"><span class="ci" aria-hidden="true">${ic[k]}</span><span class="em"><b>${esc(t('pp.conf.'+k))}</b><span class="eh">${q.uturn?'':`<span>⏳ ${esc(q.early?t('esc.early',{n:q.early,day:today}):t('esc.early0'))}</span>`}${ex}</span></span><span class="pts">${ppPtsPair(q)}</span>${on?`<span class="chk">${glyph('done')}</span>`:''}</button>`; }).join('');
+ const tx=loudText(c.outcome,cf,s);
+ const less=p.win<now.win?`<p class="escwarn">⚠️ ${esc(t('esc.less',{n:'+'+now.win}))}</p>`:'';
+ const btn=t('esc.post')+(dd?' · '+ppSecs()+'s':'');
+ return `${ppSheetHead(t('esc.over',{d:c.day}),t('esc.title'))}
+  <p class="escsub">${esc(t('esc.sub'))}</p>
+  <div class="escnow"><span class="lb">${esc(t('esc.now'))}</span><span class="cc">${ocHtml(c.outcome,'solid')}<span>${ic[c.conf]} ${esc(t('pp.conf.'+c.conf))} · ${esc(escDay(c.day))}</span></span><span class="pts">${ppPtsPair(now)}${now.exclusive?`<small>${esc(t('esc.nowEx'))}</small>`:''}</span></div>
+  <div class="step" style="margin-top:14px"><span class="sn">📢</span>${esc(t('esc.pick'))}</div>
+  <div class="escopts" role="radiogroup" aria-label="${esc(t('esc.pick'))}">${opts}</div>
+  <div class="preview"><div class="tw"><span class="av you">✍️</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · ${esc(t('pp.c.preview'))}</span></div><p class="txt">${esc(tx)}</p></div></div></div>
+  <p class="escrule">${esc(t('esc.rule',{day:today}))}</p>${less}
+  <p class="stakes">${esc(t('pp.c.ifRight'))} <b class="up"><bdi dir="ltr">+${p.win}</bdi></b> · ${esc(t('pp.c.ifWrong'))} <b class="dn"><bdi dir="ltr">−${Math.abs(p.lose)}</bdi></b></p>
+  <button class="btn primary" data-act="escGo" data-id="${id}">📢 ${esc(btn)}</button>`; }
+LANE_ACTS.escAsk=(el,v,id)=>{ id=+id; if(!canEscalate(id)) return; PP.esc=null; currentSaga=id; ppSheet(ppEscHtml(id),'comp ppesc'); beep('whoosh'); };
+LANE_ACTS.escPick=(el,v,id)=>{ id=+id; if(!canEscalate(id,v)) return; PP.esc={id,conf:v}; beep('select'); ppSheetBody(ppEscHtml(id)); };
+LANE_ACTS.escGo=(el,v,id)=>{ id=+id; const s=game&&game.sagas[id]; const cf=PP.esc&&PP.esc.id===id?PP.esc.conf:null; if(!s||!cf||!canEscalate(id,cf)){ ppSheetClose(); return; }
+ ppSheetClose(true); composeOverlay(id,s.call.outcome,cf,{esc:true}); };
 /* @@LANE JS:player END */
 /* ─ */
 /* @@LANE JS:results BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -5886,7 +6075,8 @@ const RS_FALLBACK={ praiseExclusive:'praise', ddClutch:'praise', lateJab:'praise
 function rsCallDay(x,s){ return x.callDay||(s&&s.call&&s.call.day)||null; }
 function rsLate(x,s){ if(x.late) return x.late; if(!s||!s.call) return null; const rp=(s.rivalPosts||[]).filter(p=>p.correct&&p.day<=s.call.day).sort((a,b)=>a.day-b.day)[0]; return rp?{rival:rp.rival,day:rp.day}:null; }
 function rsCase(x,s){ if(!x.called) return 'none'; const c=(s&&s.call)||{}; const td=(s&&s.twist&&s.twist.day)||x.twistDay, cd=rsCallDay(x,s);
- if(td&&cd){ if(x.correct&&x.uturn&&cd>=td) return 'twistUpdated'; if(!x.uturn&&cd<td) return x.correct?(x.exclusive?'twistCalledEx':'twistCalled'):'twistCaught'; }
+ const cd0=x.escFrom&&x.escFrom.day!=null?x.escFrom.day:cd;
+ if(td&&cd){ if(x.correct&&x.uturn&&cd>=td) return 'twistUpdated'; if(!x.uturn&&cd0<td) return x.correct?(x.exclusive?'twistCalledEx':'twistCalled'):'twistCaught'; }
  if(x.correct){ if(x.uturn) return 'rightU'; if(x.exclusive) return 'ex'; if(rsCallDay(x,s)===7) return 'dd'; if(rsLate(x,s)) return 'late'; return 'right'; }
  if(x.uturn) return 'wrongU'; return c.conf==='low'?'wrongLow':c.conf==='high'?'wrongHigh':'wrongMed'; }
 function rsStale(s,c,ci,x){ if(x&&Array.isArray(x.stale)) return !!x.stale[ci]; if(c.outdated) return true;
@@ -5943,7 +6133,8 @@ function rsThreadHtml(x,hidden){ const s=game.sagas[x.sagaId]; if(!s||!s.player)
  const del=uf&&uf.out&&uf.conf?`<div class="tw del"><span class="av you">${esc(t('qa.youAv'))}</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(rsDayLabel(uf.day))} ${esc(t('rs.deleted'))}</span><span class="stamp bad" style="font-size:11px">${esc(t('rs.stDel'))}</span></div><p class="txt">${esc(tweetText(uf.out,uf.conf,s))}</p></div></div>`:'';
  let you='';
  if(x.called&&c){ const secs=x.secsLeft!=null?x.secsLeft:c.secsLeft; const dl=rsDayLabel(c.day)+(c.day===7&&secs!=null?' · '+t('rs.left',{s:'0:'+String(Math.max(0,secs|0)).padStart(2,'0')}):'');
-  you=`<div class="tw"><span class="av you">${esc(t('qa.youAv'))}</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(dl)}</span>${stamp}</div><p class="txt">${esc(tweetText(c.outcome,c.conf,s))}</p><div class="metrics"><span>♥ <bdi dir="ltr">${fmtK(youLikes)}</bdi></span>${x.fans!=null?`<span style="color:${x.fans>=0?'var(--ok)':'var(--bad)'}">👥 <bdi dir="ltr">${x.fans>=0?'+':'−'}${fmtK(Math.abs(x.fans))}</bdi></span>`:''}</div></div></div>`; }
+  const ef=x.escFrom||c.escFrom; if(ef) you=`<div class="tw rsesc0"><span class="av you">${esc(t('qa.youAv'))}</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(rsDayLabel(ef.day))}</span></div><p class="txt">${esc(tweetText(c.outcome,ef.conf,s))}</p></div></div>`;
+  you+=`<div class="tw"><span class="av you">${esc(t('qa.youAv'))}</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>· ${esc(dl)}</span>${ef?`<span class="rsloud">📢 ${esc(t('esc.tag'))}</span>`:''}${stamp}</div><p class="txt">${esc(ef?loudText(c.outcome,c.conf,s):tweetText(c.outcome,c.conf,s))}</p><div class="metrics"><span>♥ <bdi dir="ltr">${fmtK(youLikes)}</bdi></span>${x.fans!=null?`<span style="color:${x.fans>=0?'var(--ok)':'var(--bad)'}">👥 <bdi dir="ltr">${x.fans>=0?'+':'−'}${fmtK(Math.abs(x.fans))}</bdi></span>`:''}</div></div></div>`; }
  else if(x.called) you=`<div class="tw"><span class="av you">${esc(t('qa.youAv'))}</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b>${stamp}</div><p class="txt" style="color:var(--muted)">${esc(t('arch.noDetail'))}</p></div></div>`;
  const reps=(x.replies||[]).map((rp,j)=>{ const txt=replyText(x,rp,ctx); if(!txt) return ''; const tone=rsTone(x,rp); const h=HANDLES[((x.handles&&x.handles[j]!=null)?x.handles[j]:j)%HANDLES.length];
   let likes=rsLikes(x,s,j); if(ratio&&j===0) likes=Math.max(likes,Math.round(youLikes*2.3)+1);
