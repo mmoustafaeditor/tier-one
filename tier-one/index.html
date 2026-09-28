@@ -1892,6 +1892,10 @@ html.rm .big .tweetbig .nc,html.rm .big .tweetbig.sent,html.rm .big .tweetbig.re
 .q2know .krow.old .kr,.q2know .krow.old .kq{ opacity:.5; }
 .q2know .krow.old .oc.say{ filter:grayscale(1); }
 .q2know .kwire{ margin-top:4px; }
+/* rewarded-ad chip: its own compact line above End day, never beside it */
+.bdock .adchip{ display:flex; align-items:center; justify-content:center; gap:6px; margin:0 auto 8px; height:34px; padding:0 16px; border-radius:999px; border:1px solid color-mix(in srgb,var(--cta) 55%,var(--line)); background:color-mix(in srgb,var(--cta) 12%,var(--panel)); color:var(--text); font:700 var(--fs-sm)/1 var(--body); white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
+.bdock .adchip:active{ transform:scale(.97); }
+.bdock .row .adq{ display:none; }
 /* player page: the latest call's chat exchange (question, typing dots, reply) */
 .pp .ppchat{ padding:12px; margin-top:12px; }
 .pp .ppchat .chat{ display:flex; flex-direction:column; gap:8px; }
@@ -4268,6 +4272,8 @@ let roomCtx=null;
 function C(){ const R=roomCtx&&save.rooms&&save.rooms[roomCtx]; return R&&R.career?R.career:save.career; }
 function ctxOf(s){ return {p:pName(s.player),c:cName(s.club),d:cName(s.dest),dc:cityName(s.dest),h:cName(s.hijack),hc:cityName(s.hijack),country:tt('country')[s.dest.country],cp:catchphrase()}; }
 function isCareer(){ return game&&game.mode==='career'; }
+/* rewarded 'watch ad for +1 contact': solo Career only (not rooms, Daily or Practice), never on Deadline Day, once a day, only at 0 contacts */
+function adActionOk(){ return !!game&&game.mode==='career'&&!game.room&&game.day<7&&!game.result&&game.actions===0&&!game.adActionUsed&&CONFIG.REWARDED_ADS!=='off'; }
 function baseActions(d){ d=d||(game&&game.day)||1; if(d>=7) return ddActions(); if(!isCareer()) return MATH.CONTACTS; const e=C().equip; let a=MATH.CONTACTS; if(e.includes('wifi')&&d>=MATH.WIFI_DAYS[0]&&d<=MATH.WIFI_DAYS[1]) a++; if(e.includes('phone2')&&d>=MATH.PHONE_DAYS[0]&&d<=MATH.PHONE_DAYS[1]) a++; return a; }
 function ddActions(){ return MATH.DD_CONTACTS+(gearOwned('bank')?1:0); }
 function warnChance(mode){ return Math.min(1,MATH.WARN+(mode==='career'&&MATH.WARN_GEAR?Object.keys(MATH.WARN_GEAR).reduce((a,k)=>a+(C().equip.includes(k)?MATH.WARN_GEAR[k]:0),0):0)); }
@@ -4938,8 +4944,8 @@ function hudHtml(){
  const dd=game.day===7, unc=game.sagas.filter(s=>!s.call).length;
  if(dd) return `<div class="dock bdock dd"><p class="hint">${bb(t('board.ddHint'))}</p>${unc?`<button class="btn outline-cta" id="endDayBtn" data-act="finish">${esc(t('board.closeEarly',{n:unc}))}</button>`:`<button class="btn primary" id="endDayBtn" data-act="finish">${esc(t('board.closeWin'))}</button>`}</div>`;
  const hint=unc===0?t('board.hintAll'):game.actions>0?t(game.actions===1?'board.hintUnused1':'board.hintUnused',{n:game.actions}):t('board.hintNone');
- const ad=isCareer()&&game.actions===0&&!game.adActionUsed&&CONFIG.REWARDED_ADS!=='off';
- return `<div class="dock bdock"><p class="hint">${game.actions>0&&unc?'⚠️ ':''}${bb(hint)}</p><div class="row">${ad?`<button class="btn adq" data-act="adAction">${esc(t('board.ad'))}</button>`:''}<button class="btn primary" id="endDayBtn" data-act="endDay">${esc(endDayLabel())} ${uiIcon('arrow')}</button></div></div>`;
+ const ad=adActionOk();
+ return `<div class="dock bdock"><p class="hint">${game.actions>0&&unc?'⚠️ ':''}${bb(hint)}</p>${ad?`<button class="adchip" data-act="adAction" aria-label="${esc(t('q2.adBtn'))}">${esc(t('q2.adBtn'))}</button>`:''}<div class="row"><button class="btn primary" id="endDayBtn" data-act="endDay">${esc(endDayLabel())} ${uiIcon('arrow')}</button></div></div>`;
 }
 function renderWindow(){ return `<div class="screen game board" id="boardScreen">${boardBodyHtml()}</div>`; }
 function renderFeedItem(f){
@@ -5282,7 +5288,7 @@ document.addEventListener('click',(e)=>{
  if(a==='uturnAsk'){ openModal(`<h2>${esc(t('uturn.title'))}</h2><p class="muted" style="margin-top:8px">${esc(t('uturn.body'))}</p><div class="row" style="margin-top:12px"><button class="btn danger" data-act="uturnGo" data-id="${id}">${esc(t('uturn.del'))}</button><button class="btn center" data-act="openSaga" data-id="${id}">${esc(t('uturn.keep'))}</button></div>`,t('uturn.title')); return; }
  if(a==='uturnGo'){ closeModalQuiet(); uturnOverlay(id,()=>{ draft={outcome:null,conf:null}; render(); renderSagaModal(id); }); return; }
  if(a==='boost'){ runBoost(id,el.dataset.b); return; }
- if(a==='adAction'){ showAd(()=>{ game.actions++; game.adActionUsed=true; saveGame(); toast(t('ad.plus')); render(); }); return; }
+ if(a==='adAction'){ if(!adActionOk()) return; showAd(()=>{ game.actions++; game.adActionUsed=true; saveGame(); toast(t('ad.plus')); render(); }); return; }
  if(a==='endDay'){ endDay(); dismissCoach('c4'); const dd=game.day===7; beep(dd?'siren':'dayhit'); if(dd) buzzPhone([80,40,80]); splash(dd?t('win.deadline'):t('win.day',{d:game.day}), dd?t('tut.coach.c5'):t('sys.day',{d:game.day}).split('.').slice(1).join('.').trim(), dd); render(); if(dd) startTimer(); return; }
  if(a==='finish'){ finishWindow(); return; }
  if(a==='copyShare'){ const tx=$('shareText').textContent; const done=()=>{ toast(t('toast.copied')); Analytics.track('share',{method:'copy',content_type:'result_card'}); }; if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(tx).then(done,()=>fallbackCopy(tx,done)); else fallbackCopy(tx,done); return; }
