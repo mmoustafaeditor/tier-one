@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-28 · mmoustafaeditor · Tier 1 capped at ~20% everywhere; owner UI fixes (web 2.0.2, Android 2.2)
+- **What changed:** Tier 1 now needs 385; gear is gentler (reliability +2, Wi-Fi +1 contact on day 6, Second phone on day 5, twist warnings 20%/+10%); boosts cost $200/$500/$800 and still double per repeat. Simulated strong play: Daily ~12% T1, fully geared career ~17–19%. UI (2.0.1): classic-speed tweet typing with sounds, source calls play the full animation then show the chat, simpler "What we know" list, "Decide later" button, no ad banners during play (Career-only "Watch ad · +1 contact" pill), Arabic names wrap instead of truncating.
+- **Files:** `tier-one/index.html`, `games/tier-one/app/build.gradle`, `api/tier-one/latest.js`, `downloads/TierOne.apk`, `games/tier-one/README.md`, `CLAUDE.md`, `UPDATES.md`
+- **Heads-up for the team:** Android versionCode 13. If AdSense auto ads are turned on, disable anchor/overlay formats so no banners appear over game screens.
+
 ## 2026-09-27 · mmoustafaeditor · Tier One 2.0: full overhaul finished (web 2.0.0, Android 2.1)
 - **What changed:** Everything shipped in 1.9–1.19 today, now complete: new game math (plot twists, late-opening sources, 3 contacts a day, final tuning: T1 at 370, +4/day early bonus, escalating boost prices), new design system, new Home + tab bar + 45 s learn-by-doing tutorial, board with Overnight sheet and a real-time Deadline Day clock (also on the player page, resumes on reload), redesigned player page, composer and U-turn sheet, new results (reveal, scoreboard, who-told-the-truth table, share image), Trophies cabinet with 66 achievements and PS5-style pop-ups, redesigned Career, Friends rooms and Past dailies, 500+ new replies (mixed reactions after U-turns, twist banter) in EN/ES/AR, Android Back handling, decluttered screens, ads never cover controls, plain labels instead of abbreviations. Full end-to-end QA across modes, languages, skins and sizes.
 - **Files:** `tier-one/index.html`, `games/tier-one/app/build.gradle`, `api/tier-one/latest.js`, `downloads/TierOne.apk`, `games/tier-one/README.md`, `CLAUDE.md`, `UPDATES.md`
