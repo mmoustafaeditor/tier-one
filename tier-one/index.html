@@ -2068,6 +2068,58 @@ html[lang="ar"] .rs2draft{ letter-spacing:0; font-size:11.5px; }
 /* @@LANE CSS:onb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE CSS:onb END */
 /* @@LANE CSS:rival2 BEGIN (lane-owned; insert only between BEGIN and END) */
+/* rival2: exclusive race meter (board card + player page), rival reactions, overnight rival tag, rival-watch hint */
+.rv2{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; min-width:0; }
+.rv2 .rv2t{ display:inline-flex; align-items:center; gap:0; min-width:0; max-width:100%; }
+.rv2 .rv2s{ display:inline-flex; align-items:center; gap:3px; flex-shrink:0; height:18px; padding:0 6px; border-radius:9px; border:1.5px dashed var(--line2); color:var(--dim); font:700 10.5px/1 var(--body); white-space:nowrap; }
+.rv2 .rv2s i{ font-style:normal; font-size:11px; line-height:1; }
+.rv2 .rv2s small{ font:inherit; color:inherit; opacity:.85; }
+.rv2 .rv2s + .rv2s{ margin-inline-start:9px; position:relative; }
+.rv2 .rv2s + .rv2s::before{ content:""; position:absolute; top:50%; inset-inline-start:-10px; width:8px; border-top:1.5px dashed var(--line2); }
+.rv2 .rv2s.done{ border-style:solid; border-color:var(--line2); background:var(--panel3); color:var(--text); }
+.rv2 .rv2s.old{ border-style:solid; color:var(--dim); text-decoration:line-through; text-decoration-color:var(--twist); }
+.rv2 .rv2s.quiet{ opacity:.55; }
+.rv2 .rv2s.new{ box-shadow:0 0 0 1.5px color-mix(in srgb,var(--news) 55%,transparent); }
+.rv2 .rv2st{ display:inline-block; flex-shrink:1; min-width:0; max-width:100%; height:20px; padding:0 8px; border-radius:var(--r-xs); font:800 10.5px/20px var(--body); letter-spacing:.04em; text-transform:var(--caps); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:var(--panel3); color:var(--muted); }
+.rv2 .rv2st bdi{ text-transform:none; letter-spacing:0; }
+html[lang="ar"] .rv2 .rv2st{ letter-spacing:0; font-size:11.5px; }
+.rv2.open .rv2st{ color:var(--ex); box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ex) 55%,transparent); background:color-mix(in srgb,var(--ex) 10%,var(--panel)); }
+.rv2.locked .rv2st{ color:var(--ex-ink); background:var(--ex); }
+.rv2.scooped .rv2st{ color:var(--muted); background:var(--panel2); box-shadow:inset 0 0 0 1px var(--line2); }
+.rv2.uturn .rv2st{ color:var(--dim); background:transparent; box-shadow:inset 0 0 0 1.5px var(--line2); }
+/* board card: one compact line under the intel row (inside the card button, so no nested buttons) */
+.pcard .rv2{ margin-top:6px; }
+.pcard .rv2 .rv2s{ height:16px; padding:0 4px; font-size:10px; } .pcard .rv2 .rv2s small{ display:none; }
+.pcard .rv2 .rv2s + .rv2s{ margin-inline-start:7px; } .pcard .rv2 .rv2s + .rv2s::before{ inset-inline-start:-8px; width:6px; }
+.pcard .rv2 .rv2st{ height:18px; line-height:18px; padding:0 7px; font-size:10px; }
+.pcard.twisted .rv2{ display:none; }
+/* player page: full meter under the header, before the twist banner / What we know */
+.pp .rv2wrap{ margin:2px 0 12px; padding:10px 12px; border-radius:14px; border:1px solid var(--line); background:var(--panel); }
+.pp .rv2wrap .rv2h{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px; }
+.pp .rv2wrap .rv2h .over{ font-size:var(--fs-xs); }
+.pp .rv2wrap .rv2 .rv2s{ height:22px; padding:0 8px; font-size:11.5px; } .pp .rv2wrap .rv2 .rv2s i{ font-size:13px; }
+.pp .rv2wrap .rv2 .rv2st{ height:24px; line-height:24px; padding:0 10px; font-size:11.5px; }
+.pp .rv2wrap .rv2 .rv2t{ flex-basis:100%; }
+.pp .rv2wrap .rv2n{ margin:7px 0 0; font:600 var(--fs-xs)/1.35 var(--body); color:var(--muted); }
+.pp .rv2wrap .rv2n.reset{ color:var(--twist); }
+.ppdd .rv2wrap{ margin-top:8px; }
+/* reactions under a rival post in What we know */
+.q2know .rv2rx{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:-2px 6px 8px calc(34px + 16px); }
+.q2know .rv2rx .rv2rb{ display:inline-flex; align-items:center; justify-content:center; gap:4px; min-height:44px; padding:0 12px; border-radius:12px; border:1.5px solid var(--line2); background:var(--panel2); color:var(--text); font:700 var(--fs-sm)/1 var(--body); cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.q2know .rv2rx .rv2rb:active{ transform:scale(.97); }
+.q2know .rv2rx .rv2rb.on{ border-color:var(--cta-text); background:color-mix(in srgb,var(--cta) 16%,var(--panel)); color:var(--text); }
+.q2know .rv2rx .rv2rb[aria-pressed="false"].dimmed{ opacity:.55; }
+.q2know .rv2rx .rv2rl{ flex-basis:100%; font:600 var(--fs-xs)/1.3 var(--body); color:var(--muted); }
+.q2know .krow.old .rv2rx{ display:none; }
+/* overnight sheet: which rival, at a glance, next to the NEW chip */
+.onrow.rival .oside .rv2who{ display:inline-flex; align-items:center; gap:5px; height:19px; padding:0 6px; border-radius:6px; border:1.5px dashed var(--line2); color:var(--muted); font:800 10px/1 var(--body); letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; }
+html[lang="ar"] .onrow.rival .oside .rv2who{ letter-spacing:0; font-size:11px; }
+.onrow.rival .oside .rv2who .sig{ height:10px; }
+/* rival watch (career / rooms, blue tick or level 4+) */
+.rv2watch{ display:flex; align-items:flex-start; gap:8px; margin:0 0 10px; padding:9px 12px; border-radius:12px; border:1px dashed var(--line2); background:var(--panel); font:600 var(--fs-xs)/1.4 var(--body); color:var(--muted); }
+.rv2watch .ic{ flex-shrink:0; font-size:15px; line-height:1.2; }
+.rv2watch b{ color:var(--text); font-weight:800; }
+html.rm .rv2rx .rv2rb:active{ transform:none; }
 /* @@LANE CSS:rival2 END */
 /* @@LANE CSS:career2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE CSS:career2 END */
@@ -4703,6 +4755,29 @@ deepMerge(I18N,{
 /* @@LANE I18N:onb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE I18N:onb END */
 /* @@LANE I18N:rival2 BEGIN (lane-owned; insert only between BEGIN and END) */
+deepMerge(I18N,{
+ en:{rv2:{title:'Exclusive race',aria:'Exclusive race: {s}',days:'D{r}',quiet:'quiet',
+  st:{open:'Exclusive still open',locked:'★ Exclusive locked in',scooped:'Scooped by {h} on {d}',uturn:'No exclusive after a U-turn'},
+  ss:{open:'Exclusive open',locked:'★ Exclusive locked',scooped:'Scooped {d} · {n}',uturn:'No exclusive · U-turn'},
+  note:{open:'Post a right call before any rival and it scores +{x}.',locked:'You posted before every rival. If the call is right, it is an exclusive (+{x}).',scooped:'{n} posted first, so a right call here scores without the exclusive bonus.',uturn:'A re-called post can never be an exclusive.',reset:'🌀 The twist restarted the race on {d}: only posts from then on count.'},
+  seg:{done:'{n} posted on {d}',old:'{n} posted on {d}, before the twist',due:'{n} posts on {d}',quiet:'{n} stayed quiet'},
+  rx:{doubt:'Doubt it 🧢',big:'Big if true 👀',aria:'React to {n}\'s post',you:'Your take: {v}',vdoubt:'doubt it',vbig:'big if true'},
+  watch:{title:'Rival watch',tomorrow:'{n} ({h}) starts posting tomorrow, days {r}.'}}},
+ es:{rv2:{title:'Carrera por la exclusiva',aria:'Carrera por la exclusiva: {s}',days:'D{r}',quiet:'nada',
+  st:{open:'La exclusiva sigue abierta',locked:'★ Exclusiva asegurada',scooped:'Te pisó {h} el {d}',uturn:'Sin exclusiva tras rectificar'},
+  ss:{open:'Exclusiva abierta',locked:'★ Exclusiva asegurada',scooped:'Pisada {d} · {n}',uturn:'Sin exclusiva · rectificación'},
+  note:{open:'Publica una noticia correcta antes que cualquier rival y suma +{x}.',locked:'Publicaste antes que todos los rivales. Si aciertas, es exclusiva (+{x}).',scooped:'{n} publicó primero: si aciertas, puntúa sin el plus de exclusiva.',uturn:'Una noticia rectificada nunca puede ser exclusiva.',reset:'🌀 El giro reinició la carrera el {d}: solo cuentan las publicaciones desde entonces.'},
+  seg:{done:'{n} publicó el {d}',old:'{n} publicó el {d}, antes del giro',due:'{n} publica el {d}',quiet:'{n} no dijo nada'},
+  rx:{doubt:'Lo dudo 🧢',big:'Bomba si es verdad 👀',aria:'Reacciona a lo que dice {n}',you:'Tu reacción: {v}',vdoubt:'lo dudo',vbig:'bomba si es verdad'},
+  watch:{title:'Ojo a los rivales',tomorrow:'{n} ({h}) empieza a publicar mañana, días {r}.'}}},
+ ar:{rv2:{title:'سباق الانفراد',aria:'سباق الانفراد: {s}',days:'يوم {r}',quiet:'ساكت',
+  st:{open:'الانفراد لسه متاح',locked:'★ الانفراد اتحجز',scooped:'{h} سبقك {d}',uturn:'مفيش انفراد بعد التعديل'},
+  ss:{open:'الانفراد متاح',locked:'★ الانفراد اتحجز',scooped:'اتسبقت {d} · {n}',uturn:'مفيش انفراد · تعديل'},
+  note:{open:'انشر خبر صح قبل أي منافس وخد +{x}.',locked:'انت نزّلت قبل كل المنافسين. لو الخبر صح يبقى انفراد (+{x}).',scooped:'{n} نزّل الأول، فالخبر الصح هنا بيتحسب من غير بونص الانفراد.',uturn:'الخبر اللي اتعدّل عمره ما يبقى انفراد.',reset:'🌀 اللفة رجّعت السباق من الأول {d}: اللي بيتحسب بس اللي نزل من ساعتها.'},
+  seg:{done:'{n} نزّل {d}',old:'{n} نزّل {d}، قبل اللفة',due:'{n} بينزّل {d}',quiet:'{n} ما قالش حاجة'},
+  rx:{doubt:'مش مصدق 🧢',big:'لو صح تبقى كبيرة 👀',aria:'رد على كلام {n}',you:'رأيك: {v}',vdoubt:'مش مصدق',vbig:'لو صح تبقى كبيرة'},
+  watch:{title:'راقب المنافسين',tomorrow:'{n} ({h}) هيبدأ ينزّل بكرة، يوم {r}.'}}}
+});
 /* @@LANE I18N:rival2 END */
 /* @@LANE I18N:career2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE I18N:career2 END */
@@ -7140,9 +7215,7 @@ function rvOf(k){ return RIVALS.find(r=>r.key===k)||{key:k,handle:'',ic:'👤',d
 function rvLabel(k){ const r=rvOf(k); return r.handle?'⁦'+r.handle+'⁩ ('+t('pp.short.'+k)+')':t('rival.'+k); }
 function rvMeta(k){ const r=rvOf(k); return `<span class="rvtag" title="${esc(t('rv.role'))}">${esc(t('rv.tag'))}</span>${r.handle?`<bdi dir="ltr" class="rvh">${esc(r.handle)}</bdi>`:''}`; }
 function rvTip(){ return coachHtml('rivals').replace('<span class="ic" aria-hidden="true">💡</span>','<span class="ic" aria-hidden="true">🗞️</span>'); }
-function rvBoardChip(s){ const ps=game.feed.filter(f=>f.sagaId===s.id&&f.type==='rival'&&f.claim); if(!ps.length) return '';
- const ics=[...new Set(ps.map(f=>rvOf(f.rival).ic))].join('');
- return `<span class="rvchip"><i aria-hidden="true">${ics}</i>${esc(t(ps.length===1?'rv.b1':'rv.bN',{n:ps.length}))}</span>`; }
+function rvBoardChip(s){ return ''; } /* the 'n rival guesses' chip is replaced by the per-card exclusive race line (rival2 slot) */
 function rvHowCard(){ const rows=RIVALS.map(r=>`<div class="rvhrow"><span class="rvav" aria-hidden="true">${r.ic}</span><span class="rvhm"><span class="rvhn"><b>${esc(t('rival.'+r.key))}</b>${rvMeta(r.key)}</span><span class="rvhd">${esc(t('rv.how.'+r.key,{a:r.dmin,b:Math.min(7,r.dmax)}))}</span></span></div>`).join('');
  return `<section class="card rvhow"><h2 class="d4">${esc(t('rv.how.title'))}</h2><p class="rvhp">${esc(t('rv.how.body'))}</p>${rows}<p class="rvhx">👑 ${esc(t('rv.how.ex'))}</p></section>`; }
 /* results: one line per call saying who won the race */
@@ -7359,6 +7432,68 @@ onHook('rendered',sc=>{ if(sc!=='window') return; rs2DraftChips(); const b=$('bo
 /* @@LANE JS:onb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:onb END */
 /* @@LANE JS:rival2 BEGIN (lane-owned; insert only between BEGIN and END) */
+/* rival2: the exclusive race, made visible. Reads RIVALS, s.rivalPosts (only posts with day<=game.day: nothing about the future
+   or about correctness leaks), s.call, s.tw; writes only s.rx (reactions, saved with the game). Mirrors the engine's live rule
+   (rivalsPostedOn/exclusiveOpen + resolveWindow): the first rival post of the current era (after a twist, a new era) beats a call
+   posted on or after that day; a U-turned call is never an exclusive. Board/player page DOM is injected, never owned. */
+function rv2Esc(key,ctx){ return esc(t(key)).replace(/\{(\w+)\}/g,(m,k)=>ctx&&ctx[k]!=null?ctx[k]:m); } /* esc()'d template, safe HTML fragments filled in after */
+function rv2Bdi(x){ return `<bdi dir="ltr">${esc(String(x))}</bdi>`; }
+function rv2Days(a,b){ return rv2Esc('rv2.days',{r:rv2Bdi(b!=null&&b!==a?a+'–'+b:a)}); }
+function rv2DaysTxt(a,b){ return t('rv2.days',{r:b!=null&&b!==a?a+'–'+b:a}); }
+function rv2State(s){ const day=game.day, era=(s.tw&&day>=s.tw)?s.tw:0;
+ const posts=(s.rivalPosts||[]).filter(p=>p.day<=day&&RIVALS.some(r=>r.key===p.rival)).sort((a,b)=>a.day-b.day);
+ const first=posts.find(p=>p.day>=era)||null, c=s.call; let st;
+ if(c) st=c.uturn?'uturn':(!first||c.day<first.day)?'locked':'scooped'; else st=first?'scooped':'open';
+ return {day,era,posts,first,st}; }
+function rv2Ctx(st,html){ const f=st.first, r=f?rvOf(f.rival):null; const nm=r?t('pp.short.'+r.key):'';
+ return html?{h:r?rv2Bdi(r.handle):'',n:esc(nm),d:f?rv2Days(f.day):'',x:esc(String(MATH.EXCL))}:{h:r?r.handle:'',n:nm,d:f?rv2DaysTxt(f.day):'',x:MATH.EXCL}; }
+function rv2Sig(s){ const st=rv2State(s); const un=unseenNews(s).filter(f=>f.type==='rival'&&f.claim).map(f=>f.rival).join(',');
+ return [lang,st.day,st.era,st.st,st.posts.map(p=>p.rival+p.day).join(','),un,s.rx?Object.keys(s.rx).map(k=>k+':'+(s.rx[k]&&s.rx[k].v)).join(','):''].join('|'); }
+function rv2Segs(s,st,mini){ const un=unseenNews(s).filter(f=>f.type==='rival'&&f.claim).map(f=>f.rival);
+ return RIVALS.map(r=>{ const p=st.posts.find(q=>q.rival===r.key), nm=t('pp.short.'+r.key), dmax=Math.min(7,r.dmax); let cls,lab,aria;
+  if(p){ cls=p.day<st.era?'old':'done'; lab=rv2Days(p.day); aria=t('rv2.seg.'+cls,{n:nm,d:rv2DaysTxt(p.day)}); if(cls==='done'&&un.includes(r.key)) cls+=' new'; }
+  else if(st.day>dmax){ cls='quiet'; lab=esc(t('rv2.quiet')); aria=t('rv2.seg.quiet',{n:nm}); }
+  else{ cls='due'; lab=rv2Days(r.dmin,dmax); aria=t('rv2.seg.due',{n:nm,d:rv2DaysTxt(r.dmin,dmax)}); }
+  return `<span class="rv2s ${cls}" role="img" aria-label="${esc(aria)}"><i aria-hidden="true">${r.ic}</i>${mini?'':`<span>${esc(nm)}</span>`}<small>${lab}</small></span>`; }).join(''); }
+function rv2Html(s,mini){ const st=rv2State(s), k=(mini?'rv2.ss.':'rv2.st.')+st.st;
+ const aria=t('rv2.aria',{s:t(k,rv2Ctx(st,false))});
+ return `<div class="rv2 ${st.st}" data-sig="${esc(rv2Sig(s))}" role="group" aria-label="${esc(aria)}"><span class="rv2t">${rv2Segs(s,st,mini)}</span><span class="rv2st">${st.st==='open'?'👑 ':''}${rv2Esc(k,rv2Ctx(st,true))}</span></div>`; }
+function rv2PageHtml(s){ const st=rv2State(s); const reset=st.era&&st.posts.some(p=>p.day<st.era);
+ return `<section class="rv2wrap" data-sig="${esc(rv2Sig(s))}" aria-label="${esc(t('rv2.title'))}"><div class="rv2h"><span class="over">${esc(t('rv2.title'))}</span></div>${rv2Html(s,false)}<p class="rv2n">${rv2Esc('rv2.note.'+st.st,rv2Ctx(st,true))}</p>${reset?`<p class="rv2n reset">${rv2Esc('rv2.note.reset',{d:rv2Days(st.era)})}</p>`:''}</section>`; }
+/* reactions: s.rx[rivalKey] = {v:'doubt'|'big', day} — data for the results lane, no scoring effect */
+function rv2RxHtml(s,key){ const rx=s.rx&&s.rx[key], v=rx&&rx.v;
+ const b=k=>`<button class="rv2rb${v===k?' on':''}${v&&v!==k?' dimmed':''}" data-act="rv2rx" data-id="${s.id}" data-v="${key}|${k}" aria-pressed="${v===k}">${esc(t('rv2.rx.'+k))}</button>`;
+ return `<div class="rv2rx" data-rv2="${key}" role="group" aria-label="${esc(t('rv2.rx.aria',{n:t('rival.'+key)}))}">${b('doubt')}${b('big')}${v?`<span class="rv2rl">${esc(t('rv2.rx.you',{v:t('rv2.rx.v'+v)}))}</span>`:''}</div>`; }
+LANE_ACTS.rv2rx=(el,v,id)=>{ const s=game&&!game.result&&game.sagas&&game.sagas[+id]; if(!s) return; const m=/^(tabloid|itk|insider)\|(doubt|big)$/.exec(String(v||'')); if(!m||!RIVALS.some(r=>r.key===m[1])) return;
+ s.rx=s.rx&&typeof s.rx==='object'&&!Array.isArray(s.rx)?s.rx:{}; const cur=s.rx[m[1]];
+ if(cur&&cur.v===m[2]) delete s.rx[m[1]]; else s.rx[m[1]]={v:m[2],day:game.day};
+ saveGame(); beep('tap'); try{ Analytics.track('rival_react',{rival:m[1],take:s.rx[m[1]]?m[2]:'cleared',day:game.day}); }catch(e){}
+ const box=el.closest('.rv2rx'); if(box) box.outerHTML=rv2RxHtml(s,m[1]); };
+/* board: one compact race line per card + the rival-watch hint (career/rooms, blue tick or level 4+) */
+function rv2Board(){ if(!game||game.result||screen!=='window'||!game.sagas) return;
+ document.querySelectorAll('#boardScreen .pcard[data-id]').forEach(b=>{ const s=game.sagas[+b.dataset.id], pm=b.querySelector('.pm'); if(!s||!pm||!s.rivalPosts) return;
+  const cur=pm.querySelector('.rv2'); const sig=rv2Sig(s); if(cur&&cur.dataset.sig===sig) return; if(cur) cur.remove(); pm.insertAdjacentHTML('beforeend',rv2Html(s,true)); });
+ const host=document.querySelector('#boardScreen .pcards'), old=document.getElementById('rv2watch'); if(!host) return;
+ let ok=false; try{ ok=isCareer()&&game.day<7&&(gearOwned('tick')||levelInfo(C().xp).n>=4); }catch(e){ ok=false; }
+ const rs=ok?RIVALS.filter(r=>r.dmin===game.day+1):[]; if(!rs.length){ if(old) old.remove(); return; }
+ const txt=rs.map(r=>rv2Esc('rv2.watch.tomorrow',{n:esc(t('rival.'+r.key)),h:rv2Bdi(r.handle),r:rv2Bdi(r.dmin+'–'+Math.min(7,r.dmax))})).join(' ');
+ const h=`<div class="rv2watch" id="rv2watch" role="note" data-sig="${esc(lang+game.day)}"><span class="ic" aria-hidden="true">👁️</span><span><b>${esc(t('rv2.watch.title'))}:</b> ${txt}</span></div>`;
+ if(old&&old.dataset.sig===lang+game.day) return; if(old) old.remove(); host.insertAdjacentHTML('beforebegin',h); }
+/* player page (ppRender is not a render(): we watch #modalRoot) — meter under the header, reactions under each rival post, overnight rival tag */
+function rv2Page(){ const root=$('modalRoot'); if(!root||!game||game.result||!game.sagas) return;
+ const pg=root.querySelector('.pp .ppin'); const s=pg&&typeof PP!=='undefined'&&PP.id!=null?game.sagas[PP.id]:null;
+ if(pg&&s&&s.rivalPosts){ const sig=rv2Sig(s); let w=pg.querySelector('.rv2wrap'); if(w&&w.dataset.sig!==sig){ w.remove(); w=null; }
+  if(!w){ const at=pg.querySelector('.pptwist')||pg.querySelector('#ppChat')||pg.querySelector('#ppKnow'); if(at) at.insertAdjacentHTML('beforebegin',rv2PageHtml(s)); }
+  pg.querySelectorAll('.krow.rival').forEach(row=>{ if(row.querySelector('.rv2rx')) return; const kr=row.querySelector('.kr[data-v]'); const m=kr&&/^r(\d+)$/.exec(kr.dataset.v||''); const f=m&&game.feed[+m[1]];
+   if(!f||f.type!=='rival'||!f.claim||f.sagaId!==s.id||!RIVALS.some(r=>r.key===f.rival)) return; row.insertAdjacentHTML('beforeend',rv2RxHtml(s,f.rival)); }); }
+ root.querySelectorAll('.onrow.rival[data-id]').forEach(row=>{ const side=row.querySelector('.oside'); if(!side||side.querySelector('.rv2who')) return;
+  const hh=(row.querySelector('.ow .rvh')||{}).textContent||'', ic=(row.querySelector('.ow .rvav')||{}).textContent||''; const r=RIVALS.find(q=>q.handle&&hh.trim()===q.handle)||RIVALS.find(q=>ic.trim()===q.ic); if(!r) return;
+  side.insertAdjacentHTML('afterbegin',`<span class="rv2who" title="${esc(t('rival.'+r.key))}">${esc(t('pp.short.'+r.key))}${sigHtml(ppBars(r.rel),false,null,{hidden:true})}</span>`); }); }
+(function(){ let raf=0; const kick=()=>{ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; try{ rv2Board(); }catch(e){} try{ rv2Page(); }catch(e){} }); };
+ try{ new MutationObserver(kick).observe(document.body,{childList:true,subtree:true}); }catch(e){}
+ onHook('rendered',kick); onHook('day',kick); onHook('call',kick); onHook('uturn',kick); kick(); })();
+/* results contract: at resolve time result.per[i].rx mirrors that saga's reactions (same shape), so the results lane and the daily archive keep them */
+onHook('resolved',res=>{ try{ ((res&&res.per)||[]).forEach(x=>{ const s=game.sagas[x.sagaId]; if(s&&s.rx&&Object.keys(s.rx).length&&!x.rx) x.rx=JSON.parse(JSON.stringify(s.rx)); }); }catch(e){} });
 /* @@LANE JS:rival2 END */
 /* @@LANE JS:career2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:career2 END */
