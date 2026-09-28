@@ -1957,6 +1957,44 @@ html[lang="ar"] .rvtag{ letter-spacing:0; font-size:11px; }
 /* @@LANE CSS:lb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE CSS:lb END */
 /* @@LANE CSS:results2 BEGIN (lane-owned; insert only between BEGIN and END) */
+/* results2: profile chip (hero), story card, U-turn story on rows, rival verdicts in threads, U-turn draft label */
+.rsx .rs2chip{ display:inline-flex; align-items:center; gap:7px; margin-top:12px; height:32px; padding:0 13px; border-radius:999px; background:color-mix(in srgb,var(--tc) 16%,var(--panel)); border:1px solid color-mix(in srgb,var(--tc) 45%,var(--line)); font:800 var(--ital) 15px/1 var(--display); letter-spacing:.03em; text-transform:var(--caps); color:var(--text); max-width:100%; }
+.rsx .rs2chip .ic{ font-style:normal; font-size:16px; line-height:1; }
+html[lang="ar"] .rsx .rs2chip{ letter-spacing:0; font-size:16px; }
+.rsx .rs2story{ margin-top:14px; padding:12px 14px; }
+.rsx .rs2quip{ display:flex; gap:10px; align-items:flex-start; margin:0; font:600 var(--fs-sm)/1.4 var(--body); color:var(--text); }
+.rsx .rs2quip .ic{ flex-shrink:0; font-size:22px; line-height:1.05; }
+.rsx .rs2meta{ display:flex; flex-wrap:wrap; gap:6px 8px; margin-top:10px; }
+.rsx .rs2meta[hidden]{ display:none; }
+.rsx .rs2meta span{ display:inline-flex; align-items:center; min-height:26px; padding:3px 9px; border-radius:8px; background:var(--panel2); font:700 12.5px/1.25 var(--body); color:var(--muted); }
+.rsx .rs2meta span[hidden]{ display:none; }
+.rsx .rs2meta #rsRank{ color:var(--text); }
+.rsx .rs2meta .pr.honest{ color:var(--ok); }
+.rsx .rs2meta .pr.liars{ color:var(--text); }
+.rsx .rs2ch{ width:100%; justify-content:center; margin-top:12px; }
+.rsx .rs2quip + .rs2ch,.rsx .rs2story > .rs2ch:first-child{ margin-top:0; }
+.rsx .rs2quip + .rs2ch{ margin-top:12px; }
+.rsx .srow .rs2ut{ grid-column:2 / 5; display:flex; flex-wrap:wrap; gap:3px 8px; font:700 11.5px/1.3 var(--body); color:var(--muted); }
+.rsx .srow .rs2ut b{ color:var(--text); }
+.rsx .srow .rs2ut b.ok{ color:var(--ok); }
+.rsx .srow .rs2ut b.bad{ color:var(--bad); }
+.rsx .rs2rvs{ margin-top:10px; padding-top:9px; border-top:1px solid var(--line); }
+.rsx .rs2rvh{ display:block; margin-bottom:5px; font:800 10.5px/1 var(--body); letter-spacing:.07em; text-transform:var(--caps); color:var(--muted); }
+.rsx .rs2rv{ display:flex; align-items:center; gap:6px; min-height:26px; font:600 12px/1.25 var(--body); color:var(--muted); }
+.rsx .rs2rv .ic{ width:18px; text-align:center; flex-shrink:0; }
+.rsx .rs2rv b{ color:var(--text); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rsx .rs2rv .d{ white-space:nowrap; }
+.rsx .rs2rv .oc{ height:20px; font-size:10px; padding:0 6px 0 4px; }
+.rsx .rs2rv .v{ margin-inline-start:auto; white-space:nowrap; font-weight:700; }
+.rsx .rs2rv.t .v{ color:var(--ok); }
+.rsx .rs2rv.f .v{ color:var(--bad); }
+.rsx .rs2rv.o .v{ color:var(--twist); }
+.shcard .shs + .shs{ margin-top:3px; }
+.shcard .shs.pf{ color:#F3F5FA; font-weight:700; }
+.rs2draft{ display:inline-flex; align-items:center; gap:6px; margin:8px 0 0; padding:4px 8px; border-radius:6px; background:color-mix(in srgb,var(--ex) 18%,var(--panel2)); font:800 10.5px/1.2 var(--body); letter-spacing:.06em; text-transform:var(--caps); color:var(--text); }
+html[lang="ar"] .rs2draft{ letter-spacing:0; font-size:11.5px; }
+.tag.rs2dchip{ background:color-mix(in srgb,var(--ex) 18%,var(--panel2)); color:var(--text); }
+.big.compose .quirk .rs2dt{ color:var(--ex); }
 /* @@LANE CSS:results2 END */
 /* @@LANE CSS:onb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE CSS:onb END */
@@ -4537,6 +4575,32 @@ deepMerge(I18N,{
 /* @@LANE I18N:lb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE I18N:lb END */
 /* @@LANE I18N:results2 BEGIN (lane-owned; insert only between BEGIN and END) */
+deepMerge(I18N,{
+ en:{rs2:{rank:'#{rank} of {total} today',streak:'🔥 {n} Dailies in a row',t1streak:'Tier 1 ×{n} in a row',beat:'Beat @{nick} by {n}',behind:'{n} behind @{nick}',level:'Level with @{nick}',
+  liars:'🧢 {list} lied to you',honest:'Every source told you the truth',and:' and ',comma:', ',legend:'LEGEND',story:'Your window',
+  challenge:'Challenge a friend',chDaily:'I got {tier} on Tier One Daily #{num} — same 5 players for everyone. Beat me: {url}',chOther:'I got {tier} ({pts} pts) in Tier One — same 5 players for everyone in the Daily. Beat me: {url}',
+  first:'First take: {o} · {c}',final:'Final: {o} · {c}',hadIt:'You had it.',goodU:'Good U-turn.',twice:'Twice wrong, still standing.',bothR:'Right twice. The U-turn still cost half.',
+  rivals:'Rival posts',right:'right',wrong:'wrong',draft:'DRAFT — your old post is still live',draftChip:'Draft pending',draftTyping:'draft · not live yet',
+  prof:{sniper:{n:'The Sniper',q:'Every shot landed. Somebody check this account.'},gambler:{n:'The Gambler',q:'Confirmed, confirmed, wrong, wrong. The house always wins.'},insider:{n:'The Insider',q:'First to the story, twice. Sources are texting you now.'},
+   dancer:{n:'Deadline Dancer',q:'Left it to the last hour and still nailed it. Heart rate: unknown.'},patient:{n:'The Patient One',q:'Waited for the medical. Boring. Correct.'},specialist:{n:'The Specialist',q:'Right on the small calls, wrong on the big ones. Very on brand.'},
+   rookie:{n:'The Rookie',q:'Tomorrow is a fresh board. Please.'},steady:{n:'Steady Hands',q:'Never once said Confirmed. Never once got ratio’d.'},ghost:{n:'The Ghost',q:'Filed nothing. The window barely noticed.'},grinder:{n:'The Grinder',q:'Some right, some wrong. The beat goes on.'}}}},
+ es:{rs2:{rank:'#{rank} de {total} hoy',streak:'🔥 {n} diarios seguidos',t1streak:'Tier 1 ×{n} seguidos',beat:'Ganaste a @{nick} por {n}',behind:'{n} por detrás de @{nick}',level:'Empate con @{nick}',
+  liars:'🧢 {list} te mintieron',honest:'Todas las fuentes te dijeron la verdad',and:' y ',comma:', ',legend:'LEYENDA',story:'Tu mercado',
+  challenge:'Reta a un amigo',chDaily:'Saqué {tier} en el Diario #{num} de Tier One — los mismos 5 jugadores para todos. Supérame: {url}',chOther:'Saqué {tier} ({pts} pts) en Tier One — los mismos 5 jugadores para todos en el Diario. Supérame: {url}',
+  first:'Primera apuesta: {o} · {c}',final:'Final: {o} · {c}',hadIt:'La tenías.',goodU:'Buena rectificación.',twice:'Dos fallos y sigues en pie.',bothR:'Acertaste dos veces. Rectificar te costó la mitad igual.',
+  rivals:'Posts rivales',right:'acertó',wrong:'falló',draft:'BORRADOR — tu post antiguo sigue publicado',draftChip:'Borrador pendiente',draftTyping:'borrador · aún no publicado',
+  prof:{sniper:{n:'El Francotirador',q:'Todas dentro. Que alguien revise esta cuenta.'},gambler:{n:'El Apostador',q:'Confirmado, confirmado, fallo, fallo. La banca siempre gana.'},insider:{n:'El Insider',q:'Primero con la noticia, dos veces. Las fuentes ya te escriben.'},
+   dancer:{n:'Bailarín del Límite',q:'Lo dejaste para la última hora y la clavaste. Pulsaciones: desconocidas.'},patient:{n:'El Paciente',q:'Esperaste al reconocimiento. Aburrido. Correcto.'},specialist:{n:'El Especialista',q:'Aciertas las pequeñas, fallas las grandes. Muy tú.'},
+   rookie:{n:'El Novato',q:'Mañana hay tablero nuevo. Por favor.'},steady:{n:'Pulso Firme',q:'Nunca dijiste Confirmado. Nunca te hicieron ratio.'},ghost:{n:'El Fantasma',q:'No publicaste nada. El mercado apenas se enteró.'},grinder:{n:'El Currante',q:'Algún acierto, algún fallo. La ronda sigue.'}}}},
+ ar:{rs2:{rank:'رقم {rank} من {total} النهارده',streak:'🔥 {n} يومي ورا بعض',t1streak:'تير 1 ×{n} ورا بعض',beat:'كسبت @{nick} بفارق {n}',behind:'ورا @{nick} بـ{n}',level:'بالتساوي مع @{nick}',
+  liars:'🧢 {list} كدبوا عليك',honest:'كل المصادر قالتلك الحقيقة',and:' و',comma:'، ',legend:'أسطورة',story:'الميركاتو بتاعك',
+  challenge:'اتحدى صاحبك',chDaily:'جبت {tier} في يومي Tier One رقم {num} — نفس الـ5 لاعيبة للكل. اكسبني: {url}',chOther:'جبت {tier} ({pts} نقطة) في Tier One — نفس الـ5 لاعيبة للكل في اليومي. اكسبني: {url}',
+  first:'أول كلام: {o} · {c}',final:'الأخير: {o} · {c}',hadIt:'كانت في إيدك.',goodU:'رجوع في الوقت المناسب.',twice:'غلط مرتين ولسه واقف.',bothR:'صح مرتين. والرجوع كلفك النص برضه.',
+  rivals:'بوستات المنافسين',right:'صح',wrong:'غلط',draft:'مسودة — البوست القديم لسه شغال',draftChip:'مسودة مستنية',draftTyping:'مسودة · لسه ماتنشرتش',
+  prof:{sniper:{n:'القناص',q:'كل طلقة جت في مكانها. حد يراجع الحساب ده.'},gambler:{n:'المقامر',q:'خلصانة، خلصانة، غلط، غلط. الكازينو دايمًا بيكسب.'},insider:{n:'ابن الدار',q:'أول واحد بالخبر، مرتين. المصادر هي اللي بتبعتلك دلوقتي.'},
+   dancer:{n:'راقص يوم الحسم',q:'سبتها لآخر ساعة وجبتها برضه. النبض: مجهول.'},patient:{n:'الصبور',q:'استنيت الكشف الطبي. ممل. بس صح.'},specialist:{n:'المتخصص',q:'صح في الصغيرة وغلط في الكبيرة. إنت بالظبط.'},
+   rookie:{n:'المبتدئ',q:'بكرة لوحة جديدة. بالله عليك.'},steady:{n:'إيد ثابتة',q:'عمرك ما قلت خلصانة. وعمرك ما اتبهدلت.'},ghost:{n:'الشبح',q:'ما نشرتش حاجة. الميركاتو بالعافية لاحظ.'},grinder:{n:'الشغّيل',q:'شوية صح وشوية غلط. الشغل مستمر.'}}}}
+});
 /* @@LANE I18N:results2 END */
 /* @@LANE I18N:onb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE I18N:onb END */
@@ -5317,7 +5381,7 @@ function contactOverlay(kind,then,o){
 }
 function composeOverlay(id,outcome,conf,opt){
  const loud=!!(opt&&opt.esc); const s=game.sagas[id]; if(loud&&!canEscalate(id,conf)) return; const text=loud?loudText(outcome,conf,s):tweetText(outcome,conf,s); const uturn=!loud&&!!s.uturns; const dd=game.day===7; const rm=motionReduced();
- const d=bigOverlayPersistent(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}<div class="quirk">${esc(tt('quirk')[outcome][conf])}<small>${esc(pName(s.player))} · ${esc(t('conf.'+conf))}${uturn?' · '+esc(t('uturn.tag')):''}${loud?' · 📢 '+esc(t('esc.tag')):''}</small></div>
+ const d=bigOverlayPersistent(`${dd?`<div class="ppclk">${ppClock()}</div>`:''}<div class="quirk">${esc(tt('quirk')[outcome][conf])}<small>${esc(pName(s.player))} · ${esc(t('conf.'+conf))}${uturn?' · '+esc(t('uturn.tag'))+(dd?'':` · <span class="rs2dt">${esc(t('rs2.draftTyping'))}</span>`):''}${loud?' · 📢 '+esc(t('esc.tag')):''}</small></div>
   <div class="tweetbig typing ${uturn?'uturn':''}${loud?' loud':''}"><div class="av">✍️</div><div style="flex:1;min-width:0"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · <em class="tst">${esc(t('compose.typing').replace(/[.…]+$/,''))}</em></span></div><div class="txt" id="typed"><span class="cursor"></span></div><div class="foot"><span>💬 0</span><span>🔁 0</span><span>❤️ 0</span><span class="up" id="gain"></span><span class="sendb" aria-hidden="true">${esc(loud?t('esc.send'):t(uturn?'compose.postU':'compose.post'))}</span></div></div></div>`,'compose');
  /* Deadline Day: the call is locked the moment you press Post (the clock may run out while the tweet types) */
  if(dd){ d._gain=loud?escalateCall(id,conf):publishCall(id,outcome,conf); render(); }
@@ -5507,7 +5571,7 @@ function renderResults(){
   const vt=k==='none'?`<span class="vt">${esc(t('rs.vtNone'))}</span>`:k==='ex'?`<span class="vt ex">${esc(t('rs.vtEx'))}</span>`:k==='right'?(x.uturn?`<span class="vt">${esc(t('rs.vtHalf'))}</span>`:`<span class="vt ok">${esc(t('rs.vtCalled'))}</span>`):`<span class="vt bad">${esc(t('rs.vtWrong'))}</span>`;
   const ef=x.called&&(x.escFrom||(c&&c.escFrom)), cd=rsCallDay(x,s); const escN=ef&&c?`<span class="sesc">📢 ${esc(t('rs.escNote',{a:t('pp.conf.'+ef.conf),b:t('pp.conf.'+c.conf),day:cd===7?t('rs.dd'):t('pp.dayN',{d:cd})}))}</span>`:'';
   const aria=pName(s.player)+' · '+t('rs.sbYou')+': '+(x.called&&c?t('ds.oc.'+c.outcome):'—')+' · '+t('rs.sbTruth')+': '+t('ds.oc.'+s.truth);
-  return `<button class="srow" data-act="rsRow" data-id="${s.id}" aria-label="${esc(aria)}">${kitSVG(s.club,initials(s.player.name))}<span class="sn">${esc(pName(s.player))}</span><span class="sy">${you}</span><span class="st">${ocHtml(s.truth,'solid')}</span><span class="sp"><b class="${pcls}"><bdi dir="ltr">${x.called?rsPtsStr(x.pts):'0'}</bdi></b><span class="svt">${disc}${vt}</span></span>${escN}</button>`; }).join('');
+  return `<button class="srow" data-act="rsRow" data-id="${s.id}" aria-label="${esc(aria)}">${kitSVG(s.club,initials(s.player.name))}<span class="sn">${esc(pName(s.player))}</span><span class="sy">${you}</span><span class="st">${ocHtml(s.truth,'solid')}</span><span class="sp"><b class="${pcls}"><bdi dir="ltr">${x.called?rsPtsStr(x.pts):'0'}</bdi></b><span class="svt">${disc}${vt}</span></span>${escN}${rs2UturnLine(x,s)}</button>`; }).join('');
  const ach=(r.achUnlocked||[]).map(id=>{ const a=rsAch(id); let rr=String(a.r).toLowerCase(); if(rr==='legendary') rr='legend';
   return `<div class="ucard" style="--rc:var(--r-${esc(rr)})">${medalHtml(a.ic,rr)}<span class="ut"><span class="rw">${esc(t('rs.isNew',{r:t('ds.rar.'+rr)}))}</span><b>${esc(a.name)}</b>${a.how?`<small>${esc(a.how)}</small>`:''}</span></div>`; }).join('');
  const order=r.per.map((x,i)=>({x,i})).sort((a,b)=>((b.x.uturn&&b.x.called?1:0)-(a.x.uturn&&a.x.called?1:0))||(Math.abs(b.x.pts||0)-Math.abs(a.x.pts||0))||(a.i-b.i));
@@ -5521,8 +5585,10 @@ function renderResults(){
   <p class="rscore num"><bdi dir="ltr" id="scoreNum">${r.total}</bdi><small>${esc(t('rs.pts'))}</small></p>
   <div class="rgrid" role="list" aria-label="${esc(t('rs.grid'))}">${tiles}</div>
   ${stats}
+  ${rs2ChipHtml()}
  </section>
  ${rsLadderHtml()}
+ ${rs2StoryHtml()}
  <div class="sechead"><h2 class="d4">${esc(t('rs.calls'))}</h2><span class="aux">${esc(t('rs.callsAux'))}</span></div>
  <section class="card sb"><div class="sbh"><span></span><span>${esc(t('rs.sbYou'))}</span><span>${esc(t('rs.sbTruth'))}</span><span>${esc(t('rs.sbPts'))}</span></div>${sbRows}<div class="sbf"><span>${esc(t('rs.sbFoot'))}</span><b class="num"><bdi dir="ltr">${r.total}</bdi></b></div></section>
  ${ach?`<div class="sechead"><h2 class="d4">${esc(t('rs.unlocked'))}</h2>${SCREENS.achievements?`<button class="link" data-act="rsAch">${esc(t('rs.allAch'))}</button>`:''}</div><div class="unl">${ach}</div>`:''}
@@ -6420,7 +6486,7 @@ onHook('resolved',res=>{
   const l=rsLate(x,s); if(l) x.late=l;
   if(s.twist&&x.twistDay==null) x.twistDay=s.twist.day;
   x.stale=(s.clues||[]).map((c,ci)=>rsStale(s,c,ci,null)?1:0);
-  x.rivals=(s.rivalPosts||[]).map(p=>({rival:p.rival,day:p.day,correct:!!p.correct,outdated:!!p.outdated}));
+  x.rivals=(s.rivalPosts||[]).map(p=>({rival:p.rival,day:p.day,correct:!!p.correct,outdated:!!p.outdated,out:p.out||p.claim||null})); if(s.rs2first) x.rs2first=s.rs2first;
   try{ if(x.called&&!x.correct){ const ci=(s.clues||[]).map((c,i)=>i).filter(i=>s.clues[i].source!=='paid'&&s.clues[i].source!=='tipoff').pop(); const cl=ci!=null?s.clues[ci]:null; const pool=cl&&((tt('sreply')||{})[cl.source]||{}).outdated; if(cl&&x.stale[ci]&&Array.isArray(pool)&&pool.length) x.srcReply={src:cl.source,cs:'outdated',v:rsHash(seed+'|o|'+s.id)%pool.length}; } }catch(e){}
   const cs=rsCase(x,s), out=[];
   (RS_CASES[cs]||[]).forEach((k0,j)=>{ let k=k0; if(!rsPool(k)) k=RS_FALLBACK[k]; if(!k||!rsPool(k)) return; const n=rsPool(k).length;
@@ -6445,13 +6511,15 @@ function rsBest(){ try{ const r=game.result; if(game.mode==='daily'){ const h=sa
 function rsAch(id){ let a=null; try{ const A=typeof ACH!=='undefined'?ACH:null; if(Array.isArray(A)) a=A.find(o=>o&&o.id===id); else if(A&&typeof A==='object') a=A[id]||(Array.isArray(A.list)?A.list.find(o=>o&&o.id===id):null); }catch(e){}
  const nm=a&&(a[lang]||a.en||a.name)||(tt('ach.'+id+'.name')||id); const how=a&&(a['how_'+lang]||(typeof a.how==='object'?a.how[lang]||a.how.en:a.how))||tt('ach.'+id+'.how')||''; return {ic:a&&a.ic||'🏅',r:a&&(a.r||a.rarity)||'common',name:String(nm),how:String(how)}; }
 function rsLabel(){ const n=game.archived&&game.num?game.num:dailyNumber(); return game.mode==='daily'?t('win.daily',{n}):game.mode==='career'?(game.room?t('online.label',{c:game.room,s:(game.season||0)+1,n:roomSeasons(game.room)}):t('win.career')+' #'+C().windows):t('win.practice'); }
-function rsShareText(){ const r=game.result, tr=r.tier; const medal={t1:'🥇',t2:'🥈',t3:'🥉',clown:'🤡'}[tr.key]||'';
+function rsShareText(){ const r=game.result, tr=r.tier; let medal={t1:'🥇',t2:'🥈',t3:'🥉',clown:'🤡'}[tr.key]||''; if(medal&&String(tierName(tr)).includes(medal)) medal='';
  const sq=r.per.map(x=>({ex:'🟨',right:'🟩',wrong:'🟥',none:'⬛'})[rsKind(x)]).join('');
  const keys=['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣'];
  const hasDays=r.per.some(x=>x.called&&rsCallDay(x,game.sagas[x.sagaId]));
  const days=hasDays?r.per.map(x=>!x.called?'➖':x.uturn?'🔄':keys[rsCallDay(x,game.sagas[x.sagaId])||0]||'➖').join(''):'';
  const u=r.per.filter(x=>x.uturn).length;
- return [t('rs.shareHead',{label:rsLabel(),tier:tierName(tr)})+(medal?' '+medal:''),sq,days,t('rs.shareLine',{pts:r.total,e:r.exclusives||0,u}),CONFIG.SITE_URL].filter(Boolean).join('\n'); }
+ const head=t('rs.shareHead',{label:rsLabel(),tier:tierName(tr)})+(medal?' '+medal:'')+(rs2Legend()?' · '+t('rs2.legend'):'');
+ const extra=[]; try{ const st=rs2Streak(), t1=rs2T1Streak(); const l1=[rs2RankText(),st>=2?t('rs2.streak',{n:st}):'',t1>=2?t('rs2.t1streak',{n:t1}):''].filter(Boolean).join(' · '); if(l1) extra.push(l1); const room=rs2Room(); if(room) extra.push(room); const pf=rs2Profile(); if(pf) extra.push(pf.ic+' '+pf.name); const pr=rs2Proof(); if(pr.txt) extra.push(pr.txt); }catch(e){}
+ return [head,sq,days,t('rs.shareLine',{pts:r.total,e:r.exclusives||0,u}),...extra,CONFIG.SITE_URL].filter(Boolean).join('\n'); }
 function rsThreadHtml(x,hidden){ const s=game.sagas[x.sagaId]; if(!s||!s.player) return ''; const k=rsKind(x); const ctx=ctxOf(s); const late=rsLate(x,s); const uf=x.uturn?rsUturnFrom(x,s):null;
  Object.assign(ctx,{d:(uf&&uf.day)||(late&&late.day)||rsCallDay(x,s)||'',r:late?t('rival.'+late.rival):'',rival:late?t('rival.'+late.rival):''});
  const c=s.call; const cs=rsCase(x,s); const ratio=cs==='wrongHigh'||(x.called&&!x.correct&&c&&c.conf==='high');
@@ -6473,7 +6541,7 @@ function rsThreadHtml(x,hidden){ const s=game.sagas[x.sagaId]; if(!s||!s.player)
  const noCall=!x.called&&!reps?`<p class="sys">${esc(t('res.silence'))}</p>`:'';
  return `<article class="thread ${k==='none'?'':k}" id="rsth${s.id}" data-n="${esc(pName(s.player))}"${hidden?' hidden':''}>
   <div class="thh">${kitSVG(s.club,initials(s.player.name))}<div style="min-width:0"><b class="n">${esc(pName(s.player))}</b><span class="route"><i style="--c:${s.club.kit}"></i><span class="from">${esc(cName(s.club))}</span><span class="arr">${lang==='ar'?'←':'→'}</span><i style="--c:${s.dest.kit}"></i><b>${esc(cName(s.dest))}</b></span></div>${vt}</div>
-  <div class="thb">${wire}${del}${you}${x.uturn&&reps?`<p class="mixed">${esc(t('rs.mixed'))}</p>`:''}${reps}${src}${noCall}</div></article>`; }
+  <div class="thb">${wire}${del}${you}${x.uturn&&reps?`<p class="mixed">${esc(t('rs.mixed'))}</p>`:''}${reps}${src}${rs2RivalsHtml(x,s)}${noCall}</div></article>`; }
 function rsTruthHtml(){ const r=game.result, sg=game.sagas; const perBy={}; r.per.forEach(x=>perBy[x.sagaId]=x);
  const rows={}; const order=Object.keys(SOURCES);
  sg.forEach((s,si)=>(s.clues||[]).forEach((c,ci)=>{ if(c.source==='tipoff') return; const key=c.source==='paid'?'leak':c.source; if(!SOURCES[key]) return; const R=rows[key]||(rows[key]={cells:{},t:0,n:0});
@@ -6544,7 +6612,7 @@ function rsImage(){ const r=game.result, tr=r.tier; const c=document.createEleme
  const css=v=>{ try{ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }catch(e){ return ''; } };
  const tc=(/^t[1-5]$/.test(tr.key)&&css('--'+tr.key))||'#FF4D63'; const D='800 italic {s}px "Barlow Condensed", Impact, sans-serif', B='600 {s}px Barlow, system-ui, sans-serif';
  g.fillStyle='#0A0F1E'; g.fillRect(0,0,1080,1350); g.textAlign='center'; g.fillStyle='#F3F5FA';
- g.font=D.replace('{s}',64); g.fillText('TIER ONE',540,130); g.fillStyle='#B8C0D6'; g.font=B.replace('{s}',40); g.fillText(rsLabel(),540,195);
+ g.font=D.replace('{s}',64); g.fillText('TIER ONE',540,130); g.fillStyle='#B8C0D6'; g.font=B.replace('{s}',40); g.fillText(rsLabel()+(rs2Legend()?' · '+t('rs2.legend'):''),540,195);
  const hx=(cx,cy,w,h)=>{ g.beginPath(); g.moveTo(cx,cy-h/2); g.lineTo(cx+w/2,cy-h/4); g.lineTo(cx+w/2,cy+h/4); g.lineTo(cx,cy+h/2); g.lineTo(cx-w/2,cy+h/4); g.lineTo(cx-w/2,cy-h/4); g.closePath(); };
  g.fillStyle=tc; hx(540,430,300,336); g.fill(); g.fillStyle='#121A30'; hx(540,430,270,306); g.fill();
  g.fillStyle=tc; g.font=D.replace('{s}',40); g.fillText(tr.key==='clown'?'ITK':'TIER',540,360); g.fillStyle='#F3F5FA'; g.font=D.replace('{s}',tr.key==='clown'?150:190); g.fillText(tr.key==='clown'?'🤡':tr.key.slice(1),540,530);
@@ -6553,11 +6621,16 @@ function rsImage(){ const r=game.result, tr=r.tier; const c=document.createEleme
  r.per.forEach((x,i)=>{ const k=rsKind(x), X=x0+i*(sz+gp), Y=800; g.fillStyle=col[k]; if(g.roundRect){ g.beginPath(); g.roundRect(X,Y,sz,sz,28); g.fill(); } else g.fillRect(X,Y,sz,sz);
   g.fillStyle=k==='wrong'?'#fff':k==='none'?'#76819F':'#0B0F1A'; g.font='900 84px system-ui, sans-serif'; g.fillText(mark[k],X+sz/2,Y+sz/2+30);
   const d=rsCallDay(x,game.sagas[x.sagaId]); g.fillStyle=d===7?'#FF6B7D':'#B8C0D6'; g.font=B.replace('{s}',34); g.fillText(!x.called?'—':(x.uturn?'↺ ':'')+(d===7?t('rs.ddShort'):d?t('rs.dayShort',{d}):''),X+sz/2,Y+sz+52); });
- g.fillStyle='#F3F5FA'; g.font=B.replace('{s}',42); g.fillText([t('rs.nRight',{n:r.corrects||0}),t('rs.nEx',{n:r.exclusives||0}),t('rs.nWrong',{n:r.wrongs||0})].join(' · '),540,1120);
- g.fillStyle='#8C96B2'; g.font=B.replace('{s}',36); g.fillText(String(CONFIG.SITE_URL||'').replace(/^https?:\/\//,''),540,1270); return c; }
-function rsShareSheet(){ const txt=rsShareText(); const lines=txt.split('\n');
- openModal(`<div class="shcard" dir="ltr"><div class="shb"><div class="shh">${esc(lines[0])}</div><div class="shgrid">${esc(lines[1]||'')}${lines.length>4?'<br>'+esc(lines[2]):''}</div><div class="shs">${esc(lines[lines.length-2]||'')}</div><div class="shu">${esc(lines[lines.length-1]||'')}</div></div></div>
-  <div class="shbtns"><button class="btn primary" data-act="copyShare">${uiIcon('copy')} ${esc(t('rs.copy'))}</button>${navigator.share?`<button class="btn" data-act="nativeShare">${uiIcon('share')} ${esc(t('rs.native'))}</button>`:''}<button class="btn ghost" data-act="rsSaveImg">${esc(t('rs.saveImg'))}</button></div>`,t('rs.shareTitle')); }
+ const fit=(txt,font,max)=>{ g.font=font; let s=+((font.match(/(\d+)px/)||[0,40])[1]); while(s>20&&g.measureText(txt).width>max){ s-=2; g.font=font.replace(/\d+px/,s+'px'); } };
+ const stats=[t('rs.nRight',{n:r.corrects||0}),t('rs.nEx',{n:r.exclusives||0}),t('rs.nWrong',{n:r.wrongs||0})].join(' · '); g.fillStyle='#F3F5FA'; fit(stats,B.replace('{s}',42),1000); g.fillText(stats,540,1100);
+ let y=1162; try{ const pf=rs2Profile(); if(pf){ const line=pf.ic+' '+pf.name.toUpperCase(); g.fillStyle=tc; fit(line,D.replace('{s}',54),1000); g.fillText(line,540,y); y+=56; }
+  const st=rs2Streak(), t1=rs2T1Streak(); const l1=[rs2RankText(),st>=2?t('rs2.streak',{n:st}):'',t1>=2?t('rs2.t1streak',{n:t1}):'',rs2Room()].filter(Boolean).join(' · '); if(l1){ g.fillStyle='#F3F5FA'; fit(l1,B.replace('{s}',36),1000); g.fillText(l1,540,y); y+=48; }
+  const pr=rs2Proof(); if(pr.txt){ g.fillStyle=pr.k==='honest'?'#27E08A':'#B8C0D6'; fit(pr.txt,B.replace('{s}',34),1000); g.fillText(pr.txt,540,y); y+=48; } }catch(e){}
+ g.fillStyle='#8C96B2'; g.font=B.replace('{s}',36); g.fillText(String(CONFIG.SITE_URL||'').replace(/^https?:\/\//,''),540,Math.max(1270,y+18)); return c; }
+function rsShareSheet(){ const txt=rsShareText(); const lines=txt.split('\n'); const head=lines[0]||'', url=lines.length>1?lines[lines.length-1]:''; const mid=lines.slice(1,-1);
+ const isGrid=l=>/^[🟨🟩🟥⬛➖🔄0-9\uFE0F\u20E3]+$/u.test(l); const grid=mid.filter(isGrid), rest=mid.filter(l=>!isGrid(l)); let pf=null; try{ pf=rs2Profile(); }catch(e){}
+ openModal(`<div class="shcard"><div class="shb"><div class="shh" dir="auto">${esc(head)}</div>${grid.length?`<div class="shgrid" dir="ltr">${grid.map(esc).join('<br>')}</div>`:''}${rest.map(l=>`<div class="shs${pf&&l===pf.ic+' '+pf.name?' pf':''}" dir="auto">${esc(l)}</div>`).join('')}<div class="shu" dir="ltr">${esc(url)}</div></div></div>
+  <div class="shbtns"><button class="btn primary" data-act="copyShare">${uiIcon('copy')} ${esc(t('rs.copy'))}</button>${navigator.share?`<button class="btn" data-act="nativeShare">${uiIcon('share')} ${esc(t('rs.native'))}</button>`:''}<button class="btn ghost" data-act="rsSaveImg">${esc(t('rs.saveImg'))}</button><button class="btn ghost" data-act="rs2Challenge">${esc(t('rs2.challenge'))}</button></div>`,t('rs.shareTitle')); }
 LANE_ACTS.rsShare=()=>{ sfxCue('tap'); rsShareSheet(); };
 /* achievements: every real share (copy, native sheet, image) counts; the celebration's own Show-off is its own share */
 LANE_ACTS.rsSaveImg=()=>{ try{ const c=rsImage(); if(!c) return; const done=u=>{ const a=document.createElement('a'); a.href=u; a.download='tier-one-'+(game.dateKey||todayKey())+'.png'; document.body.appendChild(a); a.click(); a.remove(); toast(t('rs.saved')); };
@@ -7003,6 +7076,69 @@ onHook('rendered',sc=>{
 /* @@LANE JS:lb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:lb END */
 /* @@LANE JS:results2 BEGIN (lane-owned; insert only between BEGIN and END) */
+/* ---- results2 lane: rank line, streaks, room rival, proof line, profile, challenge-a-friend, U-turn story, rival verdicts, U-turn draft label ---- */
+function rs2Key(){ return game&&game.dateKey?game.dateKey:todayKey(); }
+function rs2Rank(){ try{ if(typeof LB==='undefined'||!LB||typeof LB.rank!=='function'||!game||game.mode!=='daily') return null; const q=LB.rank(rs2Key()); if(!q||!(q.rank>0)||!(q.total>0)) return null; return {rank:q.rank|0,total:q.total|0}; }catch(e){ return null; } }
+function rs2RankText(){ const q=rs2Rank(); return q?t('rs2.rank',{rank:q.rank,total:q.total}):''; }
+function rs2Streak(){ if(!game||game.mode!=='daily'||game.archived) return 0; try{ return hmStreak()|0; }catch(e){ return (save.daily&&save.daily.streak)|0; } }
+function rs2T1Streak(){ if(!game||game.mode!=='daily') return 0; try{ const h=(save.daily&&save.daily.history)||{}; const k=rs2Key(); const keys=Object.keys(h).filter(q=>q<=k).sort(); let n=0; for(let i=keys.length-1;i>=0;i--){ if(h[keys[i]]&&h[keys[i]].tier===1) n++; else break; } return n; }catch(e){ return 0; } }
+function rs2Legend(){ try{ if(!game||game.mode!=='career'||typeof C!=='function') return false; const c=C(); return !!(c&&c.prestige>0); }catch(e){ return false; } }
+/* rooms: nearest rivals in this season's table (others' results for this season may not be in yet → nothing) */
+function rs2Room(){ try{ if(!game||!game.room||!game.result) return ''; const R=save.rooms&&save.rooms[game.room]; if(!R||!R.room||!Array.isArray(R.room.players)) return ''; const sn=game.season|0, me=game.result.total;
+ const others=R.room.players.filter(p=>p&&p.pid!==R.pid&&Array.isArray(p.results)&&p.results[sn]&&typeof p.results[sn].score==='number').map(p=>({nick:String(p.nick||'?').replace(/^@/,''),score:p.results[sn].score}));
+ if(!others.length) return ''; const above=others.filter(o=>o.score>me).sort((a,b)=>a.score-b.score)[0], below=others.filter(o=>o.score<me).sort((a,b)=>b.score-a.score)[0], tie=others.find(o=>o.score===me);
+ const parts=[]; if(below) parts.push(t('rs2.beat',{nick:below.nick,n:me-below.score})); if(above) parts.push(t('rs2.behind',{nick:above.nick,n:above.score-me})); if(!parts.length&&tie) parts.push(t('rs2.level',{nick:tie.nick})); return parts.join(' · '); }catch(e){ return ''; } }
+/* proof line: which sources lied (fresh reads only; a read outdated by a twist doesn't count) */
+function rs2Proof(){ try{ const r=game.result, sg=game.sagas, perBy={}; (r.per||[]).forEach(x=>perBy[x.sagaId]=x); const liars=[], asked=new Set();
+ sg.forEach(s=>(s.clues||[]).forEach((c,ci)=>{ if(c.source==='tipoff') return; const key=c.source==='paid'?'leak':c.source; if(!SOURCES[key]) return; if(rsStale(s,c,ci,perBy[s.id])) return; asked.add(key); if(!c.truthful&&!liars.includes(key)) liars.push(key); }));
+ if(!asked.size) return {k:'none',txt:''}; if(!liars.length) return {k:'honest',txt:t('rs2.honest')};
+ const nm=k=>{ const s=String(t('src.'+k+'.name')).replace(/^(The |El |La |His |Su )/i,''); return s.charAt(0).toUpperCase()+s.slice(1); };
+ const names=liars.map(nm); const list=names.length===1?names[0]:names.slice(0,-1).join(t('rs2.comma'))+t('rs2.and')+names[names.length-1]; return {k:'liars',txt:t('rs2.liars',{list})}; }catch(e){ return {k:'none',txt:''}; } }
+/* profile: one meme-able label per window */
+const RS2_PROF_IC={sniper:'🎯',gambler:'🎰',insider:'🕵️',dancer:'🕺',patient:'🧘',specialist:'🔬',rookie:'🤡',steady:'🧤',ghost:'👻',grinder:'⚙️'};
+function rs2Profile(){ try{ const r=game.result; if(!r||!r.per) return null; const c=r.per.filter(x=>x.called); const conf=x=>x.conf||((game.sagas[x.sagaId]||{}).call||{}).conf; const day=x=>rsCallDay(x,game.sagas[x.sagaId]);
+ const right=c.filter(x=>x.correct), wrong=c.filter(x=>!x.correct), hi=c.filter(x=>conf(x)==='high'), hiW=hi.filter(x=>!x.correct), hiR=hi.filter(x=>x.correct), d7=c.filter(x=>day(x)===7), late=c.filter(x=>day(x)>=6), ex=c.filter(x=>x.exclusive);
+ let k; if(!c.length) k='ghost';
+ else if(c.length>=3&&!wrong.length&&hi.length) k='sniper';
+ else if(hiW.length>=2) k='gambler';
+ else if(ex.length>=2&&wrong.length<=right.length) k='insider';
+ else if(d7.length>=2&&d7.every(x=>x.correct)) k='dancer';
+ else if(late.length>=3&&right.length>=Math.ceil(c.length*0.6)) k='patient';
+ else if(hiW.length>=1&&!hiR.length&&right.length>=1) k='specialist';
+ else if(r.tier&&r.tier.key==='clown') k='rookie';
+ else if(right.length>=3&&!hi.length) k='steady';
+ else k='grinder';
+ return {k,ic:RS2_PROF_IC[k],name:t('rs2.prof.'+k+'.n'),quip:t('rs2.prof.'+k+'.q')}; }catch(e){ return null; } }
+function rs2ChipHtml(){ const pf=rs2Profile(); return pf?`<span class="rs2chip"><span class="ic" aria-hidden="true">${pf.ic}</span>${esc(pf.name)}</span>`:''; }
+function rs2StoryHtml(){ const r=game.result; if(!r) return ''; const pf=rs2Profile(), rank=rs2RankText(), st=rs2Streak(), t1=rs2T1Streak(), room=rs2Room(), pr=rs2Proof();
+ const meta=[]; if(game.mode==='daily') meta.push(`<span id="rsRank"${rank?'':' hidden'}>${esc(rank)}</span>`); if(st>=2) meta.push(`<span>${esc(t('rs2.streak',{n:st}))}</span>`); if(t1>=2) meta.push(`<span>${esc(t('rs2.t1streak',{n:t1}))}</span>`); if(room) meta.push(`<span>${esc(room)}</span>`); if(pr.txt) meta.push(`<span class="pr ${pr.k}">${esc(pr.txt)}</span>`);
+ const vis=meta.filter(m=>!/ hidden>/.test(m)).length;
+ return `<section class="card rs2story" aria-label="${esc(t('rs2.story'))}">${pf?`<p class="rs2quip"><span class="ic" aria-hidden="true">${pf.ic}</span><span>${esc(pf.quip)}</span></p>`:''}${meta.length?`<div class="rs2meta"${vis?'':' hidden'}>${meta.join('')}</div>`:''}<button class="btn rs2ch" data-act="rs2Challenge">${uiIcon(navigator.share?'share':'copy')} ${esc(t('rs2.challenge'))}</button></section>`; }
+function rs2ChallengeText(){ const r=game&&game.result; if(!r) return ''; const tier=tierName(r.tier); const url='https://sembagames.app/tier-one/?daily=1';
+ if(game.mode==='daily'){ const num=game.archived&&game.num?game.num:dailyNumber(); return t('rs2.chDaily',{tier,num,url}); } return t('rs2.chOther',{tier,pts:r.total,url}); }
+LANE_ACTS.rs2Challenge=()=>{ const tx=rs2ChallengeText(); if(!tx) return; try{ sfxCue('tap'); }catch(e){} const tr=m=>{ try{ Analytics.track('share',{method:m,content_type:'challenge'}); }catch(e){} };
+ if(navigator.share){ navigator.share({text:tx}).then(()=>tr('native'),()=>{}); } else { copyText(tx,t('toast.copied')); tr('copy'); } };
+/* live rank: the lb lane dispatches lb:rank when the submit resolves */
+document.addEventListener('lb:rank',e=>{ try{ if(screen!=='results'||!game||game.mode!=='daily'||!game.result) return; const d=(e&&e.detail)||{}; if(d.key&&d.key!==rs2Key()) return;
+ const txt=rs2RankText()||(d.rank>0&&d.total>0?t('rs2.rank',{rank:d.rank,total:d.total}):''); const el=$('rsRank'); if(el){ el.textContent=txt; el.hidden=!txt; const m=el.closest('.rs2meta'); if(m) m.hidden=!m.querySelector('span:not([hidden])'); }
+ const sh=$('shareText'); if(sh) sh.textContent=rsShareText(); }catch(err){} });
+/* U-turn story: remember the first take (the engine keeps only the previous call in s.uturnFrom) */
+onHook('call',(id,call)=>{ try{ const s=game&&game.sagas&&game.sagas[id]; if(s&&call&&!s.rs2first) s.rs2first={out:call.outcome,conf:call.conf,day:call.day}; }catch(e){} });
+function rs2First(x,s){ if(x&&x.rs2first&&x.rs2first.out) return x.rs2first; if(s&&s.rs2first&&s.rs2first.out) return s.rs2first; const u=rsUturnFrom(x,s); return u&&u.out?{out:u.out,conf:u.conf,day:u.day}:null; }
+function rs2UturnLine(x,s){ if(!x||!x.called||!x.uturn||!s) return ''; const f=rs2First(x,s), c=s.call; if(!f||!c||!c.outcome) return ''; const fr=f.out===s.truth; const key=fr&&!x.correct?'hadIt':!fr&&x.correct?'goodU':!fr&&!x.correct?'twice':'bothR';
+ return `<span class="rs2ut"><span>${esc(t('rs2.first',{o:t('ds.oc.'+f.out),c:t('pp.conf.'+f.conf)}))}</span><span>${esc(t('rs2.final',{o:t('ds.oc.'+c.outcome),c:t('pp.conf.'+c.conf)}))}</span><b class="${key==='goodU'?'ok':key==='hadIt'?'bad':''}">${esc(t('rs2.'+key))}</b></span>`; }
+/* rival verdicts: every rival post shown during the window, ✅ right / ❌ wrong against s.truth */
+function rs2RivalsHtml(x,s){ const list=((x&&x.rivals&&x.rivals.length)?x.rivals:(s&&s.rivalPosts)||[]).filter(p=>p&&p.rival&&p.day<=7); if(!list.length) return '';
+ const rows=list.slice().sort((a,b)=>a.day-b.day).map(p=>{ const rv=RIVALS.find(q=>q.key===p.rival)||{ic:'👤'}; const o=p.out||p.claim||null; const st=p.outdated?'o':p.correct?'t':'f';
+  return `<div class="rs2rv ${st}"><span class="ic" aria-hidden="true">${rv.ic}</span><b>${esc(t('rival.'+p.rival))}</b><span class="d">${esc(rsDayLabel(p.day))}</span>${o?ocHtml(o):''}<span class="v">${st==='t'?'✅ '+esc(t('rs2.right')):st==='f'?'❌ '+esc(t('rs2.wrong')):'↺ '+esc(t('rs.lgO'))}</span></div>`; }).join('');
+ return `<div class="rs2rvs"><span class="rs2rvh">${esc(t('rs2.rivals'))}</span>${rows}</div>`; }
+/* Draft label while a U-turn is pending (the old post stays live until a different outcome is posted): the U-turn composer sheet
+   is the player lane's, so the label is injected into its header; the board card gets a "Draft pending" chip. */
+function rs2DraftLabel(){ try{ const sh=document.querySelector('#ppSheet .sheet.pputd'); if(!sh||sh.querySelector('.rs2draft')) return; const ch=sh.querySelector('.ch > div'); if(!ch) return; const el=document.createElement('p'); el.className='rs2draft'; el.textContent=t('rs2.draft'); ch.appendChild(el); }catch(e){} }
+function rs2DraftChips(){ try{ document.querySelectorAll('.pcard .rs2dchip').forEach(el=>el.remove()); if(screen!=='window'||!game||game.result||typeof draft==='undefined'||!draft||!draft.ut||draft.sid==null||!(draft.outcome||draft.conf)) return; const s=game.sagas[draft.sid]; if(!s||!s.call) return;
+ const box=document.querySelector(`.pcard[data-id="${s.id}"] .intel`); if(!box) return; const el=document.createElement('span'); el.className='tag rs2dchip'; el.textContent='✎ '+t('rs2.draftChip'); box.prepend(el); }catch(e){} }
+try{ new MutationObserver(ms=>{ ms.forEach(m=>{ m.addedNodes.forEach(n=>{ if(n&&n.id==='ppSheet'){ n._rs2=true; rs2DraftLabel(); const sh=n.querySelector('.sheet'); if(sh) new MutationObserver(rs2DraftLabel).observe(sh,{childList:true}); } }); m.removedNodes.forEach(n=>{ if(n&&n._rs2) rs2DraftChips(); }); }); }).observe(document.body,{childList:true}); }catch(e){}
+onHook('rendered',sc=>{ if(sc!=='window') return; rs2DraftChips(); const b=$('boardScreen'); if(b&&!b._rs2ob){ try{ b._rs2ob=new MutationObserver(rs2DraftChips); b._rs2ob.observe(b,{childList:true}); }catch(e){} } });
 /* @@LANE JS:results2 END */
 /* @@LANE JS:onb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:onb END */
