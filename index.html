@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Semba Games — games by Semba Studios</title>
-<meta name="description" content="Games by Semba Studios. Play Tier One, the football transfer journalist game — free in your browser, new Daily Challenge every day.">
+<meta name="description" content="Games by Semba Studios. Play Tier One, the football transfer journalist game, and The Gaffer, the football management game — free in your browser.">
 <meta name="theme-color" content="#07090B">
 <link rel="canonical" href="https://sembagames.app/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Semba Games">
 <meta property="og:title" content="Semba Games — games by Semba Studios">
-<meta property="og:description" content="Now playing: Tier One, the transfer journalist game. Free in your browser.">
+<meta property="og:description" content="Now playing: Tier One, the transfer journalist game, and The Gaffer, the football manager. Free in your browser.">
 <meta property="og:url" content="https://sembagames.app/">
 <meta property="og:image" content="https://sembagames.app/assets/semba-logo-192.png">
 <meta name="twitter:card" content="summary">
@@ -26,6 +26,7 @@
  --text:#F4F5FA; --muted:#A9AEC4; --dim:#8B91AB;
  --neon:#B6FF3A; --ink:#0A1400; --t1:#FFD23F; --t1ink:#1A1400; --red:#FF3D55; --navy:#0A0F1E; --navy2:#111a30;
  --display:Sora,system-ui,sans-serif; --body:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --cond:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+ --hdr:64px;
  color-scheme:dark;
 }
 *{ box-sizing:border-box; }
@@ -40,48 +41,124 @@ a{ color:inherit; text-decoration:none; }
 h1,h2,h3{ margin:0; }
 p{ margin:0; }
 ul,ol{ margin:0; padding:0; list-style:none; }
+svg.i{ width:18px; height:18px; flex:none; }
 
-/* ---- header ---- */
-header .wrap{ display:flex; align-items:center; justify-content:space-between; height:68px; }
-.brand{ display:flex; align-items:center; gap:10px; font:700 18px/1 var(--display); letter-spacing:-.01em; }
+/* ---- sticky header + tabs ---- */
+header{ position:sticky; top:0; z-index:20; background:rgba(7,9,11,.84); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-bottom:1px solid var(--line); }
+header .wrap{ display:flex; align-items:center; justify-content:space-between; gap:12px; height:var(--hdr); }
+.brand{ display:flex; align-items:center; gap:10px; flex:none; font:700 18px/1 var(--display); letter-spacing:-.01em; min-height:44px; }
 .brand img{ width:36px; height:36px; border-radius:10px; box-shadow:0 0 22px -6px rgba(182,255,58,.7); }
-.nav{ display:flex; align-items:center; gap:4px; }
-.nav a{ display:inline-flex; align-items:center; min-height:44px; color:var(--muted); font:600 14.5px var(--body); padding:0 12px; border-radius:10px; }
+.nav{ display:flex; align-items:center; gap:2px; min-width:0; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity; padding:0 2px; }
+.nav::-webkit-scrollbar{ display:none; }
+.nav.more{ mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent); -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent); }
+.nav a{ display:inline-flex; align-items:center; min-height:44px; flex:none; color:var(--muted); font:600 14.5px var(--body); padding:0 12px; border-radius:10px; position:relative; scroll-snap-align:start; }
 .nav a:hover{ color:var(--text); background:rgba(255,255,255,.05); }
-.nav a.mini{ color:var(--t1ink); background:var(--t1); min-height:38px; border-radius:999px; padding:0 14px; }
+.nav a[aria-current="true"]{ color:var(--text); }
+.nav a[aria-current="true"]::after{ content:""; position:absolute; left:12px; right:12px; bottom:5px; height:2px; border-radius:1px; background:var(--t1); }
+.nav a.mini{ color:var(--t1ink); background:var(--t1); min-height:38px; border-radius:999px; padding:0 14px; margin-left:6px; }
 .nav a.mini:hover{ background:#FFDC5E; }
+.nav a.mini::after{ display:none; }
 
 /* ---- buttons ---- */
-.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:52px; padding:0 22px; border-radius:14px; border:1px solid var(--line2); background:rgba(255,255,255,.05); color:var(--text); font:700 16px/1 var(--body); white-space:nowrap; cursor:pointer; transition:transform .12s,background .2s,box-shadow .2s; }
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:50px; padding:0 20px; border-radius:14px; border:1px solid var(--line2); background:rgba(255,255,255,.05); color:var(--text); font:700 15.5px/1 var(--body); white-space:nowrap; cursor:pointer; transition:transform .12s,background .2s,box-shadow .2s; }
 .btn:hover{ background:rgba(255,255,255,.09); } .btn:active{ transform:scale(.97); }
-.btn.play{ background:var(--t1); color:var(--t1ink); border-color:transparent; box-shadow:0 14px 34px -14px rgba(255,210,63,.85); font-size:17px; }
+.btn.play{ background:var(--t1); color:var(--t1ink); border-color:transparent; box-shadow:0 14px 34px -14px rgba(255,210,63,.85); font-size:16.5px; }
 .btn.play:hover{ background:#FFDC5E; box-shadow:0 16px 40px -12px rgba(255,210,63,.9); }
 .btn.play svg{ width:16px; height:16px; }
 .btn.big{ min-height:58px; padding:0 30px; }
-.and{ width:18px; height:18px; flex:none; }
+.btn.ghost{ background:transparent; }
 
 /* ---- section basics ---- */
-section{ padding:56px 0; }
+section{ padding:56px 0; scroll-margin-top:calc(var(--hdr) + 8px); }
 .eyebrow{ display:inline-flex; align-items:center; gap:8px; font:800 italic 15px/1 var(--cond); letter-spacing:.14em; text-transform:uppercase; color:var(--t1); }
 .eyebrow.green{ color:var(--neon); }
 .eyebrow i{ width:7px; height:7px; border-radius:50%; background:currentColor; box-shadow:0 0 10px currentColor; }
-h2{ font:800 clamp(28px,3.6vw,42px)/1.08 var(--display); letter-spacing:-.03em; margin:10px 0 12px; }
+h2{ font:800 clamp(27px,3.4vw,40px)/1.08 var(--display); letter-spacing:-.03em; margin:10px 0 12px; }
 .sub{ color:var(--muted); font-size:clamp(15.5px,1.3vw,17.5px); max-width:56ch; }
-
-/* ---- hero ---- */
-.hero{ padding:26px 0 40px; }
-.hero .wrap{ display:grid; grid-template-columns:1.05fr .95fr; gap:40px 56px; align-items:center; }
+.shead{ display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:14px 24px; }
 .live{ display:inline-flex; align-items:center; gap:7px; height:26px; padding:0 10px; border-radius:7px; background:var(--red); color:#fff; font:800 italic 13px/1 var(--cond); letter-spacing:.1em; }
 .live i{ width:6px; height:6px; border-radius:50%; background:#fff; animation:blip 1.2s infinite; }
 @keyframes blip{ 50%{ opacity:.25; } }
-.wordmark{ display:flex; align-items:flex-end; gap:6px; margin:18px 0 14px; font:800 italic clamp(54px,7vw,84px)/.8 var(--cond); letter-spacing:-.02em; transform:rotate(-2deg); transform-origin:left bottom; width:max-content; }
-.wordmark b{ background:var(--t1); color:var(--t1ink); padding:8px 16px 4px 12px; clip-path:polygon(7% 0,100% 0,93% 100%,0 100%); box-shadow:0 0 40px rgba(255,210,63,.35); }
-h1{ font:800 clamp(30px,4.2vw,52px)/1.06 var(--display); letter-spacing:-.035em; margin:0 0 14px; }
+.pill{ display:inline-flex; align-items:center; gap:7px; min-height:30px; padding:0 11px; border-radius:999px; border:1px solid var(--line2); color:var(--muted); font:600 13px var(--body); }
+.pill i{ width:6px; height:6px; border-radius:50%; background:var(--neon); box-shadow:0 0 8px var(--neon); }
+
+/* ---- studio hero ---- */
+.hero{ padding:40px 0 8px; }
+.hero .wrap{ display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:24px 48px; }
+h1{ font:800 clamp(34px,5vw,58px)/1.04 var(--display); letter-spacing:-.035em; margin:12px 0 12px; max-width:16ch; }
 h1 span{ background:linear-gradient(120deg,var(--neon),#3AF2A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
-.lede{ color:var(--muted); font-size:clamp(16px,1.5vw,18.5px); max-width:44ch; }
-.cta{ display:flex; flex-wrap:wrap; gap:10px; margin-top:24px; }
-.cta .play{ flex:1 1 200px; }
-.meta{ display:flex; flex-wrap:wrap; gap:6px 10px; margin-top:14px; color:var(--dim); font:500 13.5px var(--body); }
+.lede{ color:var(--muted); font-size:clamp(16px,1.5vw,18.5px); max-width:52ch; }
+.hero .pills{ display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding-bottom:6px; }
+.pill.new i{ background:var(--t1); box-shadow:0 0 8px var(--t1); }
+
+/* ---- games grid ---- */
+.games{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:26px; }
+.gc{ position:relative; display:flex; flex-direction:column; border-radius:24px; background:var(--panel); border:1px solid var(--line); overflow:hidden; }
+.gc .art{ position:relative; display:grid; place-items:center; width:100%; aspect-ratio:16/9; overflow:hidden; }
+.gc .body{ display:flex; flex-direction:column; gap:10px; flex:1; padding:20px 22px 22px; }
+.gc h3{ font:800 24px/1.1 var(--display); letter-spacing:-.02em; }
+.gc h3 a:hover{ color:var(--t1); }
+.gc .pitch{ color:var(--muted); font-size:15.5px; }
+.gc .tags{ display:flex; flex-wrap:wrap; gap:6px 12px; color:var(--dim); font:500 13.5px var(--body); }
+.gc .tags span:not(:last-child)::after{ content:"·"; margin-left:12px; color:var(--line2); }
+.gc .row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:auto; padding-top:8px; }
+.gc .row .play{ flex:1 1 150px; }
+.gc .more{ display:inline-flex; align-items:center; gap:6px; min-height:44px; color:var(--t1); font:700 14.5px var(--body); }
+.gc .more:hover{ text-decoration:underline; }
+/* flagship: full-width, horizontal on desktop */
+.gc.flag{ grid-column:1/-1; flex-direction:row; border-color:rgba(255,210,63,.3); box-shadow:0 30px 70px -45px rgba(255,210,63,.55); }
+.gc.flag .art{ flex:0 0 44%; aspect-ratio:auto; min-height:250px; background:radial-gradient(70% 80% at 30% 20%,rgba(255,210,63,.26),transparent 60%),radial-gradient(50% 60% at 100% 100%,rgba(61,139,255,.22),transparent 60%),#0B1226; }
+.gc.flag .art::after{ content:""; position:absolute; inset:0; background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 28px),repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 28px); mask:radial-gradient(60% 60% at 50% 50%,#000,transparent); -webkit-mask:radial-gradient(60% 60% at 50% 50%,#000,transparent); pointer-events:none; }
+.gc.flag .art .live{ position:absolute; top:16px; left:16px; z-index:2; }
+.gc.flag .art .num{ position:absolute; right:18px; bottom:12px; font:800 italic 15px var(--cond); letter-spacing:.14em; color:rgba(255,255,255,.45); }
+.wordmark{ position:relative; z-index:1; display:flex; align-items:flex-end; gap:6px; font:800 italic clamp(50px,6vw,74px)/.8 var(--cond); letter-spacing:-.02em; transform:rotate(-2deg); width:max-content; }
+.wordmark b{ background:var(--t1); color:var(--t1ink); padding:8px 16px 4px 12px; clip-path:polygon(7% 0,100% 0,93% 100%,0 100%); box-shadow:0 0 40px rgba(255,210,63,.35); }
+.wordmark.sm{ font-size:26px; transform:none; } .wordmark.sm b{ padding:5px 9px 2px 7px; box-shadow:none; }
+.wordmark.gf b{ background:var(--neon); color:var(--ink); box-shadow:0 0 40px rgba(182,255,58,.3); }
+.gc.flag .body{ padding:26px 28px; }
+.gc.flag h3{ font-size:clamp(26px,2.6vw,32px); }
+/* game 02: The Gaffer (dugout + pitch-line motif, no logo yet) */
+.gc.g2 .art{ background:radial-gradient(70% 90% at 50% 110%,rgba(182,255,58,.22),transparent 60%),radial-gradient(50% 60% at 0% 0%,rgba(61,139,255,.16),transparent 60%),#0A1420; }
+.gc.g2 .art .wordmark{ font-size:clamp(40px,4.4vw,52px); }
+.gc.g2 .art .pitch{ position:absolute; inset:0; width:100%; height:100%; }
+.gc.g2 .art .tag,.gc.soon .art .lock{ position:absolute; top:16px; left:16px; z-index:2; }
+.gc.g2 .art .num{ position:absolute; right:18px; bottom:12px; font:800 italic 15px var(--cond); letter-spacing:.14em; color:rgba(255,255,255,.45); }
+.tag{ display:inline-flex; align-items:center; gap:7px; height:26px; padding:0 10px; border-radius:7px; background:var(--neon); color:var(--ink); font:800 italic 13px/1 var(--cond); letter-spacing:.1em; }
+.gc.g2{ border-color:rgba(182,255,58,.28); }
+/* coming-soon placeholders */
+.gc.soon{ border-style:dashed; border-color:var(--line2); background:transparent; }
+.gc.soon .art{ background:repeating-linear-gradient(135deg,rgba(255,255,255,.028) 0 10px,transparent 10px 22px),var(--panel); }
+.gc.soon .art .num{ font:800 italic clamp(72px,9vw,104px)/1 var(--cond); color:transparent; -webkit-text-stroke:2px rgba(255,255,255,.2); letter-spacing:-.02em; }
+.gc.soon h3{ color:var(--muted); font-size:20px; }
+.gc.soon .pitch{ color:var(--dim); }
+
+/* ---- game detail (one per game; #tier-one is the first) ---- */
+.game-detail{ padding-top:24px; }
+.gd{ border-radius:28px; border:1px solid var(--line); background:linear-gradient(180deg,rgba(255,255,255,.025),transparent 30%),var(--panel); padding:32px; }
+.gd .head{ display:flex; flex-wrap:wrap; align-items:center; gap:12px 16px; }
+.gd .head h2{ margin:0; }
+.gd .head .live,.gd .head .tag{ margin-left:auto; }
+.gd.g2 .f{ --glow:rgba(182,255,58,.14); }
+/* static "how it plays" list (games without an animated explainer) */
+.steps{ display:grid; gap:8px; margin-top:14px; width:100%; max-width:300px; }
+.steps li{ display:grid; grid-template-columns:30px minmax(0,1fr); gap:10px; align-items:start; padding:12px 14px 12px 12px; border-radius:14px; background:var(--navy2); border:1px solid rgba(255,255,255,.07); font-size:14px; color:var(--muted); }
+.steps li b{ display:grid; place-items:center; width:30px; height:30px; border-radius:9px; background:rgba(182,255,58,.14); color:var(--neon); font:800 italic 15px var(--cond); }
+.steps li strong{ display:block; color:var(--text); font:700 14.5px/1.3 var(--body); margin-bottom:2px; }
+.gd .top{ display:grid; grid-template-columns:minmax(0,1fr) 300px; grid-template-areas:"lede demo" "grid demo" "also demo"; gap:0 48px; align-items:start; margin-top:22px; }
+.gd .lede{ grid-area:lede; max-width:none; }
+.gd .grid{ grid-area:grid; } .gd .also{ grid-area:also; } .gd .demo{ grid-area:demo; }
+.grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:22px; }
+.f{ position:relative; padding:18px 18px 20px; border-radius:18px; background:var(--panel2); border:1px solid var(--line); overflow:hidden; }
+.f::before{ content:""; position:absolute; inset:0; background:radial-gradient(60% 50% at 100% 0%,var(--glow,rgba(255,210,63,.14)),transparent 70%); pointer-events:none; }
+.f .ic{ font-size:24px; line-height:1; margin-bottom:10px; }
+.f h3{ font:800 17.5px/1.2 var(--display); letter-spacing:-.02em; margin-bottom:6px; }
+.f p{ color:var(--muted); font-size:14.5px; }
+.f.dd{ --glow:rgba(255,61,85,.22); } .f.tw{ --glow:rgba(182,255,58,.16); } .f.t1c{ --glow:rgba(255,210,63,.22); } .f.srcs{ --glow:rgba(90,110,255,.22); }
+.also{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.also li{ display:inline-flex; align-items:center; gap:7px; min-height:38px; padding:0 13px; border-radius:999px; border:1px solid var(--line2); color:var(--muted); font:600 13.5px var(--body); }
+.cta{ display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; padding-top:24px; border-top:1px solid var(--line); }
+.cta .play{ flex:1 1 200px; max-width:320px; }
+.meta{ display:flex; flex-wrap:wrap; gap:6px 10px; margin-top:12px; color:var(--dim); font:500 13.5px var(--body); }
 .meta span:not(:last-child)::after{ content:"·"; margin-left:10px; color:var(--line2); }
 
 /* ---- phone explainer ---- */
@@ -191,8 +268,9 @@ h1 span{ background:linear-gradient(120deg,var(--neon),#3AF2A0); -webkit-backgro
 .pause:hover{ color:var(--text); background:rgba(255,255,255,.05); }
 
 /* ---- leaderboard ---- */
-.lb{ padding-top:40px; }
-.lbhead{ display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:14px 24px; }
+.gsw{ display:inline-flex; align-items:center; gap:6px; margin-top:14px; }
+.gs{ display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:0 14px; border-radius:999px; border:1px solid rgba(255,210,63,.5); background:rgba(255,210,63,.1); color:var(--text); font:700 13.5px var(--body); }
+.gs .wordmark.sm{ font-size:16px; gap:3px; } .gs .wordmark.sm b{ padding:3px 6px 1px 5px; }
 .tabs{ display:inline-flex; padding:4px; border-radius:14px; background:rgba(255,255,255,.05); border:1px solid var(--line); }
 .tab{ min-height:44px; padding:0 18px; border-radius:11px; border:0; background:transparent; color:var(--muted); font:700 14.5px var(--body); cursor:pointer; }
 .tab[aria-selected="true"]{ background:var(--t1); color:var(--t1ink); }
@@ -216,45 +294,36 @@ h1 span{ background:linear-gradient(120deg,var(--neon),#3AF2A0); -webkit-backgro
 .empty a:hover{ background:rgba(255,210,63,.2); }
 .lbfoot{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 16px; margin-top:12px; color:var(--dim); font-size:13px; }
 
-/* ---- features ---- */
-.grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-top:26px; }
-.f{ position:relative; padding:22px 22px 24px; border-radius:20px; background:var(--panel); border:1px solid var(--line); overflow:hidden; }
-.f::before{ content:""; position:absolute; inset:0; background:radial-gradient(60% 50% at 100% 0%,var(--glow,rgba(255,210,63,.14)),transparent 70%); pointer-events:none; }
-.f .ic{ font-size:28px; line-height:1; margin-bottom:12px; }
-.f h3{ font:800 20px/1.2 var(--display); letter-spacing:-.02em; margin-bottom:8px; }
-.f p{ color:var(--muted); font-size:15.5px; }
-.f.dd{ --glow:rgba(255,61,85,.22); } .f.tw{ --glow:rgba(182,255,58,.16); } .f.t1c{ --glow:rgba(255,210,63,.22); } .f.srcs{ --glow:rgba(90,110,255,.22); }
-.also{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
-.also li{ display:inline-flex; align-items:center; gap:7px; min-height:40px; padding:0 14px; border-radius:999px; border:1px solid var(--line2); color:var(--muted); font:600 14px var(--body); }
-
-/* ---- changelog ---- */
-.log{ margin-top:26px; display:grid; gap:0; }
-.log li{ display:grid; grid-template-columns:22px 1fr; gap:14px; padding:18px 0; border-top:1px solid var(--line); }
+/* ---- updates (studio changelog) ---- */
+.log{ margin-top:26px; }
+.log li{ display:grid; grid-template-columns:96px minmax(0,1fr); gap:6px 20px; padding:18px 0; border-top:1px solid var(--line); }
 .log li:last-child{ border-bottom:1px solid var(--line); }
-.log .n{ font:800 italic 18px/1.1 var(--cond); color:var(--neon); }
-.log .said{ color:var(--muted); font-size:15.5px; }
-.log .said b{ color:var(--text); font-weight:700; }
-.log .built{ margin-top:6px; font-size:15.5px; }
-.log .built b{ font:800 italic 13px var(--cond); letter-spacing:.12em; color:var(--t1); text-transform:uppercase; margin-right:8px; }
+.log time{ font:800 italic 15px/1.4 var(--cond); letter-spacing:.08em; text-transform:uppercase; color:var(--neon); padding-top:3px; }
+.log h3{ font:800 17px/1.3 var(--display); letter-spacing:-.02em; }
+.log h3 small{ font:600 12.5px var(--body); color:var(--dim); margin-left:8px; letter-spacing:0; }
+.log p{ color:var(--muted); font-size:15px; margin-top:4px; }
+.updfoot{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin-top:22px; }
 
-/* ---- final CTA ---- */
-.final{ padding-bottom:64px; }
-.final .box{ position:relative; overflow:hidden; text-align:center; padding:48px 24px; border-radius:28px; border:1px solid rgba(255,210,63,.3); background:radial-gradient(70% 90% at 80% 0%,rgba(255,210,63,.3),transparent 60%),radial-gradient(60% 80% at 0% 100%,rgba(61,139,255,.2),transparent 60%),#0B1226; box-shadow:0 30px 70px -35px #000; }
-.final h2{ margin-top:12px; }
-.final .cta{ justify-content:center; margin-top:26px; }
-.final .cta .play{ flex:0 1 auto; }
+/* ---- about ---- */
+.about .box{ position:relative; overflow:hidden; padding:40px 32px; border-radius:28px; border:1px solid rgba(255,210,63,.25); background:radial-gradient(70% 90% at 90% 0%,rgba(255,210,63,.22),transparent 60%),radial-gradient(60% 80% at 0% 100%,rgba(61,139,255,.2),transparent 60%),#0B1226; box-shadow:0 30px 70px -35px #000; }
+.about .box .wrap2{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:24px 40px; align-items:center; }
+.about p{ color:var(--muted); font-size:clamp(15.5px,1.3vw,17px); max-width:60ch; }
+.about p+p{ margin-top:10px; }
+.about p b{ color:var(--text); }
+.about .side{ display:flex; flex-direction:column; gap:10px; min-width:220px; }
+.about .side .btn{ justify-content:flex-start; }
 .toast{ position:fixed; left:50%; bottom:calc(88px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,10px); background:var(--text); color:#07090B; font:600 14px var(--body); padding:12px 16px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity .25s,transform .25s; z-index:40; max-width:calc(100% - 32px); }
 .toast.on{ opacity:1; transform:translate(-50%,0); }
 
 /* ---- footer ---- */
-footer{ padding:22px 0 calc(22px + env(safe-area-inset-bottom,0px)); color:var(--dim); font-size:13.5px; border-top:1px solid var(--line); }
+footer{ margin-top:auto; padding:22px 0 calc(22px + env(safe-area-inset-bottom,0px)); color:var(--dim); font-size:13.5px; border-top:1px solid var(--line); }
 footer .wrap{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px 18px; }
 footer nav{ display:flex; flex-wrap:wrap; gap:6px 4px; }
 footer a{ display:inline-flex; align-items:center; min-height:44px; padding:0 8px; color:var(--muted); } footer a:hover{ color:var(--text); }
-.soon{ display:inline-flex; align-items:center; gap:8px; color:var(--muted); font:600 13px var(--body); }
-.soon i{ width:7px; height:7px; border-radius:50%; background:var(--neon); box-shadow:0 0 10px var(--neon); }
+.fsoon{ display:inline-flex; align-items:center; gap:8px; color:var(--muted); font:600 13px var(--body); }
+.fsoon i{ width:7px; height:7px; border-radius:50%; background:var(--neon); box-shadow:0 0 10px var(--neon); }
 
-/* ---- sticky bar ---- */
+/* ---- sticky bar (mobile, only while the Tier One detail is on screen) ---- */
 .bar{ position:fixed; left:0; right:0; bottom:0; z-index:30; display:none; align-items:center; gap:12px; padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px)); background:rgba(7,9,11,.86); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-top:1px solid var(--line2); transform:translateY(110%); transition:transform .3s; }
 .bar.on{ transform:none; }
 .bar .t{ flex:1; min-width:0; } .bar .t b{ display:block; font:800 italic 17px/1 var(--cond); letter-spacing:.04em; } .bar .t small{ color:var(--dim); font-size:12.5px; }
@@ -265,21 +334,39 @@ footer a{ display:inline-flex; align-items:center; min-height:44px; padding:0 8p
 @keyframes up{ from{ opacity:0; transform:translateY(18px); } }
 
 @media (max-width:900px){
- .hero .wrap{ grid-template-columns:1fr; gap:36px; }
- .grid{ grid-template-columns:1fr; }
+ .hero .wrap{ grid-template-columns:1fr; gap:20px; }
+ .hero .pills{ flex-direction:row; flex-wrap:wrap; padding-bottom:0; }
+ .gc.flag{ flex-direction:column; }
+ .gc.flag .art{ flex:none; aspect-ratio:16/9; min-height:0; }
+ .gd .top{ grid-template-columns:1fr; grid-template-areas:"lede" "demo" "grid" "also"; }
+ .gd .demo{ margin-top:26px; }
+ .steps{ max-width:none; }
+ .about .box .wrap2{ grid-template-columns:1fr; }
+ .about .side{ flex-direction:row; flex-wrap:wrap; }
  .bar{ display:flex; }
- body{ padding-bottom:0; }
- .final{ padding-bottom:40px; }
+}
+@media (max-width:720px){
+ .games{ grid-template-columns:1fr; }
+ .grid{ grid-template-columns:1fr; }
+ .nav a.mini{ display:none; }
+ .nav a{ padding:0 10px; font-size:14px; }
+ .brand span{ display:none; }
+ .brand{ gap:0; }
+ .gd{ padding:22px 18px 24px; }
+ .log li{ grid-template-columns:1fr; gap:2px; }
 }
 @media (max-width:520px){
+ :root{ --hdr:58px; }
  .wrap{ padding:0 16px; }
- header .wrap{ height:60px; }
- .nav a.mini{ display:none; }
  section{ padding:44px 0; }
- .hero{ padding:12px 0 36px; }
+ .hero{ padding:28px 0 4px; }
  .cta .btn{ flex:1 1 140px; padding:0 14px; }
+ .cta .play{ max-width:none; }
+ .gc .body{ padding:18px 18px 20px; }
+ .gc.flag .body{ padding:20px 18px 22px; }
  .board .hd,.board .rw{ grid-template-columns:30px 1fr auto auto; gap:10px; padding:11px 14px; }
  .sc{ min-width:44px; }
+ .about .box{ padding:28px 20px; }
  footer .wrap{ justify-content:center; text-align:center; }
  footer nav{ justify-content:center; }
 }
@@ -294,10 +381,20 @@ footer a{ display:inline-flex; align-items:center; min-height:44px; padding:0 8p
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+ <symbol id="ico-and" viewBox="0 0 24 24"><path fill="#3DDC84" d="M17.6 9.48l1.84-3.18a.38.38 0 00-.66-.38l-1.87 3.23A11.4 11.4 0 0012 8.1c-1.78 0-3.46.38-4.91 1.05L5.22 5.92a.38.38 0 00-.66.38L6.4 9.48A10.8 10.8 0 001 18h22a10.8 10.8 0 00-5.4-8.52zM7 15.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zm10 0a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z"/></symbol>
+ <symbol id="ico-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></symbol>
+ <symbol id="ico-share" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M12 15V3m0 0L8 7m4-4l4 4"/></symbol>
+</defs></svg>
+
 <header>
  <div class="wrap">
-  <a class="brand" href="/" aria-label="Semba Games home"><img src="/assets/semba-logo-192.webp" width="36" height="36" alt="">Semba Games</a>
-  <nav class="nav" aria-label="Main">
+  <a class="brand" href="#top" aria-label="Semba Games home"><img src="/assets/semba-logo-192.webp" width="36" height="36" alt=""><span>Semba Games</span></a>
+  <nav class="nav" id="nav" aria-label="Site">
+   <a href="#games" data-spy="games" aria-current="true">Games</a>
+   <a href="#leaderboard" data-spy="leaderboard">Leaderboard</a>
+   <a href="#updates" data-spy="updates">Updates</a>
+   <a href="#about" data-spy="about">About</a>
    <a href="mailto:hello@sembastudios.com">Contact</a>
    <a class="mini" href="/tier-one/">Play Tier One</a>
   </nav>
@@ -305,26 +402,101 @@ footer a{ display:inline-flex; align-items:center; min-height:44px; padding:0 8p
 </header>
 
 <main id="main">
- <!-- 1. Hero + 2. explainer -->
- <section class="hero" aria-labelledby="h1">
+ <!-- 1. Studio hero -->
+ <section class="hero" id="top" aria-labelledby="h1">
   <div class="wrap">
    <div class="hcopy">
-    <span class="live in"><i></i>Daily Challenge live</span>
-    <div class="wordmark in d1" aria-hidden="true"><span>TIER</span><b>ONE</b></div>
-    <h1 id="h1" class="in d1">Break the deal first. <span>Or become the meme.</span></h1>
-    <p class="lede in d2">You're a football transfer journalist. Six sources, five sagas, seven days — and some of your sources are lying. Post your call, survive Deadline Day, and find out if you're Tier 1 or an ITK clown.</p>
-    <div class="cta in d2" id="heroCta">
-     <a class="btn play" href="/tier-one/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>Play now</a>
-     <a class="btn" href="/downloads/TierOne.apk" download aria-label="Download the Android app">
-      <svg class="and" viewBox="0 0 24 24" aria-hidden="true"><path fill="#3DDC84" d="M17.6 9.48l1.84-3.18a.38.38 0 00-.66-.38l-1.87 3.23A11.4 11.4 0 0012 8.1c-1.78 0-3.46.38-4.91 1.05L5.22 5.92a.38.38 0 00-.66.38L6.4 9.48A10.8 10.8 0 001 18h22a10.8 10.8 0 00-5.4-8.52zM7 15.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zm10 0a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z"/></svg>
-      Android
-     </a>
-    </div>
-    <p class="meta in d3"><span>Free</span><span>No sign-up</span><span>New Daily Challenge every day</span></p>
+    <span class="eyebrow green in"><i></i>Semba Studios</span>
+    <h1 id="h1" class="in d1">Games worth <span>coming back for.</span></h1>
+    <p class="lede in d2">Quick to learn, hard to put down. Free in your browser, with an Android app when you want one on your home screen.</p>
    </div>
+   <div class="pills in d3" aria-label="Studio status">
+    <a class="pill" href="#tier-one"><i></i>Live: Tier One · Daily Challenge</a>
+    <a class="pill new" href="#the-gaffer"><i></i>New: The Gaffer · v0.12</a>
+    <span class="pill">Next game in development</span>
+   </div>
+  </div>
+ </section>
 
-   <div class="demo in d3">
-    <span class="eyebrow">How it plays · 20 seconds</span>
+ <!-- 2. Games showcase -->
+ <section id="games" aria-labelledby="gamesh">
+  <div class="wrap">
+   <span class="eyebrow">Our games</span>
+   <h2 id="gamesh">Two live. More on the way.</h2>
+   <p class="sub">Every Semba game is free to play in the browser. Tap a game for the full story.</p>
+   <div class="games">
+    <article class="gc flag" aria-labelledby="g1h">
+     <a class="art" href="#tier-one" aria-label="About Tier One">
+      <span class="live"><i></i>Daily Challenge live</span>
+      <div class="wordmark" aria-hidden="true"><span>TIER</span><b>ONE</b></div>
+      <span class="num">GAME 01</span>
+     </a>
+     <div class="body">
+      <h3 id="g1h"><a href="#tier-one">Tier One</a></h3>
+      <p class="pitch">The football transfer journalist game. Six sources, five sagas, seven days, and some of your sources are lying. Post your call, survive Deadline Day, and find out if you're Tier 1 or an ITK clown.</p>
+      <p class="tags"><span>Free</span><span>No sign-up</span><span>New Daily every day</span><span>EN · ES · AR</span></p>
+      <div class="row">
+       <a class="btn play" href="/tier-one/"><svg class="i" aria-hidden="true"><use href="#ico-play"/></svg>Play now</a>
+       <a class="btn" href="/downloads/TierOne.apk" download aria-label="Download the Android app"><svg class="i" aria-hidden="true"><use href="#ico-and"/></svg>Android</a>
+       <a class="more" href="#tier-one">How it plays ↓</a>
+      </div>
+     </div>
+    </article>
+    <article class="gc g2" aria-labelledby="g2h">
+     <a class="art" href="#the-gaffer" aria-label="About The Gaffer">
+      <svg class="pitch" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true" fill="none" stroke="rgba(182,255,58,.28)" stroke-width="1.5"><rect x="-40" y="24" width="400" height="200" rx="2"/><line x1="160" y1="24" x2="160" y2="224"/><circle cx="160" cy="124" r="34"/><circle cx="160" cy="124" r="2.5" fill="rgba(182,255,58,.5)" stroke="none"/><rect x="-40" y="78" width="70" height="92"/><rect x="290" y="78" width="70" height="92"/></svg>
+      <span class="tag">New · v0.12</span>
+      <div class="wordmark gf" aria-hidden="true"><span>THE</span><b>GAFFER</b></div>
+      <span class="num">GAME 02</span>
+     </a>
+     <div class="body">
+      <h3 id="g2h"><a href="#the-gaffer">The Gaffer</a></h3>
+      <p class="pitch">The football management game. Build a coaching career across Europe's big five leagues and the Arab leagues: delegate to your staff or run it all yourself, survive two transfer windows a season, and fill the trophy cabinet.</p>
+      <p class="tags"><span>Free</span><span>Web · Android</span><span>EN · AR · ES · FR</span></p>
+      <div class="row">
+       <a class="btn play" href="/the-gaffer/"><svg class="i" aria-hidden="true"><use href="#ico-play"/></svg>Play now</a>
+       <a class="btn" href="/downloads/TheGaffer.apk" download aria-label="Download The Gaffer Android app"><svg class="i" aria-hidden="true"><use href="#ico-and"/></svg>Android</a>
+       <a class="more" href="#the-gaffer">How it plays ↓</a>
+      </div>
+     </div>
+    </article>
+    <article class="gc soon" aria-labelledby="g3h">
+     <div class="art" aria-hidden="true"><span class="pill lock">In development</span><span class="num">03</span></div>
+     <div class="body">
+      <h3 id="g3h">Next game · in development</h3>
+      <p class="pitch">The third Semba game is in the lab. It shows up here the moment there's something to play.</p>
+      <p class="tags"><span>Semba Studios</span><span>2026</span></p>
+     </div>
+    </article>
+   </div>
+  </div>
+ </section>
+
+ <!-- 3. Game detail: Tier One (one of these per game) -->
+ <section class="game-detail" id="tier-one" aria-labelledby="t1h" data-name="TIER ONE" data-sub="Free · new Daily every day" data-play="/tier-one/">
+  <div class="wrap">
+   <div class="gd">
+    <div class="head">
+     <div class="wordmark sm" aria-hidden="true"><span>TIER</span><b>ONE</b></div>
+     <h2 id="t1h">Tier One</h2>
+     <span class="live"><i></i>Daily Challenge live</span>
+    </div>
+    <div class="top">
+      <p class="lede">Break the deal first, or become the meme. You're a football transfer journalist with six sources, five sagas and seven days. Some sources lie. Deadline Day is 60 real seconds. Tier 1 is earned.</p>
+      <div class="grid">
+       <article class="f srcs"><div class="ic">🕴️</div><h3>Sources that lie to you</h3><p>The physio, the airport spotter, the agent, the kitman, the barber, the rival leak. Each has a reliability level and sticks to its story. Ask around before you go loud.</p></article>
+       <article class="f tw"><div class="ic">🚨</div><h3>Plot twists</h3><p>Exactly two real deals turn mid-window. Earlier reads go stale and a right call after a twist scores extra. The week is never over on Day 3.</p></article>
+       <article class="f dd"><div class="ic">⏱️</div><h3>Deadline Day: 60 real seconds</h3><p>The app turns red, a real clock starts, and you have three contacts to fix every call you're not sure about.</p></article>
+       <article class="f t1c"><div class="ic">👑</div><h3>Tier 1 is earned</h3><p>Five tiers plus the ITK Clown. Strong play lands Tier 1 in roughly 12% of Daily windows, so a Tier 1 screenshot means something.</p></article>
+      </div>
+      <ul class="also" aria-label="Also in the game">
+       <li>🧰 Career mode + source upgrades</li>
+       <li>🤝 Private rooms with friends</li>
+       <li>🌍 English · Español · مصري</li>
+      </ul>
+
+     <div class="demo">
+      <span class="eyebrow">How it plays · 20 seconds</span>
     <div class="stage">
      <div class="phone" id="phone" data-b="0" data-s="0" tabindex="0" role="img" aria-label="Animated walkthrough of a Tier One window: pick a player, call a source who may be lying, post your call as a tweet, race the 60-second Deadline Day clock, and land a Tier 1 exclusive.">
       <div class="screen">
@@ -396,18 +568,72 @@ footer a{ display:inline-flex; align-items:center; min-height:44px; padding:0 8p
      <p class="caption" id="caption" aria-live="off"><b>1/5</b>Pick a player. Five sagas, seven days.</p>
      <button class="pause" id="pauseBtn" type="button" aria-pressed="false">Pause the loop</button>
     </div>
+     </div>
+    </div>
+
+    <div class="cta">
+     <a class="btn play big" href="/tier-one/"><svg class="i" aria-hidden="true"><use href="#ico-play"/></svg>Play now</a>
+     <a class="btn big" href="/downloads/TierOne.apk" download aria-label="Download the Android app"><svg class="i" aria-hidden="true"><use href="#ico-and"/></svg>Android</a>
+     <button class="btn big" id="shareBtn" type="button"><svg class="i" aria-hidden="true"><use href="#ico-share"/></svg>Share</button>
+    </div>
+    <p class="meta"><span>Free</span><span>No sign-up</span><span>Same board as everyone else today</span></p>
    </div>
   </div>
  </section>
 
- <!-- 3. Leaderboard -->
- <section class="lb" aria-labelledby="lbh">
+ <!-- 3b. Game detail: The Gaffer -->
+ <section class="game-detail" id="the-gaffer" aria-labelledby="gfh" data-name="THE GAFFER" data-sub="Free · football manager" data-play="/the-gaffer/">
   <div class="wrap">
-   <div class="lbhead">
+   <div class="gd g2">
+    <div class="head">
+     <div class="wordmark sm gf" aria-hidden="true"><span>THE</span><b>GAFFER</b></div>
+     <h2 id="gfh">The Gaffer</h2>
+     <span class="tag">New · v0.12</span>
+    </div>
+    <div class="top">
+      <p class="lede">Build a coaching career across Europe's big five leagues and the Arab leagues. Hand the dull jobs to your staff or take control of everything, survive the summer and winter windows, and leave a trophy cabinet behind you.</p>
+      <div class="grid">
+       <article class="f"><div class="ic">🧑‍💼</div><h3>Staff room</h3><p>13 duties you can hand to your staff or take back at any time. Everything except playing the match. Your staff log what they did.</p></article>
+       <article class="f"><div class="ic">📺</div><h3>Matchday like a broadcast</h3><p>Player ratings, man of the match, xG and commentary, then a full-time card with the table move, the board, the fans and any records.</p></article>
+       <article class="f"><div class="ic">📝</div><h3>Two transfer windows</h3><p>Summer and winter windows with a deadline day, a shortlist, scout estimates for players outside your league, and season loans in and out.</p></article>
+       <article class="f"><div class="ic">🏆</div><h3>History and records</h3><p>Past seasons, club records, a trophy cabinet and the academy graduates you brought through.</p></article>
+      </div>
+      <ul class="also" aria-label="Also in the game">
+       <li>🏟️ Big five leagues + Arab leagues</li>
+       <li>🖥️ Two-column layout on desktop</li>
+       <li>🌍 English · العربية · Español · Français</li>
+      </ul>
+
+     <div class="demo">
+      <span class="eyebrow green">How it plays</span>
+      <ol class="steps">
+       <li><b>1</b><span><strong>Pick a club</strong>Europe's big five leagues or the Arab leagues.</span></li>
+       <li><b>2</b><span><strong>Run the staff room</strong>Delegate duties or take control. Home shows what needs you today.</span></li>
+       <li><b>3</b><span><strong>Play the match</strong>Ratings, man of the match, xG, commentary and a full-time card.</span></li>
+       <li><b>4</b><span><strong>Work the windows</strong>Shortlist, bids, loans and deadline day, summer and winter.</span></li>
+       <li><b>5</b><span><strong>Build a history</strong>Seasons, records, trophies and academy graduates.</span></li>
+      </ol>
+     </div>
+    </div>
+
+    <div class="cta">
+     <a class="btn play big" href="/the-gaffer/"><svg class="i" aria-hidden="true"><use href="#ico-play"/></svg>Play now</a>
+     <a class="btn big" href="/downloads/TheGaffer.apk" download aria-label="Download The Gaffer Android app"><svg class="i" aria-hidden="true"><use href="#ico-and"/></svg>Android</a>
+    </div>
+    <p class="meta"><span>Free</span><span>Web build 0.12.0</span><span>The app updates itself when a new build is live</span></p>
+   </div>
+  </div>
+ </section>
+
+ <!-- 4. Leaderboard (game switcher-ready) -->
+ <section id="leaderboard" aria-labelledby="lbh">
+  <div class="wrap">
+   <div class="shead">
     <div>
      <span class="eyebrow green"><i></i>Live</span>
-     <h2 id="lbh">Today's top journalists</h2>
+     <h2 id="lbh">Leaderboard</h2>
      <p class="sub">Same five sagas for everyone in the Daily. Best calls, fewest clown moments.</p>
+     <div class="gsw"><span class="gs"><span class="wordmark sm" aria-hidden="true"><span>TIER</span><b>ONE</b></span>Tier One · Daily Challenge</span></div>
     </div>
     <div class="tabs" role="tablist" aria-label="Leaderboard period">
      <button class="tab" role="tab" id="tabD" aria-selected="true" aria-controls="board" data-p="daily" type="button">Today</button>
@@ -421,53 +647,43 @@ footer a{ display:inline-flex; align-items:center; min-height:44px; padding:0 8p
   </div>
  </section>
 
- <!-- 4. Why it hooks -->
- <section aria-labelledby="whyh">
+ <!-- 5. Updates (studio changelog) -->
+ <section id="updates" aria-labelledby="updh">
   <div class="wrap">
-   <span class="eyebrow">Why it hooks</span>
-   <h2 id="whyh">Everyone's an ITK until Deadline Day.</h2>
-   <p class="sub">Built for people who refresh the transfer feed at 11pm. Every mechanic is there to make you sweat before you post.</p>
-   <div class="grid">
-    <article class="f srcs"><div class="ic">🕴️</div><h3>Sources that lie to you</h3><p>The physio, the airport spotter, the agent, the kitman, the barber, the rival newsroom leak. Each has a reliability level, each sticks to its story, and the agent is usually talking the deal up. Ask around before you go loud.</p></article>
-    <article class="f tw"><div class="ic">🚨</div><h3>Plot twists</h3><p>Exactly two real deals turn mid-window. Earlier reads go stale, that player's sources open up again, and a right call after a twist scores extra. The week is never over on Day 3.</p></article>
-    <article class="f dd"><div class="ic">⏱️</div><h3>Deadline Day: 60 real seconds</h3><p>The app turns red, a real-time clock starts, and you have three contacts to fix every call you're not sure about. It's the best minute in football and now it's a game.</p></article>
-    <article class="f t1c"><div class="ic">👑</div><h3>Tier 1 is earned</h3><p>Five tiers plus the ITK Clown. Strong play lands Tier 1 in roughly 12% of Daily windows, so a Tier 1 screenshot means something on your timeline.</p></article>
-   </div>
-   <ul class="also" aria-label="Also in the game">
-    <li>🧰 Career mode with a source upgrade tree</li>
-    <li>🤝 Private rooms: same sagas, best career wins</li>
-    <li>🌍 English · Español · مصري</li>
-   </ul>
-  </div>
- </section>
-
- <!-- 5. You asked, we shipped -->
- <section aria-labelledby="shiph">
-  <div class="wrap">
-   <span class="eyebrow green">You asked, we shipped</span>
-   <h2 id="shiph">What changed because you played.</h2>
-   <p class="sub">The last few updates, in the order you asked for them.</p>
+   <span class="eyebrow">Updates</span>
+   <h2 id="updh">Latest from the studio</h2>
+   <p class="sub">What shipped, newest first. The browser version updates the moment we ship; the Android app follows.</p>
    <ol class="log">
-    <li><span class="n">01</span><div><p class="said"><b>You said</b> one good read on Day 2 and the week was decided.</p><p class="built"><b>We built</b>Plot twists: two real deals turn mid-window, sources open later in the week, and the wire posts 🚨 TWIST so your old reads go stale.</p></div></li>
-    <li><span class="n">02</span><div><p class="said"><b>You said</b> Career sources never got any better.</p><p class="built"><b>We built</b>A source upgrade tree: three reliability levels per source, the physio and airport spotter unlock earlier, and Career-only tier bars that rise as you upgrade.</p></div></li>
-    <li><span class="n">03</span><div><p class="said"><b>You said</b> being right early was punished if you wanted to go bigger.</p><p class="built"><b>We built</b>Go louder: escalate a posted call without a U-turn penalty. A U-turn now stays a draft until the new call actually posts.</p></div></li>
-    <li><span class="n">04</span><div><p class="said"><b>You said</b> it was hard to tell who beat you to the story.</p><p class="built"><b>We built</b>Rival journalists are clearly labelled on the board and in results: "Beaten by @X on Day N", right next to your call.</p></div></li>
-    <li><span class="n">05</span><div><p class="said"><b>You said</b> too many pop-ups, too many taps.</p><p class="built"><b>We built</b>A compact Trophies grid with calmer pop-ups (Rare+ by default), a full-screen Semba intro, and a browser Back button that walks up the menus instead of leaving the game.</p></div></li>
+    <li><time datetime="2026-09-28">28 Sep 2026</time><div><h3>The Gaffer 0.12 <small>Manager overhaul and live updates</small></h3><p>Five tabs (Home · Squad · Match · Transfers · Club), a staff room with 13 duties you can delegate, player ratings, man of the match and xG on matchday, summer and winter windows with deadline day and season loans, and a history and records screen. New APK: the app now downloads new builds by itself.</p></div></li>
+    <li><time datetime="2026-09-28">28 Sep 2026</time><div><h3>Tier One 2.4 <small>Leaderboards and share card</small></h3><p>Daily and weekly leaderboards with your rank on the results screen, a share image with your streaks, Snap calls in the last 15 seconds of Deadline Day, the Exclusive race meter, Career goals and the Legend career. New sembagames.app home.</p></div></li>
+    <li><time datetime="2026-09-28">28 Sep 2026</time><div><h3>Tier One 2.3 <small>Intro, source tree, Go louder</small></h3><p>Full-screen Semba intro with its own soundtrack, a Career source upgrade tree, "Go louder" on a posted call, clearly labelled rival journalists and a compact Trophies grid.</p></div></li>
+    <li><time datetime="2026-09-28">28 Sep 2026</time><div><h3>Tier One 2.0.2 <small>Tier 1 rebalanced</small></h3><p>Tier 1 now needs 385 points and lands in roughly 12% of strong Daily windows. Gentler gear, classic-speed tweet typing with sounds, no ad banners during play.</p></div></li>
+    <li><time datetime="2026-09-27">27 Sep 2026</time><div><h3>Tier One 2.0 <small>The full overhaul</small></h3><p>Plot twists, a real-time Deadline Day clock, a 45-second learn-by-doing tutorial, new results with a share image, a Trophies cabinet with 66 achievements and 500+ new replies in English, Spanish and Arabic.</p></div></li>
    </ol>
+   <div class="updfoot">
+    <a class="btn" href="/downloads/TierOne.apk" download aria-label="Download the Tier One Android app"><svg class="i" aria-hidden="true"><use href="#ico-and"/></svg>Tier One APK</a>
+    <a class="btn" href="/downloads/TheGaffer.apk" download aria-label="Download The Gaffer Android app"><svg class="i" aria-hidden="true"><use href="#ico-and"/></svg>The Gaffer APK</a>
+    <span class="pill"><i></i>Installed apps are told when a new version is out</span>
+   </div>
   </div>
  </section>
 
- <!-- 6. Final CTA -->
- <section class="final" aria-labelledby="finh">
+ <!-- 6. About -->
+ <section class="about" id="about" aria-labelledby="abouth">
   <div class="wrap">
    <div class="box">
-    <span class="eyebrow"><i></i>Today's Daily is open</span>
-    <h2 id="finh">Think you can break a transfer<br>before the tabloids?</h2>
-    <p class="sub" style="margin:0 auto">Free. No sign-up. Same board as everyone else today.</p>
-    <div class="cta">
-     <a class="btn play big" href="/tier-one/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>Play now</a>
-     <a class="btn big" href="/downloads/TierOne.apk" download aria-label="Download the Android app"><svg class="and" viewBox="0 0 24 24" aria-hidden="true"><path fill="#3DDC84" d="M17.6 9.48l1.84-3.18a.38.38 0 00-.66-.38l-1.87 3.23A11.4 11.4 0 0012 8.1c-1.78 0-3.46.38-4.91 1.05L5.22 5.92a.38.38 0 00-.66.38L6.4 9.48A10.8 10.8 0 001 18h22a10.8 10.8 0 00-5.4-8.52zM7 15.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zm10 0a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z"/></svg>Android</a>
-     <button class="btn big" id="shareBtn" type="button"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M12 15V3m0 0L8 7m4-4l4 4"/></svg>Share</button>
+    <div class="wrap2">
+     <div>
+      <span class="eyebrow">About</span>
+      <h2 id="abouth">Semba Studios</h2>
+      <p><b>Semba Studios</b> is a small indie studio making quick-to-learn, hard-to-put-down football games.</p>
+      <p>Our games are free to play in the browser, with an Android app when you want one on your home screen. Every game ships in English, Spanish and Arabic; The Gaffer adds French.</p>
+      <p>We're a tiny human team working side by side with AI, and every release is logged in Updates above. Ideas, bugs, banter: write to us.</p>
+     </div>
+     <div class="side">
+      <a class="btn" href="mailto:hello@sembastudios.com">✉️ hello@sembastudios.com</a>
+      <a class="btn ghost" href="#games">🎮 Our games</a>
+     </div>
     </div>
    </div>
   </div>
@@ -477,7 +693,7 @@ footer a{ display:inline-flex; align-items:center; min-height:44px; padding:0 8p
 <footer>
  <div class="wrap">
   <span>© <span id="yr">2026</span> Semba Studios</span>
-  <span class="soon"><i></i>More games coming soon</span>
+  <span class="fsoon"><i></i>More games coming soon</span>
   <nav aria-label="Footer">
    <a href="/tier-one/#privacy">Privacy</a>
    <a href="/tier-one/#terms">Terms</a>
@@ -487,8 +703,8 @@ footer a{ display:inline-flex; align-items:center; min-height:44px; padding:0 8p
 </footer>
 
 <div class="bar" id="bar" aria-hidden="true">
- <div class="t"><b>TIER ONE</b><small>Free · new Daily every day</small></div>
- <a class="btn play" href="/tier-one/" tabindex="-1">Play now</a>
+ <div class="t"><b id="barName">TIER ONE</b><small id="barSub">Free · new Daily every day</small></div>
+ <a class="btn play" id="barPlay" href="/tier-one/" tabindex="-1">Play now</a>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -534,12 +750,43 @@ document.addEventListener('visibilitychange',function(){ if(userPaused||reduce) 
 if(reduce){ setFrame(4,0); clk.textContent='07'; pauseBtn.textContent='Play the loop'; pauseBtn.setAttribute('aria-pressed','true'); userPaused=true; paused=true; }
 else play();
 
-/* ---------- sticky bar ---------- */
-var bar=$('bar'), heroCta=$('heroCta'), finalBox=document.querySelector('.final .box'), pastHero=false, finalSeen=false;
-function setBar(){ var on=pastHero&&!finalSeen; bar.classList.toggle('on',on); bar.setAttribute('aria-hidden',on?'false':'true'); bar.querySelector('a').tabIndex=on?0:-1; }
+/* ---------- nav: active tab follows the section on screen ---------- */
+var nav=$('nav'), links=[].slice.call(nav.querySelectorAll('a[data-spy]')), spyIds={top:'games',games:'games','tier-one':'games','the-gaffer':'games',leaderboard:'leaderboard',updates:'updates',about:'about'};
+var spySections=Object.keys(spyIds).map(function(id){ return $(id); }).filter(Boolean), spyRaf=0, current='';
+function hdrH(){ return document.querySelector('header').offsetHeight; }
+function spy(){
+ spyRaf=0;
+ /* the active tab is the last section whose top has crossed a line ~35% down the viewport; at the very bottom it is the last section */
+ var line=hdrH()+Math.min(220,innerHeight*.35), pick=spySections[0], i;
+ for(i=0;i<spySections.length;i++){ if(spySections[i].getBoundingClientRect().top<=line) pick=spySections[i]; }
+ if(innerHeight+scrollY>=document.documentElement.scrollHeight-2) pick=spySections[spySections.length-1];
+ var id=spyIds[pick.id]; if(id===current) return; current=id;
+ links.forEach(function(a){ var on=a.getAttribute('data-spy')===id; if(on) a.setAttribute('aria-current','true'); else a.removeAttribute('aria-current'); if(on&&a.scrollIntoView&&nav.scrollWidth>nav.clientWidth+2) a.scrollIntoView({block:'nearest',inline:'nearest'}); });
+}
+function askSpy(){ if(!spyRaf) spyRaf=requestAnimationFrame(spy); }
 if('IntersectionObserver' in window){
- new IntersectionObserver(function(es){ es.forEach(function(e){ pastHero=!e.isIntersecting&&e.boundingClientRect.top<0; }); setBar(); },{threshold:0}).observe(heroCta);
- new IntersectionObserver(function(es){ es.forEach(function(e){ finalSeen=e.isIntersecting; }); setBar(); },{threshold:.2}).observe(finalBox);
+ /* fires whenever a section enters or leaves the band between the header and the 35% line, i.e. exactly when the active tab can change */
+ var band=new IntersectionObserver(askSpy,{rootMargin:'-'+hdrH()+'px 0px -65% 0px',threshold:[0,.5,1]});
+ spySections.forEach(function(s){ band.observe(s); });
+}
+addEventListener('scroll',askSpy,{passive:true}); addEventListener('resize',askSpy); spy();
+/* mobile tab row: fade the right edge while more tabs are hidden */
+function navMore(){ nav.classList.toggle('more',nav.scrollWidth-nav.clientWidth-nav.scrollLeft>6); }
+nav.addEventListener('scroll',navMore,{passive:true}); addEventListener('resize',navMore); navMore();
+
+/* ---------- sticky bar: follows whichever game detail is being read (hidden while that game's own CTAs are on screen) ---------- */
+var bar=$('bar'), barName=$('barName'), barSub=$('barSub'), barPlay=$('barPlay'), details=[].slice.call(document.querySelectorAll('.game-detail')), inBand={}, ctaIn={};
+function setBar(){
+ var cur=null; details.forEach(function(d){ if(inBand[d.id]) cur=d; }); /* the lowest one in the band wins during the hand-over */
+ var on=!!cur&&!ctaIn[cur.id];
+ if(cur){ barName.textContent=cur.getAttribute('data-name'); barSub.textContent=cur.getAttribute('data-sub'); barPlay.href=cur.getAttribute('data-play'); }
+ bar.classList.toggle('on',on); bar.setAttribute('aria-hidden',on?'false':'true'); barPlay.tabIndex=on?0:-1;
+}
+if('IntersectionObserver' in window){
+ /* "being read" = the section overlaps the band between 45% and 72% of the viewport height */
+ var bandIO=new IntersectionObserver(function(es){ es.forEach(function(e){ inBand[e.target.id]=e.isIntersecting; }); setBar(); },{threshold:0,rootMargin:'-45% 0px -28% 0px'});
+ var ctaIO=new IntersectionObserver(function(es){ es.forEach(function(e){ ctaIn[e.target.closest('.game-detail').id]=e.isIntersecting; }); setBar(); },{threshold:.3});
+ details.forEach(function(d){ bandIO.observe(d); var c=d.querySelector('.cta'); if(c) ctaIO.observe(c); });
 }
 
 /* ---------- share ---------- */
@@ -552,12 +799,18 @@ $('shareBtn').addEventListener('click',function(){
  else say(SHARE_TEXT);
 });
 
-/* ---------- leaderboard ---------- */
+/* ---------- leaderboard (Tier One · Daily Challenge; a game switcher can set GAME later) ---------- */
 var API=/(^|\.)sembagames\.app$/.test(location.hostname)?'/api/online':'https://www.sembagames.app/api/online';
 var board=$('board'), lbMeta=$('lbMeta'), lbUpd=$('lbUpd'), period='daily', cache={}, timer=0, visible=false, inflight=null;
 var TIER_LABEL={1:'TIER 1',2:'TIER 2',3:'TIER 3',4:'TIER 4',5:'TIER 5',9:'CLOWN 🤡'};
+var DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function el(tag,cls,txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
 function clean(s,max){ s=String(s==null?'':s).replace(/[\u0000-\u001f\u007f]/g,'').trim(); return s.length>max?s.slice(0,max)+'…':s; }
+function fmtKey(k){ /* '2026-09-28' -> 'Mon 28 Sep'; '2026-W40' -> 'Week 40' */
+ var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(k); if(m){ var d=new Date(+m[1],+m[2]-1,+m[3]); return DAYS[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()]; }
+ m=/^(\d{4})-W(\d{1,2})$/.exec(k); if(m) return 'Week '+(+m[2]);
+ return clean(k,12);
+}
 function renderEmpty(){
  board.innerHTML='';
  var e=el('div','empty'); e.appendChild(el('p',null,"Leaderboard goes live with today's Daily")); e.appendChild(el('small',null,'Play now and claim a spot.')); e.appendChild(el('br')); var a=el('a',null,"Play today's Daily"); a.href='/tier-one/'; e.appendChild(a); board.appendChild(e);
@@ -576,8 +829,8 @@ function renderRows(data){
   rw.appendChild(el('span','sc',isFinite(score)?String(Math.round(score)):'—'));
   board.appendChild(rw);
  });
- var meta=[]; if(isFinite(Number(data.players))&&Number(data.players)>0) meta.push(Number(data.players).toLocaleString()+(period==='daily'?' played today':' played this week'));
- var key=period==='daily'?data.day:data.week; if(typeof key==='string'&&key) meta.push(clean(key,12));
+ var meta=['Tier One · Daily Challenge']; if(isFinite(Number(data.players))&&Number(data.players)>0) meta.push(Number(data.players).toLocaleString()+(period==='daily'?' played today':' played this week'));
+ var key=period==='daily'?data.day:data.week; if(typeof key==='string'&&key) meta.push(fmtKey(key));
  lbMeta.textContent=meta.join(' · ');
  lbUpd.textContent='Updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
