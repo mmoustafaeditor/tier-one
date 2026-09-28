@@ -4035,6 +4035,15 @@ deepMerge(I18N,{
    dailyNote:'اليومي والتمرين دايمًا بالمصادر الأساسية: كلها بتفتح من أول يوم، والدكتور وبتاع المطار عندهم إحساس بس في الأول.',shopHint:'تطوير المصادر',shopHintSub:'الصدق والفتح بدري في تاب المصادر'}}
 });
 optbApplyI18N();
+/* Career tier bars (lane/ctier): lines that show the active Career/Rooms bars ({bars} = "T1 385 · T2 320 · T3 260", LTR) */
+deepMerge(I18N,{
+ en:{cbars:{career:'Your Career bars: {bars}. They rise as you upgrade.',room:'Your bars in this room: {bars}. They rise as you upgrade.',
+  result:'Career bars this window: {bars}. They rise as you upgrade.',howto:'These are the Daily bars. Career and Rooms use your own bars, which rise as you upgrade: {lo} for a new career, {hi} fully upgraded.'}},
+ es:{cbars:{career:'Tus listones de Carrera: {bars}. Suben a medida que mejoras.',room:'Tus listones en esta sala: {bars}. Suben a medida que mejoras.',
+  result:'Listones de Carrera en este mercado: {bars}. Suben a medida que mejoras.',howto:'Estos son los listones del Diario. Carrera y Salas usan los tuyos, que suben a medida que mejoras: {lo} en una carrera nueva, {hi} con todo mejorado.'}},
+ ar:{cbars:{career:'حدود التيرز في مسيرتك: {bars}. بتعلى كل ما تطوّر.',room:'حدود التيرز بتاعتك في الأوضة دي: {bars}. بتعلى كل ما تطوّر.',
+  result:'حدود التيرز للمسيرة في الميركاتو ده: {bars}. بتعلى كل ما تطوّر.',howto:'دي حدود اليومي. المسيرة والأوض ليها حدود خاصة بيك بتعلى كل ما تطوّر: {lo} في مسيرة جديدة، و{hi} لما تطوّر كل حاجة.'}}
+});
 /* @@LANE I18N:math END */
 /* ─ */
 /* @@LANE I18N:ds BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -4542,7 +4551,10 @@ const MATH={
  CONTACTS:CONFIG.CONTACTS, DD_CONTACTS:CONFIG.DD_CONTACTS, DD_TIMER:CONFIG.DD_SECONDS, FMULT:[1,1,1,1], REP_REL:0, TICK:0,
  WARN_GEAR:{radar:.2,laptop:.1}, LEAD_GEAR:'laptop', LEAD_DAYS:2, WIFI_DAYS:[6,6], PHONE_DAYS:[5,5], EARLY_GEAR:{}, PAID_REL:1,
  PAY:{base:25,perPt:.3,perEx:15,tier:{1:80,2:40,3:20,4:5},repAt:70,repMult:1.25,mult:2.25},
- TIERS:CONFIG.TIERS, BARS:[.55,.75], BOOST_STEP:2
+ TIERS:CONFIG.TIERS, BARS:[.55,.75], BOOST_STEP:2,
+ /* Career/Rooms tier bars [T1,T2,T3] at upgrade progress AT (0 = new, .6 = half, 1 = everything; upgradeProgress), linear in between,
+    rounded to 5. T4 (70) and clown (<0) stay shared. Daily/Practice use CONFIG.TIERS. See MATH_NOTES "Career tier bars". */
+ CAREER_BARS:{at:[0,.6,1],bars:[[385,320,260],[390,350,315],[395,360,340]]}
 };
 function wpick(r,w){ const ks=Object.keys(w); let x=r.next()*ks.reduce((a,k)=>a+w[k],0); for(const k of ks){ x-=w[k]; if(x<=0) return k; } return ks[ks.length-1]; }
 const SIDE_OF={DONE:'HIJACK',HIJACK:'DONE',OFF:'FAKE',FAKE:'OFF'}; // same side of "is he leaving?" (the kitman's near-miss lies)
@@ -4638,7 +4650,7 @@ function newGame(mode,seed){
  game={usedLines:{}};
  sagas.forEach(s=>{ s.ov=freshPick('official.'+s.truth,(tt('official')[s.truth]||[]).length); s.events.forEach(e=>{ const eo=e.sh||e.o||s.truth; e.v=freshPick('evt.'+(e.idx===0&&eo!=='FAKE'?'bid':eo+e.idx),evtPool(eo,e.idx).length); }); s.rivalPosts.forEach(rp=>{ const st=RIVALS.find(x=>x.key===rp.rival).style; rp.v=freshPick('rline.'+rp.claim+'.'+st,(tt('rline')[rp.claim][st]||[]).length); }); });
  const usedLines=game.usedLines;
- game={v:3,usedLines,mode,seed,rngState:rng.state,day:1,actions:0,feed:[],sagas,tab:'sagas',result:null,timer:MATH.DD_TIMER,timerMax:MATH.DD_TIMER,followers:mode==='career'?(C().followers||1200):1000+rng.int(400)};
+ game={v:3,usedLines,mode,seed,rngState:rng.state,day:1,actions:0,feed:[],sagas,tab:'sagas',result:null,timer:MATH.DD_TIMER,timerMax:MATH.DD_TIMER,followers:mode==='career'?(C().followers||1200):1000+rng.int(400)}; game.tb=tierCutoffs(mode);
  game.actions=baseActions(1);
  game.feed.push({day:1,type:'sys',k:'sys.open'});
  sagas.forEach(s=>game.feed.push({day:1,type:'event',sagaId:s.id,k:'sys.report'}));
@@ -4737,7 +4749,14 @@ function applyScoreMultiplier(baseScore,isCareerMode){
  const playerType=getPlayerType(C().followers||1200);
  return Math.round(baseScore*playerType.mult);
 }
-function tierFor(score){ const T=CONFIG.TIERS||MATH.TIERS; if(score<0) return {n:9,key:'clown'}; if(score>=T[0]) return {n:1,key:'t1'}; if(score>=T[1]) return {n:2,key:'t2'}; if(score>=T[2]) return {n:3,key:'t3'}; if(score>=T[3]) return {n:4,key:'t4'}; return {n:5,key:'t5'}; }
+/* Career tier bars: upgradeProgress(c) = share of upgrades owned (source-tree steps + gear, 0..1). tierCutoffs(mode,c) = the active
+   [T1,T2,T3,T4] bars: shared CONFIG.TIERS in Daily/Practice, progress-based in Career/Rooms (the room's own career). newGame snapshots
+   them in game.tb, so buying upgrades mid-window never moves the current window's bars. tierFor(score,T) uses T, else game.tb. */
+function upgradeProgress(c){ c=c||C(); const g=gearProgress(c); return g.max?Math.max(0,Math.min(1,g.cur/g.max)):0; }
+function careerBars(p){ const B=MATH.CAREER_BARS, A=B.at; let i=0; while(i<A.length-2&&p>A[i+1]) i++; const f=Math.max(0,Math.min(1,(p-A[i])/(A[i+1]-A[i])));
+ return B.bars[i].map((v,j)=>Math.round((v+(B.bars[i+1][j]-v)*f)/5)*5); }
+function tierCutoffs(mode,c){ const T=(CONFIG.TIERS||MATH.TIERS).slice(); if(mode!=='career') return T; const b=careerBars(upgradeProgress(c)); return [b[0],b[1],b[2],T[3]]; }
+function tierFor(score,T){ T=T||(game&&game.tb)||tierCutoffs(game&&game.mode); if(score<0) return {n:9,key:'clown'}; if(score>=T[0]) return {n:1,key:'t1'}; if(score>=T[1]) return {n:2,key:'t2'}; if(score>=T[2]) return {n:3,key:'t3'}; if(score>=T[3]) return {n:4,key:'t4'}; return {n:5,key:'t5'}; }
 function tierName(tr){ return t('tier.'+tr.key); }
 
 // ---------- actions ----------
@@ -5503,6 +5522,7 @@ function renderCareer(){
   const gs=careerGoals(c); const cnt=achCount();
   body=`<div class="sechead"><h2 class="d4">${esc(t('econ.goalsTitle'))}</h2><span class="aux"><bdi dir="ltr">${gs.filter(g=>g.cur>=g.max).length}/4</bdi></span></div>
    <div class="goalgrid">${gs.map(g=>{ const p=Math.round(g.cur/g.max*100), ok=g.cur>=g.max; return `<div class="gmini ${ok?'ok':''}"><span class="ring" style="--p:${p}${ok?';--c:var(--ok)':''}"><b>${ok?'✓':p+'%'}</b></span><span>${esc(t('econ.goal.'+g.k))}</span><small><bdi dir="ltr">${g.k==='fans'?fmtK(g.cur)+' / 100K':g.cur+' / '+g.max}</bdi></small></div>`; }).join('')}</div>
+   ${cbarsHtml('career',c)}
    <button type="button" class="achrow" data-act="achScreen">${medalHtml('🏆','legend',{size:'sm'})}<span><b>${esc(t('ach.title'))}</b><small>${esc(t('ach.glory'))}</small></span><em><bdi dir="ltr">${cnt.got}/${cnt.total}</bdi></em><span class="chev" aria-hidden="true">›</span></button>
    ${c.history.length?`<div class="sechead"><h2 class="d4">${esc(t('career.recent'))}</h2></div><section class="list">${c.history.slice(0,5).map(h=>`<div class="hrow"><span class="sq" dir="ltr">${esc(h.row||'')}</span><span class="ht">${esc(h.tier===9?t('tier.clown'):t('career.tierN',{n:h.tier}))}</span><b><bdi dir="ltr">${h.score}</bdi></b></div>`).join('')}</section>`:`<p class="muted sm" style="margin:14px 4px 0">${esc(t('cr.noHistory'))}</p>`}
    ${Ads.slot('career')}`;
@@ -5516,7 +5536,7 @@ function renderCareer(){
   const boosts=`<div class="sechead"><h2 class="d4">${esc(t('career.boosts'))}</h2><span class="aux">${esc(t('cr.boostSub'))}</span></div><section class="list">${BOOSTS.map(b=>`<div class="gear ${lv.n<b.lvl?'lockd':''}"><span class="gi" aria-hidden="true">${b.ic}</span><span style="min-width:0"><b>${esc(t('boost.'+b.key+'.name'))}</b><span class="fx">${esc(t('boost.'+b.key+'.desc'))}</span></span><span class="gp">${lv.n<b.lvl?`<span class="buy no">🔒 ${esc(t('cr.lv',{n:b.lvl}))}</span>`:`<span class="buy no"><bdi dir="ltr">$${b.cost}</bdi><small>${esc(t('cr.inWindow'))}</small></span>`}</span></div>`).join('')}</section>`;
   const packs=roomCtx?'':`<div class="sechead" id="packs"><h2 class="d4">${esc(t('career.packs'))}</h2></div><p class="xs muted" style="margin:-4px 4px 10px">${esc(t('econ.packNote'))}</p><section class="list">${CONFIG.REWARDED_ADS!=='off'?`<div class="gear"><span class="gi" aria-hidden="true">▶️</span><span style="min-width:0"><b>${esc(t('econ.adCash'))}</b><span class="gd">${esc(t('econ.adCashDesc'))}</span></span><span class="gp">${save.career.adCash===todayKey()?`<span class="owned-chip">✓</span>`:`<button type="button" class="buy" data-act="adCash">+$40</button>`}</span></div>`:''}${['pack1','pack2','pack3'].map(k=>{ const p=CONFIG.PACKS[k]; const av=Pay.available(k); const tag=k==='pack2'?'popular':k==='pack3'?'best':''; return `<div class="gear"><span class="gi" aria-hidden="true">💵</span><span style="min-width:0"><b>${esc(t('career.'+k))}${tag?` <span class="rtag legend">${esc(t('econ.'+tag))}</span>`:''}</b><span class="gd">${esc(t('econ.cash',{n:p.credits.toLocaleString('en-US')}))}</span></span><span class="gp"><button type="button" class="buy ${av?'':'no'}" data-act="buyPack" data-v="${k}" ${av?'':'disabled'}>${esc(p.price)}</button></span></div>`; }).join('')}<div class="gear"><span class="gi" aria-hidden="true">🚫</span><span style="min-width:0"><b>${esc(t('prod.removeAds'))}</b><span class="gd">${esc(t('prod.removeAdsDesc'))}</span></span><span class="gp">${save.purchases.removeAds?`<span class="owned-chip">✓ ${esc(t('career.owned'))}</span>`:`<button type="button" class="buy ${Pay.available('removeAds')?'':'no'}" data-act="buyPack" data-v="removeAds" ${Pay.available('removeAds')?'':'disabled'}>${esc(CONFIG.PACKS.removeAds.price)}</button>`}</span></div></section><p class="xs dim" style="margin:8px 4px 0">${esc(t('career.packsNote'))}</p>`;
   const treeHint=`<button type="button" class="goalcard" data-act="ctab" data-v="sources" style="margin-top:12px"><span class="gi" aria-hidden="true">🧭</span><span style="min-width:0"><b>${esc(t('tree.shopHint'))}</b><small>${esc(t('tree.shopHintSub'))} · <bdi dir="ltr">${treeSteps(c).n}/${treeSteps(c).m}</bdi></small></span><span class="chev" aria-hidden="true">›</span></button>`;
-  body=load+treeHint+gear+boosts+packs+`<p class="xs muted crnote">${esc(t('cr.fair'))}</p>`;
+  body=load+cbarsHtml('career',c)+treeHint+gear+boosts+packs+`<p class="xs muted crnote">${esc(t('cr.fair'))}</p>`;
  }else if(careerTab==='style'){
   const th=save.settings.theme||'auto'; const isDef=(save.settings.skin||'default')==='default';
   const skins=`<div class="sechead"><h2 class="d4">${esc(t('career.look'))}</h2></div><div class="skingrid">${SKINS.map(s=>crSkinCard(s,c)).join('')}</div>
@@ -5544,7 +5564,7 @@ function renderHowTo(){
   ${card(1,t('howto2.goal'),`<div class="hmgoal">${['DONE','HIJACK','OFF','FAKE'].map(o=>`<div>${ocHtml(o,'lg')}<span>${esc(t('howto2.o.'+o))}</span></div>`).join('')}</div>`)}
   ${card(2,t('howto2.ask'),`<ul class="hmul"><li>${esc(t('howto2.ask1',{n}))}</li><li>${esc(t('howto2.ask2'))}</li><li>${esc(t('howto2.ask3',{a:hmOpenDay('airport'),p:hmOpenDay('physio')}))}</li><li>${esc(t('howto2.ask4'))}</li></ul>`)}
   ${card(3,t('howto2.call'),`<table class="hmpts"><caption>${esc(t('howto2.tblCap'))}</caption><thead><tr><th scope="col"></th><th scope="col">${esc(t('howto2.right'))}</th><th scope="col">${esc(t('howto2.wrong'))}</th></tr></thead><tbody>${lb}</tbody></table><ul class="hmul"><li>${esc(t('howto2.early',{n:early}))}</li><li>${esc(t('howto2.ex',{n:ex}))}</li><li>${esc(t('howto2.types'))}</li><li>${esc(t('howto2.ut',{w:hmM().UT_WRONG||10}))}</li></ul>`)}
-  ${card(4,t('howto2.dd'),`<ul class="hmul"><li>${esc(t('howto2.dd1',{s:dds,n:ddc}))}</li><li>${esc(t('howto2.dd2'))}</li><li>${esc(t('howto2.twist'))}</li></ul><ol class="hmladder">${tiers}</ol>`)}
+  ${card(4,t('howto2.dd'),`<ul class="hmul"><li>${esc(t('howto2.dd1',{s:dds,n:ddc}))}</li><li>${esc(t('howto2.dd2'))}</li><li>${esc(t('howto2.twist'))}</li></ul><ol class="hmladder">${tiers}</ol>${cbarsHtml('howto')}`)}
   <div class="sechead"><span class="over">${esc(t('howto2.sources'))}</span></div><div class="list hmsrcs">${srcs}</div>
   ${rvHowCard()}
   <div class="sechead"><span class="over">${esc(t('howto2.modes'))}</span></div>
@@ -5717,6 +5737,15 @@ LANE_ACTS.boost=(el,v,id)=>{ const k=el.dataset.b, c=C(), before=c.credits, s=ga
  if(game&&c.credits<before){ game.boostUses=game.boostUses||{}; game.boostUses[k]=(game.boostUses[k]||0)+1; saveGame();
   if(k==='burner'||(k==='bribe'&&s&&s.clues.length===n0)) renderSagaModal(id); } };
 optbApplyI18N(); // Option B strings win over later I18N blocks (howto2/tut/board)
+/* Career tier bars (lane/ctier): one-line explainer of the active bars. kind: 'career' (Career screen; room-aware), 'result'
+   (results of a career/room window: the bars snapshotted at newGame), 'howto' (Daily ladder note with the Career range). */
+function cbarsTxt(T){ return 'T1 '+T[0]+' · T2 '+T[1]+' · T3 '+T[2]; }
+function cbarsHtml(kind,c){ const B='\u0001', bd=s=>`<bdi dir="ltr">${esc(s)}</bdi>`; let key, v={};
+ if(kind==='result'){ if(!game||game.mode!=='career') return ''; key='result'; v.bars=cbarsTxt(game.tb||tierCutoffs('career')); }
+ else if(kind==='howto'){ const A=MATH.CAREER_BARS.at; key='howto'; v.lo=cbarsTxt(careerBars(A[0])); v.hi=cbarsTxt(careerBars(A[A.length-1])); }
+ else { key=roomCtx?'room':'career'; v.bars=cbarsTxt(tierCutoffs('career',c||C())); }
+ const raw={}; for(const k in v) raw[k]=B+k+B; let s=esc(t('cbars.'+key,raw)); for(const k in v) s=s.split(B+k+B).join(bd(v[k]));
+ return `<p class="xs muted cbars" style="margin:10px 4px 0">📊 ${s}</p>`; }
 /* @@LANE JS:math END */
 /* ─ */
 /* @@LANE JS:home BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -5733,7 +5762,7 @@ function hmDDContacts(){ return CONFIG.DD_CONTACTS||hmM().DD_CONTACTS||3; }
 function hmEarly(){ return hmM().EARLY||CONFIG.EARLY||3; }
 function hmExcl(){ return hmM().EXCL||CONFIG.EXCL||15; }
 function hmOpenDay(k){ try{ if(typeof srcOpenDay==='function') return srcOpenDay(k)||1; if(typeof srcFrom==='function') return srcFrom(k)||1; }catch(e){} const s=SOURCES[k]||{}; return s.opensDay||s.opens||s.from||1; }
-function hmTiers(){ const out=[]; let prev=null; for(let s=0;s<=1000;s++){ const tr=tierFor(s); if(!prev||tr.n!==prev.n){ out.push({n:tr.n,key:tr.key,min:s}); prev=tr; } } return out.reverse(); }
+function hmTiers(){ const out=[]; let prev=null; for(let s=0;s<=1000;s++){ const tr=tierFor(s,CONFIG.TIERS); if(!prev||tr.n!==prev.n){ out.push({n:tr.n,key:tr.key,min:s}); prev=tr; } } return out.reverse(); }
 function hmIsApk(){ return location.protocol==='file:'&&/Android/i.test(navigator.userAgent||''); }
 function hmPlayOnce(k){ try{ beep(k); }catch(e){} }
 
@@ -6337,7 +6366,7 @@ function rsLadderHtml(){ const r=game.result, tr=r.tier, cuts=rsCuts(); const to
  const next=cuts.filter(c=>c.v>score).sort((a,b)=>a.v-b.v)[0]; const best=rsBest();
  let gap; if(tr.n===1) gap=`<b>${esc(t('rs.top'))}</b>`; else gap=next?`<b>${esc(t('rs.short',{n:next.v-score,t:tierName(tierOf(next.n))}))}</b>`:'';
  if(best&&score>best.s) gap+=(gap?' · ':'')+`<span class="nb">${esc(t('rs.newBest'))}</span>`; else if(best) gap+=(gap?' · ':'')+esc(t('rs.best',{n:best.s}))+(best.n?' ('+esc(t('win.daily',{n:best.n}))+')':'');
- return `<div style="--tc:${rsTierVar(tr)};margin-top:34px"><div class="ladder" id="rsLadder" role="img" aria-label="${esc(score+' '+t('rs.pts'))}"><div class="trk"><span class="fill" style="width:0%" data-w="${pct(score)}"></span>${ticks}<span class="you" style="inset-inline-start:0%" data-w="${pct(score)}">${esc(t('qa.youAv'))}</span></div></div></div><p class="gap">${gap}</p>`; }
+ return `<div style="--tc:${rsTierVar(tr)};margin-top:34px"><div class="ladder" id="rsLadder" role="img" aria-label="${esc(score+' '+t('rs.pts'))}"><div class="trk"><span class="fill" style="width:0%" data-w="${pct(score)}"></span>${ticks}<span class="you" style="inset-inline-start:0%" data-w="${pct(score)}">${esc(t('qa.youAv'))}</span></div></div></div><p class="gap">${gap}</p>${cbarsHtml('result')}`; }
 function rsLadder(anim){ const L=$('rsLadder'); if(!L) return; if(!anim) L.classList.add('inst'); else L.classList.remove('inst'); L.querySelectorAll('[data-w]').forEach(el=>{ if(el.classList.contains('fill')) el.style.width=el.dataset.w+'%'; else el.style.insetInlineStart=el.dataset.w+'%'; }); }
 /* reveal */
 const RV={el:null,speed:1,tm:null};
