@@ -1854,6 +1854,21 @@ html.ad-anchored .overlay,html.ad-anchored .rvl{ top:var(--ad-top,0px); bottom:v
 .trophy.tr-common{ --tc:#E0A26A; } .trophy.tr-rare{ --tc:#D5DEEA; } .trophy.tr-epic{ --tc:#FFC933; } .trophy.tr-legend{ --tc:#9FE8FF; } .trophy.tr-shame{ --tc:#FF7A8A; }
 @media (min-width:1000px){ #trophyRoot{ top:calc(16px + env(safe-area-inset-top,0px)); bottom:auto!important; justify-items:end; padding-inline-end:20px; } .trophy,.trophy.hide{ transform:translateY(-130%); } .trophy.show{ transform:none; } }
 html.rm .trophy,html.rm .trophy.hide{ transform:none; transition:opacity .15s linear; }
+/* names and clubs never ellipsize on player cards: wrap to 2 lines instead (Arabic names are long at 360 px) */
+.pcard .pn{ align-items:flex-start; }
+.pcard .pn b{ white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; }
+.pcard .pn .stars{ margin-top:4px; }
+.pcard .route{ flex-wrap:wrap; row-gap:1px; white-space:normal; }
+.pcard .route .from,.pcard .route b{ overflow:visible; text-overflow:clip; white-space:nowrap; }
+html[lang="ar"] .pcard .pn b{ font-size:16.5px; line-height:1.3; }
+html[lang="ar"] .pcard .route{ font-size:12.5px; }
+html[lang="ar"] :is(.pp,.ppsheet) .ph .d3{ white-space:normal; overflow:visible; font-size:24px; line-height:1.25; overflow-wrap:anywhere; }
+html[lang="ar"] :is(.pp,.ppsheet) .ph .route,html[lang="ar"] :is(.pp,.ppsheet) .ddbar .route{ flex-wrap:wrap; white-space:normal; }
+html[lang="ar"] :is(.pp,.ppsheet) .ph .route .from{ overflow:visible; }
+html[lang="ar"] :is(.pp,.ppsheet) .appbar.ddbar .ttl{ white-space:normal; }
+html[lang="ar"] :is(.pp,.ppsheet) .appbar.ddbar{ height:auto; min-height:64px; padding-block:6px 8px; }
+html[lang="ar"] :is(.pp,.ppsheet) .appbar.ddbar .ttl > b{ white-space:normal; font-size:18px; line-height:1.25; overflow:visible; overflow-wrap:anywhere; }
+html[lang="ar"] :is(.srow .sn,.thh b.n,.rvr .pn,.saga .who b,.today .five b){ white-space:normal; overflow:visible; line-height:1.3; overflow-wrap:anywhere; }
 @media (prefers-reduced-motion:reduce){ .trophy,.trophy.hide{ transform:none; transition:opacity .15s linear; } }
 /* ─ */
 </style>
