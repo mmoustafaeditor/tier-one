@@ -2124,6 +2124,69 @@ html.rm .rv2rx .rv2rb:active{ transform:none; }
 /* @@LANE CSS:career2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE CSS:career2 END */
 /* @@LANE CSS:dd BEGIN (lane-owned; insert only between BEGIN and END) */
+/* ===== Deadline Day intensity (dd lane). --ddp (1 → 0) is set on <html> by ddTick; --ddk is the crunch (0 → 1). ===== */
+html[data-dd="1"]{ --ddk:calc(1 - var(--ddp,1)); }
+/* darkening veil: one fixed pseudo layer, static paint, only its opacity moves (compositor-only). Subtle at 60 s, heavy at 10 s. */
+html[data-dd="1"] body::after{ background:radial-gradient(135% 105% at 50% 42%,rgba(18,0,6,0) 28%,rgba(18,0,6,.62) 72%,rgba(46,0,12,.96) 100%); box-shadow:inset 0 0 0 2px rgba(255,61,85,.6),inset 0 0 70px rgba(255,61,85,.42),inset 0 0 190px rgba(60,0,12,.9); opacity:calc(.32 + .68 * var(--ddk,0)); }
+html[data-dd="1"].dd-alarm body::after{ animation:ddVeil .5s ease-in-out infinite alternate; }
+@keyframes ddVeil{ from{ opacity:.72; } to{ opacity:1; } }
+html[data-dd="1"] .ddhead .d2{ text-shadow:0 0 calc(24px * var(--ddk,0)) rgba(255,61,85,calc(.9 * var(--ddk,0))); }
+html[data-dd="1"] .pcard.dd:not(.called){ box-shadow:0 0 0 1px rgba(255,61,85,calc(.15 + .55 * var(--ddk,0))),0 0 calc(22px * var(--ddk,0)) rgba(255,61,85,calc(.45 * var(--ddk,0))); }
+/* clocks under 10 s: the player-page clock grows and shakes; the board's big clock rocks (transform-only) */
+html[data-dd="1"] .pp .ppclock.alarm,html[data-dd="1"] .ppsheet .ppclock.alarm,html[data-dd="1"] .ppclk .ppclock.alarm{ transform:scale(1.14); transform-origin:100% 50%; animation:ddShake .42s linear infinite; }
+html[dir="rtl"][data-dd="1"] .pp .ppclock.alarm{ transform-origin:0 50%; }
+html[data-dd="1"] .pp .ppclock.alarm b{ font-size:29px; }
+html[data-dd="1"] .ddhead .clock.big.alarm{ animation:ddShake .42s linear infinite; }
+@keyframes ddShake{ 0%,100%{ translate:0 0; rotate:0deg; } 20%{ translate:-1.5px 1px; rotate:-1.2deg; } 45%{ translate:1.5px -1px; rotate:1.1deg; } 70%{ translate:-1px -1px; rotate:-.6deg; } }
+html[data-dd="1"] .pp .ppclock.alarm b,html[data-dd="1"] .ppclk .ppclock.alarm b{ animation:clockBeat .5s ease-in-out infinite; }
+/* reduced motion / low effects: a static darker state, no pulsing, no shaking */
+html.rm[data-dd="1"] body::after,html.lowfx[data-dd="1"] body::after,html.rm[data-dd="1"].dd-alarm body::after,html.lowfx[data-dd="1"].dd-alarm body::after{ animation:none; }
+html.rm[data-dd="1"].dd-alarm body::after,html.lowfx[data-dd="1"].dd-alarm body::after{ opacity:.9; }
+html.rm[data-dd="1"] .pp .ppclock.alarm,html.lowfx[data-dd="1"] .pp .ppclock.alarm,html.rm[data-dd="1"] .ddhead .clock.big.alarm,html.lowfx[data-dd="1"] .ddhead .clock.big.alarm,html.rm[data-dd="1"] .ppclk .ppclock.alarm{ animation:none; }
+html.rm[data-dd="1"] .pp .ppclock.alarm b,html.lowfx[data-dd="1"] .pp .ppclock.alarm b{ animation:none; }
+@media (prefers-reduced-motion:reduce){ html[data-dd="1"] body::after,html[data-dd="1"].dd-alarm body::after,html[data-dd="1"] .pp .ppclock.alarm,html[data-dd="1"] .ddhead .clock.big.alarm,html[data-dd="1"] .ppclk .ppclock.alarm{ animation:none; } }
+/* ---- snap-decision overlay (#ddSnap, ≤15 s): above the board and player page (50/56), below sheets (70), overlays (80), the veil (90) ---- */
+#ddSnap{ position:fixed; inset:0; z-index:60; display:flex; flex-direction:column; justify-content:flex-end; background:rgba(12,2,6,.66); animation:ddsScrim .2s ease-out both; }
+#ddSnap .dds-in{ position:relative; width:100%; max-width:430px; margin:0 auto; max-height:calc(100% - env(safe-area-inset-top,0px) - 20px); overflow:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; background:linear-gradient(180deg,#2A0812,#15060A 40%); border:1px solid #6A2437; border-bottom:0; border-radius:22px 22px 0 0; padding:12px var(--gutter) calc(12px + env(safe-area-inset-bottom,0px)); box-shadow:0 -20px 60px rgba(0,0,0,.6); animation:ddsUp .32s var(--ease-out) both; }
+#ddSnap.out{ animation:ddsScrimOut .24s ease-in forwards; } #ddSnap.out .dds-in{ animation:ddsDown .24s ease-in forwards; }
+@keyframes ddsUp{ from{ transform:translateY(100%); } } @keyframes ddsDown{ to{ transform:translateY(100%); } } @keyframes ddsScrim{ from{ opacity:0; } } @keyframes ddsScrimOut{ to{ opacity:0; } }
+.dds-head{ display:grid; grid-template-columns:auto minmax(0,1fr); gap:14px; align-items:center; margin:0 0 8px; }
+.dds-clk{ position:relative; width:80px; height:80px; border-radius:50%; background:conic-gradient(#fff calc(var(--ddp,1) * 360deg),rgba(255,255,255,.16) 0); display:grid; place-items:center; box-shadow:0 0 26px rgba(255,61,85,.55); }
+.dds-clk::before{ content:""; position:absolute; inset:5px; border-radius:50%; background:#C8102E; }
+.dds-clk b{ position:relative; font:800 italic 30px/1 var(--display); color:#fff; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+html.dd-alarm .dds-clk b{ animation:clockBeat .5s ease-in-out infinite; } html.dd-alarm .dds-clk{ animation:ddShake .42s linear infinite; }
+html.rm .dds-clk b,html.lowfx .dds-clk b,html.rm .dds-clk,html.lowfx .dds-clk{ animation:none; }
+.dds-t h2{ font:800 var(--ital) 30px/1 var(--display); text-transform:var(--caps); color:#FF6B7D; letter-spacing:-.01em; } html[lang="ar"] .dds-t h2{ line-height:1.3; font-size:26px; }
+.dds-t p{ margin-top:5px; font:600 var(--fs-sm)/1.3 var(--body); color:#EDB4BE; }
+.dds-rows{ display:block; }
+.dds-row{ display:grid; grid-template-rows:1fr; border-top:1px solid #4D1826; transition:grid-template-rows .26s ease-in,opacity .2s ease-in; }
+.dds-row > .dds-c{ min-height:0; overflow:hidden; padding:10px 0 12px; transition:padding .26s ease-in; }
+.dds-row.gone{ grid-template-rows:0fr; opacity:0; } .dds-row.gone > .dds-c{ padding-block:0; }
+.dds-who{ display:flex; align-items:center; gap:10px; min-width:0; margin-bottom:8px; }
+.dds-who > svg{ width:36px; height:36px; flex-shrink:0; }
+.dds-nm{ min-width:0; display:flex; flex-direction:column; gap:2px; }
+.dds-nm > b{ font:800 var(--ital) 20px/1.05 var(--display); text-transform:var(--caps); color:#FFF1F3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dds-nm .route{ font-size:13px; }
+.dds-opts{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+.dds-o{ --oc:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-height:56px; padding:6px 3px; border-radius:14px; border:1.5px solid var(--oc); background:#2E0E17; background:color-mix(in srgb,var(--oc) 16%,#1C070D); color:#fff; font:800 12.5px/1 var(--body); letter-spacing:.04em; text-transform:var(--caps); -webkit-tap-highlight-color:transparent; transition:transform .12s,background .12s; }
+.dds-o:active{ transform:scale(.93); background:color-mix(in srgb,var(--oc) 42%,#1C070D); }
+.dds-o .og{ width:18px; height:18px; color:var(--oc); }
+.dds-o.done{ --oc:var(--o-done); } .dds-o.hijack{ --oc:var(--o-hijack); } .dds-o.off{ --oc:var(--o-off); } .dds-o.fake{ --oc:var(--o-fake); }
+.dds-o > span{ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+html[lang="ar"] .dds-o{ font-size:13.5px; letter-spacing:0; }
+.dds-done{ display:flex; align-items:center; gap:8px; min-height:44px; font:700 var(--fs-sm) var(--body); color:#FFF1F3; }
+.dds-done b{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .dds-done > span:last-child{ color:#6FF5C8; font-weight:800; white-space:nowrap; }
+.dds-back{ display:block; width:100%; min-height:48px; margin-top:6px; background:none; border:0; border-top:1px solid #4D1826; color:#EDB4BE; font:700 var(--fs-md) var(--body); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.dds-empty{ padding:18px 0; text-align:center; font:700 var(--fs-md) var(--body); color:#FFF1F3; }
+html.rm #ddSnap,html.rm #ddSnap .dds-in,html.rm .dds-row{ animation:none; transition:none; }
+/* ---- zero hit: red flash behind the "Window shut" slab + a TIME stamp inside it ---- */
+.wshut.ddz{ background:rgba(90,3,16,.78); animation:ddzFlash .8s ease-out both; }
+@keyframes ddzFlash{ 0%{ background:#FF1F3D; } 28%{ background:rgba(150,4,24,.88); } 100%{ background:rgba(10,2,5,.72); } }
+.wshut.ddz .ws-slab{ padding-top:16px; }
+.ddz-time{ display:block; width:max-content; max-width:80%; margin:0 auto 10px; padding:5px 12px 4px; border:3px solid #E0102E; border-radius:8px; color:#E0102E; font:800 var(--ital) 22px/1 var(--display); letter-spacing:.28em; text-indent:.28em; text-transform:uppercase; transform:rotate(-7deg); animation:ddzStamp .34s cubic-bezier(.2,1.4,.4,1) .1s both; }
+html[lang="ar"] .ddz-time{ letter-spacing:0; text-indent:0; line-height:1.3; font-size:20px; }
+@keyframes ddzStamp{ from{ opacity:0; transform:rotate(-7deg) scale(2.4); } to{ opacity:1; transform:rotate(-7deg) scale(1); } }
+html.lowfx .wshut.ddz,html.rm .wshut.ddz{ animation:none; } html.rm .ddz-time{ animation:none; }
 /* @@LANE CSS:dd END */
 /* ---- QA integration fixes (after every lane slot, so they win) ---- */
 .pp{ animation-fill-mode:backwards; }            /* a filled transform animation made the fixed dock scroll with the page */
@@ -4782,6 +4845,11 @@ deepMerge(I18N,{
 /* @@LANE I18N:career2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE I18N:career2 END */
 /* @@LANE I18N:dd BEGIN (lane-owned; insert only between BEGIN and END) */
+deepMerge(I18N,{
+ en:{dd:{snapTitle:'Snap calls',snapSub:'{n} uncalled · one tap posts as {c}',snapSub1:'1 uncalled · one tap posts as {c}',snapBack:'Back to board',snapAria:'Snap decision: {n} uncalled players',snapPostA:'{o} · {p}',snapAll:'All called. Nice.',time:'TIME'}},
+ es:{dd:{snapTitle:'Decide ya',snapSub:'{n} sin exclusiva · un toque publica como {c}',snapSub1:'1 sin exclusiva · un toque publica como {c}',snapBack:'Volver al tablero',snapAria:'Decisión rápida: {n} jugadores sin exclusiva',snapPostA:'{o} · {p}',snapAll:'Todos publicados. Bien.',time:'¡TIEMPO!'}},
+ ar:{dd:{snapTitle:'قرّر بسرعة',snapSub:'{n} من غير خبر · دوسة واحدة تنشر كـ {c}',snapSub1:'واحد من غير خبر · دوسة واحدة تنشر كـ {c}',snapBack:'ارجع للوحة',snapAria:'قرار سريع: {n} لعيبة من غير خبر',snapPostA:'{o} · {p}',snapAll:'كله اتنشر. تمام.',time:'خلص الوقت'}}
+});
 /* @@LANE I18N:dd END */
 /* ─ */
 /* ─ */
@@ -5597,15 +5665,15 @@ function bumpFollowers(){ const el=$('followers'); if(!el) return; el.textConten
 function ddTick(){ if(!game) return 0; const mx=game.timerMax||ddMax(); let ms=ddPending?mx*1000:game.ddEndsAt?game.ddEndsAt-Date.now():(game.timer||0)*1000; ms=Math.max(0,ms); const sec=Math.ceil(ms/1000); game.timer=sec; const p=Math.max(0,Math.min(1,ms/(mx*1000)));
  document.querySelectorAll('[data-ddtimer]').forEach(el=>{ el.textContent=sec+'s'; el.classList.toggle('pulse',sec<=10); });
  document.querySelectorAll('[data-ddclock]').forEach(el=>{ const v=fmtClock(sec); if(el.textContent!==v) el.textContent=v; });
- document.querySelectorAll('[data-ddring]').forEach(el=>el.style.setProperty('--ddp',p.toFixed(4)));
+ const ps=p.toFixed(4); document.querySelectorAll('[data-ddring]').forEach(el=>el.style.setProperty('--ddp',ps)); document.documentElement.style.setProperty('--ddp',ps);
  document.querySelectorAll('.clock').forEach(el=>{ el.classList.toggle('warn',sec<=20&&sec>10); el.classList.toggle('alarm',sec<=10); });
  document.documentElement.classList.toggle('dd-alarm',sec<=10&&game.day===7&&!game.result&&!ddPending); return sec; }
 function startTimer(){ stopTimer(); if(!game||game.day!==7||game.result||ddShutting) return; ddMax(); if(ddPending){ ddTick(); return; }
  if(!game.ddEndsAt){ const left=(game.timer>0&&game.timer<game.timerMax)?game.timer:game.timerMax; game.ddEndsAt=Date.now()+left*1000; saveGame(); }
  ddLastSec=null; const step=()=>{ if(!game||game.result||game.day!==7||BOARD_HUBS.includes(screen)){ stopTimer(); return; } const sec=ddTick(); if(sec!==ddLastSec){ const prev=ddLastSec; ddLastSec=sec; ddSecond(sec,prev); } if(sec<=0){ stopTimer(); windowShut(); } };
  step(); if(!timerHandle&&!ddShutting&&game&&!game.result) timerHandle=setInterval(step,250); }
-function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
-function finishWindow(){ stopTimer(); ddPending=false; if(game) game.closedWithSecs=game.day===7?Math.max(0,game.timer|0):0; dismissCoach('c5'); resolveWindow(); try{ const r=game.result; Analytics.track('level_end',{level_name:game.mode,success:r.tier.n<=3}); Analytics.track('post_score',{score:r.total,level:game.mode,character:r.tier.key}); (r.newBadges||[]).forEach(b=>Analytics.track('unlock_achievement',{achievement_id:b})); }catch(e){} go('results'); }
+function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } if(typeof ddHeartStop==='function') ddHeartStop(); }
+function finishWindow(){ stopTimer(); ddPending=false; if(typeof ddSnapClose==='function') ddSnapClose(true); document.documentElement.style.removeProperty('--ddp'); if(game) game.closedWithSecs=game.day===7?Math.max(0,game.timer|0):0; dismissCoach('c5'); resolveWindow(); try{ const r=game.result; Analytics.track('level_end',{level_name:game.mode,success:r.tier.n<=3}); Analytics.track('post_score',{score:r.total,level:game.mode,character:r.tier.key}); (r.newBadges||[]).forEach(b=>Analytics.track('unlock_achievement',{achievement_id:b})); }catch(e){} go('results'); }
 
 // ----- root -----
 function render(){
@@ -7498,6 +7566,50 @@ onHook('resolved',res=>{ try{ ((res&&res.per)||[]).forEach(x=>{ const s=game.sag
 /* @@LANE JS:career2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:career2 END */
 /* @@LANE JS:dd BEGIN (lane-owned; insert only between BEGIN and END) */
+/* ===== Deadline Day intensity (dd lane): heartbeat loop, snap-decision overlay (#ddSnap, ≤15 s), zero-hit stamp.
+   The darkening rides on --ddp, which ddTick publishes on <html> (see the dd CSS slot). Rules (seconds, contacts, scoring) untouched. ===== */
+var DDX={h:null,zero:null};
+function ddLiveNow(){ return !!(game&&game.day===7&&!game.result&&timerHandle&&!ddPending&&!ddShutting&&screen==='window'); }
+function ddSecsNow(){ if(!game) return 0; return game.ddEndsAt?Math.max(0,(game.ddEndsAt-Date.now())/1000):Math.max(0,game.timer||0); }
+/* heartbeat: the SFX 'heartbeat' patch through beep() (so it obeys the Sound setting). Starts at 30 s at 60 BPM and quickens to
+   ~100 BPM by 10 s; under 10 s the board's per-second heartbeat is the on-beat and this loop only adds the off-beat (120 BPM together). */
+function ddHeartStop(){ if(DDX.h){ clearTimeout(DDX.h); DDX.h=null; } }
+function ddHeartTick(){ DDX.h=null; if(!ddLiveNow()) return; const s=ddSecsNow(); if(s<=0||s>30.5) return;
+ let wait; const ms=s*1000, phase=(1000-(ms%1000))%1000; /* ms since the last second boundary */
+ if(s>10){ const bpm=60+60*Math.min(1,Math.max(0,(30-s)/30)); wait=Math.round(60000/bpm); if(!document.hidden) beep('heartbeat'); }
+ else { const tgt=620; let d=tgt-phase; if(d<=40) d+=1000; if(Math.abs(phase-tgt)<=200&&!document.hidden) beep('heartbeat'); wait=d; }
+ DDX.h=setTimeout(ddHeartTick,Math.max(120,wait)); }
+/* snap-decision overlay */
+function ddSnapRows(){ return game?game.sagas.filter(s=>!s.call):[]; }
+function ddSnapSub(n){ return t(n===1?'dd.snapSub1':'dd.snapSub',{n,c:t('pp.conf.med')}); }
+function ddSnapRowHtml(s){ const nm=pName(s.player);
+ return `<div class="dds-row" data-sid="${s.id}" role="group" aria-label="${esc(nm)}"><div class="dds-c"><div class="dds-who">${kitSVG(s.club,initials(s.player.name))}<div class="dds-nm"><b>${esc(nm)}</b><span class="route"><i style="--c:${esc(s.club.kit||'var(--muted)')}"></i><span class="from">${esc(cName(s.club))}</span><span class="arr">→</span><i style="--c:${esc(s.dest.kit||'var(--muted)')}"></i><b>${esc(cName(s.dest))}</b></span></div></div><div class="dds-opts">${OUTCOMES.map(o=>{ const lo=o.toLowerCase(); return `<button class="dds-o ${lo}" data-act="ddSnapPost" data-v="${o}" data-id="${s.id}" aria-label="${esc(t('dd.snapPostA',{o:t('ds.oc.'+o),p:nm}))}">${glyph(lo)}<span>${esc(t('ds.oc.'+o))}</span></button>`; }).join('')}</div></div></div>`; }
+function ddSnapHtml(){ const rows=ddSnapRows(), sec=Math.ceil(ddSecsNow()), p=Math.max(0,Math.min(1,ddSecsNow()/(game.timerMax||ddMax())));
+ return `<div class="dds-in"><header class="dds-head"><div class="dds-clk" data-ddring style="--ddp:${p.toFixed(3)}" role="timer" aria-label="${esc(t('board.secsLeft',{n:sec}))}"><b data-ddtimer dir="ltr">${sec}s</b></div><div class="dds-t"><h2>${esc(t('dd.snapTitle'))}</h2><p>${esc(ddSnapSub(rows.length))}</p></div></header><div class="dds-rows">${rows.map(ddSnapRowHtml).join('')}</div><button class="dds-back" data-act="ddSnapX">${esc(t('dd.snapBack'))}</button></div>`; }
+function ddSnapBlocked(){ return !!($('ppSheet')||document.querySelector('.big:not(.out):not(.clock),.stinger,.wshut')); }
+function ddSnapShow(){ if($('ddSnap')||!game||game.ddSnapOff||!ddLiveNow()||ddSnapBlocked()) return; const rows=ddSnapRows(); if(!rows.length) return;
+ const d=document.createElement('div'); d.id='ddSnap'; d.setAttribute('role','dialog'); d.setAttribute('aria-modal','true'); d.setAttribute('aria-label',t('dd.snapAria',{n:rows.length})); d.innerHTML=ddSnapHtml(); document.body.appendChild(d);
+ ddTick(); beep('whoosh'); buzzPhone(30); ddLive(t('dd.snapAria',{n:rows.length}),true); }
+function ddSnapClose(quiet){ const d=$('ddSnap'); if(!d) return; d.id=''; if(quiet||motionReduced()){ d.remove(); return; } d.classList.add('out'); setTimeout(()=>d.remove(),260); }
+function ddSnapAfter(){ const d=$('ddSnap'); if(!d) return; const n=ddSnapRows().length; const sub=d.querySelector('.dds-t p'); if(sub) sub.textContent=ddSnapSub(n);
+ if(!n){ const rows=d.querySelector('.dds-rows'); if(rows&&!rows.querySelector('.dds-row')) rows.innerHTML=`<p class="dds-empty">${esc(t('dd.snapAll'))}</p>`; setTimeout(()=>ddSnapClose(),900); } }
+LANE_ACTS.ddSnapX=()=>{ if(game){ game.ddSnapOff=true; saveGame(); } beep('tap'); ddSnapClose(); };
+LANE_ACTS.ddSnapPost=(el,v,id,e)=>{ if(e&&e.stopPropagation) e.stopPropagation(); if(!game||game.result||ddShutting||id==null) return; const o=String(v||'').toUpperCase(); if(!OUTCOMES.includes(o)) return; const s=game.sagas[id]; if(!s||s.call) return;
+ const gain=publishCall(id,o,'med'); dismissCoach('c3'); sfxCue('post');
+ const row=el.closest('.dds-row'); if(row){ row.classList.add('sent'); row.querySelector('.dds-c').innerHTML=`<div class="dds-done">${ocHtml(o)}<b>${esc(pName(s.player))}</b><span><bdi dir="ltr">👥 +${gain}</bdi></span></div>`;
+  setTimeout(()=>{ row.classList.add('gone'); setTimeout(()=>{ row.remove(); ddSnapAfter(); },motionReduced()?0:270); },motionReduced()?0:560); }
+ render(); bumpFollowers(); if(PP.id===id&&$('modalRoot').querySelector('.pp')) ppRender(id); };
+BACK.push(()=>{ if($('ddSnap')){ LANE_ACTS.ddSnapX(); return true; } return false; });
+/* zero hit: bass bang + red flash + TIME stamp on the board lane's "Window shut" slab (which runs finishWindow ≈0.9 s later) */
+function ddZeroHit(){ if(!game||DDX.zero===game) return; DDX.zero=game; ddHeartStop(); ddSnapClose(true); beep('reveal');
+ const stamp=()=>{ const w=document.querySelector('.wshut'); if(!w||w.classList.contains('ddz')) return; w.classList.add('ddz'); const slab=w.querySelector('.ws-slab'); if(slab) slab.insertAdjacentHTML('afterbegin',`<span class="ddz-time" aria-hidden="true">${esc(t('dd.time'))}</span>`); };
+ setTimeout(stamp,0); setTimeout(stamp,80); }
+onHook('ddtick',sec=>{ if(!game||game.day!==7||game.result) return;
+ if(sec<=0){ ddZeroHit(); return; }
+ if(!ddLiveNow()) return;
+ if(sec<=30&&!DDX.h) ddHeartTick();
+ if(sec<=15) ddSnapShow(); });
+onHook('rendered',sc=>{ if(sc!=='window'||!game||game.day!==7||game.result){ ddSnapClose(true); ddHeartStop(); if(!(game&&game.day===7&&!game.result)) document.documentElement.style.removeProperty('--ddp'); } });
 /* @@LANE JS:dd END */
 /* ---- QA: keep ads out of the way. AdSense anchor/overlay ads are position:fixed at the top or bottom edge; measure them and
    lift every bottom-pinned control (dock, End day, tab bar, consent, trophy pills) above a bottom anchor and push sticky/fixed
