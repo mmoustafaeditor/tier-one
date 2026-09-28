@@ -2086,7 +2086,7 @@ const CONFIG={
  CONTACTS:4,                                     // source contacts per day, days 1-6 (Career gear adds more)
  DD_SECONDS:60,                                  // Deadline-Day timer (seconds)
  DD_CONTACTS:3,                                  // Deadline-Day contacts (Power bank gear +1)
- TIERS:[385,260,160,70],                         // tier cut-offs T1..T4 (T5 >= 0, Clown < 0)                              // TESTING ONLY: lets the Daily Challenge be replayed. Set to false to make it one-go-a-day again.                 // your live URL — printed at the bottom of every share card
+ TIERS:[395,330,270,70],                         // tier cut-offs T1..T4 (T5 >= 0, Clown < 0)                              // TESTING ONLY: lets the Daily Challenge be replayed. Set to false to make it one-go-a-day again.                 // your live URL — printed at the bottom of every share card
  CONTACT_EMAIL:'hello@sembastudios.com',         // support + legal contact shown in Terms / Privacy / Contact
  JURISDICTION:'',                                // e.g. 'the State of Florida, USA' — used in the Terms. '' = generic wording
  LEGAL_EFFECTIVE:'September 25, 2026',          // effective date printed on Terms & Privacy — update when you edit them
@@ -4391,13 +4391,29 @@ const RIVALS=[ {key:'tabloid',handle:'@BackPageBants',ic:'🗞️',rel:0.30,dmin
 const CATCH_KEYS=['confirmed','sources','allegedly','barber','myman','scoop','trust','tier1'];
 const BADGE_KEYS=[['legend','👑'],['first','📝'],['clean','🧼'],['ddhero','⏱️'],['scoop','👑'],['tier1','🥇'],['fumble','💼',1],['ratio','🤡',1],['blocked','🚫',1],['barber','💈'],['wrong10','🧢',1],['flip','🔄',1]];
 const LEVEL_XP=[0,100,250,450,700,1000,1400];
-const EQUIP=[{key:'wifi',ic:'📶',cost:120,lvl:1},{key:'press',ic:'🎫',cost:150,lvl:1},{key:'chair',ic:'💺',cost:140,lvl:1},{key:'coffee',ic:'☕',cost:140,lvl:1},{key:'medical',ic:'🏥',cost:200,lvl:2},{key:'locker',ic:'🔑',cost:160,lvl:2},{key:'radar',ic:'📡',cost:180,lvl:2},{key:'lunch',ic:'🍽️',cost:220,lvl:2},{key:'phone2',ic:'📱',cost:250,lvl:3},{key:'bank',ic:'🔋',cost:260,lvl:3},{key:'mic',ic:'🎙️',cost:320,lvl:3},{key:'tick',ic:'☑️',cost:400,lvl:4},{key:'coat',ic:'🧥',cost:450,lvl:5},{key:'laptop',ic:'💻',cost:600,lvl:5}];
-const GEAR_REL={physio:['medical',.02],airport:['press',.02],agent:['lunch',.02],kitman:['locker',.02],barber:['chair',.02],leak:['coffee',.02]};
+const EQUIP=[{key:'wifi',ic:'📶',cost:120,lvl:1},{key:'radar',ic:'📡',cost:180,lvl:2},{key:'phone2',ic:'📱',cost:250,lvl:3},{key:'bank',ic:'🔋',cost:260,lvl:3},{key:'mic',ic:'🎙️',cost:320,lvl:3},{key:'tick',ic:'☑️',cost:400,lvl:4},{key:'coat',ic:'🧥',cost:450,lvl:5},{key:'laptop',ic:'💻',cost:600,lvl:5}];
+const GEAR_REL={}; // legacy (per-source +2% reliability gear, replaced by the Career source tree below)
+/* Career/Rooms source tree (see MATH_NOTES "Career source tree"). rel: 3 reliability levels per source ([price, career level]),
+   gains in MATH.REL_UP. open: elite sources open earlier, one day per step ([price, career level]). Old reliability gear
+   (medical/press/lunch/locker/chair/coffee) migrates to level 1 of that source's track (upState). Stored in career.up. */
+const SRC_TREE={physio:{rel:[[200,1],[450,3],[900,5]],open:[[300,3],[700,5]]},airport:{rel:[[200,1],[450,2],[900,5]],open:[[250,2],[600,5]]},
+ agent:{rel:[[150,1],[350,2],[700,4]]},kitman:{rel:[[150,1],[350,2],[700,4]]},barber:{rel:[[120,1],[280,1],[560,3]]},leak:{rel:[[120,1],[280,1],[560,3]]}};
+const OLD_REL_GEAR={medical:'physio',press:'airport',lunch:'agent',locker:'kitman',chair:'barber',coffee:'leak'};
+function upState(c){ c=c||C(); if(!c.up||typeof c.up!=='object') c.up={rel:{},open:{}}; const u=c.up; u.rel=u.rel||{}; u.open=u.open||{};
+ if(!u.mig){ u.mig=1; (c.equip||[]).forEach(k=>{ const s=OLD_REL_GEAR[k]; if(s) u.rel[s]=Math.max(1,u.rel[s]||0); }); } return u; }
+function relLvl(key,c){ return upState(c).rel[key]||0; }
+function openLvl(key,c){ return upState(c).open[key]||0; }
+function unlockDay(key,c){ return Math.max(1,(MATH.SRC_FROM[key]||1)-openLvl(key,c)); } // Career/Rooms: first day this source can be asked
+/* next step of a track: {track,key,step (0-based),price,lvl,max} or null when maxed */
+function treeNext(key,track,c){ const T=SRC_TREE[key]&&SRC_TREE[key][track]; if(!T) return null; const n=track==='rel'?relLvl(key,c):openLvl(key,c); if(n>=T.length) return null; return {track,key,step:n,price:T[n][0],lvl:T[n][1],max:T.length}; }
+function treeSteps(c){ let n=0, m=0; for(const k in SRC_TREE){ for(const tr of ['rel','open']){ const T=SRC_TREE[k][tr]; if(!T) continue; m+=T.length; n+=Math.min(T.length,tr==='rel'?relLvl(k,c):openLvl(k,c)); } } return {n,m}; }
+function gearProgress(c){ const ts=treeSteps(c); return {cur:EQUIP.filter(e=>(c.equip||[]).includes(e.key)).length+ts.n,max:EQUIP.length+ts.m}; }
+function buyTree(key,track,c){ c=c||C(); const nx=treeNext(key,track,c); if(!nx||c.credits<nx.price||levelInfo(c.xp).n<nx.lvl) return false; c.credits-=nx.price; const u=upState(c); u[track][key]=nx.step+1; return nx; }
 /* ─ lane boundary: engine | career ─ */
-function careerGoals(c){ return [{k:'lvl',cur:Math.min(levelInfo(c.xp).n,7),max:7},{k:'t1',cur:Math.min(c.t1||0,3),max:3},{k:'gear',cur:EQUIP.filter(e=>c.equip.includes(e.key)).length,max:EQUIP.length},{k:'fans',cur:Math.min(c.followers||0,100000),max:100000}]; }
+function careerGoals(c){ return [{k:'lvl',cur:Math.min(levelInfo(c.xp).n,7),max:7},{k:'t1',cur:Math.min(c.t1||0,3),max:3},{k:'gear',cur:gearProgress(c).cur,max:gearProgress(c).max},{k:'fans',cur:Math.min(c.followers||0,100000),max:100000}]; }
 /* ─ lane boundary: career | engine ─ */
 function gearOwned(k){ return isCareer()&&C().equip.includes(k); }
-const BOOSTS=[{key:'burner',ic:'☎️',base:200,lvl:1,get cost(){ return boostCost(this); }},{key:'tipoff',ic:'💡',base:500,lvl:2,get cost(){ return boostCost(this); }},{key:'bribe',ic:'💸',base:800,lvl:3,get cost(){ return boostCost(this); }}];
+const BOOSTS=[{key:'burner',ic:'☎️',base:450,lvl:1,get cost(){ return boostCost(this); }},{key:'tipoff',ic:'💡',base:1100,lvl:2,get cost(){ return boostCost(this); }},{key:'bribe',ic:'💸',base:1800,lvl:3,get cost(){ return boostCost(this); }}];
 function boostCost(b){ const n=(game&&!game.result&&game.mode==='career'&&game.boostUses&&game.boostUses[b.key])||0; return Math.round(b.base*Math.pow(MATH.BOOST_STEP,n)); } // price doubles with every use of the same boost in a window
 const SKINS=[{key:'default',cost:0},{key:'stadium',cost:100},{key:'tabloid',cost:80},{key:'broadsheet',cost:80},{key:'neon',cost:120}];
 const PTS={low:[10,-5],med:[20,-12],high:[40,-45]};
@@ -4414,11 +4430,12 @@ const MATH={
  TW_M:{DONE:{HIJACK:.5,OFF:.5},OFF:{DONE:.6,HIJACK:.4},HIJACK:{DONE:.5,OFF:.5}},
  TW_KINDS:['meeting','statement','silence','scramble'],
  WARN:0, EV_P:.5, EV_RH:.5, RIV_P:.6,
- SRC_FROM:{physio:6,airport:4,agent:1,kitman:1,barber:1,leak:1}, HUNCH:.55,
+ SRC_FROM:{physio:6,airport:4,agent:1,kitman:1,barber:1,leak:1}, HUNCH:.55, CAREER_CONTACTS:3,
+ REL_UP:{physio:[.05,.10,.15],airport:[.06,.12,.20],agent:[.06,.13,.25],kitman:[.06,.13,.25],barber:[.07,.15,.32],leak:[.07,.15,.32]}, REL_CAP:.95,
  EARLY:4, EXCL:20, EX_RULE:'first', UT_FRAC:.5, UT_WRONG:10, TW_BONUS:10, KIT_SIDE:.5, TW_UT_FRAC:.5,
  CONTACTS:CONFIG.CONTACTS, DD_CONTACTS:CONFIG.DD_CONTACTS, DD_TIMER:CONFIG.DD_SECONDS, FMULT:[1,1,1,1], REP_REL:0, TICK:0,
  WARN_GEAR:{radar:.2,laptop:.1}, LEAD_GEAR:'laptop', LEAD_DAYS:2, WIFI_DAYS:[6,6], PHONE_DAYS:[5,5], EARLY_GEAR:{}, PAID_REL:1,
- PAY:{base:25,perPt:.3,perEx:15,tier:{1:80,2:40,3:20,4:5},repAt:70,repMult:1.25},
+ PAY:{base:25,perPt:.3,perEx:15,tier:{1:80,2:40,3:20,4:5},repAt:70,repMult:1.25,mult:2.25},
  TIERS:CONFIG.TIERS, BARS:[.55,.75], BOOST_STEP:2
 };
 function wpick(r,w){ const ks=Object.keys(w); let x=r.next()*ks.reduce((a,k)=>a+w[k],0); for(const k of ks){ x-=w[k]; if(x<=0) return k; } return ks[ks.length-1]; }
@@ -4427,9 +4444,12 @@ function barsOf(rel){ return rel>=MATH.BARS[1]?3:rel>=MATH.BARS[0]?2:1; }
 function truthAt(s,d){ return s.tw&&d>=s.tw?s.truth:(s.pre||s.truth); }
 function twistSeen(s,d){ return !!(s&&s.tw&&(d==null?game.day:d)>=s.tw); }
 function clueStale(s,c,d){ d=d==null?game.day:d; return !!(s.tw&&d>=s.tw&&c.day<s.tw); }
-function srcFrom(key){ const g=MATH.EARLY_GEAR&&MATH.EARLY_GEAR[key]; return Math.max(1,(MATH.SRC_FROM[key]||1)-(g&&isCareer()&&C().equip.includes(g)?1:0)); }
-function srcOpen(key,d){ return !!SOURCES[key]; } // Option B: every source is askable from day 1 (see srcRel for the early hunch)
-function srcHunch(key,d){ return (d==null?game.day:d)<srcFrom(key); }
+/* Mode split: Daily/Practice = Option B (every source askable from day 1; physio/airport only give a hunch before SRC_FROM).
+   Career/Rooms = gated (physio/airport can't be asked before their day; the source tree opens them earlier; no hunches). */
+function gatedMode(){ return isCareer(); }
+function srcFrom(key){ return gatedMode()?unlockDay(key):Math.max(1,MATH.SRC_FROM[key]||1); }
+function srcOpen(key,d){ if(!SOURCES[key]) return false; return gatedMode()?(d==null?game.day:d)>=srcFrom(key):true; }
+function srcHunch(key,d){ return !gatedMode()&&(d==null?game.day:d)<srcFrom(key); }
 function askedFresh(s,key){ return s.clues.some(c=>c.source===key&&!clueStale(s,c)); }
 /* Go louder: a call can be escalated (same outcome, higher confidence). c.day/c.conf are the scoring day/confidence (the
    escalation's); c.escFrom={conf,day} keeps the ORIGINAL post, which decides the free post-twist update and the twist-tracker bonus. */
@@ -4481,11 +4501,11 @@ function ctxOf(s){ return {p:pName(s.player),c:cName(s.club),d:cName(s.dest),dc:
 function isCareer(){ return game&&game.mode==='career'; }
 /* rewarded 'watch ad for +1 contact': solo Career only (not rooms, Daily or Practice), never on Deadline Day, once a day, only at 0 contacts */
 function adActionOk(){ return !!game&&game.mode==='career'&&!game.room&&game.day<7&&!game.result&&game.actions===0&&!game.adActionUsed&&CONFIG.REWARDED_ADS!=='off'; }
-function baseActions(d){ d=d||(game&&game.day)||1; if(d>=7) return ddActions(); if(!isCareer()) return MATH.CONTACTS; const e=C().equip; let a=MATH.CONTACTS; if(e.includes('wifi')&&d>=MATH.WIFI_DAYS[0]&&d<=MATH.WIFI_DAYS[1]) a++; if(e.includes('phone2')&&d>=MATH.PHONE_DAYS[0]&&d<=MATH.PHONE_DAYS[1]) a++; return a; }
+function baseActions(d){ d=d||(game&&game.day)||1; if(d>=7) return ddActions(); if(!isCareer()) return MATH.CONTACTS; const e=C().equip; let a=MATH.CAREER_CONTACTS||MATH.CONTACTS; if(e.includes('wifi')&&d>=MATH.WIFI_DAYS[0]&&d<=MATH.WIFI_DAYS[1]) a++; if(e.includes('phone2')&&d>=MATH.PHONE_DAYS[0]&&d<=MATH.PHONE_DAYS[1]) a++; return a; }
 function ddActions(){ return MATH.DD_CONTACTS+(gearOwned('bank')?1:0); }
 function warnChance(mode){ return Math.min(1,MATH.WARN+(mode==='career'&&MATH.WARN_GEAR?Object.keys(MATH.WARN_GEAR).reduce((a,k)=>a+(C().equip.includes(k)?MATH.WARN_GEAR[k]:0),0):0)); }
 function warnLead(mode){ return mode==='career'&&MATH.LEAD_GEAR&&C().equip.includes(MATH.LEAD_GEAR)?(MATH.LEAD_DAYS||2):1; }
-function relAdj(base,key){ if(!isCareer()) return base; const g=GEAR_REL[key]; const bonus=g&&C().equip.includes(g[0])?g[1]:0; return Math.min(0.97,Math.max(0.1,base+bonus+(C().rep-50)*MATH.REP_REL)); }
+function relAdj(base,key){ if(!isCareer()) return base; const n=relLvl(key), up=MATH.REL_UP&&MATH.REL_UP[key]; const bonus=n&&up?up[Math.min(n,up.length)-1]||0:0; return Math.min(MATH.REL_CAP||0.97,Math.max(0.1,base+bonus+(C().rep-50)*MATH.REP_REL)); }
 function buildBoard(seed,n,wc,wl){
  const rng=new RNG(seed);
  const picks=rng.shuffle(PLAYERS.slice()).slice(0,n||CONFIG.SAGAS);
@@ -4721,7 +4741,7 @@ function resolveWindow(){
  }else if(game.mode==='career'){
   const c=C(); const before=levelInfo(c.xp); c.followers=game.followers;
   res.xpGain=Math.max(0,multipliedTotal)+20; c.xp+=res.xpGain;
-  const PY=MATH.PAY; const payBonus=exclusives*PY.perEx+(PY.tier[tier.n]||0); res.payBonus=payBonus; res.creditGain=Math.round((PY.base+Math.max(0,multipliedTotal)*PY.perPt+payBonus)*(c.rep>=PY.repAt?PY.repMult:1)); c.credits+=res.creditGain;
+  const PY=MATH.PAY; const payBonus=exclusives*PY.perEx+(PY.tier[tier.n]||0); res.payBonus=payBonus; res.creditGain=Math.round((PY.base+Math.max(0,multipliedTotal)*PY.perPt+payBonus)*(c.rep>=PY.repAt?PY.repMult:1)*(PY.mult||1)); c.credits+=res.creditGain;
   res.repDelta=corrects*3-wrongs*4; c.rep=Math.max(0,Math.min(100,c.rep+res.repDelta));
   c.windows++; c.exclusives+=exclusives; c.wrong+=wrongs; c.correct+=corrects; c.bestTier=Math.min(c.bestTier,tier.n);
   c.history.unshift({when:todayKey(),score:multipliedTotal,tier:tier.n,row:per.map(x=>x.emoji).join('')}); c.history=c.history.slice(0,20);
@@ -5526,18 +5546,20 @@ function fallbackCopy(tx,done){ const ta=document.createElement('textarea'); ta.
 /* math lane: UI data contract (UX_SPEC §10). Pure reads of game state; never reveal hidden truth (s.truth/s.pre/s.tw before it lands). */
 /* Option B: every source is open from day 1. Elite sources (physio, airport) only give a hunch (MATH.HUNCH) before their day
    (srcFrom/srcSharpDay), then their full reliability. Sources are sticky per era, so an early hunch is locked in until a twist. */
-function srcRel(key,day){ const src=SOURCES[key]; if(!src) return 0; const full=relAdj(src.rel,key); day=day==null?(game?game.day:1):day; return day<srcFrom(key)?Math.min(full,MATH.HUNCH):full; }
-function srcOpenDay(key){ return 1; }        // everything is askable from day 1
+/* Career/Rooms (gatedMode): physio/airport can't be asked before srcFrom (source tree opens them earlier), no hunches; srcOpenDay = srcFrom. */
+function srcRel(key,day){ const src=SOURCES[key]; if(!src) return 0; const full=relAdj(src.rel,key); day=day==null?(game?game.day:1):day; return !gatedMode()&&day<srcFrom(key)?Math.min(full,MATH.HUNCH):full; }
+function srcOpenDay(key){ return gatedMode()?srcFrom(key):1; }        // Daily/Practice: everything is askable from day 1
 function srcSharpDay(key){ return srcFrom(key); } // first day at full reliability (1 = always)
-function whatSharpensTomorrow(day){ day=day==null?(game?game.day:1):day; if(day>=7) return []; return Object.keys(SOURCES).filter(k=>srcFrom(k)===day+1); }
-function whatOpensTomorrow(day){ return whatSharpensTomorrow(day); } // legacy name: sources that SHARPEN tomorrow (board.tmOpen reads "… sharpens tomorrow")
+function whatSharpensTomorrow(day){ day=day==null?(game?game.day:1):day; if(day>=7) return []; return Object.keys(SOURCES).filter(k=>srcFrom(k)>1&&srcFrom(k)===day+1); }
+function whatOpensTomorrow(day){ return whatSharpensTomorrow(day); } // Daily: sources that SHARPEN tomorrow; Career/Rooms: sources that OPEN tomorrow (board.tmOpen is mode-aware)
 function sourceState(sagaId,key){
  const s=game&&game.sagas&&game.sagas[sagaId], src=SOURCES[key]; if(!s||!src) return null;
  const day=game.day, rel=srcRel(key,day), bars=barsOf(rel), opensDay=srcFrom(key), cost=src.cost||1;
- const sharpDay=opensDay, hunch=day<sharpDay;
- const o={state:'open',opensDay:1,sharpDay,hunch,bars,rel,sharper:day>1&&sharpDay===day,openedToday:false,atMax:false,cost,reasonKey:hunch?'math.reason.hunch':null,label:hunch?t('math.hunchUntil',{d:sharpDay}):null,gearKey:null,clue:null,reopened:false,short:game.actions<cost};
+ const G=gatedMode(), sharpDay=opensDay, hunch=!G&&day<sharpDay;
+ const o={state:'open',opensDay:G?opensDay:1,sharpDay,hunch,bars,rel,sharper:!G&&day>1&&sharpDay===day,openedToday:G&&day>1&&opensDay===day,atMax:false,cost,reasonKey:hunch?'math.reason.hunch':null,label:hunch?t('math.hunchUntil',{d:sharpDay}):null,gearKey:null,clue:null,reopened:false,short:game.actions<cost};
  const fresh=[...s.clues].reverse().find(c=>c.source===key&&!clueStale(s,c)); const old=[...s.clues].reverse().find(c=>c.source===key&&clueStale(s,c));
  if(isCareer()&&src.lock&&!C().equip.includes(src.lock)){ o.state='gear'; o.gearKey=src.lock; o.reasonKey='math.reason.gear'; return o; }
+ if(G&&!srcOpen(key)){ o.state='later'; o.reasonKey='math.reason.'+key; o.label=t('math.opens',{d:opensDay}); return o; }
  if(fresh){ o.state='asked'; o.clue=fresh; o.reasonKey='math.reason.asked'; return o; }
  if(old){ o.reopened=true; o.clue=old; }
  if(o.short){ o.state='short'; o.reasonKey='math.reason.short'; return o; }
@@ -5578,7 +5600,7 @@ function twistsTotal(){ return game?Math.min(MATH.TWISTS,game.sagas.filter(s=>s.
 /* one-line effect per gear with before→after numbers (i18n key + vars), for Career › Shop */
 function gearEffect(key){ const s=k=>Math.round(SOURCES[k].rel*100), g=k=>{ const e=Object.keys(GEAR_REL).find(x=>GEAR_REL[x][0]===key); return e; };
  const e=g(); if(e) return {k:'math.gear.rel',v:{src:t('src.'+e+'.name'),a:s(e),b:Math.round((SOURCES[e].rel+GEAR_REL[e][1])*100)}};
- if(key==='wifi') return {k:'math.gear.wifi',v:{a:MATH.CONTACTS,b:MATH.CONTACTS+1}}; if(key==='phone2') return {k:'math.gear.phone2',v:{a:MATH.CONTACTS,b:MATH.CONTACTS+1}};
+ const CC=MATH.CAREER_CONTACTS||MATH.CONTACTS; if(key==='wifi') return {k:'math.gear.wifi',v:{a:CC,b:CC+1}}; if(key==='phone2') return {k:'math.gear.phone2',v:{a:CC,b:CC+1}};
  if(key==='bank') return {k:'math.gear.bank',v:{a:MATH.DD_CONTACTS,b:MATH.DD_CONTACTS+1}}; if(key==='radar') return {k:'math.gear.radar',v:{a:0,b:Math.round(MATH.WARN_GEAR.radar*100)}};
  if(key==='laptop') return {k:'math.gear.laptop',v:{a:1,b:MATH.LEAD_DAYS}}; return {k:'equip.'+key+'.desc',v:{}}; }
 /* Boost prices double with every use of the same boost in a window (anti-spam; see boostCost). Counts a use only when runBoost
@@ -6315,7 +6337,7 @@ function achProg(a){ const S=save.stats||{}, B=S.best||{}, c=save.career||{}; le
   case 'contacts_book': cur=B.srcs; best=true; break;
   case 'barber': cur=S.barberAsks; break;
   case 'lvl3': case 'lvl5': case 'lvl7': cur=achLevel(); break;
-  case 'gear_all': cur=EQUIP.filter(e=>(c.equip||[]).includes(e.key)).length; break;
+  case 'gear_all': cur=gearProgress(c).cur; break;
   case 'fans100k': cur=c.followers||0; break;
   case 'trusted': cur=c.rep||0; break;
   case 'legend': cur=achTry(()=>careerGoals(c).filter(g=>g.cur>=g.max).length,0); break;
@@ -6323,7 +6345,7 @@ function achProg(a){ const S=save.stats||{}, B=S.best||{}, c=save.career||{}; le
   case 'ratio': cur=B.wrong; best=true; break;
   case 'wrong10': cur=S.wrongs; break;
   default: return null; }
- const tgt=a.id==='gear_all'?EQUIP.length:a.t; return {cur:Math.max(0,Math.min(tgt,+cur||0)),tgt,best}; }
+ const tgt=a.id==='gear_all'?gearProgress(c).max:a.t; return {cur:Math.max(0,Math.min(tgt,+cur||0)),tgt,best}; }
 function achDaily(){ return game&&game.mode==='daily'?(game.num||achTry(()=>dailyNumber(),1)):null; }
 function achCtx(extra){ const m=achMode(); const c={m:m||'practice'}; if(m==='daily') c.n=achDaily(); else if(m==='career') c.n=(save.career.windows||0); else if(m==='rooms'){ c.r=game.room; c.n=game.season||(C().windows||0); } return Object.assign(c,extra||{}); }
 function achReward(a){ if(a.rw&&a.rw.catch){ achCareers().forEach(c=>{ c.catch=c.catch||['confirmed']; if(!c.catch.includes(a.rw.catch)) c.catch.push(a.rw.catch); }); } }
