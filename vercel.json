@@ -4,6 +4,18 @@
   ],
   "headers": [
     {
+      "source": "/the-gaffer/(index.html|version.json)?",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/the-gaffer",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
       "source": "/downloads/TheGaffer.apk",
       "headers": [
         { "key": "Content-Type", "value": "application/vnd.android.package-archive" },

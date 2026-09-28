@@ -5,6 +5,7 @@ import type { Prefs } from '../sim/prefs';
 import { DEFAULT_BALANCE, INJURY_MULTS, MULTS, balanceOf } from '../sim/balance';
 import { AppBar } from './parts';
 
+import { BUILD } from '../update';
 declare const __APP_VERSION__: string;
 
 const LANGS: [UiLang, string][] = [['en', 'English'], ['ar', 'العربية'], ['es', 'Español'], ['fr', 'Français']];
@@ -63,7 +64,7 @@ export function Settings({ prefs, career, t, langs, onPrefs, onBalance, onBack, 
         <button className="cell" onClick={onPrivacy}><span className="cmain"><b>{t.privacy}</b><span>{t.privacySub}</span></span></button>
       </div>
       <div className="sechead"><span className="over">{t.aboutT}</span></div>
-      <p className="muted" style={{ margin: 0 }}>The Gaffer · {t.versionT(__APP_VERSION__)}<br />{t.madeBy}</p>
+      <p className="muted" style={{ margin: 0 }}>The Gaffer · {t.versionT(__APP_VERSION__)} · build {BUILD}<br />{t.madeBy}</p>
     </>
   );
 }

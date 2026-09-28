@@ -42,6 +42,8 @@ import { aftermath, type Aftermath } from './sim/aftermath';
 import { staffPrep } from './sim/staff';
 import { checkPurchase, loadAds } from './monet';
 import { avgRating } from './sim/ratings';
+import { UpdateBanner } from './ui/UpdateBanner';
+import { backupToShell } from './update';
 import gearIcon from '../../../../design/assets/icons/ui/gear.svg?raw';
 import homeIcon from '../../../../design/assets/icons/ui/home.svg?raw';
 import friendsIcon from '../../../../design/assets/icons/ui/friends.svg?raw';
@@ -192,6 +194,7 @@ export function App() {
     setCareer(c);
     setSaved({ world: w, career: c });
     if (!(await store(w, c))) setToast(t.saveFailed);
+    else backupToShell();
   };
 
   // Live: the match is stored at kick-off (and at half-time and after changes), and only counted at full time.
@@ -780,6 +783,7 @@ export function App() {
       )}
       {ft && world && !player && !summary && <FullTime a={ft} world={world} lang={lang} t={t} onClose={() => setFt(null)} />}
       {toast && <div className="g-toast toast" role="status">{toast}</div>}
+      {screen.id !== 'live' && <UpdateBanner t={t} />}
 
       {summary && world && career && myClub && myLeague && (
         <>

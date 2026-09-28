@@ -210,6 +210,11 @@ export const NEW_AR: NewStrings = {
   gradLine: (apps: number, goals: number) => `${apps} ماتش · ${goals} جون الموسم ده`,
   trophyKinds: { league: 'الدوري', cup: 'كاس', continental: 'بطولة قارية', promotion: 'صعود' },
 
+  updWeb: (v: string) => `نسخة ${v} من The Gaffer جاهزة: تصليحات وحاجات جديدة.`,
+  updWebBtn: 'حدّث دلوقتي',
+  updApk: (v: string) => `تحديث التطبيق ${v} نزل. نزّله عشان التحديثات توصلك.`,
+  updApkBtn: 'نزّله',
+  updLater: 'بعدين',
   supportT: 'ادعم The Gaffer',
   supportBody: 'باكدج الداعم مرة واحدة: كل ألوان النادي، علامة داعم على كارت المدرب، ومن غير إعلانات. اللعبة نفسها كاملة للكل.',
   supportBtn: 'هات باكدج الداعم',

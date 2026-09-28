@@ -1,9 +1,11 @@
+// Written by games/the-gaffer/scripts/publish-apk.mjs when CI publishes an APK. Don't edit by hand.
+// Installed apps compare versionCode with their own and offer the download when this one is higher.
 const LATEST = {
-  version: '0.11.0',
-  versionCode: 4,
-  downloadUrl: 'https://sembagames.app/downloads/TheGaffer.apk',
-  webUrl: 'https://sembagames.app/the-gaffer',
-  changelog: 'The Gaffer branding, server-ready web deployment, direct APK updates, and Android update checks.',
+  "version": "0.12.0",
+  "versionCode": 29843669,
+  "downloadUrl": "https://www.sembagames.app/downloads/TheGaffer.apk",
+  "webUrl": "https://www.sembagames.app/the-gaffer",
+  "changelog": "Manager overhaul: staff room, transfer windows, loans, ratings, new navigation, live updates."
 };
 
 export default function handler(req, res) {

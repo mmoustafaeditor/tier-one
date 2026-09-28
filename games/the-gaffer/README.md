@@ -12,7 +12,7 @@
 
 **Canonical product name:** The Gaffer.
 
-**v0.12.0: the manager overhaul.** Web 0.12.0; the Android APK in `downloads/` is still 0.11.0 until it's rebuilt from the `build-the-gaffer` workflow.
+**v0.12.0: the manager overhaul.** Web and Android 0.12.0 (APK versionCode 29843669). Updates reach the site and installed apps by themselves: see Live updates below.
 
 - **Five tabs:** Home · Squad · Match · Transfers · Club, one door per feature (settings behind the gear in Club).
 - **Home command center:** "Today: n things need you", each with one button; next match, form, board and fans, headlines.
@@ -32,6 +32,28 @@
 - Android app id: `com.sembagames.thegaffer`
 
 Core career data stays on the device.
+
+## Live updates
+
+Push a change to The Gaffer on `main` and it reaches everyone without anyone rebuilding by hand:
+
+1. **CI** (`.github/workflows/build-the-gaffer.yml`) builds the web game and the APK, commits the fresh web build
+   (`/the-gaffer/index.html` + `version.json`) to `main`, and asks Vercel to deploy.
+2. **The website** shows players who have the game open a banner, "The Gaffer x.y is ready · Update now".
+   It checks `/the-gaffer/version.json` on start, every 10 minutes and when the tab comes back.
+3. **The Android app** downloads the new web build itself (checked against the SHA-256 in `version.json`), shows the same
+   banner, and uses the new build from then on. It plays offline from its bundled copy, and keeps a copy of the save
+   outside the page. If a downloaded build ever fails to start, it goes back to the bundled one.
+4. **A new APK** is only published when `games/the-gaffer/android/` changed (or when you run the workflow with
+   "Also publish a new APK"). Installed apps then show "App update x.y is out · Download".
+
+Every build has a number (minutes since 1970). It's the web build number, the APK versionCode and what the apps compare,
+so nobody bumps versions by hand; `web/package.json` holds the name shown to players (0.12.0).
+
+**One-time setup (mmoustafaeditor):** Vercel only deploys commits made by members of the Vercel team, so the bot's
+publish commit needs a deploy hook. Vercel › tier-one › Settings › Git › Deploy Hooks › create one for `main`, then
+GitHub › Settings › Secrets and variables › Actions › New secret `VERCEL_DEPLOY_HOOK` = that URL. Without it the site
+catches up on mmoustafaeditor's next push.
 
 ## Source and builds
 

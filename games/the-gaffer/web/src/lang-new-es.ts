@@ -212,6 +212,11 @@ export const NEW_ES: NewStrings = {
   gradLine: (apps: number, goals: number) => `${apps} PJ · ${goals} goles esta temporada`,
   trophyKinds: { league: 'Liga', cup: 'Copa', continental: 'Copa continental', promotion: 'Ascenso' },
 
+  updWeb: (v: string) => `The Gaffer ${v} está listo: arreglos y novedades.`,
+  updWebBtn: 'Actualizar',
+  updApk: (v: string) => `Ya está la versión ${v} de la app. Instálala para seguir recibiendo novedades.`,
+  updApkBtn: 'Descargar',
+  updLater: 'Luego',
   supportT: 'Apoya a The Gaffer',
   supportBody: 'Un pack de Socio de pago único: todos los estilos de club, insignia de Socio en tu tarjeta y sin anuncios. El juego sigue completo para todos.',
   supportBtn: 'Conseguir el pack de Socio',

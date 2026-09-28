@@ -17,6 +17,15 @@ together with your change.
 
 ---
 
+## 2026-09-28 · saifsaber · The Gaffer: new APK and live updates for the site and the app
+- **What changed:** New APK (0.12.0, versionCode 29843669, same signing key, installs over 0.11). Live updates:
+  - **Build numbers:** every web build gets one (minutes since 1970) plus `/the-gaffer/version.json`. The APK versionCode is that number, so versions never need bumping by hand.
+  - **Website:** the game shows "Update now" when a newer build is live. Game page and `version.json` are served with no cache.
+  - **Android app:** a new `WebUpdater` replaces the 6-hourly `UpdateChecker`. It downloads new web builds in the background (size + SHA-256 checked), shows the same banner in the game (EN/AR/ES/FR), falls back to the bundled build if a download ever fails to start, keeps a copy of the save outside the page, and shows "Download" when a new APK is out.
+  - **Workflow:** on every push to `main` it builds web + APK, commits the web build back with `[skip ci]` (plus the APK and `api/the-gaffer/latest.js` when `android/` changed, or on request), then triggers Vercel through a deploy hook. It checks the APK's signature, versionCode and bundled page.
+- **Files:** `.github/workflows/build-the-gaffer.yml`, `games/the-gaffer/android/app/build.gradle`, `…/MainActivity.java`, `…/WebUpdater.java` (new), `…/UpdateChecker.java` (removed), `games/the-gaffer/scripts/publish-apk.mjs` (new), `games/the-gaffer/web/{vite.config.ts,package.json,tsconfig.json}`, `web/src/update.ts`, `web/src/ui/UpdateBanner.tsx` (new), `web/src/{App,main}.tsx`, `lang-new*.ts`, `styles/gaffer.css`, `the-gaffer/{index.html,version.json}`, `games/the-gaffer/build/*`, `downloads/TheGaffer.apk`, `api/the-gaffer/latest.js`, `vercel.json`, `games/the-gaffer/README.md`, `CLAUDE.md`
+- **Heads-up for the team:** mmoustafaeditor: add the `VERCEL_DEPLOY_HOOK` secret (steps in `games/the-gaffer/README.md` › Live updates), or bot commits won't go live. Install the new APK once from sembagames.app/downloads/TheGaffer.apk after the merge; later updates arrive inside the app.
+
 ## 2026-09-28 · saifsaber · The Gaffer 0.12.0: manager overhaul (staff room, transfer windows, loans, ratings, new navigation)
 - **What changed:** Built from saifsaber's decisions on the product audit (https://claude.ai/artifact/S5oRNcQG4emVv2RxLxik2n).
   - **Navigation:** five tabs, Home · Squad · Match · Transfers · Club; settings sit behind the gear in Club; one way into each screen.

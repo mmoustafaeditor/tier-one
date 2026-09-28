@@ -21,13 +21,16 @@ import androidx.core.content.FileProvider;
 import java.io.File;
 import java.io.FileOutputStream;
 
-// The Gaffer: the whole game is assets/index.html (built by games/the-gaffer/web) in a WebView, fully offline.
+// The Gaffer: the whole game is one web page in a WebView. It plays offline from the copy bundled in the APK
+// (assets/index.html); WebUpdater keeps it up to date with the build published on sembagames.app.
 // The page talks to Android through window.GafferAndroid (sharing images, save files and text, which a WebView
-// can't download on its own) and asks the page about the back button through window.__gafferBack().
+// can't download on its own; live updates; a copy of the save) and asks the page about the back button through
+// window.__gafferBack().
 public class MainActivity extends Activity {
     private static final int PICK_FILE = 7;
     private WebView web;
     private ValueCallback<Uri[]> pending;
+    private WebUpdater updater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +49,7 @@ public class MainActivity extends Activity {
         s.setAllowFileAccess(true);
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setTextZoom(100);
+        updater = new WebUpdater(this, web);
         web.addJavascriptInterface(new Bridge(), "GafferAndroid");
         web.setWebChromeClient(new WebChromeClient() {
             // <input type="file">: coach photo, save import, world import.
@@ -79,7 +83,7 @@ public class MainActivity extends Activity {
         if (savedInstanceState != null) {
             web.restoreState(savedInstanceState);
         } else {
-            web.loadUrl("file:///android_asset/index.html");
+            web.loadUrl(updater.startUrl());
         }
     }
 
@@ -115,6 +119,15 @@ public class MainActivity extends Activity {
             }
         }
 
+        // Live updates and the save copy (see WebUpdater and web/src/update.ts).
+        @JavascriptInterface public void booted(int build) { updater.booted(build); }
+        @JavascriptInterface public String updateState() { return updater.updateState(); }
+        @JavascriptInterface public void applyUpdate() { updater.applyUpdate(); }
+        @JavascriptInterface public void openApkUpdate() { updater.openApkUpdate(); }
+        @JavascriptInterface public void backupSave(String json) { updater.backupSave(json); }
+        @JavascriptInterface public String restoreSave() { return updater.restoreSave(); }
+        @JavascriptInterface public int shellVersion() { return WebUpdater.SHELL; }
+
         @JavascriptInterface
         public boolean shareText(String text) {
             Intent send = new Intent(Intent.ACTION_SEND);
@@ -146,6 +159,6 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
-        new UpdateChecker(this, this).checkForUpdates();
+        updater.check();
     }
 }

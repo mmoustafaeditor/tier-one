@@ -434,3 +434,12 @@ select.g-input { width: 100%; box-sizing: border-box; }
   .dock { max-width: 1080px; }
   .sheet { max-width: 560px; }
 }
+
+/* Live update banner: sits at the top, under the safe area, clear of the tab bar and the match dock. */
+.g-update { position: fixed; z-index: 60; top: calc(8px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%);
+  width: calc(100% - 2 * var(--gutter)); max-width: 520px; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2);
+  padding: var(--s2) var(--s3); border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line)); border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--panel) 96%, transparent); box-shadow: var(--cta-glow); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.g-update-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+.g-update-text { flex: 1 1 180px; font: 600 var(--fs-sm)/1.35 var(--body); }
+.g-update .btn { min-height: 40px; }

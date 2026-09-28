@@ -226,6 +226,11 @@ export const NEW_EN = {
   gradLine: (apps: number, goals: number) => `${apps} apps · ${goals} goals this season`,
   trophyKinds: { league: 'League title', cup: 'Cup', continental: 'Continental cup', promotion: 'Promotion' } as Record<string, string>,
 
+  updWeb: (v: string) => `The Gaffer ${v} is ready: new fixes and features.`,
+  updWebBtn: 'Update now',
+  updApk: (v: string) => `App update ${v} is out. Install it to keep getting updates.`,
+  updApkBtn: 'Download',
+  updLater: 'Later',
   // Support and looks
   supportT: 'Support The Gaffer',
   supportBody: 'A one-off Supporter pack: every club look, a Supporter badge on your coach card, and no ads. The game itself stays complete for everyone.',

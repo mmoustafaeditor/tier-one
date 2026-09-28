@@ -212,6 +212,11 @@ export const NEW_FR: NewStrings = {
   gradLine: (apps: number, goals: number) => `${apps} matchs · ${goals} buts cette saison`,
   trophyKinds: { league: 'Championnat', cup: 'Coupe', continental: 'Coupe continentale', promotion: 'Montée' },
 
+  updWeb: (v: string) => `The Gaffer ${v} est prêt : correctifs et nouveautés.`,
+  updWebBtn: 'Mettre à jour',
+  updApk: (v: string) => `La version ${v} de l’app est sortie. Installez-la pour continuer à recevoir les mises à jour.`,
+  updApkBtn: 'Télécharger',
+  updLater: 'Plus tard',
   supportT: 'Soutenir The Gaffer',
   supportBody: 'Un pack Supporter en une fois : tous les styles de club, un badge Supporter sur votre carte et pas de pubs. Le jeu reste complet pour tout le monde.',
   supportBtn: 'Obtenir le pack Supporter',
