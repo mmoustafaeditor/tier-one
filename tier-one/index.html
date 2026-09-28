@@ -2054,6 +2054,10 @@ html[lang="ar"] .rsx .rs2chip{ letter-spacing:0; font-size:16px; }
 html[lang="ar"] .rs2draft{ letter-spacing:0; font-size:11.5px; }
 .tag.rs2dchip{ background:color-mix(in srgb,var(--ex) 18%,var(--panel2)); color:var(--text); }
 .big.compose .quirk .rs2dt{ color:var(--ex); }
+/* twist count under the header stats + TWIST tag on twisted scoreboard rows */
+.rsx .rhero .rs2tw{ margin:8px 0 0; font:700 var(--fs-sm)/1.3 var(--body); color:var(--text); }
+.rsx .srow .sn .rs2twt{ display:inline-flex; align-items:center; gap:2px; vertical-align:middle; margin-inline-end:6px; height:16px; padding:0 5px; border-radius:var(--r-xs); font:800 9.5px/1 var(--body); letter-spacing:.06em; text-transform:var(--caps); color:var(--twist); background:color-mix(in srgb,var(--twist) 14%,transparent); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--twist) 55%,transparent); white-space:nowrap; }
+html[lang="ar"] .rsx .srow .sn .rs2twt{ letter-spacing:0; font-size:10.5px; }
 /* @@LANE CSS:results2 END */
 /* @@LANE CSS:onb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* onb lane: tutorial tier beat + How to play (loop first, details collapsed) */
@@ -2102,7 +2106,8 @@ html[lang="ar"] .hmdet > summary{ line-height:1.3; }
 html[lang="ar"] .rv2 .rv2st{ letter-spacing:0; font-size:11.5px; }
 .rv2.open .rv2st{ color:var(--ex); box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ex) 55%,transparent); background:color-mix(in srgb,var(--ex) 10%,var(--panel)); }
 .rv2.locked .rv2st{ color:var(--ex-ink); background:var(--ex); }
-.rv2.scooped .rv2st{ color:var(--muted); background:var(--panel2); box-shadow:inset 0 0 0 1px var(--line2); }
+.rv2.contested .rv2st{ color:var(--text); background:var(--panel2); box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ex) 45%,var(--line2)); }
+.rv2ex{ color:var(--ex); font-weight:800; white-space:normal; }
 .rv2.uturn .rv2st{ color:var(--dim); background:transparent; box-shadow:inset 0 0 0 1.5px var(--line2); }
 /* board card: one compact line under the intel row (inside the card button, so no nested buttons) */
 .pcard .rv2{ margin-top:6px; }
@@ -4805,21 +4810,21 @@ deepMerge(I18N,{
   ex:'Exclusive: you beat every rival',uturn:"U-turned calls can't be exclusive",gotIt:'{h} ({n}) got it right on {d}',nobody:'No rival got this one right either',
   how:{title:'Rival journalists',body:"Three other journalists chase the same stories. They are not your sources: you can't ask them, and they're only guessing.",
    tabloid:'Posts early (days {a}–{b}). Often wrong.',itk:'Posts mid-week (days {a}–{b}). A coin flip.',insider:'Posts late (days {a}–{b}). Usually right.',
-   ex:'Post a correct call before any rival posts on that player for an exclusive.'}},
+   ex:'Post a correct call before any rival gets that player right for an exclusive.'}},
   tut:{coach:{rivals:'Rivals are other journalists racing you. They guess too — beat them to a correct call for an 👑 exclusive.'}}},
  es:{rv:{tag:'RIVAL',role:'Periodista rival',roles:'Periodistas rivales',b1:'1 apuesta rival',bN:'{n} apuestas rivales',
   beaten:'Te ganó {h} ({n}) el {d} · tú lo diste el {c}',first:'{h} ({n}) publicó antes, el {d} · tú lo diste el {c}',
   ex:'Exclusiva: te adelantaste a todos los rivales',uturn:'Una rectificación no puede ser exclusiva',gotIt:'{h} ({n}) acertó el {d}',nobody:'Ningún rival acertó esta tampoco',
   how:{title:'Periodistas rivales',body:'Otros tres periodistas persiguen las mismas historias. No son tus fuentes: no puedes preguntarles y solo están adivinando.',
    tabloid:'Publica pronto (días {a}–{b}). Suele fallar.',itk:'Publica a mitad de semana (días {a}–{b}). Cara o cruz.',insider:'Publica tarde (días {a}–{b}). Suele acertar.',
-   ex:'Publica una noticia correcta antes de que ningún rival hable de ese jugador y tendrás una exclusiva.'}},
+   ex:'Publica una noticia correcta antes de que ningún rival acierte con ese jugador y tendrás una exclusiva.'}},
   tut:{coach:{rivals:'Los rivales son otros periodistas que compiten contigo. También adivinan: gánales con una noticia correcta y tendrás una 👑 exclusiva.'}}},
  ar:{rv:{tag:'منافس',role:'صحفي منافس',roles:'الصحفيين المنافسين',b1:'تخمين منافس واحد',bN:'{n} تخمينات منافسين',
   beaten:'{h} ({n}) سبقك {d} · انت قلتها {c}',first:'{h} ({n}) نزّل قبلك {d} · انت قلتها {c}',
   ex:'انفراد: سبقت كل المنافسين',uturn:'الخبر اللي اتعدّل مينفعش يبقى انفراد',gotIt:'{h} ({n}) جابها صح {d}',nobody:'ولا منافس جابها صح برضه',
   how:{title:'الصحفيين المنافسين',body:'في تلات صحفيين تانيين بيجروا ورا نفس القصص. دول مش مصادرك: مش هتعرف تسألهم، وهما أصلًا بيخمّنوا.',
    tabloid:'بينزّل بدري (يوم {a}–{b}). وغالبًا غلطان.',itk:'بينزّل نص الأسبوع (يوم {a}–{b}). يا صابت يا خابت.',insider:'بينزّل متأخر (يوم {a}–{b}). وغالبًا صح.',
-   ex:'انشر خبر صح قبل ما أي منافس ينزّل عن اللعيب ده وخد انفراد.'}},
+   ex:'انشر خبر صح قبل ما أي منافس يجيب اللعيب ده صح وخد انفراد.'}},
   tut:{coach:{rivals:'المنافسين دول صحفيين تانيين بيسابقوك. هما كمان بيخمّنوا، اسبقهم بخبر صح وخد 👑 انفراد.'}}}
 });
 /* @@LANE I18N:rivals END */
@@ -4861,6 +4866,7 @@ deepMerge(I18N,{
   challenge:'Challenge a friend',chDaily:'I got {tier} on Tier One Daily #{num} — same 5 players for everyone. Beat me: {url}',chOther:'I got {tier} ({pts} pts) in Tier One — same 5 players for everyone in the Daily. Beat me: {url}',
   first:'First take: {o} · {c}',final:'Final: {o} · {c}',hadIt:'You had it.',goodU:'Good U-turn.',twice:'Twice wrong, still standing.',bothR:'Right twice. The U-turn still cost half.',
   rivals:'Rival posts',right:'right',wrong:'wrong',draft:'DRAFT — your old post is still live',draftChip:'Draft pending',draftTyping:'draft · not live yet',
+  tw1:'🚨 1 twist this window',tw2:'🚨 2 twists this window',twN:'🚨 {n} twists this window',twTag:'TWIST',
   prof:{sniper:{n:'The Sniper',q:'Every shot landed. Somebody check this account.'},gambler:{n:'The Gambler',q:'Confirmed, confirmed, wrong, wrong. The house always wins.'},insider:{n:'The Insider',q:'First to the story, twice. Sources are texting you now.'},
    dancer:{n:'Deadline Dancer',q:'Left it to the last hour and still nailed it. Heart rate: unknown.'},patient:{n:'The Patient One',q:'Waited for the medical. Boring. Correct.'},specialist:{n:'The Specialist',q:'Right on the small calls, wrong on the big ones. Very on brand.'},
    rookie:{n:'The Rookie',q:'Tomorrow is a fresh board. Please.'},steady:{n:'Steady Hands',q:'Never once said Confirmed. Never once got ratio’d.'},ghost:{n:'The Ghost',q:'Filed nothing. The window barely noticed.'},grinder:{n:'The Grinder',q:'Some right, some wrong. The beat goes on.'}}}},
@@ -4869,6 +4875,7 @@ deepMerge(I18N,{
   challenge:'Reta a un amigo',chDaily:'Saqué {tier} en el Diario #{num} de Tier One — los mismos 5 jugadores para todos. Supérame: {url}',chOther:'Saqué {tier} ({pts} pts) en Tier One — los mismos 5 jugadores para todos en el Diario. Supérame: {url}',
   first:'Primera apuesta: {o} · {c}',final:'Final: {o} · {c}',hadIt:'La tenías.',goodU:'Buena rectificación.',twice:'Dos fallos y sigues en pie.',bothR:'Acertaste dos veces. Rectificar te costó la mitad igual.',
   rivals:'Posts rivales',right:'acertó',wrong:'falló',draft:'BORRADOR — tu post antiguo sigue publicado',draftChip:'Borrador pendiente',draftTyping:'borrador · aún no publicado',
+  tw1:'🚨 1 giro en este mercado',tw2:'🚨 2 giros en este mercado',twN:'🚨 {n} giros en este mercado',twTag:'GIRO',
   prof:{sniper:{n:'El Francotirador',q:'Todas dentro. Que alguien revise esta cuenta.'},gambler:{n:'El Apostador',q:'Confirmado, confirmado, fallo, fallo. La banca siempre gana.'},insider:{n:'El Insider',q:'Primero con la noticia, dos veces. Las fuentes ya te escriben.'},
    dancer:{n:'Bailarín del Límite',q:'Lo dejaste para la última hora y la clavaste. Pulsaciones: desconocidas.'},patient:{n:'El Paciente',q:'Esperaste al reconocimiento. Aburrido. Correcto.'},specialist:{n:'El Especialista',q:'Aciertas las pequeñas, fallas las grandes. Muy tú.'},
    rookie:{n:'El Novato',q:'Mañana hay tablero nuevo. Por favor.'},steady:{n:'Pulso Firme',q:'Nunca dijiste Confirmado. Nunca te hicieron ratio.'},ghost:{n:'El Fantasma',q:'No publicaste nada. El mercado apenas se enteró.'},grinder:{n:'El Currante',q:'Algún acierto, algún fallo. La ronda sigue.'}}}},
@@ -4877,6 +4884,7 @@ deepMerge(I18N,{
   challenge:'اتحدى صاحبك',chDaily:'جبت {tier} في يومي Tier One رقم {num} — نفس الـ5 لاعيبة للكل. اكسبني: {url}',chOther:'جبت {tier} ({pts} نقطة) في Tier One — نفس الـ5 لاعيبة للكل في اليومي. اكسبني: {url}',
   first:'أول كلام: {o} · {c}',final:'الأخير: {o} · {c}',hadIt:'كانت في إيدك.',goodU:'رجوع في الوقت المناسب.',twice:'غلط مرتين ولسه واقف.',bothR:'صح مرتين. والرجوع كلفك النص برضه.',
   rivals:'بوستات المنافسين',right:'صح',wrong:'غلط',draft:'مسودة — البوست القديم لسه شغال',draftChip:'مسودة مستنية',draftTyping:'مسودة · لسه ماتنشرتش',
+  tw1:'🚨 قلبة واحدة في النافذة دي',tw2:'🚨 قلبتين في النافذة دي',twN:'🚨 {n} قلبات في النافذة دي',twTag:'قلبة',
   prof:{sniper:{n:'القناص',q:'كل طلقة جت في مكانها. حد يراجع الحساب ده.'},gambler:{n:'المقامر',q:'خلصانة، خلصانة، غلط، غلط. الكازينو دايمًا بيكسب.'},insider:{n:'ابن الدار',q:'أول واحد بالخبر، مرتين. المصادر هي اللي بتبعتلك دلوقتي.'},
    dancer:{n:'راقص يوم الحسم',q:'سبتها لآخر ساعة وجبتها برضه. النبض: مجهول.'},patient:{n:'الصبور',q:'استنيت الكشف الطبي. ممل. بس صح.'},specialist:{n:'المتخصص',q:'صح في الصغيرة وغلط في الكبيرة. إنت بالظبط.'},
    rookie:{n:'المبتدئ',q:'بكرة لوحة جديدة. بالله عليك.'},steady:{n:'إيد ثابتة',q:'عمرك ما قلت خلصانة. وعمرك ما اتبهدلت.'},ghost:{n:'الشبح',q:'ما نشرتش حاجة. الميركاتو بالعافية لاحظ.'},grinder:{n:'الشغّيل',q:'شوية صح وشوية غلط. الشغل مستمر.'}}}}
@@ -4911,23 +4919,26 @@ deepMerge(I18N,{
 /* @@LANE I18N:rival2 BEGIN (lane-owned; insert only between BEGIN and END) */
 deepMerge(I18N,{
  en:{rv2:{title:'Exclusive race',aria:'Exclusive race: {s}',days:'Day {r}',quiet:'quiet',
-  st:{open:'Exclusive still open',locked:'★ Exclusive locked in',scooped:'Scooped by {h} on {d}',uturn:'No exclusive after a U-turn'},
-  ss:{open:'Exclusive open',locked:'★ Exclusive locked',scooped:'Scooped {d} · {n}',uturn:'No exclusive · U-turn'},
-  note:{open:'Post a right call before any rival and it scores +{x}.',locked:'You posted before every rival. If the call is right, it is an exclusive (+{x}).',scooped:'{n} posted first, so a right call here scores without the exclusive bonus.',uturn:'A re-called post can never be an exclusive.',reset:'🌀 The twist restarted the race on {d}: only posts from then on count.'},
+  st:{open:'Exclusive still open',locked:'★ Called before the rivals',contested:'Rival posted {d}',uturn:'No exclusive after a U-turn'},
+  ss:{open:'Exclusive open',locked:'★ Before the rivals',contested:'{n} posted {d}',uturn:'No exclusive · U-turn'},
+  note:{open:'Post a right call before any rival and it scores +{x}.',locked:'You posted before every rival. If the call is right, it is an exclusive (+{x}).',contested:'{n} posted first — a right call here is still an exclusive (+{x}) if {n} got it wrong.',uturn:'A re-called post can never be an exclusive.',reset:'🌀 The twist restarted the race on {d}: only posts from then on count.'},
+  exMaybe:'+{x} more if {h} was wrong',
   seg:{done:'{n} posted on {d}',old:'{n} posted on {d}, before the twist',due:'{n} posts on {d}',quiet:'{n} stayed quiet'},
   rx:{doubt:'Doubt it 🧢',big:'Big if true 👀',aria:'React to {n}\'s post',you:'Your take: {v}',vdoubt:'doubt it',vbig:'big if true'},
   watch:{title:'Rival watch',tomorrow:'{n} ({h}) starts posting tomorrow, days {r}.'}}},
  es:{rv2:{title:'Carrera por la exclusiva',aria:'Carrera por la exclusiva: {s}',days:'Día {r}',quiet:'nada',
-  st:{open:'La exclusiva sigue abierta',locked:'★ Exclusiva asegurada',scooped:'Te pisó {h} el {d}',uturn:'Sin exclusiva tras rectificar'},
-  ss:{open:'Exclusiva abierta',locked:'★ Exclusiva asegurada',scooped:'Pisada {d} · {n}',uturn:'Sin exclusiva · rectificación'},
-  note:{open:'Publica una noticia correcta antes que cualquier rival y suma +{x}.',locked:'Publicaste antes que todos los rivales. Si aciertas, es exclusiva (+{x}).',scooped:'{n} publicó primero: si aciertas, puntúa sin el plus de exclusiva.',uturn:'Una noticia rectificada nunca puede ser exclusiva.',reset:'🌀 El giro reinició la carrera el {d}: solo cuentan las publicaciones desde entonces.'},
+  st:{open:'La exclusiva sigue abierta',locked:'★ Antes que los rivales',contested:'Un rival publicó el {d}',uturn:'Sin exclusiva tras rectificar'},
+  ss:{open:'Exclusiva abierta',locked:'★ Antes que los rivales',contested:'{n} publicó el {d}',uturn:'Sin exclusiva · rectificación'},
+  note:{open:'Publica una noticia correcta antes que cualquier rival y suma +{x}.',locked:'Publicaste antes que todos los rivales. Si aciertas, es exclusiva (+{x}).',contested:'{n} publicó primero — si aciertas, sigue siendo exclusiva (+{x}) siempre que {n} haya fallado.',uturn:'Una noticia rectificada nunca puede ser exclusiva.',reset:'🌀 El giro reinició la carrera el {d}: solo cuentan las publicaciones desde entonces.'},
+  exMaybe:'+{x} más si {h} falló',
   seg:{done:'{n} publicó el {d}',old:'{n} publicó el {d}, antes del giro',due:'{n} publica el {d}',quiet:'{n} no dijo nada'},
   rx:{doubt:'Lo dudo 🧢',big:'Bomba si es verdad 👀',aria:'Reacciona a lo que dice {n}',you:'Tu reacción: {v}',vdoubt:'lo dudo',vbig:'bomba si es verdad'},
   watch:{title:'Ojo a los rivales',tomorrow:'{n} ({h}) empieza a publicar mañana, días {r}.'}}},
  ar:{rv2:{title:'سباق الانفراد',aria:'سباق الانفراد: {s}',days:'يوم {r}',quiet:'ساكت',
-  st:{open:'الانفراد لسه متاح',locked:'★ الانفراد اتحجز',scooped:'{h} سبقك {d}',uturn:'مفيش انفراد بعد التعديل'},
-  ss:{open:'الانفراد متاح',locked:'★ الانفراد اتحجز',scooped:'اتسبقت {d} · {n}',uturn:'مفيش انفراد · تعديل'},
-  note:{open:'انشر خبر صح قبل أي منافس وخد +{x}.',locked:'انت نزّلت قبل كل المنافسين. لو الخبر صح يبقى انفراد (+{x}).',scooped:'{n} نزّل الأول، فالخبر الصح هنا بيتحسب من غير بونص الانفراد.',uturn:'الخبر اللي اتعدّل عمره ما يبقى انفراد.',reset:'🌀 اللفة رجّعت السباق من الأول {d}: اللي بيتحسب بس اللي نزل من ساعتها.'},
+  st:{open:'الانفراد لسه متاح',locked:'★ قلتها قبل المنافسين',contested:'منافس نزّل {d}',uturn:'مفيش انفراد بعد التعديل'},
+  ss:{open:'الانفراد متاح',locked:'★ قبل المنافسين',contested:'{n} نزّل {d}',uturn:'مفيش انفراد · تعديل'},
+  note:{open:'انشر خبر صح قبل أي منافس وخد +{x}.',locked:'انت نزّلت قبل كل المنافسين. لو الخبر صح يبقى انفراد (+{x}).',contested:'{n} نزّل الأول — لو خبرك صح لسه هياخد انفراد (+{x}) طالما {n} كان غلطان.',uturn:'الخبر اللي اتعدّل عمره ما يبقى انفراد.',reset:'🌀 اللفة رجّعت السباق من الأول {d}: اللي بيتحسب بس اللي نزل من ساعتها.'},
+  exMaybe:'+{x} كمان لو {h} كان غلطان',
   seg:{done:'{n} نزّل {d}',old:'{n} نزّل {d}، قبل اللفة',due:'{n} بينزّل {d}',quiet:'{n} ما قالش حاجة'},
   rx:{doubt:'مش مصدق 🧢',big:'لو صح تبقى كبيرة 👀',aria:'رد على كلام {n}',you:'رأيك: {v}',vdoubt:'مش مصدق',vbig:'لو صح تبقى كبيرة'},
   watch:{title:'راقب المنافسين',tomorrow:'{n} ({h}) هيبدأ ينزّل بكرة، يوم {r}.'}}}
@@ -7449,6 +7460,10 @@ onHook('rendered',sc=>{
  LANE_ACTS.coachOk=(el,v,id,e)=>{ if(v!=='rivals'){ if(prev) return prev(el,v,id,e); dismissCoach(v); if($('modalRoot').innerHTML&&currentSaga!=null) renderSagaModal(currentSaga); else render(); return; }
   dismissCoach(v); document.querySelectorAll('.coach [data-act="coachOk"][data-v="rivals"]').forEach(b=>{ const c=b.closest('.coach'); if(c) c.remove(); }); };
 })();
+/* board.rulesTw is defined in the QA I18N block after every I18N slot, so the 1–3 twists wording must be merged later than that (here). */
+deepMerge(I18N,{en:{board:{rulesTw:'One to three real deals **twist** every window — how many is revealed with your results.'}},
+ es:{board:{rulesTw:'De uno a tres fichajes reales dan un **giro** en cada mercado — cuántos se revela con tus resultados.'}},
+ ar:{board:{rulesTw:'من صفقة لتلات صفقات حقيقية بيحصل فيهم **قلبة** كل نافذة — والعدد بيتكشف مع نتيجتك.'}}});
 /* @@LANE JS:rivals END */
 /* @@LANE JS:lb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* ---------- lb: Daily Challenge leaderboards (daily + weekly) ----------
@@ -7634,14 +7649,27 @@ function rs2DraftChips(){ try{ document.querySelectorAll('.pcard .rs2dchip').for
  const box=document.querySelector(`.pcard[data-id="${s.id}"] .intel`); if(!box) return; const el=document.createElement('span'); el.className='tag rs2dchip'; el.textContent='✎ '+t('rs2.draftChip'); box.prepend(el); }catch(e){} }
 try{ new MutationObserver(ms=>{ ms.forEach(m=>{ m.addedNodes.forEach(n=>{ if(n&&n.id==='ppSheet'){ n._rs2=true; rs2DraftLabel(); const sh=n.querySelector('.sheet'); if(sh) new MutationObserver(rs2DraftLabel).observe(sh,{childList:true}); } }); m.removedNodes.forEach(n=>{ if(n&&n._rs2) rs2DraftChips(); }); }); }).observe(document.body,{childList:true}); }catch(e){}
 onHook('rendered',sc=>{ if(sc!=='window') return; rs2DraftChips(); const b=$('boardScreen'); if(b&&!b._rs2ob){ try{ b._rs2ob=new MutationObserver(rs2DraftChips); b._rs2ob.observe(b,{childList:true}); }catch(e){} } });
+/* twists: 1–3 real deals twist per window and the count is secret until results (result.twistN / result.twisted, math lane).
+   Results: one line under the header stats, a TWIST tag on each twisted player's scoreboard row, one line in the share text. */
+function rs2TwistN(){ try{ const r=game&&game.result; if(!r) return 0; if(r.twistN!=null) return r.twistN|0; if(typeof twistsTotal==='function'){ const n=twistsTotal(); if(n!=null) return n|0; } return (game.sagas||[]).filter(s=>s&&s.tw).length; }catch(e){ return 0; } }
+function rs2Twisted(){ try{ const r=game&&game.result; if(r&&Array.isArray(r.twisted)) return new Set(r.twisted.map(Number)); return new Set((game&&game.sagas||[]).filter(s=>s&&s.tw).map(s=>s.id)); }catch(e){ return new Set(); } }
+function rs2TwistLine(n){ n=n==null?rs2TwistN():n; return n>0?t(n===1?'rs2.tw1':n===2?'rs2.tw2':'rs2.twN',{n}):''; }
+function rs2TwistDom(){ try{ if(screen!=='results'||!game||!game.result) return; const n=rs2TwistN();
+ const hero=document.querySelector('.rsx .rhero'); if(hero&&n>0&&!hero.querySelector('.rs2tw')){ const B='\u0001'; const html=esc(t(n===1?'rs2.tw1':n===2?'rs2.tw2':'rs2.twN',{n:B})).split(B).join(`<bdi dir="ltr">${n}</bdi>`);
+  const at=hero.querySelector('.rstats'); const h=`<p class="rs2tw" id="rs2tw">${html}</p>`; if(at) at.insertAdjacentHTML('afterend',h); else hero.insertAdjacentHTML('beforeend',h); }
+ const tw=rs2Twisted(); if(!tw.size) return; document.querySelectorAll('.rsx .srow[data-id]').forEach(b=>{ if(!tw.has(+b.dataset.id)) return; const sn=b.querySelector('.sn'); if(!sn||sn.querySelector('.rs2twt')) return; sn.insertAdjacentHTML('afterbegin',`<span class="rs2twt" title="${esc(t('rs2.twTag'))}">🌀 ${esc(t('rs2.twTag'))}</span>`); }); }catch(e){} }
+onHook('rendered',sc=>{ if(sc==='results') rs2TwistDom(); });
+(function(){ if(typeof rsShareText!=='function') return; const orig=rsShareText; rsShareText=function(){ const s=orig.apply(this,arguments); try{ const ln=rs2TwistLine(); if(!ln||String(s).includes(ln)) return s; const a=String(s).split('\n'); const i=a.lastIndexOf(CONFIG.SITE_URL); a.splice(i>0?i:a.length,0,ln); return a.join('\n'); }catch(e){ return s; } }; })();
 /* @@LANE JS:results2 END */
 /* @@LANE JS:onb BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:onb END */
 /* @@LANE JS:rival2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* rival2: the exclusive race, made visible. Reads RIVALS, s.rivalPosts (only posts with day<=game.day: nothing about the future
    or about correctness leaks), s.call, s.tw; writes only s.rx (reactions, saved with the game). Mirrors the engine's live rule
-   (rivalsPostedOn/exclusiveOpen + resolveWindow): the first rival post of the current era (after a twist, a new era) beats a call
-   posted on or after that day; a U-turned call is never an exclusive. Board/player page DOM is injected, never owned. */
+   (exclusiveState/previewPoints + resolveWindow, MATH.EX_RULE 'correct'): a right call is an exclusive when posted before the first
+   CORRECT rival post of the current era (after a twist, a new era). Mid-window rival correctness is secret, so a call posted on or
+   after the first rival post is 'contested' (still +EXCL if that rival was wrong), never 'lost'. A U-turned call is never an
+   exclusive. Board/player page DOM is injected, never owned. */
 function rv2Esc(key,ctx){ return esc(t(key)).replace(/\{(\w+)\}/g,(m,k)=>ctx&&ctx[k]!=null?ctx[k]:m); } /* esc()'d template, safe HTML fragments filled in after */
 function rv2Bdi(x){ return `<bdi dir="ltr">${esc(String(x))}</bdi>`; }
 function rv2Days(a,b){ return rv2Esc('rv2.days',{r:rv2Bdi(b!=null&&b!==a?a+'–'+b:a)}); }
@@ -7649,7 +7677,7 @@ function rv2DaysTxt(a,b){ return t('rv2.days',{r:b!=null&&b!==a?a+'–'+b:a}); }
 function rv2State(s){ const day=game.day, era=(s.tw&&day>=s.tw)?s.tw:0;
  const posts=(s.rivalPosts||[]).filter(p=>p.day<=day&&RIVALS.some(r=>r.key===p.rival)).sort((a,b)=>a.day-b.day);
  const first=posts.find(p=>p.day>=era)||null, c=s.call; let st;
- if(c) st=c.uturn?'uturn':(!first||c.day<first.day)?'locked':'scooped'; else st=first?'scooped':'open';
+ if(c) st=c.uturn?'uturn':(!first||c.day<first.day)?'locked':'contested'; else st=first?'contested':'open'; /* MATH.EX_RULE 'correct': a rival post only beats you if it was right, which nobody knows mid-window → 'contested' */
  return {day,era,posts,first,st}; }
 function rv2Ctx(st,html){ const f=st.first, r=f?rvOf(f.rival):null; const nm=r?t('pp.short.'+r.key):'';
  return html?{h:r?rv2Bdi(r.handle):'',n:esc(nm),d:f?rv2Days(f.day):'',x:esc(String(MATH.EXCL))}:{h:r?r.handle:'',n:nm,d:f?rv2DaysTxt(f.day):'',x:MATH.EXCL}; }
@@ -7695,7 +7723,17 @@ function rv2Page(){ const root=$('modalRoot'); if(!root||!game||game.result||!ga
  root.querySelectorAll('.onrow.rival[data-id]').forEach(row=>{ const side=row.querySelector('.oside'); if(!side||side.querySelector('.rv2who')) return;
   const hh=(row.querySelector('.ow .rvh')||{}).textContent||'', ic=(row.querySelector('.ow .rvav')||{}).textContent||''; const r=RIVALS.find(q=>q.handle&&hh.trim()===q.handle)||RIVALS.find(q=>ic.trim()===q.ic); if(!r) return;
   side.insertAdjacentHTML('afterbegin',`<span class="rv2who" title="${esc(t('rival.'+r.key))}">${esc(t('pp.short.'+r.key))}${sigHtml(ppBars(r.rel),false,null,{hidden:true})}</span>`); }); }
-(function(){ let raf=0; const kick=()=>{ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; try{ rv2Board(); }catch(e){} try{ rv2Page(); }catch(e){} }); };
+/* exclusive hints (player lane's dock hint + compose sheet): when a rival has posted, previewPoints says exState 'contested' and
+   exMaybe = the bonus still paid if that rival was wrong; the player lane prints "+0", so we add "+20 more if @x was wrong". */
+function rv2ExHint(){ if(!game||game.result||!game.sagas) return;
+ const add=(el,s)=>{ if(!el||el.querySelector('.rv2ex')||!s||s.call||typeof previewPoints!=='function') return; let p=null; try{ p=previewPoints(s.id,'DONE','med'); }catch(e){ p=null; }
+  if(!p||p.exState!=='contested'||!(p.exMaybe>0)) return; const st=rv2State(s), r=st.first?rvOf(st.first.rival):null; if(!r||!r.handle) return;
+  el.insertAdjacentHTML('beforeend',` <span class="rv2ex">· ${rv2Esc('rv2.exMaybe',{x:rv2Bdi(p.exMaybe),h:rv2Bdi(r.handle)})}</span>`); };
+ const pg=document.querySelector('#modalRoot .pp'); const s=pg&&typeof PP!=='undefined'&&PP.id!=null?game.sagas[PP.id]:null;
+ if(s){ const el=pg.querySelector('.ppdock .hint'); if(el&&el.textContent.includes('👑')) add(el,s); }
+ const sh=document.querySelector('#ppSheet .ppsheet.comp .hints'); const s2=sh&&typeof draft!=='undefined'&&draft&&!draft.ut&&draft.sid!=null?game.sagas[draft.sid]:null;
+ if(sh&&s2){ const rows=sh.querySelectorAll(':scope > div'); const row=[...rows].find(d=>d.textContent.includes('👑')); const el=row&&row.querySelector('span:last-child'); if(el) add(el,s2); } }
+(function(){ let raf=0; const kick=()=>{ if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; try{ rv2Board(); }catch(e){} try{ rv2Page(); }catch(e){} try{ rv2ExHint(); }catch(e){} }); };
  try{ new MutationObserver(kick).observe(document.body,{childList:true,subtree:true}); }catch(e){}
  onHook('rendered',kick); onHook('day',kick); onHook('call',kick); onHook('uturn',kick); kick(); })();
 /* results contract: at resolve time result.per[i].rx mirrors that saga's reactions (same shape), so the results lane and the daily archive keep them */
