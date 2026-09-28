@@ -1963,6 +1963,55 @@ html[lang="ar"] .rvtag{ letter-spacing:0; font-size:11px; }
 /* @@LANE CSS:rival2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE CSS:rival2 END */
 /* @@LANE CSS:career2 BEGIN (lane-owned; insert only between BEGIN and END) */
+/* career2: LEGEND tag, payoff line, early badge, goals rows, level-up sheet, prestige card + confirm */
+.lgtag{ display:inline-flex; align-items:center; gap:3px; height:20px; padding:0 7px; border-radius:6px; background:linear-gradient(135deg,#FFD23F,#E3A700); color:#1A1400; font:800 10.5px/1 var(--body); letter-spacing:.06em; text-transform:var(--caps); white-space:nowrap; vertical-align:middle; box-shadow:0 1px 0 rgba(0,0,0,.15); }
+html[lang="ar"] .lgtag{ letter-spacing:0; font-size:11.5px; }
+.lgtag.xl{ height:26px; padding:0 10px; font-size:13px; margin-bottom:8px; }
+.appbar .ttl .lgtag{ margin-inline-start:6px; }
+.prof h1.d3{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.today .mode .lgtag.hm{ position:absolute; top:8px; inset-inline-end:8px; }
+.gear .pay,.srcc.tree .pay{ display:block; margin-top:5px; font:700 11.5px/1.3 var(--body); color:var(--muted); }
+.srcc.tree .tmain small .pay{ margin-top:4px; }
+:is(.pp,.ppsheet) .st .corner.cr2e{ inset-inline-start:auto; inset-inline-end:6px; }
+:is(.pp,.ppsheet) .st .corner.cr2e .tag.early{ background:var(--cta); color:var(--cta-ink); }
+.msrow{ display:grid; grid-template-columns:36px minmax(0,1fr); gap:12px; align-items:center; padding:12px 14px; }
+.msrow + .msrow{ border-top:1px solid var(--line); }
+.msrow .mi{ font-size:22px; text-align:center; line-height:1; }
+.msrow b{ display:block; font:700 14.5px/1.25 var(--body); }
+.msrow b .mk{ color:var(--ok); }
+.msrow small{ display:block; margin-top:2px; font:500 12px/1.3 var(--body); color:var(--muted); }
+.msrow .prog{ display:flex; align-items:center; gap:8px; margin-top:7px; }
+.msrow .prog .bar{ flex:1; height:5px; } .msrow .prog small{ margin:0; font:700 11.5px var(--body); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.msrow.ok .prog .bar i{ background:var(--ok); }
+.prcard{ display:flex; align-items:center; gap:12px; width:100%; margin-top:12px; padding:13px 14px; border-radius:16px; border:1px solid color-mix(in srgb,#FFC933 55%,var(--line)); background:linear-gradient(var(--gdir,90deg),color-mix(in srgb,#FFC933 14%,var(--panel)),var(--panel) 75%); color:var(--text); text-align:start; cursor:pointer; font:inherit; }
+.prcard .gi{ font-size:26px; }
+.prcard b{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; font:700 15px/1.2 var(--body); }
+.prcard small{ display:block; margin-top:3px; font:500 12.5px/1.35 var(--body); color:var(--muted); }
+.prcard .chev{ margin-inline-start:auto; font-size:20px; color:var(--muted); }
+.prnow{ margin:10px 4px 0; font:700 var(--fs-sm)/1.35 var(--body); color:var(--accent-text); }
+.prconf{ text-align:center; padding-bottom:4px; }
+.prkv{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; text-align:start; }
+.prkv > div{ padding:10px 12px; border-radius:12px; background:var(--panel2); }
+.prkv b{ display:block; margin-top:4px; font:600 13px/1.4 var(--body); }
+.prbonus{ margin:12px auto 0; max-width:34ch; padding:10px 12px; border-radius:12px; background:color-mix(in srgb,#FFC933 16%,transparent); color:var(--text); font:700 var(--fs-sm)/1.35 var(--body); }
+.prrow{ display:flex; gap:10px; margin-top:16px; } .prrow .btn{ flex:1; min-height:48px; }
+/* level-up sheet */
+.lvsheet{ position:fixed; inset:0; z-index:97; display:flex; flex-direction:column; align-items:center; overflow-y:auto; padding:max(28px,env(safe-area-inset-top,0px)) 20px max(24px,env(safe-area-inset-bottom,0px)); text-align:center; color:#F3F5FA; background:radial-gradient(70% 50% at 50% 30%,rgba(255,210,63,.22),transparent 70%),#03060E; background-color:#03060E; animation:celIn var(--t-base,240ms) ease-out both; }
+.lvsheet .lvin{ position:relative; margin:auto 0; width:100%; max-width:360px; display:flex; flex-direction:column; align-items:center; animation:celPop 600ms var(--ease-pop,cubic-bezier(.2,1.4,.4,1)) both; }
+.lvsheet .rw{ color:#FFD23F; font-size:12px; letter-spacing:.14em; } html[lang="ar"] .lvsheet .rw{ letter-spacing:0; font-size:13px; }
+.lvsheet .lvn{ margin-top:6px; font:800 var(--ital) 96px/1 var(--display); color:#FFD23F; text-shadow:0 8px 30px rgba(255,210,63,.35); }
+.lvsheet h2{ margin-top:4px; font-size:30px; line-height:1.1; overflow-wrap:anywhere; max-width:100%; }
+.lvsheet .lvh{ margin-top:14px; font:700 var(--fs-xs)/1.2 var(--body); text-transform:var(--caps); letter-spacing:.09em; color:#A9B3CC; } html[lang="ar"] .lvsheet .lvh{ letter-spacing:0; }
+.lvsheet .lvp{ margin-top:14px; max-width:30ch; font:500 15px/1.45 var(--body); color:#A9B3CC; }
+.lvsheet ul{ list-style:none; margin:8px 0 0; padding:0; width:100%; display:grid; gap:6px; text-align:start; }
+.lvsheet li{ display:flex; gap:10px; align-items:center; min-height:44px; padding:8px 12px; border-radius:12px; background:#0F1729; border:1px solid #31426A; font:600 var(--fs-sm)/1.3 var(--body); }
+.lvsheet li > span:first-child{ font-size:20px; width:26px; text-align:center; flex-shrink:0; }
+.lvsheet li.more{ justify-content:center; color:#A9B3CC; background:transparent; border-style:dashed; }
+.lvsheet .nx{ margin-top:14px; width:100%; padding:10px 14px; border-radius:12px; background:rgba(255,210,63,.12); color:#FFD23F; font:700 var(--fs-sm)/1.4 var(--body); }
+.lvsheet .btn{ width:100%; margin-top:18px; }
+.lvsheet.out{ opacity:0; transition:opacity 240ms; }
+.lvsheet.rm,.lvsheet.rm *,html.rm .lvsheet,html.rm .lvsheet *{ animation:none !important; }
+@media (max-width:370px){ .lvsheet .lvn{ font-size:80px; } .lvsheet h2{ font-size:26px; } }
 /* @@LANE CSS:career2 END */
 /* @@LANE CSS:dd BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE CSS:dd END */
@@ -4543,6 +4592,25 @@ deepMerge(I18N,{
 /* @@LANE I18N:rival2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE I18N:rival2 END */
 /* @@LANE I18N:career2 BEGIN (lane-owned; insert only between BEGIN and END) */
+/* career2 lane: gear one-liners, payoff, early badge, level-up sheet, milestones, Prestige */
+deepMerge(I18N,{en:{cr2:{goals:'Goals',payoff:'Pays for itself in ~{n} windows',payoffHow:'Rough estimate: the extra points it earns × cash per point, plus the chance of finishing one tier higher.',
+ fx:{day:'Day {d}: {b} contacts instead of {a}.',days:'Days {d1}–{d2}: {b} contacts instead of {a}.',bank:'Deadline Day: {b} contacts instead of {a}.',radar:'{p}% of twists get a tip-off the day before they land.',laptop:'Twist tip-offs land {n} days early instead of 1, and {p}% more twists get one.',mic:'+{p}% followers from every right call.',tick:'Exclusives bring +{b} followers instead of +{a}.',tickPts:'They also score {n} more.',coat:'Your first wrong call each window loses only half the points.',rel:'Level {n}: {src} tells the truth {b} of the time instead of {a}.',open:'Level {n}: {src} opens on Day {b} instead of Day {a}.'},
+ early:'Early · upgrade',earlyAria:'{src} is open early thanks to your upgrade',earlyToast:'{src} opened early thanks to your upgrade',
+ lvl:{eyebrow:'Level up',title:'Level {n} — {t}',unlocked:'What this unlocks',nothing:'New title on your profile: {t}. Rooms see it too.',next:'Next: Level {n} — {p}',toGo:'{n} XP to go',top:'Top level. You are the story now.',go:'Let\'s go',perkGear:'{g} in the shop ({p})',perkRel:'{src}: reliability level {n} ({p})',perkOpen:'{src}: unlock-earlier level {n} ({p})',perkBoost:'{b} boost (buy mid-window)',perkCatch:'Catchphrase: {c}',perkTrophy:'Trophy: {a}',perkTitle:'Trophy: {a} · title {t}',perkGoal:'Career goal: Reach level 7 ✓',more:'+{n} more'},
+ ms:{core:'Legend goals',legendNote:'Complete all four to become a Tier One Legend — and unlock the Legend career.',title:'Milestones',t1rate:'Tier 1 rate ≥30% over your last 10 windows',t1rateSub:'{n} of your last 10 windows at Tier 1',t2streak:'5-window Tier 2+ streak',t2streakSub:'best {n} · current {c}',ddExcl:'First exclusive on Deadline Day',srcAll:'Every source upgraded once',rivalBeat:'Beat a rival to 5 exclusives'},
+ pr:{tag:'LEGEND',tagN:'LEGEND ×{n}',card:'Start a Legend career',cardSub:'Keep trophies, followers, catchphrases and skins. Level, cash, gear and sources start over — with higher tier bars and +10% pay.',confirmTitle:'Start a Legend career?',keep:'You keep',keepList:'Trophies · followers · catchphrases · skins',reset:'Starts over',resetList:'Level · cash · gear · source tree · Tier 1 count',bonus:'Legend ★{n}: tier bars +{b} · pay +{p}%',cancel:'Not yet',go:'Start Legend career',inWindow:'Finish your current window first.',done:'👑 Legend career ★{n} started. Tier bars +{b}, pay +{p}%.',bonusLine:'★ Legend bonus (+{p}%)',bonusToast:'★ Legend bonus: +${n} (+{p}%)',active:'Legend ★{n}: tier bars +{b} · pay +{p}%'}}},
+es:{cr2:{goals:'Metas',payoff:'Se amortiza en ~{n} mercados',payoffHow:'Estimación aproximada: los puntos extra que da × dinero por punto, más la opción de acabar un tier más arriba.',
+ fx:{day:'Día {d}: {b} contactos en vez de {a}.',days:'Días {d1}–{d2}: {b} contactos en vez de {a}.',bank:'Día límite: {b} contactos en vez de {a}.',radar:'El {p}% de los vuelcos te avisan el día antes.',laptop:'Los avisos de vuelco llegan {n} días antes en vez de 1, y un {p}% más de vuelcos avisan.',mic:'+{p}% de seguidores por cada acierto.',tick:'Las exclusivas dan +{b} seguidores en vez de +{a}.',tickPts:'Además suman {n} puntos más.',coat:'Tu primer fallo de cada mercado solo pierde la mitad de puntos.',rel:'Nivel {n}: {src} dice la verdad el {b} de las veces en vez del {a}.',open:'Nivel {n}: {src} abre el día {b} en vez del día {a}.'},
+ early:'Antes · mejora',earlyAria:'{src} está abierta antes gracias a tu mejora',earlyToast:'{src} abrió antes gracias a tu mejora',
+ lvl:{eyebrow:'Subes de nivel',title:'Nivel {n} — {t}',unlocked:'Qué desbloquea',nothing:'Nuevo título en tu perfil: {t}. Las salas también lo ven.',next:'Siguiente: nivel {n} — {p}',toGo:'Faltan {n} XP',top:'Nivel máximo. Ahora la noticia eres tú.',go:'Vamos',perkGear:'{g} en la tienda ({p})',perkRel:'{src}: fiabilidad nivel {n} ({p})',perkOpen:'{src}: abrir antes nivel {n} ({p})',perkBoost:'Impulso {b} (se compra en el mercado)',perkCatch:'Coletilla: {c}',perkTrophy:'Trofeo: {a}',perkTitle:'Trofeo: {a} · título {t}',perkGoal:'Objetivo de carrera: Llegar al nivel 7 ✓',more:'+{n} más'},
+ ms:{core:'Objetivos de Leyenda',legendNote:'Completa los cuatro para ser Leyenda Tier One — y desbloquear la carrera de Leyenda.',title:'Hitos',t1rate:'Tier 1 en ≥30% de tus últimos 10 mercados',t1rateSub:'{n} de tus últimos 10 mercados en Tier 1',t2streak:'Racha de 5 mercados en Tier 2 o mejor',t2streakSub:'mejor {n} · actual {c}',ddExcl:'Primera exclusiva el Día límite',srcAll:'Todas las fuentes mejoradas una vez',rivalBeat:'Gana a un rival en 5 exclusivas'},
+ pr:{tag:'LEYENDA',tagN:'LEYENDA ×{n}',card:'Empezar una carrera de Leyenda',cardSub:'Conservas trofeos, seguidores, coletillas y skins. Nivel, dinero, equipo y fuentes empiezan de cero — con tiers más altos y +10% de paga.',confirmTitle:'¿Empezar una carrera de Leyenda?',keep:'Conservas',keepList:'Trofeos · seguidores · coletillas · skins',reset:'Empieza de cero',resetList:'Nivel · dinero · equipo · árbol de fuentes · cuenta de Tier 1',bonus:'Leyenda ★{n}: tiers +{b} · paga +{p}%',cancel:'Aún no',go:'Empezar carrera de Leyenda',inWindow:'Termina primero el mercado que tienes abierto.',done:'👑 Carrera de Leyenda ★{n} iniciada. Tiers +{b}, paga +{p}%.',bonusLine:'★ Bonus Leyenda (+{p}%)',bonusToast:'★ Bonus Leyenda: +${n} (+{p}%)',active:'Leyenda ★{n}: tiers +{b} · paga +{p}%'}}},
+ar:{cr2:{goals:'الأهداف',payoff:'بيرجّع تمنه في حوالي {n} نوافذ',payoffHow:'تقدير تقريبي: النقط الزيادة اللي بيجيبها × فلوس كل نقطة، زايد فرصة إنك تخلّص تير أعلى.',
+ fx:{day:'يوم {d}: {b} اتصالات بدل {a}.',days:'أيام {d1}–{d2}: {b} اتصالات بدل {a}.',bank:'يوم القفلة: {b} اتصالات بدل {a}.',radar:'{p}% من القلبات بيجيلك تنبيه قبلها بيوم.',laptop:'تنبيهات القلبة بتوصلك قبلها بـ{n} يوم بدل يوم واحد، و{p}% قلبات زيادة بيجيلها تنبيه.',mic:'+{p}% متابعين من كل توقّع صح.',tick:'الانفراد بيجيب +{b} متابع بدل +{a}.',tickPts:'وكمان بياخد {n} نقط زيادة.',coat:'أول غلطة في كل نافذة بتخسّرك نص النقط بس.',rel:'مستوى {n}: {src} بيقول الصح {b} من المرات بدل {a}.',open:'مستوى {n}: {src} بيفتح يوم {b} بدل يوم {a}.'},
+ early:'بدري · ترقية',earlyAria:'{src} فاتح بدري بفضل الترقية بتاعتك',earlyToast:'{src} فتح بدري بفضل الترقية بتاعتك',
+ lvl:{eyebrow:'ليفل جديد',title:'ليفل {n} — {t}',unlocked:'الليفل ده بيفتحلك',nothing:'لقب جديد على بروفايلك: {t}. الأوض كمان بتشوفه.',next:'الجاي: ليفل {n} — {p}',toGo:'فاضل {n} XP',top:'آخر ليفل. إنت بقيت الخبر نفسه.',go:'يلا بينا',perkGear:'{g} في المحل ({p})',perkRel:'{src}: صدق مستوى {n} ({p})',perkOpen:'{src}: فتح بدري مستوى {n} ({p})',perkBoost:'بوست {b} (بيتشرى جوه النافذة)',perkCatch:'لازمة: {c}',perkTrophy:'كاس: {a}',perkTitle:'كاس: {a} · لقب {t}',perkGoal:'هدف المسيرة: وصّل لفل 7 ✓',more:'+{n} كمان'},
+ ms:{core:'أهداف الأسطورة',legendNote:'خلّص الأربعة وتبقى أسطورة تير وان — وتفتح مسيرة الأسطورة.',title:'محطات',t1rate:'تير 1 في 30% أو أكتر من آخر 10 نوافذ',t1rateSub:'{n} من آخر 10 نوافذ على تير 1',t2streak:'5 نوافذ ورا بعض تير 2 أو أحسن',t2streakSub:'أحسن {n} · دلوقتي {c}',ddExcl:'أول انفراد يوم القفلة',srcAll:'كل مصدر اتطوّر مرة على الأقل',rivalBeat:'اسبق منافس في 5 انفرادات'},
+ pr:{tag:'أسطورة',tagN:'أسطورة ×{n}',card:'ابدأ مسيرة أسطورة',cardSub:'الكاسات والمتابعين واللازمات والسكينات بتفضل معاك. الليفل والفلوس والعدّة والمصادر بتبدأ من الأول — بتيرات أعلى و+10% أجر.',confirmTitle:'تبدأ مسيرة أسطورة؟',keep:'بيفضل معاك',keepList:'الكاسات · المتابعين · اللازمات · السكينات',reset:'بيبدأ من الأول',resetList:'الليفل · الفلوس · العدّة · شجرة المصادر · عدد تير 1',bonus:'أسطورة ★{n}: التيرات +{b} · الأجر +{p}%',cancel:'لسه',go:'ابدأ مسيرة الأسطورة',inWindow:'خلّص النافذة اللي إنت فيها الأول.',done:'👑 مسيرة الأسطورة ★{n} بدأت. التيرات +{b}، الأجر +{p}%.',bonusLine:'★ بونص الأسطورة (+{p}%)',bonusToast:'★ بونص الأسطورة: +${n} (+{p}%)',active:'أسطورة ★{n}: التيرات +{b} · الأجر +{p}%'}}}});
 /* @@LANE I18N:career2 END */
 /* @@LANE I18N:dd BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE I18N:dd END */
@@ -4675,7 +4743,7 @@ function treeSteps(c){ let n=0, m=0; for(const k in SRC_TREE){ for(const tr of [
 function gearProgress(c){ const ts=treeSteps(c); return {cur:EQUIP.filter(e=>(c.equip||[]).includes(e.key)).length+ts.n,max:EQUIP.length+ts.m}; }
 function buyTree(key,track,c){ c=c||C(); const nx=treeNext(key,track,c); if(!nx||c.credits<nx.price||levelInfo(c.xp).n<nx.lvl) return false; c.credits-=nx.price; const u=upState(c); u[track][key]=nx.step+1; return nx; }
 /* ─ lane boundary: engine | career ─ */
-function careerGoals(c){ return [{k:'lvl',cur:Math.min(levelInfo(c.xp).n,7),max:7},{k:'t1',cur:Math.min(c.t1||0,3),max:3},{k:'gear',cur:gearProgress(c).cur,max:gearProgress(c).max},{k:'fans',cur:Math.min(c.followers||0,100000),max:100000}]; }
+function careerGoals(c,all){ const core=[{k:'lvl',cur:Math.min(levelInfo(c.xp).n,7),max:7},{k:'t1',cur:Math.min(c.t1||0,3),max:3},{k:'gear',cur:gearProgress(c).cur,max:gearProgress(c).max},{k:'fans',cur:Math.min(c.followers||0,100000),max:100000}]; return all&&typeof careerMilestones==='function'?core.concat(careerMilestones(c)):core; } // all=true also appends the career2 milestones; the Legend badge only counts the core four
 /* ─ lane boundary: career | engine ─ */
 function gearOwned(k){ return isCareer()&&C().equip.includes(k); }
 const BOOSTS=[{key:'burner',ic:'☎️',base:450,lvl:1,get cost(){ return boostCost(this); }},{key:'tipoff',ic:'💡',base:1100,lvl:2,get cost(){ return boostCost(this); }},{key:'bribe',ic:'💸',base:1800,lvl:3,get cost(){ return boostCost(this); }}];
@@ -4905,7 +4973,7 @@ function applyScoreMultiplier(baseScore,isCareerMode){
 function upgradeProgress(c){ c=c||C(); const g=gearProgress(c); return g.max?Math.max(0,Math.min(1,g.cur/g.max)):0; }
 function careerBars(p){ const B=MATH.CAREER_BARS, A=B.at; let i=0; while(i<A.length-2&&p>A[i+1]) i++; const f=Math.max(0,Math.min(1,(p-A[i])/(A[i+1]-A[i])));
  return B.bars[i].map((v,j)=>Math.round((v+(B.bars[i+1][j]-v)*f)/5)*5); }
-function tierCutoffs(mode,c){ const T=(CONFIG.TIERS||MATH.TIERS).slice(); if(mode!=='career') return T; const b=careerBars(upgradeProgress(c)); return [b[0],b[1],b[2],T[3]]; }
+function tierCutoffs(mode,c){ const T=(CONFIG.TIERS||MATH.TIERS).slice(); if(mode!=='career') return T; const b=careerBars(upgradeProgress(c)); const pb=10*Math.max(0,((c||C()).prestige|0)); return [b[0]+pb,b[1]+pb,b[2]+pb,T[3]]; } // Legend career: every tier bar +10 per prestige level (T4 and clown stay shared)
 function tierFor(score,T){ T=T||(game&&game.tb)||tierCutoffs(game&&game.mode); if(score<0) return {n:9,key:'clown'}; if(score>=T[0]) return {n:1,key:'t1'}; if(score>=T[1]) return {n:2,key:'t2'}; if(score>=T[2]) return {n:3,key:'t3'}; if(score>=T[3]) return {n:4,key:'t4'}; return {n:5,key:'t5'}; }
 function tierName(tr){ return t('tier.'+tr.key); }
 
@@ -5658,10 +5726,10 @@ function renderArchive(){
 // ----- career hub -----
 function renderCareer(){
  const c=C(); const lv=levelInfo(c.xp); const pct=lv.next?Math.round((c.xp-lv.cur)/(lv.next-lv.cur)*100):100; achEnsure();
- const tabsK=roomCtx?['profile','shop','sources']:['profile','shop','style','sources']; if(!tabsK.includes(careerTab)) careerTab='profile';
- const tabs=`<div class="seg" role="tablist" style="margin-top:16px">${tabsK.map(k=>`<button type="button" role="tab" aria-selected="${careerTab===k}" class="${careerTab===k?'on':''}" data-act="ctab" data-v="${k}">${esc(t('career.'+k))}</button>`).join('')}</div>`;
+ const tabsK=roomCtx?['profile','shop','sources','goals']:['profile','shop','style','sources','goals']; if(!tabsK.includes(careerTab)) careerTab='profile';
+ const tabs=`<div class="seg" role="tablist" style="margin-top:16px">${tabsK.map(k=>`<button type="button" role="tab" aria-selected="${careerTab===k}" class="${careerTab===k?'on':''}" data-act="ctab" data-v="${k}">${esc(k==='goals'?t('cr2.goals'):t('career.'+k))}</button>`).join('')}</div>`;
  const ttlA=save.ach.title&&ACH_BY[save.ach.title]&&save.ach.got[save.ach.title]?ACH_BY[save.ach.title]:null;
- const prof=`<section class="card" style="margin-top:12px"><div class="prof"><span class="ring" style="--p:${pct}" role="img" aria-label="${esc(t('cr.levelN',{n:lv.n}))}"><b>${lv.n}</b></span><div style="min-width:0"><h1 class="d3">${esc(lv.title)}</h1>${ttlA?`<span class="ttlchip">🏷️ ${esc(achTitleOf(ttlA))}</span>`:''}<p class="pl">${esc(t('cr.levelN',{n:lv.n}))} · <bdi dir="ltr">${lv.next?`${c.xp} / ${lv.next} XP`:`${c.xp} XP`}</bdi> · ${esc(t('cr.rep',{n:c.rep}))}</p><div class="bar"><i style="width:${pct}%"></i></div></div></div>
+ const prof=`<section class="card" style="margin-top:12px"><div class="prof"><span class="ring" style="--p:${pct}" role="img" aria-label="${esc(t('cr.levelN',{n:lv.n}))}"><b>${lv.n}</b></span><div style="min-width:0"><h1 class="d3">${esc(lv.title)}${cr2Tag(c.prestige)}</h1>${ttlA?`<span class="ttlchip">🏷️ ${esc(achTitleOf(ttlA))}</span>`:''}<p class="pl">${esc(t('cr.levelN',{n:lv.n}))} · <bdi dir="ltr">${lv.next?`${c.xp} / ${lv.next} XP`:`${c.xp} XP`}</bdi> · ${esc(t('cr.rep',{n:c.rep}))}</p><div class="bar"><i style="width:${pct}%"></i></div></div></div>
   <div class="kpis"><div><b>${fmtK(c.followers||1200)}</b><span>${esc(t('cr.kFollowers'))}</span></div><div><b>${c.exclusives||0}</b><span>${esc(t('cr.kExcl'))}</span></div><div><b>${c.bestTier===99?'—':c.bestTier===9?'🤡':'T'+c.bestTier}</b><span>${esc(t('cr.kBest'))}</span></div></div></section>`;
  const ip=save.inProgress; const resume=!roomCtx&&ip&&ip.mode==='career'&&!ip.room;
  const primary=roomCtx?`<button type="button" class="btn primary xl" style="margin-top:12px" data-act="playRoom" data-v="${esc(roomCtx)}">${uiIcon('play')}${esc(t('online.play',{s:c.windows+1}))}</button>`
@@ -5672,7 +5740,7 @@ function renderCareer(){
   const gs=careerGoals(c); const cnt=achCount();
   body=`<div class="sechead"><h2 class="d4">${esc(t('econ.goalsTitle'))}</h2><span class="aux"><bdi dir="ltr">${gs.filter(g=>g.cur>=g.max).length}/4</bdi></span></div>
    <div class="goalgrid">${gs.map(g=>{ const p=Math.round(g.cur/g.max*100), ok=g.cur>=g.max; return `<div class="gmini ${ok?'ok':''}"><span class="ring" style="--p:${p}${ok?';--c:var(--ok)':''}"><b>${ok?'✓':p+'%'}</b></span><span>${esc(t('econ.goal.'+g.k))}</span><small><bdi dir="ltr">${g.k==='fans'?fmtK(g.cur)+' / 100K':g.cur+' / '+g.max}</bdi></small></div>`; }).join('')}</div>
-   ${cbarsHtml('career',c)}
+   ${crPrestigeCard(c)}${cbarsHtml('career',c)}
    <button type="button" class="achrow" data-act="achScreen">${medalHtml('🏆','legend',{size:'sm'})}<span><b>${esc(t('ach.title'))}</b><small>${esc(t('ach.glory'))}</small></span><em><bdi dir="ltr">${cnt.got}/${cnt.total}</bdi></em><span class="chev" aria-hidden="true">›</span></button>
    ${c.history.length?`<div class="sechead"><h2 class="d4">${esc(t('career.recent'))}</h2></div><section class="list">${c.history.slice(0,5).map(h=>`<div class="hrow"><span class="sq" dir="ltr">${esc(h.row||'')}</span><span class="ht">${esc(h.tier===9?t('tier.clown'):t('career.tierN',{n:h.tier}))}</span><b><bdi dir="ltr">${h.score}</bdi></b></div>`).join('')}</section>`:`<p class="muted sm" style="margin:14px 4px 0">${esc(t('cr.noHistory'))}</p>`}
    ${Ads.slot('career')}`;
@@ -5696,8 +5764,9 @@ function renderCareer(){
     return `<div class="cpv ${own?'':'locked'} ${on?'on':''}"><span class="av" aria-hidden="true">${esc(t('cr.you'))}</span><span style="min-width:0"><span class="cm"><b>${esc(t('win.you'))}</b> · <span class="muted">📢</span></span><span class="ct">${esc(tt('catch')[k]||k)}</span>${own?'':aid?`<button type="button" class="lk" data-act="achOpen" data-v="${aid}">🏆 ${esc(t('cr.unlockWith',{a:achName(ACH_BY[aid])}))} ›</button>`:`<span class="lk">🔒 ${esc(t('catchHow.'+k))}</span>`}</span><span class="gp">${own?(on?`<span class="owned-chip">✓</span>`:`<button type="button" class="btn sm" data-act="setCatch" data-v="${k}">${esc(t('career.use'))}</button>`):`<span class="buy no">🔒</span>`}</span></div>`; }).join('')}</section>`;
   const cur=save.ach.title; const titles=`<div class="sechead"><h2 class="d4">${esc(t('cr.titles'))}</h2><span class="aux">${esc(t('cr.titlesSub'))}</span></div><section class="list"><div class="cpv ${!cur?'on':''}"><span class="av tl" aria-hidden="true">—</span><span style="min-width:0"><span class="ct">${esc(t('cr.noTitle'))}</span></span><span class="gp">${!cur?`<span class="owned-chip">✓</span>`:`<button type="button" class="btn sm" data-act="crTitle" data-v="none">${esc(t('career.use'))}</button>`}</span></div>${crTitles().map(a=>{ const own=!!save.ach.got[a.id], on=cur===a.id; return `<div class="cpv ${own?'':'locked'} ${on?'on':''}">${medalHtml(a.ic,a.r,{size:'sm',locked:!own})}<span style="min-width:0"><span class="ct">🏷️ ${esc(achTitleOf(a))}</span><button type="button" class="lk" data-act="achOpen" data-v="${a.id}">${own?'✓ ':'🔒 '}${esc(achName(a))} ›</button></span><span class="gp">${own?(on?`<span class="owned-chip">✓</span>`:`<button type="button" class="btn sm" data-act="crTitle" data-v="${a.id}">${esc(t('career.use'))}</button>`):''}</span></div>`; }).join('')}</section>`;
   body=skins+cps+titles;
- }else{ body=crSourcesTab(c); }
- const bar=`<header class="appbar">${roomCtx?`<button type="button" class="iconbtn" data-act="openRoom" data-v="${esc(roomCtx)}" aria-label="${esc(t('online.backShort'))}">${uiIcon('back')}</button>`:'<span></span>'}<div class="ttl">${esc(roomCtx?t('online.roomTag',{c:roomCtx}):t('cr.title'))}</div><div class="right"><button type="button" class="wal" data-act="ctab" data-v="shop" aria-label="${esc(t('career.credits'))}">💵 <bdi dir="ltr">$${c.credits}</bdi></button></div></header>`;
+ }else if(careerTab==='goals'){ body=crGoalsTab(c); }
+ else{ body=crSourcesTab(c); }
+ const bar=`<header class="appbar">${roomCtx?`<button type="button" class="iconbtn" data-act="openRoom" data-v="${esc(roomCtx)}" aria-label="${esc(t('online.backShort'))}">${uiIcon('back')}</button>`:'<span></span>'}<div class="ttl">${esc(roomCtx?t('online.roomTag',{c:roomCtx}):t('cr.title'))}${roomCtx?'':cr2Tag(c.prestige)}</div><div class="right"><button type="button" class="wal" data-act="ctab" data-v="shop" aria-label="${esc(t('career.credits'))}">💵 <bdi dir="ltr">$${c.credits}</bdi></button></div></header>`;
  return bar+prof+primary+tabs+body;
 }
 
@@ -6862,8 +6931,8 @@ function crPrice(e,c,lv){ const own=c.equip.includes(e.key);
  if(lv.n<(e.lvl||1)) return `<span class="buy no">🔒 ${esc(t('cr.lv',{n:e.lvl}))}</span>`;
  if(c.credits>=e.cost) return `<button type="button" class="buy" data-act="crBuy" data-v="${e.key}" aria-label="${esc(t('cr.buyFor',{p:e.cost}))}"><bdi dir="ltr">$${e.cost}</bdi></button>`;
  return `<button type="button" class="buy no" data-act="needCash" data-v="${e.cost-c.credits}"><bdi dir="ltr">$${e.cost}</bdi><small>${esc(t('econ.need',{n:e.cost-c.credits}))}</small></button>`; }
-function crGearRow(e,c,lv){ const own=c.equip.includes(e.key), lk=!own&&lv.n<(e.lvl||1); const fx=crFx(e.key);
- return `<div class="gear ${own?'owned':''} ${lk?'lockd':''}"><button type="button" class="gtap" data-act="crGear" data-v="${e.key}" aria-label="${esc(t('equip.'+e.key+'.name'))}"></button><span class="gi" aria-hidden="true">${e.ic}</span><span style="min-width:0"><b>${esc(t('equip.'+e.key+'.name'))}</b>${fx?`<span class="fx">${fx}</span><span class="gd">${esc(t('equip.'+e.key+'.desc'))}</span>`:`<span class="fx">${esc(t('equip.'+e.key+'.desc'))}</span>`}</span><span class="gp">${crPrice(e,c,lv)}</span></div>`; }
+function crGearRow(e,c,lv){ const own=c.equip.includes(e.key), lk=!own&&lv.n<(e.lvl||1); const one=crOneLiner(e.key), pay=own?'':crPayoffHtml(e);
+ return `<div class="gear ${own?'owned':''} ${lk?'lockd':''}"><button type="button" class="gtap" data-act="crGear" data-v="${e.key}" aria-label="${esc(t('equip.'+e.key+'.name'))}"></button><span class="gi" aria-hidden="true">${e.ic}</span><span style="min-width:0"><b>${esc(t('equip.'+e.key+'.name'))}</b><span class="fx">${one}</span>${pay}</span><span class="gp">${crPrice(e,c,lv)}</span></div>`; }
 function crGoal(c){ const gs=careerGoals(c).filter(g=>g.cur<g.max); if(!gs.length) return ''; const g=gs.sort((a,b)=>b.cur/b.max-a.cur/a.max)[0]; const lv=levelInfo(c.xp); let sub='', tab='profile';
  if(g.k==='gear'){ tab='shop'; const nx=EQUIP.filter(e=>!c.equip.includes(e.key)&&lv.n>=(e.lvl||1)).sort((a,b)=>a.cost-b.cost)[0]; sub=t('cr.goalGear',{n:g.cur,m:g.max})+(nx?' · '+t(c.credits>=nx.cost?'cr.inReach':'cr.nextBuy',{x:t('equip.'+nx.key+'.name'),p:nx.cost}):''); }
  else if(g.k==='lvl') sub=lv.next?t('cr.goalLvl',{n:lv.next-c.xp,l:lv.n+1}):'';
@@ -6889,22 +6958,22 @@ function crSourcesTab(c){ const lv=levelInfo(c.xp);
   const row=(lab,n,m,big,sub,nx)=>`<div class="trow"><div class="tmain"><span class="tlab"><span class="over">${esc(lab)}</span>${crPips(n,m)}</span><b>${big}</b><small>${sub}</small></div><div class="tbuy">${crTreeBtn(nx,c,lv)}</div></div>`;
   const gate=nx=>` · <bdi dir="ltr">$${nx.price}</bdi> · ${esc(t('tree.lvlGate',{n:nx.lvl}))}`;
   let rows=''; if(T.open){ const on=openLvl(k,c), d=unlockDay(k,c), ox=treeNext(k,'open',c);
-   rows+=row(t('tree.open'),on,T.open.length,`🕐 ${esc(t('tree.opensNow',{d}))}`,ox?esc(t('tree.openNext',{src:nm,a:d,b:d-1}))+gate(ox):esc(t('tree.openMax')),ox); }
-  if(rm) rows+=row(t('tree.rel'),rn,rm,`${sigHtml(crBars(crRel(k)))} ${crBdi('tree.relNow',{n:now+'%'})}`,rx?crBdi('tree.relNext',{a:now+'%',b:nxt+'%'})+gate(rx):esc(t('tree.relMax')),rx);
+   rows+=row(t('tree.open'),on,T.open.length,`🕐 ${esc(t('tree.opensNow',{d}))}`,ox?crTreeLiner(k,'open',ox,c)+gate(ox)+crPayoffHtml(ox):esc(t('tree.openMax')),ox); }
+  if(rm) rows+=row(t('tree.rel'),rn,rm,`${sigHtml(crBars(crRel(k)))} ${crBdi('tree.relNow',{n:now+'%'})}`,rx?crTreeLiner(k,'rel',rx,c)+gate(rx)+crPayoffHtml(rx):esc(t('tree.relMax')),rx);
   return `<div class="card srcc tree"><div class="srch"><span class="se" aria-hidden="true">${s.ic}</span><span style="min-width:0"><b>${esc(nm)}</b><small>${esc(t('src.'+k+'.desc'))}</small></span><span class="srcost"><bdi dir="ltr">📞 ${s.cost}</bdi></span></div>${rows}
    <p class="trec"><span class="over">${esc(t('cr.record'))}</span> <b>${st&&st.n?esc(t('cr.recordN',{n:st.ok,m:st.n})):'—'}</b></p></div>`; }).join('')+`<p class="xs dim" style="margin:10px 4px 0">${esc(t('tree.dailyNote'))}</p>`; }
 LANE_ACTS.crUp=(el,v)=>{ const [tr,k]=String(v||'').split(':'); if(!SOURCES[k]||(tr!=='rel'&&tr!=='open')) return; const cc=C(); const nx=buyTree(k,tr,cc); if(!nx) return;
  achTry(()=>Analytics.track('spend_virtual_currency',{value:nx.price,virtual_currency_name:'credits',item_name:tr+'_'+k+'_'+(nx.step+1)})); achTry(()=>sfxCue('register'),null); beep('register');
  const out=[]; if(achUnlock('gear1',{m:roomCtx?'rooms':'career',r:roomCtx||undefined})) out.push('gear1'); out.push(...achEval({m:'career'})); persist();
  render(); toast(tr==='rel'?t('tree.toastRel',{src:t('src.'+k+'.name'),n:Math.round(crRel(k)*100)+'%'}):t('tree.toastOpen',{src:t('src.'+k+'.name'),d:unlockDay(k,cc)})); out.forEach(achToast); };
-LANE_ACTS.crGear=(el,v)=>{ const e=EQUIP.find(x=>x.key===v); if(!e) return; const c=C(), lv=levelInfo(c.xp); const own=c.equip.includes(v); const fx=crFx(v);
- openModal(`<div class="geardet"><span class="gi big" aria-hidden="true">${e.ic}</span><h2 class="d3">${esc(t('equip.'+v+'.name'))}</h2><p>${esc(t('equip.'+v+'.desc'))}</p>${fx?`<span class="fx">${fx}</span>`:''}
+LANE_ACTS.crGear=(el,v)=>{ const e=EQUIP.find(x=>x.key===v); if(!e) return; const c=C(), lv=levelInfo(c.xp); const own=c.equip.includes(v); const one=crOneLiner(v), pay=own?'':crPayoffHtml(e);
+ openModal(`<div class="geardet"><span class="gi big" aria-hidden="true">${e.ic}</span><h2 class="d3">${esc(t('equip.'+v+'.name'))}</h2><p>${one}</p>${pay?`<p class="pay" style="margin-top:6px">${pay}</p>`:''}
   <p class="xs muted" style="margin-top:10px">${esc(t('cr.gearNote'))}</p>
   ${own?`<div class="owned-chip" style="margin-top:14px">✓ ${esc(t('career.owned'))}</div>`:lv.n<(e.lvl||1)?`<button class="btn" type="button" disabled style="margin-top:14px">🔒 ${esc(t('cr.lv',{n:e.lvl}))}</button>`:c.credits>=e.cost?`<button class="btn primary" type="button" data-act="crBuy" data-v="${v}" style="margin-top:14px">${esc(t('cr.buyFor',{p:e.cost}))}</button>`:`<button class="btn" type="button" data-act="needCash" data-v="${e.cost-c.credits}" style="margin-top:14px">${esc(t('econ.need',{n:e.cost-c.credits}))}</button>`}</div>`,t('equip.'+v+'.name')); };
 LANE_ACTS.crBuy=(el,v)=>{ const eq=EQUIP.find(x=>x.key===v); const cc=C(); if(!eq||cc.equip.includes(v)||cc.credits<eq.cost||levelInfo(cc.xp).n<(eq.lvl||1)) return; cc.credits-=eq.cost; cc.equip.push(v);
  achTry(()=>Analytics.track('spend_virtual_currency',{value:eq.cost,virtual_currency_name:'credits',item_name:v})); achTry(()=>sfxCue('register'),null); beep('register');
  const out=[]; if(achUnlock('gear1',{m:roomCtx?'rooms':'career',r:roomCtx||undefined})) out.push('gear1'); out.push(...achEval({m:'career'})); persist();
- closeModalQuiet(); render(); toast(t('equip.'+v+'.desc')); out.forEach(achToast); };
+ closeModalQuiet(); render(); toast(crOneLiner(v,true)); out.forEach(achToast); };
 LANE_ACTS.crTheme=(el,v)=>{ save.settings.theme=v; persist(); applyTheme(); render(); };
 LANE_ACTS.crTitle=(el,v)=>{ achEnsure(); save.ach.title=v&&v!=='none'?v:null; persist(); beep('pop'); render(); };
 /* @@LANE JS:career END */
@@ -7009,6 +7078,126 @@ onHook('rendered',sc=>{
 /* @@LANE JS:rival2 BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:rival2 END */
 /* @@LANE JS:career2 BEGIN (lane-owned; insert only between BEGIN and END) */
+/* career2 lane: gear one-liners + payoff estimate, "opened early" badge, level-up story sheet, milestone goals, Prestige (Legend career).
+   Cosmetic + career-only: nothing here touches the Daily, the board maths or the timer. Pay bonus and tier bars only apply to the solo career. */
+const CR2_PAY_MAX=25;
+function cr2M(){ return typeof MATH!=='undefined'&&MATH?MATH:{}; }
+/* t() with only the numeric vars wrapped in <bdi dir="ltr"> (names stay in the page direction) */
+function cr2F(k,v){ const ks=Object.keys(v||{}), m={}; ks.forEach((x,i)=>m[x]='\u0001'+i+'\u0002'); return esc(t(k,m)).replace(/\u0001(\d+)\u0002/g,(_,i)=>{ const val=String(v[ks[+i]]); return /^[\d$%+.,\-–→← ]+$/.test(val)?`<bdi dir="ltr">${esc(val)}</bdi>`:esc(val); }); }
+/* ---------- 1. one plain sentence per shop item / tree step, from the real EQUIP / MATH / SRC_TREE effects ---------- */
+function crOneLiner(key,plain){ const M=cr2M(), CC=M.CAREER_CONTACTS||M.CONTACTS||3, T=(k,v)=>plain?t(k,v):cr2F(k,v);
+ switch(key){
+  case 'wifi': case 'phone2': { const D=key==='wifi'?(M.WIFI_DAYS||[6,6]):(M.PHONE_DAYS||[5,5]); return D[0]===D[1]?T('cr2.fx.day',{d:D[0],a:CC,b:CC+1}):T('cr2.fx.days',{d1:D[0],d2:D[1],a:CC,b:CC+1}); }
+  case 'bank': return T('cr2.fx.bank',{a:M.DD_CONTACTS||3,b:(M.DD_CONTACTS||3)+1});
+  case 'radar': return T('cr2.fx.radar',{p:Math.round(((M.WARN_GEAR||{}).radar||0)*100)});
+  case 'laptop': return T('cr2.fx.laptop',{n:M.LEAD_DAYS||2,p:Math.round(((M.WARN_GEAR||{}).laptop||0)*100)});
+  case 'mic': return T('cr2.fx.mic',{p:25});                      /* resolveWindow: fans ×1.25 on right calls */
+  case 'tick': return T('cr2.fx.tick',{a:'800',b:'1,600'})+(M.TICK>0?' '+T('cr2.fx.tickPts',{n:M.TICK}):''); /* resolveWindow: exclusive fan bonus 800 → 1600 (+MATH.TICK pts, currently 0) */
+  case 'coat': return T('cr2.fx.coat',{});                          /* resolveWindow: first wrong call halved */
+  default: return plain?t('equip.'+key+'.desc'):esc(t('equip.'+key+'.desc')); } }
+function crTreeLiner(k,track,nx,c,plain){ const M=cr2M(), s=SOURCES[k], nm=t('src.'+k+'.name'), T=(kk,v)=>plain?t(kk,v):cr2F(kk,v); if(!s||!nx) return '';
+ if(track==='rel'){ const a=Math.round(crRel(k)*100), b=Math.round(Math.min(M.REL_CAP||.97,s.rel+(((M.REL_UP||{})[k]||[])[nx.step]||0))*100); return T('cr2.fx.rel',{src:nm,n:nx.step+1,a:a+'%',b:b+'%'}); }
+ const d=unlockDay(k,c||C()); return T('cr2.fx.open',{src:nm,n:nx.step+1,a:d,b:Math.max(1,d-1)}); }
+/* Payoff estimate — deliberately rough, conservative and in ONE place. Extra points a window per item:
+   +1 contact on one day ≈ +5 (one more 60–80 % read ≈ a quarter of a right call); a Deadline-Day contact the same;
+   radar ≈ 2 twists × 20 % warned × ~15 pts ≈ +6; laptop ≈ +4 (10 % more warnings, 2-day lead); coat ≈ +6 (one −12 call halved);
+   reliability step ≈ Δrel × ~2 asks × ~12 pts; unlock-earlier step ≈ +3 (one more day of a top source); mic/tick move followers, not pay → no estimate.
+   Cash per point = PAY.perPt × PAY.mult (× repMult at 70+ rep), plus the chance of finishing one tier higher (Δpts / ~40-pt bar gap) × the
+   average tier step in cash. The line is shown only when the answer is ≤ CR2_PAY_MAX windows; anything weaker is skipped. */
+function payoffWindows(item){ try{ const M=cr2M(), P=M.PAY||{}; if(!item) return null; const c=C(); let pts=0;
+ if(item.track){ if(!SOURCES[item.key]) return null; if(item.track==='rel'){ const up=(M.REL_UP||{})[item.key]||[]; const prev=item.step>0?up[item.step-1]||0:0; pts=Math.max(0,(up[item.step]||0)-prev)*2*12; } else pts=3; }
+ else pts={wifi:5,phone2:5,bank:5,radar:6,laptop:4,coat:6}[item.key]||0;
+ const price=item.price!=null?item.price:item.cost; if(pts<=0||!price) return null;
+ const mult=(P.mult||1)*((c.rep||0)>=(P.repAt||70)?(P.repMult||1):1); const tv=P.tier||{};
+ const cash=pts*(P.perPt||0)*mult+Math.min(1,pts/40)*((((tv[1]||0)-(tv[2]||0))+((tv[2]||0)-(tv[3]||0)))/2)*mult; if(cash<=0) return null;
+ const n=Math.ceil(price/cash); return n<=CR2_PAY_MAX?n:null; }catch(e){ return null; } }
+function crPayoffHtml(item){ const n=payoffWindows(item); return n?`<span class="pay" title="${esc(t('cr2.payoffHow'))}">💵 ${cr2F('cr2.payoff',{n})}</span>`:''; }
+window.payoffWindows=payoffWindows;
+/* ---------- 2. "opened early" (Career/Rooms): a source open today only because of the unlock-earlier tree step ---------- */
+function cr2EarlyKeys(){ if(!game||!isCareer()||game.result) return []; const M=cr2M(), c=C(); return Object.keys(SOURCES).filter(k=>{ const base=(M.SRC_FROM||{})[k]||1; if(base<=1) return false; const d=unlockDay(k,c); return d<base&&game.day>=d&&game.day<base; }); }
+function cr2EarlyBadges(){ if(!game||!isCareer()||game.result||screen!=='window') return; const ks=cr2EarlyKeys(); if(!ks.length) return;
+ document.querySelectorAll('.st[data-src]').forEach(el=>{ const k=el.dataset.src; if(!ks.includes(k)||el.querySelector('.corner')||/\b(later|locked)\b/.test(el.className)) return;
+  const sp=document.createElement('span'); sp.className='corner cr2e'; sp.innerHTML=`<span class="tag early" title="${esc(t('cr2.earlyAria',{src:t('src.'+k+'.name')}))}">⚡ ${esc(t('cr2.early'))}</span>`; el.prepend(sp); }); }
+(function(){ let tm=null; try{ new MutationObserver(()=>{ if(tm) return; tm=setTimeout(()=>{ tm=null; cr2EarlyBadges(); },40); }).observe(document.body,{childList:true,subtree:true}); }catch(e){} })();
+function cr2EarlyToast(){ if(!game||!isCareer()||game.result) return; const c=C(); const ks=cr2EarlyKeys().filter(k=>unlockDay(k,c)===game.day); if(!ks.length) return;
+ game.cr2early=game.cr2early||{}; const fresh=ks.filter(k=>!game.cr2early[k]); if(!fresh.length) return; fresh.forEach(k=>game.cr2early[k]=1); saveGame();
+ setTimeout(()=>{ if(game&&!game.result) toast(t('cr2.earlyToast',{src:fresh.map(k=>t('src.'+k+'.name')).join(' · ')})); },1700); }
+onHook('day',()=>cr2EarlyToast());
+/* ---------- 4. milestone goals (per career, C().stats) ---------- */
+function cr2Stats(c){ c=c||C(); if(!c.stats||typeof c.stats!=='object') c.stats={}; const S=c.stats; ['t2streak','t2best','ddExcl','rivalBeat'].forEach(k=>{ if(typeof S[k]!=='number') S[k]=0; }); return S; }
+function careerMilestones(c){ c=c||C(); const S=cr2Stats(c); const last=(c.history||[]).slice(0,10), n1=last.filter(h=>h.tier===1).length; const srcs=Object.keys(SOURCES); const up=srcs.filter(k=>relLvl(k,c)>=1).length;
+ return [{k:'t1rate',ic:'🥇',cur:Math.min(30,n1*10),max:30,unit:'%',sub:t('cr2.ms.t1rateSub',{n:n1})},
+  {k:'t2streak',ic:'🔥',cur:Math.min(5,S.t2best),max:5,sub:t('cr2.ms.t2streakSub',{n:S.t2best,c:S.t2streak})},
+  {k:'ddExcl',ic:'⏱️',cur:Math.min(1,S.ddExcl),max:1},
+  {k:'srcAll',ic:'🧭',cur:up,max:srcs.length},
+  {k:'rivalBeat',ic:'⚔️',cur:Math.min(5,S.rivalBeat),max:5}]; }
+window.careerMilestones=careerMilestones;
+/* ---------- 3/5. resolved: milestone counters, level-up pending flag, Legend pay bonus (solo career only) ---------- */
+onHook('resolved',res=>{ try{ if(!game||game.mode!=='career'||!res) return; const c=C(), S=cr2Stats(c); const tier=res.tier&&res.tier.n;
+ S.t2streak=tier&&tier<=2?S.t2streak+1:0; S.t2best=Math.max(S.t2best,S.t2streak);
+ (res.per||[]).forEach(x=>{ if(!x.exclusive) return; const s=game.sagas[x.sagaId]; if(x.callDay===7) S.ddExcl++; if(s&&(s.rivalPosts||[]).length) S.rivalBeat++; });
+ const p=game.room?0:(c.prestige|0); if(p>0&&res.creditGain>0){ const extra=Math.round(res.creditGain*0.1*p); c.credits+=extra; res.creditGain+=extra; res.prestigeBonus=extra; res.prestigePct=10*p; }
+ if(res.levelUp&&res.levelUp.n) c.lvPending=res.levelUp.n;
+ }catch(e){ console.error('career2',e); } });
+/* ---------- 3. level-up story sheet: what this level unlocks (gear, tree steps, boosts, catchphrase, trophy/title, goal) + what's next ---------- */
+function crLevelPerks(n){ const out=[]; const mk=(ic,k,v)=>out.push({ic,tx:t(k,v),html:cr2F(k,v)});
+ if(n===7) mk('🎯','cr2.lvl.perkGoal',{});
+ EQUIP.filter(e=>(e.lvl||1)===n).forEach(e=>mk(e.ic,'cr2.lvl.perkGear',{g:t('equip.'+e.key+'.name'),p:'$'+e.cost}));
+ Object.keys(SRC_TREE).forEach(k=>['rel','open'].forEach(tr=>((SRC_TREE[k]||{})[tr]||[]).forEach((st,i)=>{ if(st[1]===n&&SOURCES[k]) mk(SOURCES[k].ic,tr==='rel'?'cr2.lvl.perkRel':'cr2.lvl.perkOpen',{src:t('src.'+k+'.name'),n:i+1,p:'$'+st[0]}); })));
+ (typeof BOOSTS!=='undefined'?BOOSTS:[]).filter(b=>(b.lvl||1)===n).forEach(b=>mk(b.ic,'cr2.lvl.perkBoost',{b:t('boost.'+b.key+'.name')}));
+ if(n===2) mk('💬','cr2.lvl.perkCatch',{c:(tt('catch')||{}).sources||''});   /* resolveWindow: cg('sources') at level 2 */
+ const a=ACH_BY['lvl'+n]; if(a){ if(achTitleOf(a)) mk(a.ic,'cr2.lvl.perkTitle',{a:achName(a),t:achTitleOf(a)}); else mk(a.ic,'cr2.lvl.perkTrophy',{a:achName(a)}); }
+ return out; }
+let cr2Lv=null;
+function crLevelSheet(n){ const c=C(); n=n||levelInfo(c.xp).n; const titles=tt('levels')||[]; const title=titles[Math.min(n,titles.length)-1]||''; const perks=crLevelPerks(n);
+ const nx=LEVEL_XP[n]!=null?n+1:null; const nxp=nx?crLevelPerks(nx):[]; const toGo=nx?Math.max(0,LEVEL_XP[n]-c.xp):0; const shown=perks.slice(0,5), more=perks.length-shown.length;
+ crLevelClose(true); const d=document.createElement('div'); d.className='lvsheet'+(motionReduced()?' rm':''); d.setAttribute('role','dialog'); d.setAttribute('aria-modal','true'); d.setAttribute('aria-label',t('cr2.lvl.title',{n,t:title}));
+ d.innerHTML=`<div class="lvin"><span class="rw">⬆️ ${esc(t('cr2.lvl.eyebrow'))}</span><div class="lvn" aria-hidden="true"><bdi dir="ltr">${n}</bdi></div><h2 class="d2">${esc(t('cr2.lvl.title',{n,t:title}))}</h2>
+  ${perks.length?`<p class="lvh">${esc(t('cr2.lvl.unlocked'))}</p>`:`<p class="lvp">${esc(t('cr2.lvl.nothing',{t:title}))}</p>`}
+  ${perks.length?`<ul>${shown.map(p=>`<li><span aria-hidden="true">${p.ic}</span><span>${p.html}</span></li>`).join('')}${more>0?`<li class="more">${esc(t('cr2.lvl.more',{n:more}))}</li>`:''}</ul>`:''}
+  <div class="nx">${nx?cr2F('cr2.lvl.next',{n:nx,p:nxp.length?nxp[0].tx:(titles[nx-1]||'')})+' · '+cr2F('cr2.lvl.toGo',{n:toGo}):esc(t('cr2.lvl.top'))}</div>
+  <button class="btn primary xl" type="button" data-act="crLvOk">${esc(t('cr2.lvl.go'))}</button></div>`;
+ document.body.appendChild(d); cr2Lv=d; achTry(()=>sfxCue('levelup')); if(!motionReduced()) achTry(()=>confetti({n:70}));
+ d.addEventListener('click',e=>{ if(e.target===d) crLevelClose(); }); setTimeout(()=>{ const b=d.querySelector('.btn'); if(b) b.focus({preventScroll:true}); },50); }
+function crLevelClose(quiet){ if(!cr2Lv) return; const d=cr2Lv; cr2Lv=null; if(quiet||motionReduced()) d.remove(); else { d.classList.add('out'); setTimeout(()=>d.remove(),240); } }
+LANE_ACTS.crLvOk=()=>crLevelClose(); BACK.push(()=>{ if(cr2Lv){ crLevelClose(); return true; } return false; });
+window.crLevelSheet=crLevelSheet;
+function cr2LvShow(){ const c=C(); const n=c.lvPending; if(!n||cr2Lv) return; c.lvPending=null; persist(); crLevelSheet(n); }
+/* the sheet waits for the Results reveal, the tier slam and any trophy celebration; the Results line "Level up! …" (results lane) stays as the record */
+onHook('rendered',scr=>{ const c=C(); if(!c||!c.lvPending||cr2Lv) return;
+ if(scr==='career'){ setTimeout(()=>{ if(screen==='career') cr2LvShow(); },300); return; }
+ if(scr==='results'&&game&&game.mode==='career'&&!game.archived&&game.result&&game.result.levelUp){ let n=0, calm=0; const tick=()=>{ if(screen!=='results'||cr2Lv) return; const busy=document.querySelector('.rvl,.big,.celebrate')||document.body.classList.contains('modal-open'); if(busy){ calm=0; if(n++<80) setTimeout(tick,400); return; } if(calm++<1){ setTimeout(tick,800); return; } cr2LvShow(); }; setTimeout(tick,1500); } });
+/* ---------- 5. Prestige: "Legend career" (solo career only) ---------- */
+function cr2Eligible(c){ c=c||C(); return !roomCtx&&careerGoals(c).every(g=>g.cur>=g.max); }
+function cr2Busy(){ const ip=save.inProgress; return !!(ip&&ip.mode==='career'&&!ip.room); }
+function cr2Tag(p,cls){ p=p|0; if(!p) return ''; return `<span class="lgtag ${cls||''}">★ ${esc(t(p>1?'cr2.pr.tagN':'cr2.pr.tag',{n:p}))}</span>`; }
+function crPrestigeCard(c){ if(!cr2Eligible(c)) return ''; const n=(c.prestige|0)+1;
+ return `<button type="button" class="prcard" data-act="crPrestige"><span class="gi" aria-hidden="true">👑</span><span style="min-width:0"><b>${esc(t('cr2.pr.card'))} ${cr2Tag(n)}</b><small>${esc(t('cr2.pr.cardSub'))}</small></span><span class="chev" aria-hidden="true">›</span></button>`; }
+LANE_ACTS.crPrestige=()=>{ const c=C(); if(!cr2Eligible(c)) return; const n=(c.prestige|0)+1, busy=cr2Busy();
+ openModal(`<div class="prconf">${cr2Tag(n,'xl')}<h2 class="d3">${esc(t('cr2.pr.confirmTitle'))}</h2>
+  <div class="prkv"><div><span class="over">${esc(t('cr2.pr.keep'))}</span><b>${esc(t('cr2.pr.keepList'))}</b></div><div><span class="over">${esc(t('cr2.pr.reset'))}</span><b>${esc(t('cr2.pr.resetList'))}</b></div></div>
+  <p class="prbonus">${cr2F('cr2.pr.bonus',{n,b:10*n,p:10*n})}</p>
+  ${busy?`<p class="xs muted" style="margin-top:10px">${esc(t('cr2.pr.inWindow'))}</p>`:''}
+  <div class="prrow"><button class="btn" type="button" data-act="closeModal">${esc(t('cr2.pr.cancel'))}</button><button class="btn primary" type="button" data-act="crPrestigeGo" ${busy?'disabled':''}>${esc(t('cr2.pr.go'))}</button></div></div>`,t('cr2.pr.card')); };
+LANE_ACTS.crPrestigeGo=()=>{ const c=C(); if(!cr2Eligible(c)||cr2Busy()) return; const f=freshSave().career;
+ c.prestige=(c.prestige|0)+1; c.xp=0; c.credits=f.credits; c.equip=[]; c.up={rel:{},open:{},mig:1}; c.t1=0; c.lvPending=null; careerTab='profile'; persist();
+ achTry(()=>Analytics.track('prestige',{level:c.prestige})); achTry(()=>sfxCue('unlock','legend')); closeModalQuiet(); render(); if(!motionReduced()) achTry(()=>confetti({n:120}));
+ setTimeout(()=>toast(t('cr2.pr.done',{n:c.prestige,b:10*c.prestige,p:10*c.prestige})),200); };
+/* LEGEND tag on the Home career card; Legend bonus line under the cash stat on Results (toast if the results lane restructures the box) */
+onHook('rendered',scr=>{
+ if(scr==='window') cr2EarlyToast();
+ if(scr==='home'){ const p=save.career&&save.career.prestige|0; if(!p) return; const el=document.querySelector('.today .mode[data-v="career"]'); if(!el||el.querySelector('.lgtag')) return; el.insertAdjacentHTML('beforeend',cr2Tag(p,'hm')); return; }
+ if(scr==='results'&&game&&game.result&&!game.room){ const r=game.result; if(!r.prestigeBonus) return; const box=document.querySelector('.modebox'); if(box&&box.querySelector('.cr2pb')) return;
+  if(!box){ if(!r.cr2Toasted){ r.cr2Toasted=1; setTimeout(()=>{ if(screen==='results') toast(t('cr2.pr.bonusToast',{n:r.prestigeBonus,p:r.prestigePct||10})); },2600); } return; }
+  const div=document.createElement('div'); div.className='stat cr2pb'; div.innerHTML=`<span>${esc(t('cr2.pr.bonusLine',{p:r.prestigePct||10}))}</span><b><bdi dir="ltr">+$${r.prestigeBonus}</bdi></b>`;
+  const stats=box.querySelectorAll('.stat'); const cash=stats[1]||stats[stats.length-1]; if(cash&&cash.parentNode===box) box.insertBefore(div,cash.nextSibling); else box.appendChild(div); } });
+/* ---------- Career › Goals tab ---------- */
+function crGoalsTab(c){ const gs=careerGoals(c), ms=careerMilestones(c), lv=levelInfo(c.xp); const ICON={lvl:'📈',t1:'🥇',gear:'🧰',fans:'👥'}; const p=c.prestige|0;
+ const row=(g,name,sub)=>{ const ok=g.cur>=g.max, pc=Math.round(g.cur/g.max*100); const val=g.k==='fans'?fmtK(g.cur)+' / 100K':g.unit==='%'?g.cur+'% / '+g.max+'%':g.cur+' / '+g.max;
+  return `<div class="msrow ${ok?'ok':''}"><span class="mi" aria-hidden="true">${g.ic||ICON[g.k]||'🎯'}</span><span style="min-width:0"><b>${esc(name)}${ok?' <span class="mk" aria-label="✓">✓</span>':''}</b>${sub?`<small>${esc(sub)}</small>`:''}<span class="prog"><span class="bar"><i style="width:${Math.min(100,pc)}%"></i></span><small><bdi dir="ltr">${esc(val)}</bdi></small></span></span></div>`; };
+ return `<div class="sechead"><h2 class="d4">${esc(t('cr2.ms.core'))}</h2><span class="aux"><bdi dir="ltr">${gs.filter(g=>g.cur>=g.max).length}/${gs.length}</bdi></span></div><section class="list">${gs.map(g=>row(g,t('econ.goal.'+g.k),g.k==='lvl'&&lv.next?t('cr.goalLvl',{n:lv.next-c.xp,l:lv.n+1}):'')).join('')}</section>
+  <p class="xs muted" style="margin:8px 4px 0">${esc(t('cr2.ms.legendNote'))}</p>${crPrestigeCard(c)}${p?`<p class="prnow">👑 ${cr2F('cr2.pr.active',{n:p,b:10*p,p:10*p})}</p>`:''}
+  <div class="sechead"><h2 class="d4">${esc(t('cr2.ms.title'))}</h2><span class="aux"><bdi dir="ltr">${ms.filter(g=>g.cur>=g.max).length}/${ms.length}</bdi></span></div><section class="list">${ms.map(g=>row(g,t('cr2.ms.'+g.k),g.sub||'')).join('')}</section>`; }
 /* @@LANE JS:career2 END */
 /* @@LANE JS:dd BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:dd END */
