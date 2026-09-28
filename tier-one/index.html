@@ -1985,7 +1985,7 @@ const CONFIG={
  SITE_URL:'https://sembagames.app/tier-one',
  DAILY_REPLAY:true,
  SAGAS:5,                                        // players per window, every mode
- CONTACTS:3,                                     // source contacts per day, days 1-6 (Career gear adds more)
+ CONTACTS:4,                                     // source contacts per day, days 1-6 (Career gear adds more)
  DD_SECONDS:60,                                  // Deadline-Day timer (seconds)
  DD_CONTACTS:3,                                  // Deadline-Day contacts (Power bank gear +1)
  TIERS:[385,260,160,70],                         // tier cut-offs T1..T4 (T5 >= 0, Clown < 0)                              // TESTING ONLY: lets the Daily Challenge be replayed. Set to false to make it one-go-a-day again.                 // your live URL — printed at the bottom of every share card
@@ -3794,6 +3794,46 @@ deepMerge(I18N,{
 });
 /* tune2: tutorial cards (base I18N) quote the Tier-1 bar; keep them in sync with CONFIG.TIERS[0] */
 ['en','es','ar'].forEach(l=>{ const T=I18N[l]; if(!T) return; const fx=v=>typeof v==='string'?v.replace(/\b3[5-9]\d\+/g,CONFIG.TIERS[0]+'+'):Array.isArray(v)?v.map(fx):v; ['tut','howto'].forEach(k=>{ if(T[k]&&T[k].cards) T[k].cards=fx(T[k].cards); }); });
+/* Option B (all sources open from day 1; physio/airport give a ~55% hunch before day 6/4). Hard-coded days: MATH.SRC_FROM
+   (physio 6, airport 4) and MATH.HUNCH (.55). Applied here and again from the math JS slot, because some of these keys are
+   (re)defined by later I18N blocks (howto2, tut.coach, board). */
+const OPTB_I18N={
+ en:{math:{hunchUntil:'Hunch until Day {d}',hunchLine:{physio:'(No medical booked yet. Just a hunch.)',airport:'(No flight plan filed yet. Just a hunch.)'},
+   reason:{hunch:'Only a hunch until Day {d}. Ask now and that hunch sticks until a twist.',physio:'No medical booked before Day {d}: until then the physio only has a hunch.',airport:'No flight plans filed before Day {d}: until then the airport spotter only has a hunch.'},
+   opens:'Sharp from Day {d}',
+   rules:{summary:'Five sagas, seven days, four contacts a day, and two real deals will TWIST before the window shuts: the wire shouts 🚨, the old answer becomes wrong and his sources talk again. Call early for bonus points and exclusives, or wait for the physio to get sharp on day 6 and Deadline Day, but only go loud when you\'re really sure.',
+    sources:'Every source answers from day 1. Barber and leak cost 1, agent and kitman 2. Airport spotter (3) and physio (3) only have a hunch (about 55%) before day 4 and day 6, then they\'re the best sources. Ask early and the hunch sticks until a twist.'}},
+  equip:{wifi:{desc:'+1 contact on day 6 (4 → 5)'},phone2:{desc:'+1 contact on day 5 (4 → 5)'}},
+  src:{physio:{desc:'Best source from day 6, when medicals get booked. Before that, just a hunch.'},airport:{desc:'High from day 4, when flights get filed. Before that, just a hunch.'}},
+  howto2:{ask3:'Every source answers from day 1, but the airport spotter only has a hunch before day 4 and the physio before day 6. Ask early and you\'re stuck with it: each source answers once per player until a twist.'},
+  tut:{coach:{opens:'Every source answers from day 1. The physio and the airport spotter only have a hunch until their day.'}},
+  board:{tmOpen:'Tomorrow: **{x} sharpens**'},
+  howtoCard:['4 contacts a day','Spend 4 contacts a day. Every source answers from day 1. Barber and rival leak cost 1, agent and kitman 2. The airport spotter (3) and the physio (3) are the best sources, but before flights get filed (day 4) and medicals get booked (day 6) they only have a hunch (about 55%). Ask early and you\'re stuck with that hunch: each source answers once per player until a twist. Everyone lies sometimes.']},
+ es:{math:{hunchUntil:'Corazonada hasta el día {d}',hunchLine:{physio:'(Aún no hay reconocimiento médico. Es solo una corazonada.)',airport:'(Aún no hay plan de vuelo registrado. Es solo una corazonada.)'},
+   reason:{hunch:'Solo una corazonada hasta el día {d}. Si preguntas ya, esa corazonada se queda hasta que haya un giro.',physio:'No hay reconocimiento antes del día {d}: hasta entonces el fisio solo tiene una corazonada.',airport:'No hay planes de vuelo antes del día {d}: hasta entonces el vigía del aeropuerto solo tiene una corazonada.'},
+   opens:'Fiable desde el día {d}',
+   rules:{summary:'Cinco culebrones, siete días, cuatro contactos al día, y dos operaciones reales darán un GIRO antes del cierre: la agencia avisa con 🚨, la respuesta de antes pasa a ser falsa y sus fuentes vuelven a hablar. Apuesta pronto para sumar bonus y exclusivas, o espera a que el fisio sea fiable el día 6 y al día límite, pero grita solo si estás muy seguro.',
+    sources:'Todas las fuentes contestan desde el día 1. Barbero y topo cuestan 1, agente y utillero 2. El vigía del aeropuerto (3) y el fisio (3) solo tienen una corazonada (un 55%) antes del día 4 y del día 6; después son las mejores fuentes. Si preguntas pronto, la corazonada se queda hasta un giro.'}},
+  equip:{wifi:{desc:'+1 contacto el día 6 (4 → 5)'},phone2:{desc:'+1 contacto el día 5 (4 → 5)'}},
+  src:{physio:{desc:'La mejor fuente desde el día 6, cuando hay reconocimientos. Antes, solo una corazonada.'},airport:{desc:'Alta desde el día 4, cuando se registran los vuelos. Antes, solo una corazonada.'}},
+  howto2:{ask3:'Todas las fuentes contestan desde el día 1, pero el vigía del aeropuerto solo tiene una corazonada antes del día 4 y el fisio antes del día 6. Si preguntas pronto, te quedas con eso: cada fuente contesta una vez por jugador hasta que hay un giro.'},
+  tut:{coach:{opens:'Todas las fuentes contestan desde el día 1. El fisio y el vigía del aeropuerto solo tienen una corazonada hasta su día.'}},
+  board:{tmOpen:'Mañana: **{x} se vuelve fiable**'},
+  howtoCard:['4 contactos al día','Tienes 4 contactos al día. Todas las fuentes contestan desde el día 1. Barbero y topo cuestan 1, agente y utillero 2. El vigía del aeropuerto (3) y el fisio (3) son las mejores fuentes, pero antes de que se registren los vuelos (día 4) y haya reconocimientos (día 6) solo tienen una corazonada (un 55%). Si preguntas pronto, te quedas con esa corazonada: cada fuente contesta una vez por jugador hasta que hay un giro. Todos mienten a veces.']},
+ ar:{math:{hunchUntil:'إحساس لحد يوم {d}',hunchLine:{physio:'(لسه مفيش كشف طبي متحجز. ده مجرد إحساس.)',airport:'(لسه مفيش خطة طيران متسجلة. ده مجرد إحساس.)'},
+   reason:{hunch:'مجرد إحساس لحد يوم {d}. لو سألت دلوقتي، الإحساس ده هيفضل معاك لحد ما تحصل قلبة.',physio:'مفيش كشف طبي قبل يوم {d}: لحد ساعتها دكتور الفريق عنده إحساس بس.',airport:'مفيش رحلات بتتسجل قبل يوم {d}: لحد ساعتها الواد بتاع المطار عنده إحساس بس.'},
+   opens:'مظبوط من يوم {d}',
+   rules:{summary:'خمس قصص، سبع أيام، أربع اتصالات في اليوم، وصفقتين حقيقيين هيتقلبوا قبل ما النافذة تقفل: الأخبار بتصرخ 🚨، الإجابة القديمة بتبقى غلط ومصادره بتتكلم تاني. قول بدري عشان البونص والانفراد، أو استنى دكتور الفريق لما كلامه يتظبط يوم 6 ويوم القفلة، بس متعليش صوتك إلا وانت متأكد بجد.',
+    sources:'كل المصادر بترد من أول يوم. الحلاق والمسرّب بـ1، السمسار وعم سيد بـ2. الواد بتاع المطار (3) ودكتور الفريق (3) عندهم إحساس بس (حوالي 55%) قبل يوم 4 ويوم 6، وبعدها هما أحسن مصادر. لو سألت بدري، الإحساس بيفضل لحد القلبة.'}},
+  equip:{wifi:{desc:'+1 اتصال في يوم 6 (4 ← 5)'},phone2:{desc:'+1 اتصال في يوم 5 (4 ← 5)'}},
+  src:{physio:{desc:'أحسن مصدر من يوم 6 لما الكشف الطبي يتحجز. قبلها مجرد إحساس.'},airport:{desc:'عالي من يوم 4 لما الرحلات تتسجل. قبلها مجرد إحساس.'}},
+  howto2:{ask3:'كل المصادر بترد من أول يوم، بس الواد بتاع المطار عنده إحساس بس قبل يوم 4، ودكتور الفريق قبل يوم 6. لو سألت بدري هتفضل على كده: كل مصدر بيرد مرة واحدة على كل لعيب لحد ما تحصل قلبة.'},
+  tut:{coach:{opens:'كل المصادر بترد من أول يوم. دكتور الفريق والواد بتاع المطار عندهم إحساس بس لحد يومهم.'}},
+  board:{tmOpen:'بكرة: **{x} كلامه بيتظبط**'},
+  howtoCard:['4 اتصالات في اليوم','معاك 4 اتصالات كل يوم. كل المصادر بترد من أول يوم. الحلاق والمسرّب بـ1، السمسار وعم سيد بـ2. الواد بتاع المطار (3) ودكتور الفريق (3) أحسن مصادر، بس قبل ما الرحلات تتسجل (يوم 4) والكشف الطبي يتحجز (يوم 6) عندهم إحساس بس (حوالي 55%). لو سألت بدري هتفضل على الإحساس ده: كل مصدر بيرد مرة واحدة على كل لعيب لحد ما تحصل قلبة. الكل بيكدب ساعات.']}
+};
+function optbApplyI18N(){ deepMerge(I18N,OPTB_I18N); ['en','es','ar'].forEach(l=>{ const T=I18N[l], c=OPTB_I18N[l].howtoCard; if(T&&T.howto&&Array.isArray(T.howto.cards)&&T.howto.cards[2]) T.howto.cards[2]=c.slice(); }); }
+optbApplyI18N();
 /* @@LANE I18N:math END */
 /* ─ */
 /* @@LANE I18N:ds BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -4211,7 +4251,8 @@ const PTS={low:[10,-5],med:[20,-12],high:[40,-45]};
 /* ---- GAME MATH ("Plot Twists"). Every tuned number lives here (see ot/math/final/MATH_NOTES.md).
    TWISTS real deals (never a FAKE story) flip their truth each window; TW_D1/TW_D2 = day weights of twist 1/2 (announced on the
    wire at the start of that day: pre-twist reads go out of date, the player's sources re-open). TW_M = where a flipped deal goes.
-   SRC_FROM = first day a source can be asked. EARLY = pts per day left on a right call. EXCL = exclusive bonus (right AND posted
+   SRC_FROM = first day a source answers at full reliability (Option B: every source is open from day 1; before its day an elite
+   source only has a hunch, reliability HUNCH). EARLY = pts per day left on a right call. EXCL = exclusive bonus (right AND posted
    before ANY rival post in the current era). UT_FRAC = share of base a U-turned right call keeps; UT_WRONG = extra loss when a
    U-turned call is wrong (waived for a free post-twist update). TW_BONUS = right call on a twisted player posted on/after the twist.
    KIT_SIDE = share of the kitman's lies that stay on the right side of "is he leaving?". WARN_GEAR/LEAD_GEAR = Career twist tip-offs. */
@@ -4220,7 +4261,7 @@ const MATH={
  TW_M:{DONE:{HIJACK:.5,OFF:.5},OFF:{DONE:.6,HIJACK:.4},HIJACK:{DONE:.5,OFF:.5}},
  TW_KINDS:['meeting','statement','silence','scramble'],
  WARN:0, EV_P:.5, EV_RH:.5, RIV_P:.6,
- SRC_FROM:{physio:6,airport:4,agent:1,kitman:1,barber:1,leak:1},
+ SRC_FROM:{physio:6,airport:4,agent:1,kitman:1,barber:1,leak:1}, HUNCH:.55,
  EARLY:4, EXCL:20, EX_RULE:'first', UT_FRAC:.5, UT_WRONG:10, TW_BONUS:10, KIT_SIDE:.5, TW_UT_FRAC:.5,
  CONTACTS:CONFIG.CONTACTS, DD_CONTACTS:CONFIG.DD_CONTACTS, DD_TIMER:CONFIG.DD_SECONDS, FMULT:[1,1,1,1], REP_REL:0, TICK:0,
  WARN_GEAR:{radar:.2,laptop:.1}, LEAD_GEAR:'laptop', LEAD_DAYS:2, WIFI_DAYS:[6,6], PHONE_DAYS:[5,5], EARLY_GEAR:{}, PAID_REL:1,
@@ -4234,7 +4275,8 @@ function truthAt(s,d){ return s.tw&&d>=s.tw?s.truth:(s.pre||s.truth); }
 function twistSeen(s,d){ return !!(s&&s.tw&&(d==null?game.day:d)>=s.tw); }
 function clueStale(s,c,d){ d=d==null?game.day:d; return !!(s.tw&&d>=s.tw&&c.day<s.tw); }
 function srcFrom(key){ const g=MATH.EARLY_GEAR&&MATH.EARLY_GEAR[key]; return Math.max(1,(MATH.SRC_FROM[key]||1)-(g&&isCareer()&&C().equip.includes(g)?1:0)); }
-function srcOpen(key,d){ return (d==null?game.day:d)>=srcFrom(key); }
+function srcOpen(key,d){ return !!SOURCES[key]; } // Option B: every source is askable from day 1 (see srcRel for the early hunch)
+function srcHunch(key,d){ return (d==null?game.day:d)<srcFrom(key); }
 function askedFresh(s,key){ return s.clues.some(c=>c.source===key&&!clueStale(s,c)); }
 function twistedSinceCall(s){ return !!(s.call&&s.tw&&s.call.day<s.tw&&game.day>=s.tw); }
 const ROAST_N=Math.max(...Object.values(I18N).map(l=>(l.roast||[]).length)), PRAISE_N=Math.max(...Object.values(I18N).map(l=>(l.praise||[]).length));
@@ -4382,7 +4424,7 @@ function saveGame(){ if(!game) return; if(game.mode==='practice'){ save.inProgre
 
 // ---------- text renderers (always current language) ----------
 function catchphrase(){ return tt('catch')[save.settings.catch]||tt('catch').confirmed; }
-function clueText(s,cl){ const ctx=ctxOf(s); if(cl.source==='tipoff') return t(cl.out==='FAKE'?'sheet.tipFake':'sheet.tipReal'); const src=cl.source==='paid'?'leak':cl.source; return fill(pickVar(tt('line')[src][cl.out],cl.v||0),ctx); }
+function clueText(s,cl){ const ctx=ctxOf(s); if(cl.source==='tipoff') return t(cl.out==='FAKE'?'sheet.tipFake':'sheet.tipReal'); const src=cl.source==='paid'?'leak':cl.source; const x=fill(pickVar(tt('line')[src][cl.out],cl.v||0),ctx); return cl.hunch&&tt('math.hunchLine.'+src)?t('math.hunchLine.'+src)+' '+x:x; }
 function clueWho(cl){ if(cl.source==='paid') return t('sheet.paid'); if(cl.source==='tipoff') return t('sheet.tip'); return SOURCES[cl.source].ic+' '+t('src.'+cl.source+'.name'); }
 function eventText(s,e){ const pool=evtPool(e.sh||e.o||s.truth,e.idx); return fill(pickVar(pool,e.v||0),ctxOf(s)); }
 function rivalText(s,rp){ const ri=RIVALS.findIndex(r=>r.key===rp.rival); const rv=RIVALS[ri]; return fill(pickVar(tt('rline')[rp.claim][rv.style],rp.v!=null?rp.v:s.id+ri*3),ctxOf(s)); }
@@ -4417,7 +4459,7 @@ function tierName(tr){ return t('tier.'+tr.key); }
 // ---------- actions ----------
 function contactSource(sagaId,key,opts){
  const s=game.sagas[sagaId]; const src=SOURCES[key]; if(!(opts&&opts.paid)&&(!src||askedFresh(s,key)||!srcOpen(key))) return false; const r=rng();
- const z=truthAt(s,game.day); let truthful, out=z, paid=!!(opts&&opts.paid); const rel=paid?(MATH.PAID_REL||1):relAdj(src.rel,key);
+ const z=truthAt(s,game.day); let truthful, out=z, paid=!!(opts&&opts.paid); const rel=paid?(MATH.PAID_REL||1):srcRel(key,game.day); const hunch=!paid&&srcHunch(key);
  if(paid){ truthful=rel>=1||r.chance(rel); if(!truthful) out=pickLie(r,z); }
  else{
   truthful=r.chance(rel);
@@ -4425,7 +4467,7 @@ function contactSource(sagaId,key,opts){
   game.actions-=src.cost||1;
   if(isCareer()){ const st=C().sources[key]||(C().sources[key]={n:0,ok:0}); st.n++; if(truthful) st.ok++; if(key==='barber') C().barber++; }
  }
- const lk=paid?'leak':key; s.clues.push({source:paid?'paid':key,out,truthful,day:game.day,bars:barsOf(rel),outdated:false,v:freshPick('line.'+lk+'.'+out,((tt('line')[lk]||{})[out]||[]).length),a:freshPick('ask',(tt('ask')||[]).length),revealAt:Date.now()+2100+Math.floor(Math.random()*500)});
+ const lk=paid?'leak':key; s.clues.push({source:paid?'paid':key,out,truthful,day:game.day,bars:barsOf(rel),hunch,outdated:false,v:freshPick('line.'+lk+'.'+out,((tt('line')[lk]||{})[out]||[]).length),a:freshPick('ask',(tt('ask')||[]).length),revealAt:Date.now()+2100+Math.floor(Math.random()*500)});
  commitRng(r); saveGame(); fireHook('contact',sagaId,key,s.clues[s.clues.length-1]); return true;
 }
 function endDay(){
@@ -5310,16 +5352,20 @@ function fallbackCopy(tx,done){ const ta=document.createElement('textarea'); ta.
 
 /* @@LANE JS:math BEGIN (lane-owned; insert only between BEGIN and END) */
 /* math lane: UI data contract (UX_SPEC §10). Pure reads of game state; never reveal hidden truth (s.truth/s.pre/s.tw before it lands). */
-function srcRel(key,day){ const src=SOURCES[key]; if(!src) return 0; return relAdj(src.rel,key); } // no clarity curve in this model: day-independent
-function srcOpenDay(key){ return srcFrom(key); }
-function whatOpensTomorrow(day){ day=day==null?(game?game.day:1):day; if(day>=7) return []; return Object.keys(SOURCES).filter(k=>srcFrom(k)===day+1); }
+/* Option B: every source is open from day 1. Elite sources (physio, airport) only give a hunch (MATH.HUNCH) before their day
+   (srcFrom/srcSharpDay), then their full reliability. Sources are sticky per era, so an early hunch is locked in until a twist. */
+function srcRel(key,day){ const src=SOURCES[key]; if(!src) return 0; const full=relAdj(src.rel,key); day=day==null?(game?game.day:1):day; return day<srcFrom(key)?Math.min(full,MATH.HUNCH):full; }
+function srcOpenDay(key){ return 1; }        // everything is askable from day 1
+function srcSharpDay(key){ return srcFrom(key); } // first day at full reliability (1 = always)
+function whatSharpensTomorrow(day){ day=day==null?(game?game.day:1):day; if(day>=7) return []; return Object.keys(SOURCES).filter(k=>srcFrom(k)===day+1); }
+function whatOpensTomorrow(day){ return whatSharpensTomorrow(day); } // legacy name: sources that SHARPEN tomorrow (board.tmOpen reads "… sharpens tomorrow")
 function sourceState(sagaId,key){
  const s=game&&game.sagas&&game.sagas[sagaId], src=SOURCES[key]; if(!s||!src) return null;
  const day=game.day, rel=srcRel(key,day), bars=barsOf(rel), opensDay=srcFrom(key), cost=src.cost||1;
- const o={state:'open',opensDay,bars,rel,sharper:false,openedToday:day>1&&opensDay===day,atMax:false,cost,reasonKey:null,gearKey:null,clue:null,reopened:false,short:game.actions<cost};
+ const sharpDay=opensDay, hunch=day<sharpDay;
+ const o={state:'open',opensDay:1,sharpDay,hunch,bars,rel,sharper:day>1&&sharpDay===day,openedToday:false,atMax:false,cost,reasonKey:hunch?'math.reason.hunch':null,label:hunch?t('math.hunchUntil',{d:sharpDay}):null,gearKey:null,clue:null,reopened:false,short:game.actions<cost};
  const fresh=[...s.clues].reverse().find(c=>c.source===key&&!clueStale(s,c)); const old=[...s.clues].reverse().find(c=>c.source===key&&clueStale(s,c));
  if(isCareer()&&src.lock&&!C().equip.includes(src.lock)){ o.state='gear'; o.gearKey=src.lock; o.reasonKey='math.reason.gear'; return o; }
- if(!srcOpen(key)){ o.state='later'; o.reasonKey='math.reason.'+key; return o; }
  if(fresh){ o.state='asked'; o.clue=fresh; o.reasonKey='math.reason.asked'; return o; }
  if(old){ o.reopened=true; o.clue=old; }
  if(o.short){ o.state='short'; o.reasonKey='math.reason.short'; return o; }
@@ -5356,6 +5402,7 @@ LANE_ACTS.boost=(el,v,id)=>{ const k=el.dataset.b, c=C(), before=c.credits, s=ga
  runBoost(id,k);
  if(game&&c.credits<before){ game.boostUses=game.boostUses||{}; game.boostUses[k]=(game.boostUses[k]||0)+1; saveGame();
   if(k==='burner'||(k==='bribe'&&s&&s.clues.length===n0)) renderSagaModal(id); } };
+optbApplyI18N(); // Option B strings win over later I18N blocks (howto2/tut/board)
 /* @@LANE JS:math END */
 /* ─ */
 /* @@LANE JS:home BEGIN (lane-owned; insert only between BEGIN and END) */
