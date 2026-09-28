@@ -1869,6 +1869,29 @@ html.rm .trophy,html.rm .trophy.hide{ transform:none; transition:opacity .15s li
 @media (prefers-reduced-motion:reduce){ .big .tweetbig .nc,.big .tweetbig.sent,.big .tweetbig.ready .sendb{ animation:none; } }
 html.rm .big .tweetbig .nc,html.rm .big .tweetbig.sent,html.rm .big .tweetbig.ready .sendb{ animation:none; }
 .pp.still{ animation:none; } /* re-rendering the open page must not replay its entry animation */
+/* What we know: one plain row per report */
+.q2know .ksum{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; margin:2px 0 6px; font:700 var(--fs-sm)/1.3 var(--body); }
+.q2know .ks{ display:inline-flex; align-items:center; gap:4px; color:var(--c); } .q2know .ks .og{ width:14px; height:14px; }
+.q2know .kdot{ color:var(--dim); }
+.q2know .klist{ display:flex; flex-direction:column; margin:0 -6px; }
+.q2know .krow{ border-top:1px solid var(--line); } .q2know .krow:first-child{ border-top:0; }
+.q2know .kr{ display:grid; grid-template-columns:34px minmax(0,1fr) 14px; gap:10px; align-items:center; width:100%; padding:9px 6px; border:0; background:none; color:var(--text); text-align:start; cursor:pointer; border-radius:12px; font:inherit; }
+.q2know .kr:active{ background:var(--panel2); }
+.q2know .ki{ width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-size:18px; background:var(--panel2); }
+.q2know .ki.rival{ background:transparent; border:1.5px dashed var(--line2); }
+.q2know .kb{ min-width:0; display:flex; flex-direction:column; gap:5px; }
+.q2know .kt{ display:flex; align-items:center; gap:7px; min-width:0; font-size:var(--fs-sm); }
+.q2know .kt b{ font-weight:700; min-width:0; overflow-wrap:anywhere; }
+.q2know .krv{ flex-shrink:0; padding:2px 6px; border-radius:6px; border:1px dashed var(--line2); font:700 10.5px/1.2 var(--body); color:var(--muted); }
+.q2know .kd{ margin-inline-start:auto; flex-shrink:0; font:600 var(--fs-xs) var(--body); color:var(--dim); white-space:nowrap; }
+.q2know .ko{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.q2know .oc.say{ height:auto; min-height:24px; padding:3px 9px; white-space:normal; text-transform:none; letter-spacing:0; font:700 13px/1.25 var(--body); text-align:start; }
+.q2know .kold{ font:700 11px/1.2 var(--body); color:var(--muted); }
+.q2know .chev{ color:var(--dim); font-size:18px; transition:transform .2s; } .q2know .krow.open .chev{ transform:rotate(90deg); } [dir="rtl"] .q2know .krow.open .chev{ transform:rotate(-90deg); }
+.q2know .kq{ margin:0 6px 10px calc(34px + 16px); padding:9px 12px; border-radius:12px; background:var(--panel2); font-size:var(--fs-sm); line-height:1.45; animation:bubin .2s var(--ease-out) both; }
+.q2know .krow.old .kr,.q2know .krow.old .kq{ opacity:.5; }
+.q2know .krow.old .oc.say{ filter:grayscale(1); }
+.q2know .kwire{ margin-top:4px; }
 /* player page: the latest call's chat exchange (question, typing dots, reply) */
 .pp .ppchat{ padding:12px; margin-top:12px; }
 .pp .ppchat .chat{ display:flex; flex-direction:column; gap:8px; }
@@ -1879,13 +1902,13 @@ html.rm .big .tweetbig .nc,html.rm .big .tweetbig.sent,html.rm .big .tweetbig.re
 .pcard .pn{ align-items:flex-start; }
 .pcard .pn b{ white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; }
 .pcard .pn .stars{ margin-top:4px; }
-.pcard .route{ flex-wrap:wrap; row-gap:1px; white-space:normal; }
-.pcard .route .from,.pcard .route b{ overflow:visible; text-overflow:clip; white-space:nowrap; }
+:is(.pp,.ppsheet) .pmeta{ flex-wrap:wrap; row-gap:6px; } :is(.pp,.ppsheet) .pmeta .ptype{ flex-shrink:0; }
+.pcard .route,:is(.pp,.ppsheet) .ph .route,:is(.pp,.ppsheet) .ddbar .route{ flex-wrap:nowrap; white-space:normal; line-height:1.2; }
+.pcard .route .from,:is(.pp,.ppsheet) .ph .route .from,:is(.pp,.ppsheet) .ddbar .route .from{ overflow:visible; text-overflow:clip; white-space:normal; min-width:0; flex:0 1 auto; }
+.pcard .route b,:is(.pp,.ppsheet) .ph .route b,:is(.pp,.ppsheet) .ddbar .route b{ white-space:normal; flex:0 1 auto; min-width:0; }
 html[lang="ar"] .pcard .pn b{ font-size:16.5px; line-height:1.3; }
 html[lang="ar"] .pcard .route{ font-size:12.5px; }
 html[lang="ar"] :is(.pp,.ppsheet) .ph .d3{ white-space:normal; overflow:visible; font-size:24px; line-height:1.25; overflow-wrap:anywhere; }
-html[lang="ar"] :is(.pp,.ppsheet) .ph .route,html[lang="ar"] :is(.pp,.ppsheet) .ddbar .route{ flex-wrap:wrap; white-space:normal; }
-html[lang="ar"] :is(.pp,.ppsheet) .ph .route .from{ overflow:visible; }
 html[lang="ar"] :is(.pp,.ppsheet) .appbar.ddbar .ttl{ white-space:normal; }
 html[lang="ar"] :is(.pp,.ppsheet) .appbar.ddbar{ height:auto; min-height:64px; padding-block:6px 8px; }
 html[lang="ar"] :is(.pp,.ppsheet) .appbar.ddbar .ttl > b{ white-space:normal; font-size:18px; line-height:1.25; overflow:visible; overflow-wrap:anywhere; }
@@ -4093,6 +4116,15 @@ deepMerge(I18N,{
   board:{rulesTw:'صفقتين حقيقيين بيحصل فيهم **قلبة** كل نافذة: الخبر العاجل بيصرّخ 🌀، الكلام القديم بيبقى قديم، ومصادره بتتكلم تاني.'},
   scoop:{exSub:'سبقت كل المنافسين: +{n} نقطة وموجة متابعين'}}
 });
+/* QA2: What we know rows, rewarded-ad chip, Decide later */
+deepMerge(I18N,{
+ en:{q2:{say:{DONE:'Signs for {d}',HIJACK:'Hijacked: joins another club, not {d}',OFF:'Collapses, he stays',FAKE:'Fake, never real'},says1:'1 says {o}',saysN:'{n} say {o}',rivalGuess:'Rival · guess',
+  adBtn:'▶ Watch ad · +1 contact',adShort:'▶ Ad · +1',later:'Decide later',laterAria:'Decide later: back to the players'}},
+ es:{q2:{say:{DONE:'Firma con {d}',HIJACK:'Robo: se va a otro club, no al {d}',OFF:'Se cae, se queda',FAKE:'Humo, nunca fue real'},says1:'1 dice {o}',saysN:'{n} dicen {o}',rivalGuess:'Rival · apuesta',
+  adBtn:'▶ Ver anuncio · +1 contacto',adShort:'▶ Anuncio · +1',later:'Decidir luego',laterAria:'Decidir luego: volver a los jugadores'}},
+ ar:{q2:{say:{DONE:'هيمضي لـ{d}',HIJACK:'اتخطف: رايح نادي تاني، مش {d}',OFF:'الصفقة باظت، وقاعد',FAKE:'هري، ماكانتش حقيقية'},says1:'واحد بيقول {o}',saysN:'{n} بيقولوا {o}',rivalGuess:'منافس · تخمين',
+  adBtn:'▶ اتفرج على إعلان · +1 اتصال',adShort:'▶ إعلان · +1',later:'أقرّر بعدين',laterAria:'أقرّر بعدين: ارجع للّعيبة'}}
+});
 /* ─ */
 /* =========================================================
    Engine. Game objects store keys (outcomes, indices, sources), never text —
@@ -5587,21 +5619,18 @@ function ppMarkSeen(id,ids){ const a=ppSeenArr(id); ids.forEach(x=>{ if(!a.inclu
 function ppDayLbl(d){ return d===game.day?t('pp.justNow'):t('pp.dayN',{d}); }
 function ppTok(c){ const lab=t('pp.tokAria',{n:ppName(c.kind,c.key,true),tr:t('ds.trust.'+c.bars),o:t('ds.oc.'+c.out),d:c.day});
  return `<button class="tok${c.kind==='rival'?' rival':''}${PP.fresh.has(c.id)?' new':''}${PP.sel===c.id?' on':''}${c.old?' old':''}" data-act="ppTok" data-v="${c.id}" aria-label="${esc(lab)}"><span class="e" aria-hidden="true">${ppIc(c.kind,c.key)}</span><span class="n">${esc(ppName(c.kind,c.key))}</span>${sigHtml(c.bars,false,null,{hidden:true})}</button>`; }
+function ppSays(o,ctx){ return t('q2.say.'+o,ctx); }
+function ppKnowRow(c,ctx){ const open=PP.sel===c.id, rv=c.kind==='rival', fresh=PP.fresh.has(c.id);
+ return `<div class="krow${rv?' rival':''}${c.old?' old':''}${open?' open':''}"><button class="kr" data-act="ppRow" data-v="${c.id}" aria-expanded="${open}"><span class="ki${rv?' rival':''}" aria-hidden="true">${ppIc(c.kind,c.key)}</span><span class="kb"><span class="kt"><b>${esc(ppName(c.kind,c.key,true))}</b>${rv?`<span class="krv">${esc(t('q2.rivalGuess'))}</span>`:sigHtml(c.bars,false,null,{hidden:true})}${fresh&&!c.old?`<span class="tag new">${esc(t('pp.new'))}</span>`:''}<span class="kd">${esc(ppDayLbl(c.day))}</span></span><span class="ko">${ocHtml(c.out,'say',ppSays(c.out,ctx))}${c.old?`<span class="kold">🌀 ${esc(t('pp.beforeTwist'))}</span>`:''}</span></span><span class="chev" aria-hidden="true">›</span></button>${open?`<p class="kq">“${esc(c.text)}”</p>`:''}</div>`; }
 function ppKnowHtml(s){ const ctx=ctxOf(s), claims=ppClaims(s).filter(c=>c.out), wire=ppWire(s), tw=ppTwist(s);
- const nNew=claims.filter(c=>PP.fresh.has(c.id)).length;
- if(!PP.sel||!claims.some(c=>c.id===PP.sel)){ const f=claims.find(c=>PP.fresh.has(c.id)&&!c.old)||claims.find(c=>!c.old)||claims[0]; PP.sel=f?f.id:null; }
- const q=claims.find(c=>c.id===PP.sel);
- const sub={DONE:t('pp.lane.DONE',{d:ctx.d}),HIJACK:t('pp.lane.HIJACK',{d:ctx.d}),OFF:t('pp.lane.OFF'),FAKE:t('pp.lane.FAKE')};
- const mine=s.call&&s.call.outcome;
- const lanes=OUTCOMES.filter(o=>claims.some(c=>c.out===o)).map(o=>`<div class="lane${mine===o?' mine':''}" style="--c:var(--o-${o.toLowerCase()})"><span class="ll"><span class="lw">${glyph(o)}${esc(t('ds.oc.'+o))}</span><small>${esc(sub[o])}</small>${mine===o?`<span class="tag ppmine">${esc(t('pp.yourCallTag',{d:s.call.day}))}</span>`:''}</span><div class="toks">${claims.filter(c=>c.out===o).map(ppTok).join('')}</div></div>`).join('');
- const zero=OUTCOMES.filter(o=>!claims.some(c=>c.out===o));
- const zrow=zero.length&&mine&&zero.includes(mine)?`<div class="zrow"><span>${esc(t('pp.nobody'))}</span>${zero.map(o=>`<span class="zo" style="--c:var(--o-${o.toLowerCase()})">${glyph(o)}${esc(t('ds.oc.'+o))}</span>`).join('')}${mine&&zero.includes(mine)?`<span class="tag ppmine">${esc(t('pp.yourCallTag',{d:s.call.day}))} · ${esc(t('ds.oc.'+mine))}</span>`:''}</div>`:'';
+ const rows=claims.slice().sort((a,b)=>(a.old-b.old)||(b.day-a.day)||(b.seq-a.seq));
+ const live=rows.filter(c=>!c.old&&c.kind!=='rival'), tally={}; live.forEach(c=>{ tally[c.out]=(tally[c.out]||0)+1; });
+ const sum=live.length>=2?Object.keys(tally).sort((a,b)=>tally[b]-tally[a]).map(o=>`<span class="ks" style="--c:var(--o-${o.toLowerCase()})">${glyph(o)}${esc(t(tally[o]===1?'q2.says1':'q2.saysN',{n:tally[o],o:t('ds.oc.'+o)}))}</span>`).join('<span class="kdot">·</span>'):'';
+ const aux=claims.length?t(claims.length===1?'board.report1':'pp.reports',{n:claims.length}):'';
  const w=wire.find(x=>!(x.twist&&tw&&!s.ppTwSeen))||null;
  const kwire=w?`<div class="kwire"><span class="wl">📡 ${esc(t('pp.wire'))}</span><p>${w.twist?'🌀 ':''}${esc(w.text)} <span>· ${esc(t('pp.dShort',{d:w.day}))}</span>${wire.length>1?` <button class="pplink" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.moreN',{n:wire.length-1}))}</button>`:''}</p></div>`:'';
- const quote=q?`<div class="quote${PP.quoteOpen?' open':''}" style="--c:var(--o-${q.out.toLowerCase()})" data-act="ppQuote"><div class="qh"><span aria-hidden="true">${ppIc(q.kind,q.key)}</span><b>${esc(ppName(q.kind,q.key,true))}</b><span>· ${q.kind==='rival'?esc(t('pp.rival'))+' · ':''}${esc(ppDayLbl(q.day))}</span>${PP.fresh.has(q.id)?`<span class="tag new">${esc(t('pp.new'))}</span>`:''}${q.old?`<span class="tag twist">${esc(t('pp.beforeTwist'))}</span>`:''}${ocHtml(q.out)}</div><p class="qt">${esc(q.text)}</p></div>`:`<p class="ppempty">${esc(t('pp.empty'))}</p>`;
- const showLegend=(isCareer()?(C().windows||0):(save.stats&&save.stats.windows)||0)<3;
- const legend=showLegend&&claims.length?`<div class="legend"><span>${sigHtml(3,false,null,{hidden:true})} ${esc(t('pp.lgTrust'))}</span><span><i class="dash"></i> ${esc(t('pp.lgRival'))}</span><span>${esc(t('pp.lgTap'))}</span></div>`:'';
- return `<section class="card know" id="ppKnow" aria-label="${esc(t('pp.know'))}"><div class="kh"><h2 class="over">${esc(t('pp.know'))}</h2><span class="aux">${claims.length?esc(t(claims.length===1?'board.report1':'pp.reports',{n:claims.length})):''}</span></div>${lanes}${zrow}${kwire}${quote}${legend}</section>`;
+ const body=rows.length?`<div class="klist">${rows.map(c=>ppKnowRow(c,ctx)).join('')}</div>`:`<p class="ppempty">${esc(t('pp.empty'))}</p>`;
+ return `<section class="card know q2know" id="ppKnow" aria-label="${esc(t('pp.know'))}"><div class="kh"><h2 class="over">${esc(t('pp.know'))}</h2><span class="aux">${esc(aux)}</span></div>${sum?`<div class="ksum">${sum}</div>`:''}${body}${kwire}</section>`;
 }
 function ppChatHtml(s){ const ch=PP.chat; if(!ch||ch.id!==s.id||ch.phase==='call') return ''; const cl=s.clues[ch.i]; if(!cl) return '';
  const ctx=ctxOf(s), asks=tt('ask'), still=ch.shown?' style="animation:none"':''; const oc=cl.source==='tipoff'?(cl.out==='FAKE'?'FAKE':null):cl.out;
@@ -5629,8 +5658,8 @@ function ppMsgRow(c){ return `<div class="msg${c.old?' old':''}"><span class="me
 function ppEarlierHtml(s){ const all=ppClaims(s).filter(c=>c.id!==PP.sel); const fresh=all.filter(c=>!c.old), old=all.filter(c=>c.old);
  const nChat=s.clues.length*2+game.feed.filter(f=>f.sagaId===s.id&&(f.type==='rival'||f.type==='twist'||(f.type==='event'&&(f.day>1||f.warn)))).length;
  if(!fresh.length&&!old.length&&!nChat) return '';
- const dd=ppDD(); const rows=dd?'':fresh.slice(0,2).map(ppMsgRow).join('');
- return `<div class="sechead"><h2 class="d4">${esc(t('pp.earlier'))}</h2><span class="aux">${esc(t('pp.newest'))}</span></div><section class="card earlier">${rows}${dd&&fresh.length?`<button class="collapse" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.earlierN',{n:fresh.length}))} <span class="chev" aria-hidden="true">›</span></button>`:''}${old.length?`<button class="collapse" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.twistGroup',{n:old.length}))} <span class="chev" aria-hidden="true">›</span></button>`:''}<button class="collapse" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.fullChat',{n:nChat}))} <span class="chev" aria-hidden="true">›</span></button></section>`; }
+ const dd=ppDD(); const rows='';
+ return `<div class="sechead"><h2 class="d4">${esc(t('pp.earlier'))}</h2><span class="aux">${esc(t('pp.newest'))}</span></div><section class="card earlier">${rows}<button class="collapse" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.fullChat',{n:nChat}))} <span class="chev" aria-hidden="true">›</span></button></section>`; }
 function ppPts(id,o,c){ if(typeof previewPoints==='function'){ try{ const p=previewPoints(id,o,c); if(p) return p; }catch(e){} }
  const s=game.sagas[id], m=ptype(s.player).pts, ut=!!s.uturns;
  const early=ut?0:Math.max(0,(7-game.day)*3); const ex=ut?0:15+(gearOwned('tick')?10:0);
@@ -5726,6 +5755,7 @@ function ppMsgsHtml(id){ const s=game.sagas[id], ctx=ctxOf(s), asks=tt('ask'); c
 /* ----- click actions ----- */
 LANE_ACTS.ppSheetX=()=>{ ppSheetClose(); };
 LANE_ACTS.ppTok=(el,v)=>{ PP.sel=v; PP.fresh.delete(v); PP.quoteOpen=false; beep('select'); const k=$('ppKnow'); const s=game.sagas[PP.id]; if(k&&s) k.outerHTML=ppKnowHtml(s); };
+LANE_ACTS.ppRow=(el,v)=>{ PP.sel=PP.sel===v?null:v; PP.fresh.delete(v); beep('select'); const k=$('ppKnow'); const s=game.sagas[PP.id]; if(k&&s) k.outerHTML=ppKnowHtml(s); };
 LANE_ACTS.ppQuote=()=>{ PP.quoteOpen=!PP.quoteOpen; const q=document.querySelector('.pp .quote'); if(q) q.classList.toggle('open',PP.quoteOpen); };
 LANE_ACTS.ppType=(el,v,id)=>{ const pt=ptype(game.sagas[+id].player); toast(t('pp.ptTip.'+pt.key,{p:pt.pts,f:pt.fans})); };
 LANE_ACTS.ppMsgs=(el,v,id)=>{ ppSheet(ppMsgsHtml(+id),'ppmsg'); };
@@ -5739,7 +5769,7 @@ LANE_ACTS.contact=(el,v,id)=>{ id=+id; const k=el.dataset.src; const s=game&&gam
  if(st.state==='short'||game.actions<(st.cost||SOURCES[k].cost||1)){ beep('buzz'); toast(t('pp.shortToast')); return; }
  const n=s.clues.length; contactSource(id,k); const cl=s.clues[n];
  if(!cl){ toast(t('pp.cantAsk')); ppRender(id); return; }
- cl.revealAt=0; saveGame(); dismissCoach('c2'); syncWindow(); PP.sel='c'+n; PP.fresh.add('c'+n); PP.calling=k; const chat=PP.chat={id,i:n,phase:'call'}; ppRender(id);
+ cl.revealAt=0; saveGame(); dismissCoach('c2'); syncWindow(); PP.sel=null; PP.fresh.add('c'+n); PP.calling=k; const chat=PP.chat={id,i:n,phase:'call'}; ppRender(id);
  const here=()=>PP.chat===chat&&PP.id===id&&!!$('modalRoot').querySelector('.pp');
  const done=()=>{ if(PP.chat!==chat) return; chat.phase='done'; PP.calling=null; if(here()){ beep('pop'); buzzPhone(12); ppRender(id); chat.shown=true; } };
  contactOverlay(k,()=>{ if(PP.chat!==chat) return; if(!here()){ done(); return; } chat.phase='typing'; ppRender(id); const c=$('ppChat'); const pg=$('modalRoot').querySelector('.pp'); if(c&&pg) pg.scrollTop=Math.max(0,c.offsetTop-70);
