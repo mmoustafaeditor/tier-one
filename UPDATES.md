@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-28 · saifsaber · The Gaffer: phone UI fixes from the product audit (web 0.11.0)
+- **What changed:** Fixed defects found in a browser run of every screen: the THE GAFFER logo and the Quick match tile ran off the right edge on phones; set-piece pickers (Tactics) covered their labels; Squad/Match/League with no career now offer a New career button instead of a dead end; News, Inbox, Your career and Quick match go Back to the tab you came from (not always Home); "1 players out of position" / "1 starters are tired" plurals fixed in EN/AR/ES/FR.
+- **Files:** `games/the-gaffer/web/src/App.tsx`, `ui/parts.tsx`, `styles/gaffer.css`, `i18n.ts`, `lang-es.ts`, `lang-fr.ts`, `games/the-gaffer/build/index.html`, `the-gaffer/index.html`
+- **Heads-up for the team:** Web only. `downloads/TheGaffer.apk` is still the 0.11.0 build without these fixes: rebuild it from the `build-the-gaffer` workflow artifact at the next Gaffer release. Bigger changes from the audit are waiting for saifsaber's go-ahead.
+
 ## 2026-09-28 · saifsaber · The Gaffer moved into the team repo (web 0.11.0, Android 0.11.0 / versionCode 4)
 - **What changed:** Brought The Gaffer (game 02, football manager) over from the retired `saifsaber/tier-one`: web source, minified build, Android project, update feed and APK. Once merged it's served at sembagames.app/the-gaffer, with the APK at `/downloads/TheGaffer.apk` and the feed at `/api/the-gaffer/latest`. Added a README card. The build workflow now only builds and uploads the APK; the old step that pushed bot commits straight to `main` is gone.
 - **Files:** `the-gaffer/index.html`, `games/the-gaffer/**`, `api/the-gaffer/*`, `downloads/TheGaffer.apk`, `.github/workflows/build-the-gaffer.yml`, `vercel.json` (new: `/the-gaffer` rewrite + APK download headers), `design/` (17 shared files the source imports: tokens, components, fonts, 8 icons, logo), `.gitignore`, `.vercelignore` (+`/design`), `README.md`, `CLAUDE.md`, `.claude/requests.md`

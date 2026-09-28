@@ -307,3 +307,12 @@ select.g-input { width: 100%; box-sizing: border-box; }
 .g-radar-l { font: 700 4.4px var(--body); fill: var(--muted); }
 .g-radar-key { display: flex; justify-content: center; gap: var(--s4); font-size: var(--fs-sm); }
 .g-radar-key i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 6px; vertical-align: middle; }
+
+/* Phone fixes (2026-09-28 audit): the wordmark and the three landing tiles fit a 360-390px screen,
+   and set-piece pickers no longer cover their labels. */
+.wordmark.lg { font-size: clamp(40px, 12.5vw, 62px); max-width: 100%; }
+.g-tile { min-width: 0; }
+.g-tile .d5 { font-size: clamp(15px, 4.4vw, 20px); overflow-wrap: anywhere; }
+@media (max-width: 420px) { .g-tiles { gap: var(--s2); } .g-tile { padding: var(--s3); } }
+.cell.g-row > select.g-input { width: auto; flex: 0 0 58%; min-width: 0; }
+.cell.g-row > .cmain { flex: 1 1 auto; }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { UI, dataLang, type Lang, type UiLang } from './i18n';
 import { loadPrefs, savePrefs, type Prefs } from './sim/prefs';
 import { Settings, TextPage } from './ui/Settings';
@@ -304,6 +304,10 @@ export function App() {
   };
   const onTab = Math.max(0, TAB_SCREENS.indexOf(screen.id));
   const hub = HUBS.includes(screen.id);
+  // Screens reachable from more than one hub (News, Inbox, Career, Quick match) go back to the hub they were opened from.
+  const lastHub = useRef<Screen['id']>('home');
+  if (hub) lastHub.current = screen.id;
+  const backToHub = () => setScreen({ id: lastHub.current } as Screen);
 
   return (
     <div className={`app${hub ? ' tabs' : ''}`}>
@@ -689,7 +693,7 @@ export function App() {
         <>
           <AppBar title={t.squad} sub={myClub ? clubName(myClub) : undefined} />
           {!career || !world ? (
-            <Empty text={t.noCareer} />
+            <Empty text={t.noCareer} action={{ label: t.newCareer, onClick: startNewCareer }} />
           ) : (
             <>
               {myClub && (
@@ -739,7 +743,7 @@ export function App() {
         <>
           <AppBar title={t.match} sub={myLeague ? myLeague.name[lang] : undefined} />
           {!career || !world || !myClub ? (
-            <Empty text={t.noCareer} />
+            <Empty text={t.noCareer} action={{ label: t.newCareer, onClick: startNewCareer }} />
           ) : career.live ? (
             <button className="btn primary" style={{ width: '100%', marginTop: 'var(--s5)' }} onClick={() => { setLive(career.live!); setLiveLocked(false); setScreen({ id: 'live' }); }}>{t.resumeMatch}</button>
           ) : (() => {
@@ -814,7 +818,7 @@ export function App() {
       )}
 
       {screen.id === 'quick' && (
-        <QuickMatch source={world ?? saved?.world ?? null} lang={lang} t={t} prefs={prefs} onToast={setToast} onExit={() => setScreen({ id: 'home' })} />
+        <QuickMatch source={world ?? saved?.world ?? null} lang={lang} t={t} prefs={prefs} onToast={setToast} onExit={backToHub} />
       )}
       {screen.id === 'editor' && world && career && (
         <WorldEditor world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'more' })} onToast={setToast}
@@ -831,7 +835,7 @@ export function App() {
         <Rankings world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'more' })} />
       )}
       {screen.id === 'news' && world && career && (
-        <News world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'home' })} onToast={setToast} />
+        <News world={world} career={career} lang={lang} t={t} onBack={backToHub} onToast={setToast} />
       )}
       {screen.id === 'club' && world && career && (
         <ClubScreen world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'squad' })} onChange={commitMsg} />
@@ -847,11 +851,11 @@ export function App() {
       )}
 
       {screen.id === 'inbox' && world && career && (
-        <Inbox world={world} career={career} lang={lang} t={t} onBack={() => setScreen({ id: 'home' })} onChange={(c) => commit(world, c)} />
+        <Inbox world={world} career={career} lang={lang} t={t} onBack={backToHub} onChange={(c) => commit(world, c)} />
       )}
 
       {screen.id === 'coach' && world && career && (
-        <CoachScreen world={world} career={career} lang={lang} ui={prefs.lang} t={t} onBack={() => setScreen({ id: 'home' })}
+        <CoachScreen world={world} career={career} lang={lang} ui={prefs.lang} t={t} onBack={backToHub}
           onChange={async (c, msg) => { await commit(world, c); if (msg) setToast(msg); }}
           onJob={async (id) => { const r = moveTo(world, career, id); await commit(r.world, r.career); setScreen({ id: 'home' }); }} onToast={setToast} />
       )}
@@ -865,7 +869,7 @@ export function App() {
         <>
           <AppBar title={t.table} sub={myLeague ? myLeague.name[lang] : undefined} />
           {!career || !world || !myLeague ? (
-            <Empty text={t.noCareer} />
+            <Empty text={t.noCareer} action={{ label: t.newCareer, onClick: startNewCareer }} />
           ) : (
             <>
               <div className="seg" style={{ margin: 'var(--s4) 0' }}>

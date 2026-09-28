@@ -39,10 +39,11 @@ export function Line({ k, v, unit }: { k: string; v: string; unit?: string }) {
   );
 }
 
-export function Empty({ text }: { text: string }) {
+export function Empty({ text, action }: { text: string; action?: { label: string; onClick: () => void } }) {
   return (
     <div className="card" style={{ marginTop: 'var(--s5)', textAlign: 'center' }}>
       <p className="muted" style={{ margin: 0 }}>{text}</p>
+      {action && <button className="btn primary" style={{ width: '100%', marginTop: 'var(--s4)' }} onClick={action.onClick}>{action.label}</button>}
     </div>
   );
 }
