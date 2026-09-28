@@ -1979,7 +1979,7 @@ html[lang="ar"] :is(.srow .sn,.thh b.n,.rvr .pn,.saga .who b,.today .five b){ wh
    your own domain — not inside the claude.ai preview.
    ============================================================ */
 const CONFIG={
- VERSION:'2.0.2',
+ VERSION:'2.1.0',
  GAME_NAME:'Tier One',
  STUDIO_NAME:'Semba Studios',
  SITE_URL:'https://sembagames.app/tier-one',
@@ -5711,6 +5711,7 @@ function ppTileHtml(s,k){ const src=SOURCES[k], st=ppSrcState(s,k), nm=esc(ppNam
  else if(st.state==='reopened'){ cls='re'; ft=`🌀 ${esc(t('pp.again'))}`; }
  else if(dd&&st.atMax){ cls='sharp'; ft=tier(t('pp.sharpest')); }
  else if(st.sharper){ cls='sharp'; ft=tier(t('pp.sharper')); }
+ else if(st.hunch&&st.label) ft=tier(st.label);
  else ft=tier(tw);
  if(st.openedToday&&st.state==='open') corner=`<span class="corner"><span class="tag new">${esc(t('pp.openedToday'))}</span></span>`;
  const dis=PP.calling!=null&&PP.calling!==k;
