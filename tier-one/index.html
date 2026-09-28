@@ -1364,6 +1364,8 @@ html.rm .pp{ animation:none; }
 /* board chip: loudness icon (👀 Talks, 📈 Advanced, 📢 Confirmed; ▲ = went louder) */
 .pcard .loudm{ display:inline-flex; align-items:center; gap:1px; font-size:12px; line-height:1; }
 .pcard .loudm b{ font-size:9px; color:var(--ok); }
+.ppsheet .opt.cur:not(.on){ border-style:dashed; }
+.ppsheet .pputstrip.ppsafe{ border-style:solid; }
 /* @@LANE CSS:player END */
 /* ─ */
 /* @@LANE CSS:results BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -4171,6 +4173,9 @@ ar:{esc:{btn:'علّي الصوت',next:'اللي بعده: {p}',title:'علّي
    FAKE:{med:'لسه عند كلامي: {p} لـ{d} شغل وكلا ومفيهاش حاجة 🧢',high:'{cp} مش قلتلكم؟ مفيش أي حاجة في {p} لـ{d}. هري. 🧢'}}},
  rs:{sbYou:'توقعك',sbTruth:'اللي حصل',escNote:'{a} ← {b} {day}'}}
 });
+deepMerge(I18N,{en:{pp:{c:{curCall:'your current call',keep:'Keep my call',keepStrip:'Same call: nothing changes'}}},
+ es:{pp:{c:{curCall:'tu apuesta actual',keep:'Mantener mi apuesta',keepStrip:'Misma apuesta: no cambia nada'}}},
+ ar:{pp:{c:{curCall:'توقعك الحالي',keep:'خليني على توقعي',keepStrip:'نفس التوقع: مفيش حاجة هتتغير'}}}});
 /* @@LANE I18N:player END */
 /* ─ */
 /* @@LANE I18N:results BEGIN (lane-owned; insert only between BEGIN and END) */
@@ -5956,26 +5961,34 @@ function ppSheet(html,cls){ ppSheetClose(true); const w=document.createElement('
 function ppSheetBody(html){ const sh=document.querySelector('#ppSheet .sheet'); if(sh){ const y=sh.scrollTop; sh.innerHTML='<div class="grab"></div>'+html; sh.scrollTop=y; } }
 function ppSheetClose(quiet){ const w=$('ppSheet'); if(!w) return; w.id=''; if(quiet||motionReduced()){ w.remove(); return; } w.querySelector('.sheet').classList.add('out'); w.querySelector('.scrim').classList.add('out'); setTimeout(()=>w.remove(),240); }
 function ppSheetHead(over,title,side){ return `<div class="ch"><div style="min-width:0">${ppDD()?ppClock():`<p class="over">${esc(over)}</p>`}<h2 class="d3" style="margin-top:4px">${esc(title)}</h2></div>${side||`<button class="iconbtn solid" data-act="ppSheetX" aria-label="${esc(t('pp.close'))}">${uiIcon('close')}</button>`}</div>`; }
-function ppComposeHtml(id){ const s=game.sagas[id], ctx=ctxOf(s), dd=ppDD(), o=draft.outcome, cf=draft.conf, ut=!!s.uturns&&!s.call, prev=s.uturnFrom||s.ppPrev;
+/* U-turn draft: the posted call stays live until a DIFFERENT outcome is posted. 'keep' = same outcome at same/lower confidence
+   (closes, no change), 'loud' = same outcome louder (Go louder, no U-turn cost), 'uturn' = different outcome (uturnCall then publishCall). */
+function ppUtMode(s,o,cf){ if(!s||!s.call) return 'post'; if(!o||o!==s.call.outcome) return 'uturn';
+ return cf&&CONF_UP.indexOf(cf)>CONF_UP.indexOf(s.call.conf)?'loud':'keep'; }
+function ppUtPts(id,o,c){ const s=game.sagas[id]; if(draft.ut&&s&&s.call&&ppUtMode(s,o,c)==='keep'&&typeof escPreview==='function'){ try{ const q=escPreview(id,c); if(q&&q.now) return q.now; }catch(e){} } return ppPts(id,o,c); }
+function ppUturnDraft(id){ if(!game||game.result) return; const s=game.sagas[id]; if(!s||!s.call) return; currentSaga=id; draft={outcome:null,conf:null,sid:id,ut:true}; ppSheet(ppComposeHtml(id),'comp pputd'); beep('whoosh'); }
+function ppComposeHtml(id){ const s=game.sagas[id], ctx=ctxOf(s), dd=ppDD(), o=draft.outcome, cf=draft.conf, utd=!!(draft.ut&&s.call), ut=utd||(!!s.uturns&&!s.call), prev=utd?{out:s.call.outcome,conf:s.call.conf,day:s.call.day}:(s.uturnFrom||s.ppPrev);
+ const mode=utd?ppUtMode(s,o,cf):'post', PT=(oo,cc)=>utd?ppUtPts(id,oo,cc):ppPts(id,oo,cc);
  const claims=ppClaims(s).filter(c=>c.out&&!c.old);
  const line={DONE:t('pp.c.DONE',ctx),HIJACK:t('pp.c.HIJACK',ctx),OFF:t('pp.c.OFF',ctx),FAKE:t('pp.c.FAKE',ctx)};
- const opts=OUTCOMES.map(k=>{ const lk=k.toLowerCase(), who=claims.filter(c=>c.out===k), isPrev=ut&&prev&&prev.out===k;
-  return `<button class="opt ${lk}${o===k?' on':''}${isPrev?' prev':''}" role="radio" aria-checked="${o===k}" data-act="pickOutcome" data-v="${k}"${isPrev?' disabled':''}><span class="oh"><span class="gt">${glyph(k)}</span><span class="ow">${esc(t('ds.oc.'+k))}</span></span><span class="d">${esc(line[k])}</span><span class="who">${isPrev?esc(t('pp.c.oldCall')):who.length?`<span class="avs">${who.slice(0,4).map(c=>`<span>${ppIc(c.kind,c.key)}</span>`).join('')}</span>${esc(t('pp.c.said',{n:who.length}))}`:esc(t('pp.c.nobody'))}</span>${o===k?`<span class="chk">${glyph('done')}</span>`:''}</button>`; }).join('');
- const confs=[['low','👀'],['med','📈'],['high','📢']].map(([c,ic])=>{ const p=ppPts(id,o||'DONE',c); return `<button class="cf${cf===c?' on':''}" role="radio" aria-checked="${cf===c}" data-act="pickConf" data-v="${c}"><span class="ci" aria-hidden="true">${ic}</span><b>${esc(t('pp.conf.'+c))}</b><span class="pts"><bdi dir="ltr"><span class="up">+${p.win}</span> · <span class="dn">−${Math.abs(p.lose)}</span></bdi></span></button>`; }).join('');
+ const opts=OUTCOMES.map(k=>{ const lk=k.toLowerCase(), who=claims.filter(c=>c.out===k), isPrev=ut&&prev&&prev.out===k, dis=isPrev&&!utd;
+  return `<button class="opt ${lk}${o===k?' on':''}${dis?' prev':''}${isPrev&&utd?' cur':''}" role="radio" aria-checked="${o===k}" data-act="pickOutcome" data-v="${k}"${dis?' disabled':''}><span class="oh"><span class="gt">${glyph(k)}</span><span class="ow">${esc(t('ds.oc.'+k))}</span></span><span class="d">${esc(line[k])}</span><span class="who">${isPrev?esc(t(utd?'pp.c.curCall':'pp.c.oldCall')):who.length?`<span class="avs">${who.slice(0,4).map(c=>`<span>${ppIc(c.kind,c.key)}</span>`).join('')}</span>${esc(t('pp.c.said',{n:who.length}))}`:esc(t('pp.c.nobody'))}</span>${o===k?`<span class="chk">${glyph('done')}</span>`:''}</button>`; }).join('');
+ const confs=[['low','👀'],['med','📈'],['high','📢']].map(([c,ic])=>{ const p=PT(o||(utd?'':'DONE')||OUTCOMES.find(k=>k!==s.call.outcome),c); return `<button class="cf${cf===c?' on':''}" role="radio" aria-checked="${cf===c}" data-act="pickConf" data-v="${c}"><span class="ci" aria-hidden="true">${ic}</span><b>${esc(t('pp.conf.'+c))}</b><span class="pts"><bdi dir="ltr"><span class="up">+${p.win}</span> · <span class="dn">−${Math.abs(p.lose)}</span></bdi></span></button>`; }).join('');
  let preview='';
- if(o&&cf){ const tx=esc(tweetText(o,cf,s)), dn=esc(ctx.d); preview=`<div class="preview"><div class="tw"><span class="av you">✍️</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · ${esc(t('pp.c.preview'))}</span></div><p class="txt">${dn&&tx.includes(dn)?tx.split(dn).join(`<mark>${dn}</mark>`):tx}</p></div></div></div>`; }
- const p=ppPts(id,o||'DONE',cf||'med'), nr=ppRivalsPosted(id);
+ if(o&&cf&&mode!=='keep'){ const tx=esc(mode==='loud'?loudText(o,cf,s):tweetText(o,cf,s)), dn=esc(ctx.d); preview=`<div class="preview"><div class="tw"><span class="av you">✍️</span><div class="tb"><div class="meta"><b>${esc(t('win.you'))}</b><span>@tierone_you · ${esc(t('pp.c.preview'))}</span></div><p class="txt">${dn&&tx.includes(dn)?tx.split(dn).join(`<mark>${dn}</mark>`):tx}</p></div></div></div>`; }
+ const p=utd&&!o?{win:0,lose:0}:PT(o||'DONE',cf||'med'), nr=ppRivalsPosted(id);
  const hints=ut?'':`<div class="hints"><div><span class="hi">⏳</span><span>${t('pp.c.early',{n:'<b>+'+p.early+'</b>'})}</span></div><div><span class="hi">👑</span><span>${t('pp.c.ex',{n:'<b>+'+p.exclusive+'</b>'})} · ${esc(t(nr===1?'pp.c.rivals1':'pp.c.rivals',{n:nr}))}</span></div></div>`;
  const stakes=cf?`<p class="stakes">${esc(t('pp.c.ifRight'))} <b class="up"><bdi dir="ltr">+${p.win}</bdi></b> · ${esc(t('pp.c.ifWrong'))} <b class="dn"><bdi dir="ltr">−${Math.abs(p.lose)}</bdi></b></p>`:'';
- const ok=!!(o&&cf); const btn=`${t(ut?'pp.c.postU':'pp.c.post')}${dd?' · '+ppSecs()+'s':''}`;
+ const ok=!!(o&&(cf||mode==='keep')); const btn=mode==='keep'?t('pp.c.keep'):`${t(mode==='loud'?'esc.post':ut?'pp.c.postU':'pp.c.post')}${dd?' · '+ppSecs()+'s':''}`;
+ const free=utd&&ppTwFree(s), strip=mode==='keep'?`✓ ${esc(t('pp.c.keepStrip'))}`:mode==='loud'?`📢 ${esc(t('esc.sub'))}`:free?`🌀 ${esc(t('math.updateFree'))}`:`↺ ${esc(t('pp.c.utStrip'))}`;
  return `${ppSheetHead(t('pp.c.over',{d:game.day}),t('pp.c.title',{p:pName(s.player),d:ctx.d}))}
-  ${ut?`<div class="pputstrip">↺ ${esc(t('pp.c.utStrip'))}</div>`:''}
+  ${ut?`<div class="pputstrip${mode==='keep'||mode==='loud'||free?' ppsafe':''}">${strip}</div>`:''}
   <div class="step" id="ppStep1"><span class="sn">1</span>${esc(t('pp.c.s1'))}</div><div class="opts" role="radiogroup" aria-label="${esc(t('pp.c.s1'))}">${opts}</div>
   <div class="step" style="margin-top:14px"><span class="sn">2</span>${esc(t('pp.c.s2'))}<span class="aux">${esc(t('pp.c.s2aux'))}</span></div><div class="confs" role="radiogroup" aria-label="${esc(t('pp.c.s2'))}">${confs}</div>
   ${preview}${hints}${stakes}
   <button class="btn primary${ok?'':' ppdis'}" data-act="publish" data-id="${id}" data-o="${o||''}" data-c="${cf||''}" aria-disabled="${!ok}">${esc(btn)}</button>
   ${save.ppPosted?'':`<p class="ppfine">${esc(t('pp.c.first'))}</p>`}`; }
-function ppCompose(id){ if(!game||game.result) return; const s=game.sagas[id]; if(!s||s.call) return; currentSaga=id; if(draft.sid!==id) draft={outcome:null,conf:null,sid:id}; ppSheet(ppComposeHtml(id),'comp'); beep('whoosh'); }
+function ppCompose(id){ if(!game||game.result) return; const s=game.sagas[id]; if(!s||s.call) return; currentSaga=id; if(draft.sid!==id||draft.ut) draft={outcome:null,conf:null,sid:id}; ppSheet(ppComposeHtml(id),'comp'); beep('whoosh'); }
 function ppUturnHtml(id){ const s=game.sagas[id]; const tw=ppTwist(s); const twAfter=tw&&s.call&&tw.day>s.call.day;
  const nNew=ppClaims(s).filter(c=>c.day>s.call.day&&!c.old).length;
  const side=twAfter?`<span class="tag twist" style="margin-top:4px">🌀 ${esc(t('pp.u.twistOn',{d:tw.day}))}</span>`:nNew?`<span class="tag new" style="margin-top:4px">${esc(t(nNew===1?'pp.u.reads1':'pp.u.reads',{n:nNew}))}</span>`:'';
@@ -6022,12 +6035,19 @@ LANE_ACTS.contact=(el,v,id)=>{ id=+id; const k=el.dataset.src; const s=game&&gam
 };
 LANE_ACTS.pickOutcome=(el,v)=>{ const id=currentSaga; if(id==null) return; draft.outcome=v; draft.sid=id; beep('select'); if($('ppSheet')) ppSheetBody(ppComposeHtml(id)); else ppCompose(id); };
 LANE_ACTS.pickConf=(el,v)=>{ const id=currentSaga; if(id==null) return; draft.conf=v; draft.sid=id; beep('select'); if($('ppSheet')) ppSheetBody(ppComposeHtml(id)); else ppCompose(id); };
-LANE_ACTS.publish=(el,v,id)=>{ id=+id; const o=draft.outcome, c=draft.conf; if(!o||!c){ const st=$('ppStep1'); const g=document.querySelector('#ppSheet .opts'); if(g&&!o){ g.classList.remove('ppshake'); void g.offsetWidth; g.classList.add('ppshake'); } else toast(t('toast.pickFirst')); if(st&&st.scrollIntoView) st.scrollIntoView({block:'nearest'}); return; }
- if(game.result) return; ppSheetClose(true); composeOverlay(id,o,c); };
+LANE_ACTS.publish=(el,v,id)=>{ id=+id; const o=draft.outcome, c=draft.conf; const s=game&&game.sagas[id], utd=!!(draft.ut&&s&&s.call);
+ if(utd&&o&&ppUtMode(s,o,c)==='keep'){ draft={outcome:null,conf:null}; beep('tap'); ppSheetClose(); return; }
+ if(!o||!c){ const st=$('ppStep1'); const g=document.querySelector('#ppSheet .opts'); if(g&&!o){ g.classList.remove('ppshake'); void g.offsetWidth; g.classList.add('ppshake'); } else toast(t('toast.pickFirst')); if(st&&st.scrollIntoView) st.scrollIntoView({block:'nearest'}); return; }
+ if(game.result) return; ppSheetClose(true);
+ if(utd){ const m=ppUtMode(s,o,c); draft={outcome:null,conf:null};
+  if(m==='loud'){ if(canEscalate(id,c)) composeOverlay(id,o,c,{esc:true}); return; }
+  s.ppPrev={out:s.call.outcome,conf:s.call.conf,day:s.call.day};
+  uturnOverlay(id,()=>{ render(); if(!game||game.result) return; ppRender(id); composeOverlay(id,o,c); }); return; }
+ composeOverlay(id,o,c); };
 LANE_ACTS.rewrite=()=>{ const id=currentSaga; const d=document.querySelector('.big.compose'); dismissBig(d,()=>{ if(id!=null) ppCompose(id); }); };
-LANE_ACTS.uturnAsk=(el,v,id)=>{ id=+id; const s=game.sagas[id]; if(!s||!s.call) return; ppSheet(ppUturnHtml(id),'pputurn'); };
-LANE_ACTS.uturnGo=(el,v,id)=>{ id=+id; const s=game.sagas[id]; if(!s||!s.call||game.result) return; s.ppPrev={out:s.call.outcome,conf:s.call.conf,day:s.call.day}; ppSheetClose(true);
- uturnOverlay(id,()=>{ draft={outcome:null,conf:null,sid:id}; render(); ppRender(id); ppCompose(id); }); };
+/* U-turn opens the composer as a draft: nothing is deleted or charged until a different outcome is posted (see publish). */
+LANE_ACTS.uturnAsk=(el,v,id)=>{ ppUturnDraft(+id); };
+LANE_ACTS.uturnGo=LANE_ACTS.uturnAsk;
 
 /* ----- hooks ----- */
 BACK.push(()=>{ if($('ppSheet')){ ppSheetClose(); return true; } return false; });
