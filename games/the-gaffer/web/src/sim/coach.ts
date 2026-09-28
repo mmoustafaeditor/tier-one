@@ -1,0 +1,337 @@
+// The coach's career: board and fans, sacking, job offers, XP and level, reputation, licences, courses, milestones and the inbox.
+// E2E lessons: board messages match the real situation (#19), sacking really happens (#17), offers fit the coach (#18),
+// one licence at a time (#44), licences gate clubs and formations (#16), milestones only when really done (#43),
+// moving club never locks the career and the new club welcomes you (#40, #49, #50, #27), the inbox trims itself (#37).
+import type { Career, Club, Coach, Licence, LocalizedName, Msg, MsgKind, Objective } from '../model/types';
+import { clamp } from './rng';
+import { objectiveOf, squadOf, type World } from './world';
+import type { FormationId } from './tactics';
+import { cupRun, cupWinner } from './cups';
+import { newOps } from './economy';
+import { myWorldRank } from './rankings';
+import { addNews } from './news';
+import { balanceOf, sackLine, seasonSackLine } from './balance';
+
+// ---------- licences ----------
+
+export const LICENCES: Licence[] = ['D', 'C', 'B', 'A', 'PRO', 'ELITE'];
+// Highest club reputation each licence lets you manage.
+export const LICENCE_CAP: Record<Licence, number> = { D: 62, C: 70, B: 78, A: 86, PRO: 94, ELITE: 100 };
+export const LICENCE_NEEDS: Record<Licence, { level: number; matches: number; fee: number; trophy?: boolean }> = {
+  D: { level: 1, matches: 0, fee: 0 }, C: { level: 3, matches: 20, fee: 5_000 }, B: { level: 6, matches: 50, fee: 15_000 },
+  A: { level: 10, matches: 100, fee: 40_000 }, PRO: { level: 15, matches: 180, fee: 100_000 }, ELITE: { level: 22, matches: 300, fee: 250_000, trophy: true },
+};
+export const LICENCE_GAP = 10; // matchdays between two licences
+
+const FORMATION_LICENCE: Record<FormationId, Licence> = { '4-4-2': 'D', '4-3-3': 'D', '4-1-4-1': 'D', '4-2-3-1': 'C', '5-3-2': 'B', '3-5-2': 'A' };
+export const formationNeeds = (f: FormationId) => FORMATION_LICENCE[f];
+export const hasLicence = (have: Licence, need: Licence) => LICENCES.indexOf(have) >= LICENCES.indexOf(need);
+export const licenceFor = (clubRep: number): Licence => LICENCES.find((l) => LICENCE_CAP[l] >= clubRep) ?? 'ELITE';
+export const nextLicence = (l: Licence): Licence | null => LICENCES[LICENCES.indexOf(l) + 1] ?? null;
+
+export const levelOf = (xp: number) => Math.min(50, Math.floor(Math.sqrt(xp / 120)) + 1);
+export const xpForLevel = (level: number) => 120 * (level - 1) ** 2;
+
+export type ExamCheck = { ok: true } | { ok: false; reason: 'max' | 'level' | 'matches' | 'fee' | 'wait' | 'trophy'; n?: number };
+
+export function canTakeExam(c: Career): ExamCheck {
+  const next = nextLicence(c.coach.licence);
+  if (!next) return { ok: false, reason: 'max' };
+  const need = LICENCE_NEEDS[next];
+  if (c.coach.days - c.coach.licenceAt < LICENCE_GAP) return { ok: false, reason: 'wait', n: LICENCE_GAP - (c.coach.days - c.coach.licenceAt) };
+  if (levelOf(c.coach.xp) < need.level) return { ok: false, reason: 'level', n: need.level };
+  if (c.coach.record[0] < need.matches) return { ok: false, reason: 'matches', n: need.matches };
+  if (need.trophy && !c.coach.trophies.length) return { ok: false, reason: 'trophy' };
+  if (c.coach.wallet < need.fee) return { ok: false, reason: 'fee', n: need.fee };
+  return { ok: true };
+}
+
+// Exam: 3 questions from the pool, 2 right to pass. The fee is paid either way.
+// Questions and answers in [English, Arabic, Spanish, French].
+type Q4 = [string, string, string, string];
+export const EXAM_POOL: { q: Q4; a: Q4[]; right: number }[] = [
+  { q: ['Your side is tired after 60 minutes. What helps most?', 'فريقك تعبان بعد 60 دقيقة. إيه أكتر حاجة تفيد؟', 'Tu equipo está cansado a los 60 minutos. ¿Qué ayuda más?', 'Ton équipe est fatiguée après 60 minutes. Qu’est-ce qui aide le plus ?'],
+    a: [['High pressing', 'ضغط عالي', 'Presión alta', 'Pressing haut'], ['Fresh legs from the bench', 'دم جديد من الدكة', 'Piernas frescas del banquillo', 'Du sang neuf venu du banc'], ['All-out attack', 'هجوم كاسح', 'Todo al ataque', 'Tout pour l’attaque']], right: 1 },
+  { q: ['Which formation has three centre-backs?', 'أنهي خطة فيها 3 قلوب دفاع؟', '¿Qué formación tiene tres centrales?', 'Quel système a trois défenseurs centraux ?'],
+    a: [['4-3-3', '4-3-3', '4-3-3', '4-3-3'], ['3-5-2', '3-5-2', '3-5-2', '3-5-2'], ['4-4-2', '4-4-2', '4-4-2', '4-4-2']], right: 1 },
+  { q: ['Short passing works best with…', 'التمرير القصير بينفع أكتر مع…', 'El pase corto funciona mejor con…', 'Les passes courtes marchent mieux avec…'],
+    a: [['Good passers', 'لاعيبة تمريرهم حلو', 'Buenos pasadores', 'De bons passeurs'], ['Tall strikers', 'مهاجمين طوال', 'Delanteros altos', 'Des attaquants grands'], ['A tired team', 'فريق تعبان', 'Un equipo cansado', 'Une équipe fatiguée']], right: 0 },
+  { q: ['Direct play works best with…', 'اللعب المباشر بينفع أكتر مع…', 'El juego directo funciona mejor con…', 'Le jeu direct marche mieux avec…'],
+    a: [['Slow defenders', 'دفاع بطيء', 'Defensas lentos', 'Des défenseurs lents'], ['Fast forwards', 'هجوم سريع', 'Delanteros rápidos', 'Des attaquants rapides'], ['A small squad', 'قايمة صغيرة', 'Una plantilla corta', 'Un petit effectif']], right: 1 },
+  { q: ['A player gets a second yellow card. What happens?', 'لاعب خد كارت أصفر تاني. يحصل إيه؟', 'Un jugador ve la segunda amarilla. ¿Qué pasa?', 'Un joueur prend un deuxième carton jaune. Que se passe-t-il ?'],
+    a: [['Nothing', 'ولا حاجة', 'Nada', 'Rien'], ['He is sent off', 'بيطرد', 'Le expulsan', 'Il est expulsé'], ['A penalty', 'ضربة جزاء', 'Penalti', 'Un penalty']], right: 1 },
+  { q: ['Parking the bus mostly…', 'الأوتوبيس في الغالب…', 'Aparcar el autobús sobre todo…', 'Garer le bus, surtout…'],
+    a: [['Lowers goals at both ends', 'بيقلل الأجوان في المرميين', 'Reduce los goles en las dos áreas', 'Réduit les buts des deux côtés'], ['Wins every match', 'بيكسب كل ماتش', 'Gana todos los partidos', 'Gagne tous les matchs'], ['Tires the team more', 'بيتعب الفريق أكتر', 'Cansa más al equipo', 'Fatigue plus l’équipe']], right: 0 },
+  { q: ['High pressing costs…', 'الضغط العالي بيكلّف…', 'La presión alta cuesta…', 'Le pressing haut coûte…'],
+    a: [['Money', 'فلوس', 'Dinero', 'De l’argent'], ['Fitness', 'لياقة', 'Forma física', 'De la forme'], ['Morale', 'معنويات', 'Moral', 'Du moral']], right: 1 },
+  { q: ['A knockout tie ends level. What comes next here?', 'ماتش خروج المغلوب خلص تعادل. إيه اللي بعده هنا؟', 'Una eliminatoria acaba en empate. ¿Qué viene aquí?', 'Un match à élimination directe finit à égalité. Et ensuite ?'],
+    a: [['A replay', 'ماتش إعادة', 'Un partido de desempate', 'Un match à rejouer'], ['Penalties', 'ضربات ترجيح', 'Penaltis', 'Les tirs au but'], ['Both go through', 'الاتنين يطلعوا', 'Pasan los dos', 'Les deux se qualifient']], right: 1 },
+  { q: ['Playing a full-back as a striker…', 'تلعّب ظهير كمهاجم…', 'Poner a un lateral de delantero…', 'Faire jouer un latéral en attaquant…'],
+    a: [['Costs rating', 'بيقلل تقييمه', 'Le baja la media', 'Fait baisser sa note'], ['Adds rating', 'بيزود تقييمه', 'Le sube la media', 'Fait monter sa note'], ['Changes nothing', 'مش بيغيّر حاجة', 'No cambia nada', 'Ne change rien']], right: 0 },
+  { q: ['Most subs a side can make here?', 'أقصى عدد تبديلات هنا؟', '¿Cuántos cambios como máximo aquí?', 'Combien de changements au maximum ici ?'],
+    a: [['3', '3', '3', '3'], ['5', '5', '5', '5'], ['7', '7', '7', '7']], right: 1 },
+];
+
+export function examQuestions(c: Career) {
+  const start = (c.seed + c.coach.days * 7) % EXAM_POOL.length;
+  return [0, 3, 7].map((k) => EXAM_POOL[(start + k) % EXAM_POOL.length]);
+}
+
+export function takeExam(c: Career, answers: number[]): { career: Career; passed: boolean } {
+  const next = nextLicence(c.coach.licence)!;
+  const qs = examQuestions(c);
+  const right = qs.filter((q, i) => q.right === answers[i]).length;
+  const passed = right >= 2;
+  let coach: Coach = { ...c.coach, wallet: c.coach.wallet - LICENCE_NEEDS[next].fee };
+  let career: Career = { ...c, coach };
+  if (passed) {
+    coach = { ...coach, licence: next, licenceAt: coach.days, xp: coach.xp + 200 };
+    career = addMsg({ ...c, coach }, 'coach', 'licence', { s: next });
+    career = checkMilestones(career, null).career; // licence milestones carry no cash
+  }
+  return { career, passed };
+}
+
+// ---------- courses ----------
+
+export const COURSES: { id: string; cost: number; xp: number; rep: number }[] = [
+  { id: 'conditioning', cost: 30_000, xp: 280, rep: 3 },  // -15% match fatigue
+  { id: 'psychology', cost: 35_000, xp: 300, rep: 4 },    // losses hurt morale less
+  { id: 'gegenpress', cost: 25_000, xp: 250, rep: 3 },    // high pressing hits harder
+  { id: 'fellowship', cost: 75_000, xp: 650, rep: 6 },    // young players develop faster
+];
+
+export function takeCourse(c: Career, id: string): { career: Career; ok: boolean } {
+  const course = COURSES.find((x) => x.id === id)!;
+  if (c.coach.courses.includes(id) || c.coach.wallet < course.cost) return { career: c, ok: false };
+  const coach: Coach = { ...c.coach, wallet: c.coach.wallet - course.cost, courses: [...c.coach.courses, id], xp: c.coach.xp + course.xp, reputation: clamp(c.coach.reputation + course.rep, 0, 100) };
+  return { career: addMsg({ ...c, coach }, 'coach', 'course', { s: id }), ok: true };
+}
+
+// ---------- inbox ----------
+
+export function addMsg(c: Career, kind: MsgKind, key: string, ref: { club?: string; player?: string; pn?: LocalizedName; n?: number; s?: string } = {}): Career {
+  const msg: Msg = { id: `${c.season}.${c.round}.${key}.${(c.inbox?.length ?? 0)}.${ref.player ?? ref.club ?? ref.s ?? ''}`, season: c.season, round: c.round, kind, key, ...ref };
+  return { ...c, inbox: [msg, ...(c.inbox ?? [])].slice(0, 60) };
+}
+
+// ---------- start, salary, moving ----------
+
+export const salaryOf = (club: Club) => Math.max(3_000, Math.round(club.wageCap * 0.03 / 100) * 100);
+
+export function newCoach(club: Club): Coach {
+  const licence = licenceFor(club.reputation);
+  return {
+    xp: xpForLevel(LICENCE_NEEDS[licence].level), reputation: clamp(club.reputation - 25, 10, 70), licence, licenceAt: -LICENCE_GAP,
+    courses: [], milestones: [], wallet: salaryOf(club), record: [0, 0, 0, 0, 0], goals: [0, 0], streak: 0, unbeaten: 0,
+    trophies: [], clubs: [club.id], days: 0,
+  };
+}
+
+// New club: fresh board, the tactics and transfer list start clean, and the new club says hello.
+export function moveTo(w: World, c: Career, clubId: string): { world: World; career: Career } {
+  const players = w.players.map((p) => (p.listed && p.clubId === c.clubId ? { ...p, listed: undefined } : p));
+  let career: Career = {
+    ...c, clubId, tactics: undefined, offers: [], jobs: [], sacked: false, live: null, ops: newOps(w, w.clubs.find((x) => x.id === clubId)!, c.season),
+    board: { confidence: 60, fans: 55 },
+    coach: { ...c.coach, clubs: c.coach.clubs.includes(clubId) ? c.coach.clubs : [...c.coach.clubs, clubId] },
+  };
+  career = addMsg(career, 'club', 'welcome', { club: clubId });
+  career = addNews(career, 'managers', 'appointed', { club: clubId, s: c.managerName });
+  return { world: { ...w, players }, career };
+}
+
+// Clubs that would hire this coach: within the licence cap and near the coach's reputation. When sacked, lower clubs only.
+export function jobOffers(w: World, c: Career, sacked: boolean, n = 3): string[] {
+  const cap = LICENCE_CAP[c.coach.licence];
+  const rep = c.coach.reputation;
+  const here = w.clubs.find((x) => x.id === c.clubId);
+  const pool = w.clubs.filter((x) => x.id !== c.clubId && x.reputation <= cap
+    && (sacked ? x.reputation <= Math.max(58, (here?.reputation ?? 60) + 3) : x.reputation >= rep + 10 && x.reputation <= rep + 25 && x.reputation > (here?.reputation ?? 0)));
+  // Clubs from the coach's own country come first, then its region, then the rest.
+  const countryOf = (x: Club) => w.leagues.find((l) => l.id === x.leagueId)!.country;
+  const mine = here ? countryOf(here) : '';
+  const arab = ['EGY', 'KSA', 'MAR', 'TUN', 'ALG', 'UAE', 'QAT'];
+  const near = (x: Club) => (countryOf(x) === mine ? 0 : arab.includes(countryOf(x)) === arab.includes(mine) ? 1 : 2);
+  const sorted = pool.sort((a, b) => near(a) - near(b) || b.reputation - a.reputation);
+  return sorted.slice(0, n).map((x) => x.id);
+}
+
+// ---------- board objectives ----------
+
+export type CupAim = 'win' | 'semi' | 'round2';
+export interface Objectives { league: Objective; cup: CupAim; youth: number; finance: true }
+
+export function objectivesOf(w: World, c: Career): Objectives {
+  const club = w.clubs.find((x) => x.id === c.clubId)!;
+  const lg = w.leagues.find((l) => l.id === club.leagueId)!;
+  const country = w.clubs.filter((x) => w.leagues.find((l) => l.id === x.leagueId)?.country === lg.country).sort((a, b) => b.reputation - a.reputation);
+  const rank = country.findIndex((x) => x.id === club.id);
+  return { league: objectiveOf(w, club), cup: rank < 2 ? 'win' : rank < 8 ? 'semi' : 'round2', youth: club.reputation >= 85 ? 5 : 15, finance: true };
+}
+
+export const youthApps = (w: World, c: Career) =>
+  squadOf(w, c.clubId).filter((p) => c.season - p.birthYear <= 21).reduce((s, p) => s + (c.stats[p.id]?.[0] ?? 0), 0);
+
+export function cupAimMet(w: World, c: Career, aim: CupAim): boolean | null {
+  const lg = w.leagues.find((l) => l.id === w.clubs.find((x) => x.id === c.clubId)!.leagueId)!;
+  const cup = c.cups[`${lg.country.toLowerCase()}_cup`];
+  if (!cup) return null;
+  const run = cupRun(cup, c.clubId);
+  if (!run) return null;
+  const rounds = cup.days.length;
+  // Still in it: not decided yet.
+  const out = cup.ties[run.round].some((t) => (t[0] === c.clubId || t[1] === c.clubId) && t[6] && t[6] !== c.clubId);
+  if (!out && !run.won && !cupWinner(cup)) {
+    if (aim === 'round2' && run.round >= 1) return true;
+    return null;
+  }
+  if (aim === 'win') return run.won;
+  if (aim === 'semi') return run.round >= rounds - 2;
+  return run.round >= 1;
+}
+
+// ---------- after each of the user's matches ----------
+
+export interface MatchOutcome { mine: number; theirs: number; oppId: string; home: boolean; myLevel: number; oppLevel: number; cup: boolean }
+
+export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World; career: Career } {
+  const me = w.clubs.find((x) => x.id === c.clubId)!;
+  const opp = w.clubs.find((x) => x.id === o.oppId)!;
+  const pts = o.mine > o.theirs ? 3 : o.mine === o.theirs ? 1 : 0;
+  const expected = clamp(1.4 + (o.myLevel - o.oppLevel) * 0.1 + (o.home ? 0.2 : -0.2), 0.3, 2.6);
+  const surprise = pts - expected;
+  const coach: Coach = {
+    ...c.coach,
+    record: [c.coach.record[0] + 1, c.coach.record[1] + (pts === 3 ? 1 : 0), c.coach.record[2] + (pts === 1 ? 1 : 0), c.coach.record[3] + (pts === 0 ? 1 : 0), 0],
+    goals: [c.coach.goals[0] + o.mine, c.coach.goals[1] + o.theirs],
+    streak: pts === 3 ? c.coach.streak + 1 : 0,
+    unbeaten: pts > 0 ? c.coach.unbeaten + 1 : 0,
+    xp: c.coach.xp + (pts === 3 ? 30 : pts === 1 ? 10 : 3) + (o.cup && pts === 3 ? 10 : 0),
+    reputation: clamp(c.coach.reputation + (surprise > 0.8 ? 0.1 : surprise < -1.2 ? -0.1 : 0), 0, 100),
+  };
+  const before = c.board;
+  const board = {
+    confidence: clamp(Math.round((before.confidence + surprise * 2.5) * 10) / 10, 0, 100),
+    fans: clamp(Math.round((before.fans + surprise * 4 + (o.mine >= 3 ? 1 : 0)) * 10) / 10, 0, 100),
+  };
+  let career: Career = { ...c, coach, board };
+  // Messages that match what really happened (E2E #19).
+  if (o.mine - o.theirs >= 3) career = addMsg(career, 'fans', 'bigWin', { club: opp.id, s: `${o.mine}-${o.theirs}` });
+  if (o.theirs - o.mine >= 3) career = addMsg(career, 'board', 'badLoss', { club: opp.id, s: `${o.mine}-${o.theirs}` });
+  if (pts === 3 && opp.reputation >= me.reputation + 15) career = addMsg(career, 'fans', 'giantKill', { club: opp.id });
+  if (before.confidence >= 35 && board.confidence < 35) career = addMsg(career, 'board', 'boardWorried');
+  if (before.confidence >= 20 && board.confidence < 20) career = addMsg(career, 'board', 'boardAngry');
+  if (before.confidence < 75 && board.confidence >= 75) career = addMsg(career, 'board', 'boardHappy');
+  if (before.fans >= 30 && board.fans < 30) career = addMsg(career, 'fans', 'fansAngry');
+  if (before.fans < 80 && board.fans >= 80) career = addMsg(career, 'fans', 'fansLove');
+  const ms = checkMilestones(career, { beat: pts === 3 ? opp.reputation - me.reputation : null, rank: myWorldRank(w, career) });
+  career = ms.career;
+  let world = w;
+  if (ms.cash) world = { ...w, clubs: w.clubs.map((x) => (x.id === c.clubId ? { ...x, budget: x.budget + ms.cash } : x)) };
+  return { world, career };
+}
+
+// Mid-season sacking: from matchday 12 on, a board below 12% lets you go.
+export function sackCheck(w: World, c: Career): Career {
+  if (c.sacked || c.round < 12 || c.board.confidence >= sackLine(balanceOf(c))) return c;
+  const career: Career = { ...c, sacked: true, jobs: jobOffers(w, c, true) };
+  return addNews(addMsg(career, 'board', 'sacked', { club: c.clubId }), 'managers', 'sacked', { club: c.clubId, s: c.managerName });
+}
+
+// ---------- milestones ----------
+
+export const MILESTONES: { id: string; cat: 'short' | 'mid' | 'long'; xp: number; rep: number; cash: number }[] = [
+  { id: 'firstWin', cat: 'short', xp: 150, rep: 1, cash: 25_000 },
+  { id: 'streak3', cat: 'short', xp: 250, rep: 1, cash: 50_000 },
+  { id: 'unbeaten10', cat: 'mid', xp: 400, rep: 2, cash: 75_000 },
+  { id: 'giantSlayer', cat: 'mid', xp: 450, rep: 3, cash: 75_000 },
+  { id: 'streak5', cat: 'mid', xp: 500, rep: 2, cash: 100_000 },
+  { id: 'cupGlory', cat: 'mid', xp: 800, rep: 4, cash: 150_000 },
+  { id: 'promotion', cat: 'mid', xp: 700, rep: 4, cash: 150_000 },
+  { id: 'leagueTitle', cat: 'long', xp: 1200, rep: 6, cash: 250_000 },
+  { id: 'topFlightTitle', cat: 'long', xp: 2000, rep: 8, cash: 500_000 },
+  { id: 'continental', cat: 'long', xp: 2500, rep: 10, cash: 1_000_000 },
+  { id: 'matches100', cat: 'long', xp: 600, rep: 3, cash: 100_000 },
+  { id: 'winRate55', cat: 'long', xp: 900, rep: 4, cash: 200_000 },
+  { id: 'twoClubs', cat: 'long', xp: 1500, rep: 6, cash: 300_000 },
+  { id: 'licenceA', cat: 'mid', xp: 500, rep: 3, cash: 0 },
+  { id: 'licencePro', cat: 'long', xp: 1000, rep: 5, cash: 0 },
+  { id: 'worldNo1', cat: 'long', xp: 3000, rep: 10, cash: 1_000_000 },
+];
+
+// Each milestone is checked against real numbers; `beat` is the reputation gap of a team just beaten.
+export function checkMilestones(c: Career, ctx: { beat: number | null; rank?: number } | null): { career: Career; cash: number } {
+  const k = c.coach;
+  const has = (id: string) => k.milestones.includes(id);
+  const clubsWithTrophy = new Set(k.trophies.filter((t) => t.kind !== 'promotion').map((t) => t.clubId));
+  const done: Record<string, boolean> = {
+    firstWin: k.record[1] >= 1,
+    streak3: k.streak >= 3,
+    streak5: k.streak >= 5,
+    unbeaten10: k.unbeaten >= 10,
+    giantSlayer: (ctx?.beat ?? -99) >= 15,
+    cupGlory: k.trophies.some((t) => t.kind === 'cup'),
+    promotion: k.trophies.some((t) => t.kind === 'promotion'),
+    leagueTitle: k.trophies.some((t) => t.kind === 'league'),
+    topFlightTitle: k.trophies.some((t) => t.kind === 'league' && t.id.endsWith('1')),
+    continental: k.trophies.some((t) => t.kind === 'continental'),
+    matches100: k.record[0] >= 100,
+    winRate55: k.record[0] >= 50 && k.record[1] / k.record[0] >= 0.55,
+    twoClubs: clubsWithTrophy.size >= 2,
+    // Only licences earned by exam count, not the one you started with (E2E #43).
+    licenceA: k.licenceAt >= 0 && hasLicence(k.licence, 'A'),
+    licencePro: k.licenceAt >= 0 && hasLicence(k.licence, 'PRO'),
+    worldNo1: ctx?.rank === 1,
+  };
+  let career = c, cash = 0;
+  for (const m of MILESTONES) {
+    if (has(m.id) || !done[m.id]) continue;
+    const coach: Coach = { ...career.coach, milestones: [...career.coach.milestones, m.id], xp: career.coach.xp + m.xp, reputation: clamp(career.coach.reputation + m.rep / 2, 0, 100) };
+    career = addMsg({ ...career, coach }, 'coach', 'milestone', { s: m.id });
+    cash += m.cash;
+  }
+  return { career, cash };
+}
+
+// ---------- end of season (called by endSeason with the final tables, before promotion and relegation) ----------
+
+export function coachSeasonEnd(w: World, c: Career, position: number, leagueId: string, promoted: boolean, met: boolean, short = 3):
+  { career: Career; cash: number } {
+  const lg = w.leagues.find((l) => l.id === leagueId)!;
+  const trophies = [...c.coach.trophies];
+  let rep = c.coach.reputation;
+  if (position === 1) { trophies.push({ season: c.season, kind: 'league', id: leagueId, clubId: c.clubId }); rep += lg.tier === 1 ? 4 : 2; }
+  if (promoted) { trophies.push({ season: c.season, kind: 'promotion', id: leagueId, clubId: c.clubId }); rep += 2; }
+  for (const cup of Object.values(c.cups)) {
+    if (cupWinner(cup) === c.clubId) {
+      trophies.push({ season: c.season, kind: cup.kind === 'national' ? 'cup' : 'continental', id: cup.id, clubId: c.clubId });
+      rep += cup.kind === 'national' ? 2 : 5;
+    }
+  }
+  const aims = objectivesOf(w, c);
+  const cupMet = cupAimMet(w, c, aims.cup);
+  const youthMet = youthApps(w, c) >= aims.youth;
+  const inTheBlack = w.clubs.find((x) => x.id === c.clubId)!.budget >= 0;
+  // The weekly table check already moved confidence during the season, so the review weighs how far off the club finished.
+  const delta = (met ? 10 : -Math.min(16, 6 + 2 * short)) + (cupMet === true ? 5 : cupMet === false ? -5 : 0) + (youthMet ? 3 : -3) + (inTheBlack ? 3 : -10);
+  rep += met ? 1 : -3;
+  let career: Career = {
+    ...c,
+    coach: { ...c.coach, trophies, reputation: clamp(rep, 0, 100), xp: c.coach.xp + (met ? 400 : 100) },
+    board: { confidence: clamp(c.board.confidence + delta, 0, 100), fans: clamp(c.board.fans + (met ? 10 : -10), 0, 100) },
+  };
+  career = addMsg(career, 'board', met ? 'seasonGood' : 'seasonBad', { n: position });
+  const ms = checkMilestones(career, null);
+  career = ms.career;
+  if (career.board.confidence < seasonSackLine(balanceOf(career))) {
+    career = { ...career, sacked: true, jobs: jobOffers(w, career, true) };
+    career = addMsg(career, 'board', 'sacked', { club: c.clubId });
+    career = addNews(career, 'managers', 'sacked', { club: c.clubId, s: c.managerName });
+  } else {
+    const jobs = jobOffers(w, career, false, met ? 2 : 1);
+    career = { ...career, jobs };
+    for (const j of jobs) career = addMsg(career, 'job', 'jobOffer', { club: j });
+  }
+  return { career, cash: ms.cash };
+}

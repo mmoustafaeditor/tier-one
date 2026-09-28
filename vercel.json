@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    { "source": "/the-gaffer", "destination": "/the-gaffer/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/downloads/TheGaffer.apk",
+      "headers": [
+        { "key": "Content-Type", "value": "application/vnd.android.package-archive" },
+        { "key": "Content-Disposition", "value": "attachment; filename=\"TheGaffer.apk\"" },
+        { "key": "Cache-Control", "value": "public, max-age=300, s-maxage=300" }
+      ]
+    }
+  ]
+}

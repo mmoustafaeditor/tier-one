@@ -1,0 +1,148 @@
+/* =====================================================================
+   SEMBA GAMES DESIGN SYSTEM · tokens.css
+   Source of truth: Tier One web 2.0.0 (design system v2 "Deadline Night"), tier-one/index.html in
+   mmoustafaeditor/tier-one, commit b1884f6. Values are copied verbatim; only comments were added.
+   Use: <link rel="stylesheet" href="design/tokens.css">, then set on <html>:
+     data-skin="default|stadium|neon|tabloid|broadsheet"  data-theme="auto|dark|light"  lang="en|es|ar"  dir="ltr|rtl"
+     data-dd="1" only during a game's "crunch" state (Tier One: Deadline Day).
+   Components must read the SEMANTIC tokens (--cta, --ok, --o-*, --news …), not the raw palette.
+   ===================================================================== */
+
+/* ---- fonts ------------------------------------------------------------------------------------
+   1) Google Fonts (all weights + Arabic). Put this in <head> BEFORE this stylesheet:
+      <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Barlow:wght@400;500;600;700&family=Cairo:wght@600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+   2) Offline subsets (below): Barlow Condensed 800 italic + Barlow 500/700, Latin + Latin Ext-A. Same family
+      names, declared after the Google link, so they win for those ranges and render with no network
+      (Android WebView). The game embeds these same files as base64; here they are separate files. */
+@font-face{ font-family:"Barlow Condensed"; font-style:italic; font-weight:800; font-display:swap; src:url(assets/fonts/BarlowCondensed-800-italic-latin.woff2) format("woff2"); unicode-range:U+0020-007E,U+00A0-00FF,U+0131,U+0152-0153,U+0160-0161,U+0178,U+017D-017E,U+2011,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2039-203A,U+2212; }
+@font-face{ font-family:"Barlow Condensed"; font-style:italic; font-weight:800; font-display:swap; src:url(assets/fonts/BarlowCondensed-800-italic-latin-ext.woff2) format("woff2"); unicode-range:U+0100-017F; }
+@font-face{ font-family:"Barlow"; font-style:normal; font-weight:500; font-display:swap; src:url(assets/fonts/Barlow-500-latin.woff2) format("woff2"); unicode-range:U+0020-007E,U+00A0-00FF,U+0131,U+0152-0153,U+0160-0161,U+0178,U+017D-017E,U+2011,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2039-203A,U+2212; }
+@font-face{ font-family:"Barlow"; font-style:normal; font-weight:500; font-display:swap; src:url(assets/fonts/Barlow-500-latin-ext.woff2) format("woff2"); unicode-range:U+0100-017F; }
+@font-face{ font-family:"Barlow"; font-style:normal; font-weight:700; font-display:swap; src:url(assets/fonts/Barlow-700-latin.woff2) format("woff2"); unicode-range:U+0020-007E,U+00A0-00FF,U+0131,U+0152-0153,U+0160-0161,U+0178,U+017D-017E,U+2011,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2039-203A,U+2212; }
+@font-face{ font-family:"Barlow"; font-style:normal; font-weight:700; font-display:swap; src:url(assets/fonts/Barlow-700-latin-ext.woff2) format("woff2"); unicode-range:U+0100-017F; }
+
+/* ---- Semba Studios brand (studio home page sembagames.app, index.html) ----------------------------
+   Studio = neon green. Each game keeps its own accent (Tier One = yellow). Studio pages use Sora/Inter. */
+:root{
+ --semba-neon:#B6FF3A; --semba-neon-ink:#0A1400; --semba-neon-2:#3AF2A0; /* headline gradient: 120deg neon → #3AF2A0 */
+ --semba-bg:#07090B; --semba-line:rgba(255,255,255,.09); --semba-line2:rgba(255,255,255,.16);
+ --semba-text:#F4F5FA; --semba-muted:#A1A6BD; --semba-dim:#6C7290;
+ --semba-display:Sora,system-ui,sans-serif; --semba-body:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+ --semba-glow:0 0 10px var(--semba-neon);
+ --tier-one-yellow:#FFD23F; --tier-one-ink:#1A1400; /* Tier One brand pair, same as --accent/--accent-ink below */
+}
+
+/* ---- Tier One game tokens (the shared game design system) ---------------------------------------- */
+:root{
+ /* ---- palette: Deadline Night (default, dark) ---- */
+ --bg:#070B16; --bg2:#0B1224; --panel:#0F1729; --panel2:#16213A; --panel3:#1F2C4A; --line:#22304F; --line2:#31426A;
+ --text:#F3F5FA; --muted:#98A3BF; --dim:#7D88A6; /* dim: AA on --panel2 too (4.5:1), still clearly below --muted */
+ --accent:#FFD23F; --accent-ink:#1A1400; --accent-text:#FFD23F;
+ --blue:#3D8BFF; --red:#FF3D55; --green:#27E08A; --gold:#FFB020; --purple:#A98BFF; --cyan:#2FD6F0; --stamp:#FF3D55;
+ --display:"Barlow Condensed","sans-serif-condensed","Roboto Condensed","Arial Narrow",Impact,sans-serif;
+ --body:Barlow,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+ --ital:italic; --caps:uppercase; --track:.02em;
+ --gdir:90deg;
+ /* ---- semantic: the ONE primary action ---- */
+ --cta:var(--accent); --cta-ink:var(--accent-ink); --cta-text:var(--cta); /* --cta-text: the CTA colour when used as text/lines on panels */ --cta-glow:0 0 0 1px rgba(255,210,63,.35),0 12px 30px -12px rgba(255,210,63,.6);
+ /* ---- semantic: outcomes (only ever used for outcomes) ---- */
+ --o-done:#27E08A; --o-hijack:#FF9F43; --o-off:#FF4D63; --o-fake:#A98BFF; --o-ink:#0A0E18;
+ /* ---- semantic: results, events ---- */
+ --ok:#27E08A; --bad:#FF4D63; --ex:#FFC933; --ex-ink:#241800;
+ --twist:#2FD6F0; --news:#FF3D55; --sharp:var(--accent); --info:#3D8BFF; --you:#3D8BFF;
+ --news-fill:#C8102E; /* --news as a fill under white TEXT that carries information (AA 5.9:1); --news stays for dots, badges, NEW tags */
+ --you-fill:color-mix(in srgb,var(--you) 70%,#000); /* --you as a fill under white text (AA); literal fallback for old engines below */
+ --stars:#FFB020;
+ --clock-bg:#FFFFFF; --clock-ink:#D0142A; --clock-alarm:#FF3D55;
+ /* ---- achievements / tiers ---- */
+ --r-common:#A9B6D3; --r-rare:#4C9BFF; --r-epic:#B07BFF; --r-legend:#FFC933; --r-shame:#FF5A6E;
+ --t1:#FFD23F; --t2:#C9D3E6; --t3:#D8975A; --t4:#8390AE; --t5:#66728F; --tclown:#FF3D55;
+ --scrim:rgba(3,6,14,.72);
+ /* ---- spacing (4-pt) ---- */
+ --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px; --s10:40px; --s14:56px; --gutter:16px;
+ /* ---- radii ---- */
+ --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+ /* ---- elevation ---- */
+ --e1:0 1px 0 rgba(255,255,255,.05) inset,0 10px 24px -16px rgba(0,0,0,.85);
+ --e2:0 1px 0 rgba(255,255,255,.06) inset,0 18px 40px -18px rgba(0,0,0,.9);
+ --e3:0 -20px 60px rgba(0,0,0,.6);
+ --lift:var(--e1); --glow:var(--cta-glow);
+ /* ---- type ---- */
+ --fs-hero:84px; --fs-d1:64px; --fs-d2:44px; --fs-d3:30px; --fs-d4:21px; --fs-d5:17px;
+ --fs-lg:17px; --fs-md:15px; --fs-sm:13px; --fs-xs:12px; --fs-mi:11px;
+ /* ---- motion ---- */
+ --t-press:90ms; --t-fast:160ms; --t-base:240ms; --t-slow:420ms; --t-stage:650ms;
+ --ease-out:cubic-bezier(.16,1,.3,1); --ease-spring:cubic-bezier(.34,1.56,.64,1); --ease-io:cubic-bezier(.7,0,.2,1); --ease-pop:cubic-bezier(.2,1.4,.4,1);
+ /* ---- layout ---- */
+ --tap:44px; --appbar:56px; --dock:108px; --tabbar:64px;
+ color-scheme:dark;
+}
+/* ---------- skins: palette + only the semantic tokens that would collide ----------
+   Light palettes also darken the raw --green/--red/--gold/--purple/--stamp: older markup still uses them as text. */
+/* ---- skin: Stadium (dark green pitch, lime CTA). Bought in Career › Style ---- */
+:root[data-skin="stadium"]{ --bg:#05231A; --bg2:#072C21; --panel:#0A3427; --panel2:#0E4131; --panel3:#14503D; --line:#1A5C46; --line2:#23735A; --text:#EFFFF6; --muted:#A3D2BD; --dim:#86B8A2;
+ --accent:#E8FF5A; --accent-ink:#0E1800; --accent-text:#E8FF5A; --cta-glow:0 0 0 1px rgba(232,255,90,.35),0 12px 30px -12px rgba(232,255,90,.5);
+ --o-done:#6FF5C8; --ok:#6FF5C8; --o-off:#FF8795; --bad:#FF8795; --o-fake:#C4A8FF; --o-hijack:#FFAE5C; --ex:#FFD23F; --green:#6FF5C8; --red:#FF8795; --stamp:#FF8795;
+ --info:#6FA8FF; --t4:#A8B4D0; --t5:#95A1BE; --tclown:#FF8795; }
+/* ---- skin: Neon (deep violet, cyan CTA) ---- */
+:root[data-skin="neon"]{ --bg:#0D0724; --bg2:#120A31; --panel:#170D3A; --panel2:#21134F; --panel3:#2C1B66; --line:#382480; --line2:#4A33A0; --text:#F6F2FF; --muted:#B7ABE3; --dim:#9486C9;
+ --accent:#33E6FF; --accent-ink:#021219; --accent-text:#33E6FF; --cta-glow:0 0 0 1px rgba(51,230,255,.4),0 12px 34px -10px rgba(51,230,255,.6);
+ --o-done:#9CFF57; --ok:#9CFF57; --o-off:#FF5A5F; --bad:#FF5A5F; --o-fake:#C9A8FF; --twist:#FF6AD5; --you:#B36BFF; --info:#B36BFF; --green:#9CFF57; --purple:#C9A8FF; }
+/* ---- skin: Tabloid (light: red-top newspaper, black CTA) ---- */
+:root[data-skin="tabloid"]{ --bg:#FFF3F0; --bg2:#FFF8F6; --panel:#FFFFFF; --panel2:#FFE9E4; --panel3:#FFD8D0; --line:#F2C9C0; --line2:#E0A193; --text:#1C0B08; --muted:#6E423B; --dim:#8A5E56;
+ --accent:#E3202F; --accent-ink:#FFFFFF; --accent-text:#B8101E;
+ --cta:#16110F; --cta-ink:#FFFFFF; --cta-glow:0 10px 24px -12px rgba(22,17,15,.6); --sharp:#E3202F;
+ --o-done:#07703C; --ok:#07703C; --o-hijack:#9A4400; --o-off:#B50C28; --bad:#B50C28; --o-fake:#6E3FD1; --o-ink:#FFFFFF; --ex:#8A5A00; --ex-ink:#FFFFFF;
+ --twist:#076A88; --news:#C8102E; --you:#1D5FD6; --info:#1D5FD6; --blue:#1D5FD6;
+ --green:#07703C; --red:#C8102E; --gold:#8A5A00; --purple:#6E3FD1; --stamp:#B50C28;
+ --r-common:#5D6B8A; --r-rare:#1D5FD6; --r-epic:#6E3FD1; --r-legend:#8A5A00; --r-shame:#C8102E;
+ --t1:#B8860B; --t2:#6B7894; --t3:#9C5B22; --t4:#5D6B8A; --t5:#6B7280; --tclown:#C8102E; --news-fill:var(--news); --stars:#A55F00;
+ --e1:0 1px 0 #fff inset,0 10px 24px -14px rgba(120,30,20,.3); --e2:0 1px 0 #fff inset,0 16px 36px -16px rgba(120,30,20,.35); --e3:0 -16px 50px rgba(80,20,10,.25); --scrim:rgba(40,10,6,.45); color-scheme:light; }
+/* ---- skin: Broadsheet (light: cream newsprint, ink CTA) ---- */
+:root[data-skin="broadsheet"]{ --bg:#F1EBDD; --bg2:#F6F1E6; --panel:#FBF8F0; --panel2:#EFE7D4; --panel3:#E4D9C0; --line:#D8CCB0; --line2:#BFAE86; --text:#1E1A12; --muted:#5E5542; --dim:#6A604F;
+ --accent:#1E1A12; --accent-ink:#F6F1E6; --accent-text:#1E1A12; --cta-glow:0 10px 26px -12px rgba(30,26,18,.5); --sharp:#9A6200;
+ --o-done:#22683B; --ok:#22683B; --o-hijack:#8A4500; --o-off:#B3261E; --bad:#B3261E; --o-fake:#5B3E96; --o-ink:#FFFFFF; --ex:#7F5C12; --ex-ink:#FFFFFF;
+ --twist:#1F6573; --news:#B3261E; --you:#2B4C8C; --info:#2B4C8C; --blue:#2B4C8C;
+ --green:#22683B; --red:#B3261E; --gold:#7F5C12; --purple:#5B3E96; --stamp:#B3261E;
+ --r-common:#5E5542; --r-rare:#2B4C8C; --r-epic:#5B3E96; --r-legend:#7F5C12; --r-shame:#B3261E;
+ --t1:#9A6200; --t2:#6B6452; --t3:#8A4F1F; --t4:#5E5542; --t5:#6A604F; --tclown:#B3261E; --news-fill:var(--news); --stars:#A55F00;
+ --e1:0 1px 0 #fff inset,0 10px 24px -16px rgba(60,45,20,.3); --e2:0 1px 0 #fff inset,0 16px 36px -16px rgba(60,45,20,.35); --e3:0 -16px 50px rgba(60,45,20,.22); --scrim:rgba(30,26,18,.45); color-scheme:light; }
+/* "Daylight": the light theme of the house skin. Theme = Light, or Theme = Auto (no data-theme / "auto") + a light OS. */
+:root[data-skin="default"][data-theme="light"]{ --cta-text:#7F5D00; --bg:#F3F5FA; --bg2:#FFFFFF; --panel:#FFFFFF; --panel2:#EEF1F7; --panel3:#E1E6F0; --line:#DCE2EE; --line2:#BCC6DA; --text:#0B1224; --muted:#4F5B78; --dim:#5F6A87;
+ --accent-text:#7F5D00; --sharp:#B8860B;
+ --o-done:#07703C; --ok:#07703C; --o-hijack:#9A4400; --o-off:#B50C28; --bad:#B50C28; --o-fake:#6E3FD1; --o-ink:#FFFFFF; --ex:#8A5A00; --ex-ink:#FFFFFF;
+ --twist:#076A88; --news:#D81E3A; --you:#1F6FEB; --info:#1A5FD0; --blue:#1F6FEB; --news-fill:var(--news); --stars:#A55F00;
+ --green:#07703C; --red:#C8102E; --gold:#8A5A00; --purple:#6E3FD1; --stamp:#B50C28;
+ --r-common:#5D6B8A; --r-rare:#1F6FEB; --r-epic:#6E3FD1; --r-legend:#8A5A00; --r-shame:#C8102E;
+ --t1:#B8860B; --t2:#6B7894; --t3:#9C5B22; --t4:#5D6B8A; --t5:#6B7280; --tclown:#C8102E;
+ --cta-glow:0 0 0 1px rgba(184,134,11,.35),0 12px 26px -14px rgba(184,134,11,.55);
+ --e1:0 1px 0 #fff inset,0 8px 22px -14px rgba(20,30,60,.28); --e2:0 16px 36px -16px rgba(20,30,60,.32); --e3:0 -16px 50px rgba(20,30,60,.2); --scrim:rgba(10,18,36,.45); color-scheme:light; }
+/* ---- theme: Daylight again, for Theme = Auto on a light OS (same values as above) ---- */
+@media (prefers-color-scheme:light){
+:root[data-skin="default"]:is(:not([data-theme]),[data-theme="auto"]){ --cta-text:#7F5D00; --bg:#F3F5FA; --bg2:#FFFFFF; --panel:#FFFFFF; --panel2:#EEF1F7; --panel3:#E1E6F0; --line:#DCE2EE; --line2:#BCC6DA; --text:#0B1224; --muted:#4F5B78; --dim:#5F6A87;
+ --accent-text:#7F5D00; --sharp:#B8860B;
+ --o-done:#07703C; --ok:#07703C; --o-hijack:#9A4400; --o-off:#B50C28; --bad:#B50C28; --o-fake:#6E3FD1; --o-ink:#FFFFFF; --ex:#8A5A00; --ex-ink:#FFFFFF;
+ --twist:#076A88; --news:#D81E3A; --you:#1F6FEB; --info:#1A5FD0; --blue:#1F6FEB; --news-fill:var(--news); --stars:#A55F00;
+ --green:#07703C; --red:#C8102E; --gold:#8A5A00; --purple:#6E3FD1; --stamp:#B50C28;
+ --r-common:#5D6B8A; --r-rare:#1F6FEB; --r-epic:#6E3FD1; --r-legend:#8A5A00; --r-shame:#C8102E;
+ --t1:#B8860B; --t2:#6B7894; --t3:#9C5B22; --t4:#5D6B8A; --t5:#6B7280; --tclown:#C8102E;
+ --cta-glow:0 0 0 1px rgba(184,134,11,.35),0 12px 26px -14px rgba(184,134,11,.55);
+ --e1:0 1px 0 #fff inset,0 8px 22px -14px rgba(20,30,60,.28); --e2:0 16px 36px -16px rgba(20,30,60,.32); --e3:0 -16px 50px rgba(20,30,60,.2); --scrim:rgba(10,18,36,.45); color-scheme:light; }
+}
+/* Deadline Day: "the lights go down". Overrides EVERY skin/theme: higher specificity AND declared last. */
+:root[data-skin][data-dd="1"],:root[data-dd="1"]:not([data-skin]){ --cta-text:#FFFFFF; --bg:#15060A; --bg2:#1C070D; --panel:#230A11; --panel2:#2E0E17; --panel3:#3C131F; --line:#4D1826; --line2:#6A2437; --text:#FFF1F3; --muted:#EDB4BE; --dim:#C98894;
+ --accent:#FF3D55; --accent-ink:#FFFFFF; --accent-text:#FFC2CB;
+ --cta:#FFFFFF; --cta-ink:#C8102E; --cta-glow:0 0 0 1px rgba(255,255,255,.4),0 14px 34px -10px rgba(255,61,85,.9); --sharp:#FFFFFF;
+ --o-done:#3BEA9B; --ok:#3BEA9B; --o-hijack:#FFA24D; --o-off:#FF7A8A; --bad:#FF7A8A; --o-fake:#C3A6FF; --o-ink:#14040A; --ex:#FFC933; --ex-ink:#241800;
+ --twist:#5CE1F5; --news:#FF3D55; --news-fill:#C8102E; --you:#6FA8FF; --info:#6FA8FF; --blue:#6FA8FF; --stars:#FFC933;
+ --green:#3BEA9B; --red:#FF3D55; --gold:#FFC933; --purple:#C3A6FF; --stamp:#FF7A8A;
+ --r-common:#A9B6D3; --r-rare:#6FA8FF; --r-epic:#C3A6FF; --r-legend:#FFC933; --r-shame:#FF7A8A;
+ --t1:#FFD23F; --t2:#C9D3E6; --t3:#D8975A; --t4:#8390AE; --t5:#66728F; --tclown:#FF3D55;
+ --e1:0 1px 0 rgba(255,255,255,.05) inset,0 10px 24px -16px rgba(0,0,0,.85); --e2:0 18px 40px -18px rgba(0,0,0,.9); --e3:0 -20px 60px rgba(0,0,0,.6); --scrim:rgba(10,2,5,.72); color-scheme:dark; }
+/* ---- fallback for engines without color-mix() (old Android WebViews) ---- */
+@supports not (color:color-mix(in srgb,red 50%,blue)){ :root,:root[data-skin],:root[data-skin][data-dd="1"]{ --you-fill:#1F4E9E; } }
+/* ---- Arabic: Cairo (display) + Tajawal (body); no italics, no caps, no tracking ---- */
+html[lang="ar"]{ --display:Cairo,Tajawal,"Segoe UI",sans-serif; --body:Tajawal,Cairo,"Segoe UI",sans-serif; --ital:normal; --caps:none; --track:0; }
+/* ---- RTL: gradients that run "forward" flip direction ---- */
+[dir="rtl"]{ --gdir:270deg; }

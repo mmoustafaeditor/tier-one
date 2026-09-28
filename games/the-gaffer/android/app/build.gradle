@@ -1,0 +1,57 @@
+plugins { id 'com.android.application' }
+
+// The game is the single file built by ../web (npm run build → web/dist/index.html). It is copied into
+// src/main/assets/ before every build, so the APK always ships the current web build. The version name comes
+// from web/package.json; bump versionCode (+1) for every APK you publish.
+def webDir = file('../../web')
+def webVersion = new groovy.json.JsonSlurper().parse(new File(webDir, 'package.json')).version
+
+android {
+    namespace 'com.sembagames.thegaffer'
+    compileSdk 34
+
+    buildFeatures { buildConfig true }
+
+    defaultConfig {
+        applicationId "com.sembagames.thegaffer"
+        minSdk 24
+        targetSdk 34
+        versionCode 4
+        versionName webVersion
+    }
+
+    // The Gaffer's own key (not Tier One's). Keep this file: every build must be signed with it so updates install over old versions.
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'gafferkey'
+            keyPassword 'android'
+            storeType 'pkcs12'
+        }
+    }
+
+    buildTypes {
+        debug { signingConfig signingConfigs.debug }
+        release { minifyEnabled false }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core:1.13.1' // FileProvider, to share images and save files
+}
+
+tasks.register('copyGame', Copy) {
+    def built = new File(webDir, 'dist/index.html')
+    doFirst {
+        if (!built.exists()) throw new GradleException("Build the game first: cd games/the-gaffer/web && npm ci && npm run build")
+    }
+    from built
+    into 'src/main/assets'
+}
+preBuild.dependsOn copyGame

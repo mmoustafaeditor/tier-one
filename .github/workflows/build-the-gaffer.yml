@@ -1,0 +1,95 @@
+name: Build and publish The Gaffer
+
+on:
+  push:
+    paths:
+      - 'games/the-gaffer/**'
+      - 'design/**'
+      - 'api/the-gaffer/**'
+      - '.github/workflows/build-the-gaffer.yml'
+  pull_request:
+    paths:
+      - 'games/the-gaffer/**'
+      - 'design/**'
+      - 'api/the-gaffer/**'
+      - '.github/workflows/build-the-gaffer.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: games/the-gaffer/web/package-lock.json
+
+      - name: Reject legacy project branding
+        run: |
+          set -e
+          for encoded in \
+            2KPZhtiqINin2YTZhdiv2LHYqA== \
+            QW50YSBFbCBNb2RhcmVi \
+            YW50YS1lbC1tb2RhcmVi \
+            bW9kYXJlYi5haS5zdHVkaW8= \
+            YW50YV9lbF9tb2RhcmVi \
+            QW50YUVsTW9kYXJlYg==
+          do
+            term="$(printf '%s' "$encoded" | base64 -d)"
+            if grep -R -F -n "$term" games/the-gaffer/web/src games/the-gaffer/web/index.html games/the-gaffer/android api/the-gaffer; then
+              echo "Legacy project branding found in The Gaffer source/deploy surface."
+              exit 1
+            fi
+          done
+
+      - name: Build The Gaffer web
+        working-directory: games/the-gaffer/web
+        run: |
+          npm ci
+          npm run build
+          test -s dist/index.html
+          ! grep -q 'fonts.googleapis' dist/index.html
+          npm run build:min
+          test -s ../build/index.html
+          for encoded in 2KPZhtiqINin2YTZhdiv2LHYqA== QW50YSBFbCBNb2RhcmVi YW50YS1lbC1tb2RhcmVi bW9kYXJlYi5haS5zdHVkaW8=; do
+            term="$(printf '%s' "$encoded" | base64 -d)"
+            ! grep -F "$term" ../build/index.html
+          done
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Build The Gaffer APK
+        working-directory: games/the-gaffer/android
+        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK
+        working-directory: games/the-gaffer/android
+        run: |
+          unzip -l app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/index.html'
+          unzip -p app/build/outputs/apk/debug/app-debug.apk assets/index.html > /tmp/the-gaffer-index.html
+          for encoded in 2KPZhtiqINin2YTZhdiv2LHYqA== QW50YSBFbCBNb2RhcmVi YW50YS1lbC1tb2RhcmVi bW9kYXJlYi5haS5zdHVkaW8=; do
+            term="$(printf '%s' "$encoded" | base64 -d)"
+            ! grep -F "$term" /tmp/the-gaffer-index.html
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TheGaffer-apk
+          path: games/the-gaffer/android/app/build/outputs/apk/debug/app-debug.apk

@@ -12,3 +12,9 @@ Template:
 ```
 
 <!-- requests start -->
+
+## 2026-09-28 · from saifsaber → for mmoustafaeditor · OK to publish The Gaffer on sembagames.app?
+The Gaffer (game 02) is ready on branch `ccr-dc1851aa-6gusor`. It adds new files only: `the-gaffer/`, `games/the-gaffer/`,
+`api/the-gaffer/`, `downloads/TheGaffer.apk`, `vercel.json`, `design/` (a few shared files). No Tier One files change.
+Because it adds files under `api/` and `downloads/`, it needs your OK before it goes to `main`. If you say yes: merge the branch
+into `main` and push it yourself so Vercel deploys it. Then check sembagames.app/the-gaffer and /api/the-gaffer/latest.
