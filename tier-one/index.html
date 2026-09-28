@@ -1804,6 +1804,49 @@ button.onl-cd b{ font-weight:800; }
 .onl-emic{ font-size:44px; }
 .onl-empty .d4{ font-size:22px; line-height:1.15; }
 /* @@LANE CSS:online END */
+/* @@LANE CSS:rivals BEGIN (rival journalists: consistent RIVAL look, race lines, how-to card) */
+.rvtag{ display:inline-flex; align-items:center; flex-shrink:0; height:18px; padding:0 6px; border-radius:5px; border:1.5px dashed var(--line2); background:transparent; color:var(--muted); font:800 10px/1 var(--body); letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; vertical-align:middle; }
+html[lang="ar"] .rvtag{ letter-spacing:0; font-size:11px; }
+.rvh{ flex-shrink:1; min-width:0; color:var(--dim); font:600 var(--fs-xs)/1.2 var(--body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rvav{ display:inline-grid; place-items:center; flex-shrink:0; width:28px; height:28px; border-radius:50%; border:1.5px dashed var(--line2); background:transparent; font-size:15px; line-height:1; }
+/* feed sheet */
+.frow.rival .fmeta{ display:flex; flex-wrap:wrap; align-items:center; column-gap:6px; row-gap:2px; }
+.frow.rival .fmeta > span:last-child{ flex-basis:100%; }
+/* overnight sheet */
+.onrow.rival .ow{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; }
+.onrow.rival .ow .rvav{ width:22px; height:22px; font-size:12px; } .onrow.rival .ow .rvn{ font-weight:700; }
+/* board rows: rival guesses are their own dashed chip, never in your tally */
+.pcard .intel .rvchip{ display:inline-flex; align-items:center; gap:4px; height:22px; padding:0 7px; border-radius:11px; border:1.5px dashed var(--line2); color:var(--muted); font:700 11.5px/1 var(--body); white-space:nowrap; }
+.pcard .intel .rvchip i{ font-style:normal; font-size:11px; letter-spacing:1px; }
+/* player page: What we know + messages */
+.q2know .krow.rival .kt{ flex-wrap:wrap; row-gap:3px; }
+.q2know .krow.rival .kt .rvh{ order:3; }
+.q2know .krow.rival .kd{ order:4; }
+.q2know .krow.rival .oc.say{ background:transparent; box-shadow:inset 0 0 0 1.5px var(--line2); }
+:is(.pp,.ppsheet) .msg .mh .rvtag{ margin-inline-start:2px; }
+.bub.rival .who{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; }
+.coach.hmtip .tx{ overflow-wrap:anywhere; }
+/* truth table */
+.rsx .mxt tbody.riv th.over .rvtag{ margin-inline-start:6px; height:16px; font-size:9px; }
+.rsx .mxt tbody.riv .sn .e{ display:inline-grid; place-items:center; width:22px; height:22px; border-radius:50%; border:1.5px dashed var(--line2); font-size:12px; }
+/* results: who won the race, under each call */
+.rsx .sb .rvrace{ display:flex; align-items:flex-start; gap:8px; margin:-4px 0 0; padding:0 12px 10px calc(12px + 44px); font:600 var(--fs-xs)/1.35 var(--body); color:var(--muted); }
+.rsx .sb .rvrace .rvav{ width:20px; height:20px; font-size:11px; }
+.rsx .sb .rvrace .rvt{ min-width:0; padding-top:2px; }
+.rsx .sb .rvrace .rvtag{ height:16px; font-size:9px; margin-inline-end:6px; }
+.rsx .sb .rvrace.ex{ color:var(--text); font-weight:800; }
+.rsx .sb .rvrace.ex .rvav{ border:0; background:color-mix(in srgb,var(--gold,#E8B931) 30%,transparent); }
+/* how-to / rules card */
+.rvhow{ margin-top:14px; padding:14px; }
+.rvhow .rvhp{ margin:6px 0 4px; font-size:var(--fs-sm); line-height:1.45; color:var(--muted); }
+.rvhow .rvhrow{ display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line); }
+.rvhow .rvhrow:first-of-type{ border-top:0; }
+.rvhow .rvav{ width:34px; height:34px; font-size:18px; }
+.rvhow .rvhm{ min-width:0; display:flex; flex-direction:column; gap:3px; }
+.rvhow .rvhn{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; font-size:var(--fs-sm); }
+.rvhow .rvhd{ font-size:var(--fs-xs); color:var(--muted); line-height:1.35; }
+.rvhow .rvhx{ margin-top:8px; padding-top:10px; border-top:1px solid var(--line); font:700 var(--fs-sm)/1.4 var(--body); }
+/* @@LANE CSS:rivals END */
 /* ---- QA integration fixes (after every lane slot, so they win) ---- */
 .pp{ animation-fill-mode:backwards; }            /* a filled transform animation made the fixed dock scroll with the page */
 .onrow > svg:first-child{ width:36px; height:36px; flex-shrink:0; }
@@ -4088,6 +4131,31 @@ const REPLY_DIRTY={en:/\b(shit|wtf|ffs|bellend|arse|piss|damn|bloody|crap|bolloc
 function replyClean(k,i,l){ l=l||lang; const L=getPath(I18N[l],k)||getPath(I18N.en,k); const s=Array.isArray(L)?L[((i%L.length)+L.length)%L.length]:L; return s==null||!(REPLY_DIRTY[l]||REPLY_DIRTY.en).test(String(s)); }
 function cleanIdx(k,l){ l=l||lang; const L=getPath(I18N[l],k)||getPath(I18N.en,k)||[]; return (Array.isArray(L)?L:[L]).map((_,i)=>i).filter(i=>replyClean(k,i,l)); }
 /* @@LANE I18N:content END */
+/* @@LANE I18N:rivals BEGIN */
+deepMerge(I18N,{
+ en:{rv:{tag:'RIVAL',role:'Rival journalist',roles:'Rival journalists',b1:'1 rival guess',bN:'{n} rival guesses',
+  beaten:'Beaten by {h} ({n}) on {d} · you called it {c}',first:'{h} ({n}) posted first on {d} · you called it {c}',
+  ex:'Exclusive: you beat every rival',uturn:"U-turned calls can't be exclusive",gotIt:'{h} ({n}) got it right on {d}',nobody:'No rival got this one right either',
+  how:{title:'Rival journalists',body:"Three other journalists chase the same stories. They are not your sources: you can't ask them, and they're only guessing.",
+   tabloid:'Posts early (days {a}–{b}). Often wrong.',itk:'Posts mid-week (days {a}–{b}). A coin flip.',insider:'Posts late (days {a}–{b}). Usually right.',
+   ex:'Post a correct call before any rival posts on that player for an exclusive.'}},
+  tut:{coach:{rivals:'Rivals are other journalists racing you. They guess too — beat them to a correct call for an 👑 exclusive.'}}},
+ es:{rv:{tag:'RIVAL',role:'Periodista rival',roles:'Periodistas rivales',b1:'1 apuesta rival',bN:'{n} apuestas rivales',
+  beaten:'Te ganó {h} ({n}) el {d} · tú lo diste el {c}',first:'{h} ({n}) publicó antes, el {d} · tú lo diste el {c}',
+  ex:'Exclusiva: te adelantaste a todos los rivales',uturn:'Una rectificación no puede ser exclusiva',gotIt:'{h} ({n}) acertó el {d}',nobody:'Ningún rival acertó esta tampoco',
+  how:{title:'Periodistas rivales',body:'Otros tres periodistas persiguen las mismas historias. No son tus fuentes: no puedes preguntarles y solo están adivinando.',
+   tabloid:'Publica pronto (días {a}–{b}). Suele fallar.',itk:'Publica a mitad de semana (días {a}–{b}). Cara o cruz.',insider:'Publica tarde (días {a}–{b}). Suele acertar.',
+   ex:'Publica una noticia correcta antes de que ningún rival hable de ese jugador y tendrás una exclusiva.'}},
+  tut:{coach:{rivals:'Los rivales son otros periodistas que compiten contigo. También adivinan: gánales con una noticia correcta y tendrás una 👑 exclusiva.'}}},
+ ar:{rv:{tag:'منافس',role:'صحفي منافس',roles:'الصحفيين المنافسين',b1:'تخمين منافس واحد',bN:'{n} تخمينات منافسين',
+  beaten:'{h} ({n}) سبقك {d} · انت قلتها {c}',first:'{h} ({n}) نزّل قبلك {d} · انت قلتها {c}',
+  ex:'انفراد: سبقت كل المنافسين',uturn:'الخبر اللي اتعدّل مينفعش يبقى انفراد',gotIt:'{h} ({n}) جابها صح {d}',nobody:'ولا منافس جابها صح برضه',
+  how:{title:'الصحفيين المنافسين',body:'في تلات صحفيين تانيين بيجروا ورا نفس القصص. دول مش مصادرك: مش هتعرف تسألهم، وهما أصلًا بيخمّنوا.',
+   tabloid:'بينزّل بدري (يوم {a}–{b}). وغالبًا غلطان.',itk:'بينزّل نص الأسبوع (يوم {a}–{b}). يا صابت يا خابت.',insider:'بينزّل متأخر (يوم {a}–{b}). وغالبًا صح.',
+   ex:'انشر خبر صح قبل ما أي منافس ينزّل عن اللعيب ده وخد انفراد.'}},
+  tut:{coach:{rivals:'المنافسين دول صحفيين تانيين بيسابقوك. هما كمان بيخمّنوا، اسبقهم بخبر صح وخد 👑 انفراد.'}}}
+});
+/* @@LANE I18N:rivals END */
 /* ─ */
 /* ─ */
 /* QA: no cryptic abbreviations (D3, DD, ½, ×1.2) — spell things out; one name per concept */
@@ -4363,7 +4431,7 @@ function scoopBar(s,x){ if(!x.called||!x.correct||!s.call) return '';
  if(x.exclusive) return `<div class="scoopbar ex"><b>👑 ${esc(t('scoop.exTitle'))}</b><span>${esc(t('scoop.exSub',{n:MATH.EXCL}))}</span></div>`;
  if(x.uturn) return `<div class="scoopbar late"><b>✅ ${esc(t('scoop.rightTitle'))}</b><span>${esc(t('scoop.uturn'))}</span></div>`;
  const rp=(s.rivalPosts||[]).filter(p=>p.correct&&p.day<=s.call.day).sort((a,b)=>a.day-b.day)[0];
- return `<div class="scoopbar late"><b>✅ ${esc(t('scoop.rightTitle'))}</b><span>${esc(rp?t('scoop.beaten',{r:t('rival.'+rp.rival),d:rp.day}):t('scoop.late'))}</span></div>`; }
+ return `<div class="scoopbar late"><b>✅ ${esc(t('scoop.rightTitle'))}</b><span>${esc(rp?t('scoop.beaten',{r:rvLabel(rp.rival),d:rp.day}):t('scoop.late'))}</span></div>`; }
 /* ─ lane boundary: results | board ─ */
 function unseenNews(s,from){ from=from!=null?from:(s.newsSeen||1); return game.feed.filter(f=>f.sagaId===s.id&&(f.type==='rival'||f.type==='twist'||(f.type==='event'&&f.day>1))&&f.day>from); }
 function newsChip(s){ const un=unseenNews(s); if(!un.length) return ''; const last=un[un.length-1]; if(last.type!=='rival'||!last.claim) return `<span class="newsnip"><i>${esc(t('news.new'))}</i>📡 ${esc(t('news.n',{n:un.length}))}</span>`; const rp=last; return `<span class="newsnip"><i>${esc(t('news.new'))}</i>${RIVALS.find(r=>r.key===rp.rival).ic} ${esc(t('news.claim.'+rp.claim))}</span>`; }
@@ -4934,7 +5002,7 @@ function sagaStatus(s){ const dd=game.day===7;
  return `<span class="callpill">${esc(t('board.noCall'))}</span>`; }
 function sagaListHtml(){ const dd=game.day===7, now=Date.now();
  return `<div class="pcards">`+game.sagas.map(s=>{ const tw=boardTwist(s), twUnseen=!!(tw&&(s.newsSeen||1)<tw.day), pt=ptype(s.player), un=unseenNews(s).length>0;
-  const claims=[...s.clues.filter(c=>!(c.revealAt&&c.revealAt>now)).map(c=>({o:c.out,day:c.day,old:!!c.outdated})),...game.feed.filter(f=>f.sagaId===s.id&&f.type==='rival'&&f.claim).map(f=>({o:f.claim,day:f.day,old:!!f.outdated}))];
+  const claims=[...s.clues.filter(c=>!(c.revealAt&&c.revealAt>now)).map(c=>({o:c.out,day:c.day,old:!!c.outdated}))];
   claims.forEach(c=>{ if(tw&&c.day<tw.day) c.old=true; });
   const tally={}; claims.forEach(c=>{ const k=c.o+(c.old?'|old':''); tally[k]=(tally[k]||0)+1; });
   const tls=Object.keys(tally).sort((a,b)=>tally[b]-tally[a]).slice(0,twUnseen?0:2).map(k=>{ const o=k.split('|')[0], lo=String(o).toLowerCase(); return `<span class="tl ${lo}${k.includes('|old')?' old':''}" aria-label="${esc(t('board.say',{n:tally[k],o:t('ds.oc.'+o)}))}">${glyph(lo)}${tally[k]}</span>`; }).join('');
@@ -4943,6 +5011,7 @@ function sagaListHtml(){ const dd=game.day===7, now=Date.now();
   if(!claims.length) intel+=`<span class="nr">${esc(t('board.noReports'))}</span>`;
   else if(twUnseen) intel+=`<span>${esc(t('board.askAgain'))}</span>`;
   else intel+=`<span>${esc(t(claims.length===1?'board.report1':'board.reports',{n:claims.length}))}</span>`;
+  if(!twUnseen) intel+=rvBoardChip(s);
   const cls=['pcard',s.call?'called':'',twUnseen?'twisted':'',pt.key==='super'?'super':'',dd?'dd':''].filter(Boolean).join(' ');
   return `<button class="${cls}" ${s.call?`style="--oc:var(--o-${String(s.call.outcome).toLowerCase()})"`:''} data-act="openSaga" data-id="${s.id}" aria-label="${esc(pName(s.player))}">${un?`<span class="newdot" aria-label="${esc(t('news.new'))}"></span>`:''}${kitSVG(s.club,initials(s.player.name))}
  <span class="pm"><span class="pn"><b>${esc(pName(s.player))}</b><span class="stars">${'★'.repeat(pt.stars||1)}</span></span><span class="route"><i style="--c:${s.club.kit}"></i><span class="from">${esc(cName(s.club))}</span><span class="arr">→</span><i style="--c:${s.dest.kit}"></i><b>${esc(cName(s.dest))}</b></span><span class="intel">${intel}</span></span>
@@ -4966,7 +5035,7 @@ function renderFeedItem(f){
  else if(f.type==='you'){ av='✍️'; who=t('win.you'); }
  else return '';
  const tag=s?'button':'div';
- return `<${tag} class="frow ${f.type}${f.warn?' warn':''}${f.outdated?' old':''}${f.deleted?' deleted':''}"${s?` data-act="feedOpen" data-id="${s.id}"`:''}><span class="fav ${f.type==='rival'?'dashed':''}">${av}</span><span class="fb"><span class="fmeta"><b>${esc(who)}</b>${s?`<span> · ${esc(pName(s.player))}</span>`:''}</span><span class="ftxt">${esc(boardFeedText(f))}</span>${note}</span>${chip}</${tag}>`;
+ return `<${tag} class="frow ${f.type}${f.warn?' warn':''}${f.outdated?' old':''}${f.deleted?' deleted':''}"${s?` data-act="feedOpen" data-id="${s.id}"`:''}><span class="fav ${f.type==='rival'?'dashed':''}">${av}</span><span class="fb"><span class="fmeta"><b>${esc(who)}</b>${f.type==='rival'?rvMeta(f.rival):''}${s?`<span> · ${esc(pName(s.player))}</span>`:''}</span><span class="ftxt">${esc(boardFeedText(f))}</span>${note}</span>${chip}</${tag}>`;
 }
 
 // ----- saga sheet -----
@@ -5205,7 +5274,7 @@ function renderHowTo(){
   ${card(3,t('howto2.call'),`<table class="hmpts"><caption>${esc(t('howto2.tblCap'))}</caption><thead><tr><th scope="col"></th><th scope="col">${esc(t('howto2.right'))}</th><th scope="col">${esc(t('howto2.wrong'))}</th></tr></thead><tbody>${lb}</tbody></table><ul class="hmul"><li>${esc(t('howto2.early',{n:early}))}</li><li>${esc(t('howto2.ex',{n:ex}))}</li><li>${esc(t('howto2.types'))}</li><li>${esc(t('howto2.ut',{w:hmM().UT_WRONG||10}))}</li></ul>`)}
   ${card(4,t('howto2.dd'),`<ul class="hmul"><li>${esc(t('howto2.dd1',{s:dds,n:ddc}))}</li><li>${esc(t('howto2.dd2'))}</li><li>${esc(t('howto2.twist'))}</li></ul><ol class="hmladder">${tiers}</ol>`)}
   <div class="sechead"><span class="over">${esc(t('howto2.sources'))}</span></div><div class="list hmsrcs">${srcs}</div>
-  <div class="sechead"><span class="over">${esc(t('howto2.rivals'))}</span></div><div class="list hmsrcs">${rv}</div>
+  ${rvHowCard()}
   <div class="sechead"><span class="over">${esc(t('howto2.modes'))}</span></div>
   <div class="hmmodes"><div class="card"><b>📅 ${esc(t('howto2.m.daily'))}</b><p>${esc(t('howto2.m.dailyT'))}</p></div><div class="card"><b>💼 ${esc(t('nav.career'))}</b><p>${esc(t('howto2.m.careerT'))}</p></div><div class="card"><b>🏟️ ${esc(t('nav.friends'))}</b><p>${esc(t('howto2.m.friendsT'))}</p></div></div>
   <button class="btn" style="margin-top:16px" data-act="replayTut">${esc(t('settings.tutorial2'))}</button>
@@ -5560,7 +5629,7 @@ function windowShut(){ if(ddShutting||!game||game.result) return; ddShutting=tru
  setTimeout(()=>{ try{ closeModalQuiet(); document.querySelectorAll('.big,.stinger,.sheet,.scrim').forEach(x=>x.remove()); finishWindow(); }catch(e){ console.error(e); } setTimeout(()=>{ d.classList.add('out'); setTimeout(()=>d.remove(),260); ddShutting=false; },250); },motionReduced()?500:900); }
 function overnightRow(f){ const s=game.sagas[f.sagaId]; if(!s) return ''; let who, chip='';
  if(f.type==='twist') who=`<span class="tag twist">${esc(t('board.twistTag'))}</span> 🌀 ${esc(boardFeedText(f))}`;
- else if(f.type==='rival'){ const rv=RIVALS.find(r=>r.key===f.rival)||{ic:'👤',key:f.rival}; who=`${rv.ic} ${esc(t('rival.'+rv.key))}`; chip=f.claim?ocHtml(f.claim):''; }
+ else if(f.type==='rival'){ const rv=RIVALS.find(r=>r.key===f.rival)||{ic:'👤',key:f.rival}; who=`<span class="rvav" aria-hidden="true">${rv.ic}</span><b class="rvn">${esc(t('rival.'+rv.key))}</b>${rvMeta(rv.key)}`; chip=f.claim?ocHtml(f.claim):''; }
  else who=`${f.warn?'':'📡 '}${esc(boardFeedText(f))}`;
  return `<button class="onrow ${f.type}${f.warn?' warn':''}" data-act="feedOpen" data-id="${s.id}">${kitSVG(s.club,initials(s.player.name))}<span class="om"><b>${esc(pName(s.player))}</b><span class="ow">${who}</span></span><span class="oside">${chip}<span class="tag new">${esc(t('news.new'))}</span></span></button>`; }
 function showOvernight(){ if(!game||game.day>=7||screen!=='window'||game.result) return; const d=game.day;
@@ -5569,16 +5638,16 @@ function showOvernight(){ if(!game||game.day>=7||screen!=='window'||game.result)
  if(!items.length){ toast(t('board.quiet')); return; }
  const tw=items.filter(f=>f.type==='twist'), wn=items.filter(f=>f.warn), rest=items.filter(f=>f.type!=='twist'&&!f.warn).sort((a,b)=>a.sagaId-b.sagaId);
  if(tw.length) sfxCue('twist');
- openModal(`<div class="onight"><p class="on-n">${esc(t('board.onN',{n:items.length}))}</p><div class="on-rows">${[...tw,...wn,...rest].map(overnightRow).join('')}</div><button class="btn primary on-cta" data-act="closeSheet">${esc(t('board.backToWork'))}</button></div>`,t('board.onTitle',{d})); }
+ openModal(`<div class="onight">${items.some(f=>f.type==='rival')?rvTip():''}<p class="on-n">${esc(t('board.onN',{n:items.length}))}</p><div class="on-rows">${[...tw,...wn,...rest].map(overnightRow).join('')}</div><button class="btn primary on-cta" data-act="closeSheet">${esc(t('board.backToWork'))}</button></div>`,t('board.onTitle',{d})); }
 function feedSheetHtml(){ const F=boardFeedF; game._firstWire=0;
  const items=game.feed.filter(f=>f.type!=='sys'&&(F==='all'||(F==='rival'&&f.type==='rival')||(F==='wire'&&(f.type==='event'||f.type==='twist'))||(F==='you'&&f.type==='you')));
  const chips=`<div class="fchips">${['all','rival','wire','you'].map(k=>`<button class="${F===k?'on':''}" data-act="feedF" data-v="${k}">${esc(t('board.f.'+k))}</button>`).join('')}</div>`;
  const byDay={}; items.forEach(f=>{ (byDay[f.day]=byDay[f.day]||[]).push(f); });
  const ds=Object.keys(byDay).map(Number).sort((a,b)=>b-a);
  const body=ds.length?ds.map(d=>`<h3 class="fday">${esc(d===7?t('board.ddFull'):t('board.day',{d}))}</h3>${byDay[d].slice().reverse().sort((a,b)=>(b.type==='twist')-(a.type==='twist')||(!!b.warn)-(!!a.warn)).map(renderFeedItem).join('')}`).join(''):`<p class="fempty">${esc(t('board.fEmpty'))}</p>`;
- return chips+body; }
+ return (items.some(f=>f.type==='rival')?rvTip():'')+chips+body; }
 function rulesHtml(){ const b=tt('board.rulesB')||[]; const opens=k=>{ try{ return typeof srcOpenDay==='function'?srcOpenDay(k):1; }catch(e){ return 1; } };
- return `<ul class="brules">${b.map(x=>`<li>${bb(x)}</li>`).join('')}<li>${bb(t('board.rulesTw'))}</li></ul><table class="bsrc"><thead><tr><th>${esc(t('board.th.src'))}</th><th>${esc(t('board.th.cost'))}</th><th>${esc(t('board.th.opens'))}</th></tr></thead><tbody>${Object.keys(SOURCES).filter(k=>k!=='paid'&&k!=='tipoff').map(k=>{ const n=((tt('src')||{})[k]||{}).name||k; const o=opens(k); return `<tr><td>${SOURCES[k].ic||''} ${esc(n)}</td><td>${esc(t('qa.nContacts',{n:SOURCES[k].cost||1}))}</td><td>${esc(o>1?t('board.day',{d:o}):t('board.always'))}</td></tr>`; }).join('')}</tbody></table>`; }
+ return `<ul class="brules">${b.map(x=>`<li>${bb(x)}</li>`).join('')}<li>${bb(t('board.rulesTw'))}</li></ul><table class="bsrc"><thead><tr><th>${esc(t('board.th.src'))}</th><th>${esc(t('board.th.cost'))}</th><th>${esc(t('board.th.opens'))}</th></tr></thead><tbody>${Object.keys(SOURCES).filter(k=>k!=='paid'&&k!=='tipoff').map(k=>{ const n=((tt('src')||{})[k]||{}).name||k; const o=opens(k); return `<tr><td>${SOURCES[k].ic||''} ${esc(n)}</td><td>${esc(t('qa.nContacts',{n:SOURCES[k].cost||1}))}</td><td>${esc(o>1?t('board.day',{d:o}):t('board.always'))}</td></tr>`; }).join('')}</tbody></table>`+rvHowCard(); }
 LANE_ACTS.endDay=(el)=>{ if(!game||game.day>=7||game.result) return; if(game.actions>0&&game.sagas.some(s=>!s.call)&&!armConfirm(el,t(game.actions===1?'board.endAnyway1':'board.endAnyway',{n:game.actions}))) return;
  endDay(); dismissCoach('c4');
  if(game.day===7){ ddPending=true; game.ddEndsAt=null; game.ddMax=null; ddMax(); game.timer=game.timerMax; render(); sfxCue('dd');
@@ -5635,7 +5704,7 @@ function ppTok(c){ const lab=t('pp.tokAria',{n:ppName(c.kind,c.key,true),tr:t('d
  return `<button class="tok${c.kind==='rival'?' rival':''}${PP.fresh.has(c.id)?' new':''}${PP.sel===c.id?' on':''}${c.old?' old':''}" data-act="ppTok" data-v="${c.id}" aria-label="${esc(lab)}"><span class="e" aria-hidden="true">${ppIc(c.kind,c.key)}</span><span class="n">${esc(ppName(c.kind,c.key))}</span>${sigHtml(c.bars,false,null,{hidden:true})}</button>`; }
 function ppSays(o,ctx){ return t('q2.say.'+o,ctx); }
 function ppKnowRow(c,ctx){ const open=PP.sel===c.id, rv=c.kind==='rival', fresh=PP.fresh.has(c.id);
- return `<div class="krow${rv?' rival':''}${c.old?' old':''}${open?' open':''}"><button class="kr" data-act="ppRow" data-v="${c.id}" aria-expanded="${open}"><span class="ki${rv?' rival':''}" aria-hidden="true">${ppIc(c.kind,c.key)}</span><span class="kb"><span class="kt"><b>${esc(ppName(c.kind,c.key,true))}</b>${rv?`<span class="krv">${esc(t('q2.rivalGuess'))}</span>`:sigHtml(c.bars,false,null,{hidden:true})}${fresh&&!c.old?`<span class="tag new">${esc(t('pp.new'))}</span>`:''}<span class="kd">${esc(ppDayLbl(c.day))}</span></span><span class="ko">${ocHtml(c.out,'say',ppSays(c.out,ctx))}${c.old?`<span class="kold">🌀 ${esc(t('pp.beforeTwist'))}</span>`:''}</span></span><span class="chev" aria-hidden="true">›</span></button>${open?`<p class="kq">“${esc(c.text)}”</p>`:''}</div>`; }
+ return `<div class="krow${rv?' rival':''}${c.old?' old':''}${open?' open':''}"><button class="kr" data-act="ppRow" data-v="${c.id}" aria-expanded="${open}"><span class="ki${rv?' rival':''}" aria-hidden="true">${ppIc(c.kind,c.key)}</span><span class="kb"><span class="kt"><b>${esc(ppName(c.kind,c.key,true))}</b>${rv?rvMeta(c.key):sigHtml(c.bars,false,null,{hidden:true})}${fresh&&!c.old?`<span class="tag new">${esc(t('pp.new'))}</span>`:''}<span class="kd">${esc(ppDayLbl(c.day))}</span></span><span class="ko">${ocHtml(c.out,'say',ppSays(c.out,ctx))}${c.old?`<span class="kold">🌀 ${esc(t('pp.beforeTwist'))}</span>`:''}</span></span><span class="chev" aria-hidden="true">›</span></button>${open?`<p class="kq">“${esc(c.text)}”</p>`:''}</div>`; }
 function ppKnowHtml(s){ const ctx=ctxOf(s), claims=ppClaims(s).filter(c=>c.out), wire=ppWire(s), tw=ppTwist(s);
  const rows=claims.slice().sort((a,b)=>(a.old-b.old)||(b.day-a.day)||(b.seq-a.seq));
  const live=rows.filter(c=>!c.old&&c.kind!=='rival'), tally={}; live.forEach(c=>{ tally[c.out]=(tally[c.out]||0)+1; });
@@ -5644,7 +5713,7 @@ function ppKnowHtml(s){ const ctx=ctxOf(s), claims=ppClaims(s).filter(c=>c.out),
  const w=wire.find(x=>!(x.twist&&tw&&!s.ppTwSeen))||null;
  const kwire=w?`<div class="kwire"><span class="wl">📡 ${esc(t('pp.wire'))}</span><p>${w.twist?'🌀 ':''}${esc(w.text)} <span>· ${esc(t('pp.dShort',{d:w.day}))}</span>${wire.length>1?` <button class="pplink" data-act="ppMsgs" data-id="${s.id}">${esc(t('pp.moreN',{n:wire.length-1}))}</button>`:''}</p></div>`:'';
  const body=rows.length?`<div class="klist">${rows.map(c=>ppKnowRow(c,ctx)).join('')}</div>`:`<p class="ppempty">${esc(t('pp.empty'))}</p>`;
- return `<section class="card know q2know" id="ppKnow" aria-label="${esc(t('pp.know'))}"><div class="kh"><h2 class="over">${esc(t('pp.know'))}</h2><span class="aux">${esc(aux)}</span></div>${sum?`<div class="ksum">${sum}</div>`:''}${body}${kwire}</section>`;
+ return `<section class="card know q2know" id="ppKnow" aria-label="${esc(t('pp.know'))}"><div class="kh"><h2 class="over">${esc(t('pp.know'))}</h2><span class="aux">${esc(aux)}</span></div>${sum?`<div class="ksum">${sum}</div>`:''}${claims.some(c=>c.kind==='rival')?rvTip():''}${body}${kwire}</section>`;
 }
 function ppChatHtml(s){ const ch=PP.chat; if(!ch||ch.id!==s.id||ch.phase==='call') return ''; const cl=s.clues[ch.i]; if(!cl) return '';
  const ctx=ctxOf(s), asks=tt('ask'), still=ch.shown?' style="animation:none"':''; const oc=cl.source==='tipoff'?(cl.out==='FAKE'?'FAKE':null):cl.out;
@@ -5668,7 +5737,7 @@ function ppTileHtml(s,k){ const src=SOURCES[k], st=ppSrcState(s,k), nm=esc(ppNam
  if(st.openedToday&&st.state==='open') corner=`<span class="corner"><span class="tag new">${esc(t('pp.openedToday'))}</span></span>`;
  const dis=PP.calling!=null&&PP.calling!==k;
  return `<button class="st ${cls}" data-act="contact" data-id="${s.id}" data-src="${k}"${dis?' disabled':''}${/later|gear|short/.test(st.state)?' aria-disabled="true"':''} aria-label="${esc(t('src.'+k+'.name'))}. ${esc(ft.replace(/<[^>]+>/g,' ').replace(/\s+/g,' '))}">${corner}<span class="top">${top}</span><span class="nm">${nm}</span><span class="ft">${ft}</span></button>`; }
-function ppMsgRow(c){ return `<div class="msg${c.old?' old':''}"><span class="me${c.kind==='rival'?' rival':''}" aria-hidden="true">${ppIc(c.kind,c.key)}</span><div style="min-width:0"><div class="mh"><b>${esc(ppName(c.kind,c.key,true))}</b><span>· ${esc(t('pp.dayN',{d:c.day}))}</span>${c.out?ocHtml(c.out):''}</div><p class="mt">${esc(c.text)}</p></div></div>`; }
+function ppMsgRow(c){ return `<div class="msg${c.old?' old':''}"><span class="me${c.kind==='rival'?' rival':''}" aria-hidden="true">${ppIc(c.kind,c.key)}</span><div style="min-width:0"><div class="mh"><b>${esc(ppName(c.kind,c.key,true))}</b>${c.kind==='rival'?rvMeta(c.key):''}<span>· ${esc(t('pp.dayN',{d:c.day}))}</span>${c.out?ocHtml(c.out):''}</div><p class="mt">${esc(c.text)}</p></div></div>`; }
 function ppEarlierHtml(s){ const all=ppClaims(s).filter(c=>c.id!==PP.sel); const fresh=all.filter(c=>!c.old), old=all.filter(c=>c.old);
  const nChat=s.clues.length*2+game.feed.filter(f=>f.sagaId===s.id&&(f.type==='rival'||f.type==='twist'||(f.type==='event'&&(f.day>1||f.warn)))).length;
  if(!fresh.length&&!old.length&&!nChat) return '';
@@ -5760,7 +5829,7 @@ function ppMsgsHtml(id){ const s=game.sagas[id], ctx=ctxOf(s), asks=tt('ask'); c
  const add=(d,h)=>{ (by[d]=by[d]||[]).push(h); };
  s.clues.forEach((cl,i)=>{ const st=ppStale(s,cl); if(cl.source!=='tipoff') add(cl.day,`<div class="bub me">${esc(fill(asks[(cl.a!=null?cl.a:id+i)%asks.length],ctx))}</div>`);
   add(cl.day,`<div class="bub them${st?' ppold':''}"><span class="who">${esc(clueWho(cl))}${st?' · '+esc(t('pp.beforeTwist')):''}</span>${esc(clueText(s,cl))}</div>`); });
- game.feed.forEach(f=>{ if(f.sagaId!==id) return; if(f.type==='rival'){ const rv=RIVALS.find(r=>r.key===f.rival)||{}; add(f.day,`<div class="bub them rival"><span class="who">${rv.ic||''} ${esc(t('rival.'+f.rival))}</span>${esc(feedText(f))}</div>`); }
+ game.feed.forEach(f=>{ if(f.sagaId!==id) return; if(f.type==='rival'){ const rv=RIVALS.find(r=>r.key===f.rival)||{}; add(f.day,`<div class="bub them rival"><span class="who">${rv.ic||''} ${esc(t('rival.'+f.rival))}${rvMeta(f.rival)}</span>${esc(feedText(f))}</div>`); }
   else if(f.type==='twist'||(f.type==='event'&&(f.day>1||f.warn))) add(f.day,`<div class="bub them evt"><span class="who">📡 ${esc(t('pp.wire'))}</span>${f.type==='twist'||f.twist?'🌀 ':''}${esc(feedText(f))}</div>`); });
  const days=Object.keys(by).map(Number).sort((a,b)=>b-a);
  const body=days.length?days.map((d,i)=>`<details class="ppday"${i===0?' open':''}><summary class="collapse">${esc(t('pp.dayN',{d}))} · ${esc(t('pp.msgsN',{n:by[d].length}))} <span class="chev" aria-hidden="true">›</span></summary><div class="chat">${by[d].join('')}</div></details>`).join(''):`<p class="ppempty">${esc(t('pp.empty'))}</p>`;
@@ -5905,7 +5974,7 @@ function rsTruthHtml(){ const r=game.result, sg=game.sagas; const perBy={}; r.pe
  <section class="card mx"><p class="insight">${insight}</p><details class="mxd"><summary>${esc(t('qa.seeTable'))}<span class="chev" aria-hidden="true">›</span></summary><table class="mxt"><caption class="sr">${esc(t('rs.cap'))}</caption>
   <thead><tr><th scope="col" class="over">${esc(t('rs.sources'))}</th>${sg.map(s=>`<th scope="col"><b>${esc(code(s))}</b><i style="background:${s.club.kit}"></i></th>`).join('')}<th scope="col" class="over sc2">${esc(t('rs.score'))}</th></tr></thead>
   <tbody>${srcKeys.map(k=>row(SOURCES[k].ic,srcName(k),rows[k])).join('')}</tbody>
-  ${rvKeys.length?`<tbody class="riv"><tr><th scope="rowgroup" colspan="${sg.length+2}" class="over" style="text-align:start">${esc(t('rs.rivals'))}</th></tr>${rvKeys.map(k=>{ const q=RIVALS.find(o=>o.key===k); return row(q.ic,t('rival.'+k),rv[k]); }).join('')}</tbody>`:''}
+  ${rvKeys.length?`<tbody class="riv"><tr><th scope="rowgroup" colspan="${sg.length+2}" class="over" style="text-align:start">${esc(t('rv.roles'))} <span class="rvtag">${esc(t('rv.tag'))}</span></th></tr>${rvKeys.map(k=>{ const q=RIVALS.find(o=>o.key===k); return row(q.ic,t('rival.'+k),rv[k]); }).join('')}</tbody>`:''}
  </table>
  <div class="mxleg"><span>${dot('t')} ${esc(t('rs.lgT'))}</span><span>${dot('f')} ${esc(t('rs.lgF'))}</span><span>${dot('o')} ${esc(t('rs.lgO'))}</span><span>${dot('n')} ${esc(t('rs.lgN'))}</span></div></details></section>`; }
 function rsModeHtml(){ const r=game.result;
@@ -6336,6 +6405,44 @@ onHook('rendered',scr=>{
 /* ─ */
 /* @@LANE JS:content BEGIN (lane-owned; insert only between BEGIN and END) */
 /* @@LANE JS:content END */
+/* @@LANE JS:rivals BEGIN */
+/* Rival journalists: the Tabloid, the ITK account and the Club Insider guess outcomes and post on set days.
+   They are never your sources: every place they appear gets the same dashed avatar + RIVAL tag + @handle. */
+function rvOf(k){ return RIVALS.find(r=>r.key===k)||{key:k,handle:'',ic:'👤',dmin:1,dmax:7,rel:.5}; }
+function rvLabel(k){ const r=rvOf(k); return r.handle?'⁦'+r.handle+'⁩ ('+t('pp.short.'+k)+')':t('rival.'+k); }
+function rvMeta(k){ const r=rvOf(k); return `<span class="rvtag" title="${esc(t('rv.role'))}">${esc(t('rv.tag'))}</span>${r.handle?`<bdi dir="ltr" class="rvh">${esc(r.handle)}</bdi>`:''}`; }
+function rvTip(){ return coachHtml('rivals').replace('<span class="ic" aria-hidden="true">💡</span>','<span class="ic" aria-hidden="true">🗞️</span>'); }
+function rvBoardChip(s){ const ps=game.feed.filter(f=>f.sagaId===s.id&&f.type==='rival'&&f.claim); if(!ps.length) return '';
+ const ics=[...new Set(ps.map(f=>rvOf(f.rival).ic))].join('');
+ return `<span class="rvchip"><i aria-hidden="true">${ics}</i>${esc(t(ps.length===1?'rv.b1':'rv.bN',{n:ps.length}))}</span>`; }
+function rvHowCard(){ const rows=RIVALS.map(r=>`<div class="rvhrow"><span class="rvav" aria-hidden="true">${r.ic}</span><span class="rvhm"><span class="rvhn"><b>${esc(t('rival.'+r.key))}</b>${rvMeta(r.key)}</span><span class="rvhd">${esc(t('rv.how.'+r.key,{a:r.dmin,b:Math.min(7,r.dmax)}))}</span></span></div>`).join('');
+ return `<section class="card rvhow"><h2 class="d4">${esc(t('rv.how.title'))}</h2><p class="rvhp">${esc(t('rv.how.body'))}</p>${rows}<p class="rvhx">👑 ${esc(t('rv.how.ex'))}</p></section>`; }
+/* results: one line per call saying who won the race */
+function rvRaceHtml(x){ const s=game.sagas[x.sagaId]; if(!s||!x.called) return '';
+ const ps=(Array.isArray(x.rivals)?x.rivals:(s.rivalPosts||[]).map(p=>({rival:p.rival,day:p.day,correct:!!p.correct,outdated:!!p.outdated}))).filter(p=>RIVALS.some(r=>r.key===p.rival));
+ const cd=rsCallDay(x,s), D=d=>rsDayLabel(d);
+ const line=(cls,ic,txt)=>`<div class="rvrace ${cls}"><span class="rvav" aria-hidden="true">${ic}</span><span class="rvt">${cls==='ex'?'':`<span class="rvtag">${esc(t('rv.tag'))}</span>`}${esc(txt)}</span></div>`;
+ if(x.correct){
+  if(x.exclusive) return line('ex','👑',t('rv.ex'));
+  if(x.uturn) return line('ut','↺',t('rv.uturn'));
+  let p=rsLate(x,s); if(p) p={rival:p.rival,day:p.day,correct:true};
+  else p=ps.filter(q=>!q.outdated&&cd!=null&&q.day<=cd).sort((a,b)=>a.day-b.day)[0];
+  if(!p) return '';
+  return line('late',rvOf(p.rival).ic,t(p.correct?'rv.beaten':'rv.first',{h:rvOf(p.rival).handle,n:t('pp.short.'+p.rival),d:D(p.day),c:cd?D(cd):'—'}));
+ }
+ const ok=ps.filter(q=>q.correct&&!q.outdated).sort((a,b)=>a.day-b.day)[0];
+ return ok?line('wrong',rvOf(ok.rival).ic,t('rv.gotIt',{h:rvOf(ok.rival).handle,n:t('pp.short.'+ok.rival),d:D(ok.day)})):line('wrong','🤷',t('rv.nobody'));
+}
+onHook('rendered',sc=>{
+ if(sc==='results'&&game&&game.result){ document.querySelectorAll('.rsx .srow[data-id]').forEach(b=>{ const nx=b.nextElementSibling; if(nx&&nx.classList.contains('rvrace')) return;
+  const x=(game.result.per||[]).find(p=>String(p.sagaId)===b.dataset.id); let hh=''; try{ hh=x?rvRaceHtml(x):''; }catch(e){ hh=''; } if(hh) b.insertAdjacentHTML('afterend',hh); }); }
+ if(sc==='window'&&game&&!game.result&&!coachDone('rivals')&&game.feed.some(f=>f.type==='rival')){ const z=$('coachZone'); if(z&&!z.querySelector('[data-v="rivals"]')) z.insertAdjacentHTML('beforeend',rvTip()); }
+});
+(function(){ const prev=LANE_ACTS.coachOk;
+ LANE_ACTS.coachOk=(el,v,id,e)=>{ if(v!=='rivals'){ if(prev) return prev(el,v,id,e); dismissCoach(v); if($('modalRoot').innerHTML&&currentSaga!=null) renderSagaModal(currentSaga); else render(); return; }
+  dismissCoach(v); document.querySelectorAll('.coach [data-act="coachOk"][data-v="rivals"]').forEach(b=>{ const c=b.closest('.coach'); if(c) c.remove(); }); };
+})();
+/* @@LANE JS:rivals END */
 /* ---- QA: keep ads out of the way. AdSense anchor/overlay ads are position:fixed at the top or bottom edge; measure them and
    lift every bottom-pinned control (dock, End day, tab bar, consent, trophy pills) above a bottom anchor and push sticky/fixed
    headers (✕, back, DD clock) below a top anchor. No-op while ads are off. ---- */
