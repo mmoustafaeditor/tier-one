@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '2.3',
-  versionCode: 14,
+  version: '2.4',
+  versionCode: 15,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'New epic Semba intro, Career source upgrade tree with tier bars that rise as you upgrade, Go louder on your calls, clearer rival journalists, a compact Trophies page and calmer trophy pop-ups.',
+  changelog: 'Daily and weekly leaderboards, a share card with your rank, streak and journalist profile, Deadline Day snap calls with a heartbeat clock, an exclusive race meter against rival journalists, Career level-up stories, milestone goals and Legend careers, and a sharper tutorial.',
 };
 
 export default function handler(req, res) {
