@@ -7,7 +7,7 @@ import { FREE_AGENT } from '../model/types';
 import { makeRng, int } from './rng';
 import { freeShirt, playerOf, squadOf, wageOf, type World } from './world';
 import { roundFee, roundsIn, table } from './season';
-import { askingPrices } from './transfers';
+import { askingPrices, SQUAD_MAX, SQUAD_SELL_MIN } from './transfers';
 
 const MAX_NEWS = 40;
 
@@ -50,8 +50,10 @@ export function newsRound(before: Career, w: World, c: Career): Career {
 
 // ---------- rumours ----------
 
-const AI_SQUAD_MIN = 18; // a club won't sell below this many players
-const AI_SQUAD_MAX = 30; // nor buy above it
+// Squad limits come from the one pair in transfers.ts, with a margin of two either side for AI deals: a club won't
+// sell below 18 players nor buy above 30. (Functions, not constants: transfers.ts imports this module back.)
+const aiSquadMin = () => SQUAD_SELL_MIN + 2;
+const aiSquadMax = () => SQUAD_MAX - 2;
 
 // Every 4 matchdays, all season long: new rumours about good players. Each one is settled on the next deadline day
 // (summer or winter), so the user can hijack it while the window is open. Players out on loan are never sold.
@@ -65,7 +67,7 @@ export function rumoursRound(w: World, c: Career): { world: World; career: Caree
     const p = playerOf(world, ru.playerId);
     const buyer = world.clubs.find((x) => x.id === ru.to)!;
     if (!p || p.clubId !== ru.from || p.clubId === c.clubId || onLoan.has(p.id) || r() * 100 > ru.chance) continue;
-    if (buyer.budget < ru.fee || squadOf(world, ru.from).length <= AI_SQUAD_MIN || squadOf(world, ru.to).length >= AI_SQUAD_MAX) continue;
+    if (buyer.budget < ru.fee || squadOf(world, ru.from).length <= aiSquadMin() || squadOf(world, ru.to).length >= aiSquadMax()) continue;
     world = aiMove(world, p, ru.to, ru.fee, c.season);
     career = addNews(career, 'transfers', 'aiTransfer', { player: p.id, pn: p.name, club: ru.from, club2: ru.to, s: String(ru.fee) });
   }

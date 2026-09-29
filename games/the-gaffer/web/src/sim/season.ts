@@ -454,6 +454,12 @@ export interface SeasonSummary {
 
 const SQUAD_MIN = SQUAD_SELL_MIN;  // clubs promote academy kids up to this (the same floor selling stops at)
 const AI_SQUAD = 22;               // AI clubs sign free agents up to this
+// League prize money: a pot of PRIZE_POT months of the league's summed wage caps, shared by final place and size:
+// weight = own wage cap × (clubs below + 1)^PRIZE_STEEPNESS. The champion takes the most, the bottom next to nothing,
+// and a small club's cheque is measured against its own wages (a mid-table finish is worth about half a month's cap,
+// a title about two), not against the giants' budgets.
+export const PRIZE_POT = 1.0;
+export const PRIZE_STEEPNESS = 1.5;
 
 // Closes the season: records the result, moves clubs up and down, ages and develops players, retires veterans,
 // ends contracts (AI clubs renew most; the user's expiring players leave), fills squads from the academy and the
@@ -486,11 +492,13 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
   const promoted: string[] = [], relegated: string[] = [];
   for (const lg of w.leagues) {
     const t = tables.get(lg.id)!;
-    const topBudget = Math.max(...clubs.filter((x) => x.leagueId === lg.id).map((x) => x.budget));
+    const pot = PRIZE_POT * clubs.filter((x) => x.leagueId === lg.id).reduce((s, x) => s + x.wageCap, 0);
+    const weights = t.map((row, i) => byId.get(row.clubId)!.wageCap * (t.length - i) ** PRIZE_STEEPNESS);
+    const wsum = weights.reduce((s, x) => s + x, 0);
     const byRep = [...t].sort((a, b) => byId.get(b.clubId)!.reputation - byId.get(a.clubId)!.reputation);
     t.forEach((row, i) => {
       const club = byId.get(row.clubId)!;
-      club.budget = Math.round(club.budget + topBudget * 0.12 * (1 - i / t.length));
+      club.budget = Math.round(club.budget + pot * weights[i] / wsum);
       const expected = byRep.findIndex((x) => x.clubId === row.clubId);
       club.reputation = clamp(club.reputation + Math.sign(expected - i) * Math.min(3, Math.round(Math.abs(expected - i) / 3)) + (i === 0 ? 2 : 0), 30, 99);
     });

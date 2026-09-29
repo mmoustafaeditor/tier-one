@@ -169,12 +169,15 @@ export function attendance(w: World, c: Career, price: number): number {
 const tvMoney = (w: World, club: Club) => roundFee(club.wageCap * (leagueOf(w, club).tier === 1 ? 0.35 : 0.25));
 export const upkeep = (ops: ClubOps, club: Club) => roundFee(club.wageCap * 0.004 * FACILITIES.reduce((s, f) => s + ops.facilities[f], 0));
 
-// Gate money is scaled to the club's size: the biggest wage cap in the league keeps its full gate, smaller clubs
-// take a share of theirs. Their ticket income then sits near their wage bill instead of several times it.
-export const GATE_SCALE_POWER = 0.4;
-export const referenceCap = (w: World, leagueId: string) => Math.max(1, ...w.clubs.filter((x) => x.leagueId === leagueId).map((x) => x.wageCap));
-export const gateScale = (w: World, club: Club) => Math.min(1, Math.pow(club.wageCap / referenceCap(w, club.leagueId), GATE_SCALE_POWER));
-export const gateMoney = (w: World, c: Career, att: number) => att * c.ops.ticket * gateScale(w, w.clubs.find((x) => x.id === c.clubId)!);
+// Gate money is scaled to the club's size: a full house at the usual price (on the base stadium, so a bigger ground
+// still earns more) pays at most GATE_SHARE of a month's wage cap. The giants keep their full gate; a small club's
+// ticket income is about a third of its wage bill (TV and sponsors pay the rest), not several times it.
+export const GATE_SHARE = 0.25;
+export const gateScale = (w: World, club: Club, ops: ClubOps) =>
+  Math.min(1, (GATE_SHARE * club.wageCap) / Math.max(1, ops.baseCapacity * refPrice(w, club)));
+export const gateMoney = (w: World, c: Career, att: number) => att * c.ops.ticket * gateScale(w, w.clubs.find((x) => x.id === c.clubId)!, c.ops);
+// What an AI club takes at the gate in a month: two home games at the usual two-thirds full house.
+export const AI_GATE_SHARE = 2 * GATE_SHARE * 0.65;
 
 // Monthly picture for the finance screen: the same numbers the weekly flow uses, times four.
 export function monthly(w: World, c: Career) {
@@ -217,8 +220,8 @@ export function economyWeek(w: World, c: Career, home: boolean): { world: World;
 }
 export const SPONSOR_RENEWAL = 12; // months a sponsor renews for when a deal runs out
 
-// The other clubs' week, the cheap way: wages and upkeep out, TV and their sponsors in. No gate (their ticket
-// income and prize money are what let them buy), so treasuries stop growing without limit.
+// The other clubs' week, the cheap way: wages and upkeep out, TV, the gate and their sponsors in. That about breaks
+// even; league prize money (endSeason) is what lets the top of the table buy, so treasuries stop growing without limit.
 export const AI_SPONSOR_SHARE = 0.325; // shirt + kit deals at the usual rate
 export function aiEconomyWeek(w: World, c: Career): World {
   const bills = new Map<string, number>();
@@ -227,7 +230,7 @@ export function aiEconomyWeek(w: World, c: Career): World {
     if (x.id === c.clubId) return x;
     const tier1 = leagueOf(w, x).tier === 1;
     const lvl = clamp(1 + Math.floor((x.reputation - 50) / 12), 1, 5);
-    const monthly = x.wageCap * (tier1 ? 0.35 : 0.25) + x.wageCap * 0.5 * AI_SPONSOR_SHARE - (bills.get(x.id) ?? 0) - x.wageCap * 0.004 * (5 * lvl - 1);
+    const monthly = x.wageCap * ((tier1 ? 0.35 : 0.25) + AI_GATE_SHARE) + x.wageCap * 0.5 * AI_SPONSOR_SHARE - (bills.get(x.id) ?? 0) - x.wageCap * 0.004 * (5 * lvl - 1);
     // The owner covers a shortfall: a club never goes below zero on wages alone.
     return { ...x, budget: Math.max(0, Math.round(x.budget + monthly / 4)) };
   });

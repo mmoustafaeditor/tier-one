@@ -255,7 +255,7 @@ function signing(w: World, c: Career) {
   let world = w, career = c;
   const free = !windowOf(career);
   const squad = squadOf(world, career.clubId);
-  if (squad.length >= Math.min(SQUAD_MAX, 28)) return { world, career };
+  if (squad.length >= SQUAD_MAX - 4) return { world, career };
   const groups = [0, 1, 2, 3].map((g) => squad.filter((p) => GROUP_OF[p.position] === g));
   const g = [0, 1, 2, 3].sort((a, b) => groups[a].length / NEED[a] - groups[b].length / NEED[b])[0];
   if (groups[g].length >= NEED[g] && squad.length >= 22) return { world, career };
