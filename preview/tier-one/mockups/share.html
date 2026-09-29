@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your Scoop · Tier One</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<script src="../kit.js" defer></script>
+<style>
+  /* The card is a physical object: always printed on morning newsprint,
+     whatever edition the app is in. It is 1080×1350 when exported. */
+  .card {
+    --paper: #F2EEE5; --paper-3: #DCD5C5; --ink: #15130F; --ink-2: #47423A; --ink-3: #7C766A; --rule: rgba(21,19,15,.18);
+    --accent: #D2381B; --accent-text: #B42E14; --o-done: #17613F;
+    color-scheme: light;
+    background: var(--paper); color: var(--ink);
+    aspect-ratio: 4 / 5; width: 100%; position: relative; overflow: hidden;
+    padding: 5.5% 6% 5%; display: flex; flex-direction: column;
+    box-shadow: 0 1px 0 rgba(0,0,0,.08), 0 26px 50px -24px rgba(0,0,0,.55);
+    container-type: inline-size;
+    margin-top: 16px;
+  }
+  .card::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .09; mix-blend-mode: multiply;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 .4 0 0 0 0 .35 0 0 0 0 .3 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"); }
+  .card__mast { display: flex; justify-content: space-between; align-items: baseline; border-bottom: .9cqi solid var(--ink); padding-bottom: 1.6cqi; }
+  .card__name { font-family: var(--f-display); font-weight: 700; font-size: 9.5cqi; letter-spacing: -.045em; line-height: .9; font-variation-settings: "opsz" 72; }
+  .card__ed { font-family: var(--f-mono); font-size: 2.5cqi; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); text-align: end; line-height: 1.35; }
+  .card__thin { border-top: .3cqi solid var(--ink); margin-top: .8cqi; }
+  .card__kick { margin-top: 4cqi; font-family: var(--f-text); font-weight: 800; font-size: 2.9cqi; letter-spacing: .16em; text-transform: uppercase; color: var(--accent-text); }
+  .card__hed { font-family: var(--f-cond); font-stretch: 62%; font-weight: 900; text-transform: uppercase; font-size: 19.5cqi; line-height: .82; letter-spacing: -.01em; margin-top: 1.5cqi; }
+  .card__sub { font-family: var(--f-display); font-style: italic; font-size: 7cqi; line-height: 1; letter-spacing: -.02em; margin-top: 2.2cqi; font-variation-settings: "opsz" 60; }
+  .card__body { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 4cqi; margin-top: 4.5cqi; min-height: 0; }
+  .card__body .portrait { height: 100%; }
+  .card__stats { display: flex; flex-direction: column; justify-content: space-between; border-top: .3cqi solid var(--ink); }
+  .card__stat { padding-block: 1.1cqi; border-bottom: .2cqi solid var(--rule); }
+  .card__stat b { display: block; font-family: var(--f-cond); font-stretch: 62%; font-weight: 900; font-size: 8.4cqi; line-height: .85; }
+  .card__stat span { font-family: var(--f-mono); font-size: 2.3cqi; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+  .card__foot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 3.5cqi; border-top: .3cqi solid var(--ink); padding-top: 1.8cqi; font-family: var(--f-mono); font-size: 2.4cqi; letter-spacing: .06em; text-transform: uppercase; }
+  .card__by { font-family: var(--f-display); font-style: italic; font-size: 3.6cqi; text-transform: none; letter-spacing: 0; }
+  .card__stamp { position: absolute; inset-inline-start: 7%; top: 60%; --stamp-size: 6.2cqi; --rot: -12deg; }
+  .shareacts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .shareacts .btn:first-child { grid-column: 1 / -1; }
+  .ledger__r { display: flex; justify-content: space-between; align-items: baseline; padding-block: 10px; border-bottom: var(--hair) solid var(--rule); gap: 12px; }
+  .ledger__r span:first-child { font-size: 15px; }
+  .ledger__r .cond { font-size: 26px; }
+  .ledger__t { border-top: 2px solid var(--ink); border-bottom: 0; padding-top: 12px; }
+  .ledger__t .cond { font-size: 48px; color: var(--o-done); }
+  @media (min-width: 960px) {
+    .share-grid { display: grid; grid-template-columns: 520px minmax(0,1fr); gap: 48px; margin-top: 28px; align-items: start; }
+    .bar { position: static; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="bar">
+    <a class="bar__back" href="home.html"><span class="arr">←</span> Front page</a>
+    <span class="bar__end"><span class="meta">Result</span><button class="edition" data-edition-toggle>Late edition</button></span>
+  </header>
+  <nav class="nav"><a href="home.html">The Wire</a><a href="challenge.html">The Daily</a><a href="deadline.html">Deadline Day</a><a href="desk.html">Career Desk</a><a href="share.html" aria-current="page">Scoops</a><a href="store.html">Press Pass</a></nav>
+
+  <div class="share-grid">
+    <div>
+      <div class="row row--between" style="margin-top:18px"><span class="kicker">You had it first</span><span class="meta">Saga 3 · settled 22:59</span></div>
+      <article class="card" aria-label="Share card">
+        <div class="card__mast"><span class="card__name">Tier One</span><span class="card__ed">Extra · No. 214<br>29 Sep 2026</span></div>
+        <div class="card__thin"></div>
+        <div class="card__kick">Tier 1 · Exclusive</div>
+        <h1 class="card__hed">Anderson<br>to City</h1>
+        <p class="card__sub">Called it nineteen days early.</p>
+        <div class="card__body">
+          <figure data-portrait="MCI:8"></figure>
+          <div class="card__stats">
+            <div class="card__stat"><b>23</b><span>Heat when filed</span></div>
+            <div class="card__stat"><b>4%</b><span>Of the desk agreed</span></div>
+            <div class="card__stat" style="border-bottom:0"><b style="color:var(--o-done)">+312</b><span>Reputation</span></div>
+          </div>
+        </div>
+        <div class="card__foot"><span class="card__by">By Mo Moustafa</span><span>tierone.game/s/8QK2</span></div>
+        <span class="card__stamp stamp stamp--exclusive is-slam" data-sfx="stamp.exclusive">Exclusive</span>
+      </article>
+      <div class="seg" style="margin-top:14px" role="group" aria-label="Format"><button aria-pressed="true">Post<small>4:5</small></button><button>Story<small>9:16</small></button><button>Square<small>1:1</small></button></div>
+      <div class="shareacts">
+        <button class="btn btn--accent">Send it to the group chat <span class="arr">→</span></button>
+        <button class="btn btn--ghost">Save image</button>
+        <button class="btn btn--ghost">Copy link</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="flag"><h2 class="flag__t">How it scored</h2><span class="flag__aside meta">Every point, shown</span></div>
+      <div class="ledger__r"><span>Published <b>Advanced</b>, right</span><span class="cond">+140</span></div>
+      <div class="ledger__r"><span>Early — filed day 1 of 7 <span class="meta">×1.6</span></span><span class="cond">+84</span></div>
+      <div class="ledger__r"><span>Exclusive — nobody else had it</span><span class="cond">+60</span></div>
+      <div class="ledger__r"><span>Fee band exact · £95–110m</span><span class="cond">+25</span></div>
+      <div class="ledger__r"><span>Went Talks first, upgraded day 4</span><span class="cond muted">+3</span></div>
+      <div class="ledger__r ledger__t"><span class="hed hed--3">Saga total</span><span class="cond">+312</span></div>
+      <p class="pq" style="margin-top:22px">Your Forest insider was right about the price and right about United. He’s earned a pint and a higher reliability: 78 → 81.</p>
+      <div class="flag"><h2 class="flag__t">Today’s paper</h2><span class="flag__aside meta">Daily No. 88</span></div>
+      <p class="note">Four of five called. Tier 1 finish — 312 of 8,440 players got there. Tomorrow’s board opens at midnight.</p>
+    </div>
+  </div>
+</div>
+<nav class="tabs" aria-label="Sections">
+  <a href="home.html" aria-current="page"><span class="n">01</span><span class="w">Wire</span></a>
+  <a href="challenge.html"><span class="n">02</span><span class="w">Daily</span></a>
+  <a href="deadline.html"><span class="n">03</span><span class="w">Live</span></a>
+  <a href="desk.html"><span class="n">04</span><span class="w">Desk</span></a>
+  <a href="store.html"><span class="n">05</span><span class="w">Pass</span></a>
+</nav>
+</body>
+</html>

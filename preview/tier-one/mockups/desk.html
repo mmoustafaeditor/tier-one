@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Career Desk · Tier One</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<script src="../kit.js" defer></script>
+<style>
+  .id { padding-top: 20px; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; align-items: end; }
+  .rank { font-family: var(--f-display); font-style: italic; font-size: 20px; color: var(--ink-2); }
+  .rep { font-family: var(--f-cond); font-stretch: 62%; font-weight: 900; font-size: 96px; line-height: .8; }
+  .ruler { margin-top: 18px; position: relative; height: 34px; }
+  .ruler__track { position: absolute; inset-inline: 0; top: 10px; height: 10px; background: repeating-linear-gradient(90deg, var(--ink) 0 1px, transparent 1px 10%); border-bottom: 1.5px solid var(--ink); }
+  [dir="rtl"] .ruler__track { background: repeating-linear-gradient(-90deg, var(--ink) 0 1px, transparent 1px 10%); }
+  .ruler__fill { position: absolute; inset-inline-start: 0; top: 16px; height: 5px; width: 72%; background: var(--accent); }
+  .ruler__l { position: absolute; top: 24px; inset-inline: 0; display: flex; justify-content: space-between; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 22px; border-block: 1.5px solid var(--ink); }
+  .kpis > div { padding: 12px 0 10px; }
+  .kpis > div + div { border-inline-start: var(--hair) solid var(--rule); padding-inline-start: 12px; }
+  .kpis .cond { font-size: 40px; display: block; }
+  .ct { display: grid; grid-template-columns: 38px minmax(0,1fr) 70px; gap: 12px; align-items: center; padding-block: 12px; border-bottom: var(--hair) solid var(--rule); }
+  .ct__av { width: 38px; height: 38px; display: grid; place-items: center; border: 1.5px solid var(--ink); font-family: var(--f-display); font-style: italic; font-weight: 600; font-size: 16px; }
+  .ct__n { font-weight: 800; font-size: 15px; }
+  .ct__d { font-family: var(--f-display); font-style: italic; font-size: 14px; color: var(--ink-2); }
+  .ct__r { text-align: end; }
+  .ct__r .cond { font-size: 26px; display: block; }
+  .ct__trend { font-family: var(--f-mono); font-size: 10.5px; }
+  .unlock { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; gap: 12px; padding-block: 12px; border-bottom: var(--hair) solid var(--rule); align-items: center; }
+  .unlock__box { width: 22px; height: 22px; border: 1.5px solid var(--ink); display: grid; place-items: center; }
+  .unlock.done .unlock__box { background: var(--ink); color: var(--paper); }
+  .unlock.locked { color: var(--ink-3); }
+  .unlock.locked .unlock__box { border-style: dashed; border-color: var(--ink-3); }
+  .unlock__t { font-weight: 700; font-size: 15px; }
+  .unlock__d { font-size: 13px; color: var(--ink-3); }
+  .table .cond { font-size: 20px; }
+  .mv-up { color: var(--o-done); font-family: var(--f-mono); font-size: 11px; }
+  .mv-dn { color: var(--accent-text); font-family: var(--f-mono); font-size: 11px; }
+  .zone-l { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em; color: var(--ink-3); text-transform: uppercase; text-align: center !important; padding: 4px 0 !important; border-bottom: 0 !important; }
+  @media (min-width: 960px) { .bar { position: static; } .id { padding-top: 28px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="bar">
+    <span class="bar__title">Career Desk</span>
+    <span class="bar__end"><span class="meta">Season 2</span><button class="edition" data-edition-toggle>Late edition</button></span>
+  </header>
+  <nav class="nav"><a href="home.html">The Wire</a><a href="challenge.html">The Daily</a><a href="deadline.html">Deadline Day</a><a href="desk.html" aria-current="page">Career Desk</a><a href="share.html">Scoops</a><a href="store.html">Press Pass</a></nav>
+
+  <div class="cols cols--2-even">
+  <main>
+    <section class="id">
+      <div>
+        <div class="kicker">Mo Moustafa</div>
+        <div class="rank">Senior Correspondent</div>
+        <div class="rep num" style="margin-top:8px">2,418</div>
+        <div class="label" style="margin-top:16px">Reputation</div>
+      </div>
+      <span class="stamp stamp--exclusive" style="margin-bottom:10px">6× Tier 1</span>
+    </section>
+    <div class="ruler" aria-label="582 reputation to Chief Correspondent">
+      <div class="ruler__track"></div><div class="ruler__fill"></div>
+      <div class="ruler__l"><span class="meta">2,000</span><span class="meta accent">582 to Chief Correspondent</span><span class="meta">3,000</span></div>
+    </div>
+    <div class="kpis">
+      <div><span class="label">Right</span><span class="cond">71%</span><span class="meta">of 212 calls</span></div>
+      <div><span class="label">Scoops</span><span class="cond">14</span><span class="meta">Exclusives</span></div>
+      <div><span class="label">U-turns</span><span class="cond">9</span><span class="meta">Owned up</span></div>
+    </div>
+
+    <div class="flag"><h2 class="flag__t">The contact book</h2><span class="flag__aside meta">Reliability · with you</span></div>
+    <div class="ct"><span class="ct__av">FI</span><div><div class="ct__n">Forest insider</div><div class="ct__d">Leans pro-club. Never wrong on price.</div></div><div class="ct__r"><span class="cond">81</span><span class="ct__trend mv-up">▲ 3</span></div></div>
+    <div class="ct"><span class="ct__av">KM</span><div><div class="ct__n">The kit man</div><div class="ct__d">Madrid. Sees who comes to lunch.</div></div><div class="ct__r"><span class="cond">71</span><span class="ct__trend muted">—</span></div></div>
+    <div class="ct"><span class="ct__av">SP</span><div><div class="ct__n">Selhurst press officer</div><div class="ct__d">Denies everything. Denials mean something.</div></div><div class="ct__r"><span class="cond">83</span><span class="ct__trend mv-up">▲ 1</span></div></div>
+    <div class="ct"><span class="ct__av">AC</span><div><div class="ct__n">The agent’s cousin</div><div class="ct__d">Knows every agent. Loves the sound of his voice.</div></div><div class="ct__r"><span class="cond">58</span><span class="ct__trend mv-dn">▼ 6</span></div></div>
+    <div class="ct"><span class="ct__av">TD</span><div><div class="ct__n">The tabloid desk</div><div class="ct__d">Echoes. Sometimes first. Usually loud.</div></div><div class="ct__r"><span class="cond">41</span><span class="ct__trend mv-dn">▼ 2</span></div></div>
+    <div class="ct" style="opacity:.55"><span class="ct__av" style="border-style:dashed">?</span><div><div class="ct__n">Sixth contact</div><div class="ct__d">Opens at Chief Correspondent. Serie A beat.</div></div><div class="ct__r"><span class="meta">Locked</span></div></div>
+
+    <div class="flag"><h2 class="flag__t">Unlocks</h2><span class="flag__aside meta">Earned, not bought</span></div>
+    <div class="unlock done"><span class="unlock__box">✓</span><div><div class="unlock__t">La Liga beat</div><div class="unlock__d">Spanish sagas on your Career board</div></div><span class="meta">1,500</span></div>
+    <div class="unlock done"><span class="unlock__box">✓</span><div><div class="unlock__t">Second phone</div><div class="unlock__d">+1 contact card a day in Career</div></div><span class="meta">2,000</span></div>
+    <div class="unlock locked"><span class="unlock__box"></span><div><div class="unlock__t">Serie A beat + sixth contact</div><div class="unlock__d">Chief Correspondent</div></div><span class="meta">3,000</span></div>
+    <div class="unlock locked"><span class="unlock__box"></span><div><div class="unlock__t">Your own column</div><div class="unlock__d">Publish a weekly prediction others can follow</div></div><span class="meta">4,500</span></div>
+  </main>
+
+  <aside>
+    <div class="flag" style="margin-top:28px"><h2 class="flag__t">The league</h2><span class="flag__aside meta">Marylebone · week 39</span></div>
+    <p class="note">Daily scores only — same board for everyone. Top 5 go up, bottom 5 go down on Sunday night.</p>
+    <table class="table" style="margin-top:10px">
+      <thead><tr><th class="l">#</th><th class="l">Reporter</th><th>Right</th><th>Pts</th></tr></thead>
+      <tbody>
+        <tr><td class="l"><span class="cond">1</span></td><td class="l">Hana Takeda <span class="mv-up">▲2</span></td><td>81%</td><td><b>1,904</b></td></tr>
+        <tr><td class="l"><span class="cond">2</span></td><td class="l">Sam Okafor</td><td>77%</td><td>1,861</td></tr>
+        <tr><td class="l"><span class="cond">3</span></td><td class="l">Inès Laurent <span class="mv-dn">▼1</span></td><td>74%</td><td>1,790</td></tr>
+        <tr class="is-you"><td class="l"><span class="cond">4</span></td><td class="l">You <span class="mv-up">▲3</span></td><td>72%</td><td>1,742</td></tr>
+        <tr class="zone"><td class="l"><span class="cond">5</span></td><td class="l">Karim Haddad</td><td>70%</td><td>1,733</td></tr>
+        <tr><td colspan="4" class="zone-l">Promotion line</td></tr>
+        <tr><td class="l"><span class="cond">6</span></td><td class="l">Lucía Ortega</td><td>69%</td><td>1,688</td></tr>
+        <tr><td class="l"><span class="cond">7</span></td><td class="l">Tom Brennan <span class="mv-dn">▼4</span></td><td>66%</td><td>1,640</td></tr>
+        <tr><td class="l"><span class="cond">8</span></td><td class="l">Yusuf Demir</td><td>68%</td><td>1,602</td></tr>
+      </tbody>
+    </table>
+    <p class="meta" style="margin-top:10px">30 reporters · 3 days left in the week</p>
+  </aside>
+  </div>
+</div>
+<nav class="tabs" aria-label="Sections">
+  <a href="home.html"><span class="n">01</span><span class="w">Wire</span></a>
+  <a href="challenge.html"><span class="n">02</span><span class="w">Daily</span></a>
+  <a href="deadline.html"><span class="n">03</span><span class="w">Live</span></a>
+  <a href="desk.html" aria-current="page"><span class="n">04</span><span class="w">Desk</span></a>
+  <a href="store.html"><span class="n">05</span><span class="w">Pass</span></a>
+</nav>
+</body>
+</html>

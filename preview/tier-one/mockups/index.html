@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tier One v3 · The Look</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<script src="../kit.js" defer></script>
+<style>
+  .toc a { display: grid; grid-template-columns: 40px minmax(0,1fr) auto; gap: 12px; align-items: baseline; padding-block: 14px; border-bottom: var(--hair) solid var(--rule); }
+  .toc .pg { font-family: var(--f-cond); font-stretch: 62%; font-weight: 800; font-size: 30px; line-height: 1; }
+  .toc .t { font-family: var(--f-display); font-weight: 600; font-size: 21px; line-height: 1.15; font-variation-settings: "opsz" 30; }
+  .toc .d { font-size: 13.5px; color: var(--ink-2); margin-top: 3px; }
+  .toc a:hover .t { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  .sw { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1.5px solid var(--ink); }
+  .sw > div { aspect-ratio: 1; padding: 8px; display: flex; flex-direction: column; justify-content: flex-end; font-family: var(--f-mono); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+  .spec > div { padding-block: 12px; border-bottom: var(--hair) solid var(--rule); }
+  .stamps { display: flex; flex-wrap: wrap; gap: 20px 18px; padding: 16px 4px; }
+  .crests { display: flex; flex-wrap: wrap; gap: 10px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="mast">
+    <div class="mast__top"><span class="meta">Art direction · v3</span><button class="edition" data-edition-toggle>Late edition</button></div>
+    <hr class="rule--double">
+    <h1 class="mast__title">Tier One</h1>
+    <div class="mast__sub"><span class="meta">The look</span><span class="meta"><b>Inside this edition</b></span><span class="meta">Sep 2026</span></div>
+  </header>
+
+  <div class="cols cols--2">
+  <main>
+    <div class="flag"><h2 class="flag__t">Contents</h2><span class="flag__aside meta">Page</span></div>
+    <nav class="toc">
+      <a href="home.html"><span class="pg">1</span><span><span class="t">The front page</span><div class="d">Lead story, the wire, your calls, the Daily, the league.</div></span><span class="arr">→</span></a>
+      <a href="rumour.html"><span class="pg">2</span><span><span class="t">The file: a rumour in full</span><div class="d">The read, evidence trail, heat, market, publishing desk.</div></span><span class="arr">→</span></a>
+      <a href="rumour.ar.html"><span class="pg">2a</span><span><span class="t">الملف — the same page in Arabic</span><div class="d">RTL, Naskh headlines, mirrored rules and charts.</div></span><span class="arr">→</span></a>
+      <a href="challenge.html"><span class="pg">3</span><span><span class="t">The Daily and the phones</span><div class="d">Seven-day window, contact cards, a call in progress.</div></span><span class="arr">→</span></a>
+      <a href="deadline.html"><span class="pg">4</span><span><span class="t">Deadline Day: extra edition</span><div class="d">The 60-second clock, breaking stamps, last calls.</div></span><span class="arr">→</span></a>
+      <a href="share.html"><span class="pg">5</span><span><span class="t">The scoop card</span><div class="d">The share asset, and how every point was scored.</div></span><span class="arr">→</span></a>
+      <a href="desk.html"><span class="pg">6</span><span><span class="t">Career desk and the league</span><div class="d">Reputation, contact book, unlocks, weekly table.</div></span><span class="arr">→</span></a>
+      <a href="store.html"><span class="pg">7</span><span><span class="t">Press Pass</span><div class="d">Premium, honest, and it never buys points.</div></span><span class="arr">→</span></a>
+    </nav>
+  </main>
+  <aside>
+    <div class="flag"><h2 class="flag__t">The type</h2></div>
+    <div class="spec">
+      <div><div class="hed hed--2">Newsreader</div><div class="meta">Display serif · headlines, names, quotes</div></div>
+      <div><div style="font-weight:800;font-size:20px">Schibsted Grotesk</div><div class="meta">Text & UI · drawn for a newsroom</div></div>
+      <div><div class="cond" style="font-size:40px">ARCHIVO 62% 0:23</div><div class="meta">Condensed · clocks, figures, stamps</div></div>
+      <div><div style="font-family:var(--f-mono);font-size:15px">IBM PLEX MONO 22:59</div><div class="meta">Datelines, slugs, odds</div></div>
+    </div>
+    <div class="flag"><h2 class="flag__t">The inks</h2></div>
+    <div class="sw">
+      <div style="background:var(--paper);color:var(--ink)">Paper</div>
+      <div style="background:var(--ink);color:var(--paper)">Ink</div>
+      <div style="background:var(--accent);color:var(--accent-ink)">Vermilion</div>
+      <div style="background:var(--paper-2);color:var(--ink-2)">Inset</div>
+    </div>
+    <div class="flag"><h2 class="flag__t">The stamps</h2></div>
+    <div class="stamps">
+      <span class="stamp stamp--exclusive">Exclusive</span>
+      <span class="stamp stamp--done">Done</span>
+      <span class="stamp stamp--hijack">Hijack</span>
+      <span class="stamp stamp--off">Off</span>
+      <span class="stamp stamp--fake">Fake</span>
+      <span class="stamp stamp--solid stamp--flat">Breaking</span>
+    </div>
+    <div class="flag"><h2 class="flag__t">Crests, not badges</h2></div>
+    <div class="crests">
+      <i data-crest="ARS" style="--size:38px"></i><i data-crest="LIV" style="--size:38px"></i><i data-crest="MCI" style="--size:38px"></i><i data-crest="CHE" style="--size:38px"></i><i data-crest="NEW" style="--size:38px"></i><i data-crest="RMA" style="--size:38px"></i><i data-crest="FCB" style="--size:38px"></i><i data-crest="BAY" style="--size:38px"></i><i data-crest="BVB" style="--size:38px"></i><i data-crest="JUV" style="--size:38px"></i><i data-crest="INT" style="--size:38px"></i><i data-crest="HIL" style="--size:38px"></i>
+    </div>
+    <p class="note" style="margin-top:10px">Drawn from club colours and initials only. No real badge, logo or photo appears anywhere.</p>
+  </aside>
+  </div>
+</div>
+</body>
+</html>
