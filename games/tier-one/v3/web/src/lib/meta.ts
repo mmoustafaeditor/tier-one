@@ -3,6 +3,7 @@
 import { update, getSave, type Save } from './save';
 import type { Result } from './engine';
 import { t } from './i18n';
+import { trackWindow } from './progress';
 
 type Toast = { id: number; kind: 'ach' | 'info' | 'warn'; title: string; body?: string };
 const listeners = new Set<(t: Toast[]) => void>();
@@ -84,6 +85,7 @@ export function onDailyDone(dayKey: string, no: number, r: Result, extra: { ddLa
     if ((s.stats.t1 || 0) >= 3) grant(s, 't1x3');
     if (extra.ddLast15) grant(s, 'dd');
     windowAch(s, r);
+    trackWindow(s, r, 'daily');
   });
 }
 export function onPracticeDone(r: Result, coach: boolean) {
@@ -95,6 +97,7 @@ export function onPracticeDone(r: Result, coach: boolean) {
     if (s.practice.played >= 5) grant(s, 'practice5');
     if (coach) grant(s, 'coach');
     windowAch(s, r);
+    trackWindow(s, r, 'practice');
   });
 }
 export function onCareerDone(r: Result, milestoneCredits: number) {
@@ -109,10 +112,11 @@ export function onCareerDone(r: Result, milestoneCredits: number) {
     if (milestoneCredits) credit(s, milestoneCredits, 'followers');
     addPP(s, 10);
     windowAch(s, r);
+    trackWindow(s, r, 'story');
   });
 }
-export function onRoomDone(r: Result) { update((s) => { grant(s, 'room'); addPP(s, 15); windowAch(s, r); }); }
-export function onWireFiled() { update((s) => { grant(s, 'wire1'); s.stats.wire = (s.stats.wire || 0) + 1; addPP(s, 5); }); }
+export function onRoomDone(r: Result) { update((s) => { grant(s, 'room'); addPP(s, 15); windowAch(s, r); trackWindow(s, r, 'room'); }); }
+export function onWireFiled() { update((s) => { grant(s, 'wire1'); s.stats.wire = (s.stats.wire || 0) + 1; s.stats.m_wire = (s.stats.m_wire || 0) + 1; addPP(s, 5); }); }
 export function onWireRight() { update((s) => { grant(s, 'wireRight'); addPP(s, 10); }); }
 export function onShared() { update((s) => grant(s, 'share')); }
 export function spend(n: number, why: string): boolean {

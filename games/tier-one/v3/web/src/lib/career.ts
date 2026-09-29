@@ -96,7 +96,7 @@ export function applyWindow(c: CareerSave, g: Game, res: Result, cast: CastSaga[
   for (const [id, r] of Object.entries(c.relations)) if (!(id in rel0s) && c.windows - r.last >= 10 && r.v !== 0) { r.v += r.v > 0 ? -1 : 1; r.last = c.windows; }
   c.rep = Math.max(0, Math.min(100, Math.round((c.rep + delta - 0.05 * (c.rep - 50)) * 10) / 10));
   c.followers = Math.max(0, Math.round(c.followers + followers));
-  if (res.tier === 'T1') { c.t1++; favours++; }
+  if (res.tier === 'T1') { c.t1++; favours++; if (c.rank === RANKS.length - 1) c.t1Top = (c.t1Top || 0) + 1; }
   const fav = favours;
   for (let k = 0; k < fav; k++) { const kinds = ['burner', 'tipoff', 'stakeout'] as const; const kind = kinds[(c.windows + k) % 3]; if (totalFavours(c) < 5) c.favours[kind]++; }
   let promoted: number | null = null;

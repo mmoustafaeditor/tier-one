@@ -2,6 +2,7 @@
 // Ranked results live on the server; this holds settings, history, Career, Practice, the wallet and achievements.
 import { useSyncExternalStore } from 'react';
 import type { Pub, Tier, Act } from './engine';
+import type { MissionState } from './progress';
 
 export const SAVE_KEY = 'tierone_v3';
 export const SAVE_V = 1;
@@ -13,6 +14,7 @@ export interface CareerSave {
   slot: number; paper: string; rank: number; windows: number; rep: number; followers: number; favours: { burner: number; tipoff: number; stakeout: number };
   contacts: Record<string, Contact>; relations: Record<string, { v: number; last: number }>; t1: number; exclusives: number; right: number; calls: number; uturns: number;
   history: { n: number; total: number; tier: Tier; repAfter: number; at: number }[]; live: LocalWindow | null; restarts: number;
+  t1Top?: number; // Tier 1 windows played at the top rank (Story finale)
 }
 export interface Save {
   v: number; dev: string; nick: string; lang: 'en' | 'ar' | 'es'; edition: '' | 'morning' | 'late'; sound: boolean; reduced: boolean; onboarded: boolean;
@@ -26,6 +28,11 @@ export interface Save {
   milestones: Record<string, number>;
   wireSeen: string[];
   last?: { pub: Pub; at: number };
+  // 3.1 game layer (all optional: older saves load unchanged)
+  missions?: MissionState;
+  story?: { prologue?: boolean; chapterSeen?: number; beats?: Record<string, number>; inbox?: { at: number; from: string; key: string; v?: Record<string, string | number>; read?: boolean }[] };
+  tut?: { done?: boolean; seen?: Record<string, boolean> };
+  scenes?: Record<string, number>;
 }
 
 const rid = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; let s = ''; const b = new Uint8Array(16); crypto.getRandomValues(b); for (const x of b) s += a[x % a.length]; return s; };
