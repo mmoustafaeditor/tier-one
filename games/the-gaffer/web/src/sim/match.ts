@@ -3,7 +3,7 @@
 // resumed after the app was closed plays out the same way for the same decisions.
 import type { Career, Player, Position } from '../model/types';
 import { bell, clamp, makeRng, type Rng } from './rng';
-import { playerOf, squadOf, type World } from './world';
+import { playerOf, squadOf, squadStrength, type World } from './world';
 import { balanceOf, oppBoost } from './balance';
 import {
   BEATS, FORMATIONS, TRAP_VS, aiTactics, autoXI, available, formOf, setPieces, slotValue, xiFor, DEFAULT_TACTICS, type Tactics,
@@ -54,14 +54,13 @@ export interface LiveMatch {
 
 export const SUBS_MAX = 5;
 export const BENCH_MAX = 9;
+export const MENTALITY_COST = 0.10;     // chances the opponent gains per step of mentality
+export const MENTALITY_GAP_COST = 0.01;  // extra per rating point the opponent is stronger, when attacking
 
 const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 17);
 export const rngFor = (key: string, minute: number) => makeRng(hash(`${key}:${minute}`));
 
-const level = (squad: Player[]) => {
-  const best = squad.map((p) => p.rating).sort((a, b) => b - a).slice(0, 11);
-  return best.reduce((s, x) => s + x, 0) / Math.max(1, best.length);
-};
+const level = squadStrength;
 
 function side(w: World, c: Career | null, clubId: string, oppLevel: number, form: number): SideState {
   const squad = squadOf(w, clubId);
@@ -135,8 +134,9 @@ export function rates(m: LiveMatch, get: Lookup): [number, number] {
     const me = m.sides[i], them = m.sides[1 - i], o = (1 - i) as 0 | 1;
     const f = FORMATIONS[me.tactics.formation], g = FORMATIONS[them.tactics.formation];
     x[i] *= (1 + 0.05 * f.attack) * (1 - 0.05 * g.defence) * me.form;
+    // Attacking opens you up, and the stronger the opponent the more it costs (up to ten rating points of gap count).
     x[i] *= 1 + 0.12 * me.tactics.mentality;
-    x[o] *= 1 + 0.07 * me.tactics.mentality;
+    x[o] *= 1 + MENTALITY_COST * me.tactics.mentality + MENTALITY_GAP_COST * Math.max(0, me.tactics.mentality) * Math.min(10, Math.max(0, L[o] - L[i]));
     if (me.tactics.pressing === 2) { x[i] *= 1.05 * (me.mods?.press ?? 1); x[o] *= 0.95; }
     if (me.tactics.pressing === 0) { x[i] *= 0.95; x[o] *= 0.97; }
     if (me.tactics.passing === 0) x[i] *= 1 + (avgAttr(m, i, 2, get) - 65) * 0.004;
@@ -158,17 +158,17 @@ function styleMods(m: LiveMatch, i: 0 | 1, L: number[], x: [number, number], get
   const at = (pos: Position[], a: number) => { const ps = on.filter((p) => pos.includes(p.position)); return ps.length ? ps.reduce((s, p) => s + p.attrs[a], 0) / ps.length : 50; };
   if (ph === 'possession') { x[i] *= 1 + 0.04 * k; x[o] *= 1 - 0.03 * k; }
   if (ph === 'counter') { x[i] *= 1 + (L[i] < L[o] ? 0.06 : 0.02) * k; x[o] *= 1 - 0.02 * k; }
-  if (ph === 'gegenpress') { x[i] *= 1 + 0.05 * k; x[o] *= 1 - 0.04 * k; }
+  if (ph === 'gegenpress') { x[i] *= 1 + 0.04 * k; x[o] *= 1 - 0.04 * k; }
   if (ph === 'bus') { x[i] *= 0.92; x[o] *= 1 - 0.1 * k; }
   if (ph === 'wings') x[i] *= 1 + (at(['LW', 'RW', 'LB', 'RB'], 0) >= 70 ? 0.05 : 0.01) * k;
   if (ph === 'direct') x[i] *= 1 + (Math.max(at(['ST'], 5), at(['ST'], 0)) >= 72 ? 0.05 : 0.01) * k;
-  if (BEATS[ph].includes(opp)) x[i] *= 1.05;
+  if (BEATS[ph].includes(opp)) x[i] *= 1.04;
   if (t.fullback === 1) { x[i] *= 1.03; x[o] *= 1.02; } else if (t.fullback === 2) x[i] *= 1.01; else x[o] *= 0.98;
   if (t.striker === 0 && at(['ST'], 0) >= 70) x[i] *= 1.02;
   if (t.striker === 1 && at(['ST'], 5) >= 72) x[i] *= 1.03;
   if (t.striker === 2 && at(['ST'], 2) >= 72) x[i] *= 1.02;
   if (t.striker === 3) x[o] *= 0.98;
-  if (t.trap && t.pressing >= 1) { x[o] *= 0.97; if (TRAP_VS[opp] === t.trap) x[o] *= 0.95; }
+  if (t.trap && t.pressing >= 1) { x[o] *= 0.98; if (TRAP_VS[opp] === t.trap) x[o] *= 0.96; }
 }
 
 // Win / draw / loss chances for the home side, from the current rates (E2E #15, #46: tactics change it).
@@ -330,8 +330,9 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
       const inId = s.subs < SUBS_MAX ? bestIn(m, i, pos, get) : null;
       if (inId) sub(m, i, hurt.id, inId); else s.onPitch[k] = '';
     }
-    // Fatigue
-    const press = (s.tactics.pressing === 2 ? 1.35 : s.tactics.pressing === 0 ? 0.75 : 1) * (s.mods?.fatigue ?? 1) * (s.tactics.philosophy === 'gegenpress' ? 1.1 : 1);
+    // Fatigue: chasing a side that keeps the ball costs half as much again.
+    const chase = s.tactics.pressing === 2 && m.sides[o].tactics.philosophy === 'possession' ? 1.5 : 1;
+    const press = (s.tactics.pressing === 2 ? 1.35 * chase : s.tactics.pressing === 0 ? 0.75 : 1) * (s.mods?.fatigue ?? 1) * (s.tactics.philosophy === 'gegenpress' ? 1.1 : 1);
     for (const p of mine) m.fit[p.id] = Math.max(20, (m.fit[p.id] ?? 100) - (p.position === 'GK' ? 0.04 : 0.15 * press * runExtra(p, s.tactics)));
   }
   m.stats[0][0] = Math.round(m.possSum / m.minute);

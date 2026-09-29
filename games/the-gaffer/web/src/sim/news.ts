@@ -6,7 +6,7 @@ import type { Career, NewsCat, NewsItem, Player, Rumour } from '../model/types';
 import { FREE_AGENT } from '../model/types';
 import { makeRng, int } from './rng';
 import { freeShirt, playerOf, squadOf, wageOf, type World } from './world';
-import { roundFee, table } from './season';
+import { roundFee, roundsIn, table } from './season';
 import { askingPrices } from './transfers';
 
 const MAX_NEWS = 40;
@@ -50,24 +50,30 @@ export function newsRound(before: Career, w: World, c: Career): Career {
 
 // ---------- rumours ----------
 
-// Every 4 matchdays: new rumours about good players; rumours at their deadline are settled.
+const AI_SQUAD_MIN = 18; // a club won't sell below this many players
+const AI_SQUAD_MAX = 30; // nor buy above it
+
+// Every 4 matchdays, all season long: new rumours about good players. Each one is settled on the next deadline day
+// (summer or winter), so the user can hijack it while the window is open. Players out on loan are never sold.
 export function rumoursRound(w: World, c: Career): { world: World; career: Career } {
   let world = w, career: Career = { ...c, rumours: c.rumours ?? [] };
   const r = makeRng((c.seed ^ (c.season * 131)) + c.round * 977);
+  const onLoan = new Set((c.loans ?? []).filter((l) => l.season === c.season).map((l) => l.playerId));
   // Settle.
   for (const ru of career.rumours!.filter((x) => x.until <= c.round)) {
     career = { ...career, rumours: career.rumours!.filter((x) => x.id !== ru.id) };
     const p = playerOf(world, ru.playerId);
     const buyer = world.clubs.find((x) => x.id === ru.to)!;
-    if (!p || p.clubId !== ru.from || p.clubId === c.clubId || r() * 100 > ru.chance) continue;
-    if (buyer.budget < ru.fee || squadOf(world, ru.from).length <= 18 || squadOf(world, ru.to).length >= 30) continue;
+    if (!p || p.clubId !== ru.from || p.clubId === c.clubId || onLoan.has(p.id) || r() * 100 > ru.chance) continue;
+    if (buyer.budget < ru.fee || squadOf(world, ru.from).length <= AI_SQUAD_MIN || squadOf(world, ru.to).length >= AI_SQUAD_MAX) continue;
     world = aiMove(world, p, ru.to, ru.fee, c.season);
     career = addNews(career, 'transfers', 'aiTransfer', { player: p.id, pn: p.name, club: ru.from, club2: ru.to, s: String(ru.fee) });
   }
   // New ones.
   if (c.round % 4 === 1) {
     const prices = askingPrices(world);
-    const pool = world.players.filter((p) => p.clubId !== FREE_AGENT && p.clubId !== c.clubId && p.rating >= 72);
+    const until = nextDeadline(c);
+    const pool = world.players.filter((p) => p.clubId !== FREE_AGENT && p.clubId !== c.clubId && p.rating >= 72 && !onLoan.has(p.id));
     for (let i = 0; i < 3 && pool.length; i++) {
       const p = pool[Math.floor(r() * pool.length)];
       const from = world.clubs.find((x) => x.id === p.clubId)!;
@@ -76,12 +82,20 @@ export function rumoursRound(w: World, c: Career): { world: World; career: Caree
       if (!buyers.length || career.rumours!.some((x) => x.playerId === p.id)) continue;
       const to = buyers[Math.floor(r() * buyers.length)];
       const fee = roundFee((prices.get(p.id) ?? p.marketValue) * (0.9 + r() * 0.3));
-      const ru: Rumour = { id: `ru${c.season}_${c.round}_${p.id}`, playerId: p.id, pn: p.name, from: from.id, to: to.id, fee, chance: int(r, 30, 80), until: c.round + 4 };
+      const ru: Rumour = { id: `ru${c.season}_${c.round}_${p.id}`, playerId: p.id, pn: p.name, from: from.id, to: to.id, fee, chance: int(r, 30, 80), until };
       career = { ...career, rumours: [...career.rumours!, ru] };
       career = addNews(career, 'transfers', 'rumour', { player: p.id, pn: p.name, club: to.id, club2: from.id, n: ru.chance });
     }
   }
   return { world, career };
+}
+
+// The next deadline day: this summer's, this winter's, or next summer's (one season's rounds ahead; endSeason rebases it).
+export function nextDeadline(c: Career): number {
+  const rounds = roundsIn(c), mid = Math.floor(rounds / 2);
+  if (c.round <= 2) return 2;
+  if (c.round <= mid + 1) return mid + 1;
+  return rounds + 2;
 }
 
 // A transfer between two AI clubs.

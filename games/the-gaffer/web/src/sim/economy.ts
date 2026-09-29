@@ -169,11 +169,18 @@ export function attendance(w: World, c: Career, price: number): number {
 const tvMoney = (w: World, club: Club) => roundFee(club.wageCap * (leagueOf(w, club).tier === 1 ? 0.35 : 0.25));
 export const upkeep = (ops: ClubOps, club: Club) => roundFee(club.wageCap * 0.004 * FACILITIES.reduce((s, f) => s + ops.facilities[f], 0));
 
+// Gate money is scaled to the club's size: the biggest wage cap in the league keeps its full gate, smaller clubs
+// take a share of theirs. Their ticket income then sits near their wage bill instead of several times it.
+export const GATE_SCALE_POWER = 0.4;
+export const referenceCap = (w: World, leagueId: string) => Math.max(1, ...w.clubs.filter((x) => x.leagueId === leagueId).map((x) => x.wageCap));
+export const gateScale = (w: World, club: Club) => Math.min(1, Math.pow(club.wageCap / referenceCap(w, club.leagueId), GATE_SCALE_POWER));
+export const gateMoney = (w: World, c: Career, att: number) => att * c.ops.ticket * gateScale(w, w.clubs.find((x) => x.id === c.clubId)!);
+
 // Monthly picture for the finance screen: the same numbers the weekly flow uses, times four.
 export function monthly(w: World, c: Career) {
   const club = w.clubs.find((x) => x.id === c.clubId)!;
   const wages = squadOf(w, c.clubId).reduce((s, p) => s + p.wage, 0);
-  const gate = attendance(w, c, c.ops.ticket) * c.ops.ticket * 2; // about two home games a month
+  const gate = gateMoney(w, c, attendance(w, c, c.ops.ticket)) * 2; // about two home games a month
   const sponsors = c.ops.sponsors.reduce((s, d) => s + d.monthly, 0);
   const tv = tvMoney(w, club);
   const staff = staffWages(c.ops);
@@ -189,7 +196,7 @@ export function economyWeek(w: World, c: Career, home: boolean): { world: World;
   const inc = balanceOf(c).income;
   if (home) {
     const att = attendance(world, career, career.ops.ticket);
-    const revenue = att * career.ops.ticket * inc;
+    const revenue = gateMoney(world, career, att) * inc;
     step('tickets', revenue);
     career = { ...career, ops: { ...career.ops, lastGate: { attendance: att, revenue } } };
   }
@@ -198,15 +205,32 @@ export function economyWeek(w: World, c: Career, home: boolean): { world: World;
   step('wages', -squadOf(world, c.clubId).reduce((s, p) => s + p.wage, 0) / 4);
   step('staff', -staffWages(career.ops) / 4);
   step('upkeep', -upkeep(career.ops, club) / 4);
-  // Sponsor deals run by the month (every 4 matchdays); expired ones free the slot and bring new offers.
+  // Sponsor deals run by the month (every 4 matchdays). A deal that runs out is renewed by the sponsor for another
+  // year at today's rate the same matchday, so a club is never left without a shirt sponsor; ending it is still free
+  // to choose (endSponsor brings the slot's other offers).
   if (c.round % 4 === 3) {
     const r = makeRng(hash(c.clubId) ^ (c.season * 97 + c.round));
-    const left = career.ops.sponsors.map((d) => ({ ...d, months: d.months - 1 }));
-    const ended = left.filter((d) => d.months <= 0);
-    const ops: ClubOps = { ...career.ops, sponsors: left.filter((d) => d.months > 0) };
-    career = { ...career, ops: { ...ops, sponsorOffers: ended.length ? [...ops.sponsorOffers, ...sponsorOffers(r, world, club, ops)] : ops.sponsorOffers } };
+    const sponsors = career.ops.sponsors.map((d) => (d.months > 1 ? { ...d, months: d.months - 1 } : { ...deal(r, club, d.slot, d.brand, SPONSOR_RENEWAL), id: d.id }));
+    career = { ...career, ops: { ...career.ops, sponsors } };
   }
   return { world, career };
+}
+export const SPONSOR_RENEWAL = 12; // months a sponsor renews for when a deal runs out
+
+// The other clubs' week, the cheap way: wages and upkeep out, TV and their sponsors in. No gate (their ticket
+// income and prize money are what let them buy), so treasuries stop growing without limit.
+export const AI_SPONSOR_SHARE = 0.325; // shirt + kit deals at the usual rate
+export function aiEconomyWeek(w: World, c: Career): World {
+  const bills = new Map<string, number>();
+  for (const p of w.players) if (p.clubId !== c.clubId) bills.set(p.clubId, (bills.get(p.clubId) ?? 0) + p.wage);
+  const clubs = w.clubs.map((x) => {
+    if (x.id === c.clubId) return x;
+    const tier1 = leagueOf(w, x).tier === 1;
+    const lvl = clamp(1 + Math.floor((x.reputation - 50) / 12), 1, 5);
+    const monthly = x.wageCap * (tier1 ? 0.35 : 0.25) + x.wageCap * 0.5 * AI_SPONSOR_SHARE - (bills.get(x.id) ?? 0) - x.wageCap * 0.004 * (5 * lvl - 1);
+    return { ...x, budget: Math.round(x.budget + monthly / 4) };
+  });
+  return { ...w, clubs };
 }
 
 // Sponsor bonuses for a league title or a cup, paid when it happens.
@@ -254,14 +278,17 @@ export function donate(w: World, c: Career, amount: number): { world: World; car
   const club = w.clubs.find((x) => x.id === c.clubId)!;
   const weight = amount / Math.max(1, club.wageCap);
   const r = spend(w, { ...c, coach: { ...c.coach, wallet: c.coach.wallet - amount } }, 'donations', amount);
-  const board = { confidence: clamp(c.board.confidence + Math.min(15, weight * 20), 0, 100), fans: clamp(c.board.fans + Math.min(10, weight * 12), 0, 100) };
+  const board = { ...c.board, confidence: clamp(c.board.confidence + Math.min(15, weight * 20), 0, 100), fans: clamp(c.board.fans + Math.min(10, weight * 12), 0, 100) };
   return { world: r.world, career: { ...r.career, board }, ok: true };
 }
 
-// Turning budget into a higher monthly wage cap costs 12 months of it, and back (the old game's conversion, kept symmetric).
+// Turning budget into a higher monthly wage cap costs 12 months of it; lowering the cap gives 6 months back
+// (the cap also follows the wage bill at season end, so unused room is not a cash machine).
+export const CAP_MONTHS_UP = 12;
+export const CAP_MONTHS_DOWN = 6;
 export function moveWageCap(w: World, c: Career, perMonth: number): { world: World; career: Career; ok: boolean } {
   const club = w.clubs.find((x) => x.id === c.clubId)!;
-  const cost = perMonth * 12;
+  const cost = perMonth * (perMonth > 0 ? CAP_MONTHS_UP : CAP_MONTHS_DOWN);
   if (perMonth > 0 && club.budget < cost) return { world: w, career: c, ok: false };
   const bill = squadOf(w, c.clubId).reduce((s, p) => s + p.wage, 0);
   if (perMonth < 0 && club.wageCap + perMonth < bill) return { world: w, career: c, ok: false };

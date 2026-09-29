@@ -218,8 +218,7 @@ function placeStars(r: Rng, clubs: Club[], players: Player[], season: number) {
 // Ranking points start from real squad strength (reputation is relative to each league, so Al Ahly and Madrid both have ~95).
 export function seedElo(clubs: Club[], players: Player[]) {
   for (const c of clubs) {
-    const best = players.filter((p) => p.clubId === c.id).map((p) => p.rating).sort((a, b) => b - a).slice(0, 11);
-    const s = best.reduce((a, x) => a + x, 0) / Math.max(1, best.length);
+    const s = squadStrength(players.filter((p) => p.clubId === c.id));
     c.elo = Math.round(1000 + (s - 50) * 30);
   }
 }
@@ -321,11 +320,12 @@ const POS_ORDER: Position[] = ['GK', 'RB', 'CB', 'LB', 'CDM', 'CM', 'CAM', 'RW',
 export const sortSquad = (ps: Player[]) =>
   [...ps].sort((a, b) => POS_ORDER.indexOf(a.position) - POS_ORDER.indexOf(b.position) || b.rating - a.rating);
 
-// Club strength = average of its best 11 players.
-export function strengthOf(w: World, clubId: string): number {
-  const best = squadOf(w, clubId).map((p) => p.rating).sort((a, b) => b - a).slice(0, 11);
-  return Math.round(best.reduce((s, x) => s + x, 0) / best.length);
+// Club strength = average of its best 11 players. One formula for the engine, the market and the screens.
+export function squadStrength(squad: Player[]): number {
+  const best = squad.map((p) => p.rating).sort((a, b) => b - a).slice(0, 11);
+  return best.reduce((s, x) => s + x, 0) / Math.max(1, best.length);
 }
+export const strengthOf = (w: World, clubId: string) => Math.round(squadStrength(squadOf(w, clubId)));
 
 // 1-5 stars (halves) by the club's place in its own league.
 export function starsOf(w: World, club: Club): number {
