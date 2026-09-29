@@ -84,7 +84,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
       {stage >= TIER && <p className="tierline">{t('tierLine.' + r.tier)}{r.tier !== 'T1' ? ' ' + t('results.t1Need', { n: view.R.TIERS.T1 }) : ''}</p>}
 
       <section className="ledger2">
-        {r.per.map((p, k) => stage >= 2 + k ? <SagaRow key={p.i} p={p} c={cast[p.i]} R={view.R} k={k} /> : <div key={p.i} className="lrow lrow--hidden" />)}
+        {r.per.map((p, k) => stage >= 2 + k ? <SagaRow key={p.i} p={p} c={cast[p.i]} R={view.R} k={k} /> : <div key={p.i} className="rrow rrow--hidden" />)}
       </section>
 
       {stage >= PROG && <section className="prog stagger">
@@ -118,14 +118,14 @@ function SagaRow({ p, c, R, k }: { p: ResultSaga; c: CastSaga; R: View['R']; k: 
   const hj = p.truth === 1 && c.alt ? ' · ' + t('results.hijackTo', { c: c.alt.s }) : '';
   const why = p.right && !p.excl && p.call ? (p.why === 'twosource' ? t('results.whyTwo', { o: outWord(t.lang, p.truth) }) : p.why === 'beaten' && p.firstRight ? t('results.whyBeaten', { r: t('rival.' + p.firstRight.id), d: p.firstRight.day }) : p.why === 'uturn' ? t('results.whyUturn') : p.why === 'strength' ? t('results.whyStrength') : '') : '';
   const verdict = !p.call ? 'none' : p.excl ? 'excl' : p.right ? 'right' : 'wrong';
-  return <div className={'lrow is-' + verdict} style={{ ['--k' as string]: k }}>
-    <button className="lrow__head" onClick={(e) => { e.stopPropagation(); setOpen(!open); }} aria-expanded={open}>
+  return <div className={'rrow is-' + verdict} style={{ ['--k' as string]: k }}>
+    <button className="rrow__head" onClick={(e) => { e.stopPropagation(); setOpen(!open); }} aria-expanded={open}>
       <Kit club={p.truth === 1 && c.alt ? c.alt : p.truth === 0 ? c.to : c.from} player={c.player} size={44} />
-      <span className="lrow__who"><b>{c.player.n}</b><span className="g-mono">{p.call ? strWord(t.lang, p.call.s) + ' ' + outWord(t.lang, p.call.o) + ' · ' + t('g.saga.dayShort', { n: p.call.day }) : t('results.notCalled')}</span></span>
+      <span className="rrow__who"><b>{c.player.n}</b><span className="g-mono">{p.call ? strWord(t.lang, p.call.s) + ' ' + outWord(t.lang, p.call.o) + ' · ' + t('g.saga.dayShort', { n: p.call.day }) : t('results.notCalled')}</span></span>
       <span className={'g-stamp g-stamp--' + OUTS[p.truth]}>{outWord(t.lang, p.truth)}</span>
-      <span className="lrow__pts g-num">{verdict === 'excl' && <Icon n="bolt" size={16} />}{num(p.pts, true)}</span>
+      <span className="rrow__pts g-num">{verdict === 'excl' && <Icon n="bolt" size={16} />}{num(p.pts, true)}</span>
     </button>
-    {open && <div className="lrow__body">
+    {open && <div className="rrow__body">
       <p>{t('results.happened')}: <b>{outWord(t.lang, p.truth)}</b> · {t('out.' + OUTS[p.truth] + 'D', { to: c.to.s })}{hj}</p>
       {p.tw > 0 && <p>{t('results.twisted', { d: p.tw, a: outWord(t.lang, p.pre), b: outWord(t.lang, p.truth) })}</p>}
       {p.call && (p.right ? <>
@@ -134,16 +134,16 @@ function SagaRow({ p, c, R, k }: { p: ResultSaga; c: CastSaga; R: View['R']; k: 
         {p.parts.excl > 0 && <Line l={t('results.excl')} v={p.parts.excl} hot />}
       </> : <Line l={t('results.wrong', { s: strWord(t.lang, p.call.s) })} v={-p.parts.loss} />)}
       {p.parts.pen > 0 && <Line l={t('results.pen', { s: p.call && p.call.from ? strWord(t.lang, p.call.from.s) + ' ' + outWord(t.lang, p.call.from.o) : '' })} v={-p.parts.pen} />}
-      {why && <p className="lrow__why">{why}</p>}
-      <p className="lrow__spin">{t('results.spin', { o: outWord(t.lang, p.spin) })}</p>
-      {(p.reads.length > 0 || p.posts.length > 0) && <ul className="lrow__reads">
+      {why && <p className="rrow__why">{why}</p>}
+      <p className="rrow__spin">{t('results.spin', { o: outWord(t.lang, p.spin) })}</p>
+      {(p.reads.length > 0 || p.posts.length > 0) && <ul className="rrow__reads">
         {p.reads.map((x, j) => <li key={j} className={x.right ? 'ok' : 'no'}><span>{t('src.' + x.src)} · {t('common.day', { n: x.day })}</span><span>{saysWord(t.lang, x.src, x.r, c)}</span><Icon n={x.right ? 'check' : 'x'} size={16} /></li>)}
         {p.posts.map((x, j) => <li key={'p' + j} className={x.right ? 'ok' : 'no'}><span>{t('rival.' + x.id)} · {t('common.day', { n: x.day })}</span><span>{outWord(t.lang, x.claim)}</span><Icon n={x.right ? 'check' : 'x'} size={16} /></li>)}
       </ul>}
     </div>}
   </div>;
 }
-const Line = ({ l, v, hot }: { l: string; v: number; hot?: boolean }) => <div className="lrow__line"><span>{l}</span><b className={v < 0 ? 'neg' : hot ? 'hot' : ''}>{num(v, true)}</b></div>;
+const Line = ({ l, v, hot }: { l: string; v: number; hot?: boolean }) => <div className="rrow__line"><span>{l}</span><b className={v < 0 ? 'neg' : hot ? 'hot' : ''}>{num(v, true)}</b></div>;
 
 function StoryBlock({ report, beat, style }: { report: CareerReport; beat: Beat | null; style?: React.CSSProperties }) {
   const t = useT();
