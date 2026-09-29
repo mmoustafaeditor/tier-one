@@ -44,7 +44,10 @@ button:disabled { cursor: not-allowed; }
 .row.wrap .btns { flex-basis: 100%; justify-content: flex-start; padding-inline-start: 52px; }
 .p-more { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); }
 .empty-state { display: grid; gap: var(--s-2); justify-items: start; padding: var(--s-4) 0; color: var(--ink-2); }
-.linkrow { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); }
+div.linkrow { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); }
+button.row.linkrow { width: 100%; background: none; border: 0; border-top: 1px solid var(--line); color: inherit; text-align: start; font: inherit; }
+button.row.linkrow:first-child { border-top: 0; }
+.squad-doors { margin-top: var(--s-3); }
 .textpage { margin: 0; padding-inline-start: 20px; display: grid; gap: var(--s-3); }
 .textpage p { color: var(--ink-2); font-size: 14px; margin-top: 2px; }
 .chart-y { position: absolute; inset: 0 auto auto 0; pointer-events: none; }
@@ -449,3 +452,6 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .row .grow > .name, .row .grow > .sub { display: block; }
 .sc-settings .seg { flex-wrap: wrap; border-radius: 18px; }
 .sc-settings .seg button { flex: 1 1 auto; }
+.sc-today .fixture .acts { grid-template-columns: 1fr 1fr; }
+.sc-today .fixture .acts .btn { white-space: normal; text-align: center; line-height: 1.15; padding-inline: var(--s-3); min-width: 0; }
+.sc-today .tbl tr.opp .cl::after, html[lang="ar"] .sc-today .tbl tr.opp .cl::after { content: none; }

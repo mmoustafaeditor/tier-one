@@ -73,7 +73,7 @@ export const X_FR: XStrings = {
   today: {
     eyebrow: (md: string, opp: string, days: string) => `${md} · ${opp} ${days}`,
     inDays: (n: number) => (n <= 0 ? 'aujourd’hui' : n === 1 ? 'demain' : `dans ${n} jours`),
-    head: (n: number, day: string) => (n === 0 ? ['Rien sur ton bureau.', ` Seul ${day} compte.`, ''] : [`${WORDS[Math.min(5, n)]} `, P(n, 't’attend', 't’attendent'), ` avant ${day}.`]) as [string, string, string],
+    head: (n: number, day0: string) => { const day = day0.replace(/\.$/, ''); return (n === 0 ? ['Rien sur ton bureau.', ` Seul ${day} compte.`, ''] : [`${WORDS[Math.min(5, n)]} `, P(n, 't’attend', 't’attendent'), ` avant ${day}.`]) as [string, string, string]; },
     headCup: (n: number) => (n === 0 ? ['Soir de coupe.', ' Rien d’autre ne t’attend.', ''] : [`${WORDS[Math.min(5, n)]} `, P(n, 't’attend', 't’attendent'), ' avant la coupe.']) as [string, string, string],
     seasonDone: ['La saison est finie.', ' Voyons comment elle se termine.', ''],
     sacked: ['La direction t’a remercié.', ' Le téléphone sonne encore.', ''],
