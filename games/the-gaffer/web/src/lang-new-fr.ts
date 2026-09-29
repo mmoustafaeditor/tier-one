@@ -239,7 +239,7 @@ export const NEW_FR: NewStrings = {
   supporterBadge: 'Supporter',
   supportThanks: 'Merci de soutenir The Gaffer. Tout est débloqué.',
   looksT: 'Style',
-  looks: ['Violet', 'Projecteurs', 'Pelouse', 'Rouge derby'],
+  looks: ['Sarcelle', 'Projecteurs', 'Pelouse', 'Rouge derby'],
   looksLocked: 'Pack Supporter',
   rewardedBtn: 'Regarder une courte pub : rapport gratuit',
   rewardedHint: 'Facultatif. Vous pouvez toujours payer le rapport avec l’argent du club.',

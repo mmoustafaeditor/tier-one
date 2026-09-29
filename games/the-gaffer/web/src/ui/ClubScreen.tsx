@@ -8,9 +8,10 @@ import {
   FACILITIES, SLOTS, STAFF_ROLES, attendance, capacityOf, donate, endSponsor, extendSponsor, haggleSponsor, hireStaff, monthly, moveWageCap,
   payBonus, refPrice, signSponsor, staffWages, upgradeCost, upgradeFacility, upkeep,
 } from '../sim/economy';
-import { AppBar, Stepper } from './parts';
+import { AppBar, Ic, Stepper } from './parts';
 import { dealRoll } from '../sim/transfers';
 import { dedupeOffers } from '../data/sponsors';
+import { ICONS } from './icons';
 
 type Done = (w: World, c: Career, msg?: string) => void;
 
@@ -53,7 +54,7 @@ export function ClubScreen({ world, career, lang, t, onBack, onChange, tab0 = 0 
         {t.finTabs.map((l, i) => <button key={l} className={tab === i ? 'on' : ''} onClick={() => { setTab(i); setMsg(''); }}>{l}</button>)}
       </div>
       {msg && <p className="g-ok" role="status">{msg}</p>}
-      {club.budget < 0 && <div className="banner warn" style={{ marginBottom: 'var(--s3)' }}><span className="bic">⚠️</span><div><b>{t.inTheRed}</b></div></div>}
+      {club.budget < 0 && <div className="banner warn" style={{ marginBottom: 'var(--s3)' }}><span className="bic"><Ic svg={ICONS.alert} /></span><div><b>{t.inTheRed}</b></div></div>}
 
       {tab === 0 && (
         <>

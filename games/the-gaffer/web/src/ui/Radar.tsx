@@ -4,6 +4,9 @@ import type { LiveMatch } from '../sim/match';
 import { playerOf, type World } from '../sim/world';
 import { awayKit } from './Pitch2D';
 
+// Very light shirts (white away kits) get a dark outline so they still read on the light card.
+const light = (hex: string) => { const n = parseInt(hex.replace('#', '').slice(0, 6), 16); return ((n >> 16) & 255) * 0.299 + ((n >> 8) & 255) * 0.587 + (n & 255) * 0.114 > 190; };
+
 const AXES = [0, 1, 2, 3, 4, 5]; // pace, shooting, passing, dribbling, defending, physical
 
 export function profileOf(w: World, m: LiveMatch, side: 0 | 1): number[] {
@@ -25,11 +28,11 @@ export function Radar({ world, m, t, lang = 'en' }: { world: World; m: LiveMatch
   return (
     <figure className="g-radar" aria-label={t.radarT}>
       <svg viewBox="0 0 120 106" role="img">
-        {[50, 70, 90].map((v) => <polygon key={v} points={ring(v)} fill="none" stroke="var(--line)" strokeWidth=".5" />)}
-        {AXES.map((a) => { const [x, y] = pt(a, 99); return <line key={a} x1={cx} y1={cy} x2={x} y2={y} stroke="var(--line)" strokeWidth=".5" />; })}
+        {[50, 70, 90].map((v, i) => <polygon key={v} points={ring(v)} fill={i === 2 ? 'rgba(31,163,122,.06)' : 'none'} stroke="var(--line2)" strokeWidth=".45" />)}
+        {AXES.map((a) => { const [x, y] = pt(a, 99); return <line key={a} x1={cx} y1={cy} x2={x} y2={y} stroke="var(--line2)" strokeWidth=".45" />; })}
         {vals.map((v, i) => (
           <polygon key={i} points={AXES.map((a) => pt(a, v[a]).map((n) => n.toFixed(1)).join(',')).join(' ')}
-            fill={colors[i]} fillOpacity=".28" stroke={colors[i]} strokeWidth="1.2" />
+            fill={colors[i]} fillOpacity=".3" stroke={light(colors[i]) ? '#35524D' : colors[i]} strokeWidth="1.1" strokeLinejoin="round" />
         ))}
         {AXES.map((a) => {
           const [x, y] = pt(a, 112);
@@ -38,7 +41,7 @@ export function Radar({ world, m, t, lang = 'en' }: { world: World; m: LiveMatch
       </svg>
       <figcaption className="g-radar-key">
         {m.sides.map((s, i) => (
-          <span key={i}><i style={{ background: colors[i] }} />{world.clubs.find((x) => x.id === s.clubId)!.name[lang]}</span>
+          <span key={i}><i style={{ background: colors[i], boxShadow: light(colors[i]) ? 'inset 0 0 0 1.5px #35524D' : undefined }} />{world.clubs.find((x) => x.id === s.clubId)!.name[lang]}</span>
         ))}
       </figcaption>
     </figure>

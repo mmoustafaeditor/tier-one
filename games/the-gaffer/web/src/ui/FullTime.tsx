@@ -3,7 +3,8 @@ import type { Lang, Strings } from '../i18n';
 import type { World } from '../sim/world';
 import type { Aftermath } from '../sim/aftermath';
 import { Kit } from '../components/Kit';
-import { Sheet } from './parts';
+import { Ic, Sheet } from './parts';
+import { ICONS } from './icons';
 
 const delta = (a: number, b: number) => { const d = Math.round(b - a); return d > 0 ? `+${d}` : d < 0 ? `−${Math.abs(d)}` : '±0'; };
 
@@ -18,7 +19,7 @@ export function FullTime({ a, world, lang, t, onClose }: { a: Aftermath; world: 
       </div>
       <div className="list" style={{ margin: 'var(--s4) 0' }}>
         {a.motm && (
-          <div className="cell g-row"><span className="cmain"><span>{t.motm}</span><b>⭐ {a.motm.pn[lang]}</b></span><span className="g-rating num">{a.motm.rating.toFixed(1)}</span></div>
+          <div className="cell g-row"><span className="cmain"><span>{t.motm}</span><b><Ic svg={ICONS.star} /> {a.motm.pn[lang]}</b></span><span className="g-rating num">{a.motm.rating.toFixed(1)}</span></div>
         )}
         {a.pos && a.pos[1] > 0 && (
           <div className="cell g-row"><span className="cmain"><span>{t.ftPos}</span><b className="num">{a.pos[0] ? `${t.ordinal(a.pos[0])} → ` : ''}{t.ordinal(a.pos[1])}</b></span>
@@ -29,7 +30,7 @@ export function FullTime({ a, world, lang, t, onClose }: { a: Aftermath; world: 
         {a.dev > 0 && <div className="cell g-row"><span className="cmain"><span>{t.ftDev}</span></span><b className="num g-ok">+{a.dev}</b></div>}
         {a.out.map((o, i) => <div key={i} className="cell g-row"><span className="cmain"><b className="g-bad">{o.ban ? t.ftBan(o.pn[lang]) : t.ftOut(o.pn[lang], o.n)}</b></span></div>)}
         {a.records.map((r) => <div key={r} className="cell g-row"><span className="cmain"><span>{t.ftRecord}</span><b>{t.recordNames[r]}</b></span></div>)}
-        {a.milestones.map((m) => <div key={m} className="cell g-row"><span className="cmain"><span>{t.ftMilestone}</span><b>🏅 {t.msNames[m] ?? m}</b></span></div>)}
+        {a.milestones.map((m) => <div key={m} className="cell g-row"><span className="cmain"><span>{t.ftMilestone}</span><b><Ic svg={ICONS.medal} /> {t.msNames[m] ?? m}</b></span></div>)}
       </div>
       <button className="btn primary" style={{ width: '100%' }} onClick={onClose}>{t.ftContinue}</button>
     </Sheet>

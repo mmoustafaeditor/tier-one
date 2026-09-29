@@ -9,7 +9,8 @@ import { DEFAULT_TACTICS, FORMATIONS, FORMATION_IDS, PHILOSOPHIES, available, fm
 import { predict } from '../sim/match';
 import { formationNeeds, hasLicence } from '../sim/coach';
 import { userMatch } from '../sim/season';
-import { AppBar, Sheet } from './parts';
+import { AppBar, Ic, Sheet } from './parts';
+import { ICONS } from './icons';
 
 type Seg = readonly [string, readonly string[], number, (v: number) => void];
 
@@ -88,7 +89,7 @@ export function Tactics({ world, career, lang, t, onBack, onSave }: {
               return (
                 <button key={f} className={`chip g-toggle${tac.formation === f ? ' on' : ''}${locked ? ' g-locked' : ''}`}
                   onClick={() => (locked ? setLockMsg(t.lockedBy(formationNeeds(f))) : (setLockMsg(''), setTac({ ...tac, formation: f, xi: null })))}>
-                  {locked ? '🔒 ' : ''}{fmt(f)}
+                  {locked ? <Ic svg={ICONS.lock} /> : null}{fmt(f)}
                 </button>
               );
             })}

@@ -7,8 +7,9 @@ import {
   COURSES, LICENCE_CAP, LICENCE_NEEDS, MILESTONES, canTakeExam, examQuestions, levelOf, nextLicence, takeCourse, takeExam, xpForLevel,
 } from '../sim/coach';
 import { Kit } from '../components/Kit';
-import { AppBar, Sheet, Stat } from './parts';
+import { AppBar, Icon, Sheet, Stat } from './parts';
 import { CoachCard } from './CoachCard';
+import { ICONS } from './icons';
 
 export function CoachScreen({ world, career, lang, t, onBack, onChange, onJob, onToast, ui }: {
   world: World; career: Career; lang: Lang; t: Strings; onBack: () => void; onChange: (c: Career, msg?: string) => void; onJob: (clubId: string) => void;
@@ -69,7 +70,7 @@ export function CoachScreen({ world, career, lang, t, onBack, onChange, onJob, o
         <div className="list">
           {[...k.trophies].reverse().map((tr, i) => (
             <div key={i} className="cell g-row">
-              <span className="g-shirt">🏆</span>
+              <span className="g-shirt"><Icon svg={ICONS.trophy} /></span>
               <span className="cmain"><b>{tr.kind === 'league' || tr.kind === 'promotion' ? world.leagues.find((l) => l.id === tr.id)?.name[lang] : career.cups[tr.id]?.name[lang] ?? tr.id}</b>
                 <span>{t.trophyKind[tr.kind]} · {clubName(tr.clubId)} · {t.season(tr.season)}</span></span>
             </div>

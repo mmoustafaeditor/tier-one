@@ -69,7 +69,7 @@ export function Market({ world, career, lang, t, onBack, onPick, embedded = fals
           </div>
         </>
       )}
-      <input className="g-input" style={{ width: '100%', marginTop: 'var(--s4)' }} placeholder="🔍" aria-label={t.findPlayers} value={q} onChange={(e) => setQ(e.target.value)} />
+      <input className="g-input g-search" style={{ width: '100%', marginTop: 'var(--s4)' }} placeholder={t.findPlayers} aria-label={t.findPlayers} value={q} onChange={(e) => setQ(e.target.value)} />
       <div className="seg" style={{ margin: 'var(--s3) 0' }}>
         {[t.all, ...t.groups].map((g, i) => (
           <button key={g} className={group === i - 1 ? 'on' : ''} onClick={() => setGroup(i - 1)}>{g}</button>

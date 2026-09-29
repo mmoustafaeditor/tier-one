@@ -5,7 +5,8 @@ import type { Career, RecordEntry, Records } from '../model/types';
 import { money, type World } from '../sim/world';
 import { avgRating } from '../sim/ratings';
 import { Kit } from '../components/Kit';
-import { AppBar } from './parts';
+import { AppBar, Icon } from './parts';
+import { ICONS } from './icons';
 
 const ORDER: (keyof Records)[] = ['bestFinish', 'mostPoints', 'mostGoals', 'bigWin', 'unbeaten', 'scorer', 'bestBuy', 'bestSale'];
 
@@ -71,7 +72,7 @@ export function History({ world, career, lang, t, onBack }: { world: World; care
               : career.cups[tr.id]?.name[lang] ?? t.trophyKinds[tr.kind];
             return (
               <div key={i} className="card g-trophy">
-                <span className="g-trophy-ico" aria-hidden="true">{tr.kind === 'promotion' ? '▲' : '🏆'}</span>
+                <span className="g-trophy-ico" aria-hidden="true">{tr.kind === 'promotion' ? '▲' : <Icon svg={ICONS.trophy} />}</span>
                 <b>{name}</b>
                 <small className="muted">{t.trophyKinds[tr.kind]} · {t.season(tr.season)}{c ? ` · ${c.name[lang]}` : ''}</small>
               </div>
