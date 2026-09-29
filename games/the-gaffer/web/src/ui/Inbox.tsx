@@ -13,7 +13,7 @@ export function msgText(t: Strings, lang: Lang, w: World, c: Career, m: Msg): [s
   let s = m.s ?? '';
   if (m.key === 'milestone') s = t.msNames[s] ?? s;
   if (m.key === 'course') s = t.courseNames[s] ?? s;
-  if (m.key.startsWith('cup')) s = c.cups[s]?.name[lang] ?? s;
+  if (m.kind === 'cup') s = c.cups[s]?.name[lang] ?? s;
   const f = t.msg[m.key];
   const [a, b] = f ? f({ club, player, n: m.n ?? 0, s }) : [m.key, ''];
   return [a, b];

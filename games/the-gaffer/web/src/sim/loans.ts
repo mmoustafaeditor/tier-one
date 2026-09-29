@@ -75,7 +75,7 @@ export function canLoanOut(w: World, c: Career, p: Player): LoanCheck {
   if (p.clubId !== c.clubId) return { ok: false, reason: 'free' };
   if (loanOf(c, p.id)) return { ok: false, reason: 'loaned' };
   if (loansOut(c).length >= LOANS_MAX) return { ok: false, reason: 'limit' };
-  if (squadOf(w, c.clubId).length <= 18) return { ok: false, reason: 'squad' };
+  if (squadOf(w, c.clubId).length <= SQUAD_SELL_MIN + 2) return { ok: false, reason: 'squad' };
   return { ok: true };
 }
 

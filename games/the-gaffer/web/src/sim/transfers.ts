@@ -48,7 +48,7 @@ export function wageDemand(w: World, p: Player, toClubId: string, role: Role, m 
 }
 
 export const wageBillOf = (w: World, clubId: string) => squadOf(w, clubId).reduce((s, p) => s + p.wage, 0);
-const strengthOfClub = (w: World, clubId: string) => {
+const strengthOf = (w: World, clubId: string) => {
   const best = squadOf(w, clubId).map((p) => p.rating).sort((a, b) => b - a).slice(0, 11);
   return best.reduce((s, x) => s + x, 0) / Math.max(1, best.length);
 };
@@ -73,7 +73,7 @@ export function judgeBid(w: World, c: Career, p: Player, bid: Bid): BidAnswer {
   // The seller keeps a playable squad: a club sold down to ten players can't field a side (audit S1).
   if (p.clubId !== FREE_AGENT && squadOf(w, p.clubId).length <= SQUAD_SELL_MIN) return { ok: false, reason: 'sellerThin' };
   // Stars won't drop far below their level: say so first, whatever the money.
-  if (p.rating > strengthOfClub(w, c.clubId) + 9) return { ok: false, reason: 'ambition' };
+  if (p.rating > strengthOf(w, c.clubId) + 9) return { ok: false, reason: 'ambition' };
   if (bid.fee > club.budget) return { ok: false, reason: 'budget' };
   if (wageBillOf(w, c.clubId) + bid.wage > club.wageCap) return { ok: false, reason: 'wageCap' };
   const ask = askingPrice(w, p, balanceOf(c).prices);
