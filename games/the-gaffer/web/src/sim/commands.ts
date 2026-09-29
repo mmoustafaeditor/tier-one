@@ -11,7 +11,9 @@ import { emit, stamp } from './events';
 import { buy, acceptOffer, rejectOffer, counterOffer, dealRoll, tryRenew, setListed, type Bid } from './transfers';
 import { loanIn, loanOut } from './loans';
 import { hireStaff, signSponsor, haggleSponsor, extendSponsor, endSponsor, upgradeFacility, moveWageCap, payBonus } from './economy';
-import { treat, promote, releaseProspect, scoutProspects, sellRights, type Treatment } from './training';
+import { treat } from './training';
+import { congested, loanKid, promoteKid, recallLoan, releaseKid, rushBack, setPlan, wordFor, type Treat, type YouthNo } from './youth';
+import type { Position } from '../model/types';
 import { takeCourse, moveTo } from './coach';
 import { toggleShortlist } from './estimate';
 import { makeReport } from './scouting';
@@ -46,12 +48,15 @@ export type Command =
   | { type: 'wagecap.move'; perMonth: number }
   | { type: 'squad.bonus'; ids: string[]; each: number; fromWallet: boolean }
   | { type: 'squad.talk' }
-  | { type: 'training.set'; load?: 0 | 1 | 2; focus?: { playerId: string; attr: number | null } }
-  | { type: 'medical.treat'; playerId: string; treatment: Treatment }
+  | { type: 'training.set'; load?: 0 | 1 | 2; focus?: { playerId: string; attr: number | null }; pos?: { playerId: string; pos: Position | null } }
+  | { type: 'medical.treat'; playerId: string; treatment: Treat | 'instant' }
   | { type: 'academy.promote'; id: string }
   | { type: 'academy.release'; id: string }
-  | { type: 'academy.sell'; id: string }
-  | { type: 'academy.scout' }
+  | { type: 'academy.loan'; id: string; to: string }
+  | { type: 'academy.sell'; id: string }   // retired in v2.6 (Intake Day replaced rights-selling): refused
+  | { type: 'academy.scout' }              // retired in v2.6: refused
+  | { type: 'pathway.recall'; playerId: string }
+  | { type: 'pathway.word'; playerId: string }
   | { type: 'report.make' }
   | { type: 'coach.course'; id: string }
   | { type: 'job.accept'; clubId: string }
@@ -77,6 +82,8 @@ export type Result = Done | Refusal;
 const no = (reason: string, counter?: number): Refusal => ({ ok: false, reason, counter });
 const clubOf = (w: World, c: Career) => w.clubs.find((x) => x.id === c.clubId);
 const sponsorById = (c: Career, id: string): SponsorDeal | undefined => c.ops.sponsors.find((d) => d.id === id) ?? c.ops.sponsorOffers.find((d) => d.id === id);
+
+const youth = (r: { world: World; career: Career } | YouthNo, note?: Done['note']) => (typeof r === 'string' ? no(r) : { ...r, note });
 
 // The rules for each command. Returns the next state (no events yet) or a refusal.
 function run(w: World, c: Career, cmd: Command): { world: World; career: Career; note?: Done['note'] } | Refusal {
@@ -226,39 +233,44 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
       return { world: { ...w, players }, career: c };
     }
     case 'training.set': {
-      let ops = c.ops;
-      if (cmd.load !== undefined) ops = { ...ops, training: { ...ops.training, load: cmd.load } };
-      if (cmd.focus) {
-        const p = playerOf(w, cmd.focus.playerId);
-        if (!p || p.clubId !== c.clubId) return no('gone');
-        const focus = { ...ops.training.focus };
-        if (cmd.focus.attr === null) delete focus[p.id]; else focus[p.id] = cmd.focus.attr;
-        ops = { ...ops, training: { ...ops.training, focus } };
+      // v2.6 (sim/youth.ts): Heavy is refused in a congested week; at most five individual plans.
+      let career = c;
+      if (cmd.load !== undefined) {
+        if (![0, 1, 2].includes(cmd.load)) return no('load');
+        if (cmd.load === 2 && congested(c)) return no('congested');
+        career = { ...career, ops: { ...career.ops, training: { ...career.ops.training, load: cmd.load } } };
       }
-      return { world: w, career: { ...c, ops } };
+      for (const plan of [cmd.focus && { id: cmd.focus.playerId, attr: cmd.focus.attr }, cmd.pos && { id: cmd.pos.playerId, pos: cmd.pos.pos }]) {
+        if (!plan) continue;
+        const p = playerOf(w, plan.id);
+        if (!p || p.clubId !== c.clubId) return no('gone');
+        if ('pos' in plan && plan.pos && (plan.pos === p.position || plan.pos === 'GK' || p.position === 'GK')) return no('pos');
+        const r = setPlan(career, p.id, 'pos' in plan ? { pos: plan.pos } : { attr: plan.attr });
+        if (typeof r === 'string') return no(r);
+        career = r;
+      }
+      return { world: w, career };
     }
     case 'medical.treat': {
       const p = playerOf(w, cmd.playerId);
       if (!p || p.clubId !== c.clubId) return no('gone');
+      if (cmd.treatment === 'instant') return no('retired');
+      if (cmd.treatment === 'rush') {
+        const r = rushBack(c, p);
+        if (typeof r === 'string') return no(r);
+        return { world: { ...w, players: w.players.map((x) => (x.id === p.id ? r.player : x)) }, career: c, note: { key: 'rushed', s: p.id } };
+      }
       const r = treat(w, c, p, cmd.treatment);
       return r.ok ? { world: r.world, career: r.career } : no('budget');
     }
-    case 'academy.promote': {
-      const r = promote(w, c, cmd.id);
-      return r.ok ? { world: r.world, career: r.career } : no('squadFull');
-    }
-    case 'academy.release':
-      if (!c.ops.academy.some((k) => k.id === cmd.id)) return no('gone');
-      return { world: w, career: releaseProspect(c, cmd.id) };
-    case 'academy.sell': {
-      if (!c.ops.academy.some((k) => k.id === cmd.id)) return no('gone');
-      const r = sellRights(w, c, cmd.id);
-      return { world: r.world, career: r.career, note: { key: 'rightsSold', n: r.fee } };
-    }
-    case 'academy.scout': {
-      const r = scoutProspects(w, c);
-      return r.ok ? { world: r.world, career: r.career, note: { key: 'scoutFound', n: r.found } } : no('budget');
-    }
+    case 'academy.promote': return youth(promoteKid(w, c, cmd.id), { key: 'promoted', s: cmd.id });
+    case 'academy.release': return youth(releaseKid(w, c, cmd.id));
+    case 'academy.loan': return youth(loanKid(w, c, cmd.id, cmd.to), { key: 'loanedOut', s: cmd.id });
+    case 'academy.sell':
+    case 'academy.scout':
+      return no('retired');
+    case 'pathway.recall': return youth(recallLoan(w, c, cmd.playerId));
+    case 'pathway.word': return youth(wordFor(w, c, cmd.playerId));
     case 'report.make': {
       // The analyst's report on the next opponent: his job, paid by his wages (no extra fee since v2.2).
       const m = nextUserMatch(w, c);
@@ -336,7 +348,8 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
 const DEPT_OF: Partial<Record<CommandType, Dept>> = {
   'tactics.set': 'matchprep', 'tactics.preset': 'matchprep', 'tactics.patch': 'matchprep', 'planB.set': 'matchprep', 'rest.set': 'matchprep', 'talk.set': 'matchprep', 'report.make': 'opposition',
   'prep.set': 'fitness', 'training.set': 'fitness', 'medical.treat': 'fitness', 'squad.talk': 'development', 'academy.promote': 'development',
-  'academy.release': 'development', 'academy.sell': 'development', 'academy.scout': 'development', 'transfer.bid': 'recruitment',
+  'academy.release': 'development', 'academy.sell': 'development', 'academy.scout': 'development', 'academy.loan': 'development',
+  'pathway.recall': 'development', 'pathway.word': 'development', 'transfer.bid': 'recruitment',
   'loan.in': 'recruitment', 'loan.out': 'recruitment', 'shortlist.toggle': 'recruitment', 'offer.accept': 'contracts', 'offer.reject': 'contracts',
   'offer.counter': 'contracts', 'contract.renew': 'contracts', 'player.list': 'contracts', 'sponsor.sign': 'commercial', 'sponsor.haggle': 'commercial',
   'sponsor.extend': 'commercial', 'sponsor.end': 'commercial', 'ticket.set': 'commercial',
@@ -349,12 +362,13 @@ const QUIET = new Set<CommandType>(['match.save', 'inbox.read', 'talk.set']);
 // `by`: who issued it — the manager ('me') or a member of staff (their role), for the log and the Why.
 export function dispatch(w: World, c: Career, cmd: Command, by = 'me', cause?: string): Result {
   const r = run(w, c, cmd);
+  if (!r) return no('unknown'); // a command this build doesn't know (an old staff proposal): nothing happens
   if ('ok' in r && r.ok === false) return r;
   const next = r as { world: World; career: Career; note?: Done['note'] };
   if (QUIET.has(cmd.type)) return { ok: true, world: next.world, career: next.career, events: [], note: next.note };
   const data: Record<string, string | number | boolean | null> = { by };
   const refs: { p?: string[]; c?: string[] } = {};
-  const pid = (cmd as { playerId?: string }).playerId;
+  const pid = (cmd as { playerId?: string }).playerId ?? (cmd.type.startsWith('academy.') ? (cmd as { id?: string }).id : undefined);
   if (pid) refs.p = [pid];
   const club = (cmd as { clubId?: string }).clubId;
   if (club) refs.c = [club];

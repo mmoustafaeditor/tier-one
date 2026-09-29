@@ -15,12 +15,15 @@ import { loanOf } from './loans';
 import { isDeadlineDay, windowOf } from './windows';
 import { GROUP_OF } from './groups';
 import { roundFee } from './season';
+import { youthDecisions } from './youthDecisions';
 
-export type DecKind = 'welcome' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline';
+export type DecKind = 'welcome' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline'
+  | 'risk' | 'rush' | 'intake' | 'ready' | 'loanee' | 'benched' | 'full' | 'ageout'; // v2.6 (sim/youthDecisions.ts)
 export type FxTone = 'good' | 'warn' | 'bad' | 'plain';
 export interface Fx { tone: FxTone; icon: string; key: string; n?: number; s?: string }
 export interface Choice { id: string; key: string; pn?: LocalizedName; n?: number; s?: string; cmds: Command[]; pick?: boolean; fx: Fx[]; open?: Open }
-export type Open = { to: 'player'; id: string } | { to: 'transfers' } | { to: 'tactics' } | { to: 'office' } | { to: 'career' } | { to: 'squad' } | { to: 'staff' };
+export type Open = { to: 'player'; id: string } | { to: 'transfers' } | { to: 'tactics' } | { to: 'office' } | { to: 'career' } | { to: 'squad' } | { to: 'staff' }
+  | { to: 'train' } | { to: 'medical' } | { to: 'academy' };
 export interface Ref { key: string; pn?: LocalizedName; n?: number; s?: string; club?: string; p?: string }
 export interface Decision {
   id: string; kind: DecKind; dept: Dept | null; role: StaffRole | null; icon: string;
@@ -198,6 +201,9 @@ export function decisions(w: World, c: Career): Decision[] {
       });
     }
   }
+
+  // 9. Training & pathway (v2.6): medical risk, rush-back, Intake Day, prospects, loanees, the academy.
+  for (const d of youthDecisions(w, c)) add(d);
 
   return out.sort((a, z) => z.score - a.score);
 }

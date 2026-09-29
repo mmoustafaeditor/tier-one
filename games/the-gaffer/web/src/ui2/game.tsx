@@ -11,7 +11,8 @@ import { cupOfDay, type LiveMatch } from './util';
 export type Route =
   | { s: 'today' } | { s: 'squad'; lens?: string } | { s: 'player'; id: string } | { s: 'match'; tab?: number } | { s: 'pre' } | { s: 'live' } | { s: 'ft' }
   | { s: 'digest' } | { s: 'transfers'; tab?: number } | { s: 'club'; tab?: number } | { s: 'career' } | { s: 'pass' } | { s: 'settings' }
-  | { s: 'news' } | { s: 'train' } | { s: 'world' } | { s: 'quick' };
+  | { s: 'news' } | { s: 'train' } | { s: 'world' } | { s: 'quick' }
+  | { s: 'medical' } | { s: 'academy'; focus?: string }; // v2.6
 
 export interface Game {
   w: World; c: Career; t: Strings; x: XStrings; lang: Lang; ui: UiLang; rtl: boolean;

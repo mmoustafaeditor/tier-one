@@ -7,6 +7,7 @@ import type { Career, Club, League } from '../model/types';
 import { COUNTRIES } from '../data/leagues';
 import { generateRealWorld } from '../sim/seed';
 import { newCareer } from '../sim/season';
+import { seedAcademies } from '../sim/youth';
 import { FIRST_SEASON, clubsOf, money, objectiveOf, squadOf, strengthOf, type World } from '../sim/world';
 import { Crest, I, Portrait } from './kit';
 import { Panel } from './shell';
@@ -34,7 +35,7 @@ export function NewCareer({ t, x, ui, slot, onBack, onStart }: { t: Strings; x: 
     if (!club || !ageOk) return;
     const lg = world.leagues.find((l) => l.id === club.leagueId)!;
     const c = newCareer(world, seed, club.id, name.trim() || P.nameDefault, { age: +age, nationality: nation || lg.country }, FIRST_SEASON);
-    onStart(world, c);
+    onStart(seedAcademies(world, c), c); // v2.6: every club starts with a lived-in academy
   };
   const clubCard = (c: Club) => {
     const best = [...squadOf(world, c.id)].sort((a, b) => b.rating - a.rating).slice(0, 2);
