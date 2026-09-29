@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Recruitment · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .r-head { display: grid; gap: var(--s-3); padding: var(--s-2) 0 var(--s-4); }
+  .r-head .h-hero { color: var(--on-ground); }
+  .money { display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: var(--s-5); }
+  .money .kpi .v { color: var(--on-ground); font-size: 22px; } .money .kpi .l { color: var(--on-ground-3); }
+
+  .need { display: grid; gap: var(--s-3); }
+  .need .why { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+
+  .target { display: grid; gap: var(--s-4); }
+  .t-top { display: grid; grid-template-columns: 60px 1fr auto; gap: var(--s-3); align-items: center; }
+  .t-top .portrait { width: 60px; }
+  .t-top h3 { font: 700 17px/1.2 var(--f-text); margin: 0; }
+  .t-top .sub { font-size: 12.5px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; margin-top: 3px; white-space: nowrap; }
+  .t-top .sub .crest { width: 16px; height: 16px; }
+  .known { display: grid; justify-items: end; gap: 4px; font: 700 11px/1 var(--f-text); color: var(--ink-3); }
+  .known .ring { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--dv-us) calc(var(--p) * 1%), var(--surface-3) 0); }
+  .known .ring b { width: 30px; height: 30px; border-radius: 50%; background: var(--surface-solid); display: grid; place-items: center; font: 800 12px/1 var(--f-display); color: var(--ink); }
+  .fogs { display: grid; gap: 10px; }
+  .fogrow { display: grid; grid-template-columns: 76px 1fr 64px; align-items: center; gap: var(--s-3); font-size: 13px; }
+  .fogrow .v { text-align: end; font: 800 14px/1 var(--f-display); font-feature-settings: "tnum" 1; white-space: nowrap; }
+  .fogrow .l { color: var(--ink-2); font-weight: 600; }
+  .fog { height: 16px; }
+  .fog .tick { position: absolute; inset-block: -3px; width: 2px; background: var(--ink); inset-inline-start: var(--at); border-radius: 1px; }
+  .t-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); }
+  .t-facts .kpi .v { font-size: 17px; }
+  .t-acts { display: flex; gap: var(--s-2); }
+  .t-acts .btn { flex: 1; }
+  .scout-q { font-size: 13.5px; }
+
+  .compare .dumb { display: grid; grid-template-columns: 110px 1fr; align-items: center; gap: var(--s-3); min-height: 40px; }
+  .compare .dumb b { font: 650 13.5px/1.2 var(--f-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .compare .track { position: relative; height: 22px; }
+  .compare .track::before { content: ""; position: absolute; inset-inline: 0; top: 50%; height: 1px; background: var(--line-2); }
+  .compare .rng { position: absolute; top: 5px; height: 12px; border-radius: 6px; inset-inline-start: var(--lo); width: calc(var(--hi) - var(--lo)); background: linear-gradient(90deg, color-mix(in srgb, var(--c) 30%, transparent), var(--c) 50%, color-mix(in srgb, var(--c) 30%, transparent)); }
+  .compare .ref { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--dv-4); inset-inline-start: var(--at); }
+  .axis { display: grid; grid-template-columns: 110px 1fr; gap: var(--s-3); font-size: 11px; color: var(--ink-3); }
+  .axis div { display: flex; justify-content: space-between; }
+
+  .grid { display: grid; gap: var(--s-4); }
+  .grid > * { min-width: 0; }
+  @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } .g-need, .g-cmp { grid-column: 1 / -1; } }
+  @media (min-width: 1100px) {
+    .r-head { grid-template-columns: 1fr auto; align-items: end; }
+    .grid { grid-template-columns: repeat(3, 1fr); }
+    .g-need { grid-column: 1 / 2; } .g-cmp { grid-column: 2 / 4; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" data-active="market"></nav>
+  <main class="main"><div class="page">
+    <header class="topbar on-ground">
+      <div class="club"><span data-crest="AVL" style="width:32px;height:32px"></span><div><b>Transfers</b><small>Window shut · opens 1 Jan · 92 days</small></div></div>
+      <a class="btn btn--ghost on-ground btn--sm" href="negotiation.html" data-i="handshake">Talks · 1</a>
+    </header>
+    <section class="r-head">
+      <h1 class="h-hero">Find a No.&nbsp;9</h1>
+      <div class="money"><div class="kpi"><span class="v num">£48m</span><span class="l">Transfer budget</span></div><div class="kpi"><span class="v num">£95k</span><span class="l">Wage room / wk</span></div><div class="kpi"><span class="v num">3</span><span class="l">On the list</span></div></div>
+    </section>
+
+    <div class="grid">
+      <article class="panel g-need need" style="--i:0">
+        <span class="eyebrow">Why this search exists</span>
+        <h2 class="h2">A striker who presses, for a side that hunts high.</h2>
+        <div class="why"><span class="tag tag--bad" data-i="alert">No cover for Watkins</span><span class="tag" data-i="tactics">Press: Hunt high</span><span class="tag" data-i="clock">Watkins 30</span></div>
+        <div class="advice" style="margin-top:var(--s-2)"><span class="staff" style="background:#8A5A1A">CS</span><div><div class="who">Chief scout</div><q>Samu is the one. Kroupi might be better, but I've only seen him twice. Give me two weeks in Bournemouth before you spend £40m on a guess.</q></div></div>
+      </article>
+
+      <article class="panel g-cmp compare" style="--i:1" aria-label="Ability ranges compared">
+        <div class="panel-h"><div><span class="eyebrow">What we know · ability</span><h2 class="h2" style="margin-top:4px">The wider the bar, the less we know.</h2></div></div>
+        <div class="stack-2">
+          <div class="dumb"><b>Samu Aghehowa</b><div class="track"><span class="rng" style="--lo:47%;--hi:63%;--c:var(--dv-us)"></span><span class="ref" style="--at:57%"></span></div></div>
+          <div class="dumb"><b>Eli Junior Kroupi</b><div class="track"><span class="rng" style="--lo:27%;--hi:67%;--c:var(--dv-us)"></span><span class="ref" style="--at:57%"></span></div></div>
+          <div class="dumb"><b>Tolu Arokodare</b><div class="track"><span class="rng" style="--lo:33%;--hi:40%;--c:var(--dv-us)"></span><span class="ref" style="--at:57%"></span></div></div>
+          <div class="axis"><span></span><div><span>65</span><span>75</span><span>85</span><span>95</span></div></div>
+        </div>
+        <div class="legend" style="margin-top:var(--s-3)"><span><i style="background:var(--dv-4);width:3px;height:12px"></i>Watkins today (82)</span><span><i class="band" style="background:var(--dv-us)"></i>Scouted range</span></div>
+      </article>
+
+      <article class="panel target" style="--i:2">
+        <div class="t-top"><span data-portrait="Samu Aghehowa" data-club="POR" data-num="9"></span><div class="grow"><h3>Samu Aghehowa</h3><div class="sub"><span data-crest="POR"></span>FC Porto · 22 · ST</div></div><div class="known"><span class="ring" style="--p:72"><b>72%</b></span>known</div></div>
+        <div class="fogs">
+          <div class="fogrow"><span class="l">Ability</span><div class="fog"><span class="band" style="--lo:47%;--hi:63%"></span><span class="tick" style="--at:57%"></span></div><span class="v">79–84</span></div>
+          <div class="fogrow"><span class="l">Ceiling</span><div class="fog"><span class="band" style="--lo:67%;--hi:83%"></span></div><span class="v">85–90</span></div>
+          <div class="fogrow"><span class="l">Press fit</span><div class="fog"><span class="band band--known" style="--lo:0%;--hi:88%"></span></div><span class="v">88</span></div>
+        </div>
+        <div class="t-facts"><div class="kpi"><span class="v num">£45–55m</span><span class="l">Likely fee</span></div><div class="kpi"><span class="v num">£90k</span><span class="l">Wants / wk</span></div><div class="kpi"><span class="v" style="font-size:15px;color:var(--good)">Open</span><span class="l">Wants UCL</span></div></div>
+        <div class="t-acts"><a class="btn btn--primary" href="negotiation.html" data-i="handshake">In talks</a><button class="btn btn--ghost" data-i="eye">Report</button></div>
+      </article>
+
+      <article class="panel target" style="--i:3">
+        <div class="t-top"><span data-portrait="Eli Junior Kroupi" data-club="BOU" data-num="22"></span><div class="grow"><h3>Eli Junior Kroupi</h3><div class="sub"><span data-crest="BOU"></span>Bournemouth · 20 · ST</div></div><div class="known"><span class="ring" style="--p:38"><b>38%</b></span>known</div></div>
+        <div class="fogs">
+          <div class="fogrow"><span class="l">Ability</span><div class="fog"><span class="band" style="--lo:27%;--hi:67%"></span><span class="tick" style="--at:57%"></span></div><span class="v">73–85</span></div>
+          <div class="fogrow"><span class="l">Ceiling</span><div class="fog"><span class="band" style="--lo:50%;--hi:97%"></span></div><span class="v">80–94</span></div>
+          <div class="fogrow"><span class="l">Press fit</span><div class="fog"><span class="band" style="--lo:40%;--hi:80%"></span></div><span class="v">?</span></div>
+        </div>
+        <div class="t-facts"><div class="kpi"><span class="v num">£35–50m</span><span class="l">Likely fee</span></div><div class="kpi"><span class="v num">?</span><span class="l">Wants / wk</span></div><div class="kpi"><span class="v" style="font-size:15px;color:var(--ink-3)">Unknown</span><span class="l">Interest</span></div></div>
+        <div class="t-acts"><button class="btn btn--primary" data-i="eye">Scout him · 2 wks</button></div>
+      </article>
+
+      <article class="panel target" style="--i:4">
+        <div class="t-top"><span data-portrait="Tolu Arokodare" data-club="WOL" data-num="14"></span><div class="grow"><h3>Tolu Arokodare</h3><div class="sub"><span data-crest="WOL"></span>Wolves · 25 · ST</div></div><div class="known"><span class="ring" style="--p:91"><b>91%</b></span>known</div></div>
+        <div class="fogs">
+          <div class="fogrow"><span class="l">Ability</span><div class="fog"><span class="band" style="--lo:33%;--hi:40%"></span><span class="tick" style="--at:57%"></span></div><span class="v">75–77</span></div>
+          <div class="fogrow"><span class="l">Ceiling</span><div class="fog"><span class="band" style="--lo:40%;--hi:47%"></span></div><span class="v">77–79</span></div>
+          <div class="fogrow"><span class="l">Press fit</span><div class="fog"><span class="band band--known" style="--lo:0%;--hi:71%"></span></div><span class="v">71</span></div>
+        </div>
+        <div class="t-facts"><div class="kpi"><span class="v num">£22–26m</span><span class="l">Likely fee</span></div><div class="kpi"><span class="v num">£60k</span><span class="l">Wants / wk</span></div><div class="kpi"><span class="v" style="font-size:15px;color:var(--good)">Keen</span><span class="l">Interest</span></div></div>
+        <div class="t-acts"><button class="btn btn--ghost" data-i="handshake">Ask the price</button></div>
+      </article>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+</body>
+</html>

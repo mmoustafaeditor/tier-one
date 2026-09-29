@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Squad · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .s-head { display: grid; gap: var(--s-3); padding: var(--s-2) 0 var(--s-4); }
+  .s-head .h-hero { color: var(--on-ground); }
+  .s-head .facts { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); color: var(--on-ground-2); font-size: var(--t-small); }
+  .s-head .facts b { color: var(--on-ground); font: 800 16px/1 var(--f-display); margin-inline-end: 4px; }
+
+  /* depth chart on a pitch */
+  .depth { position: relative; aspect-ratio: 68 / 88; border-radius: var(--r-md); overflow: hidden;
+    background: repeating-linear-gradient(0deg, var(--pitch-a) 0 12.5%, var(--pitch-b) 12.5% 25%); }
+  .depth svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .pos { position: absolute; translate: -50% -50%; width: 29%; display: grid; gap: 2px; padding: 6px 8px 7px; border-radius: 10px; background: rgba(250,255,253,.94); box-shadow: 0 6px 14px -8px rgba(0,30,26,.6); }
+  .pos .ph { display: flex; justify-content: space-between; align-items: center; font: 800 10.5px/1 var(--f-text); letter-spacing: .08em; color: var(--ink-3); }
+  .pos .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+  .pos.thin .dot { background: var(--warn-mark); } .pos.hole .dot { background: var(--bad); }
+  .pos.hole { box-shadow: 0 0 0 2px var(--bad), 0 6px 14px -8px rgba(0,30,26,.6); }
+  .pos b { font: 700 12.5px/1.15 var(--f-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pos span.alt { font-size: 11px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .depth-key { display: flex; gap: var(--s-4); flex-wrap: wrap; margin-top: var(--s-3); font-size: 12px; color: var(--ink-2); }
+  .depth-key span { display: inline-flex; align-items: center; gap: 6px; } .depth-key i { width: 8px; height: 8px; border-radius: 50%; }
+  .alert { display: flex; gap: var(--s-3); align-items: center; margin-top: var(--s-4); padding: 12px 14px; border-radius: var(--r-md); background: var(--bad-wash); }
+  .alert b { display: block; font: 700 14px/1.25 var(--f-text); } .alert span { font-size: 12.5px; color: var(--ink-2); }
+
+  /* list */
+  .plist { display: grid; }
+  .pl { display: grid; grid-template-columns: 44px 1fr auto; gap: var(--s-3); align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  .pl:first-child { border-top: 0; }
+  .pl .portrait { width: 44px; border-radius: 10px; }
+  .pl .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pl .name { font: 650 15px/1.2 var(--f-text); } .pl .sub { font-size: 12.5px; color: var(--ink-3); }
+  @media (max-width: 480px) { .g { min-width: 30px; } .glance { gap: 4px; } }
+  .glance { display: flex; gap: 6px; align-items: center; }
+  .g { display: grid; justify-items: center; gap: 2px; min-width: 40px; font: 700 12px/1 var(--f-text); color: var(--ink-2); }
+  .g small { font: 600 10px/1 var(--f-text); color: var(--ink-3); letter-spacing: .04em; }
+  .ring { --p: 90; width: 26px; height: 26px; border-radius: 50%; background: conic-gradient(var(--dv-us) calc(var(--p) * 1%), var(--surface-3) 0); display: grid; place-items: center; }
+  .ring::after { content: ""; width: 18px; height: 18px; border-radius: 50%; background: var(--surface-solid); }
+  .ring.warn { background: conic-gradient(var(--warn-mark) calc(var(--p) * 1%), var(--surface-3) 0); }
+  .mood { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: var(--good-wash); color: var(--good); }
+  .mood.meh { background: var(--warn-wash); color: var(--warn); } .mood.bad { background: var(--bad-wash); color: var(--bad); }
+  .mood .i { width: 15px; height: 15px; }
+  .yrs { min-width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-2); font: 800 12px/1 var(--f-display); }
+  .yrs.warn { background: var(--warn-wash); color: var(--warn); }
+  .col-h { display: grid; grid-template-columns: 44px 1fr auto; gap: var(--s-3); padding-bottom: 8px; }
+  .col-h .glance .g { font: 700 10px/1 var(--f-text); color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; }
+
+  .promise { display: grid; gap: 8px; padding: var(--s-3) 0; border-top: 1px solid var(--line); }
+  .promise:first-of-type { border-top: 0; padding-top: 0; }
+  .promise .between b { font: 650 14.5px/1.2 var(--f-text); }
+  .promise p { font-size: 12.5px; color: var(--ink-3); }
+  .prog { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; }
+  .prog i { height: 8px; border-radius: 2px; background: var(--surface-3); }
+  .prog i.y { background: var(--dv-us); } .prog i.n { background: var(--bad); }
+
+  .grid { display: grid; gap: var(--s-4); }
+  .grid > * { min-width: 0; }
+  @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } .g-list { grid-column: 1 / -1; } }
+  @media (min-width: 1100px) {
+    .grid { grid-template-columns: 400px 1fr 340px; align-items: start; }
+    .g-list { grid-column: 2; grid-row: 1 / span 2; } .g-depth { grid-column: 1; grid-row: 1 / span 2; } .g-prom { grid-column: 3; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" data-active="squad"></nav>
+  <main class="main"><div class="page">
+    <header class="topbar on-ground">
+      <div class="club"><span data-crest="AVL" style="width:32px;height:32px"></span><div><b>Aston Villa</b><small>First team · 25 players</small></div></div>
+      <button class="btn btn--ghost on-ground btn--sm" data-i="search">Find</button>
+    </header>
+    <section class="s-head">
+      <h1 class="h-hero">The squad</h1>
+      <div class="facts"><span><b>27.4</b>avg age</span><span><b>£3.1m</b>wages a week</span><span><b>2</b>unhappy</span><span><b>1</b>hole to fill</span></div>
+      <div class="chips chips--scroll on-ground"><button class="chip" aria-pressed="true">Everyone</button><button class="chip">Starters</button><button class="chip">Deals ending</button><button class="chip">Unhappy</button><button class="chip">Injured</button><button class="chip">Academy</button></div>
+    </section>
+
+    <div class="grid">
+      <article class="panel g-depth" style="--i:1">
+        <div class="panel-h"><h2 class="h2">Depth</h2><span class="eyebrow">First choice · cover</span></div>
+        <div class="depth">
+          <svg viewBox="0 0 68 88" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="var(--pitch-line)" stroke-width=".5"><rect x="2" y="2" width="64" height="84"/><line x1="2" y1="44" x2="66" y2="44"/><circle cx="34" cy="44" r="8"/><rect x="15" y="2" width="38" height="14"/><rect x="15" y="72" width="38" height="14"/></g></svg>
+          <div class="pos hole" style="left:50%;top:9%"><span class="ph">ST <i class="dot"></i></span><b>Watkins</b><span class="alt">then nobody fit</span></div>
+          <div class="pos" style="left:17%;top:27%"><span class="ph">LW <i class="dot"></i></span><b>Rogers</b><span class="alt">Guessand</span></div>
+          <div class="pos" style="left:50%;top:30%"><span class="ph">AM <i class="dot"></i></span><b>Buendía</b><span class="alt">Rogers</span></div>
+          <div class="pos thin" style="left:83%;top:27%"><span class="ph">RW <i class="dot"></i></span><b>McGinn</b><span class="alt">Bailey</span></div>
+          <div class="pos" style="left:30%;top:50%"><span class="ph">DM <i class="dot"></i></span><b>Onana</b><span class="alt">Kamara</span></div>
+          <div class="pos" style="left:70%;top:50%"><span class="ph">CM <i class="dot"></i></span><b>Tielemans</b><span class="alt">Bogarde</span></div>
+          <div class="pos thin" style="left:17%;top:70%"><span class="ph">LB <i class="dot"></i></span><b>Maatsen</b><span class="alt">Digne, 33</span></div>
+          <div class="pos" style="left:50%;top:72%"><span class="ph">CB <i class="dot"></i></span><b>Konsa</b><span class="alt">+ Torres</span></div>
+          <div class="pos" style="left:83%;top:70%"><span class="ph">RB <i class="dot"></i></span><b>Cash</b><span class="alt">García</span></div>
+          <div class="pos" style="left:50%;top:91%"><span class="ph">GK <i class="dot"></i></span><b>Martínez</b><span class="alt">Bizot</span></div>
+        </div>
+        <div class="depth-key"><span><i style="background:var(--good)"></i>Covered</span><span><i style="background:var(--warn-mark)"></i>Thin</span><span><i style="background:var(--bad)"></i>One injury from trouble</span></div>
+        <div class="alert"><span data-i="alert" style="color:var(--bad)"></span><div class="grow"><b>No cover for Watkins</b><span>Recruitment has three strikers on the list.</span></div><a class="btn btn--primary btn--sm" href="recruitment.html">Shortlist</a></div>
+      </article>
+
+      <article class="panel g-list" style="--i:2">
+        <div class="col-h"><span></span><span class="eyebrow">Player</span><div class="glance"><span class="g">Fit</span><span class="g">Mood</span><span class="g">Yrs</span></div></div>
+        <div class="plist">
+          <a class="pl" href="player.html"><span data-portrait="Morgan Rogers" data-num="27"></span><div class="grow"><div class="name">Morgan Rogers</div><div class="sub">AM · 24 · 7.4 form</div></div><div class="glance"><span class="g"><span class="ring" style="--p:96"></span></span><span class="g"><span class="mood" data-i="heart"></span></span><span class="g"><span class="yrs">5</span></span></div></a>
+          <div class="pl"><span data-portrait="Ollie Watkins" data-num="11"></span><div class="grow"><div class="name">Ollie Watkins</div><div class="sub">ST · 30 · wants talks</div></div><div class="glance"><span class="g"><span class="ring" style="--p:91"></span></span><span class="g"><span class="mood meh" data-i="chat"></span></span><span class="g"><span class="yrs warn">1½</span></span></div></div>
+          <div class="pl"><span data-portrait="Boubacar Kamara" data-num="44"></span><div class="grow"><div class="name">Boubacar Kamara</div><div class="sub">DM · 26 · hamstring</div></div><div class="glance"><span class="g"><span class="ring warn" style="--p:64"></span></span><span class="g"><span class="mood" data-i="heart"></span></span><span class="g"><span class="yrs">3</span></span></div></div>
+          <div class="pl"><span data-portrait="Leon Bailey" data-num="31"></span><div class="grow"><div class="name">Leon Bailey</div><div class="sub">RW · 29 · 2 of 6 starts</div></div><div class="glance"><span class="g"><span class="ring" style="--p:100"></span></span><span class="g"><span class="mood bad" data-i="alert"></span></span><span class="g"><span class="yrs">2</span></span></div></div>
+          <div class="pl"><span data-portrait="John McGinn" data-num="7"></span><div class="grow"><div class="name">John McGinn</div><div class="sub">CM · 32 · captain</div></div><div class="glance"><span class="g"><span class="ring" style="--p:88"></span></span><span class="g"><span class="mood" data-i="heart"></span></span><span class="g"><span class="yrs warn">1</span></span></div></div>
+          <div class="pl"><span data-portrait="Youri Tielemans" data-num="8"></span><div class="grow"><div class="name">Youri Tielemans</div><div class="sub">CM · 29 · 7.1 form</div></div><div class="glance"><span class="g"><span class="ring" style="--p:93"></span></span><span class="g"><span class="mood" data-i="heart"></span></span><span class="g"><span class="yrs">2</span></span></div></div>
+          <div class="pl"><span data-portrait="Ezri Konsa" data-num="4"></span><div class="grow"><div class="name">Ezri Konsa</div><div class="sub">CB · 29</div></div><div class="glance"><span class="g"><span class="ring" style="--p:90"></span></span><span class="g"><span class="mood" data-i="heart"></span></span><span class="g"><span class="yrs">3</span></span></div></div>
+          <div class="pl"><span data-portrait="Bradley Burrowes" data-num="46"></span><div class="grow"><div class="name">Bradley Burrowes</div><div class="sub">W · 19 · academy</div></div><div class="glance"><span class="g"><span class="ring" style="--p:100"></span></span><span class="g"><span class="mood" data-i="grow"></span></span><span class="g"><span class="yrs">3</span></span></div></div>
+        </div>
+      </article>
+
+      <article class="panel g-prom" style="--i:3">
+        <div class="panel-h"><h2 class="h2">Your word</h2><span class="eyebrow">3 promises</span></div>
+        <div class="promise"><div class="between"><b>Bailey · regular starts</b><span class="tag tag--bad" data-i="alert">Slipping</span></div><div class="prog"><i class="y"></i><i class="n"></i><i class="y"></i><i class="n"></i><i class="n"></i><i class="n"></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p>2 starts from 6. Break this and he asks to leave in January.</p></div>
+        <div class="promise"><div class="between"><b>Burrowes · cup minutes</b><span class="tag tag--good" data-i="check">On track</span></div><div class="prog"><i class="y"></i><i class="y"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p>Played both Carabao ties. The academy noticed.</p></div>
+        <div class="promise"><div class="between"><b>Rogers · Champions League</b><span class="tag tag--good" data-i="check">Kept</span></div><p>Group stage reached. Promise closed.</p></div>
+      </article>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+</body>
+</html>

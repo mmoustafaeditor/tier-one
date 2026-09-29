@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" data-light="flood">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matchday · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .main { padding-bottom: var(--s-8); }
+  /* The tunnel: the one moment before kick-off where we let the screen breathe. */
+  .tunnel { position: relative; overflow: hidden; border-radius: var(--r-lg); aspect-ratio: 4 / 5; background: #010B0A; box-shadow: var(--e2); isolation: isolate; }
+  .tunnel svg.walls { position: absolute; inset: 0; width: 100%; height: 100%; }
+  @media (max-width: 759px) { .tunnel svg.walls { height: 76%; } }
+  .tunnel .mouth { position: absolute; left: 50%; top: 34%; width: 30%; height: 28%; translate: -50% -50%; border-radius: 3px;
+    background: radial-gradient(120% 90% at 50% 30%, #F2FFF9 0%, #B9F3DD 30%, #3FD6B0 70%, #0F6E60 100%); box-shadow: 0 0 80px 30px rgba(170,255,225,.35), 0 0 200px 80px rgba(63,214,176,.18); }
+  .tunnel .mouth::after { content: ""; position: absolute; inset: auto 0 0; height: 36%; background: repeating-linear-gradient(90deg, #2FA284 0 12%, #37B391 12% 24%); }
+  .tunnel .beam { position: absolute; top: -10%; width: 40%; height: 90%; background: linear-gradient(180deg, rgba(220,255,240,.16), transparent 80%); filter: blur(6px); transform-origin: top; mix-blend-mode: screen; }
+  .tunnel .beam.l { left: 12%; rotate: 18deg; } .tunnel .beam.r { right: 12%; rotate: -18deg; }
+  .tunnel .over { position: absolute; inset: auto 0 0; padding: var(--s-5); background: linear-gradient(180deg, transparent, rgba(1,11,10,.92) 45%); display: grid; gap: var(--s-3); }
+  .tunnel .crowd { font: 700 11px/1 var(--f-text); letter-spacing: .14em; text-transform: uppercase; color: var(--mint-300); }
+  .tunnel .h-hero { color: #F2FFFB; }
+  .tunnel .walkers { position: absolute; left: 50%; top: 45%; translate: -50% -50%; display: flex; gap: 6%; width: 40%; justify-content: center; }
+  .tunnel .walkers .portrait { width: 44%; background: none; filter: brightness(.42) saturate(.8) drop-shadow(0 0 10px rgba(170,255,225,.45)); }
+  @keyframes breathe { 50% { box-shadow: 0 0 90px 36px rgba(170,255,225,.42), 0 0 220px 90px rgba(63,214,176,.22); } }
+  .tunnel .mouth { animation: breathe 3.2s ease-in-out infinite; }
+
+  .sheet-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
+  .xi { display: grid; gap: 0; }
+  .xi div { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: center; min-height: 30px; font-size: 13.5px; border-top: 1px solid var(--line); }
+  .xi div:first-child { border-top: 0; }
+  .xi .n { font: 800 12px/1 var(--f-display); color: var(--ink-3); font-feature-settings: "tnum" 1; }
+  .xi .p { font: 700 10.5px/1 var(--f-text); color: var(--ink-3); letter-spacing: .05em; }
+  .xi-h { display: flex; align-items: center; gap: 8px; margin-bottom: var(--s-2); font: 700 14px/1 var(--f-text); }
+  .xi-h .crest { width: 22px; height: 22px; }
+
+  .talk { display: grid; gap: var(--s-2); }
+  .talk button { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--s-3); text-align: start; padding: 12px 14px; border-radius: var(--r-md); border: 1.5px solid var(--line-2); background: var(--surface-2); cursor: pointer; }
+  .talk button b { font: 700 15px/1.2 var(--f-text); } .talk button span { font-size: 12.5px; color: var(--ink-2); grid-column: 1; }
+  .talk button .r { grid-row: 1 / 3; grid-column: 2; align-self: center; display: flex; gap: 3px; }
+  .talk button .r i { width: 6px; height: 18px; border-radius: 2px; background: var(--surface-3); }
+  .talk button .r i.on { background: var(--good); }
+  .talk button[aria-pressed="true"] { border-color: var(--mint-400); background: color-mix(in srgb, var(--mint-400) 10%, transparent); }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); }
+  .facts .kpi .v { font-size: 20px; }
+
+  .go { display: grid; gap: var(--s-2); }
+  .go .btn { min-height: 56px; font-size: 17px; }
+
+  .grid { display: grid; gap: var(--s-4); }
+  .grid > * { min-width: 0; }
+  @media (min-width: 760px) { .tunnel { aspect-ratio: 16 / 8; } .grid { grid-template-columns: 1fr 1fr; } .g-t { grid-column: 1 / -1; } }
+  @media (min-width: 1100px) { .grid { grid-template-columns: 1.4fr 1fr 0.9fr; } .g-t { grid-column: 1 / -1; } .tunnel { aspect-ratio: 16 / 6; } .tunnel .mouth { width: 18%; height: 40%; top: 40%; } .tunnel .walkers { width: 22%; top: 52%; } .tunnel .over { inset: 0 auto 0 0; width: 48%; align-content: end; background: linear-gradient(90deg, rgba(1,11,10,.92) 55%, transparent); } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" data-active="tactics"></nav>
+  <main class="main"><div class="page">
+    <header class="topbar">
+      <div class="club"><a class="icon-btn" href="home.html" aria-label="Back" data-i="back" data-i-cls="i--flip"></a><div><b>Matchday 7 · Premier League</b><small>Sat 3 Oct · 17:30 · dry, 11°C</small></div></div>
+    </header>
+    <div class="grid">
+      <section class="g-t tunnel" aria-label="The tunnel">
+        <svg class="walls" viewBox="0 0 400 440" preserveAspectRatio="none" aria-hidden="true">
+          <defs><linearGradient id="wl" x1="0" x2="1"><stop offset="0" stop-color="#03110F"/><stop offset="1" stop-color="#0B2E28"/></linearGradient><linearGradient id="wr" x1="1" x2="0"><stop offset="0" stop-color="#03110F"/><stop offset="1" stop-color="#0B2E28"/></linearGradient>
+          <linearGradient id="fl" y1="1" y2="0"><stop offset="0" stop-color="#010807"/><stop offset="1" stop-color="#123E36"/></linearGradient></defs>
+          <polygon points="0,0 140,132 140,254 0,440" fill="url(#wl)"/><polygon points="400,0 260,132 260,254 400,440" fill="url(#wr)"/>
+          <polygon points="0,0 400,0 260,132 140,132" fill="#020D0C"/><polygon points="0,440 140,254 260,254 400,440" fill="url(#fl)"/>
+          <g fill="#CFFFF0" opacity=".55"><rect x="190" y="6" width="20" height="6" rx="2"/><rect x="193" y="40" width="14" height="4" rx="1.5"/><rect x="195" y="70" width="10" height="3" rx="1"/><rect x="196.5" y="95" width="7" height="2" rx="1"/><rect x="197.5" y="114" width="5" height="1.5"/></g>
+          <g stroke="#1A4A42" stroke-width="1.5"><line x1="0" y1="440" x2="140" y2="254"/><line x1="400" y1="440" x2="260" y2="254"/></g>
+        </svg>
+        <span class="beam l"></span><span class="beam r"></span>
+        <span class="mouth"></span>
+        <div class="walkers" aria-hidden="true"><span data-portrait="Ollie Watkins" data-num="11" data-bare></span><span data-portrait="Bruno Guimarães" data-club="NEW" data-num="39" data-bare></span></div>
+        <div class="over">
+          <span class="crowd">42,657 · Holte End in full voice</span>
+          <h1 class="h-hero">Villa v Newcastle.</h1>
+          <p style="color:var(--ink-2);max-width:36ch">Win and you go third. Lose and Newcastle go above you.</p>
+        </div>
+      </section>
+
+      <article class="panel" style="--i:1" aria-label="Team sheets">
+        <div class="panel-h"><h2 class="h2">Team sheets</h2><span class="eyebrow">Confirmed 16:30</span></div>
+        <div class="sheet-cols">
+          <div><div class="xi-h"><span data-crest="AVL"></span>Villa · 4-2-3-1</div><div class="xi">
+            <div><span class="n">23</span>Martínez<span class="p">GK</span></div><div><span class="n">2</span>Cash<span class="p">RB</span></div><div><span class="n">4</span>Konsa<span class="p">CB</span></div><div><span class="n">14</span>Torres<span class="p">CB</span></div><div><span class="n">22</span>Maatsen<span class="p">LB</span></div><div><span class="n">24</span>Onana<span class="p">DM</span></div><div><span class="n">8</span>Tielemans<span class="p">CM</span></div><div><span class="n">7</span>McGinn<span class="p">RW</span></div><div><span class="n">10</span>Buendía<span class="p">AM</span></div><div><span class="n">27</span>Rogers<span class="p">LW</span></div><div><span class="n">11</span>Watkins<span class="p">ST</span></div></div></div>
+          <div><div class="xi-h"><span data-crest="NEW"></span>Newcastle · 4-3-3</div><div class="xi">
+            <div><span class="n">1</span>Pope<span class="p">GK</span></div><div><span class="n">2</span>Trippier<span class="p">RB</span></div><div><span class="n">4</span>Botman<span class="p">CB</span></div><div><span class="n">12</span>Thiaw<span class="p">CB</span></div><div><span class="n">33</span>Burn<span class="p">LB</span></div><div><span class="n">8</span>Tonali<span class="p">CM</span></div><div><span class="n">39</span>Guimarães<span class="p">CM</span></div><div><span class="n">7</span>Joelinton<span class="p">CM</span></div><div><span class="n">20</span>Elanga<span class="p">RW</span></div><div><span class="n">27</span>Woltemade<span class="p">ST</span></div><div><span class="n">10</span>Gordon<span class="p">LW</span></div></div></div>
+        </div>
+      </article>
+
+      <article class="panel" style="--i:2" aria-label="Team talk">
+        <div class="panel-h"><h2 class="h2">Last word in the dressing room</h2></div>
+        <div class="talk">
+          <button aria-pressed="true"><b>“Go and take it off them.”</b><span>Big-game players lift. Burrowes might freeze.</span><span class="r" aria-label="Lift: strong"><i class="on"></i><i class="on"></i><i class="on"></i></span></button>
+          <button><b>“Stick to the plan.”</b><span>Steady. Nobody gets carried away.</span><span class="r" aria-label="Lift: medium"><i class="on"></i><i class="on"></i><i></i></span></button>
+          <button><b>“No pressure. Enjoy it.”</b><span>The young ones settle. Watkins wants more.</span><span class="r" aria-label="Lift: low"><i class="on"></i><i></i><i></i></span></button>
+        </div>
+      </article>
+
+      <aside class="stack">
+        <article class="panel" style="--i:3">
+          <div class="facts"><div class="kpi"><span class="v num">44%</span><span class="l">Win chance</span></div><div class="kpi"><span class="v num">1.6</span><span class="l">Our xG · forecast</span></div><div class="kpi"><span class="v num">1.3</span><span class="l">Theirs</span></div></div>
+          <div class="advice" style="margin-top:var(--s-4)"><span class="staff" style="background:var(--mint-400);color:#04211C">AS</span><div><div class="who">Assistant</div><q>First ten minutes, let them come. Then go for Trippier's side.</q></div></div>
+        </article>
+        <div class="go"><a class="btn btn--accent btn--block" href="matchday-live.html" data-i="whistle">Walk out</a><button class="btn btn--ghost btn--block" data-i="ff">Just give me the result</button></div>
+      </aside>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+</body>
+</html>

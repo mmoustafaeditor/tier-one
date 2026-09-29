@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Today · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .hero { padding: var(--s-2) 0 var(--s-5); }
+  .hero .eyebrow { color: var(--on-ground-2); }
+  .hero h1 { margin-top: var(--s-3); max-width: 15ch; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+
+  /* Next match: the one big card */
+  .fixture { padding: 0; overflow: hidden; }
+  .fixture .top { padding: var(--s-5) var(--s-5) var(--s-4); background:
+     linear-gradient(115deg, color-mix(in srgb, var(--club-1) 16%, transparent) 0 38%, transparent 38.2% 61.8%, rgba(20,20,20,.10) 62% 100%); }
+  .fixture .vs { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--s-2); margin-top: var(--s-4); }
+  .fixture .team { display: grid; justify-items: center; gap: var(--s-2); text-align: center; }
+  .fixture .team b { font: 700 15px/1.15 var(--f-text); }
+  .fixture .ko { text-align: center; }
+  .fixture .ko .num { font-size: 30px; font-weight: 850; letter-spacing: -.02em; }
+  .fixture .ko small { display: block; font-size: var(--t-meta); color: var(--ink-3); }
+  .odds { display: grid; grid-template-columns: var(--w) var(--d) var(--l); gap: 3px; height: 8px; margin-top: var(--s-5); }
+  .odds i { border-radius: 3px; } .odds i:nth-child(1) { background: var(--dv-us); } .odds i:nth-child(2) { background: #9DB3AD; } .odds i:nth-child(3) { background: var(--dv-them); }
+  .odds-l { display: flex; justify-content: space-between; font-size: var(--t-meta); color: var(--ink-3); margin-top: 6px; }
+  .odds-l b { color: var(--ink); font-feature-settings: "tnum" 1; }
+  .fixture .read { border-top: 1px solid var(--line); padding: var(--s-4) var(--s-5); background: var(--surface-2); }
+  .fixture .acts { display: grid; grid-template-columns: 1fr auto; gap: var(--s-2); padding: var(--s-4) var(--s-5) var(--s-5); background: var(--surface-2); padding-top: 0; }
+
+  /* Decisions */
+  .decision { display: grid; gap: var(--s-4); }
+  .decision .head { display: flex; align-items: flex-start; gap: var(--s-3); }
+  .decision .head .grow { display: grid; gap: 6px; justify-items: start; }
+  .decision h3 { font: 700 17px/1.25 var(--f-text); margin: 0; }
+  .decision .due { font: 600 12px/1 var(--f-text); color: var(--ink-3); white-space: nowrap; display: inline-flex; gap: 4px; align-items: center; }
+  .choices { display: grid; gap: var(--s-2); }
+  .choice { display: flex; align-items: center; gap: var(--s-3); min-height: 56px; padding: 10px var(--s-4); border-radius: var(--r-md); background: var(--surface-solid); border: 1.5px solid var(--line); text-align: start; cursor: pointer; width: 100%;
+     transition: transform var(--d-tap) var(--ease-out), border-color var(--d-quick); }
+  .choice:active { transform: scale(.985); }
+  .choice .grow > b { display: block; font: 650 14.5px/1.2 var(--f-text); color: var(--ink); }
+  .choice .grow > span { display: block; font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
+  .choice.pick { border-color: var(--primary); background: linear-gradient(0deg, color-mix(in srgb, var(--mint-400) 14%, var(--surface-solid)), var(--surface-solid)); }
+  .choice .pickmark { font: 700 10.5px/1 var(--f-text); letter-spacing: .06em; text-transform: uppercase; color: var(--accent-text); display: inline-flex; gap: 3px; align-items: center; white-space: nowrap; }
+  .fx { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .fx .tag { font-size: 11.5px; padding: 2px 7px; }
+  .tone { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); }
+  .tone .choice { flex-direction: column; align-items: flex-start; gap: 2px; min-height: 64px; padding: 10px 12px; }
+
+
+  /* one-tap resolve: the card settles into a receipt */
+  .decision { touch-action: pan-y; transition: transform var(--d-base) var(--ease-out), opacity var(--d-base); }
+  .decision.swiping { transition: none; }
+  .decision .done { display: none; }
+  .decision.resolved { padding: var(--s-3) var(--s-4); animation: resolve var(--d-sheet) var(--ease-spring); }
+  .decision.resolved > :not(.done) { display: none; }
+  .decision.resolved .done { display: flex; align-items: center; gap: var(--s-3); font: 650 14px/1.3 var(--f-text); }
+  .decision.resolved .done .ok { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--good); color: #fff; flex: none; }
+  .decision.resolved .done .undo { margin-inline-start: auto; font: 600 13px/1 var(--f-text); color: var(--accent-text); background: none; border: 0; cursor: pointer; min-height: 32px; }
+  @keyframes resolve { from { transform: scale(.97); opacity: .4; } }
+  .swipe-hint { display: none; }
+  @media (hover: none) { .swipe-hint { display: inline; } }
+
+  /* Pulse */
+  .pulse { display: grid; gap: 0; }
+  .pulse .p { display: grid; grid-template-columns: 36px 1fr auto; grid-template-areas: "ic lab v" "ic why sp"; align-items: center; column-gap: var(--s-3); row-gap: 2px; padding: var(--s-3) 0; border-top: 1px solid var(--line); }
+  .pulse .ic { grid-area: ic; align-self: start; } .pulse .p > div { display: contents; } .pulse b { grid-area: lab; } .pulse .why { grid-area: why; } .pulse .v { grid-area: v; } .pulse .spark { grid-area: sp; justify-self: end; }
+  .pulse b em { font-style: normal; color: var(--accent-text); } .pulse .p.soft b em { color: var(--warn); }
+  .pulse .p:first-child { border-top: 0; padding-top: 0; }
+  .pulse .ic { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: var(--surface-2); color: var(--accent-text); }
+  .pulse b { display: block; font: 700 14px/1.2 var(--f-text); } .pulse .why { font-size: 12.5px; color: var(--ink-3); line-height: 1.3; }
+  .pulse .v { font: 800 20px/1 var(--f-display); font-feature-settings: "tnum" 1; text-align: end; }
+  .spark svg { width: 64px; height: 26px; }
+
+  .avail { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); }
+  .av { display: grid; gap: var(--s-2); min-width: 0; }
+  .av .portrait { width: 100%; }
+  .av b { display: block; font: 700 13.5px/1.2 var(--f-text); margin-bottom: 4px; }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tbl td { padding: 9px 4px; border-top: 1px solid var(--line); white-space: nowrap; }
+  .tbl tr:first-child td { border-top: 0; }
+  .tbl .pos { width: 22px; color: var(--ink-3); font: 700 13px/1 var(--f-display); }
+  .tbl .pts { text-align: end; font: 800 15px/1 var(--f-display); font-feature-settings: "tnum" 1; }
+  .tbl .gd { text-align: end; color: var(--ink-3); font-feature-settings: "tnum" 1; width: 36px; }
+  .tbl tr.me td { background: color-mix(in srgb, var(--mint-400) 22%, transparent); }
+  .tbl tr.me td:first-child { border-start-start-radius: 8px; border-end-start-radius: 8px; }
+  .tbl tr.me td:last-child { border-start-end-radius: 8px; border-end-end-radius: 8px; }
+  .tbl .cl { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .tbl tr.opp .cl::after { content: "Sat"; font: 700 10px/1 var(--f-text); padding: 3px 5px; border-radius: 4px; background: var(--dv-them); color: #fff; }
+  html[lang="ar"] .tbl tr.opp .cl::after { content: "السبت"; }
+
+  .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .week .d { display: grid; justify-items: center; gap: 4px; padding: 8px 2px; border-radius: 12px; font-size: 11.5px; color: var(--on-ground-3); background: var(--ground-panel); min-width: 0; }
+  .week .d b { font: 800 16px/1 var(--f-display); color: var(--on-ground); }
+  .week .d.now { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .week .d.mx { background: var(--accent); color: var(--accent-ink); } .week .d.mx b { color: var(--accent-ink); }
+  .week .d .crest { width: 18px; height: 18px; }
+  .week .d .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--on-ground-3); }
+
+  @media (max-width: 759px) { .topbar .when { display: none; } }
+  .layout { display: grid; gap: var(--s-4); }
+  .col { display: grid; gap: var(--s-4); align-content: start; min-width: 0; }
+  .col-b { order: -1; } .a-hero, .a-week { order: -2; }
+  @media (min-width: 760px) {
+    .layout { grid-template-columns: 1fr 1fr; align-items: start; }
+    .a-hero, .a-week { grid-column: 1 / -1; }
+    .col-b { order: 0; } .col-c { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; align-items: start; }
+  }
+  @media (min-width: 1100px) {
+    .layout { grid-template-columns: repeat(12, 1fr); gap: var(--s-5); }
+    .a-hero { grid-column: 1 / 9; } .a-week { grid-column: 9 / 13; align-self: end; }
+    .col-a { grid-column: 1 / 6; } .col-b { grid-column: 6 / 10; } .col-c { grid-column: 10 / 13; grid-template-columns: 1fr; }
+    .hero h1 { max-width: 20ch; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" data-active="today"></nav>
+  <main class="main"><div class="page">
+    <header class="topbar on-ground">
+      <div class="club"><span data-crest="AVL" class="crest--sm" style="width:32px;height:32px"></span><div><b data-ar="أستون فيلا">Aston Villa</b><small data-ar="الدوري الإنجليزي · المركز 4">Premier League · 4th</small></div></div>
+      <div class="when"><b data-ar="الخميس 1 أكتوبر">Thu 1 Oct</b><span data-ar="2026/27 · الأسبوع 7">2026/27 · Wk 7</span></div>
+      <button class="btn btn--accent continue" data-i="arrowr" data-i-pos="end" data-i-cls="i--sm i--flip"><span data-ar="تابع">Continue</span> <small data-ar="· 3 قرارات">· 3 open</small></button>
+    </header>
+
+    <div class="layout">
+      <section class="hero a-hero">
+        <span class="eyebrow" data-ar="صباح الخير يا مدرب · يومان على نيوكاسل">Morning, Gaffer · two days to Newcastle</span>
+        <h1 class="h-hero" data-ar-html="ثلاثة أمور <em>تنتظرك</em> قبل السبت.">Three things <em>need you</em> before Saturday.</h1>
+      </section>
+
+      <div class="week a-week on-ground" aria-label="This week">
+        <div class="d now"><span data-ar="خميس">Thu</span><b>1</b><span class="dot"></span></div>
+        <div class="d"><span data-ar="جمعة">Fri</span><b>2</b><span class="dot" style="opacity:.3"></span></div>
+        <div class="d mx"><span data-ar="سبت">Sat</span><b>3</b><span data-crest="NEW"></span></div>
+        <div class="d"><span data-ar="أحد">Sun</span><b>4</b><span class="dot" style="opacity:.3"></span></div>
+        <div class="d"><span data-ar="إثنين">Mon</span><b>5</b><span class="dot" style="opacity:.3"></span></div>
+        <div class="d"><span data-ar="ثلاثاء">Tue</span><b>6</b><span class="dot" style="opacity:.3"></span></div>
+        <div class="d"><span data-ar="أربعاء">Wed</span><b>7</b><span data-crest="POR"></span></div>
+      </div>
+
+      <!-- decisions -->
+      <div class="col col-a"><section class="a-dec stack" aria-label="Decisions">
+        <article class="panel decision" style="--i:1">
+          <div class="head">
+            <div class="grow">
+              <span class="tag tag--bad" data-i="medic"><span data-ar="العيادة">Medical</span></span>
+              <h3 data-ar="عضلة كامارا الخلفية مشدودة">Kamara's hamstring is tight</h3>
+            </div>
+            <span class="due" data-i="clock" data-i-cls="i--sm"><span data-ar="قبل الجمعة">By Fri</span></span>
+          </div>
+          <div class="advice">
+            <span class="staff" style="background:#5A3A8A">AP</span>
+            <div><div class="who" data-ar-html="أليكس · <span>أخصائي العلاج الطبيعي</span>">Alex, <span>head physio</span></div>
+            <q data-ar="أرِحه السبت ويكون جاهزاً لبورتو الأربعاء. إن لعب، فاحتمال التمزق واحد من أربعة.">Rest him Saturday and he's right for Porto on Wednesday. Play him and it's one in four he tears it.</q></div>
+          </div>
+          <div class="choices">
+            <button class="choice pick"><div class="grow"><b data-ar="أرِحه · أونانا يبدأ">Rest him · Onana starts</b><div class="fx"><span class="tag tag--good" data-i="medic"><span data-ar="خطر الإصابة 4%">Injury risk 4%</span></span><span class="tag" data-i="tactics"><span data-ar="ملاءمة الوسط −3">Midfield fit −3</span></span></div></div><span class="pickmark" data-i="check" data-i-cls="i--sm"><span data-ar="اختيار الطاقم">Staff pick</span></span></button>
+            <button class="choice"><div class="grow"><b data-ar="خاطر به">Risk him</b><div class="fx"><span class="tag tag--bad" data-i="alert"><span data-ar="خطر الإصابة 25%">Injury risk 25%</span></span><span class="tag tag--good" data-i="trend"><span data-ar="+4% فوز">Win +4%</span></span></div></div></button>
+          </div>
+        </article>
+
+        <article class="panel decision" style="--i:2">
+          <div class="head">
+            <div class="grow">
+              <span class="tag tag--club" data-i="doc"><span data-ar="عقد">Contract</span></span>
+              <h3 data-ar="واتكينز يريد حسم مستقبله">Watkins wants his future settled</h3>
+            </div>
+            <span class="due" data-i="clock" data-i-cls="i--sm"><span data-ar="هذا الأسبوع">This week</span></span>
+          </div>
+          <div class="advice">
+            <span class="staff">DM</span>
+            <div><div class="who" data-ar-html="المدير الرياضي · <span>ملف العقود</span>">Director of football, <span>contracts</span></div>
+            <q data-ar="عمره 30 وبقي له 18 شهراً. عرض سنتين مع خيار سنة، وسيوقّع هذا الأسبوع.">He's 30 with 18 months left. Two years plus an option and he signs this week. Leave it and his agent starts taking calls in January.</q></div>
+          </div>
+          <div class="choices">
+            <button class="choice pick"><div class="grow"><b data-ar="افتح المفاوضات">Open talks · 2 yrs + option</b><div class="fx"><span class="tag" data-i="pound"><span data-ar="الأجور +£1.9م/سنة">Wages +£1.9m/yr</span></span><span class="tag tag--good" data-i="heart"><span data-ar="معنويات ↑">Morale ↑</span></span></div></div><span class="pickmark" data-i="check" data-i-cls="i--sm"><span data-ar="اختيار الطاقم">Staff pick</span></span></button>
+            <button class="choice"><div class="grow"><b data-ar="بعد إغلاق السوق">Wait for January</b><div class="fx"><span class="tag tag--warn" data-i="alert"><span data-ar="قد يتواصل مع أندية">Rivals may call</span></span></div></div></button>
+          </div>
+        </article>
+
+        <article class="panel decision" style="--i:3">
+          <div class="head">
+            <div class="grow">
+              <span class="tag" data-i="chat"><span data-ar="مؤتمر صحفي">Press conference</span></span>
+              <h3 data-ar="سيسألونك إن كان فيلا قادراً على الفوز بالدوري">They'll ask if Villa can win the league</h3>
+            </div>
+            <span class="due" data-i="clock" data-i-cls="i--sm"><span data-ar="الجمعة 13:00">Fri 13:00</span></span>
+          </div>
+          <div class="tone">
+            <button class="choice pick"><b data-ar="هادئ">Calm</b><span data-ar="«خطوة بخطوة»">“One game at a time.”</span></button>
+            <button class="choice"><b data-ar="واثق">Bullish</b><span data-ar="الجماهير ↑ المجلس ↓">Fans ↑ · pressure ↑</span></button>
+            <button class="choice"><b data-ar="أرسل المساعد">Send No.2</b><span data-ar="لا تأثير">No effect</span></button>
+          </div>
+        </article>
+      </section>
+
+      </div>
+      <div class="col col-b">
+      <!-- next match -->
+      <section class="panel fixture a-match" style="--i:0" aria-label="Next match">
+        <div class="top">
+          <div class="between"><span class="eyebrow" data-ar="الدوري الإنجليزي · الجولة 7">Premier League · Matchday 7</span><span class="tag" data-i="stadium"><span data-ar="فيلا بارك">Villa Park</span></span></div>
+          <div class="vs">
+            <div class="team"><span data-crest="AVL" class="crest--lg"></span><b data-ar="أستون فيلا">Aston Villa</b><span class="form"><b class="w">W</b><b class="w">W</b><b class="d">D</b><b class="l">L</b><b class="w">W</b></span></div>
+            <div class="ko"><span class="num" data-ar="17:30">17:30</span><small data-ar="السبت 3 أكتوبر">Sat 3 Oct</small></div>
+            <div class="team"><span data-crest="NEW" class="crest--lg"></span><b data-ar="نيوكاسل">Newcastle</b><span class="form"><b class="w">W</b><b class="d">D</b><b class="w">W</b><b class="w">W</b><b class="l">L</b></span></div>
+          </div>
+          <div class="odds" style="--w:44fr;--d:27fr;--l:29fr" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="odds-l"><span data-ar-html="فوز <b>44%</b>">Win <b>44%</b></span><span data-ar-html="تعادل <b>27%</b>">Draw <b>27%</b></span><span data-ar-html="خسارة <b>29%</b>">Loss <b>29%</b></span></div>
+        </div>
+        <div class="read">
+          <div class="advice">
+            <span class="staff">AS</span>
+            <div><div class="who" data-ar-html="المساعد · <span>تقرير الخصم</span>">Assistant, <span>opposition report</span></div>
+            <q data-ar="يضغطون عالياً عبر تونالي ويتركون المساحة خلف تريبييه. اجعل روجرز يركض فيها وسنوجعهم.">They press high through Tonali and leave the space in behind Trippier's side. Get Rogers running into it and we'll hurt them.</q></div>
+          </div>
+        </div>
+        <div class="acts"><a class="btn btn--primary" href="tactics.html" data-i="tactics"><span data-ar="جهّز التشكيلة">Pick the XI</span></a><a class="btn btn--ghost" href="matchday-pre.html" data-i="eye"><span data-ar="التقرير">Report</span></a></div>
+      </section>
+
+      <section class="panel a-avail" style="--i:3" aria-label="Availability">
+        <div class="panel-h"><h2 class="h2" data-ar="جاهزية السبت">Fit for Saturday</h2><span class="eyebrow" data-ar="23 من 25">23 of 25</span></div>
+        <div class="avail">
+          <div class="av"><span data-portrait="Boubacar Kamara" data-num="44"></span><div><b data-ar="كامارا">Kamara</b><span class="tag tag--bad" data-i="medic"><span data-ar="شكّ">Doubt</span></span></div></div>
+          <div class="av"><span data-portrait="Ian Maatsen" data-num="22"></span><div><b data-ar="ماتسن">Maatsen</b><span class="tag tag--warn" data-i="bolt"><span data-ar="لياقة 82%">82% fit</span></span></div></div>
+          <div class="av"><span data-portrait="Tyrone Mings" data-num="5"></span><div><b data-ar="مينغز">Mings</b><span class="tag tag--bad" data-i="x"><span data-ar="موقوف">Banned</span></span></div></div>
+        </div>
+      </section>
+
+      <section class="panel panel--flat a-note on-ground" style="--i:6">
+        <div class="between"><div class="hstack"><span data-i="doc"></span><div><b style="font:650 14.5px/1.2 var(--f-text)" data-ar="لا شيء آخر يحتاجك. الطاقم يتولى الباقي.">Nothing else needs you. Staff have the rest.</b><div class="meta" style="color:var(--on-ground-3)" data-ar="التدريب · الكشافة · الأكاديمية — مفوّضة">Training, scouting and academy are delegated</div></div></div><a class="link" href="#" style="color:var(--accent);font:600 13.5px/1 var(--f-text);white-space:nowrap" data-ar="راجِع">Review</a></div>
+      </section>
+      </div>
+      <div class="col col-c">
+      <!-- pulse -->
+      <section class="panel a-pulse" style="--i:4" aria-label="Club pulse">
+        <div class="panel-h"><h2 class="h2" data-ar="نبض النادي">Club pulse</h2><a class="link" href="office.html" data-i="chev" data-i-pos="end" data-i-cls="i--sm i--flip"><span data-ar="المكتب">Office</span></a></div>
+        <div class="pulse">
+          <div class="p"><span class="ic" data-i="board"></span><div><b data-ar-html="المجلس · <em>واثق</em>">Board · <em>Confident</em></b><div class="why" data-ar="راضٍ عن المركز الرابع، يراقب فاتورة الأجور">Happy with 4th, eyeing the wage bill</div></div><span class="spark" data-spark="60,62,61,66,70,72"></span><span class="v">72</span></div>
+          <div class="p"><span class="ic" data-i="fans"></span><div><b data-ar-html="الجماهير · <em>متحمسة</em>">Fans · <em>Buzzing</em></b><div class="why" data-ar="الفوز على تشيلسي ما زال حديث المدينة">Still talking about the Chelsea win</div></div><span class="spark" data-spark="70,68,74,77,76,81"></span><span class="v">81</span></div>
+          <div class="p soft"><span class="ic" data-i="room"></span><div><b data-ar-html="غرفة الملابس · <em>تتململ</em>">Dressing room · <em>Restless</em></b><div class="why" data-ar="بيلي منزعج من دقائق اللعب">Bailey unhappy about minutes</div></div><span class="spark" data-spark="70,71,69,68,66,64" data-down></span><span class="v">64</span></div>
+        </div>
+      </section>
+
+      <section class="panel a-table" style="--i:5" aria-label="League table">
+        <div class="panel-h"><h2 class="h2" data-ar="الترتيب">The table</h2><span class="eyebrow" data-ar="بعد 6 جولات">After 6</span></div>
+        <table class="tbl">
+          <tr><td class="pos">2</td><td><span class="cl"><span data-crest="ARS" class="crest--sm"></span><span data-ar="آرسنال">Arsenal</span></span></td><td class="gd">+9</td><td class="pts">16</td></tr>
+          <tr><td class="pos">3</td><td><span class="cl"><span data-crest="LIV" class="crest--sm"></span><span data-ar="ليفربول">Liverpool</span></span></td><td class="gd">+6</td><td class="pts">14</td></tr>
+          <tr class="me"><td class="pos">4</td><td><span class="cl"><span data-crest="AVL" class="crest--sm"></span><span data-ar="أستون فيلا">Aston Villa</span></span></td><td class="gd">+5</td><td class="pts">13</td></tr>
+          <tr><td class="pos">5</td><td><span class="cl"><span data-crest="CHE" class="crest--sm"></span><span data-ar="تشيلسي">Chelsea</span></span></td><td class="gd">+4</td><td class="pts">12</td></tr>
+          <tr class="opp"><td class="pos">6</td><td><span class="cl"><span data-crest="NEW" class="crest--sm"></span><span data-ar="نيوكاسل">Newcastle</span></span></td><td class="gd">+3</td><td class="pts">11</td></tr>
+        </table>
+      </section>
+
+      </div>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+<script>
+document.addEventListener("kit:ready", () => {
+  // one-tap resolve + swipe right to take the staff pick
+  const cont = document.querySelector(".continue small");
+  let open = document.querySelectorAll(".decision").length;
+  const resolve = (card, label) => {
+    if (card.classList.contains("resolved")) return;
+    let d = card.querySelector(".done");
+    if (!d) { d = document.createElement("div"); d.className = "done"; card.appendChild(d); }
+    d.innerHTML = `<span class="ok">${Kit.icon("check", "i--sm")}</span><span>${label}</span><button class="undo">${Kit.AR ? "تراجع" : "Undo"}</button>`;
+    d.querySelector(".undo").onclick = (e) => { e.stopPropagation(); card.classList.remove("resolved"); open++; upd(); };
+    card.classList.add("resolved"); open--; upd();
+  };
+  const upd = () => { if (cont) cont.textContent = open ? (Kit.AR ? `· ${open} قرارات` : `· ${open} open`) : (Kit.AR ? "· جاهز" : "· all clear"); };
+  document.querySelectorAll(".decision").forEach((card) => {
+    card.querySelectorAll(".choice").forEach((c) => c.addEventListener("click", () => resolve(card, (c.querySelector("b") || c).textContent)));
+    let x0 = null, dx = 0;
+    card.addEventListener("pointerdown", (e) => { if (e.pointerType === "mouse") return; x0 = e.clientX; dx = 0; });
+    card.addEventListener("pointermove", (e) => { if (x0 == null) return; dx = (e.clientX - x0) * (Kit.AR ? -1 : 1); if (dx > 8) { card.classList.add("swiping"); card.style.transform = `translateX(${(Kit.AR ? -1 : 1) * dx * 0.6}px) rotate(${dx * 0.02}deg)`; } });
+    const end = () => { if (x0 == null) return; card.classList.remove("swiping"); card.style.transform = ""; if (dx > 90) { const p = card.querySelector(".choice.pick"); if (p) resolve(card, p.querySelector("b").textContent); } x0 = null; };
+    card.addEventListener("pointerup", end); card.addEventListener("pointercancel", end);
+  });
+
+  document.querySelectorAll("[data-spark]").forEach((el) => {
+    const d = el.dataset.spark.split(",").map(Number), mn = Math.min(...d) - 3, mx = Math.max(...d) + 3;
+    const pts = d.map((v, i) => [ (Kit.AR ? 62 - i * 12 : 2 + i * 12), 24 - ((v - mn) / (mx - mn)) * 22 ]);
+    const col = el.hasAttribute("data-down") ? "var(--warn-mark)" : "var(--dv-us)";
+    el.innerHTML = `<svg viewBox="0 0 64 26" aria-hidden="true"><path d="M${pts.map(p => p.join(",")).join("L")}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${pts.at(-1)[0]}" cy="${pts.at(-1)[1]}" r="3" fill="${col}"/></svg>`;
+  });
+});
+</script>
+</body>
+</html>
