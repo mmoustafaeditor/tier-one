@@ -5,3 +5,8 @@
 /CLAUDE.md
 /UPDATES.md
 /design
+# Semba data service: tooling, curated inputs and docs stay private (the seed JSON is served via /api/data)
+/data/tools
+/data/curated
+/data/tests
+/data/*.md

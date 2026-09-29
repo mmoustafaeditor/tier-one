@@ -1,0 +1,542 @@
+{
+ "eng-arsenal": {
+  "name": "London Gunners",
+  "shortName": "London Gunners",
+  "code": "LGU"
+ },
+ "eng-aston-villa": {
+  "name": "Aston Villans",
+  "shortName": "Aston Villans",
+  "code": "AVL"
+ },
+ "eng-bournemouth": {
+  "name": "Bournemouth Cherries",
+  "shortName": "Bournemouth Cherries",
+  "code": "BOU"
+ },
+ "eng-brentford": {
+  "name": "Brentford Bees",
+  "shortName": "Brentford Bees",
+  "code": "BRE"
+ },
+ "eng-brighton": {
+  "name": "Brighton Seagulls",
+  "shortName": "Brighton Seagulls",
+  "code": "BRI"
+ },
+ "eng-chelsea": {
+  "name": "London Blues",
+  "shortName": "London Blues",
+  "code": "LBL"
+ },
+ "eng-coventry": {
+  "name": "Coventry Sky Blues",
+  "shortName": "Coventry",
+  "code": "COV"
+ },
+ "eng-crystal-palace": {
+  "name": "Crystal Eagles",
+  "shortName": "Crystal Eagles",
+  "code": "CPE"
+ },
+ "eng-everton": {
+  "name": "Merseyside Toffees",
+  "shortName": "Merseyside Toffees",
+  "code": "MTF"
+ },
+ "eng-fulham": {
+  "name": "West London Cottagers",
+  "shortName": "West London Cottagers",
+  "code": "WLC"
+ },
+ "eng-hull": {
+  "name": "Hull Tigers",
+  "shortName": "Hull",
+  "code": "HUL"
+ },
+ "eng-ipswich": {
+  "name": "Ipswich Tractor Boys",
+  "shortName": "Ipswich",
+  "code": "IPS"
+ },
+ "eng-leeds": {
+  "name": "Leeds Whites",
+  "shortName": "Leeds Whites",
+  "code": "LDS"
+ },
+ "eng-liverpool": {
+  "name": "Liverpool Reds",
+  "shortName": "Liverpool Reds",
+  "code": "LVR"
+ },
+ "eng-man-city": {
+  "name": "Manchester Blues",
+  "shortName": "Manchester Blues",
+  "code": "MCB"
+ },
+ "eng-man-utd": {
+  "name": "Manchester Reds",
+  "shortName": "Manchester Reds",
+  "code": "MCR"
+ },
+ "eng-newcastle": {
+  "name": "Newcastle Magpies",
+  "shortName": "Newcastle Magpies",
+  "code": "NCM"
+ },
+ "eng-nottm-forest": {
+  "name": "Nottingham Foresters",
+  "shortName": "Nottingham Foresters",
+  "code": "NFO"
+ },
+ "eng-sunderland": {
+  "name": "Sunderland Black Cats",
+  "shortName": "Sunderland Black Cats",
+  "code": "SUN"
+ },
+ "eng-tottenham": {
+  "name": "North London Lilywhites",
+  "shortName": "North London Lilywhites",
+  "code": "NLL"
+ },
+ "esp-real-madrid": {
+  "name": "Madrid Whites",
+  "shortName": "Madrid Whites",
+  "code": "MDW"
+ },
+ "esp-barcelona": {
+  "name": "Barcelona Blaugrana",
+  "shortName": "Barcelona Blaugrana",
+  "code": "BCN"
+ },
+ "esp-atletico": {
+  "name": "Madrid Mattress Makers",
+  "shortName": "Madrid Mattress Makers",
+  "code": "MDR"
+ },
+ "esp-athletic": {
+  "name": "Bilbao Lions",
+  "shortName": "Bilbao Lions",
+  "code": "BIL"
+ },
+ "esp-villarreal": {
+  "name": "Villarreal Yellows",
+  "shortName": "Villarreal Yellows",
+  "code": "VIL"
+ },
+ "esp-real-sociedad": {
+  "name": "San Sebastián Txuri-Urdin",
+  "shortName": "San Sebastián Txuri-Urdin",
+  "code": "SSB"
+ },
+ "esp-betis": {
+  "name": "Seville Verdiblancos",
+  "shortName": "Seville Verdiblancos",
+  "code": "SVV"
+ },
+ "esp-sevilla": {
+  "name": "Seville Nervión",
+  "shortName": "Seville Nervión",
+  "code": "SVN"
+ },
+ "esp-valencia": {
+  "name": "Valencia Bats",
+  "shortName": "Valencia Bats",
+  "code": "VAL"
+ },
+ "esp-celta": {
+  "name": "Vigo Sky Blues",
+  "shortName": "Vigo Sky Blues",
+  "code": "VIG"
+ },
+ "esp-osasuna": {
+  "name": "Pamplona Rojillos",
+  "shortName": "Pamplona Rojillos",
+  "code": "PAM"
+ },
+ "esp-rayo": {
+  "name": "Vallecas Lightning",
+  "shortName": "Vallecas Lightning",
+  "code": "RVL"
+ },
+ "esp-getafe": {
+  "name": "Getafe Azulones",
+  "shortName": "Getafe Azulones",
+  "code": "GET"
+ },
+ "esp-espanyol": {
+  "name": "Barcelona Parakeets",
+  "shortName": "Barcelona Parakeets",
+  "code": "BPK"
+ },
+ "esp-alaves": {
+  "name": "Vitoria Babazorros",
+  "shortName": "Vitoria Babazorros",
+  "code": "VIT"
+ },
+ "esp-levante": {
+  "name": "Valencia Frogs",
+  "shortName": "Valencia Frogs",
+  "code": "LEV"
+ },
+ "esp-elche": {
+  "name": "Elche Green Stripes",
+  "shortName": "Elche Green Stripes",
+  "code": "ELC"
+ },
+ "esp-deportivo": {
+  "name": "A Coruña Blue-and-Whites",
+  "shortName": "A",
+  "code": "DEP"
+ },
+ "esp-malaga": {
+  "name": "Málaga Anchovies",
+  "shortName": "Málaga",
+  "code": "MAL"
+ },
+ "esp-racing": {
+  "name": "Santander Racers",
+  "shortName": "Santander",
+  "code": "RAC"
+ },
+ "ita-inter": {
+  "name": "Milan Nerazzurri",
+  "shortName": "Milan Nerazzurri",
+  "code": "MNZ"
+ },
+ "ita-napoli": {
+  "name": "Naples Azzurri",
+  "shortName": "Naples Azzurri",
+  "code": "NAP"
+ },
+ "ita-juventus": {
+  "name": "Turin Zebras",
+  "shortName": "Turin Zebras",
+  "code": "TZB"
+ },
+ "ita-milan": {
+  "name": "Milan Rossoneri",
+  "shortName": "Milan Rossoneri",
+  "code": "MRN"
+ },
+ "ita-atalanta": {
+  "name": "Bergamo Goddess",
+  "shortName": "Bergamo Goddess",
+  "code": "BER"
+ },
+ "ita-roma": {
+  "name": "Rome Giallorossi",
+  "shortName": "Rome Giallorossi",
+  "code": "RGR"
+ },
+ "ita-lazio": {
+  "name": "Rome Eagles",
+  "shortName": "Rome Eagles",
+  "code": "REA"
+ },
+ "ita-fiorentina": {
+  "name": "Florence Viola",
+  "shortName": "Florence Viola",
+  "code": "FLO"
+ },
+ "ita-bologna": {
+  "name": "Bologna Rossoblù",
+  "shortName": "Bologna Rossoblù",
+  "code": "BOL"
+ },
+ "ita-como": {
+  "name": "Como Lakers",
+  "shortName": "Como Lakers",
+  "code": "COM"
+ },
+ "ita-torino": {
+  "name": "Turin Bulls",
+  "shortName": "Turin Bulls",
+  "code": "TBU"
+ },
+ "ita-udinese": {
+  "name": "Udine Friulians",
+  "shortName": "Udine Friulians",
+  "code": "UDI"
+ },
+ "ita-genoa": {
+  "name": "Genoa Griffins",
+  "shortName": "Genoa Griffins",
+  "code": "GEN"
+ },
+ "ita-cagliari": {
+  "name": "Cagliari Islanders",
+  "shortName": "Cagliari Islanders",
+  "code": "CAG"
+ },
+ "ita-parma": {
+  "name": "Parma Crusaders",
+  "shortName": "Parma Crusaders",
+  "code": "PAR"
+ },
+ "ita-lecce": {
+  "name": "Lecce Salentini",
+  "shortName": "Lecce Salentini",
+  "code": "LEC"
+ },
+ "ita-sassuolo": {
+  "name": "Sassuolo Black-Greens",
+  "shortName": "Sassuolo Black-Greens",
+  "code": "SAS"
+ },
+ "ita-venezia": {
+  "name": "Venice Lagoon",
+  "shortName": "Venice",
+  "code": "VEN"
+ },
+ "ita-frosinone": {
+  "name": "Frosinone Canaries",
+  "shortName": "Frosinone",
+  "code": "FRO"
+ },
+ "ita-monza": {
+  "name": "Monza Brianzoli",
+  "shortName": "Monza",
+  "code": "MON"
+ },
+ "ger-bayern": {
+  "name": "Munich Reds",
+  "shortName": "Munich Reds",
+  "code": "MUN"
+ },
+ "ger-leverkusen": {
+  "name": "Leverkusen Works XI",
+  "shortName": "Leverkusen Works XI",
+  "code": "LEV"
+ },
+ "ger-dortmund": {
+  "name": "Dortmund Yellows",
+  "shortName": "Dortmund Yellows",
+  "code": "DOR"
+ },
+ "ger-leipzig": {
+  "name": "Leipzig Bulls",
+  "shortName": "Leipzig Bulls",
+  "code": "LEI"
+ },
+ "ger-frankfurt": {
+  "name": "Frankfurt Eagles",
+  "shortName": "Frankfurt Eagles",
+  "code": "FRA"
+ },
+ "ger-stuttgart": {
+  "name": "Stuttgart Swabians",
+  "shortName": "Stuttgart Swabians",
+  "code": "STU"
+ },
+ "ger-freiburg": {
+  "name": "Freiburg Breisgau",
+  "shortName": "Freiburg Breisgau",
+  "code": "FRE"
+ },
+ "ger-hoffenheim": {
+  "name": "Hoffenheim Kraichgau",
+  "shortName": "Hoffenheim Kraichgau",
+  "code": "HOF"
+ },
+ "ger-gladbach": {
+  "name": "Gladbach Foals",
+  "shortName": "Gladbach Foals",
+  "code": "MGB"
+ },
+ "ger-mainz": {
+  "name": "Mainz Carnival Club",
+  "shortName": "Mainz Carnival Club",
+  "code": "MAI"
+ },
+ "ger-bremen": {
+  "name": "Bremen River Club",
+  "shortName": "Bremen River Club",
+  "code": "BRM"
+ },
+ "ger-union": {
+  "name": "Berlin Irons",
+  "shortName": "Berlin Irons",
+  "code": "BER"
+ },
+ "ger-augsburg": {
+  "name": "Augsburg Fuggers",
+  "shortName": "Augsburg Fuggers",
+  "code": "AUG"
+ },
+ "ger-koln": {
+  "name": "Cologne Billy Goats",
+  "shortName": "Cologne Billy Goats",
+  "code": "KOE"
+ },
+ "ger-hamburg": {
+  "name": "Hamburg Dinos",
+  "shortName": "Hamburg Dinos",
+  "code": "HAM"
+ },
+ "ger-schalke": {
+  "name": "Gelsenkirchen Royal Blues",
+  "shortName": "Gelsenkirchen",
+  "code": "S04"
+ },
+ "ger-elversberg": {
+  "name": "Elversberg Villagers",
+  "shortName": "Elversberg",
+  "code": "SVE"
+ },
+ "ger-paderborn": {
+  "name": "Paderborn Blues",
+  "shortName": "Paderborn",
+  "code": "SCP"
+ },
+ "fra-psg": {
+  "name": "Paris Red-and-Blue",
+  "shortName": "Paris Red-and-Blue",
+  "code": "PAR"
+ },
+ "fra-marseille": {
+  "name": "Marseille Phocaeans",
+  "shortName": "Marseille Phocaeans",
+  "code": "MAR"
+ },
+ "fra-monaco": {
+  "name": "Monaco Principality",
+  "shortName": "Monaco Principality",
+  "code": "MON"
+ },
+ "fra-lille": {
+  "name": "Lille Mastiffs",
+  "shortName": "Lille Mastiffs",
+  "code": "LIL"
+ },
+ "fra-lyon": {
+  "name": "Lyon Gones",
+  "shortName": "Lyon Gones",
+  "code": "LYO"
+ },
+ "fra-nice": {
+  "name": "Nice Eaglets",
+  "shortName": "Nice Eaglets",
+  "code": "NIC"
+ },
+ "fra-lens": {
+  "name": "Lens Blood-and-Gold",
+  "shortName": "Lens Blood-and-Gold",
+  "code": "LEN"
+ },
+ "fra-rennes": {
+  "name": "Rennes Red-and-Black",
+  "shortName": "Rennes Red-and-Black",
+  "code": "REN"
+ },
+ "fra-strasbourg": {
+  "name": "Strasbourg Racers",
+  "shortName": "Strasbourg Racers",
+  "code": "STR"
+ },
+ "fra-toulouse": {
+  "name": "Toulouse Violets",
+  "shortName": "Toulouse Violets",
+  "code": "TOU"
+ },
+ "fra-brest": {
+  "name": "Brest Pirates",
+  "shortName": "Brest Pirates",
+  "code": "BRE"
+ },
+ "fra-auxerre": {
+  "name": "Auxerre Burgundians",
+  "shortName": "Auxerre Burgundians",
+  "code": "AUX"
+ },
+ "fra-angers": {
+  "name": "Angers Black-Whites",
+  "shortName": "Angers Black-Whites",
+  "code": "ANG"
+ },
+ "fra-le-havre": {
+  "name": "Le Havre Dockers",
+  "shortName": "Le Havre Dockers",
+  "code": "LHV"
+ },
+ "fra-lorient": {
+  "name": "Lorient Hakes",
+  "shortName": "Lorient Hakes",
+  "code": "LOR"
+ },
+ "fra-paris-fc": {
+  "name": "Paris Blues",
+  "shortName": "Paris Blues",
+  "code": "PFC"
+ },
+ "fra-troyes": {
+  "name": "Troyes Blue Steel",
+  "shortName": "Troyes",
+  "code": "ESTAC"
+ },
+ "fra-le-mans": {
+  "name": "Le Mans Racers",
+  "shortName": "Le",
+  "code": "LMFC"
+ },
+ "egy-al-ahly": {
+  "name": "Al Ahly",
+  "shortName": "Al Ahly",
+  "code": "AHL"
+ },
+ "egy-zamalek": {
+  "name": "Zamalek",
+  "shortName": "Zamalek",
+  "code": "ZAM"
+ },
+ "egy-pyramids": {
+  "name": "Pyramids",
+  "shortName": "Pyramids",
+  "code": "PYR"
+ },
+ "egy-al-masry": {
+  "name": "Al Masry",
+  "shortName": "Al Masry",
+  "code": "MSR"
+ },
+ "egy-ceramica": {
+  "name": "Ceramica Cleopatra",
+  "shortName": "Ceramica Cleopatra",
+  "code": "CER"
+ },
+ "egy-zed": {
+  "name": "ZED",
+  "shortName": "ZED",
+  "code": "ZED"
+ },
+ "ksa-al-hilal": {
+  "name": "Al Hilal",
+  "shortName": "Al Hilal",
+  "code": "HIL"
+ },
+ "ksa-al-nassr": {
+  "name": "Al Nassr",
+  "shortName": "Al Nassr",
+  "code": "NAS"
+ },
+ "ksa-al-ittihad": {
+  "name": "Al Ittihad",
+  "shortName": "Al Ittihad",
+  "code": "ITT"
+ },
+ "ksa-al-ahli": {
+  "name": "Al Ahli",
+  "shortName": "Al Ahli",
+  "code": "AHL"
+ },
+ "ksa-al-qadsiah": {
+  "name": "Al Qadsiah",
+  "shortName": "Al Qadsiah",
+  "code": "QAD"
+ },
+ "ksa-al-shabab": {
+  "name": "Al Shabab",
+  "shortName": "Al Shabab",
+  "code": "SHB"
+ }
+}

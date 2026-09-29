@@ -1,0 +1,23 @@
+{
+ "schema": 1,
+ "season": "2026/27",
+ "asOf": "2026-09-29",
+ "curatedAsOf": "2026-09-29",
+ "generator": "data/tools/refresh.mjs",
+ "namesMode": "real",
+ "counts": {
+  "leagues": 7,
+  "clubs": 108,
+  "players": 3603,
+  "transfers": 1557,
+  "rumours": 35,
+  "openRumours": 35
+ },
+ "confidenceHighPct": {
+  "clubs": 95,
+  "players": 91,
+  "transfers": 91,
+  "rumours": 0
+ },
+ "issues": 0
+}
