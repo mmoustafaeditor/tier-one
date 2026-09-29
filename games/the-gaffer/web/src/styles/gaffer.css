@@ -221,7 +221,8 @@ div.g-alert { cursor: default; }
 .g-subcols .cell.g-sel .cmain b, .g-subcols .cell.g-sel .cmain small, .g-subcols .cell.g-sel .g-rating { color: var(--accent-ink); }
 .g-subcols .cell.g-sel .g-rating { background: rgba(18, 7, 43, .12); }
 .g-subcols .cell.g-sel .tag { background: var(--accent-ink); color: var(--accent); }
-.g-subfoot { position: sticky; bottom: 0; z-index: 2; display: grid; gap: var(--s2); margin: var(--s4) calc(-1 * var(--gutter)) calc(-16px - env(safe-area-inset-bottom, 0px));
+/* Sticky offsets count from the sheet's content edge, so pull it down over the sheet's bottom padding. */
+.g-subfoot { position: sticky; bottom: calc(-16px - env(safe-area-inset-bottom, 0px)); z-index: 2; display: grid; gap: var(--s2); margin: var(--s4) calc(-1 * var(--gutter)) calc(-16px - env(safe-area-inset-bottom, 0px));
   padding: var(--s3) var(--gutter) calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--bg2); border-top: 1px solid var(--line); }
 .g-subfoot > b { font-size: var(--fs-sm); line-height: 1.3; }
 .g-ev.sub .cmain span { color: var(--accent-text); }
@@ -465,7 +466,7 @@ select.g-input { width: 100%; box-sizing: border-box; }
   .app.tabs .g-toast { bottom: 24px; }
   .app > :is(.list, .seg, .g-filters, .g-stats, .g-links, .g-leagues, .sechead, .banner, .card, p, .g-input, section, .g-twobtn, .g-window, .g-doors,
     .g-staffgrid, .g-cabinet, .g-intro, .g-setcard, .g-tiles, .g-tiles-2, .g-curve, .g-field, .g-chips, .g-ad, .g-support, .g-roundnav, .g-table, .g-fold) { max-width: 720px; }
-  .app > .g-homecols, .app > .g-matchcols, .app > .g-livecols { max-width: none; }
+  .app > .g-homecols, .app > .g-matchcols, .app > .g-livecols, .app > .g-bug { max-width: none; }
 }
 @media (min-width: 1000px) {
   .g-livecols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 380px); gap: var(--s4); align-items: start; }

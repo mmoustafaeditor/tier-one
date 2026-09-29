@@ -163,12 +163,17 @@ export function SaveSheet({ mode, world, career, t, onClose, onLoaded }: {
   const [text, setText] = useState('');
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const saveText = () => packSave(world!, career);
+  // A world or career that fails its checks is never written out: the sheet says why instead of throwing.
+  const saveText = async () => {
+    try { return await packSave(world!, career); } catch (e) { setMsg({ ok: false, text: t.saveRefused(e instanceof Error ? e.message : String(e)) }); return null; }
+  };
   const download = async () => {
-    await downloadFile(new Blob([await saveText()], { type: 'application/octet-stream' }), `the-gaffer-${career?.season ?? 'save'}.gaffer`);
+    const s = await saveText();
+    if (s) await downloadFile(new Blob([s], { type: 'application/octet-stream' }), `the-gaffer-${career?.season ?? 'save'}.gaffer`);
   };
   const copy = async () => {
     const s = await saveText();
+    if (!s) return;
     try { await navigator.clipboard.writeText(s); setMsg({ ok: true, text: t.copied }); } catch { setText(s); }
   };
   const load = async (raw: string) => {

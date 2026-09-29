@@ -142,7 +142,7 @@ export const NEW_FR: NewStrings = {
 
   boardT: 'Direction et objectifs',
   staffRoomT: 'Staff',
-  staffRoomSub: (n: number, all: number) => (n ? `${n} tâches sur ${all} déléguées` : 'Vous gérez tout. Déléguez ce que vous voulez.'),
+  staffRoomSub: (n: number, all: number) => (n ? `${n} tâches sur ${all} déléguées` : 'Vous gérez tout. Déléguez au choix.'),
   financesT: 'Finances',
   ticketsT: 'Billetterie',
   sponsorsT: 'Sponsors',
