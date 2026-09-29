@@ -19,10 +19,10 @@
 
 ## 📰 The story
 
-The window is open. 7 days. 8 sagas.
+The window is open. 7 days. 5 sagas.
 
 You are a football transfer journalist trying to become **Tier One**, the reporter whose word
-the whole internet trusts. Eight real players are linked with eight big moves, and every
+the whole internet trusts. Five real players are linked with five big moves, and every
 saga hides one truth:
 
 | Outcome | What really happens |
@@ -34,6 +34,9 @@ saga hides one truth:
 
 Your job is to find out which one it is, then post it before anyone else.
 Post early and loud and you could land the exclusive. Get it wrong and the replies will tear you apart.
+And the story moves: **one to three** of the real deals twist before the window shuts (how many is only
+revealed with your results). The wire shouts 🚨, older reads go stale, that player's sources will talk
+again, and a right call posted after the twist scores extra.
 
 ## 👥 Play with friends
 
@@ -54,19 +57,22 @@ Every saga shows the player's type. Bigger names swing harder, right or wrong:
 
 ## 🕵️ Your sources
 
-You get **10 contacts every day**. Every source has a reliability bar in the game: **High** costs 3 contacts,
-**Medium** 2, **Low** 1. Every source can still lie.
+You get **4 contacts a day** in the Daily and Practice (**3** in Career and Rooms). Every source has a reliability
+bar in the game: **High** costs 3 contacts, **Medium** 2, **Low** 1. Every source can still lie, and each one
+answers **once per player** until a twist reopens him.
 
 | Source | Reliability | Cost | What they're good for |
 |---|---|---|---|
-| 🩺 **The physio** | 🟢🟢🟢 High | 📞 3 | If a medical is booked, they know first. |
-| 🛩️ **Airport spotter** | 🟢🟢🟢 High | 📞 3 | Tracks the jets. Knows the city, not the club. |
+| 🩺 **The physio** | 🟢🟢🟢 High | 📞 3 | If a medical is booked, they know first. Sharp from Day 6; before that only a hunch (about 55%). |
+| 🛩️ **Airport spotter** | 🟢🟢🟢 High | 📞 3 | Tracks the jets. Sharp from Day 4; before that only a hunch (about 55%). |
 | 🕴️ **The agent** | 🟡🟡 Medium | 📞 2 | Talks a big game. Always wants a bigger fee (and leans towards "done deal" when he lies). |
-| 🧺 **The kitman** | 🟡🟡 Medium | 📞 2 | Knows if he's leaving. Never knows where. |
+| 🧺 **The kitman** | 🟡🟡 Medium | 📞 2 | Knows if he's leaving. Half his lies stay on the right side of "is he going?". |
 | 💈 **His barber** | 🔴 Low | 📞 1 | Chaotic. Occasionally pure gold. |
 | 📰 **Rival newsroom leak** | 🔴 Low | 📞 1 | A friend at another paper. Decent, not perfect. |
 
-In Career, the kitman and the physio are locked until you buy the **Press pass** and the **Medical contact**.
+In the Daily every source answers from Day 1. In Career and Rooms the airport spotter opens on Day 4 and the physio
+on Day 6, and the **source tree** (three reliability levels per source, plus "opens earlier" steps for the physio and
+the spotter) is how you sharpen them.
 
 ## 🎯 How to play
 
@@ -76,51 +82,70 @@ In Career, the kitman and the physio are locked until you buy the **Press pass**
 
    | Call | Right | Wrong |
    |---|---|---|
-   | 👀 Talks ongoing | +10 | −5 |
-   | 📈 Advanced stage | +20 | −15 |
-   | 🔒 Confirmed | +40 | −35 |
+   | 👀 Talks | +10 | −5 |
+   | 📈 Advanced | +20 | −12 |
+   | 🔒 Confirmed | +40 | −45 |
 
-   A correct call earns **+3 for every day before Day 7** you posted it. Beat every rival to a
-   correct call and it's an **exclusive: +15**.
+   A correct call earns **+4 for every day left** when you posted it. Beat every rival to a
+   correct call and it's an **exclusive: +20**. A right call posted after that player's twist gets **+10**.
+   ★★★ players count ×1.5 points, ★★ players ×1.2, ★ players ×1.
 4. **Changing your mind** is allowed, but it's public: you lose 4–8% of your followers, the Tabloid
    mocks you, a correct re-call scores only half its base points (no early bonus, no exclusive) and a
-   wrong one costs an extra 10.
-5. **End the day** when you're done. Rivals post overnight and new events drop (about 1 in 3 wire stories is planted). A player with fresh news shows a **NEW** chip; open him to see a **BREAKING** banner with only his news.
-   Each source tells you **one story per player**: asking the same source again gets the same answer, so ask someone else.
-6. **Deadline Day.** Day 7 is a 60-second timer with only 3 contacts. Anything you haven't called scores zero.
+   wrong one costs an extra 10. If a twist hit your call, updating it is free of the follower loss and the mockery
+   (it still scores half and can't be an exclusive). **Go louder** raises a call's loudness without deleting it, but
+   the call then counts as posted today.
+5. **End the day** when you're done. Rivals post overnight and new wire events drop, and after the first telling
+   event on a player, half of the later ones are planted. A player with fresh news shows a red **NEW** dot on his
+   card and NEW pills in *What we know*; the Overnight sheet sums it all up.
+   Each source tells you **one story per player** until a twist: ask someone else.
+6. **Deadline Day.** Day 7 is a 60-second real-time clock with only 3 contacts (it keeps running if you reload).
+   Anything you haven't called scores zero; in the last 15 seconds **Snap calls** post one-tap Advanced calls.
    Then everything is announced, the replies roll in and you get your tier.
 
 ### Tiers
 
 | Tier | Score |
 |---|---|
-| 🥇 **Tier 1** | 350+ |
-| **Tier 2** | 250–349 |
-| **Tier 3** | 160–249 |
-| **Tier 4** | 70–159 |
+| 🥇 **Tier 1** | 370+ |
+| **Tier 2** | 240–369 |
+| **Tier 3** | 180–239 |
+| **Tier 4** | 70–179 |
 | **Tier 5** | 0–69 |
 | 🤡 **ITK Clown** | below 0 |
 
+Those are the Daily and Practice bars (strong Daily play lands Tier 1 about 20% of the time). Career and Rooms
+use bars that rise with your upgrades (395/270/200 for a new career up to 405/365/320 fully upgraded, Tier 4 always 70).
+
 ### Your rivals
 
-- 🗞️ **The Tabloid** (`@BackPageBants`) posts early and loud, and is wrong more than half the time.
-- 🕵️ **The ITK account** (`@TransferITK_`) is a coin flip.
-- 🎙️ **The Club Insider** (`@PressBoxPete`) posts late and is nearly always right, but by then it's not an exclusive.
+- 🗞️ **The Tabloid** (`@BackPageBants`) posts on days 2–3, early and loud, and is wrong more often than right.
+- 🕵️ **The ITK account** (`@TransferITK_`) posts on days 3–5 and is close to a coin flip.
+- 🎙️ **The Club Insider** (`@PressBoxPete`) posts on days 5–7 and is right more often than not, but by then it's rarely an exclusive.
+
+A rival only beats you to the exclusive if his post was **right**; a twist restarts the race.
 
 ## 🕹️ Modes and features
 
-- **Daily Challenge.** The same 8 sagas for everyone, every day (Daily #1 was 25 September 2026). No gear, no
-  boosts: just skill and nerve. Keep a streak going, tap the tile after playing to reopen the full results, and
-  browse every past challenge (tweets, replies and all) under *Past challenges*. Saved on the device only.
-- **Career.** Your own long game. Scores are multiplied by how big you are (×1.0 under 400 followers,
-  ×1.1 under 1,500, ×1.2 under 4,000, ×1.25 above). Earn XP and credits, climb 7 levels from
-  *Local blogger* to *Global insider*, and spend credits on:
-  - **Gear:** Faster Wi‑Fi (+1 contact a day), Second phone (+1 more), Press pass, Medical contact.
-  - **Boosts:** Burner phone (+1 contact today), Tip‑off (is the rumor real at all?), Bribe a source
-    ($150, once per player: a guaranteed true clue, with a 25% chance it leaks).
+- **Daily Challenge.** The same 5 sagas for everyone, every day (Daily #1 was 25 September 2026), played once. No gear, no
+  boosts: just skill and nerve. Keep a streak going, tap the tile after playing to reopen the full results, browse every
+  past challenge (tweets, replies and all) under *Past dailies*, and post your score to the daily and weekly leaderboards.
+  Saved on the device only (with a local backup copy).
+- **Career.** Your own long game: 3 contacts a day, sources that open later in the window, and tier bars that rise as
+  you upgrade. Points are never multiplied by your follower count. Earn XP and cash (pay per window depends on points,
+  exclusives and tier), climb 7 levels from *Local blogger* to *Global insider*, and spend cash on:
+  - **Gear (8 items):** Faster Wi‑Fi (+1 contact on Day 6), Twist radar (a warning before some twists), Second phone
+    (+1 contact on Day 5), Power bank (+1 Deadline Day contact), Mic (more followers on right calls), Blue tick (bigger
+    follower surge on exclusives), Lucky trench coat (your first wrong call is halved) and Laptop (earlier, likelier
+    twist warnings).
+  - **Source tree (22 steps):** three reliability levels for every source, and earlier openings for the physio and the
+    airport spotter.
+  - **Boosts:** Burner phone (+1 contact today, $450), Tip‑off (is the rumour real at all? $1,100), Bribe a source
+    ($1,800, once per player: 75% a guaranteed true leak, 25% it blows up in your face). Each repeat buy within a
+    window doubles the price.
   - **Catchphrases** for your posts, from *CONFIRMED 🔒* to *TIER ONE 🥇*.
-- **Practice window** that doesn't count, for learning the ropes.
-- **11 achievements**, such as *Scoop king*, *Clean sheet*, *Deadline Day hero*, *Fumbled the bag* and *Flip-flopper*.
+  - Four career goals unlock the **Legend career** (prestige): keep your trophies and followers, restart the climb with higher bars and better pay.
+- **Practice window** that doesn't count and is never saved, for learning the ropes.
+- **66 achievements** in a Trophies cabinet, such as *Scoop king*, *Clean sheet*, *Deadline Day hero*, *Fumbled the bag* and *Flip-flopper*.
 - **Skins:** Deadline night, Stadium night, Tabloid red, Broadsheet and Neon insider.
 - **Three languages:** English, Spanish and Egyptian Arabic, with full right-to-left support.
 - **Share cards** so you can brag about your tier, and a **save code** to move your progress to another device.
