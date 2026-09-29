@@ -6,7 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(resolve(here, '../../../../tier-one/index.html'), 'utf8');
+const src = readFileSync(resolve(here, '../../../../tier-one-classic/index.html'), 'utf8');
 const out = resolve(here, '../src/boot');
 
 const pick = (re, what) => { const m = src.match(re); if (!m) throw new Error(`Tier One intro: ${what} not found`); return m; };

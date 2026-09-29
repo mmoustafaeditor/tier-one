@@ -10,7 +10,7 @@ import pkg from './package.json' with { type: 'json' };
 // Tier One v3 ships as ONE index.html (fonts, art and rules engine inlined), like The Gaffer, so it runs offline and the
 // Android WebView can bundle it as-is. The rules engine is shared with the server: ../../../../api/tier-one/v3/_lib.
 //   npm run build      → dist/index.html (esbuild minify; for play-testing with `npm run serve`)
-//   npm run build:min  → dist/index.html + version.json, then copied to /tier-one-v3/ at the repo root (sembagames.app/tier-one-v3)
+//   npm run build:min  → dist/index.html + version.json, then copied to /tier-one/ at the repo root (sembagames.app/tier-one)
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BUILD = Number(process.env.T1_BUILD) || Math.floor(Date.now() / 60000);
 
@@ -23,7 +23,7 @@ const publish = (): Plugin => ({
     const html = readFileSync(resolve(out, 'index.html'));
     const info = { game: 'tier-one-v3', version: pkg.version, build: BUILD, bytes: html.length, sha256: createHash('sha256').update(html).digest('hex') };
     writeFileSync(resolve(out, 'version.json'), `${JSON.stringify(info, null, 2)}\n`);
-    const site = resolve(HERE, '../../../../tier-one-v3');
+    const site = resolve(HERE, '../../../../tier-one');
     mkdirSync(site, { recursive: true });
     copyFileSync(resolve(out, 'index.html'), resolve(site, 'index.html'));
     copyFileSync(resolve(out, 'version.json'), resolve(site, 'version.json'));

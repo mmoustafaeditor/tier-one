@@ -11,15 +11,11 @@
     {
       "source": "/the-gaffer",
       "destination": "/the-gaffer/index.html"
-    },
-    {
-      "source": "/tier-one-v3",
-      "destination": "/tier-one-v3/index.html"
     }
   ],
   "headers": [
     {
-      "source": "/tier-one-v3/(index.html|version.json)?",
+      "source": "/tier-one/(index.html|version.json)?",
       "headers": [
         {
           "key": "Cache-Control",
@@ -70,6 +66,18 @@
           "value": "public, max-age=300, s-maxage=3600"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/tier-one-v3",
+      "destination": "/tier-one/",
+      "permanent": false
+    },
+    {
+      "source": "/tier-one-v3/:path*",
+      "destination": "/tier-one/",
+      "permanent": false
     }
   ]
 }

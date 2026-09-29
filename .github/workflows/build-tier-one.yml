@@ -2,12 +2,12 @@ name: Build Tier One APK
 on:
   push:
     paths:
-      - 'tier-one/**'
+      - 'tier-one-classic/**'
       - 'games/tier-one/**'
       - '.github/workflows/build-tier-one.yml'
   pull_request:
     paths:
-      - 'tier-one/**'
+      - 'tier-one-classic/**'
       - 'games/tier-one/**'
       - '.github/workflows/build-tier-one.yml'
   workflow_dispatch:
