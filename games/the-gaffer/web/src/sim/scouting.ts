@@ -6,7 +6,9 @@ import { makeRng } from './rng';
 import { playerOf, type World } from './world';
 import { roundFee } from './season';
 import { spend, staffQ } from './economy';
-import { BEATS, FORMATIONS, FORMATION_IDS, TRAP_VS, beatenBy, fitPenalty, xiFor, type FormationId, type Philosophy } from './tactics';
+import { FORMATIONS, FORMATION_IDS, PHILOSOPHIES, PRESETS, fitPenalty, xiFor, type FormationId, type Philosophy } from './tactics';
+import { expected } from './match';
+import { pointsLeft, withTactics } from './engine/story';
 import type { LiveMatch } from './match';
 
 export interface ScoutReport {
@@ -18,6 +20,7 @@ export interface ScoutReport {
   weak: { id: string; why: 'slow' | 'tired' | 'weak' }[];
   plan: { philosophy: Philosophy; pressing: 0 | 1 | 2; trap: 0 | 1 | 2 | 3 };
   accuracy: number;        // %
+  gains?: Partial<Record<Philosophy, number>>; // engine v2: expected points with each philosophy against them
 }
 
 export const scoutReportCost = (w: World, c: Career) => roundFee(w.clubs.find((x) => x.id === c.clubId)!.wageCap * 0.1);
@@ -43,9 +46,19 @@ export function makeReport(w: World, c: Career, m: LiveMatch): { world: World; c
   const worst = [...defenders].sort((a, b) => a.rating - b.rating)[0];
   if (worst && !weak.some((x) => x.id === worst.id)) weak.push({ id: worst.id, why: 'weak' });
   const ph = them.tactics.philosophy ?? 'balanced';
-  const answer = beatenBy(ph)[0] ?? 'balanced';
-  const plan = { philosophy: answer, pressing: (slow ? 2 : 1) as 0 | 1 | 2, trap: (TRAP_VS[ph] ?? 0) as 0 | 1 | 2 | 3 };
-  const report: ScoutReport = { key: m.key, opponent: them.clubId, formation, philosophy: ph, threats, weak, plan, accuracy };
+  // The counter plan is the engine's own answer: every philosophy tried against their set-up with our players
+  // (and our mastery of it), the best expected points wins.
+  const k = m.sides[0].clubId === c.clubId ? 0 : 1;
+  const gains: Partial<Record<Philosophy, number>> = {};
+  for (const p of PHILOSOPHIES) {
+    const m2 = withTactics(m, k, { ...PRESETS[p], philosophy: p }, get);
+    m2.sides = [...m2.sides] as typeof m2.sides;
+    m2.sides[k] = { ...m2.sides[k], mastery: p === 'balanced' ? 100 : c.mastery?.[p] ?? 30 };
+    gains[p] = Math.round(pointsLeft({ ...m2, minute: 0 }, k, expected(m2, get)) * 100) / 100;
+  }
+  const answer = (Object.keys(gains) as Philosophy[]).sort((a, b) => gains[b]! - gains[a]!)[0] ?? 'balanced';
+  const plan = { philosophy: answer, pressing: PRESETS[answer].pressing as 0 | 1 | 2, trap: PRESETS[answer].trap as 0 | 1 | 2 | 3 };
+  const report: ScoutReport = { key: m.key, opponent: them.clubId, formation, philosophy: ph, threats, weak, plan, accuracy, gains };
   const s = spend(w, c, 'scouting', -cost);
   return { world: s.world, career: { ...s.career, scouted: { ...(s.career.scouted ?? {}), [m.key]: report } }, report };
 }
@@ -61,8 +74,11 @@ export function advice(w: World, c: Career, report: ScoutReport | undefined, los
   const mine = tac?.philosophy ?? 'balanced';
   if (!report) tips.push({ k: 'scoutFirst' });
   else {
-    if (BEATS[report.philosophy].includes(mine)) tips.push({ k: 'mismatch', theirs: report.philosophy, use: report.plan.philosophy });
-    else if (BEATS[mine].includes(report.philosophy)) tips.push({ k: 'edge', theirs: report.philosophy });
+    const g = report.gains;
+    if (g && g[mine] !== undefined && g[report.plan.philosophy] !== undefined) {
+      if (report.plan.philosophy === mine) tips.push({ k: 'edge', theirs: report.philosophy });
+      else if (g[report.plan.philosophy]! - g[mine]! >= 0.08) tips.push({ k: 'mismatch', theirs: report.philosophy, use: report.plan.philosophy });
+    }
     if (report.plan.trap && tac?.trap !== report.plan.trap) tips.push({ k: 'trap', trap: report.plan.trap });
   }
   const mast = c.mastery?.[mine] ?? 30;

@@ -5,14 +5,16 @@ import { useMemo, useState } from 'react';
 import type { Lang, Strings } from '../i18n';
 import type { Career, Player } from '../model/types';
 import { playerOf, squadOf, type World } from '../sim/world';
-import { DEFAULT_TACTICS, FORMATIONS, FORMATION_IDS, PHILOSOPHIES, available, fmt, fitPenalty, setPieces, slotValue, xiFor, type UserTactics } from '../sim/tactics';
+import { DEFAULT_TACTICS, FORMATIONS, FORMATION_IDS, PHILOSOPHIES, applyPreset, available, fmt, fitPenalty, fullTactics, setPieces, slotValue, xiFor, type Tactics as Tac, type UserTactics } from '../sim/tactics';
 import { predict } from '../sim/match';
+import { suggest } from '../sim/engine/story';
+import { tipWhat, tipWhy } from './WhyCard';
 import { formationNeeds, hasLicence } from '../sim/coach';
 import { userMatch } from '../sim/season';
 import { AppBar, Ic, Sheet } from './parts';
 import { ICONS } from './icons';
 
-type Seg = readonly [string, readonly string[], number, (v: number) => void];
+type Seg = readonly [string, readonly string[], number, (v: number) => void, (readonly string[])?];
 
 export function Tactics({ world, career, lang, t, onBack, onSave }: {
   world: World; career: Career; lang: Lang; t: Strings; onBack: () => void; onSave: (tac: UserTactics) => void;
@@ -29,13 +31,23 @@ export function Tactics({ world, career, lang, t, onBack, onSave }: {
   const squad = squadOf(world, career.clubId);
   const pieces = setPieces(xi, tac, career.season);
 
-  const pred = useMemo(() => {
-    const m = userMatch(world, draft);
-    if (!m) return null;
-    const p = predict(m, (id) => playerOf(world, id)!);
-    return m.sides[0].clubId === career.clubId ? p : ([p[2], p[1], p[0]] as [number, number, number]);
+  const next = useMemo(() => userMatch(world, draft),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [world, JSON.stringify(tac)]);
+    [world, JSON.stringify(tac)]);
+  const pred = useMemo(() => {
+    if (!next) return null;
+    const p = predict(next, (id) => playerOf(world, id)!);
+    return next.sides[0].clubId === career.clubId ? p : ([p[2], p[1], p[0]] as [number, number, number]);
+  }, [next, world, career.clubId]);
+  const mine = next ? (next.sides[0].clubId === career.clubId ? 0 : 1) : 0;
+  // The assistant's best single change for this opponent, from the engine's own odds (Style tab only: it costs a few ms).
+  const tip = useMemo(() => (next && tab === 1 ? suggest(next, mine, (id) => playerOf(world, id)!, 1, 0.03, (p) => !p.formation)[0] : undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [next, tab]);
+  const opp = next ? next.sides[1 - mine].onPitch.filter(Boolean).map((id) => playerOf(world, id)!).filter((p) => p.position !== 'GK') : [];
+  const ft = fullTactics(tac);
+  const ins = t.eng.ins;
+  const set = (patch: Partial<Tac>) => setTac({ ...tac, ...patch });
 
   const setXI = (ids: string[]) => setTac({ ...tac, xi: ids });
   const put = (p: Player) => {
@@ -49,14 +61,16 @@ export function Tactics({ world, career, lang, t, onBack, onSave }: {
   };
   const short = (p: Player) => p.name[lang].split(' ').slice(-1)[0];
 
-  const segs = (list: Seg[]) => list.map(([label, opts, val, set]) => (
-    <div key={label}>
+  const segs = (list: Seg[]) => list.map(([label, opts, val, setV, hints]) => (
+    <div key={label} className="g-ins">
       <div className="sechead"><span className="over">{label}</span></div>
       <div className="seg g-seg-wrap">
-        {opts.map((o, i) => <button key={o} className={val === i ? 'on' : ''} onClick={() => set(i)}>{o}</button>)}
+        {opts.map((o, i) => <button key={o} className={val === i ? 'on' : ''} aria-pressed={val === i} onClick={() => setV(i)}>{o}</button>)}
       </div>
+      {hints?.[val] && <p className="g-ins-hint">{hints[val]}</p>}
     </div>
   ));
+  const name = (id: string) => playerOf(world, id)?.name[lang] ?? '';
 
   return (
     <>
@@ -114,26 +128,31 @@ export function Tactics({ world, career, lang, t, onBack, onSave }: {
           </div>
           <button className="btn g-pitchbtn" onClick={() => setTac({ ...tac, xi: null })}>{t.bestXI}</button>
 
-          {segs([[t.mentality, t.mentalities, tac.mentality + 2, (v: number) => setTac({ ...tac, mentality: v - 2 })]])}
+          {segs([[ins.mentality.t, ins.mentality.o, tac.mentality + 2, (v: number) => set({ mentality: v - 2 }), ins.mentality.h]])}
         </>
       )}
 
       {tab === 1 && (
         <>
-          {segs([
-            [t.pressing, t.pressings, tac.pressing, (v: number) => setTac({ ...tac, pressing: v as 0 | 1 | 2 })],
-            [t.passing, t.passings, tac.passing, (v: number) => setTac({ ...tac, passing: v as 0 | 1 | 2 })],
-            [`${t.rolesT} · ${t.fullbackT}`, t.fullbacks, tac.fullback ?? 0, (v: number) => setTac({ ...tac, fullback: v as 0 | 1 | 2 })],
-            [`${t.rolesT} · ${t.strikerT}`, t.strikers, tac.striker ?? 0, (v: number) => setTac({ ...tac, striker: v as 0 | 1 | 2 | 3 })],
-            [t.trapT, t.traps, tac.trap ?? 0, (v: number) => setTac({ ...tac, trap: v as 0 | 1 | 2 | 3 })],
-          ])}
-
+          {tip && (
+            <div className="card g-why g-why-mini" style={{ marginTop: 'var(--s3)' }}>
+              <span className="over">{t.eng.assistantPick}</span>
+              <div className="g-tip">
+                <div className="g-tip-main">
+                  <b>{tipWhat(tip.patch, t, name)}</b>
+                  <span>{tipWhy(tip, t, name)}</span>
+                  <small className="num">{t.eng.winChance.replace('{w0}', String(Math.round(tip.win[0] * 100))).replace('{w1}', String(Math.round(tip.win[1] * 100)))}</small>
+                </div>
+                <button className="btn primary sm" onClick={() => set(tip.patch)}>{t.eng.apply}</button>
+              </div>
+            </div>
+          )}
           <div className="sechead"><span className="over">{t.philosophyT}</span></div>
           <div className="list">
             {PHILOSOPHIES.map((ph) => {
               const m = Math.round(ph === 'balanced' ? 100 : career.mastery?.[ph] ?? 30);
               return (
-                <button key={ph} className={`cell g-phil${(tac.philosophy ?? 'balanced') === ph ? ' g-mine' : ''}`} onClick={() => setTac({ ...tac, philosophy: ph })}>
+                <button key={ph} className={`cell g-phil${(tac.philosophy ?? 'balanced') === ph ? ' g-mine' : ''}`} onClick={() => setTac(applyPreset(tac, ph))}>
                   <span className="cmain">
                     <b>{t.philosophies[ph]}</b>
                     <span>{t.philosophyHints[ph]}</span>
@@ -144,6 +163,35 @@ export function Tactics({ world, career, lang, t, onBack, onSave }: {
               );
             })}
           </div>
+          <p className="g-ins-hint" style={{ marginTop: 'var(--s3)' }}>{t.eng.styleHint}</p>
+          {segs([
+            [ins.pressing.t, ins.pressing.o, ft.pressing, (v: number) => set({ pressing: v as 0 | 1 | 2 }), ins.pressing.h],
+            [ins.line.t, ins.line.o, ft.line, (v: number) => set({ line: v as 0 | 1 | 2 }), ins.line.h],
+            [ins.width.t, ins.width.o, ft.width, (v: number) => set({ width: v as 0 | 1 | 2 }), ins.width.h],
+            [ins.tempo.t, ins.tempo.o, ft.tempo, (v: number) => set({ tempo: v as 0 | 1 | 2 }), ins.tempo.h],
+            [ins.passing.t, ins.passing.o, ft.passing, (v: number) => set({ passing: v as 0 | 1 | 2 }), ins.passing.h],
+            [`${t.rolesT} · ${ins.fullback.t}`, ins.fullback.o, ft.fullback, (v: number) => set({ fullback: v as 0 | 1 | 2 }), ins.fullback.h],
+            [`${t.rolesT} · ${ins.striker.t}`, ins.striker.o, ft.striker, (v: number) => set({ striker: v as 0 | 1 | 2 | 3 }), ins.striker.h],
+            [ins.trap.t, ins.trap.o, ft.trap, (v: number) => set({ trap: v as 0 | 1 | 2 | 3 }), ins.trap.h],
+            [ins.routine.t, ins.routine.o, ft.routine, (v: number) => set({ routine: v as 0 | 1 | 2 }), ins.routine.h],
+          ])}
+          <div className="list g-toggles" style={{ marginTop: 'var(--s4)' }}>
+            {(['counter', 'waste'] as const).map((k) => (
+              <button key={k} className={`cell g-row g-switch${ft[k] ? ' on' : ''}`} role="switch" aria-checked={ft[k]} onClick={() => set({ [k]: !ft[k] })}>
+                <span className="cmain"><b>{ins[k].t}</b><span>{ins[k].h}</span></span>
+                <span className="g-knob" aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+          {opp.length > 0 && (
+            <label className="cell g-row g-markrow">
+              <span className="cmain"><b>{ins.mark.t}</b><span>{ins.mark.h}</span></span>
+              <select className="g-input g-select" value={ft.mark ?? ''} onChange={(e) => set({ mark: e.target.value || null })}>
+                <option value="">{ins.mark.none}</option>
+                {opp.map((p) => <option key={p.id} value={p.id}>{p.name[lang]} · {p.position}</option>)}
+              </select>
+            </label>
+          )}
         </>
       )}
 

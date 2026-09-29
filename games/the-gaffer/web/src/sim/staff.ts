@@ -4,7 +4,7 @@
 import { FREE_AGENT, type Career, type Duty, type StaffLog, type StaffRole } from '../model/types';
 import { makeRng } from './rng';
 import { money, playerOf, squadOf, strengthOf, type World } from './world';
-import { DEFAULT_TACTICS, FORMATIONS, FORMATION_IDS, autoXI, slotValue, type FormationId } from './tactics';
+import { DEFAULT_TACTICS, FORMATIONS, FORMATION_IDS, applyPreset, autoXI, slotValue, type FormationId } from './tactics';
 import { formationNeeds, hasLicence } from './coach';
 import { predict } from './match';
 import { makeReport } from './scouting';
@@ -69,7 +69,8 @@ export function staffPrep(w: World, c: Career, m: { sides: { clubId: string }[];
         // A delegated tactics job uses the report's counter plan.
         if (delegated(career, 'tactics')) {
           const t = career.tactics ?? DEFAULT_TACTICS;
-          career = { ...career, tactics: { ...t, pressing: r.report.plan.pressing, trap: r.report.plan.trap, philosophy: (career.mastery?.[r.report.plan.philosophy] ?? 0) >= 50 ? r.report.plan.philosophy : t.philosophy } };
+          const ph = r.report.plan.philosophy;
+          career = { ...career, tactics: ph === 'balanced' || (career.mastery?.[ph] ?? 0) >= 50 ? applyPreset(t, ph) : { ...t, pressing: r.report.plan.pressing, trap: r.report.plan.trap } };
         }
       }
     }

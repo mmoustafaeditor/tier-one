@@ -40,11 +40,16 @@ export function matchRatings(m: LiveMatch, get: (id: string) => Player): Ratings
     if (pos === 'GK') keepers.set(id, i);
     rating[id] = v;
   }
+  // Engine v2 logs every shot and (in the user's match) every decisive duel, so each counts for a little.
   for (const e of m.events) {
     const add = (id: string | undefined, d: number) => { if (id && rating[id] !== undefined) rating[id] += d; };
     if (e.kind === 'goal') { add(e.playerId, e.how === 'pen' ? 0.8 : 1.1); add(e.assistId, 0.6); }
-    if (e.kind === 'save') add(e.playerId, 0.35);
-    if (e.kind === 'miss') add(e.playerId, -0.15);
+    if (e.kind === 'save') { add(e.playerId, m.v === 2 ? 0.25 : 0.35); add(e.assistId, 0.08); }
+    if (e.kind === 'miss') { add(e.playerId, m.v === 2 ? -0.06 : -0.15); add(e.assistId, 0.05); }
+    if (e.kind === 'block') { add(e.playerId, -0.03); add(e.vs, 0.12); }
+    if (e.kind === 'duel') { add(e.playerId, e.ok ? 0.06 : -0.03); add(e.vs, e.ok ? -0.05 : 0.06); }
+    if (e.kind === 'foul') add(e.playerId, -0.03);
+    if (e.kind === 'offside') add(e.playerId, -0.02);
     if (e.kind === 'yellow') add(e.playerId, -0.3);
     if (e.kind === 'red') add(e.playerId, -1.8);
   }

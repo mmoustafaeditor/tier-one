@@ -1,0 +1,20 @@
+// One FULL match against an AI side: the Why at half-time and full time, the suggestions, and the timings.
+import { generateWorld, playerOf } from '../src/sim/world';
+import { newCareer } from '../src/sim/season';
+import { startMatch, stepMinute, simulate } from '../src/sim/match';
+import { explain } from '../src/sim/engine/story';
+const w = generateWorld(7);
+const get = (id: string) => playerOf(w, id)!;
+const c = newCareer(w, 7, 'eng_bri', 'T', { age: 40, nationality: 'ENG' }, 2026);
+const opp = w.clubs.find((x) => x.leagueId === 'eng1' && x.id !== 'eng_bri')!;
+const m = startMatch(w, c, 'eng_bri', opp.id, 'why:1', 0);
+while (m.minute < 45) stepMinute(m, get);
+let t0 = performance.now();
+const ht = explain(m, 0, get);
+console.log('HT', m.goals, m.xg, (performance.now() - t0).toFixed(1) + 'ms', JSON.stringify(ht));
+simulate(m, get);
+t0 = performance.now();
+const ft = explain(m, 0, get);
+console.log('FT', m.goals, m.xg, (performance.now() - t0).toFixed(1) + 'ms', JSON.stringify(ft));
+console.log(m.events.filter((e) => e.kind === 'tactic').map((e) => `${e.min}' ${e.side} ${e.note}`).join('\n'));
+console.log('events', m.events.length, 'json bytes', JSON.stringify(m).length);

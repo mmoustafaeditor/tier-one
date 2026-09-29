@@ -9,6 +9,7 @@ import { makeCups } from './cups';
 import { newCoach } from './coach';
 import { ensureDirector, newOps } from './economy';
 import { makeAttrs, makeFreeAgents, seedElo, type World } from './world';
+import { ensureV2 } from './match';
 
 const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7);
 
@@ -63,7 +64,7 @@ export function upgradeCareer(w: World, c: OldCareer): Career {
 // ---------- file versions ----------
 
 // The version `makeSave` writes. Bump it together with a new entry in UPGRADES.
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 // One step each: UPGRADES[n] turns a version-n file into version n+1. Applied in order by `upgradeSave`.
 export const UPGRADES: Record<number, (s: SaveFile) => SaveFile> = {
@@ -74,6 +75,16 @@ export const UPGRADES: Record<number, (s: SaveFile) => SaveFile> = {
     version: 2,
     career: s.career ? { shortlist: [], watch: {}, loans: [], delegate: {}, staffLog: [], ...s.career } : null,
   }),
+  // 2 → 3 (match engine v2): the new instructions are written out at their middle setting (so an old tactic plays
+  // exactly as it did), and a match saved half-way through by the v1 engine carries on under v2 with its stats kept.
+  2: (s) => {
+    const c = s.career;
+    if (!c) return { ...s, version: 3 };
+    const tactics = c.tactics ? { line: 1 as const, width: 1 as const, tempo: 1 as const, counter: false, waste: false, mark: null, routine: 0 as const, ...c.tactics } : c.tactics;
+    const live = c.live ? JSON.parse(JSON.stringify(c.live)) : c.live;
+    if (live) ensureV2(live);
+    return { ...s, version: 3, career: { ...c, tactics, live } };
+  },
 };
 
 export function upgradeSave(s: SaveFile): SaveFile {

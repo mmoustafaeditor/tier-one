@@ -5,6 +5,7 @@ import type { Aftermath } from '../sim/aftermath';
 import { Kit } from '../components/Kit';
 import { Ic, Sheet } from './parts';
 import { ICONS } from './icons';
+import { verdictText } from './WhyCard';
 
 const delta = (a: number, b: number) => { const d = Math.round(b - a); return d > 0 ? `+${d}` : d < 0 ? `−${Math.abs(d)}` : '±0'; };
 
@@ -16,6 +17,7 @@ export function FullTime({ a, world, lang, t, onClose }: { a: Aftermath; world: 
         <span className="over">{t.ftSub}</span>
         <h2 className="d2" style={{ margin: 'var(--s2) 0' }}>{t.ftTitle[a.res]} <span className="num ltr">{a.mine}–{a.theirs}</span>{a.pens ? <small className="num ltr"> ({a.pens[0]}–{a.pens[1]})</small> : null}</h2>
         {opp && <span className="chip"><Kit colors={opp.colors} size="xs" /> {t.vs} {opp.name[lang]} · {a.home ? t.home : t.away}</span>}
+        {a.why && <p className="g-ft-why"><b>{t.eng.assistant}:</b> {verdictText(a.why, t)}</p>}
       </div>
       <div className="list" style={{ margin: 'var(--s4) 0' }}>
         {a.motm && (
@@ -32,7 +34,7 @@ export function FullTime({ a, world, lang, t, onClose }: { a: Aftermath; world: 
         {a.records.map((r) => <div key={r} className="cell g-row"><span className="cmain"><span>{t.ftRecord}</span><b>{t.recordNames[r]}</b></span></div>)}
         {a.milestones.map((m) => <div key={m} className="cell g-row"><span className="cmain"><span>{t.ftMilestone}</span><b><Ic svg={ICONS.medal} /> {t.msNames[m] ?? m}</b></span></div>)}
       </div>
-      <button className="btn primary" style={{ width: '100%' }} onClick={onClose}>{t.ftContinue}</button>
+      <button className="btn primary" style={{ width: '100%', marginTop: 'var(--s4)' }} onClick={onClose}>{t.ftContinue}</button>
     </Sheet>
   );
 }
