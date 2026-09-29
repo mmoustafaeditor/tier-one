@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-29 · mmoustafaeditor · Tier One v3 design spec (design only, no game code)
+- **What changed:** New ground-up v3 spec: Daily core rebuilt on 4 outcomes with a planted "spin" (correlated misinformation), one announced twist, story-driven source opening days, a two-source rule for exclusives, Tier 1 = 180+ with an exclusive; the Wire (real rumours, market-priced scoring, locks, leagues); Career ranks with earned source Trust and club relations; Semba Credits economy, Press Pass, season track; connection map, player journeys, cut list, screen list, data contract. Rules-as-code reference engine in `games/tier-one/v3/engine/`. Numbers set by hand (owner: no sim suites this round), with telemetry gates in DESIGN.md §3.10.
+- **Files:** `games/tier-one/v3/DESIGN.md`, `games/tier-one/v3/engine/daily-engine.mjs`, `games/tier-one/v3/engine/rng.mjs`
+- **Heads-up for the team:** Nothing live changes. The v2 game (`tier-one/index.html`) is untouched. v3 needs a new server API and a data service before any build.
+
 ## 2026-09-29 · mmoustafaeditor · Tier One reskin "Pitch Night" (dark sports UI)
 - **What changed:** Restyle only, no features, screens or data changed. A theme layer (`@@LANE CSS:t1ui`, loads last) gives the default look charcoal-navy surfaces, one green accent (#3DDC6E) with red for negatives, and thin Barlow type (light big numbers and names, no italics/caps). Buttons and tabs are pills; the board and feed are headline lists with hairline dividers; cards lose their outlines; results/leaderboard use round W/L/exclusive dots. `@@LANE JS:t1ui` swaps emoji UI icons (sources, rivals, crown, phone, How to play, More, medals…) for one set of inline line-SVG icons as they render (tweet/news bodies and share text keep their emoji). Barlow 300/600 Latin subsets are embedded, so it works offline. Theme **Auto** now always shows the dark look (the explicit Light option still works, with green accents). Deadline Day keeps its red palette. Scoring was checked unchanged (same seeds give the same points).
 - **Files:** `tier-one/index.html` (new font block, CSS slot `t1ui`, JS slot `t1ui`, theme-color meta), `UPDATES.md`
