@@ -11,6 +11,7 @@ import { ensureDirector, newOps } from './economy';
 import { makeAttrs, makeFreeAgents, seedElo, type World } from './world';
 import { deptsFromDuties } from './delegation';
 import { ensureV2 } from './match';
+import { upgradeRecruit } from './recruit/save';
 
 const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7);
 
@@ -65,7 +66,7 @@ export function upgradeCareer(w: World, c: OldCareer): Career {
 // ---------- file versions ----------
 
 // The version `makeSave` writes. Bump it together with a new entry in UPGRADES.
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 7;
 
 // One step each: UPGRADES[n] turns a version-n file into version n+1. Applied in order by `upgradeSave`.
 export const UPGRADES: Record<number, (s: SaveFile) => SaveFile> = {
@@ -111,6 +112,12 @@ function upgrade3(s: SaveFile): SaveFile {
   return { ...s, version: 4, world: { ...w, players }, career };
 }
 UPGRADES[3] = upgrade3;
+
+// v2.4–v2.6 run in parallel lanes, each with its own step (dressing room 5→6, recruitment 6→7, training 7→8). A lane
+// that isn't merged yet leaves its step as a pass-through; `??=` never overwrites a real step, whichever merges first.
+for (const n of [4, 5]) UPGRADES[n] ??= (s) => ({ ...s, version: n + 1 });
+// 6 → 7 (V2.5 recruitment): knowledge from the old shortlist watch, loans keep share 1. See sim/recruit/save.ts.
+UPGRADES[6] = upgradeRecruit;
 
 export function upgradeSave(s: SaveFile): SaveFile {
   let out = s;

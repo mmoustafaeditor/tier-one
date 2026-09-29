@@ -6,13 +6,14 @@ import { FLAG } from '../data/names';
 import { playerOf, squadOf, money as money0 } from '../sim/world';
 import { estimate, shortlisted } from '../sim/estimate';
 import { avgRating } from '../sim/ratings';
-import { askingPrice } from '../sim/transfers';
-import { balanceOf } from '../sim/balance';
+import { askOf } from '../sim/recruit/club';
+import { rcOf } from '../sim/recruit/state';
+import { LoanSheet, LoanOutSheet } from './Talks';
 import { slotValue } from '../sim/tactics';
-import { loanClubs, loanOf } from '../sim/loans';
+import { loanOf } from '../sim/loans';
 import { windowOf } from '../sim/windows';
 import { Crest, I, Kpi, LineChart, Meter, Portrait } from './kit';
-import { Panel, PanelHead, Sheet } from './shell';
+import { Panel, PanelHead } from './shell';
 import { useGame, clubOf, cn, money, sn } from './game';
 import { ageOf } from './util';
 
@@ -27,6 +28,7 @@ export function PlayerScreen({ id }: { id: string }) {
   const { w, c, x, lang } = g;
   const p = playerOf(w, id);
   const [loanPick, setLoanPick] = useState(false);
+  const [loanAsk, setLoanAsk] = useState(false);
   const est = useMemo(() => (p ? estimate(w, c, p) : null), [w, c, p]);
   if (!p || !est) return <div className="empty-state on-ground"><p>{x.bid.no.gone}</p><button className="btn btn--ghost on-ground" onClick={() => g.go({ s: 'squad' })}>{x.back}</button></div>;
   const mine = p.clubId === c.clubId;
@@ -50,7 +52,8 @@ export function PlayerScreen({ id }: { id: string }) {
     const v = a <= peakAge ? base + (top - base) * Math.min(1, i / Math.max(1, peakAge - age)) : top - (a - peakAge) * 1.2;
     return Math.round(Math.max(40, Math.min(99, v)));
   });
-  const ask = !mine && p.clubId !== FREE_AGENT ? askingPrice(w, p, balanceOf(c).prices) : 0;
+  const ask = !mine && p.clubId !== FREE_AGENT ? askOf(w, c, p) : 0;
+  const release = mine ? rcOf(c).clauses[p.id]?.release : null; // v2.5: a clause we signed
   const fitRows = NEAR[p.position].map((pos) => ({ pos, v: Math.round(slotValue({ ...p, fitness: 100, morale: 60 }, pos)) }));
   const range = (lo: number, hi: number) => (lo === hi ? String(lo) : `${lo}–${hi}`);
   const flag = FLAG[p.nationality] ?? '';
@@ -71,7 +74,7 @@ export function PlayerScreen({ id }: { id: string }) {
             </>
           ) : (
             <>
-              <button className="btn btn--accent btn--sm" disabled={windowShut} onClick={() => g.sheet({ k: 'bid', id: p.id })}><I n="handshake" size="sm" />{P.bid}</button>
+              <button className="btn btn--accent btn--sm" disabled={windowShut} onClick={() => g.go({ s: 'transfers', tab: 2, p: p.id })}><I n="handshake" size="sm" />{P.bid}</button>
               <button className="btn btn--ghost on-ground btn--sm" onClick={() => g.run({ type: 'shortlist.toggle', playerId: p.id }, { toast: x.saved })}><I n="star" size="sm" />{shortlisted(c, p.id) ? P.unshortlist : P.shortlist}</button>
             </>
           )}
@@ -155,7 +158,7 @@ export function PlayerScreen({ id }: { id: string }) {
                 <button className="btn btn--ghost btn--sm" onClick={() => g.sheet({ k: 'rename', kind: 'player', id: p.id })}>{P.rename}</button>
               </div>
             )}
-            {!mine && p.clubId !== FREE_AGENT && <div className="p-more"><button className="btn btn--ghost btn--sm" disabled={windowShut} onClick={() => g.run({ type: 'loan.in', playerId: p.id })}>{P.loanIn}</button></div>}
+            {!mine && p.clubId !== FREE_AGENT && <div className="p-more"><button className="btn btn--ghost btn--sm" disabled={windowShut} onClick={() => setLoanAsk(true)}>{P.loanIn}</button></div>}
           </Panel>
 
           <Panel i={5} label={P.contract}>
@@ -163,26 +166,15 @@ export function PlayerScreen({ id }: { id: string }) {
             <div className="contract">
               <Kpi v={p.clubId === FREE_AGENT ? '—' : p.contractUntil + 1} l={P.expires} />
               <Kpi v={<span className="ltr">{money(p.wage)}</span>} l={P.perMonth} />
-              {mine ? <Kpi v={P.none} l={P.release} /> : <Kpi v={<span className="ltr">{p.clubId === FREE_AGENT ? x.common.free : money0(ask)}</span>} l={x.tr.likely} />}
+              {mine ? <Kpi v={release ? <span className="ltr">{money0(release)}</span> : P.none} l={P.release} /> : <Kpi v={<span className="ltr">{p.clubId === FREE_AGENT ? x.common.free : money0(ask)}</span>} l={x.tr.likely} />}
               {mine ? <Kpi v={x.place(earnerRank)} l={P.rank} /> : <Kpi v={exact ? range(est.lo, est.hi) : `${est.lo}–${est.hi}`} l={P.ability} />}
             </div>
           </Panel>
         </div>
       </div>
 
-      {loanPick && (
-        <Sheet label={P.loanOut} onClose={() => setLoanPick(false)}>
-          <h2 className="h2">{P.loanOut}</h2>
-          <div className="rows">
-            {loanClubs(w, c, p).map((cid) => { const cl = clubOf(w, cid); return (
-              <button key={cid} className="row linkrow" onClick={async () => { setLoanPick(false); await g.run({ type: 'loan.out', playerId: p.id, to: cid }); }}>
-                <Crest club={cl} size={32} /><span className="grow"><span className="name">{cn(cl, lang)}</span></span><I n="chev" size="sm" />
-              </button>
-            ); })}
-            {!loanClubs(w, c, p).length && <p className="muted">{x.bid.no.club}</p>}
-          </div>
-        </Sheet>
-      )}
+      {loanPick && <LoanOutSheet id={p.id} onClose={() => setLoanPick(false)} />}
+      {loanAsk && <LoanSheet id={p.id} onClose={() => setLoanAsk(false)} />}
     </div>
   );
 }
