@@ -12,6 +12,9 @@ import { myWorldRank } from './rankings';
 import { addNews } from './news';
 import { balanceOf, sackLine, seasonSackLine } from './balance';
 
+// `board.hired` (coach days at the hire) is written by newBoard and read by sinceHire; saves from before this change have none.
+type Board = Career['board'] & { hired?: number };
+
 // ---------- licences ----------
 
 export const LICENCES: Licence[] = ['D', 'C', 'B', 'A', 'PRO', 'ELITE'];
@@ -29,8 +32,10 @@ export const hasLicence = (have: Licence, need: Licence) => LICENCES.indexOf(hav
 export const licenceFor = (clubRep: number): Licence => LICENCES.find((l) => LICENCE_CAP[l] >= clubRep) ?? 'ELITE';
 export const nextLicence = (l: Licence): Licence | null => LICENCES[LICENCES.indexOf(l) + 1] ?? null;
 
-export const levelOf = (xp: number) => Math.min(50, Math.floor(Math.sqrt(xp / 120)) + 1);
-export const xpForLevel = (level: number) => 120 * (level - 1) ** 2;
+// Level curve: 60 × (level−1)² XP, so licence A (level 10) takes about three or four average seasons and PRO seven or eight.
+export const XP_PER_LEVEL = 60;
+export const levelOf = (xp: number) => Math.min(50, Math.floor(Math.sqrt(xp / XP_PER_LEVEL)) + 1);
+export const xpForLevel = (level: number) => XP_PER_LEVEL * (level - 1) ** 2;
 
 export type ExamCheck = { ok: true } | { ok: false; reason: 'max' | 'level' | 'matches' | 'fee' | 'wait' | 'trophy'; n?: number };
 
@@ -111,8 +116,13 @@ export function takeCourse(c: Career, id: string): { career: Career; ok: boolean
 // ---------- inbox ----------
 
 export function addMsg(c: Career, kind: MsgKind, key: string, ref: { club?: string; player?: string; pn?: LocalizedName; n?: number; s?: string } = {}): Career {
-  const msg: Msg = { id: `${c.season}.${c.round}.${key}.${(c.inbox?.length ?? 0)}.${ref.player ?? ref.club ?? ref.s ?? ''}`, season: c.season, round: c.round, kind, key, ...ref };
-  return { ...c, inbox: [msg, ...(c.inbox ?? [])].slice(0, 60) };
+  const inbox = c.inbox ?? [];
+  // Ids never collide, even for two messages of one tick right after the inbox was cleared.
+  const base = `${c.season}.${c.round}.${key}.${ref.player ?? ref.club ?? ref.s ?? ''}`;
+  let id = base;
+  for (let n = 1; inbox.some((m) => m.id === id); n++) id = `${base}#${n}`;
+  const msg: Msg = { id, season: c.season, round: c.round, kind, key, ...ref };
+  return { ...c, inbox: [msg, ...inbox].slice(0, 60) };
 }
 
 // ---------- start, salary, moving ----------
@@ -128,12 +138,18 @@ export function newCoach(club: Club): Coach {
   };
 }
 
+// A new job starts with the board's goodwill, and the sack line stays off for the first matchdays (`hired` = coach days then).
+export const BOARD_START = 65;
+export const HONEYMOON = 10; // matchdays after a hire (and at the start of a season) before the board can sack
+export const newBoard = (c: Career | null): Board => ({ confidence: BOARD_START, fans: 55, hired: c?.coach?.days ?? 0 });
+export const sinceHire = (c: Career) => c.coach.days - ((c.board as Board).hired ?? 0);
+
 // New club: fresh board, the tactics and transfer list start clean, and the new club says hello.
 export function moveTo(w: World, c: Career, clubId: string): { world: World; career: Career } {
   const players = w.players.map((p) => (p.listed && p.clubId === c.clubId ? { ...p, listed: undefined } : p));
   let career: Career = {
     ...c, clubId, tactics: undefined, offers: [], jobs: [], sacked: false, live: null, ops: newOps(w, w.clubs.find((x) => x.id === clubId)!, c.season),
-    board: { confidence: 60, fans: 55 },
+    board: newBoard(c),
     coach: { ...c.coach, clubs: c.coach.clubs.includes(clubId) ? c.coach.clubs : [...c.coach.clubs, clubId] },
   };
   career = addMsg(career, 'club', 'welcome', { club: clubId });
@@ -193,13 +209,15 @@ export function cupAimMet(w: World, c: Career, aim: CupAim): boolean | null {
 
 // ---------- after each of the user's matches ----------
 
-export interface MatchOutcome { mine: number; theirs: number; oppId: string; home: boolean; myLevel: number; oppLevel: number; cup: boolean }
+// `expected`: the engine's own expected points at kick-off (3·P(win) + P(draw) from predict()), the same odds the user saw.
+export interface MatchOutcome { mine: number; theirs: number; oppId: string; home: boolean; myLevel: number; oppLevel: number; cup: boolean; expected?: number }
+export const BOARD_PER_SURPRISE = 1.8;
 
 export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World; career: Career } {
   const me = w.clubs.find((x) => x.id === c.clubId)!;
   const opp = w.clubs.find((x) => x.id === o.oppId)!;
   const pts = o.mine > o.theirs ? 3 : o.mine === o.theirs ? 1 : 0;
-  const expected = clamp(1.4 + (o.myLevel - o.oppLevel) * 0.1 + (o.home ? 0.2 : -0.2), 0.3, 2.6);
+  const expected = o.expected ?? clamp(1.4 + (o.myLevel - o.oppLevel) * 0.1 + (o.home ? 0.2 : -0.2), 0.3, 2.6);
   const surprise = pts - expected;
   const coach: Coach = {
     ...c.coach,
@@ -212,7 +230,7 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
   };
   const before = c.board;
   const board = {
-    confidence: clamp(Math.round((before.confidence + surprise * 2.5) * 10) / 10, 0, 100),
+    confidence: clamp(Math.round((before.confidence + surprise * BOARD_PER_SURPRISE) * 10) / 10, 0, 100),
     fans: clamp(Math.round((before.fans + surprise * 4 + (o.mine >= 3 ? 1 : 0)) * 10) / 10, 0, 100),
   };
   let career: Career = { ...c, coach, board };
@@ -232,9 +250,9 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
   return { world, career };
 }
 
-// Mid-season sacking: from matchday 12 on, a board below 12% lets you go.
+// Mid-season sacking: after the honeymoon (a new job's first matchdays, and the start of every season), a board below 12% lets you go.
 export function sackCheck(w: World, c: Career): Career {
-  if (c.sacked || c.round < 12 || c.board.confidence >= sackLine(balanceOf(c))) return c;
+  if (c.sacked || c.round < HONEYMOON || sinceHire(c) < HONEYMOON || c.board.confidence >= sackLine(balanceOf(c))) return c;
   const career: Career = { ...c, sacked: true, jobs: jobOffers(w, c, true) };
   return addNews(addMsg(career, 'board', 'sacked', { club: c.clubId }), 'managers', 'sacked', { club: c.clubId, s: c.managerName });
 }
@@ -319,7 +337,7 @@ export function coachSeasonEnd(w: World, c: Career, position: number, leagueId: 
   let career: Career = {
     ...c,
     coach: { ...c.coach, trophies, reputation: clamp(rep, 0, 100), xp: c.coach.xp + (met ? 400 : 100) },
-    board: { confidence: clamp(c.board.confidence + delta, 0, 100), fans: clamp(c.board.fans + (met ? 10 : -10), 0, 100) },
+    board: { ...c.board, confidence: clamp(c.board.confidence + delta, 0, 100), fans: clamp(c.board.fans + (met ? 10 : -10), 0, 100) },
   };
   career = addMsg(career, 'board', met ? 'seasonGood' : 'seasonBad', { n: position });
   const ms = checkMilestones(career, null);

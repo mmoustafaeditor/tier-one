@@ -2,21 +2,22 @@
 // Every league plays the same matchday together; leagues with fewer clubs finish earlier.
 import { FREE_AGENT, type Career, type Club, type Deal, type Fixture, type LocalizedName, type Offer, type Player, type PlayerStats, type Position, type SeasonRecord } from '../model/types';
 import { bell, clamp, int, makeRng, pick, type Rng } from './rng';
-import { sideLevel, simulate, startMatch, winnerOf, type LiveMatch } from './match';
+import { predict, sideLevel, simulate, startMatch, winnerOf, type LiveMatch } from './match';
 import { cupRun, cupWinner, groupTable, playCupDay, tiesOn, userCupMatch, userTie, makeCups } from './cups';
 import { addNews, newsRound, rumoursRound } from './news';
-import { addMsg, afterMatch, coachSeasonEnd, newCoach, sackCheck, salaryOf } from './coach';
+import { addMsg, afterMatch, coachSeasonEnd, newBoard, newCoach, sackCheck, salaryOf } from './coach';
 import { available } from './tactics';
-import { economyWeek, newOps, sponsorBonus, staffQ } from './economy';
+import { aiEconomyWeek, economyWeek, newOps, sponsorBonus, staffQ } from './economy';
 import { applyElo } from './rankings';
-import { academyWeek, earnDev, trainingWeek } from './training';
-import { makeAttrs, makeFreeAgents, objectiveOf, playerOf, shiftAttrs, squadOf, valueOf, wageOf, type World } from './world';
+import { academyWeek, earnDev, resetExams, trainingWeek } from './training';
+import { makeAttrs, makeFreeAgents, objectiveOf, playerOf, shiftAttrs, squadOf, squadStrength, valueOf, wageOf, type World } from './world';
 import { playerName } from '../data/names';
 import { matchRatings } from './ratings';
 import { recordMatch, recordSeason } from './records';
 import { returnLoans, loanOf } from './loans';
 import { isDeadlineDay, windowOf } from './windows';
 import { staffWeek } from './staff';
+import { SQUAD_SELL_MIN } from './transfers';
 
 // ---------- fixtures ----------
 
@@ -188,7 +189,7 @@ export function newCareer(w: World, seed: number, clubId: string, managerName: s
   const fixtures = seasonFixtures(w, seed, season);
   const c: Career = {
     managerName, clubId, season, seed, round: 0, fixtures, stats: {}, history: [], offers: [], deals: [], manager,
-    cups: makeCups(w, { seed, season, fixtures }, null), cupDay: -1, coach: newCoach(club), board: { confidence: 60, fans: 55 }, inbox: [], jobs: [],
+    cups: makeCups(w, { seed, season, fixtures }, null), cupDay: -1, coach: newCoach(club), board: newBoard(null), inbox: [], jobs: [],
     ops: newOps(w, club, season), mastery: { balanced: 100 },
   };
   return addMsg(c, 'club', 'welcome', { club: clubId });
@@ -206,20 +207,33 @@ function practise(c: Career): Career {
 // The user's next match: a cup tie first if there is one today, then the league.
 export const nextUserMatch = (w: World, c: Career): LiveMatch | null => userCupMatch(w, c) ?? userMatch(w, c);
 
-// What the user's match meant for the coach, board and fans.
-function userAfter(w: World, c: Career, m: LiveMatch): { world: World; career: Career } {
+// What the user's match meant for the coach, board and fans. The board judges the result against the odds at
+// kick-off (`pre`: the world and career before the match), the same prediction the match screen showed.
+function userAfter(pre: { world: World; career: Career }, w: World, c: Career, m: LiveMatch): { world: World; career: Career } {
   const k = m.sides[0].clubId === c.clubId ? 0 : 1;
   const get = (id: string) => playerOf(w, id)!;
   return afterMatch(w, c, {
     mine: m.goals[k], theirs: m.goals[1 - k], oppId: m.sides[1 - k].clubId, home: k === 0,
     myLevel: sideLevel(m, k as 0 | 1, get), oppLevel: sideLevel(m, (1 - k) as 0 | 1, get), cup: !!m.cup,
+    expected: expectedPoints(pre.world, pre.career, m, k as 0 | 1),
   });
+}
+
+// Expected points for the user's side from the engine's own odds at kick-off: 3·P(win) + P(draw).
+export function expectedPoints(w: World, c: Career, m: LiveMatch, k: 0 | 1): number {
+  const get = (id: string) => playerOf(w, id)!;
+  if (!m.sides.every((s) => [...s.onPitch, ...s.bench].every((id) => !id || get(id)))) return 1.4;
+  const kickOff = startMatch(w, c, m.sides[0].clubId, m.sides[1].clubId, m.key, m.round);
+  const p = predict(kickOff, get);
+  const [win, draw] = k === 0 ? [p[0], p[1]] : [p[2], p[1]];
+  return 3 * win + draw;
 }
 
 // One step of the calendar. On a cup day the cup ties go first; if the user is in one, that's all for this step
 // (the league match comes next). Otherwise the league matchday is played too.
 export function playDay(w: World, c: Career, played?: LiveMatch): { world: World; career: Career; mine: LiveMatch | null } {
   let world = w, career = c;
+  const cupPre = { world: w, career: c };
   if ((c.cupDay ?? -1) < c.round && tiesOn(c, c.round).length) {
     const inCup = !!userTie(c);
     const cd = playCupDay(w, c, played?.cup ? played : undefined);
@@ -236,7 +250,7 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
     const mine = cd.matches.find((m) => m.sides.some((s) => s.clubId === c.clubId)) ?? null;
     if (career.ops && cd.prizes.has(c.clubId)) career = { ...career, ops: { ...career.ops, ledger: { ...career.ops.ledger, prizes: (career.ops.ledger.prizes ?? 0) + cd.prizes.get(c.clubId)! } } };
     if (mine) {
-      ({ world, career } = userAfter(world, career, mine));
+      ({ world, career } = userAfter(cupPre, world, career, mine));
       career = recordMatch(career, mine);
       career = practise(career);
       const k = mine.sides[0].clubId === c.clubId ? 0 : 1;
@@ -273,16 +287,18 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
     if (inCup) return { world, career: { ...career, live: null }, mine };
   }
   const before = career;
+  const pre = { world, career };
   const res = playRound(world, career, played && !played.cup ? played : undefined);
   world = res.world;
   career = res.career;
-  // The papers and the rumour mill.
+  // The papers and the rumour mill (rumours grow all season; deals go through on deadline day).
   career = newsRound(before, world, career);
-  // Other clubs only do business while a window is open.
-  if (windowOf(before)) ({ world, career } = rumoursRound(world, career));
-  if (res.mine) ({ world, career } = userAfter(world, career, res.mine));
+  ({ world, career } = rumoursRound(world, career));
+  if (res.mine) ({ world, career } = userAfter(pre, world, career, res.mine));
   if (res.mine) career = recordMatch(career, res.mine);
   if (res.mine) career = practise(career);
+  // Every other club pays its wages and upkeep too, so treasuries don't just pile up.
+  world = aiEconomyWeek(world, career);
   // The club's week: money, training, academy; development points from the result.
   if (career.ops) {
     const home = res.mine ? res.mine.sides[0].clubId === career.clubId : false;
@@ -307,20 +323,34 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
     if (n) career = addMsg(career, 'contract', 'contractsEnding', { n });
   }
   for (const o of career.offers) if (!c.offers.some((x) => x.id === o.id)) career = addMsg(career, 'offer', 'offerIn', { player: o.playerId, pn: playerOf(world, o.playerId)?.name, club: o.clubId });
-  // The board also reads the table: on course for the objective builds trust week by week, off course costs it
-  // (more the further off). Without this a title-winning favourite ended the season barely above 45%.
+  // The board also reads the table: it counts the points between the club and its objective, so a favourite a win
+  // off the top is left alone, a club clear of its target builds trust and one far adrift loses it (±1 a week at most).
   if (c.round >= 5) {
-    const lid = club.leagueId;
-    const rows = table(world, career, lid);
-    const pos = rows.findIndex((x) => x.clubId === career.clubId) + 1;
-    const obj = objectiveOf(world, club);
-    let target = pos;
-    while (target > 1 && !objectiveMet(obj, target, rows.length)) target--;
-    const delta = objectiveMet(obj, pos, rows.length) ? 0.8 : -0.5 * Math.min(3, 1 + (pos - target) / 3);
+    const delta = tableMood(world, career, club);
     career = { ...career, board: { ...career.board, confidence: clamp(Math.round((career.board.confidence + delta) * 10) / 10, 0, 100) } };
   }
   career = sackCheck(world, career);
   return { world, career, mine: res.mine };
+}
+
+// Weekly board term from the table: points clear of the objective's line (+), or points short of it (−).
+export const MOOD_PER_POINT = 0.05;
+export function tableMood(w: World, c: Career, club: Club): number {
+  const rows = table(w, c, club.leagueId);
+  const pos = rows.findIndex((x) => x.clubId === c.clubId) + 1;
+  const obj = objectiveOf(w, club);
+  const mine = rows[pos - 1].pts;
+  if (objectiveMet(obj, pos, rows.length)) {
+    // On course: the first place that misses the objective is the line to stay clear of.
+    let edge = pos;
+    while (edge < rows.length && objectiveMet(obj, edge + 1, rows.length)) edge++;
+    const lead = edge < rows.length ? mine - rows[edge].pts : 3;
+    return clamp(0.3 + MOOD_PER_POINT * lead, 0, 1);
+  }
+  let target = pos;
+  while (target > 1 && !objectiveMet(obj, target, rows.length)) target--;
+  const short = rows[target - 1].pts - mine;
+  return short <= 3 ? 0 : clamp(-MOOD_PER_POINT * (short - 3), -1, 0);
 }
 
 // Offers for the user's players: often for listed ones, now and then for a star. Offers last 3 matchdays.
@@ -338,10 +368,7 @@ function makeOffers(w: World, c: Career, r: Rng): Offer[] {
     if (offers.some((o) => o.playerId === p.id)) return;
     const fee = roundFee(p.marketValue * (lo + r() * (hi - lo)));
     // Buyers are clubs at the player's level (he'd get games there), mostly from the same country.
-    strength ??= new Map(buyers.map((b) => {
-      const best = squadOf(w, b.id).map((x) => x.rating).sort((x, y) => y - x).slice(0, 11);
-      return [b.id, best.reduce((a, x) => a + x, 0) / Math.max(1, best.length)];
-    }));
+    strength ??= new Map(buyers.map((b) => [b.id, squadStrength(squadOf(w, b.id))]));
     const fit = buyers.filter((b) => b.budget >= fee && Math.abs(strength!.get(b.id)! - p.rating) <= 6);
     const local = fit.filter((b) => country.get(b.leagueId) === myCountry);
     const able = local.length && r() < 0.75 ? local : fit;
@@ -425,8 +452,14 @@ export interface SeasonSummary {
   cups: { id: string; name: LocalizedName; round: number; rounds: number; won: boolean }[]; // the user's cup runs, from the real brackets (E2E #3)
 }
 
-const SQUAD_MIN = 16;  // clubs promote academy kids up to this
-const AI_SQUAD = 22;   // AI clubs sign free agents up to this
+const SQUAD_MIN = SQUAD_SELL_MIN;  // clubs promote academy kids up to this (the same floor selling stops at)
+const AI_SQUAD = 22;               // AI clubs sign free agents up to this
+// League prize money: a pot of PRIZE_POT months of the league's summed wage caps, shared by final place and size:
+// weight = own wage cap × (clubs below + 1)^PRIZE_STEEPNESS. The champion takes the most, the bottom next to nothing,
+// and a small club's cheque is measured against its own wages (a mid-table finish is worth about half a month's cap,
+// a title about two), not against the giants' budgets.
+export const PRIZE_POT = 1.0;
+export const PRIZE_STEEPNESS = 1.5;
 
 // Closes the season: records the result, moves clubs up and down, ages and develops players, retires veterans,
 // ends contracts (AI clubs renew most; the user's expiring players leave), fills squads from the academy and the
@@ -459,11 +492,13 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
   const promoted: string[] = [], relegated: string[] = [];
   for (const lg of w.leagues) {
     const t = tables.get(lg.id)!;
-    const topBudget = Math.max(...clubs.filter((x) => x.leagueId === lg.id).map((x) => x.budget));
+    const pot = PRIZE_POT * clubs.filter((x) => x.leagueId === lg.id).reduce((s, x) => s + x.wageCap, 0);
+    const weights = t.map((row, i) => byId.get(row.clubId)!.wageCap * (t.length - i) ** PRIZE_STEEPNESS);
+    const wsum = weights.reduce((s, x) => s + x, 0);
     const byRep = [...t].sort((a, b) => byId.get(b.clubId)!.reputation - byId.get(a.clubId)!.reputation);
     t.forEach((row, i) => {
       const club = byId.get(row.clubId)!;
-      club.budget = Math.round(club.budget + topBudget * 0.12 * (1 - i / t.length));
+      club.budget = Math.round(club.budget + pot * weights[i] / wsum);
       const expected = byRep.findIndex((x) => x.clubId === row.clubId);
       club.reputation = clamp(club.reputation + Math.sign(expected - i) * Math.min(3, Math.round(Math.abs(expected - i) / 3)) + (i === 0 ? 2 : 0), 30, 99);
     });
@@ -488,10 +523,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
   const left: Player[] = [];
   const deals: Deal[] = [];
   const strength = new Map<string, number>();
-  for (const club of w.clubs) {
-    const sq = squadOf(w, club.id).map((p) => p.rating).sort((a, b) => b - a).slice(0, 11);
-    strength.set(club.id, sq.reduce((s, x) => s + x, 0) / Math.max(1, sq.length));
-  }
+  for (const club of w.clubs) strength.set(club.id, squadStrength(squadOf(w, club.id)));
   for (const p of w.players) {
     const age = season - p.birthYear;
     const free = p.clubId === FREE_AGENT;
@@ -582,10 +614,10 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
   const freeNow = players.filter((p) => p.clubId === FREE_AGENT).length;
   if (freeNow < 160) players.push(...makeFreeAgents(r, season, 160 - freeNow));
 
-  // Wage caps follow the new wage bills.
+  // Wage caps follow the new wage bills, down as well as up: room that was never used is not carried over.
   for (const club of clubs) {
     const bill = players.filter((p) => p.clubId === club.id).reduce((s, p) => s + p.wage, 0);
-    club.wageCap = Math.max(club.wageCap, roundFee(bill * 1.05));
+    club.wageCap = roundFee(bill * 1.05);
   }
 
   if (coachEnd?.cash) { const mc = clubs.find((x) => x.id === c.clubId)!; mc.budget += coachEnd.cash; }
@@ -596,7 +628,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     const prize = mine.budget - (coachEnd?.cash ?? 0) - w.clubs.find((x) => x.id === c.clubId)!.budget;
     const ledger = { ...ops.ledger, prizes: (ops.ledger.prizes ?? 0) + prize, milestones: (ops.ledger.milestones ?? 0) + (coachEnd?.cash ?? 0) };
     const titles = (coachEnd?.career.coach.trophies.length ?? 0) - (c.coach?.trophies.length ?? 0);
-    ops = { ...ops, lastLedger: ledger, ledger: {}, devPoints: ops.devPoints + (record.met ? 20 : 0) + Math.max(0, titles) * 30 };
+    ops = resetExams({ ...ops, lastLedger: ledger, ledger: {}, devPoints: ops.devPoints + (record.met ? 20 : 0) + Math.max(0, titles) * 30 });
     if (position === 1) {
       const bonus = ops.sponsors.reduce((s, d) => s + d.bonusLeague, 0);
       mine.budget += bonus;
@@ -612,8 +644,11 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     .filter((x) => x.p && x.p.clubId === c.clubId).sort((a, b) => b.g - a.g)[0];
   const base = recordSeason(coachEnd?.career ?? c, myRow, position, myLeague, w.leagues.find((l) => l.id === myLeague)!.tier,
     clubGoals ? { pn: clubGoals.p!.name, goals: clubGoals.g } : null);
+  // Rumours waiting for next summer's deadline day carry over, counted from the new season's first matchday.
+  const rounds = roundsIn(c);
+  const rumours = (c.rumours ?? []).filter((ru) => ru.until >= rounds).map((ru) => ({ ...ru, until: ru.until - rounds }));
   const career: Career = {
-    ...base, season, round: 0, stats: {}, ratings: {}, loans: [], offers: [], deals: [...deals, ...c.deals], ops: ops!,
+    ...base, season, round: 0, stats: {}, ratings: {}, loans: [], offers: [], deals: [...deals, ...c.deals], ops: ops!, rumours,
     fixtures, history: [...c.history, record], cups: makeCups(world, { seed: c.seed, season, fixtures }, finals), cupDay: -1, live: null, pendingSwaps: undefined,
   };
   const cupRuns = Object.values(c.cups ?? {}).map((cup) => ({ cup, run: cupRun(cup, c.clubId) })).filter((x) => x.run)

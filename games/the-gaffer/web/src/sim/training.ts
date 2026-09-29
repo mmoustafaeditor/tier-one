@@ -9,11 +9,14 @@ import { makeAttrs, shiftAttrs, squadOf, valueOf, wageOf, freeShirt, type World 
 import { roundFee } from './season';
 import { spend, staffQ } from './economy';
 import { addNews } from './news';
+import { SQUAD_MAX } from './transfers';
 
 // Weekly progress towards the next +1 rating, by age.
 const AGE_RATE = (age: number) => (age <= 19 ? 2 : age <= 21 ? 1.6 : age <= 24 ? 1.2 : age <= 28 ? 0.6 : 0.2);
-const LOAD_PROGRESS = [1, 3.5, 6.5];
-const LOAD_RECOVERY = [18, 12, 6];
+// Hard training: +40% progress for −2 fitness a week (survivable with rotation), not a spiral.
+export const LOAD_PROGRESS = [1.5, 3.5, 5];
+export const LOAD_RECOVERY = [16, 12, 11];
+export const HARD_KNOCK = 0.10; // chance per hard week that one player picks up a 1-2 matchday knock
 
 export const atCeiling = (p: Player) => p.rating >= p.potential;
 
@@ -45,7 +48,7 @@ export function trainingWeek(w: World, c: Career): { world: World; career: Caree
     return q;
   });
   // Hard weeks carry a small injury risk; a good fitness coach lowers it.
-  if (load === 2 && r() < 0.18 * (1 - staffQ(ops, 'fitness') / 200)) {
+  if (load === 2 && r() < HARD_KNOCK * (1 - staffQ(ops, 'fitness') / 200)) {
     const pool = players.filter((p) => mine.has(p.id) && p.injured === 0);
     const who = pool[Math.floor(r() * pool.length)];
     if (who) { who.injured = int(r, 1, 2); hurt.push(who.id); }
@@ -108,6 +111,14 @@ export function treat(w: World, c: Career, p: Player, t: Treatment): { world: Wo
 const POSITIONS: Position[] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CM', 'CAM', 'LW', 'RW', 'ST', 'ST'];
 export const ACADEMY_MAX = 8;
 export const scoutCost = (w: World, c: Career) => roundFee(w.clubs.find((x) => x.id === c.clubId)!.wageCap * 0.08);
+// How many prospects one exam turns up.
+export const kidsPerExam = (ops: ClubOps) => 2 + ops.facilities.scouting + (staffQ(ops, 'scout') > 70 ? 1 : 0);
+
+// Scouting exams are limited to the scouting facility's level per season (`ops.exams`, reset at season end).
+type OpsWithExams = ClubOps & { exams?: number };
+export const examsDone = (ops: ClubOps) => (ops as OpsWithExams).exams ?? 0;
+export const examsLeft = (ops: ClubOps) => Math.max(0, ops.facilities.scouting - examsDone(ops));
+export const resetExams = (ops: ClubOps): ClubOps => ({ ...ops, exams: 0 } as OpsWithExams);
 
 // Scouting exam: finds 2 + scouting level prospects aged 15-17. Better academy and club, better prospects.
 export function scoutProspects(w: World, c: Career): { world: World; career: Career; found: number; ok: boolean } {
@@ -115,9 +126,9 @@ export function scoutProspects(w: World, c: Career): { world: World; career: Car
   const lg = w.leagues.find((l) => l.id === club.leagueId)!;
   const cost = scoutCost(w, c);
   const room = ACADEMY_MAX - c.ops.academy.length;
-  if (club.budget < cost || room <= 0) return { world: w, career: c, found: 0, ok: false };
+  if (club.budget < cost || room <= 0 || examsLeft(c.ops) <= 0) return { world: w, career: c, found: 0, ok: false };
   const r = makeRng((c.seed ^ c.season) + c.round * 1301 + c.ops.academy.length);
-  const n = Math.min(room, 2 + c.ops.facilities.scouting + (staffQ(c.ops, 'scout') > 70 ? 1 : 0));
+  const n = Math.min(room, kidsPerExam(c.ops));
   const kids: Player[] = [];
   for (let i = 0; i < n; i++) {
     const pos = pick(r, POSITIONS);
@@ -133,13 +144,14 @@ export function scoutProspects(w: World, c: Career): { world: World; career: Car
     });
   }
   const s = spend(w, c, 'scouting', -cost);
-  return { world: s.world, career: { ...s.career, ops: { ...s.career.ops, academy: [...s.career.ops.academy, ...kids] } }, found: n, ok: true };
+  const ops: OpsWithExams = { ...s.career.ops, academy: [...s.career.ops.academy, ...kids], exams: examsDone(s.career.ops) + 1 };
+  return { world: s.world, career: { ...s.career, ops }, found: n, ok: true };
 }
 
 // Promote a prospect to the first-team squad (he becomes a real player of the world).
 export function promote(w: World, c: Career, id: string): { world: World; career: Career; ok: boolean } {
   const kid = c.ops.academy.find((k) => k.id === id);
-  if (!kid || squadOf(w, c.clubId).length >= 32) return { world: w, career: c, ok: false };
+  if (!kid || squadOf(w, c.clubId).length >= SQUAD_MAX) return { world: w, career: c, ok: false };
   const player: Player = { ...kid, clubId: c.clubId, shirtNumber: freeShirt(w, c.clubId, kid.position) };
   const career = addNews({ ...c, grads: [...(c.grads ?? []), kid.id], ops: { ...c.ops, academy: c.ops.academy.filter((k) => k.id !== id) } }, 'youth', 'promoted', { player: kid.id, pn: kid.name, club: c.clubId });
   return { world: { ...w, players: [...w.players, player] }, career, ok: true };
@@ -147,11 +159,15 @@ export function promote(w: World, c: Career, id: string): { world: World; career
 
 export const releaseProspect = (c: Career, id: string): Career => ({ ...c, ops: { ...c.ops, academy: c.ops.academy.filter((k) => k.id !== id) } });
 
-// Sell a prospect's rights to another academy for most of his value.
+// Sell a prospect's rights to another academy: most of his value, but never more than an exam's worth of kids
+// pays back twice over (so scouting and selling is not a money printer).
+export function rightsFee(w: World, c: Career, kid: Player): number {
+  return roundFee(Math.min(kid.marketValue * 0.7, (2 * scoutCost(w, c)) / kidsPerExam(c.ops)));
+}
 export function sellRights(w: World, c: Career, id: string): { world: World; career: Career; fee: number } {
   const kid = c.ops.academy.find((k) => k.id === id);
   if (!kid) return { world: w, career: c, fee: 0 };
-  const fee = roundFee(kid.marketValue * 0.7);
+  const fee = rightsFee(w, c, kid);
   const s = spend(w, releaseProspect(c, id), 'sales', fee);
   return { ...s, fee };
 }

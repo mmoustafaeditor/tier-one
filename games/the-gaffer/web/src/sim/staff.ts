@@ -134,11 +134,13 @@ export function staffWeek(w: World, c: Career): { world: World; career: Career }
 }
 
 // Fitness coach: training load from the squad's condition, development points on the best young players.
+// Hard weeks only in the opening matchdays (the pre-season window) with a fresh squad; never mid-season.
+const PRESEASON_ROUNDS = 3;
 function training(w: World, c: Career) {
   let world = w, career = c;
   const squad = squadOf(world, career.clubId);
   const fit = squad.reduce((s, p) => s + p.fitness, 0) / Math.max(1, squad.length);
-  const load = (fit < 78 ? 0 : fit > 90 ? 2 : 1) as 0 | 1 | 2;
+  const load = (fit < 80 ? 0 : fit > 95 && career.round < PRESEASON_ROUNDS ? 2 : 1) as 0 | 1 | 2;
   if (load !== career.ops.training.load) {
     career = log({ ...career, ops: { ...career.ops, training: { ...career.ops.training, load } } }, 'training', 'load', { n: load });
   }
@@ -253,7 +255,7 @@ function signing(w: World, c: Career) {
   let world = w, career = c;
   const free = !windowOf(career);
   const squad = squadOf(world, career.clubId);
-  if (squad.length >= Math.min(SQUAD_MAX, 28)) return { world, career };
+  if (squad.length >= SQUAD_MAX - 4) return { world, career };
   const groups = [0, 1, 2, 3].map((g) => squad.filter((p) => GROUP_OF[p.position] === g));
   const g = [0, 1, 2, 3].sort((a, b) => groups[a].length / NEED[a] - groups[b].length / NEED[b])[0];
   if (groups[g].length >= NEED[g] && squad.length >= 22) return { world, career };
