@@ -23,6 +23,19 @@ export default {
         howIntro: 'Each source adds points to the outcomes it points at. Two different circles agreeing is how you land an exclusive.',
         howPoints: 'Right: Talks / Advanced / Confirmed win {t}. Wrong: lose {l}.',
       },
+      onb: {
+        tag: 'The transfer journalist game', k: 'Welcome to the desk', h: 'Break the transfer first. Or get ratio’d trying.',
+        s1: 'Ring sources: the kit man, the barber, the agent… some of them lie.', s2: 'Call it: will he sign, go elsewhere, or was it never real?', s3: 'Publish before the rivals. Survive a 60-second Deadline Day.',
+        next: 'Let’s go', pressCard: 'Your press card', nickH: 'What’s your byline?', nickPh: 'e.g. Mo Moustafa', first: 'Play my first story', skip: 'I’ve played before. Skip the training',
+      },
+      tut: {
+        open: 'Tap a player to open his file.', openP: 'Five transfer stories this week. Start with the glowing one.',
+        ring: 'Ring the source glowing gold.', ringP: 'Every call costs phone points. You get a few a day.',
+        second: 'Now ring a different source.', secondP: 'Two different kinds of source agreeing is how you land an exclusive.',
+        call: 'Make the call.', callP: 'Pick what happens, pick how loud, then publish. Louder pays more and costs more if you’re wrong.',
+        sleep: 'Filed. You’re a journalist now.', sleepP: 'Head back to the board and sleep on it. Rivals post overnight; day 7 is a 60-second Deadline Day.',
+        gotIt: 'Got it', skip: 'Skip',
+      },
       res: {
         rolling: 'The presses are rolling…', byline: 'Exclusive by {n}', hedMove: '{p} to {c}: you called it', hedOut: '{p}: {o}. You called it', hedNone: 'A quiet edition',
         rank: 'Today', levelUp: 'Level up! Level {n}', streak: '{n}-day streak', practice: 'Warm up in Practice', nextWindow: 'Next window', home: 'Home',
@@ -60,6 +73,19 @@ export default {
         howIntro: 'كل مصدر بيدي نقط للنتيجة اللي بيشاور عليها. دايرتين مختلفتين متفقين كده تاخد سبق.',
         howPoints: 'صح: مفاوضات / متقدمة / مؤكدة تكسب {t}. غلط: تخسر {l}.',
       },
+      onb: {
+        tag: 'لعبة صحفي الانتقالات', k: 'أهلاً بيك في الديسك', h: 'اكشف الصفقة الأول. ولا هتبقى تريند بالغلط.',
+        s1: 'كلم مصادرك: مسؤول المهمات، الحلاق، الوكيل… وفيهم اللي بيكدب.', s2: 'قرر: هيمضي، هيروح حتة تانية، ولا الموضوع كله فشنك؟', s3: 'انشر قبل المنافسين. واستحمل يوم ديدلاين ٦٠ ثانية.',
+        next: 'يلا بينا', pressCard: 'كارنيه الصحافة بتاعك', nickH: 'اسمك إيه على الخبر؟', nickPh: 'مثلاً: مو مصطفى', first: 'العب أول قصة ليا', skip: 'لعبت قبل كده. عدي التدريب',
+      },
+      tut: {
+        open: 'دوس على لاعب عشان تفتح ملفه.', openP: 'خمس قصص انتقالات الأسبوع ده. ابدأ باللي منور.',
+        ring: 'كلم المصدر اللي منور دهبي.', ringP: 'كل مكالمة بنقط. عندك كام واحدة في اليوم.',
+        second: 'دلوقتي كلم مصدر من نوع تاني.', secondP: 'لما نوعين مختلفين من المصادر يتفقوا، كده تاخد سبق.',
+        call: 'خد قرارك.', callP: 'اختار إيه اللي هيحصل، وبصوت عالي قد إيه، وانشر. كل ما تعلي تكسب أكتر وتخسر أكتر لو غلطت.',
+        sleep: 'اتنشر. بقيت صحفي رسمي.', sleepP: 'ارجع للوحة ونام عليها. المنافسين بينشروا بالليل، واليوم السابع ديدلاين ٦٠ ثانية.',
+        gotIt: 'تمام', skip: 'تخطي',
+      },
       res: {
         rolling: 'المطبعة شغالة…', byline: 'سبق صحفي من {n}', hedMove: '{p} لـ{c}: قلتها الأول', hedOut: '{p}: {o}. قلتها الأول', hedNone: 'عدد هادي',
         rank: 'النهارده', levelUp: 'مستوى جديد! المستوى {n}', streak: 'سلسلة {n} أيام', practice: 'سخن في التدريب', nextWindow: 'الفترة الجاية', home: 'الرئيسية',
@@ -96,6 +122,19 @@ export default {
         rivals: 'Quién te puede ganar', rivalWhen: 'Publica días {a}–{b}', how: '¿Cómo se puntúa?',
         howIntro: 'Cada fuente suma puntos al resultado que señala. Dos círculos distintos de acuerdo: así se consigue una exclusiva.',
         howPoints: 'Acierto: Negociación / Avanzado / Confirmado ganan {t}. Fallo: pierdes {l}.',
+      },
+      onb: {
+        tag: 'El juego del periodista de fichajes', k: 'Bienvenido a la redacción', h: 'Da el fichaje antes que nadie. O hazte viral por errar.',
+        s1: 'Llama a tus fuentes: el utillero, el barbero, el agente… alguno miente.', s2: 'Decide: ¿firma, se va a otro club o nunca fue real?', s3: 'Publica antes que los rivales. Sobrevive a un cierre de 60 segundos.',
+        next: 'Vamos', pressCard: 'Tu carné de prensa', nickH: '¿Cómo firmas tus noticias?', nickPh: 'p. ej. Mo Moustafa', first: 'Jugar mi primera historia', skip: 'Ya he jugado. Saltar el tutorial',
+      },
+      tut: {
+        open: 'Toca un jugador para abrir su carpeta.', openP: 'Cinco culebrones esta semana. Empieza por el que brilla.',
+        ring: 'Llama a la fuente que brilla en dorado.', ringP: 'Cada llamada gasta puntos de teléfono. Tienes unos pocos al día.',
+        second: 'Ahora llama a otro tipo de fuente.', secondP: 'Si dos tipos de fuente distintos coinciden, puedes conseguir una exclusiva.',
+        call: 'Haz tu apuesta.', callP: 'Elige qué pasa, con qué fuerza, y publica. Más fuerte paga más y cuesta más si fallas.',
+        sleep: 'Publicado. Ya eres periodista.', sleepP: 'Vuelve al tablero y duerme. Los rivales publican de madrugada; el día 7 es un cierre de 60 segundos.',
+        gotIt: 'Entendido', skip: 'Saltar',
       },
       res: {
         rolling: 'Las rotativas están en marcha…', byline: 'Exclusiva de {n}', hedMove: '{p} al {c}: lo adelantaste tú', hedOut: '{p}: {o}. Lo adelantaste tú', hedNone: 'Una edición tranquila',

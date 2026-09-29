@@ -125,6 +125,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
 
   const dd = view.state.day === view.R.DAYS;
   const mob = sel != null;
+  const tutor = view.mode === 'practice' && view.label === 'tutorial' && !(sv.tut && sv.tut.done);
   const favours = view.mode === 'career' ? <FavourTray g={g} i={deskSel} onUse={(k) => act(['f', k, deskSel])} /> : null;
   const file = <SagaFile view={view} g={g} i={deskSel} busy={busy} last={last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} />;
 
@@ -144,7 +145,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
         {dd ? <DDBoard view={view} g={g} busy={busy} onOpen={setSel} onQuick={(i, o) => postCall(i, o, 1, !!g.calls[i])} />
           : <>
             <div className="sagas stagger">
-              {view.cast.map((_, i) => <SagaCard key={i} view={view} g={g} i={i} open={i === deskSel} filed={filedAt[i]} onOpen={() => { sfx('page.turn'); setSel(i); setLast((l) => (l && l.i === i ? l : null)); if (window.matchMedia('(max-width: 959.98px)').matches) window.scrollTo(0, 0); }} />)}
+              {view.cast.map((_, i) => <SagaCard key={i} view={view} g={g} i={i} hint={tutor && sel == null && i === 0} open={i === deskSel} filed={filedAt[i]} onOpen={() => { sfx('page.turn'); setSel(i); setLast((l) => (l && l.i === i ? l : null)); if (window.matchMedia('(max-width: 959.98px)').matches) window.scrollTo(0, 0); }} />)}
             </div>
             <GBtn kind="dark" size="lg" style={{ marginTop: 18 }} disabled={busy} sound="whoosh" onClick={() => (view.state.left > 0 ? setConfirmEnd(true) : endDay())}><Icon n="moon" size={22} />{view.state.day === view.R.DAYS - 1 ? t('daily.sleepDD') : t('g.win.sleep', { n: view.state.day + 1 })}</GBtn>
             {(view.mode === 'daily' || view.mode === 'room') && <p className="play__fair g-mono">{t('daily.fair')}</p>}
@@ -153,6 +154,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <aside className={'play__file' + (mob ? '' : ' only-desk')}>{file}</aside>
     </div>
 
+    {tutor && !calling && !night && <TutorCoach g={g} sel={sel} onDone={() => update((x) => { x.tut = { ...(x.tut || {}), done: true }; })} />}
     {calling && view.cast[calling.i] && <CallScene src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} onDone={() => setCalling(null)} />}
     {burst && <Burst key={burst.k} kind={burst.kind} />}
 
@@ -178,13 +180,13 @@ function Phones({ left, max }: { left: number; max: number }) {
     <span className="g-mono">{left ? t('g.win.callsLeft', { n: left }) : t('g.win.noCalls')}</span>
   </div>;
 }
-function SagaCard({ view, g, i, open, onOpen, filed }: { view: View; g: Game; i: number; open: boolean; onOpen: () => void; filed?: number }) {
+function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Game; i: number; open: boolean; onOpen: () => void; filed?: number; hint?: boolean }) {
   const t = useT();
   const c = view.cast[i], call = g.calls[i], ln = leanOf(g, i);
   const circ = ln.none ? 0 : E.circlesFor(g, i, ln.o).size;
   const tw = g.twist && g.twist.i === i;
   const posted = E.livePosts(g, i).length;
-  return <button className={'scard' + (open ? ' is-open' : '') + (call ? ' is-called' : '')} style={{ ['--i' as string]: i }} onClick={onOpen} aria-label={c.player.n}>
+  return <button className={'scard' + (open ? ' is-open' : '') + (call ? ' is-called' : '') + (hint ? ' is-hint' : '')} style={{ ['--i' as string]: i }} onClick={onOpen} aria-label={c.player.n}>
     <Kit club={c.from} player={c.player} size={58} />
     <span className="scard__b">
       <span className="scard__n">{c.player.n}</span>
@@ -197,6 +199,21 @@ function SagaCard({ view, g, i, open, onOpen, filed }: { view: View; g: Game; i:
     </span>
     <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + OUTS[call.o] + (filed ? ' is-slam' : '')}>{outWord(t.lang, call.o)}</span> : <Icon n={t.rtl ? 'back' : 'arrow'} size={22} />}</span>
   </button>;
+}
+
+// The guided first saga (HYBRID.md §9): one step at a time, read from the live state.
+function TutorCoach({ g, sel, onDone }: { g: Game; sel: number | null; onDone: () => void }) {
+  const t = useT();
+  const i = sel ?? 0;
+  const reads = E.curReads(g, i).length, call = g.calls[i], ln = leanOf(g, i);
+  const step = call || g.calls.some(Boolean) ? 'sleep' : sel == null ? 'open' : !reads ? 'ring' : ln.none || (E.circlesFor(g, i, ln.o).size < 2 && g.left > 0 && reads < 2) ? 'second' : 'call';
+  const n = ['open', 'ring', 'second', 'call', 'sleep'].indexOf(step) + 1;
+  useEffect(() => { sfx('ui.pop'); const id = setTimeout(() => document.querySelector(step === 'call' ? '.callbox' : '.is-hint')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350); return () => clearTimeout(id); }, [step]);
+  return <div className="tutor" role="status" key={step}>
+    <span className="tutor__n">{n}/5</span>
+    <div className="tutor__b"><b>{t('g.tut.' + step)}</b><p>{t('g.tut.' + step + 'P')}</p></div>
+    {step === 'sleep' ? <button className="tutor__ok" onClick={onDone}>{t('g.tut.gotIt')}</button> : <button className="tutor__skip" onClick={onDone}>{t('g.tut.skip')}</button>}
+  </div>;
 }
 
 // A publish goes out: reactions float up off the page.
