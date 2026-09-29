@@ -13,10 +13,10 @@ import { compactWorld, buildCast } from './_lib/world.mjs';
 import { hashStr } from './_lib/rng.mjs';
 import { WIRE, marketOf, rumourState, wirePoints, hitRate } from './_lib/wire.mjs';
 import { loadSnapshot } from '../../data/_lib/store.js';
-import { createRequire } from 'node:module';
+import OVERRIDES from './_lib/wire-overrides.mjs';
 import { createHash } from 'node:crypto';
 
-const OVERRIDES = createRequire(import.meta.url)('./_lib/wire-overrides.json');
+
 
 const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;

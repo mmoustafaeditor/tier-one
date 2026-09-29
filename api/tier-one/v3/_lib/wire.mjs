@@ -1,6 +1,6 @@
 // Tier One v3 — The Wire: calls on real rumours (DESIGN.md §4). Pure scoring and settlement; storage lives in index.js.
 // Rumours and confirmed moves come from the Semba data snapshot (data/seed, served by /api/data/*).
-// Settlement is automatic from the snapshot; wire-overrides.json corrects it by hand (DESIGN §16.1: override queue).
+// Settlement is automatic from the snapshot; wire-overrides.mjs corrects it by hand (DESIGN §16.1: override queue).
 
 export const WIRE = {
   DAILY_CALLS: 5,            // new calls a day
