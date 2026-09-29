@@ -559,8 +559,8 @@ export function roomDay(pre: World, w0: World, c0: Career, mine: LiveMatch | nul
   return x.done();
 }
 
-// Academy graduates and players who joined before they were 21.
-export const homegrown = (c: Career, p: Player) => (c.grads ?? []).includes(p.id) || p.hg === c.clubId || (p.jc === c.clubId && p.since !== undefined && p.since - p.birthYear <= 20);
+// Academy graduates: promoted by you, produced by the club's academy (V2.6 `hg`), or at the club since he was 17.
+export const homegrown = (c: Career, p: Player) => (c.grads ?? []).includes(p.id) || p.hg === c.clubId || (p.jc === c.clubId && p.since !== undefined && p.since - p.birthYear <= 17);
 
 const PRIO: Record<TalkWhy, number> = { broken: 0, request: 1, asked: 2, minutes: 3, role: 4, contract: 5, unhappy: 6, doubts: 7, new: 8, form: 9 };
 // Why a player would come knocking (the ask), from the state only.
