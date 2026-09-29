@@ -85,6 +85,8 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-i
 .g-btn:hover { filter: brightness(1.06); }
 .g-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 var(--bd), 0 4px 10px -8px rgba(0,0,0,.6); }
 .g-btn:disabled { filter: grayscale(.8) brightness(.8); opacity: .55; }
+.g-btn svg { width: 24px; height: 24px; flex: none; }
+.g-btn--sm svg { width: 18px; height: 18px; }
 .g-btn small { font-family: var(--f-mono); font-stretch: 100%; font-weight: 500; font-size: 11px; letter-spacing: .06em; opacity: .85; }
 .g-btn--lg { min-height: 64px; font-size: 25px; }
 .g-btn--sm { min-height: 42px; font-size: 16px; border-radius: 10px; box-shadow: 0 3px 0 var(--bd); }
