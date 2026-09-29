@@ -10,7 +10,7 @@ import { MeScreen } from './screens/Me';
 import { Icon } from './ui/game';
 import { WindowScreen } from './screens/Window';
 import { WireScreen } from './screens/Wire';
-import { DeskScreen } from './screens/Desk';
+import { StoryScreen } from './screens/Story';
 import { PassScreen } from './screens/Pass';
 import { PracticeScreen } from './screens/Practice';
 import { RoomsScreen } from './screens/Rooms';
@@ -93,7 +93,7 @@ export function App() {
     case 'front': screen = <Home {...chrome} />; break;
     case 'daily': case 'room': case 'play': screen = driver ? <WindowScreen key={route.n === 'daily' ? 'daily' : route.key} driver={driver} {...chrome} /> : <Home {...chrome} />; break;
     case 'wire': screen = <WireScreen {...chrome} rid={route.rid} />; break;
-    case 'desk': case 'story': screen = <DeskScreen {...chrome} />; break;
+    case 'desk': case 'story': screen = <StoryScreen {...chrome} />; break;
     case 'me': screen = <MeScreen {...chrome} />; break;
     case 'pass': screen = <PassScreen {...chrome} />; break;
     case 'practice': screen = <PracticeScreen {...chrome} />; break;

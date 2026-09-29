@@ -7,6 +7,7 @@ import './styles/app.css';
 import './styles/game.css';
 import './styles/home.css';
 import './styles/play.css';
+import './styles/story.css';
 // The Semba Studios intro, shared with The Gaffer (one copy, in its source).
 import '../../../../the-gaffer/web/src/boot/boot.css';
 import { BOOT_MARKUP, playIntro } from '../../../../the-gaffer/web/src/boot/intro';
