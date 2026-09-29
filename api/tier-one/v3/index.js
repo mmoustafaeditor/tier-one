@@ -3,7 +3,7 @@
 //
 // Storage: Upstash Redis over REST, same env as api/online.js (KV_REST_API_URL + KV_REST_API_TOKEN, or
 // UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN). Without them every action answers { ok:false, error:'offline' }.
-// T1V3_SALT (required in production): the secret mixed into every ranked seed so nobody can compute a board from the
+// T1V3_SALT (optional; falls back to a hash of the store token): the secret mixed into every ranked seed so nobody can compute a board from the
 // repo. Yesterday's seed is published by `daily.seed` so any board can be replayed and audited the day after.
 //
 // The Daily is scored here: the client never holds the truth. Every request replays the stored action log through the
@@ -14,12 +14,14 @@ import { hashStr } from './_lib/rng.mjs';
 import { WIRE, marketOf, rumourState, wirePoints, hitRate } from './_lib/wire.mjs';
 import { loadSnapshot } from '../../data/_lib/store.js';
 import { createRequire } from 'node:module';
+import { createHash } from 'node:crypto';
 
 const OVERRIDES = createRequire(import.meta.url)('./_lib/wire-overrides.json');
 
 const URL_ = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-const SALT = process.env.T1V3_SALT || '';
+// Without T1V3_SALT, derive one from the store token: already secret, and stable across deploys.
+const SALT = process.env.T1V3_SALT || (TOKEN ? createHash('sha256').update('t1v3-salt|' + TOKEN).digest('hex') : '');
 const DEV_SALT = 'dev-only-salt-set-T1V3_SALT';
 
 const DAY = 86400, DAY_MS = DAY * 1000;
