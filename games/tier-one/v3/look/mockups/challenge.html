@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Daily · Tier One</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<script src="../kit.js" defer></script>
+<style>
+  .head { padding-top: 20px; }
+  .head .hed { margin-top: 8px; }
+  .window { display: grid; grid-template-columns: repeat(7, 1fr); margin-top: 18px; border-block: 1.5px solid var(--ink); }
+  .window > div { padding: 8px 0 7px; text-align: center; position: relative; }
+  .window > div + div { border-inline-start: var(--hair) solid var(--rule); }
+  .window b { display: block; font-family: var(--f-cond); font-stretch: var(--cond-stretch); font-weight: 800; font-size: 24px; line-height: 1; }
+  .window span { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .08em; color: var(--ink-3); text-transform: uppercase; }
+  .window .past { color: var(--ink-3); }
+  .window .past b { text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: var(--accent); }
+  .window .now { background: var(--invert); color: var(--on-invert); }
+  .window .now span { color: var(--accent); }
+  .window .dd b { color: var(--accent-text); }
+  .budget { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
+  .cards { display: flex; gap: 5px; }
+  .cards i { width: 22px; height: 30px; border: 1.5px solid var(--ink); position: relative; background: var(--paper); }
+  .cards i::before { content: ""; position: absolute; inset-inline: 4px; top: 7px; height: 1.5px; background: var(--ink); box-shadow: 0 5px 0 var(--rule-2), 0 10px 0 var(--rule-2); }
+  .cards i.used { border-color: var(--rule-2); background: transparent; }
+  .cards i.used::before { background: var(--rule-2); }
+  .cards i.used::after { content: ""; position: absolute; inset: -3px 8px; border-inline-start: 2px solid var(--accent); transform: rotate(35deg); }
+  .saga { display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; gap: 12px; padding-block: 14px; border-bottom: var(--hair) solid var(--rule); align-items: center; }
+  .saga .portrait { width: 58px; height: 70px; }
+  .saga__n { font-family: var(--f-display); font-weight: 600; font-size: 19px; line-height: 1.1; letter-spacing: -.01em; font-variation-settings: "opsz" 24; }
+  .saga__m { display: flex; gap: 8px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+  .saga.is-open { background: var(--accent-wash); box-shadow: inset 3px 0 0 var(--accent); padding-inline: 10px; margin-inline: -10px; }
+  .status { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .sheet { margin-top: 28px; margin-inline: calc(var(--gutter) * -1); padding: 0 var(--gutter) 20px; }
+  .sheet__h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-top: 14px; }
+  .contact { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding-block: 12px; border-bottom: var(--hair) solid var(--rule); width: 100%; text-align: start; }
+  .contact__av { width: 38px; height: 38px; display: grid; place-items: center; border: 1.5px solid var(--ink); font-family: var(--f-display); font-style: italic; font-weight: 600; font-size: 16px; }
+  .contact__n { font-weight: 800; font-size: 15px; line-height: 1.2; }
+  .contact__d { font-family: var(--f-display); font-style: italic; font-size: 14px; color: var(--ink-2); }
+  .contact__r { text-align: end; }
+  .contact__r .cond { font-size: 24px; display: block; }
+  .contact[aria-pressed="true"] { background: var(--invert); color: var(--on-invert); margin-inline: -10px; padding-inline: 10px; width: calc(100% + 20px); }
+  .contact[aria-pressed="true"] .contact__av { border-color: var(--on-invert); }
+  .contact[aria-pressed="true"] .contact__d, .contact[aria-pressed="true"] .meta { color: color-mix(in srgb, var(--on-invert) 70%, transparent); }
+  .contact.is-cold { opacity: .5; }
+  .transcript { margin-top: 18px; border: 1.5px solid var(--ink); padding: 14px 14px 16px; position: relative; }
+  .transcript__line { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--rule-2); padding-bottom: 8px; margin-bottom: 12px; }
+  .live-dot { display: inline-flex; gap: 6px; align-items: center; }
+  .live-dot::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: live 1.4s steps(2, jump-none) infinite; }
+  .transcript .prose { font-size: 19px; line-height: 1.42; }
+  .gain { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-top: 14px; border-top: var(--hair) solid var(--rule); }
+  .gain > div { padding-top: 10px; }
+  .gain .cond { font-size: 28px; display: block; }
+  .actions { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 16px; }
+  @media (min-width: 960px) {
+    .sheet { margin: 0; box-shadow: none; border-radius: 0; padding: 0; }
+    .sheet__grip { display: none; }
+    .bar { position: static; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="bar">
+    <a class="bar__back" href="home.html"><span class="arr">←</span> Front page</a>
+    <span class="bar__end"><span class="meta">No. <b>88</b></span><button class="edition" data-edition-toggle>Late edition</button></span>
+  </header>
+  <nav class="nav"><a href="home.html">The Wire</a><a href="challenge.html" aria-current="page">The Daily</a><a href="deadline.html">Deadline Day</a><a href="desk.html">Career Desk</a><a href="share.html">Scoops</a><a href="store.html">Press Pass</a></nav>
+
+  <div class="cols cols--2">
+  <main>
+    <section class="head">
+      <div class="row row--between"><span class="kicker">The Daily · Tue 29 Sep</span><span class="meta">Board closes 23:59</span></div>
+      <h1 class="hed hed--1">Seven days, five sagas, and at least one of them is lying.</h1>
+      <div class="window" aria-label="Simulated window, day 3 of 7">
+        <div class="past"><b>1</b><span>Mon</span></div>
+        <div class="past"><b>2</b><span>Tue</span></div>
+        <div class="now"><b>3</b><span>Today</span></div>
+        <div><b>4</b><span>Thu</span></div>
+        <div><b>5</b><span>Fri</span></div>
+        <div><b>6</b><span>Sat</span></div>
+        <div class="dd"><b>7</b><span>DDay</span></div>
+      </div>
+      <div class="budget">
+        <div class="cards" aria-label="3 of 5 contacts left"><i class="used"></i><i class="used"></i><i></i><i></i><i></i></div>
+        <div><div class="label" style="color:var(--ink)">3 calls left today</div><div class="note">Unused calls don’t roll over. Nor does sleep.</div></div>
+      </div>
+    </section>
+
+    <div class="flag"><h2 class="flag__t">The board</h2><span class="flag__aside meta">Heat · your call</span></div>
+    <div class="saga">
+      <figure data-portrait="NFO:8:left"></figure>
+      <div><div class="saga__n">Elliot Anderson</div><div class="saga__m"><div class="route route--short"><i data-crest="NFO" style="--size:18px"></i><span class="route__arrow"></span><i data-crest="MCI" style="--size:18px"></i></div><span class="status" style="color:var(--accent-text)">Advanced</span></div><div class="meta" style="margin-top:4px">Filed · Talks</div></div>
+      <span data-heat="87"></span>
+    </div>
+    <div class="saga is-open">
+      <figure data-portrait="CRY:20:left"></figure>
+      <div><div class="saga__n">Adam Wharton</div><div class="saga__m"><div class="route route--short"><i data-crest="CRY" style="--size:18px"></i><span class="route__arrow"></span><i data-crest="RMA" style="--size:18px"></i></div><span class="status">Talks</span></div><div class="meta accent" style="margin-top:4px">Not filed · working it</div></div>
+      <span data-heat="74"></span>
+    </div>
+    <div class="saga">
+      <figure data-portrait="BHA:17:left"></figure>
+      <div><div class="saga__n">Carlos Baleba</div><div class="saga__m"><div class="route route--short"><i data-crest="BHA" style="--size:18px"></i><span class="route__arrow"></span><i data-crest="MUN" style="--size:18px"></i></div><span class="status">Talks</span></div><div class="meta" style="margin-top:4px">Filed · Talks</div></div>
+      <span data-heat="69"></span>
+    </div>
+    <div class="saga">
+      <figure data-portrait="BAY:17:left"></figure>
+      <div><div class="saga__n">Michael Olise</div><div class="saga__m"><div class="route route--short"><i data-crest="BAY" style="--size:18px"></i><span class="route__arrow route__arrow--dash"></span><i data-crest="LIV" style="--size:18px"></i></div><span class="status muted">Rumour</span></div><div class="meta" style="margin-top:4px">Not filed</div></div>
+      <span data-heat="52"></span>
+    </div>
+    <div class="saga">
+      <figure data-portrait="MUN:37:left"></figure>
+      <div><div class="saga__n">Kobbie Mainoo</div><div class="saga__m"><div class="route route--short"><i data-crest="MUN" style="--size:18px"></i><span class="route__arrow route__arrow--dash"></span><i data-crest="NAP" style="--size:18px"></i></div><span class="status muted">Cooling</span></div><div class="meta" style="margin-top:4px">Not filed</div></div>
+      <span data-heat="38"></span>
+    </div>
+    <button class="btn btn--ghost" style="margin-top:18px">Sleep on it · go to day 4 <span class="arr">→</span></button>
+  </main>
+
+  <aside>
+    <section class="sheet" aria-label="Work a source">
+      <div class="sheet__grip"></div>
+      <div class="sheet__h"><h2 class="hed hed--2">Who do you ring about Wharton?</h2></div>
+      <p class="note" style="margin-top:4px">Each call costs one card. Reliability is their record with you, not a promise.</p>
+
+      <div style="margin-top:10px">
+        <button class="contact" aria-pressed="true"><span class="contact__av">KM</span><span><span class="contact__n">The kit man</span><br><span class="contact__d">Valdebebas, 11 years</span></span><span class="contact__r"><span class="cond">71</span><span class="meta">Madrid</span></span></button>
+        <button class="contact"><span class="contact__av">AC</span><span><span class="contact__n">The agent’s cousin</span><br><span class="contact__d">Talks a lot, drinks more</span></span><span class="contact__r"><span class="cond">58</span><span class="meta">Agents</span></span></button>
+        <button class="contact"><span class="contact__av">SP</span><span><span class="contact__n">Selhurst press officer</span><br><span class="contact__d">Says nothing, beautifully</span></span><span class="contact__r"><span class="cond">83</span><span class="meta">Palace</span></span></button>
+        <button class="contact is-cold"><span class="contact__av">TD</span><span><span class="contact__n">The tabloid desk</span><br><span class="contact__d">Rang yesterday · cooling off</span></span><span class="contact__r"><span class="cond">41</span><span class="meta">Tomorrow</span></span></button>
+      </div>
+
+      <div class="transcript">
+        <div class="transcript__line"><span class="meta live-dot">Line open · 00:42</span><span class="meta">The kit man</span></div>
+        <p class="prose">“Their scout was in again Saturday. Sat with the sporting director this time, not up in the gods. That’s not a scouting trip, that’s a shopping trip.”</p>
+        <div class="gain">
+          <div><span class="label">New line</span><span class="cond">δ</span><span class="meta">Independent</span></div>
+          <div><span class="label">Heat</span><span class="cond accent">+6</span><span class="meta">74 → 80</span></div>
+          <div><span class="label">Says</span><span class="cond" style="font-size:22px;padding-top:4px">Talks</span><span class="meta">Not Advanced</span></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn--primary">Log it to the Wharton file <span class="arr">→</span></button>
+        <button class="btn btn--quiet" style="justify-self:start">Ring someone else · 2 left</button>
+      </div>
+    </section>
+  </aside>
+  </div>
+</div>
+<nav class="tabs" aria-label="Sections">
+  <a href="home.html"><span class="n">01</span><span class="w">Wire</span></a>
+  <a href="challenge.html" aria-current="page"><span class="n">02</span><span class="w">Daily</span></a>
+  <a href="deadline.html"><span class="n">03</span><span class="w">Live</span></a>
+  <a href="desk.html"><span class="n">04</span><span class="w">Desk</span></a>
+  <a href="store.html"><span class="n">05</span><span class="w">Pass</span></a>
+</nav>
+</body>
+</html>

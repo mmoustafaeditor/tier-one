@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Front Page · Tier One</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<script src="../kit.js" defer></script>
+<style>
+  .lead { padding-top: 18px; }
+  .lead__art { position: relative; margin-top: 14px; }
+  .lead__art .portrait { aspect-ratio: 16 / 10; }
+  .lead__heat { position: absolute; inset-inline-end: 0; bottom: 0; background: var(--paper); padding: 10px 0 0 14px; }
+  [dir="rtl"] .lead__heat { padding: 10px 14px 0 0; }
+  .lead .hed--hero { margin-top: 14px; }
+  .lead .dek { margin-top: 10px; }
+  .byline { margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .call { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding-block: 14px; border-bottom: var(--hair) solid var(--rule); align-items: center; }
+  .call__h { font-family: var(--f-display); font-weight: 600; font-size: 18px; line-height: 1.18; font-variation-settings: "opsz" 24; }
+  .call__pts { font-family: var(--f-cond); font-stretch: var(--cond-stretch); font-weight: 800; font-size: 28px; line-height: 1; text-align: end; }
+  .daily { margin-top: var(--s-10); padding: 20px 18px 18px; }
+  .daily__row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .daily .hed { font-size: 34px; line-height: 1; margin-top: 8px; }
+  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-top: 16px; }
+  .days i { height: 6px; background: var(--rule-2); }
+  .days i.on { background: var(--on-invert); }
+  .days i.now { background: var(--accent); }
+  .ear-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: var(--hair) solid var(--rule); }
+  .ear-row > div { padding: 12px 0; }
+  .ear-row > div + div { border-inline-start: var(--hair) solid var(--rule); padding-inline-start: 14px; }
+  .standing { display: grid; grid-template-columns: 28px minmax(0,1fr) auto; gap: 10px; align-items: baseline; padding-block: 9px; border-bottom: var(--hair) solid var(--rule); font-size: 14.5px; }
+  .standing .cond { font-size: 22px; }
+  .standing.is-you { background: var(--accent-wash); box-shadow: inset 3px 0 0 var(--accent); padding-inline-start: 8px; font-weight: 800; }
+  @media (min-width: 960px) {
+    .lead { padding-top: 0; }
+    .lead__art .portrait { aspect-ratio: 16 / 9; }
+    .daily { margin-top: 0; }
+    .lead .hed--hero { font-size: 54px; line-height: .95; }
+    .home-ticker { margin-inline: 0 !important; }
+    .daily .daily__row { flex-direction: column; gap: 2px; }
+    .flag:first-child { margin-top: 0; }
+    .cols { margin-top: 24px; }
+    .cols > * { grid-row: 1; border-inline-start: 0; padding-inline: 0; }
+    .col-left { grid-column: 1; padding-inline-end: var(--col-gap) !important; }
+    .col-main { grid-column: 2; border-inline-start: var(--hair) solid var(--rule) !important; padding-inline: var(--col-gap) !important; }
+    .col-right { grid-column: 3; border-inline-start: var(--hair) solid var(--rule) !important; padding-inline-start: var(--col-gap) !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="mast">
+    <div class="mast__top">
+      <span class="meta">Tue 29 Sep 2026</span>
+      <button class="edition" data-edition-toggle>Late edition</button>
+    </div>
+    <hr class="rule--double">
+    <div class="mast__band">
+      <div class="mast__ears ear"><div class="ear__n num">12</div><div class="ear__l">days on the streak</div><span data-tally data-n="12" style="margin-top:6px"></span></div>
+      <h1 class="mast__title">Tier One</h1>
+      <div class="mast__ears ear ear--end"><div class="ear__n num">4th</div><div class="ear__l">Marylebone League, week 39</div></div>
+    </div>
+    <div class="mast__sub">
+      <span class="meta">No. 214</span>
+      <span class="meta"><b>The Transfer Edition</b></span>
+      <span class="meta">5 sagas live</span>
+    </div>
+  </header>
+  <nav class="nav"><a href="home.html" aria-current="page">The Wire</a><a href="challenge.html">The Daily</a><a href="deadline.html">Deadline Day</a><a href="desk.html">Career Desk</a><a href="share.html">Scoops</a><a href="store.html">Press Pass</a></nav>
+
+  <div class="ticker home-ticker" style="margin-inline:calc(var(--gutter) * -1);margin-top:0">
+    <span class="ticker__label">The Wire</span>
+    <div class="ticker__vp"><div class="ticker__track">
+      <span><b>Anderson</b> City open talks · Grade A <span class="up">▲ 87</span></span>
+      <span><b>Wharton</b> Madrid scout Palace again <span class="up">▲ 74</span></span>
+      <span><b>Baleba</b> United prepare second bid <span class="up">▲ 69</span></span>
+      <span><b>Mainoo</b> Napoli loan talk cools ▼ 38</span>
+      <span><b>Rodrygo</b> Arsenal: here we go · Done</span>
+    </div></div>
+  </div>
+
+  <div class="ear-row only-mobile">
+    <div><span class="label">Streak</span><div class="row" style="margin-top:4px"><span class="cond" style="font-size:30px">12</span><span data-tally data-n="12"></span></div></div>
+    <div><span class="label">League</span><div class="row row--base" style="margin-top:4px"><span class="cond" style="font-size:30px">4th</span><span class="meta">of 30 · wk 39</span></div></div>
+  </div>
+
+  <div class="cols cols--3">
+    <main class="col-main">
+      <article class="lead">
+        <div class="row row--between"><span class="kicker">Lead story · Saga 3</span><span class="meta">Day 4 of 7</span></div>
+        <div class="lead__art">
+          <figure data-portrait="NFO:8:wide"></figure>
+          <div class="lead__heat"><span data-heat="87" data-label="Heat"></span></div>
+        </div>
+        <h2 class="hed hed--hero">City move for Anderson as Forest hold out for <span class="pen">£115m</span></h2>
+        <p class="dek">Talks are open and a Grade A source has it at £95m. United have asked to be kept informed — the hijack is live.</p>
+        <div class="byline">
+          <div class="route route--short"><i data-crest="NFO" style="--size:24px"></i><span class="route__arrow"></span><i data-crest="MCI" style="--size:24px"></i></div>
+          <span class="meta dot-sep"><span>3 origins</span><span>Oyelaran has Talks</span></span>
+        </div>
+        <a class="btn btn--primary" href="rumour.html" style="margin-top:16px">Open the file <span class="arr">→</span></a>
+      </article>
+
+      <div class="flag"><h2 class="flag__t">More from the wire</h2><span class="flag__aside meta">Heat</span></div>
+      <ol>
+        <li class="item"><span class="item__n">2</span><div><h3 class="item__hed">Madrid send scouts to Selhurst again for Adam Wharton</h3><div class="item__meta"><span class="grade">B</span><span class="meta">Diario Ocho · 2 h</span></div></div><span data-heat="74"></span></li>
+        <li class="item"><span class="item__n">3</span><div><h3 class="item__hed">United prepare a second bid for Carlos Baleba</h3><div class="item__meta"><span class="grade grade--a">A</span><span class="meta">The Dispatch · 5 h</span></div></div><span data-heat="69"></span></li>
+        <li class="item"><span class="item__n">4</span><div><h3 class="item__hed">Liverpool ask about Michael Olise — Bayern say not for sale</h3><div class="item__meta"><span class="grade grade--c">C</span><span class="meta">Kicker Abend · 9 h</span></div></div><span data-heat="52"></span></li>
+        <li class="item"><span class="item__n">5</span><div><h3 class="item__hed">Napoli’s interest in Kobbie Mainoo cools</h3><div class="item__meta"><span class="grade grade--d">D</span><span class="meta">@CalcioInsideTrack · 1 d</span></div></div><span data-heat="38"></span></li>
+      </ol>
+    </main>
+    <aside class="col-left">
+      <div class="flag flag--tight"><h2 class="flag__t">Your calls</h2><span class="flag__aside meta">3 live</span></div>
+      <div class="call">
+        <div><div class="call__h">Rodrygo to Arsenal</div><div class="meta" style="margin-top:4px">Filed day 2 · Advanced</div></div>
+        <div style="text-align:end"><span class="stamp stamp--done stamp--sm" data-sfx="stamp.done">Done</span><div class="call__pts" style="color:var(--o-done);margin-top:6px">+212</div></div>
+      </div>
+      <div class="call">
+        <div><div class="call__h">Baleba to Manchester United</div><div class="meta" style="margin-top:4px">Filed day 3 · Talks · resolves in 2 days</div></div>
+        <div data-heat="69"></div>
+      </div>
+      <div class="call">
+        <div><div class="call__h">Gyökeres back to Sporting</div><div class="meta" style="margin-top:4px">Filed day 1 · Talks</div></div>
+        <div style="text-align:end"><span class="stamp stamp--fake stamp--sm">Fake</span><div class="call__pts accent" style="margin-top:6px">−25</div></div>
+      </div>
+
+      <div class="only-desk">
+        <div class="flag"><h2 class="flag__t">The league</h2><span class="flag__aside meta">Week 39</span></div>
+        <div class="standing"><span class="cond">1</span><span>Hana Takeda</span><span class="meta">1,904</span></div>
+        <div class="standing"><span class="cond">2</span><span>Sam Okafor</span><span class="meta">1,861</span></div>
+        <div class="standing"><span class="cond">3</span><span>Inès Laurent</span><span class="meta">1,790</span></div>
+        <div class="standing is-you"><span class="cond">4</span><span>You</span><span class="meta"><b>1,742</b></span></div>
+        <p class="note" style="margin-top:8px">48 points off promotion. Two good calls and you’re upstairs.</p>
+      </div>
+    </aside>
+
+
+    <aside class="col-right">
+      <section class="daily invert">
+        <div class="daily__row"><span class="kicker" style="color:var(--accent)">The Daily · No. 88</span><span class="meta">Closes 23:59</span></div>
+        <h2 class="hed">Five sagas. Seven days. One window.</h2>
+        <div class="days" aria-label="Simulated day 3 of 7"><i class="on"></i><i class="on"></i><i class="now"></i><i></i><i></i><i></i><i></i></div>
+        <div class="daily__row" style="margin-top:8px"><span class="meta">Day 3 of 7</span><span class="meta">3 of 5 contacts left</span></div>
+        <a class="btn btn--accent" href="challenge.html" style="margin-top:16px">Back to the phones <span class="arr">→</span></a>
+        <p class="note" style="margin-top:10px">Same board for everyone. Nothing you buy changes your Daily score.</p>
+      </section>
+
+      <div class="only-mobile">
+        <div class="flag"><h2 class="flag__t">The league</h2><span class="flag__aside meta">Week 39</span></div>
+        <div class="standing"><span class="cond">3</span><span>Inès Laurent</span><span class="meta">1,790</span></div>
+        <div class="standing is-you"><span class="cond">4</span><span>You</span><span class="meta"><b>1,742</b></span></div>
+        <div class="standing"><span class="cond">5</span><span>Karim Haddad</span><span class="meta">1,733</span></div>
+        <p class="note" style="margin-top:8px">48 points off promotion. Haddad is nine behind and he’s been busy.</p>
+      </div>
+
+      <div class="flag"><h2 class="flag__t">On the terraces</h2><span class="flag__aside meta">Reaction</span></div>
+      <blockquote class="pq">“If we’re paying £115m for Anderson I want him to take the corners too.”</blockquote>
+      <p class="meta" style="margin-top:8px">@citizen_kane_ · 3.1k likes</p>
+      <p class="note" style="margin-top:12px">Anderson mentions up <b>340%</b> since The Dispatch report.</p>
+    </aside>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Sections">
+  <a href="home.html" aria-current="page"><span class="n">01</span><span class="w">Wire</span></a>
+  <a href="challenge.html"><span class="n">02</span><span class="w">Daily</span></a>
+  <a href="deadline.html"><span class="n">03</span><span class="w">Live</span></a>
+  <a href="desk.html"><span class="n">04</span><span class="w">Desk</span></a>
+  <a href="store.html"><span class="n">05</span><span class="w">Pass</span></a>
+</nav>
+</body>
+</html>

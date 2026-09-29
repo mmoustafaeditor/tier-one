@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-29 · mmoustafaeditor · Tier One v3 visual direction ("the newsroom look")
+- **What changed:** Added the art direction for the Tier One v3 rebuild: design tokens (morning and late editions, plus Arabic), a component layer, bundled OFL fonts (Newsreader, Schibsted Grotesk, Archivo, IBM Plex Mono, Noto Naskh Arabic, IBM Plex Sans Arabic), original crest and portrait generators, and hi-fi mockups of 7 screens, one of them also in Arabic RTL. These are mockups, not the production app.
+- **Files:** `games/tier-one/v3/look/**` (start at `mockups/index.html` and `LOOK.md`)
+- **Heads-up for the team:** Nothing live changed. Source credibility is now "Grade A–D" so it doesn't clash with the "Tier 1" result rank. The Press Pass page is marked as a concept.
+
 ## 2026-09-29 · mmoustafaeditor · Tier One reskin "Pitch Night" (dark sports UI)
 - **What changed:** Restyle only, no features, screens or data changed. A theme layer (`@@LANE CSS:t1ui`, loads last) gives the default look charcoal-navy surfaces, one green accent (#3DDC6E) with red for negatives, and thin Barlow type (light big numbers and names, no italics/caps). Buttons and tabs are pills; the board and feed are headline lists with hairline dividers; cards lose their outlines; results/leaderboard use round W/L/exclusive dots. `@@LANE JS:t1ui` swaps emoji UI icons (sources, rivals, crown, phone, How to play, More, medals…) for one set of inline line-SVG icons as they render (tweet/news bodies and share text keep their emoji). Barlow 300/600 Latin subsets are embedded, so it works offline. Theme **Auto** now always shows the dark look (the explicit Light option still works, with green accents). Deadline Day keeps its red palette. Scoring was checked unchanged (same seeds give the same points).
 - **Files:** `tier-one/index.html` (new font block, CSS slot `t1ui`, JS slot `t1ui`, theme-color meta), `UPDATES.md`

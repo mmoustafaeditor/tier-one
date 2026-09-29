@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anderson file · Tier One</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<script src="../kit.js" defer></script>
+<style>
+  .hero { margin-inline: calc(var(--gutter) * -1); position: relative; }
+  .hero .portrait { aspect-ratio: 390 / 250; }
+  .hero__stamp { position: absolute; inset-inline-end: 18px; bottom: 18px; }
+  .hero__num { position: absolute; inset-inline-start: var(--gutter); top: 14px; }
+  .who { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+  .name { font-size: clamp(44px, 6vw + 20px, 76px); margin-top: 4px; }
+  .fee { display: grid; grid-template-columns: 1fr 1fr; margin-top: 18px; border-top: var(--hair) solid var(--rule); }
+  .fee > div { padding: 12px 0 2px; }
+  .fee > div + div { border-inline-start: var(--hair) solid var(--rule); padding-inline-start: 16px; }
+  .fee .cond { font-size: 44px; display: block; margin-top: 6px; }
+  .file { margin-top: var(--s-10); }
+  .file h3 { margin-bottom: 4px; }
+  .field { margin-top: 18px; }
+  .field > .label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .summary { margin-top: 18px; padding: 14px 0 4px; border-top: 1.5px solid var(--ink); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .summary .cond { font-size: 38px; display: block; }
+  .excl { margin-top: 12px; font-size: 13.5px; color: var(--ink-2); display: flex; gap: 10px; align-items: center; }
+  .desk-l .hero { margin-inline: 0; }
+  @media (min-width: 960px) {
+    .top { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 28px; align-items: end; margin-top: 28px; }
+    .hero .portrait { aspect-ratio: 5 / 6; }
+    .file { margin-top: 28px; }
+    .bar { position: static; }
+  }
+  .chart-wrap { margin-top: 6px; max-width: 560px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="bar">
+    <a class="bar__back" href="home.html"><span class="arr">←</span> The Wire</a>
+    <span class="bar__end">
+      <span class="meta">Saga <b>3</b>/5</span>
+      <button class="edition" data-edition-toggle>Late edition</button>
+    </span>
+  </header>
+
+  <div class="cols cols--2">
+  <main class="desk-l">
+    <div class="top">
+      <div class="hero">
+        <figure class="only-mobile" data-portrait="NFO:8:wide"></figure>
+        <figure class="only-desk" data-portrait="NFO:8"></figure>
+      </div>
+      <div>
+        <div class="who">
+          <span class="kicker">Heat 87 · Rising</span>
+          <span class="meta" style="margin-inline-start:auto">Day 4 of 7</span>
+        </div>
+        <h1 class="hed name">Elliot Anderson</h1>
+        <p class="meta meta--ink dot-sep" style="margin-top:6px"><span>Midfielder</span><span>23</span><span>England</span><span>No. 8</span></p>
+        <div class="route" style="margin-top:16px">
+          <i data-crest="NFO" style="--size:34px"></i>
+          <span class="route__arrow"></span>
+          <i data-crest="MCI" style="--size:34px"></i>
+          <span class="route__arrow route__arrow--dash" style="flex:0 0 26px"></span>
+          <i data-crest="MUN" style="--size:26px;opacity:.75"></i>
+        </div>
+        <h2 class="hed hed--3" style="margin-top:14px">City move to the front as Forest dig in over price</h2>
+      </div>
+    </div>
+
+    <section style="margin-top:22px">
+      <div class="ladder" aria-label="Where the story stands">
+        <div class="ladder__s on"><b>Talks</b><span>Day 2 · Dispatch</span></div>
+        <div class="ladder__s now"><b>Advanced</b><span>Now · 3 lines</span></div>
+        <div class="ladder__s"><b>Confirmed</b><span>Not yet</span></div>
+      </div>
+    </section>
+
+    <section class="read" style="margin-top:22px" aria-label="The read">
+      <div class="read__row"><span class="read__k">Reported</span><span class="read__v">City have opened talks. Opening bid <strong>around £95m</strong>.</span></div>
+      <div class="read__row"><span class="read__k">Evidence</span><span class="read__v"><strong>Strong.</strong> <span class="lines"><i class="solid">β</i><i class="priv">γ</i><i>α</i></span> 3 independent lines — one of them only you have.</span></div>
+      <div class="read__row"><span class="read__k">Unknown</span><span class="read__v">Whether Forest move off £115m. What United do if City stall.</span></div>
+      <div class="read__row"><span class="read__k">Publish now</span><span class="read__v">As <strong>Advanced</strong>: <span style="color:var(--o-done)">+140</span> if right, <span class="accent">−90</span> if wrong.</span></div>
+      <div class="read__row"><span class="read__k">Rivals</span><span class="read__v"><strong>Marta Oyelaran</strong> has Talks filed. Likely to go Advanced within a day.</span></div>
+      <div class="read__row read__row--next"><span class="read__k">Next</span><span class="read__v">Ring your <strong>Forest insider</strong> again, or publish before Oyelaran does.</span></div>
+    </section>
+
+    <div class="fee">
+      <div><span class="label">City bid</span><span class="cond">£95m</span></div>
+      <div><span class="label">Forest want</span><span class="cond"><span class="pen">£115m</span></span></div>
+    </div>
+
+    <div class="flag"><h2 class="flag__t">The evidence</h2><span class="flag__aside meta">4 reports · 3 origins</span></div>
+    <ol class="trail">
+      <li class="trail__i">
+        <span class="trail__o">α</span>
+        <div>
+          <div class="trail__head"><span class="grade grade--d">D</span><span class="trail__who">@BlueMoonBriefing</span><span class="meta">Day 1 · 09:12</span></div>
+          <p class="trail__q">“Anderson is top of City’s list to replace Rodri long-term.”</p>
+          <p class="trail__note">Fan account. Right twice this year, wrong nine times.</p>
+        </div>
+      </li>
+      <li class="trail__i">
+        <span class="trail__o" style="background:var(--ink);color:var(--paper)">β</span>
+        <div>
+          <div class="trail__head"><span class="grade grade--a">A</span><span class="trail__who">The Dispatch</span><span class="meta">Day 2 · 18:40</span></div>
+          <p class="trail__q">“Manchester City have opened talks with Nottingham Forest. The opening proposal is around £95m.”</p>
+          <p class="trail__note">Marta Oyelaran. Named sources, two club contacts.</p>
+        </div>
+      </li>
+      <li class="trail__i is-echo">
+        <span class="trail__o echo">β′</span>
+        <div>
+          <div class="trail__head"><span class="grade grade--c">C</span><span class="trail__who">Diario Ocho</span><span class="meta">Day 3 · 08:05</span></div>
+          <p class="trail__q">“City bid for Anderson confirmed.”</p>
+          <p class="trail__note">Echo of β — cites The Dispatch. Adds no new evidence.</p>
+        </div>
+      </li>
+      <li class="trail__i">
+        <span class="trail__o mine">γ</span>
+        <div>
+          <div class="trail__head"><span class="grade grade--b">B</span><span class="trail__who">Your Forest insider</span><span class="meta">Day 4 · 07:30</span></div>
+          <p class="trail__q">“They won’t take less than one-fifteen. United have asked to be kept informed.”</p>
+          <p class="trail__note">Private to you. Reliability 78% · leans pro-club.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="flag"><h2 class="flag__t">Heat</h2><span class="flag__aside meta">Last 4 days</span></div>
+    <div class="chart-wrap"><svg id="heatchart" class="chart" viewBox="0 0 358 150" role="img" aria-label="Heat rose from 30 to 87 over four days"></svg></div>
+
+    <div class="flag"><h2 class="flag__t">Where he goes</h2><span class="flag__aside meta">Market read</span></div>
+    <div class="market">
+      <div class="market__r"><i data-crest="MCI" style="--size:26px"></i><div><div class="market__name">Manchester City <small>Lead</small></div><div class="meter"><i style="width:64%"></i></div></div><span class="market__pct">64</span></div>
+      <div class="market__r"><i data-crest="MUN" style="--size:26px"></i><div><div class="market__name">Manchester United <small>Hijack risk</small></div><div class="meter"><i style="width:21%;background:var(--o-hijack)"></i></div></div><span class="market__pct">21</span></div>
+      <div class="market__r"><i data-crest="NEW" style="--size:26px"></i><div><div class="market__name">Newcastle United <small>Watching</small></div><div class="meter"><i style="width:9%"></i></div></div><span class="market__pct">9</span></div>
+      <div class="market__r"><i data-crest="NFO" style="--size:26px"></i><div><div class="market__name">Stays at Forest</div><div class="meter"><i style="width:6%;background:var(--ink-3)"></i></div></div><span class="market__pct">6</span></div>
+    </div>
+  </main>
+
+  <aside>
+    <div class="sticky">
+    <section class="file">
+      <div class="flag flag--tight" style="margin-top:0"><h2 class="flag__t">File your call</h2><span class="flag__aside meta">Closes day 7</span></div>
+
+      <div class="field">
+        <div class="label"><span>Outcome</span></div>
+        <div class="outcomes">
+          <button class="outcome outcome--done" aria-pressed="true"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="13" r="11.5"/><path d="M7.5 13.5l3.6 3.6 7.4-8" stroke-width="2.2"/></svg><b>Done</b><span>Signs for the lead club</span></button>
+          <button class="outcome outcome--hijack" aria-pressed="false"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="13" r="11.5"/><path d="M6 17h5c3.5 0 5.5-2 5.5-5.5V8"/><path d="M13.5 10.5l3-3 3 3"/><path d="M12 17h8" stroke-dasharray="1.6 2"/></svg><b>Hijack</b><span>Another club steals him</span></button>
+          <button class="outcome outcome--off" aria-pressed="false"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="13" r="11.5"/><path d="M8.5 8.5l9 9M17.5 8.5l-9 9"/></svg><b>Off</b><span>Talks collapse</span></button>
+          <button class="outcome outcome--fake" aria-pressed="false"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="13" r="11.5" stroke-dasharray="3 2.6"/><path d="M9.8 10.2a3.3 3.3 0 1 1 4.7 3c-1 .5-1.5 1.1-1.5 2.1v.7"/><circle cx="13" cy="19" r=".9" fill="currentColor"/></svg><b>Fake</b><span>Never real</span></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label"><span>Club</span></div>
+        <div class="chips">
+          <button class="chip" aria-pressed="true"><i data-crest="MCI" style="--size:18px"></i>Man City</button>
+          <button class="chip" aria-pressed="false"><i data-crest="MUN" style="--size:18px"></i>Man Utd</button>
+          <button class="chip" aria-pressed="false"><i data-crest="NEW" style="--size:18px"></i>Newcastle</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label"><span>Fee band</span><span class="meta">+25 if exact</span></div>
+        <div class="chips">
+          <button class="chip">&lt; £95m</button>
+          <button class="chip" aria-pressed="true">£95–110m</button>
+          <button class="chip">£110–125m</button>
+          <button class="chip">£125m +</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label"><span>Publish as</span><span class="meta">How loud</span></div>
+        <div class="pub">
+          <button aria-pressed="false"><b>Talks</b><span class="odds"><span class="w">+60</span><br><span class="l">−25</span></span></button>
+          <button aria-pressed="true"><b>Advanced</b><span class="odds"><span class="w">+140</span><br><span class="l">−90</span></span></button>
+          <button aria-pressed="false"><b>Confirmed</b><span class="odds"><span class="w">+260</span><br><span class="l">−220</span></span></button>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div><span class="label">If right</span><span class="cond" style="color:var(--o-done)">+196</span><span class="meta">140 × 1.4 early</span></div>
+        <div><span class="label">If wrong</span><span class="cond accent">−90</span><span class="meta">U-turn later: −45</span></div>
+      </div>
+      <p class="excl"><span class="stamp stamp--sm stamp--flat">Exclusive</span> Nobody has published Advanced. Go now and it’s yours.</p>
+
+      <button class="btn btn--primary" style="margin-top:16px">Publish · Advanced <span class="arr">→</span></button>
+    </section>
+
+    <div class="flag"><h2 class="flag__t">The desk says</h2><span class="flag__aside meta">4,812 calls</span></div>
+    <div class="consensus" aria-label="Done 58%, Hijack 24%, Off 12%, Fake 6%">
+      <span class="c1" style="flex:58">Done 58%</span>
+      <span class="c2" style="flex:24">Hijack 24</span>
+      <span class="c3" style="flex:12">Off</span>
+      <span style="flex:6"></span>
+    </div>
+    <p class="note" style="margin-top:8px">Off 12% · Fake 6%. Only 11% had published by day 4 — early is where the points are.</p>
+
+    <div class="flag"><h2 class="flag__t">Who could beat you</h2></div>
+    <div class="rival"><span class="rival__av">MO</span><div><div class="rival__n">Marta Oyelaran</div><div class="rival__o">The Dispatch</div></div><div class="rival__s accent">Talks filed<br>Moving</div></div>
+    <div class="rival"><span class="rival__av">LF</span><div><div class="rival__n">Luca Ferri</div><div class="rival__o">Gazzetta Sera</div></div><div class="rival__s muted">Silent<br>2 days</div></div>
+    </div>
+  </aside>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Sections">
+  <a href="home.html" aria-current="page"><span class="n">01</span><span class="w">Wire</span></a>
+  <a href="challenge.html"><span class="n">02</span><span class="w">Daily</span></a>
+  <a href="deadline.html"><span class="n">03</span><span class="w">Live</span></a>
+  <a href="desk.html"><span class="n">04</span><span class="w">Desk</span></a>
+  <a href="store.html"><span class="n">05</span><span class="w">Pass</span></a>
+</nav>
+
+<script>
+(function () {
+  // Heat over four days, 6-hour steps. Report markers drawn where they landed.
+  var pts = [30, 31, 34, 33, 36, 41, 52, 55, 54, 58, 66, 71, 74, 79, 84, 87];
+  var marks = [[1, "α"], [7, "β"], [10, "β′"], [14, "γ"]];
+  var W = 358, H = 150, L = 22, R = 28, T = 12, B = 22, rtl = document.dir === "rtl";
+  function x(i) { var v = L + i * (W - L - R) / (pts.length - 1); return rtl ? W - v : v; }
+  function y(v) { return T + (100 - v) * (H - T - B) / 100; }
+  var s = '<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0v5" stroke="currentColor" stroke-width="1" opacity=".22"/></pattern></defs>';
+  [0, 50, 100].forEach(function (g) { s += '<line class="grid" x1="' + (rtl ? W - L : L) + '" x2="' + (rtl ? R : W - R) + '" y1="' + y(g) + '" y2="' + y(g) + '"/><text x="' + (rtl ? W - 2 : 2) + '" y="' + (y(g) + 3) + '" text-anchor="' + (rtl ? "end" : "start") + '">' + g + "</text>"; });
+  var d = "", area = "";
+  pts.forEach(function (v, i) { d += (i ? "H" + x(i) + "V" : "M" + x(i) + " ") + y(v); });
+  area = d + "V" + y(0) + "H" + x(0) + "Z";
+  s += '<path d="' + area + '" fill="url(#hatch)" style="color:var(--ink)"/>';
+  marks.forEach(function (m) { var i = m[0]; s += '<line class="ann" x1="' + x(i) + '" x2="' + x(i) + '" y1="' + (y(pts[i]) - 4) + '" y2="' + T + '"/><text class="ann-t" x="' + x(i) + '" y="' + (T - 2) + '" text-anchor="middle">' + m[1] + "</text>"; });
+  s += '<path class="line" d="' + d + '"/>';
+  var li = pts.length - 1;
+  s += '<circle cx="' + x(li) + '" cy="' + y(pts[li]) + '" r="4" fill="var(--accent)"/><text x="' + (rtl ? x(li) - 8 : x(li) + 8) + '" y="' + (y(pts[li]) + 4) + '" text-anchor="' + (rtl ? "end" : "start") + '" style="fill:var(--accent-text);font-weight:600;font-size:11px">' + pts[li] + "</text>";
+  var days = document.documentElement.lang === "ar" ? ["ي١", "ي٢", "ي٣", "ي٤"] : ["D1", "D2", "D3", "D4"];
+  days.forEach(function (lab, k) { s += '<text x="' + x(k * 4 + 1.5) + '" y="' + (H - 6) + '" text-anchor="middle">' + lab + "</text>"; });
+  document.getElementById("heatchart").innerHTML = s;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ملف أندرسون · تير ون</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../components.css">
+<script src="../kit.js" defer></script>
+<style>
+  .hero { margin-inline: calc(var(--gutter) * -1); position: relative; }
+  .hero .portrait { aspect-ratio: 390 / 250; }
+  .hero__stamp { position: absolute; inset-inline-end: 18px; bottom: 18px; }
+  .hero__num { position: absolute; inset-inline-start: var(--gutter); top: 14px; }
+  .who { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+  .name { font-size: clamp(44px, 6vw + 20px, 76px); margin-top: 4px; }
+  .fee { display: grid; grid-template-columns: 1fr 1fr; margin-top: 18px; border-top: var(--hair) solid var(--rule); }
+  .fee > div { padding: 12px 0 2px; }
+  .fee > div + div { border-inline-start: var(--hair) solid var(--rule); padding-inline-start: 16px; }
+  .fee .cond { font-size: 44px; display: block; margin-top: 6px; }
+  .file { margin-top: var(--s-10); }
+  .file h3 { margin-bottom: 4px; }
+  .field { margin-top: 18px; }
+  .field > .label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .summary { margin-top: 18px; padding: 14px 0 4px; border-top: 1.5px solid var(--ink); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .summary .cond { font-size: 38px; display: block; }
+  .excl { margin-top: 12px; font-size: 13.5px; color: var(--ink-2); display: flex; gap: 10px; align-items: center; }
+  .desk-l .hero { margin-inline: 0; }
+  @media (min-width: 960px) {
+    .top { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 28px; align-items: end; margin-top: 28px; }
+    .hero .portrait { aspect-ratio: 5 / 6; }
+    .file { margin-top: 28px; }
+    .bar { position: static; }
+  }
+  .chart-wrap { margin-top: 6px; max-width: 560px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="bar">
+    <a class="bar__back" href="home.html"><span class="arr">←</span> الوكالة</a>
+    <span class="bar__end">
+      <span class="meta">القصة <b>3</b>/5</span>
+      <button class="edition" data-edition-toggle>الطبعة المسائية</button>
+    </span>
+  </header>
+
+  <div class="cols cols--2">
+  <main class="desk-l">
+    <div class="top">
+      <div class="hero">
+        <figure class="only-mobile" data-portrait="NFO:8:wide"></figure>
+        <figure class="only-desk" data-portrait="NFO:8"></figure>
+      </div>
+      <div>
+        <div class="who">
+          <span class="kicker">الحرارة 87 · في ارتفاع</span>
+          <span class="meta" style="margin-inline-start:auto">اليوم 4 من 7</span>
+        </div>
+        <h1 class="hed name">إليوت أندرسون</h1>
+        <p class="meta meta--ink dot-sep" style="margin-top:6px"><span>لاعب وسط</span><span>23</span><span>إنجلترا</span><span>رقم 8</span></p>
+        <div class="route" style="margin-top:16px">
+          <i data-crest="NFO" style="--size:34px"></i>
+          <span class="route__arrow"></span>
+          <i data-crest="MCI" style="--size:34px"></i>
+          <span class="route__arrow route__arrow--dash" style="flex:0 0 26px"></span>
+          <i data-crest="MUN" style="--size:26px;opacity:.75"></i>
+        </div>
+        <h2 class="hed hed--3" style="margin-top:14px">سيتي يتصدر السباق وفورست يتمسك بسعره</h2>
+      </div>
+    </div>
+
+    <section style="margin-top:22px">
+      <div class="ladder" aria-label="أين وصلت القصة">
+        <div class="ladder__s on"><b>مفاوضات</b><span>اليوم 2 · ديسباتش</span></div>
+        <div class="ladder__s now"><b>متقدمة</b><span>الآن · 3 خيوط</span></div>
+        <div class="ladder__s"><b>مؤكدة</b><span>ليس بعد</span></div>
+      </div>
+    </section>
+
+    <section class="read" style="margin-top:22px" aria-label="The read">
+      <div class="read__row"><span class="read__k">المُعلن</span><span class="read__v">سيتي فتح المفاوضات. العرض الأول <strong>نحو 95 مليون إسترليني</strong>.</span></div>
+      <div class="read__row"><span class="read__k">الأدلة</span><span class="read__v"><strong>قوية.</strong> <span class="lines"><i class="solid">β</i><i class="priv">γ</i><i>α</i></span> 3 خيوط مستقلة، أحدها عندك وحدك.</span></div>
+      <div class="read__row"><span class="read__k">المجهول</span><span class="read__v">هل يتنازل فورست عن 115 مليوناً؟ وماذا يفعل يونايتد إن تعثّر سيتي؟</span></div>
+      <div class="read__row"><span class="read__k">انشر الآن</span><span class="read__v">كـ<strong>متقدمة</strong>: <span style="color:var(--o-done)">+140</span> إن أصبت، <span class="accent">−90</span> إن أخطأت.</span></div>
+      <div class="read__row"><span class="read__k">المنافسون</span><span class="read__v"><strong>مارتا أويلاران</strong> نشرت «مفاوضات». قد ترفعها إلى «متقدمة» خلال يوم.</span></div>
+      <div class="read__row read__row--next"><span class="read__k">الخطوة التالية</span><span class="read__v">اتصل بـ<strong>مصدرك في فورست</strong> مجدداً، أو انشر قبل أويلاران.</span></div>
+    </section>
+
+    <div class="fee">
+      <div><span class="label">عرض سيتي</span><span class="cond">£95m</span></div>
+      <div><span class="label">طلب فورست</span><span class="cond"><span class="pen">£115m</span></span></div>
+    </div>
+
+    <div class="flag"><h2 class="flag__t">الأدلة</h2><span class="flag__aside meta">4 تقارير · 3 مصادر أصلية</span></div>
+    <ol class="trail">
+      <li class="trail__i">
+        <span class="trail__o">α</span>
+        <div>
+          <div class="trail__head"><span class="grade grade--d">D</span><span class="trail__who">@BlueMoonBriefing</span><span class="meta">Day 1 · 09:12</span></div>
+          <p class="trail__q">«أندرسون على رأس قائمة سيتي لخلافة رودري على المدى البعيد.»</p>
+          <p class="trail__note">حساب مشجعين. أصاب مرتين هذا العام وأخطأ تسع مرات.</p>
+        </div>
+      </li>
+      <li class="trail__i">
+        <span class="trail__o" style="background:var(--ink);color:var(--paper)">β</span>
+        <div>
+          <div class="trail__head"><span class="grade grade--a">A</span><span class="trail__who">ذا ديسباتش</span><span class="meta">اليوم 2 · 18:40</span></div>
+          <p class="trail__q">«مانشستر سيتي فتح مفاوضات مع نوتنغهام فورست. العرض الأول نحو 95 مليون إسترليني.»</p>
+          <p class="trail__note">مارتا أويلاران. مصادر مسمّاة واتصالان داخل الناديين.</p>
+        </div>
+      </li>
+      <li class="trail__i is-echo">
+        <span class="trail__o echo">β′</span>
+        <div>
+          <div class="trail__head"><span class="grade grade--c">C</span><span class="trail__who">دياريو أوتشو</span><span class="meta">اليوم 3 · 08:05</span></div>
+          <p class="trail__q">«تأكيد عرض سيتي لأندرسون.»</p>
+          <p class="trail__note">صدى لـβ، ينقل عن ديسباتش. لا يضيف دليلاً جديداً.</p>
+        </div>
+      </li>
+      <li class="trail__i">
+        <span class="trail__o mine">γ</span>
+        <div>
+          <div class="trail__head"><span class="grade grade--b">B</span><span class="trail__who">مصدرك في فورست</span><span class="meta">اليوم 4 · 07:30</span></div>
+          <p class="trail__q">«لن يقبلوا بأقل من مئة وخمسة عشر. ويونايتد طلب أن يبقى على اطّلاع.»</p>
+          <p class="trail__note">خاص بك. الموثوقية 78٪ · يميل إلى النادي.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="flag"><h2 class="flag__t">الحرارة</h2><span class="flag__aside meta">آخر 4 أيام</span></div>
+    <div class="chart-wrap"><svg id="heatchart" class="chart" viewBox="0 0 358 150" role="img" aria-label="ارتفعت الحرارة من 30 إلى 87 خلال أربعة أيام"></svg></div>
+
+    <div class="flag"><h2 class="flag__t">إلى أين يذهب</h2><span class="flag__aside meta">قراءة السوق</span></div>
+    <div class="market">
+      <div class="market__r"><i data-crest="MCI" style="--size:26px"></i><div><div class="market__name">مانشستر سيتي <small>في الصدارة</small></div><div class="meter"><i style="width:64%"></i></div></div><span class="market__pct">64</span></div>
+      <div class="market__r"><i data-crest="MUN" style="--size:26px"></i><div><div class="market__name">مانشستر يونايتد <small>خطر خطف</small></div><div class="meter"><i style="width:21%;background:var(--o-hijack)"></i></div></div><span class="market__pct">21</span></div>
+      <div class="market__r"><i data-crest="NEW" style="--size:26px"></i><div><div class="market__name">نيوكاسل يونايتد <small>يراقب</small></div><div class="meter"><i style="width:9%"></i></div></div><span class="market__pct">9</span></div>
+      <div class="market__r"><i data-crest="NFO" style="--size:26px"></i><div><div class="market__name">يبقى في فورست</div><div class="meter"><i style="width:6%;background:var(--ink-3)"></i></div></div><span class="market__pct">6</span></div>
+    </div>
+  </main>
+
+  <aside>
+    <div class="sticky">
+    <section class="file">
+      <div class="flag flag--tight" style="margin-top:0"><h2 class="flag__t">سجّل توقعك</h2><span class="flag__aside meta">يُغلق اليوم 7</span></div>
+
+      <div class="field">
+        <div class="label"><span>النتيجة</span></div>
+        <div class="outcomes">
+          <button class="outcome outcome--done" aria-pressed="true"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="13" r="11.5"/><path d="M7.5 13.5l3.6 3.6 7.4-8" stroke-width="2.2"/></svg><b>تمّت</b><span>يوقّع للنادي المتصدر</span></button>
+          <button class="outcome outcome--hijack" aria-pressed="false"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="13" r="11.5"/><path d="M6 17h5c3.5 0 5.5-2 5.5-5.5V8"/><path d="M13.5 10.5l3-3 3 3"/><path d="M12 17h8" stroke-dasharray="1.6 2"/></svg><b>خطف</b><span>نادٍ آخر يخطفه</span></button>
+          <button class="outcome outcome--off" aria-pressed="false"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="13" r="11.5"/><path d="M8.5 8.5l9 9M17.5 8.5l-9 9"/></svg><b>ألغيت</b><span>تنهار المفاوضات</span></button>
+          <button class="outcome outcome--fake" aria-pressed="false"><svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="13" r="11.5" stroke-dasharray="3 2.6"/><path d="M9.8 10.2a3.3 3.3 0 1 1 4.7 3c-1 .5-1.5 1.1-1.5 2.1v.7"/><circle cx="13" cy="19" r=".9" fill="currentColor"/></svg><b>مفبركة</b><span>لم تكن حقيقية</span></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label"><span>النادي</span></div>
+        <div class="chips">
+          <button class="chip" aria-pressed="true"><i data-crest="MCI" style="--size:18px"></i>مان سيتي</button>
+          <button class="chip" aria-pressed="false"><i data-crest="MUN" style="--size:18px"></i>مان يونايتد</button>
+          <button class="chip" aria-pressed="false"><i data-crest="NEW" style="--size:18px"></i>نيوكاسل</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label"><span>نطاق السعر</span><span class="meta">+25 إن طابق</span></div>
+        <div class="chips">
+          <button class="chip"><bdi dir="ltr">&lt; £95m</bdi></button>
+          <button class="chip" aria-pressed="true"><bdi dir="ltr">£95–110m</bdi></button>
+          <button class="chip"><bdi dir="ltr">£110–125m</bdi></button>
+          <button class="chip"><bdi dir="ltr">£125m +</bdi></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label"><span>انشر كـ</span><span class="meta">بأي قوة</span></div>
+        <div class="pub">
+          <button aria-pressed="false"><b>مفاوضات</b><span class="odds"><span class="w">+60</span><br><span class="l">−25</span></span></button>
+          <button aria-pressed="true"><b>متقدمة</b><span class="odds"><span class="w">+140</span><br><span class="l">−90</span></span></button>
+          <button aria-pressed="false"><b>مؤكدة</b><span class="odds"><span class="w">+260</span><br><span class="l">−220</span></span></button>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div><span class="label">إن أصبت</span><span class="cond" style="color:var(--o-done)">+196</span><span class="meta">140 × 1.4 مبكراً</span></div>
+        <div><span class="label">إن أخطأت</span><span class="cond accent">−90</span><span class="meta">تراجع لاحق: −45</span></div>
+      </div>
+      <p class="excl"><span class="stamp stamp--sm stamp--flat">حصري</span> لم ينشر أحد «متقدمة» بعد. انشر الآن والسبق لك.</p>
+
+      <button class="btn btn--primary" style="margin-top:16px">انشر · متقدمة <span class="arr">→</span></button>
+    </section>
+
+    <div class="flag"><h2 class="flag__t">رأي الزملاء</h2><span class="flag__aside meta">4,812 توقعاً</span></div>
+    <div class="consensus" aria-label="Done 58%, Hijack 24%, Off 12%, Fake 6%">
+      <span class="c1" style="flex:58">تمّت 58٪</span>
+      <span class="c2" style="flex:24">خطف 24</span>
+      <span class="c3" style="flex:12">ألغيت</span>
+      <span style="flex:6"></span>
+    </div>
+    <p class="note" style="margin-top:8px">ألغيت 12٪ · مفبركة 6٪. نشر 11٪ فقط قبل اليوم الرابع، والنقاط لمن يسبق.</p>
+
+    <div class="flag"><h2 class="flag__t">من قد يسبقك</h2></div>
+    <div class="rival"><span class="rival__av">MO</span><div><div class="rival__n">مارتا أويلاران</div><div class="rival__o">ذا ديسباتش</div></div><div class="rival__s accent">نشرت مفاوضات<br>تتحرك</div></div>
+    <div class="rival"><span class="rival__av">LF</span><div><div class="rival__n">لوكا فيري</div><div class="rival__o">غازيتا سيرا</div></div><div class="rival__s muted">صامت<br>منذ يومين</div></div>
+    </div>
+  </aside>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Sections">
+  <a href="home.html" aria-current="page"><span class="n">01</span><span class="w">الوكالة</span></a>
+  <a href="challenge.html"><span class="n">02</span><span class="w">اليومي</span></a>
+  <a href="deadline.html"><span class="n">03</span><span class="w">مباشر</span></a>
+  <a href="desk.html"><span class="n">04</span><span class="w">المكتب</span></a>
+  <a href="store.html"><span class="n">05</span><span class="w">البطاقة</span></a>
+</nav>
+
+<script>
+(function () {
+  // Heat over four days, 6-hour steps. Report markers drawn where they landed.
+  var pts = [30, 31, 34, 33, 36, 41, 52, 55, 54, 58, 66, 71, 74, 79, 84, 87];
+  var marks = [[1, "α"], [7, "β"], [10, "β′"], [14, "γ"]];
+  var W = 358, H = 150, L = 22, R = 28, T = 12, B = 22, rtl = document.dir === "rtl";
+  function x(i) { var v = L + i * (W - L - R) / (pts.length - 1); return rtl ? W - v : v; }
+  function y(v) { return T + (100 - v) * (H - T - B) / 100; }
+  var s = '<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0v5" stroke="currentColor" stroke-width="1" opacity=".22"/></pattern></defs>';
+  [0, 50, 100].forEach(function (g) { s += '<line class="grid" x1="' + (rtl ? W - L : L) + '" x2="' + (rtl ? R : W - R) + '" y1="' + y(g) + '" y2="' + y(g) + '"/><text x="' + (rtl ? W - 2 : 2) + '" y="' + (y(g) + 3) + '" text-anchor="' + (rtl ? "end" : "start") + '">' + g + "</text>"; });
+  var d = "", area = "";
+  pts.forEach(function (v, i) { d += (i ? "H" + x(i) + "V" : "M" + x(i) + " ") + y(v); });
+  area = d + "V" + y(0) + "H" + x(0) + "Z";
+  s += '<path d="' + area + '" fill="url(#hatch)" style="color:var(--ink)"/>';
+  marks.forEach(function (m) { var i = m[0]; s += '<line class="ann" x1="' + x(i) + '" x2="' + x(i) + '" y1="' + (y(pts[i]) - 4) + '" y2="' + T + '"/><text class="ann-t" x="' + x(i) + '" y="' + (T - 2) + '" text-anchor="middle">' + m[1] + "</text>"; });
+  s += '<path class="line" d="' + d + '"/>';
+  var li = pts.length - 1;
+  s += '<circle cx="' + x(li) + '" cy="' + y(pts[li]) + '" r="4" fill="var(--accent)"/><text x="' + (rtl ? x(li) - 8 : x(li) + 8) + '" y="' + (y(pts[li]) + 4) + '" text-anchor="' + (rtl ? "end" : "start") + '" style="fill:var(--accent-text);font-weight:600;font-size:11px">' + pts[li] + "</text>";
+  var days = document.documentElement.lang === "ar" ? ["ي١", "ي٢", "ي٣", "ي٤"] : ["D1", "D2", "D3", "D4"];
+  days.forEach(function (lab, k) { s += '<text x="' + x(k * 4 + 1.5) + '" y="' + (H - 6) + '" text-anchor="middle">' + lab + "</text>"; });
+  document.getElementById("heatchart").innerHTML = s;
+})();
+</script>
+</body>
+</html>
