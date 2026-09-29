@@ -1,6 +1,8 @@
 // Brings saves from older builds up to date. Runs only AFTER the checksum has been verified,
 // so it can never turn an edited save into a valid one.
-import { FREE_AGENT, type Career, type Player } from '../model/types';
+// Two layers: `upgradeWorld`/`upgradeCareer` fill in fields by presence (every save before G1 said "version 1"
+// whatever it held), then `UPGRADES` moves the file's `version` number up one explicit step at a time.
+import { FREE_AGENT, type Career, type Player, type SaveFile } from '../model/types';
 import { makeRng } from './rng';
 import { seasonFixtures } from './season';
 import { makeCups } from './cups';
@@ -56,4 +58,30 @@ export function upgradeCareer(w: World, c: OldCareer): Career {
   const { goals: _drop, ...clean } = next;
   void _drop;
   return clean;
+}
+
+// ---------- file versions ----------
+
+// The version `makeSave` writes. Bump it together with a new entry in UPGRADES.
+export const SAVE_VERSION = 2;
+
+// One step each: UPGRADES[n] turns a version-n file into version n+1. Applied in order by `upgradeSave`.
+export const UPGRADES: Record<number, (s: SaveFile) => SaveFile> = {
+  // 1 → 2 (G1 "Integrity"): the v0.12 career fields exist explicitly instead of being "maybe there", so the
+  // career-level checks in sim/save.ts can read them without guessing.
+  1: (s) => ({
+    ...s,
+    version: 2,
+    career: s.career ? { shortlist: [], watch: {}, loans: [], delegate: {}, staffLog: [], ...s.career } : null,
+  }),
+};
+
+export function upgradeSave(s: SaveFile): SaveFile {
+  let out = s;
+  while (out.version < SAVE_VERSION) {
+    const step = UPGRADES[out.version];
+    if (!step) throw new Error(`no upgrade from save version ${out.version}`);
+    out = step(out);
+  }
+  return out;
 }

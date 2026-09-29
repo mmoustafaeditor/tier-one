@@ -12,7 +12,7 @@ import {
 import {
   FIRST_SEASON, clubsOf, generateWorld, money, playerOf, objectiveOf, sortSquad, squadOf, starsOf, strengthOf, wageBill, type World,
 } from './sim/world';
-import { clearStored, loadStored, store } from './sim/save';
+import { clearStored, loadStored, store, tidyCareer } from './sim/save';
 import { Kit } from './components/Kit';
 import { AppBar, Empty, GROUP, Icon, PlayerRow, Stars, Stat } from './ui/parts';
 import { PlayerSheet } from './ui/PlayerSheet';
@@ -172,11 +172,29 @@ export function App() {
     };
   }, [screen.id]);
 
+  // Escape closes the top sheet, the same way the Android back button does (GF-16).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      const scrims = document.querySelectorAll<HTMLElement>('.scrim');
+      if (scrims.length) { e.preventDefault(); scrims[scrims.length - 1].click(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  const toastAt = useRef(0);
   useEffect(() => {
     if (!toast) return;
+    toastAt.current = Date.now();
     const id = setTimeout(() => setToast(''), 2600);
     return () => clearTimeout(id);
   }, [toast]);
+  // A toast belongs to the screen it was raised on (GF-27); one raised together with the screen change stays.
+  useEffect(() => {
+    if (toast && Date.now() - toastAt.current > 200) setToast('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen.id]);
 
   // Deals and renewals: save, close the sheets, keep the open player sheet in sync.
   const afterDeal = async (w: World, c: Career, message: string) => {
@@ -190,12 +208,16 @@ export function App() {
 
   // Saves after every change; the match is stored BEFORE it is shown, so leaving mid-match can't re-roll it.
   const commit = async (w: World, c: Career) => {
+    const tidy = tidyCareer(w, c); // drops references to players who left or retired before the invariants are checked
     setWorld(w);
-    setCareer(c);
-    setSaved({ world: w, career: c });
-    if (!(await store(w, c))) setToast(t.saveFailed);
+    setCareer(tidy);
+    setSaved({ world: w, career: tidy });
+    const r = await store(w, tidy);
+    if (!r.ok) { setToast(r.reason === 'storage' ? t.saveFailed : t.saveRefused(r.reason)); setBusy(false); }
     else backupToShell();
   };
+  // Lets React paint the busy state before a long synchronous simulation (GF-28).
+  const paint = () => new Promise<void>((done) => requestAnimationFrame(() => setTimeout(done, 0)));
 
   // Live: the match is stored at kick-off (and at half-time and after changes), and only counted at full time.
   // Quick result: the whole matchday is played and saved before the score is shown.
@@ -217,6 +239,7 @@ export function App() {
         setScreen({ id: 'live' });
       }
     } else {
+      await paint();
       const { world: nw, career: next, mine } = playDay(prep.world, prep.career);
       await commit(nw, next);
       if (mine) { setPending(aftermath(prep.world, prep.career, nw, next, mine)); setLive(mine); setLiveLocked(true); setScreen({ id: 'live' }); }
@@ -241,6 +264,7 @@ export function App() {
   const finishSeason = async () => {
     if (!world || !career || busy) return;
     setBusy(true);
+    await paint();
     let c = career, w = world;
     while (!seasonOver(c) && !c.sacked) ({ world: w, career: c } = playDay(w, c));
     await commit(w, c);
@@ -286,7 +310,8 @@ export function App() {
     if (!draft || busy) return;
     setBusy(true);
     const c = newCareer(draft.world, draft.seed, club.id, managerName.trim() || t.managerDefault, { age: Number(managerAge), nationality, ...(managerNation2 && managerNation2 !== nationality ? { nationality2: managerNation2 } : {}) }, FIRST_SEASON);
-    await store(draft.world, c);
+    const stored = await store(draft.world, c);
+    if (!stored.ok) setToast(stored.reason === 'storage' ? t.saveFailed : t.saveRefused(stored.reason));
     setWorld(draft.world);
     setCareer(c);
     setSaved({ world: draft.world, career: c });
@@ -300,8 +325,8 @@ export function App() {
     if (!saved) return;
     setWorld(saved.world);
     setCareer(saved.career);
-    // A match that was being played when the app closed picks up where it stopped.
-    if (saved.career.live) { setLive(saved.career.live); setLiveLocked(false); setScreen({ id: 'live' }); }
+    // A match that was being played when the app closed picks up where it stopped, and says from which minute (GF-26).
+    if (saved.career.live) { setLive(saved.career.live); setLiveLocked(false); setScreen({ id: 'live' }); setToast(t.resumedFrom(saved.career.live.minute)); }
     else setScreen({ id: 'home' });
   };
 
@@ -329,7 +354,7 @@ export function App() {
     setToast(t.importOk);
     setScreen({ id: 'home' });
   };
-  const resumeLive = () => { if (career?.live) { setLive(career.live); setLiveLocked(false); setScreen({ id: 'live' }); } };
+  const resumeLive = () => { if (career?.live) { setLive(career.live); setLiveLocked(false); setScreen({ id: 'live' }); setToast(t.resumedFrom(career.live.minute)); } };
   const goFromHome = (g: Go) => {
     switch (g) {
       case 'offers': setShowOffers(true); break;
@@ -348,7 +373,7 @@ export function App() {
     else setScreen({ id: d } as Screen);
   };
   const onTab = Math.max(0, TAB_SCREENS.indexOf(screen.id));
-  const hub = HUBS.includes(screen.id);
+  const hub = HUBS.includes(screen.id) && !!career;
   // Screens reachable from more than one hub (News, Inbox, Career, Quick match) go back to the hub they were opened from.
   const lastHub = useRef<Screen['id']>('home');
   if (hub) lastHub.current = screen.id;
@@ -519,7 +544,7 @@ export function App() {
             <div className="g-field">
               <label className="g-form">
                 <span className="over">{t.managerName}</span>
-                <input className="g-input" value={managerName} maxLength={24} placeholder={t.managerDefault} onChange={(e) => setManagerName(e.target.value)} />
+                <input className="g-input" dir="auto" value={managerName} maxLength={24} placeholder={t.managerDefault} onChange={(e) => setManagerName(e.target.value)} />
               </label>
               <div className="g-filters">
                 <label className="g-form">
@@ -563,7 +588,7 @@ export function App() {
                   <Stat label={t.squadSize} value={String(squad.length)} />
                   <Stat label={t.avgRating} value={(squad.reduce((a, p) => a + p.rating, 0) / Math.max(1, squad.length)).toFixed(1)} />
                   <Stat label={t.avgAge} value={(squad.reduce((a, p) => a + career.season - p.birthYear, 0) / Math.max(1, squad.length)).toFixed(1)} />
-                  <Stat label={t.wageCap} value={`${Math.round((wageBill(world, myClub.id) / myClub.wageCap) * 100)}%`} />
+                  <Stat label={t.wagesOfCap} value={`${Math.round((wageBill(world, myClub.id) / myClub.wageCap) * 100)}%`} />
                 </div>
               )}
               <div className="g-links">

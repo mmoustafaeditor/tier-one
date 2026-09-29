@@ -6,9 +6,10 @@ import { advice, makeReport, scoutReportCost, type Tip } from '../sim/scouting';
 import { DEFAULT_TACTICS, fmt } from '../sim/tactics';
 import type { LiveMatch } from '../sim/match';
 
-export function ScoutPanel({ world, career, m, lossChance, lang, t, onChange }: {
+export function ScoutPanel({ world, career, m, lossChance, lang, t, onChange, part = 'all' }: {
   world: World; career: Career; m: LiveMatch; lossChance: number; lang: Lang; t: Strings;
   onChange: (w: World, c: Career, msg?: string) => void;
+  part?: 'all' | 'advice' | 'report'; // which half to show (the match hub places them apart)
 }) {
   const report = career.scouted?.[m.key];
   const tips = advice(world, career, report, lossChance);
@@ -29,7 +30,7 @@ export function ScoutPanel({ world, career, m, lossChance, lang, t, onChange }: 
   };
   return (
     <>
-      {tips.length > 0 && (
+      {part !== 'report' && tips.length > 0 && (
         <>
           <div className="sechead"><span className="over">{t.adviceT}</span></div>
           <div className="card">
@@ -39,8 +40,8 @@ export function ScoutPanel({ world, career, m, lossChance, lang, t, onChange }: 
           </div>
         </>
       )}
-      <div className="sechead"><span className="over">{t.scoutT}</span></div>
-      {!report ? (
+      {part !== 'advice' && <div className="sechead"><span className="over">{t.scoutT}</span></div>}
+      {part === 'advice' ? null : !report ? (
         <button className="btn" style={{ width: '100%' }} disabled={club.budget < cost} onClick={() => {
           const r = makeReport(world, career, m);
           if (r) onChange(r.world, r.career, t.scoutT);

@@ -57,7 +57,7 @@ export function Transfers({ world, career, lang, t, tab, onTab, onPick, onOffers
               return (
                 <PlayerRow key={p.id} p={p} lang={lang} t={t} season={career.season} onClick={() => onPick(p)}
                   sub={<>{p.position} · {nameOf(p.clubId)} · <span className="num ltr">{ask ? money(ask) : t.free}</span></>}
-                  right={<span className={`g-rating num${est.exact ? '' : ' g-est'}`}>{est.exact ? p.rating : `${est.lo}–${est.hi}`}</span>} />
+                  right={<span className={`g-rating num ltr${est.exact ? '' : ' g-est'}`}>{est.exact ? p.rating : `${est.lo}–${est.hi}`}</span>} />
               );
             })}
           </div>

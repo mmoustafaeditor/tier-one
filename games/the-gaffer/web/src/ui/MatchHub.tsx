@@ -69,18 +69,16 @@ export function MatchHub({ world, career, lang, t, myClub, myLeague, busy, tab, 
                   <span>{t.loss} <b className="num">{Math.round(pr[2] * 100)}%</b></span>
                 </div>
               </section>
+              <ScoutPanel world={world} career={career} m={m} lossChance={pr[2]} lang={lang} t={t} onChange={onChange} part="advice" />
               <div style={{ display: 'grid', gap: 'var(--s3)', margin: 'var(--s4) 0' }}>
                 <button className={`btn primary${busy ? ' loading' : ''}`} disabled={busy} onClick={onPlay}>{t.watch}</button>
                 <div className="g-twobtn">
                   <button className="btn" onClick={onTactics}>{t.tactics}</button>
-                  <button className="btn" disabled={busy} onClick={onQuick}>{t.quickResult}</button>
+                  <button className={`btn${busy ? ' loading' : ''}`} disabled={busy} onClick={onQuick}>{t.quickResult}</button>
                 </div>
+                {busy && <p className="muted g-busy" role="status" aria-live="polite">{t.playingT(matchLabel(m))}</p>}
               </div>
-              <div className="sechead"><span className="over">{t.radarT}</span></div>
-              <Radar world={world} m={m} t={t} lang={lang} />
-            </div>
-            <div>
-              <ScoutPanel world={world} career={career} m={m} lossChance={pr[2]} lang={lang} t={t} onChange={onChange} />
+              <ScoutPanel world={world} career={career} m={m} lossChance={pr[2]} lang={lang} t={t} onChange={onChange} part="report" />
               {!reported && (
                 <div style={{ display: 'grid', gap: 4, marginTop: 'var(--s2)' }}>
                   <RewardedButton t={t} name="scout-report" onFail={onToast} onReward={() => {
@@ -105,6 +103,11 @@ export function MatchHub({ world, career, lang, t, myClub, myLeague, busy, tab, 
                   </button>
                 ))}
               </div>
+              {/* The opponent's profile is the scouts' work: nothing to see until the report is in (audit Part C). */}
+              <details className="g-fold">
+                <summary className="sechead"><span className="over">{t.radarT}</span></summary>
+                {reported ? <Radar world={world} m={m} t={t} lang={lang} /> : <p className="muted" style={{ margin: 'var(--s2) 0' }}>{t.radarLocked}</p>}
+              </details>
             </div>
           </div>
         );
@@ -126,7 +129,7 @@ export function MatchHub({ world, career, lang, t, myClub, myLeague, busy, tab, 
                 return (
                   <div key={r.clubId} className={`g-trow ${zone}${r.clubId === career.clubId ? ' me' : ''}`}>
                     <span className="g-rank num">{i + 1}</span>
-                    <span className="g-tname"><Kit colors={c.colors} size="xs" /><b>{c.name[lang]}</b></span>
+                    <span className="g-tname"><Kit colors={c.colors} size="xs" /><b className={lang === 'ar' ? '' : 'g-tfull'}>{c.name[lang]}</b>{lang !== 'ar' && <b className="g-tshort">{c.shortName}</b>}</span>
                     {[r.p, r.w, r.d, r.l, r.gf - r.ga].map((v, k) => <span key={k} className="g-tnum num ltr">{k === 4 && v > 0 ? `+${v}` : v}</span>)}
                     <span className="g-tnum num"><b>{r.pts}</b></span>
                   </div>

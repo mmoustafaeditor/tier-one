@@ -1,5 +1,7 @@
 // Player match ratings (4.0-10.0) and the man of the match, worked out from what happened in the match.
 // The same numbers show live, at full time, on the player sheet and in the season averages.
+// GF-10: a keeper's rating is bounded by the shots on target he faced, and a keeper who faced at most one
+// can't be man of the match: a quiet clean sheet is a good day, not a heroic one.
 import type { Player } from '../model/types';
 import { FORMATIONS } from './tactics';
 import type { LiveMatch } from './match';
@@ -8,6 +10,10 @@ const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.char
 const DEF = new Set(['GK', 'CB', 'LB', 'RB', 'CDM']);
 
 export interface Ratings { rating: Record<string, number>; motm: string }
+
+// The most a keeper can be worth after facing `faced` shots on target.
+export const keeperCap = (faced: number) => 6.5 + 0.5 * faced;
+export const MOTM_MIN_FACED = 2;
 
 export function matchRatings(m: LiveMatch, get: (id: string) => Player): Ratings {
   const rating: Record<string, number> = {};
@@ -18,6 +24,7 @@ export function matchRatings(m: LiveMatch, get: (id: string) => Player): Ratings
   const sideOf = new Map<string, 0 | 1>();
   m.sides.forEach((s, i) => { for (const id of [...s.onPitch, ...s.bench]) if (id) sideOf.set(id, i as 0 | 1); });
   for (const e of m.events) if (e.kind === 'sub' && e.inId) sideOf.set(e.inId, e.side);
+  const keepers = new Map<string, 0 | 1>();
 
   for (const id of m.played) {
     const p = get(id);
@@ -30,6 +37,7 @@ export function matchRatings(m: LiveMatch, get: (id: string) => Player): Ratings
     let v = 6.2 + noise + (p.rating - 75) * 0.03 + (diff > 0 ? 0.35 : diff < 0 ? -0.3 : 0);
     if (DEF.has(pos) && m.goals[1 - i] === 0 && minutes >= 60) v += pos === 'GK' ? 0.8 : 0.5;
     if (DEF.has(pos)) v -= Math.min(3, m.goals[1 - i]) * (pos === 'GK' ? 0.3 : 0.15);
+    if (pos === 'GK') keepers.set(id, i);
     rating[id] = v;
   }
   for (const e of m.events) {
@@ -45,12 +53,17 @@ export function matchRatings(m: LiveMatch, get: (id: string) => Player): Ratings
     const share = Math.max(0.2, (90 - e.min) / 90);
     rating[e.inId] = 6.5 + (rating[e.inId] - 6.5) * share;
   }
+  // Keepers: no better than the shots on target they actually faced allow.
+  const faced = (i: 0 | 1) => m.stats[1 - i][2];
+  for (const [id, i] of keepers) rating[id] = Math.min(rating[id], keeperCap(faced(i)));
   let motm = '', best = -1;
   for (const [id, v] of Object.entries(rating)) {
     const r = Math.round(Math.min(10, Math.max(4, v)) * 10) / 10;
     rating[id] = r;
     // The man of the match comes from the winning side when there is one.
     const i = sideOf.get(id) ?? 0;
+    const k = keepers.get(id);
+    if (k !== undefined && faced(k) < MOTM_MIN_FACED) continue;
     const bonus = m.goals[i] > m.goals[1 - i] ? 0.3 : 0;
     if (r + bonus > best) { best = r + bonus; motm = id; }
   }

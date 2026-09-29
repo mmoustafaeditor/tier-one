@@ -1,5 +1,6 @@
-// Tactics screen: formation, the XI on a pitch, mentality, pressing, passing, set pieces, and the prediction for the
-// next match, which moves with every change (E2E #15, #46). What you see here is exactly what plays (E2E #1).
+// Tactics screen in three tabs (GF-08): Shape (prediction, formation, pitch, mentality), Style (pressing, passing,
+// roles, trap, philosophy) and Set pieces. The prediction for the next match moves with every change (E2E #15, #46);
+// what you see here is exactly what plays (E2E #1).
 import { useMemo, useState } from 'react';
 import type { Lang, Strings } from '../i18n';
 import type { Career, Player } from '../model/types';
@@ -10,10 +11,13 @@ import { formationNeeds, hasLicence } from '../sim/coach';
 import { userMatch } from '../sim/season';
 import { AppBar, Sheet } from './parts';
 
+type Seg = readonly [string, readonly string[], number, (v: number) => void];
+
 export function Tactics({ world, career, lang, t, onBack, onSave }: {
   world: World; career: Career; lang: Lang; t: Strings; onBack: () => void; onSave: (tac: UserTactics) => void;
 }) {
   const [tac, setTac] = useState<UserTactics>(career.tactics ?? DEFAULT_TACTICS);
+  const [tab, setTab] = useState(0);
   const [slot, setSlot] = useState<number | null>(null);
   // Formations locked by licence say why instead of ignoring the tap (E2E #16).
   const [lockMsg, setLockMsg] = useState('');
@@ -44,6 +48,15 @@ export function Tactics({ world, career, lang, t, onBack, onSave }: {
   };
   const short = (p: Player) => p.name[lang].split(' ').slice(-1)[0];
 
+  const segs = (list: Seg[]) => list.map(([label, opts, val, set]) => (
+    <div key={label}>
+      <div className="sechead"><span className="over">{label}</span></div>
+      <div className="seg g-seg-wrap">
+        {opts.map((o, i) => <button key={o} className={val === i ? 'on' : ''} onClick={() => set(i)}>{o}</button>)}
+      </div>
+    </div>
+  ));
+
   return (
     <>
       <AppBar back={onBack} backLabel={t.back} title={t.tactics} sub={fmt(tac.formation)} />
@@ -62,80 +75,92 @@ export function Tactics({ world, career, lang, t, onBack, onSave }: {
         </section>
       )}
 
-      <div className="sechead"><span className="over">{t.formation}</span></div>
-      <div className="g-leagues">
-        {FORMATION_IDS.map((f) => {
-          const locked = !hasLicence(career.coach?.licence ?? 'ELITE', formationNeeds(f));
-          return (
-            <button key={f} className={`chip g-toggle${tac.formation === f ? ' on' : ''}${locked ? ' g-locked' : ''}`}
-              onClick={() => (locked ? setLockMsg(t.lockedBy(formationNeeds(f))) : (setLockMsg(''), setTac({ ...tac, formation: f, xi: null })))}>
-              {locked ? '🔒 ' : ''}{fmt(f)}
-            </button>
-          );
-        })}
+      <div className="seg" style={{ margin: 'var(--s4) 0 var(--s2)' }} role="tablist">
+        {t.tacticsTabs.map((l, i) => <button key={l} role="tab" aria-selected={tab === i} className={tab === i ? 'on' : ''} onClick={() => setTab(i)}>{l}</button>)}
       </div>
-      {lockMsg && <p className="g-bad" role="status">{lockMsg}</p>}
 
-      {replaced.length > 0 && <p className="g-bad">{t.replacedN(replaced.map((p) => p.name[lang]).join('، '))}</p>}
-
-      <div className="g-pitch" dir="ltr">
-        {slots.map((sl, i) => {
-          const p = xi[i];
-          if (!p) return null;
-          const off = fitPenalty(p.position, sl.pos) > 0;
-          return (
-            <button key={i} className={`g-spot${slot === i ? ' on' : ''}${off ? ' off' : ''}`} style={{ left: `${sl.x}%`, bottom: `${sl.y}%` }} onClick={() => setSlot(i)}>
-              <span className="g-spot-n num">{p.shirtNumber}</span>
-              <span className="g-spot-name">{short(p)}</span>
-              <span className="g-spot-pos">{sl.pos}{p.id === pieces.captain.id ? ' ©' : ''}</span>
-            </button>
-          );
-        })}
-      </div>
-      <button className="btn" style={{ width: '100%', marginTop: 'var(--s3)' }} onClick={() => setTac({ ...tac, xi: null })}>{t.bestXI}</button>
-
-      {([[t.mentality, t.mentalities, tac.mentality + 2, (v: number) => setTac({ ...tac, mentality: v - 2 })],
-        [t.pressing, t.pressings, tac.pressing, (v: number) => setTac({ ...tac, pressing: v as 0 | 1 | 2 })],
-        [t.passing, t.passings, tac.passing, (v: number) => setTac({ ...tac, passing: v as 0 | 1 | 2 })],
-        [`${t.rolesT} · ${t.fullbackT}`, t.fullbacks, tac.fullback ?? 0, (v: number) => setTac({ ...tac, fullback: v as 0 | 1 | 2 })],
-        [`${t.rolesT} · ${t.strikerT}`, t.strikers, tac.striker ?? 0, (v: number) => setTac({ ...tac, striker: v as 0 | 1 | 2 | 3 })],
-        [t.trapT, t.traps, tac.trap ?? 0, (v: number) => setTac({ ...tac, trap: v as 0 | 1 | 2 | 3 })]] as const).map(([label, opts, val, set]) => (
-        <div key={label}>
-          <div className="sechead"><span className="over">{label}</span></div>
-          <div className="seg g-seg-wrap">
-            {opts.map((o, i) => <button key={o} className={val === i ? 'on' : ''} onClick={() => set(i)}>{o}</button>)}
+      {tab === 0 && (
+        <>
+          <div className="sechead"><span className="over">{t.formation}</span></div>
+          <div className="g-leagues">
+            {FORMATION_IDS.map((f) => {
+              const locked = !hasLicence(career.coach?.licence ?? 'ELITE', formationNeeds(f));
+              return (
+                <button key={f} className={`chip g-toggle${tac.formation === f ? ' on' : ''}${locked ? ' g-locked' : ''}`}
+                  onClick={() => (locked ? setLockMsg(t.lockedBy(formationNeeds(f))) : (setLockMsg(''), setTac({ ...tac, formation: f, xi: null })))}>
+                  {locked ? '🔒 ' : ''}{fmt(f)}
+                </button>
+              );
+            })}
           </div>
-        </div>
-      ))}
+          {lockMsg && <p className="g-bad" role="status">{lockMsg}</p>}
 
-      <div className="sechead"><span className="over">{t.philosophyT}</span></div>
-      <div className="list">
-        {PHILOSOPHIES.map((ph) => {
-          const m = Math.round(ph === 'balanced' ? 100 : career.mastery?.[ph] ?? 30);
-          return (
-            <button key={ph} className={`cell g-phil${(tac.philosophy ?? 'balanced') === ph ? ' g-mine' : ''}`} onClick={() => setTac({ ...tac, philosophy: ph })}>
-              <span className="cmain">
-                <b>{t.philosophies[ph]}</b>
-                <span>{t.philosophyHints[ph]}</span>
-                <span className="g-progress"><i style={{ width: `${m}%` }} /></span>
-              </span>
-              <small className="num muted">{t.mastery} {m}%</small>
-            </button>
-          );
-        })}
-      </div>
+          {replaced.length > 0 && <p className="g-bad">{t.replacedN(replaced.map((p) => p.name[lang]).join('، '))}</p>}
 
-      <div className="sechead"><span className="over">{t.setPiecesT}</span></div>
-      <div className="list">
-        {([['captain', t.captain], ['penalties', t.penaltiesT], ['freeKicks', t.freeKicksT], ['corners', t.cornersT]] as const).map(([k, label]) => (
-          <label key={k} className="cell g-row">
-            <span className="cmain"><b>{label}</b></span>
-            <select className="g-input g-select" value={pieces[k].id} onChange={(e) => setTac({ ...tac, [k]: e.target.value })}>
-              {xi.map((p) => <option key={p.id} value={p.id}>{p.name[lang]}</option>)}
-            </select>
-          </label>
-        ))}
-      </div>
+          <div className="g-pitch" dir="ltr">
+            {slots.map((sl, i) => {
+              const p = xi[i];
+              if (!p) return null;
+              const off = fitPenalty(p.position, sl.pos) > 0;
+              return (
+                <button key={i} className={`g-spot${slot === i ? ' on' : ''}${off ? ' off' : ''}`} style={{ left: `${sl.x}%`, bottom: `${sl.y}%` }} onClick={() => setSlot(i)}>
+                  <span className="g-spot-n num">{p.shirtNumber}</span>
+                  <span className="g-spot-name">{short(p)}</span>
+                  <span className="g-spot-pos">{sl.pos}{p.id === pieces.captain.id ? ' ©' : ''}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button className="btn g-pitchbtn" onClick={() => setTac({ ...tac, xi: null })}>{t.bestXI}</button>
+
+          {segs([[t.mentality, t.mentalities, tac.mentality + 2, (v: number) => setTac({ ...tac, mentality: v - 2 })]])}
+        </>
+      )}
+
+      {tab === 1 && (
+        <>
+          {segs([
+            [t.pressing, t.pressings, tac.pressing, (v: number) => setTac({ ...tac, pressing: v as 0 | 1 | 2 })],
+            [t.passing, t.passings, tac.passing, (v: number) => setTac({ ...tac, passing: v as 0 | 1 | 2 })],
+            [`${t.rolesT} · ${t.fullbackT}`, t.fullbacks, tac.fullback ?? 0, (v: number) => setTac({ ...tac, fullback: v as 0 | 1 | 2 })],
+            [`${t.rolesT} · ${t.strikerT}`, t.strikers, tac.striker ?? 0, (v: number) => setTac({ ...tac, striker: v as 0 | 1 | 2 | 3 })],
+            [t.trapT, t.traps, tac.trap ?? 0, (v: number) => setTac({ ...tac, trap: v as 0 | 1 | 2 | 3 })],
+          ])}
+
+          <div className="sechead"><span className="over">{t.philosophyT}</span></div>
+          <div className="list">
+            {PHILOSOPHIES.map((ph) => {
+              const m = Math.round(ph === 'balanced' ? 100 : career.mastery?.[ph] ?? 30);
+              return (
+                <button key={ph} className={`cell g-phil${(tac.philosophy ?? 'balanced') === ph ? ' g-mine' : ''}`} onClick={() => setTac({ ...tac, philosophy: ph })}>
+                  <span className="cmain">
+                    <b>{t.philosophies[ph]}</b>
+                    <span>{t.philosophyHints[ph]}</span>
+                    <span className="g-progress"><i style={{ width: `${m}%` }} /></span>
+                  </span>
+                  <small className="num muted">{t.mastery} {m}%</small>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {tab === 2 && (
+        <>
+          <div className="sechead"><span className="over">{t.setPiecesT}</span></div>
+          <div className="list">
+            {([['captain', t.captain], ['penalties', t.penaltiesT], ['freeKicks', t.freeKicksT], ['corners', t.cornersT]] as const).map(([k, label]) => (
+              <label key={k} className="cell g-row">
+                <span className="cmain"><b>{label}</b></span>
+                <select className="g-input g-select" value={pieces[k].id} onChange={(e) => setTac({ ...tac, [k]: e.target.value })}>
+                  {xi.map((p) => <option key={p.id} value={p.id}>{p.name[lang]}</option>)}
+                </select>
+              </label>
+            ))}
+          </div>
+        </>
+      )}
 
       <div style={{ height: 96 }} />
       <div className="dock" style={{ position: 'fixed' }}>

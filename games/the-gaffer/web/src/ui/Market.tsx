@@ -6,7 +6,7 @@ import { ageOf, money, type World } from '../sim/world';
 import { askingPrices, clubOf } from '../sim/transfers';
 import { AppBar, GROUP, PlayerRow } from './parts';
 import { balanceOf } from '../sim/balance';
-import { estimate } from '../sim/estimate';
+import { estimateAll, estimateMid, potentialMid } from '../sim/estimate';
 import { loanOf } from '../sim/loans';
 
 const LIMIT = 60;
@@ -24,8 +24,11 @@ export function Market({ world, career, lang, t, onBack, onPick, embedded = fals
   const leagueOf = useMemo(() => new Map(world.clubs.map((c) => [c.id, c.leagueId])), [world]);
   const mult = balanceOf(career).prices;
   const prices = useMemo(() => askingPrices(world, mult), [world, mult]);
+  // What the scouts think, for every player at once: sorting by the true rating would leak it (audit Part C).
+  const ests = useMemo(() => estimateAll(world, career, world.players), [world, career]);
+  const est = (p: Player) => ests.get(p.id)!;
   const sorts: [string, (p: Player) => number][] = [
-    [t.sorts[1], (p) => p.rating], [t.player.potential, (p) => p.potential], [t.sorts[2], (p) => p.marketValue],
+    [t.sorts[1], (p) => estimateMid(est(p))], [t.player.potential, (p) => potentialMid(est(p))], [t.sorts[2], (p) => p.marketValue],
     [t.sorts[3], (p) => p.wage], [t.sorts[4], (p) => -ageOf(p, career.season)],
   ];
 
@@ -40,7 +43,8 @@ export function Market({ world, career, lang, t, onBack, onPick, embedded = fals
       .filter((p) => !affordable || (prices.get(p.id) ?? 0) <= budget)
       .sort((a, b) => sorts[sort][1](b) - sorts[sort][1](a));
     return out.slice(0, LIMIT);
-  }, [world, career.clubId, freeOnly, group, league, q, affordable, sort, budget, prices]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [world, career.clubId, freeOnly, group, league, q, affordable, sort, budget, prices, ests]);
 
   const nameOf = (id: string) => (id === FREE_AGENT ? t.freeAgents : clubOf(world, id)?.name[lang] ?? '');
 
@@ -54,9 +58,10 @@ export function Market({ world, career, lang, t, onBack, onPick, embedded = fals
             {(career.rumours ?? []).map((ru) => {
               const p = world.players.find((x) => x.id === ru.playerId);
               if (!p) return null;
+              const e = est(p);
               return (
                 <div key={ru.id} className="cell g-row">
-                  <span className="cmain"><b>{p.name[lang]} · {p.rating}</b><span>{nameOf(ru.from)} → {nameOf(ru.to)} · {money(ru.fee)} · {t.chance(ru.chance)}</span></span>
+                  <span className="cmain"><b>{p.name[lang]} · {e.exact ? p.rating : `${e.lo}–${e.hi}`}</b><span>{nameOf(ru.from)} → {nameOf(ru.to)} · {money(ru.fee)} · {t.chance(ru.chance)}</span></span>
                   <button className="btn sm primary" onClick={() => onPick(p)}>{t.hijack}</button>
                 </div>
               );
@@ -87,10 +92,10 @@ export function Market({ world, career, lang, t, onBack, onPick, embedded = fals
       <div className="list">
         {list.map((p) => {
           const ask = prices.get(p.id) ?? 0;
-          const est = estimate(world, career, p);
+          const e = est(p);
           return (
             <PlayerRow key={p.id} p={p} lang={lang} t={t} season={career.season} onClick={() => onPick(p)}
-              right={est.exact ? undefined : <span className="g-rating num g-est" title={t.estimateT}>{est.lo}–{est.hi}</span>}
+              right={e.exact ? undefined : <span className="g-rating num ltr g-est" title={t.estimateT}>{e.lo}–{e.hi}</span>}
               sub={<>{p.position} · {ageOf(p, career.season)} · {nameOf(p.clubId)} · <span className="num ltr">{ask ? money(ask) : t.free}</span></>} />
           );
         })}

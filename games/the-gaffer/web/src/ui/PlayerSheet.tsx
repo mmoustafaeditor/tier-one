@@ -1,4 +1,5 @@
-// Player sheet: attributes, condition, season stats, contract, and the actions that fit (offer, renew, list for sale).
+// Player sheet: what you can do with him first (offer, renew, list, loan), then his condition, and the attributes
+// and season numbers behind "Details" (GF-17: five actions no longer sit three screens down on a phone).
 import type { Lang, Strings } from '../i18n';
 import { FREE_AGENT, type Career, type Player } from '../model/types';
 import { FLAG } from '../data/names';
@@ -11,7 +12,7 @@ import { balanceOf } from '../sim/balance';
 import { estimate, shortlisted, toggleShortlist } from '../sim/estimate';
 import { avgRating } from '../sim/ratings';
 import { windowOf } from '../sim/windows';
-import { canLoanIn, canLoanOut, loanClubs, loanFee, loanIn, loanOf, loanOut } from '../sim/loans';
+import { loanClubs, loanFee, loanIn, loanOf, loanOut } from '../sim/loans';
 
 export function PlayerSheet({ p, world, career, lang, t, onClose, onOffer, onRenew, onList, onRename, onApply }: {
   p: Player; world: World; career: Career; lang: Lang; t: Strings;
@@ -20,22 +21,22 @@ export function PlayerSheet({ p, world, career, lang, t, onClose, onOffer, onRen
 }) {
   const [loanPick, setLoanPick] = useState(false);
   const [why, setWhy] = useState('');
+  const [details, setDetails] = useState(false);
   const loan = loanOf(career, p.id);
   const mine = p.clubId === career.clubId;
   const est = estimate(world, career, p);
   const rt = career.ratings?.[p.id];
   const clubName = (id: string) => world.clubs.find((c) => c.id === id)?.name[lang] ?? '';
   const windowShut = !windowOf(career) && p.clubId !== FREE_AGENT;
+  // Loans validate themselves: a refused move changes nothing and says why.
   const tryLoanIn = () => {
-    const ok = canLoanIn(world, career, p);
-    if (!ok.ok) { setWhy(t.loanReason[ok.reason]); return; }
     const r = loanIn(world, career, p);
+    if (!r.ok) { setWhy(t.loanReason[r.reason]); return; }
     onApply(r.world, r.career, t.loanedIn(p.name[lang]));
   };
   const tryLoanOut = (to: string) => {
-    const ok = canLoanOut(world, career, p);
-    if (!ok.ok) { setWhy(t.loanReason[ok.reason]); return; }
     const r = loanOut(world, career, p, to);
+    if (!r.ok) { setWhy(t.loanReason[r.reason]); return; }
     onApply(r.world, r.career, t.loanedOut(p.name[lang], clubName(to)));
   };
   const clubs = loanPick ? loanClubs(world, career, p) : [];
@@ -62,40 +63,20 @@ export function PlayerSheet({ p, world, career, lang, t, onClose, onOffer, onRen
       {(p.injured > 0 || p.banned > 0) && (
         <p className="g-bad" style={{ margin: 'var(--s3) 0 0' }}>{p.injured > 0 ? t.statusInj(p.injured) : t.statusBan(p.banned)}</p>
       )}
-      <div className="g-stats g-stats-4">
-        <Stat label={t.player.rating} value={est.exact ? String(p.rating) : `${est.lo}–${est.hi}`} />
-        <Stat label={t.player.potential} value={est.exact ? String(p.potential) : `${est.plo}–${est.phi}`} />
-        <Stat label={t.player.age} value={String(ageOf(p, career.season))} />
-        <Stat label={t.player.shirt} value={p.shirtNumber ? `#${p.shirtNumber}` : '–'} />
+
+      {/* Actions first: the reason the sheet was opened. */}
+      {why && <p className="g-bad" role="alert" style={{ margin: 'var(--s3) 0 0' }}>{why}</p>}
+      {windowShut && !mine && !loan && <p className="muted" style={{ margin: 'var(--s3) 0 0' }}>{t.windowClosedBid}</p>}
+      <div className="g-actions">
+        {!mine && !loan && <button className="btn primary" disabled={windowShut} onClick={onOffer}>{t.makeOffer}</button>}
+        {((mine && !loan) || loan?.from === career.clubId) && <button className="btn primary" onClick={onRenew}>{t.renewTitle}</button>}
+        {!mine && !loan && p.clubId !== FREE_AGENT && <button className="btn" disabled={windowShut} onClick={tryLoanIn}>{t.loanInBtn(money(loanFee(p)))}</button>}
+        {!mine && !loan && (
+          <button className="btn" onClick={() => onApply(world, toggleShortlist(career, p.id))}>{shortlisted(career, p.id) ? `★ ${t.shortlistRemove}` : `☆ ${t.shortlistAdd}`}</button>
+        )}
+        {mine && !loan && <button className="btn" onClick={() => onList(!p.listed)}>{p.listed ? t.unlist : t.listForSale}</button>}
+        {mine && !loan && windowOf(career) && !loanPick && <button className="btn" onClick={() => { setWhy(''); setLoanPick(true); }}>{t.loanOutBtn}</button>}
       </div>
-      <div className="g-bars">
-        {[[t.fitness, p.fitness], [t.morale, p.morale]].map(([k, v]) => (
-          <div key={k as string} className="g-barrow"><span>{k}</span><div className="bar"><i style={{ width: `${v}%` }} /></div><b className="num">{v}</b></div>
-        ))}
-        {est.exact && attrIdx.map((i) => (
-          <div key={i} className="g-barrow"><span>{t.attrs[i]}</span><div className="bar attr"><i style={{ width: `${p.attrs[i]}%` }} /></div><b className="num">{p.attrs[i]}</b></div>
-        ))}
-      </div>
-      {!est.exact && <p className="muted" style={{ margin: 'var(--s2) 0 0' }}>{t.estimateT}: {t.estHint}</p>}
-      <div className="sechead"><span className="over">{t.seasonStats}</span></div>
-      <div className="g-stats g-stats-5">
-        {t.statCols.map((k, i) => <Stat key={k} label={k} value={String(st[i])} />)}
-      </div>
-      {rt && rt[1] > 0 && (
-        <div className="g-leagues" style={{ marginTop: 'var(--s3)' }}>
-          <span className="chip">{t.avgRatingT} <b className="num">{avgRating(rt).toFixed(2)}</b></span>
-          {rt[2] > 0 && <span className="chip">⭐ {t.motmN(rt[2])}</span>}
-        </div>
-      )}
-      <div className="list" style={{ margin: 'var(--s4) 0' }}>
-        <Line k={t.player.value} v={money(p.marketValue)} />
-        {!mine && p.clubId !== FREE_AGENT && <Line k={t.askPrice} v={money(askingPrice(world, p, balanceOf(career).prices))} />}
-        <Line k={t.player.wage} v={money(p.wage)} unit={t.perMonth} />
-        {p.clubId !== FREE_AGENT && <Line k={t.player.contract} v={String(p.contractUntil)} />}
-        {!!p.savings && <Line k={t.playerSavings} v={money(p.savings)} />}
-      </div>
-      {why && <p className="g-bad" role="alert">{why}</p>}
-      {windowShut && !mine && !loan && <p className="muted">{t.windowClosedBid}</p>}
       {loanPick && (
         <>
           <div className="sechead"><span className="over">{t.loanTo}</span></div>
@@ -106,15 +87,50 @@ export function PlayerSheet({ p, world, career, lang, t, onClose, onOffer, onRen
           ) : <p className="muted">{t.noLoanClubs}</p>}
         </>
       )}
-      <div style={{ display: 'grid', gap: 'var(--s3)' }}>
-        {!mine && !loan && <button className="btn primary" disabled={windowShut} onClick={onOffer}>{t.makeOffer}</button>}
-        {!mine && !loan && p.clubId !== FREE_AGENT && <button className="btn" disabled={windowShut} onClick={tryLoanIn}>{t.loanInBtn(money(loanFee(p)))}</button>}
-        {!mine && !loan && (
-          <button className="btn" onClick={() => onApply(world, toggleShortlist(career, p.id))}>{shortlisted(career, p.id) ? `★ ${t.shortlistRemove}` : `☆ ${t.shortlistAdd}`}</button>
-        )}
-        {((mine && !loan) || loan?.from === career.clubId) && <button className="btn primary" onClick={onRenew}>{t.renewTitle}</button>}
-        {mine && !loan && <button className="btn" onClick={() => onList(!p.listed)}>{p.listed ? t.unlist : t.listForSale}</button>}
-        {mine && !loan && windowOf(career) && !loanPick && <button className="btn" onClick={() => { setWhy(''); setLoanPick(true); }}>{t.loanOutBtn}</button>}
+
+      <div className="g-stats g-stats-4">
+        <Stat label={t.player.rating} value={est.exact ? String(p.rating) : `${est.lo}–${est.hi}`} />
+        <Stat label={t.player.potential} value={est.exact ? String(p.potential) : `${est.plo}–${est.phi}`} />
+        <Stat label={t.player.age} value={String(ageOf(p, career.season))} />
+        <Stat label={t.player.shirt} value={p.shirtNumber ? `#${p.shirtNumber}` : '–'} />
+      </div>
+      <div className="g-bars">
+        {[[t.fitness, p.fitness], [t.morale, p.morale]].map(([k, v]) => (
+          <div key={k as string} className="g-barrow"><span>{k}</span><div className="bar"><i style={{ width: `${v}%` }} /></div><b className="num">{v}</b></div>
+        ))}
+      </div>
+      {!est.exact && <p className="muted" style={{ margin: 'var(--s2) 0 0' }}>{t.estimateT}: {t.estHint}</p>}
+      <div className="list" style={{ margin: 'var(--s4) 0' }}>
+        <Line k={t.player.value} v={money(p.marketValue)} />
+        {!mine && p.clubId !== FREE_AGENT && <Line k={t.askPrice} v={money(askingPrice(world, p, balanceOf(career).prices))} />}
+        <Line k={t.player.wage} v={money(p.wage)} unit={t.perMonth} />
+        {p.clubId !== FREE_AGENT && <Line k={t.player.contract} v={String(p.contractUntil)} />}
+        {!!p.savings && <Line k={t.playerSavings} v={money(p.savings)} />}
+      </div>
+
+      <button className="btn ghost" aria-expanded={details} onClick={() => setDetails(!details)}>{details ? t.hideDetailsT : t.detailsT} {details ? '▴' : '▾'}</button>
+      {details && (
+        <>
+          {est.exact && (
+            <div className="g-bars">
+              {attrIdx.map((i) => (
+                <div key={i} className="g-barrow"><span>{t.attrs[i]}</span><div className="bar attr"><i style={{ width: `${p.attrs[i]}%` }} /></div><b className="num">{p.attrs[i]}</b></div>
+              ))}
+            </div>
+          )}
+          <div className="sechead"><span className="over">{t.seasonStats}</span></div>
+          <div className="g-stats g-stats-5">
+            {t.statCols.map((k, i) => <Stat key={k} label={k} value={String(st[i])} />)}
+          </div>
+          {rt && rt[1] > 0 && (
+            <div className="g-leagues" style={{ marginTop: 'var(--s3)' }}>
+              <span className="chip">{t.avgRatingT} <b className="num">{avgRating(rt).toFixed(2)}</b></span>
+              {rt[2] > 0 && <span className="chip">⭐ {t.motmN(rt[2])}</span>}
+            </div>
+          )}
+        </>
+      )}
+      <div className="g-actions" style={{ marginTop: 'var(--s4)' }}>
         <button className="btn ghost" onClick={onRename}>✎ {t.editName}</button>
         <button className="btn ghost" onClick={onClose}>{t.close}</button>
       </div>

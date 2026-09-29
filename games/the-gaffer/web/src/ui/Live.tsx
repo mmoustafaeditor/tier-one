@@ -56,7 +56,7 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
       stepMinute(n, get);
       onUpdate(n);
       if (n.minute === 45) { setTalk(true); onSave(n); }
-      else if (n.minute % 15 === 0) onSave(n); // so a restart loses at most a few minutes
+      else if (n.minute % 5 === 0) onSave(n); // so a restart loses at most four minutes (GF-26)
     }, SPEEDS[speed]);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -117,17 +117,17 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
         <div className="banner g-motm"><span className="bic">⭐</span><div><b>{t.motm}: {name(rt.motm)}</b><p className="num">{t.ratingT} {rate(rt.motm)}{m.xg ? ` · xG ${m.xg[0].toFixed(1)}–${m.xg[1].toFixed(1)}` : ''}</p></div></div>
       )}
       {tab === 0 && (
-        <>
+        <div className="g-livecols">
           <Pitch2D m={m} world={world} goalWord={t.goalWord} camera={camera} msPerMinute={SPEEDS[speed]} running={!paused && !done && !changes && !talk && !locked} />
           <div className="list g-livefeed">
-            {lines.slice(0, 6).map((l, i) => (
+            {lines.slice(0, 12).map((l, i) => (
               <div key={i} className={`cell g-ev${l.cls}`}>
                 <span className="g-ev-min num">{l.min}′</span>
                 <span className="cmain"><span>{l.text}</span></span>
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
 
       {tab === 1 && (
@@ -216,23 +216,17 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
       {changes && (
         <Sheet label={t.changes} onClose={() => setChanges(false)}>
           <h2 className="d3" style={{ margin: 'var(--s4) 0 var(--s3)' }}>{t.changes}</h2>
-          {([[t.mentality, t.mentalities, s.tactics.mentality + 2, (n: LiveMatch, v: number) => { n.sides[me].tactics.mentality = v - 2; }],
-            [t.pressing, t.pressings, s.tactics.pressing, (n: LiveMatch, v: number) => { n.sides[me].tactics.pressing = v as 0 | 1 | 2; }]] as const).map(([label, opts, val, set]) => (
-            <div key={label}>
-              <div className="sechead"><span className="over">{label}</span></div>
-              <div className="seg g-seg-wrap">
-                {opts.map((o, i) => <button key={o} className={val === i ? 'on' : ''} onClick={() => change((n) => set(n, i))}>{o}</button>)}
-              </div>
-            </div>
-          ))}
-          <div className="sechead"><span className="over">{t.subsLeft(SUBS_MAX - s.subs)}</span></div>
+          {/* Subs first (the four-tap job), both columns with rating and fitness, a sticky confirm line at the bottom (GF-07). */}
+          <div className="sechead" style={{ marginTop: 0 }}><span className="over">{t.subsLeft(SUBS_MAX - s.subs)}</span></div>
           <div className="g-subcols">
             <div>
               <small className="over">{t.subOut}</small>
               <div className="list">
                 {s.onPitch.map((id, k) => id && (
-                  <button key={id} className={`cell g-lu${outId === id ? ' g-mine' : ''}`} onClick={() => setOutId(id)}>
-                    <span className="tag">{slots[k].pos}</span><span className="cmain"><b>{name(id)}</b></span><span className="num muted">{Math.round(m.fit[id] ?? 0)}</span>
+                  <button key={id} className={`cell g-lu${outId === id ? ' g-sel' : ''}`} aria-pressed={outId === id} onClick={() => setOutId(outId === id ? '' : id)}>
+                    <span className="tag">{slots[k].pos}</span>
+                    <span className="cmain"><b>{name(id)}</b><small className="num">{t.fitness} {Math.round(m.fit[id] ?? 0)}</small></span>
+                    <span className="g-rating num">{get(id).rating}</span>
                   </button>
                 ))}
               </div>
@@ -243,18 +237,32 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
                 {s.bench.map((id) => {
                   const p: Player = get(id);
                   return (
-                    <button key={id} className={`cell g-lu${inId === id ? ' g-mine' : ''}`} onClick={() => setInId(id)}>
-                      <span className="tag">{p.position}</span><span className="cmain"><b>{p.name[lang]}</b></span><span className="g-rating num">{p.rating}</span>
+                    <button key={id} className={`cell g-lu${inId === id ? ' g-sel' : ''}`} aria-pressed={inId === id} onClick={() => setInId(inId === id ? '' : id)}>
+                      <span className="tag">{p.position}</span>
+                      <span className="cmain"><b>{p.name[lang]}</b><small className="num">{t.fitness} {Math.round(m.fit[id] ?? p.fitness)}</small></span>
+                      <span className="g-rating num">{p.rating}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
           </div>
-          <div style={{ display: 'grid', gap: 'var(--s2)', marginTop: 'var(--s4)' }}>
-            <button className="btn primary" disabled={!outId || !inId || s.subs >= SUBS_MAX}
-              onClick={() => { change((n) => userSub(n, me, outId, inId)); setOutId(''); setInId(''); }}>{t.makeSub}</button>
-            <button className="btn ghost" onClick={() => setChanges(false)}>{t.resume}</button>
+          {([[t.mentality, t.mentalities, s.tactics.mentality + 2, (n: LiveMatch, v: number) => { n.sides[me].tactics.mentality = v - 2; }],
+            [t.pressing, t.pressings, s.tactics.pressing, (n: LiveMatch, v: number) => { n.sides[me].tactics.pressing = v as 0 | 1 | 2; }]] as const).map(([label, opts, val, set]) => (
+            <div key={label}>
+              <div className="sechead"><span className="over">{label}</span></div>
+              <div className="seg g-seg-wrap">
+                {opts.map((o, i) => <button key={o} className={val === i ? 'on' : ''} onClick={() => change((n) => set(n, i))}>{o}</button>)}
+              </div>
+            </div>
+          ))}
+          <div className="g-subfoot">
+            <b className={outId && inId ? '' : 'muted'}>{outId && inId ? t.confirmSub(name(outId), name(inId)) : t.pickSubHint}</b>
+            <div className="g-twobtn">
+              <button className="btn primary" disabled={!outId || !inId || s.subs >= SUBS_MAX}
+                onClick={() => { change((n) => userSub(n, me, outId, inId)); setOutId(''); setInId(''); }}>{t.makeSub}</button>
+              <button className="btn ghost" onClick={() => setChanges(false)}>{t.resume}</button>
+            </div>
           </div>
         </Sheet>
       )}

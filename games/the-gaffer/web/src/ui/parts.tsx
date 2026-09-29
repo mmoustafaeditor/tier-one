@@ -11,11 +11,11 @@ export { GROUP_OF as GROUP } from '../sim/groups';
 export const Icon = ({ svg }: { svg: string }) => <span aria-hidden="true" style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: svg }} />;
 export const Stars = ({ n }: { n: number }) => <span className="stars" aria-label={`${n}/5`}>{'★'.repeat(Math.floor(n))}{n % 1 ? '½' : ''}</span>;
 
-export function AppBar({ back, backLabel, title, sub, right }: { back?: () => void; backLabel?: string; title: string; sub?: string; right?: ReactNode }) {
+export function AppBar({ back, backLabel, title, sub, right, wrapSub = false }: { back?: () => void; backLabel?: string; title: string; sub?: string; right?: ReactNode; wrapSub?: boolean }) {
   return (
-    <header className="appbar">
+    <header className={`appbar${wrapSub ? ' g-tall' : ''}`}>
       {back ? <button className="iconbtn" aria-label={backLabel} onClick={back}><Icon svg={backIcon} /></button> : <div />}
-      <div className="ttl">{title}{sub && <small>{sub}</small>}</div>
+      <div className={`ttl${wrapSub ? ' g-wrap' : ''}`}>{title}{sub && <small>{sub}</small>}</div>
       <div className="right">{right}</div>
     </header>
   );

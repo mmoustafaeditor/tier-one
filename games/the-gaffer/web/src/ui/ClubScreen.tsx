@@ -9,6 +9,8 @@ import {
   payBonus, refPrice, signSponsor, staffWages, upgradeCost, upgradeFacility, upkeep,
 } from '../sim/economy';
 import { AppBar, Stepper } from './parts';
+import { dealRoll } from '../sim/transfers';
+import { dedupeOffers } from '../data/sponsors';
 
 type Done = (w: World, c: Career, msg?: string) => void;
 
@@ -119,7 +121,7 @@ export function ClubScreen({ world, career, lang, t, onBack, onChange, tab0 = 0 
 
       {tab === 2 && SLOTS.map((slot) => {
         const d = ops.sponsors.find((x) => x.slot === slot);
-        const offers = ops.sponsorOffers.filter((x) => x.slot === slot);
+        const offers = dedupeOffers(ops.sponsorOffers.filter((x) => x.slot === slot));
         return (
           <div key={slot} style={{ marginBottom: 'var(--s4)' }}>
             <div className="sechead" style={{ marginTop: 0 }}><span className="over">{t.slotNames[slot]}</span></div>
@@ -139,7 +141,7 @@ export function ClubScreen({ world, career, lang, t, onBack, onChange, tab0 = 0 
                 <small className="muted">{t.bonusLeague} {money(o.bonusLeague)} · {t.bonusCup} {money(o.bonusCup)}</small>
                 <div className="g-filters">
                   <button className="btn primary sm" onClick={() => onChange(world, signSponsor(career, o), `${t.sign}: ${o.brand[lang]}`)}>{t.sign}</button>
-                  <button className="btn sm" onClick={() => { const r = haggleSponsor(career, o, Math.random()); onChange(world, r.career, r.ok ? t.haggleOk : t.haggleNo); }}>{t.askMore}</button>
+                  <button className="btn sm" onClick={() => { const r = haggleSponsor(career, o, dealRoll(career, o.id)); onChange(world, r.career, r.ok ? t.haggleOk : t.haggleNo); }}>{t.askMore}</button>
                 </div>
               </div>
             )) : <p className="muted">—</p>}

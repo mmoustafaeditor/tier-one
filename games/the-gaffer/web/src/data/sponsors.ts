@@ -47,3 +47,14 @@ export function sponsorsOf(club: Club, country: CountryCode, tier: number): { ki
   const shirt = big ? GLOBAL[(h >>> 3) % GLOBAL.length] : local[(h >>> 3) % local.length];
   return { kit: N(kit), shirt: N(shirt) };
 }
+
+// One offer per brand in a slot: when the generator rolls the same brand twice, the better-paying offer stays (GF-21).
+export function dedupeOffers<T extends { slot: string; brand: LocalizedName; monthly: number }>(offers: T[]): T[] {
+  const best = new Map<string, T>();
+  for (const o of offers) {
+    const key = `${o.slot}:${o.brand.en}`;
+    const cur = best.get(key);
+    if (!cur || o.monthly > cur.monthly) best.set(key, o);
+  }
+  return offers.filter((o) => best.get(`${o.slot}:${o.brand.en}`) === o);
+}

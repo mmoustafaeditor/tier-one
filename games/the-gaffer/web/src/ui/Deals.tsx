@@ -5,7 +5,7 @@ import type { Career, Offer, Player, SaveFile } from '../model/types';
 import { ageOf, money, squadOf, type World } from '../sim/world';
 import { roundFee } from '../sim/season';
 import {
-  acceptOffer, askingPrice, buy, canSell, clubOf, counterOffer, judgeBid, judgeRenewal, rejectOffer, renew, renewDemand, wageDemand, type Role,
+  acceptOffer, askingPrice, buy, clubOf, counterOffer, dealRoll, newContractEnd, rejectOffer, renewDemand, tryRenew, wageDemand, type Role,
 } from '../sim/transfers';
 import { parseSave, saveText as packSave } from '../sim/save';
 import { download as downloadFile } from './share';
@@ -28,17 +28,14 @@ export function BidSheet({ p, world, career, lang, t, onClose, onDone }: {
   const [msg, setMsg] = useState('');
   const club = clubOf(world, career.clubId)!;
 
+  // `buy` judges the bid itself: a refused bid changes nothing and comes back with the reason (and a counter).
   const send = () => {
-    const a = judgeBid(world, career, p, { fee, wage, years, role });
-    if (a.ok) {
-      const r = buy(world, career, p, { fee, wage, years, role });
-      onDone(r.world, r.career, t.signed(p.name[lang]));
-      return;
-    }
-    const why = t.bidReason[a.reason];
-    setMsg(typeof why === 'function' ? why(money(a.counter ?? 0)) : why);
-    if (a.reason === 'fee' && a.counter) setFee(a.counter);
-    if (a.reason === 'wage' && a.counter) setWage(a.counter);
+    const r = buy(world, career, p, { fee, wage, years, role });
+    if (r.ok) { onDone(r.world, r.career, t.signed(p.name[lang])); return; }
+    const why = t.bidReason[r.reason];
+    setMsg(typeof why === 'function' ? why(money(r.counter ?? 0)) : why);
+    if (r.reason === 'fee' && r.counter) setFee(r.counter);
+    if (r.reason === 'wage' && r.counter) setWage(r.counter);
   };
 
   return (
@@ -81,11 +78,11 @@ export function RenewSheet({ p, world, career, lang, t, onClose, onDone }: {
   const [years, setYears] = useState(Math.min(2, d.maxYears));
   const [msg, setMsg] = useState('');
   const send = () => {
-    const a = judgeRenewal(world, career, p, wage, years);
-    if (a.ok) { onDone(renew(world, career, p, wage, years), career, t.renewed(p.name[lang])); return; }
-    if (a.reason === 'wage') { setMsg(t.renewReason.wage(money(a.counter ?? 0))); setWage(a.counter ?? wage); }
-    else if (a.reason === 'years') { setMsg(t.renewReason.years(a.counter ?? 1)); setYears(a.counter ?? 1); }
-    else setMsg(t.renewReason[a.reason]);
+    const r = tryRenew(world, career, p, wage, years);
+    if (r.ok) { onDone(r.world, career, t.renewed(p.name[lang])); return; }
+    if (r.reason === 'wage') { setMsg(t.renewReason.wage(money(r.counter ?? 0))); setWage(r.counter ?? wage); }
+    else if (r.reason === 'years') { setMsg(t.renewReason.years(r.counter ?? 1)); setYears(r.counter ?? 1); }
+    else setMsg(t.renewReason[r.reason]);
   };
   return (
     <Sheet label={t.renewTitle} onClose={onClose}>
@@ -98,7 +95,7 @@ export function RenewSheet({ p, world, career, lang, t, onClose, onDone }: {
         </label>
         <label><span className="over">{t.extraYears}</span>
           <Stepper value={years} onChange={setYears} step={1} min={1} max={5} format={t.yearsN} />
-          <small className="muted">{t.player.contract} <span className="num">{career.season + 1 + years}</span></small>
+          <small className="muted">{t.newEnd(newContractEnd(p, career.season, years))}</small>
         </label>
       </div>
       {msg && <p className="g-bad" role="status">{msg}</p>}
@@ -120,14 +117,13 @@ export function OffersSheet({ world, career, lang, t, onClose, onDone }: {
     const buyer = clubOf(world, o.clubId)!;
     if (kind === 'reject') { onDone(world, rejectOffer(career, o), ''); return; }
     if (kind === 'counter') {
-      const r = counterOffer(career, o, p, o.fee * 1.2, Math.random());
+      const r = counterOffer(career, o, p, o.fee * 1.2, dealRoll(career, o.id));
       setMsg(r.accepted ? t.counterOk : t.counterNo);
       onDone(world, r.career, '');
       return;
     }
-    const ok = canSell(world, career, o);
-    if (!ok.ok) { setMsg(t.sellReason[ok.reason]); return; }
     const r = acceptOffer(world, career, o);
+    if (!r.ok) { setMsg(t.sellReason[r.reason]); return; }
     onDone(r.world, r.career, t.sold(p.name[lang], buyer.name[lang]));
   };
   return (
@@ -177,7 +173,7 @@ export function SaveSheet({ mode, world, career, t, onClose, onLoaded }: {
   };
   const load = async (raw: string) => {
     const r = await parseSave(raw.trim());
-    if (!r.ok) { setMsg({ ok: false, text: t.importBad[r.reason] }); return; }
+    if (!r.ok) { setMsg({ ok: false, text: r.detail ? `${t.importBad[r.reason]} (${r.detail})` : t.importBad[r.reason] }); return; }
     onLoaded(r.save);
   };
 

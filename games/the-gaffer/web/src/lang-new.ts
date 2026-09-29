@@ -31,9 +31,11 @@ export const NEW_EN = {
     jobs: (n: number) => `${n} ${P(n, 'club wants', 'clubs want')} to talk to you`,
     dev: (n: number) => `${n} development points to spend`,
     staff: (n: number) => `Your staff did ${n} ${P(n, 'thing', 'things')} since the last match`,
+    board: (n: number, d: number) => `Board confidence ${n}: ${d === 1 ? 'one more defeat' : `${d} more defeats`} and you’re out`,
   },
-  todayActions: { offers: 'Answer', contracts: 'Renew', unavailable: 'Fix XI', tired: 'Rotate', windowOpen: 'Market', deadline: 'Market', sponsors: 'Sign', red: 'Finances', thin: 'Sign players', jobs: 'See offers', dev: 'Train', staff: 'See log' },
+  todayActions: { offers: 'Answer', contracts: 'Renew', unavailable: 'Fix XI', tired: 'Rotate', windowOpen: 'Market', deadline: 'Market', sponsors: 'Sign', red: 'Finances', thin: 'Sign players', jobs: 'See offers', dev: 'Train', staff: 'See log', board: 'Board' },
   formT: 'Form',
+  formLetters: ['W', 'D', 'L'] as [string, string, string],
   nextMatchT: 'Next match',
 
   // Matchday
@@ -132,6 +134,7 @@ export const NEW_EN = {
     window: 'Loans only happen while a window is open.', budget: 'Not enough budget for the loan fee.', wageCap: 'His wage would break the wage cap.',
     squad: 'Squad size limit reached.', key: 'A first-team regular there: not for loan.', limit: 'You already have 4 loans that way.',
     free: 'Free agents sign, they don’t loan.', loaned: 'Already on loan.', injured: 'Injured players can’t move on loan.',
+    lenderThin: 'They won’t lend: it would leave them under 16 players.', club: 'That club can’t take him.',
   } as Record<string, string>,
   loanedIn: (name: string) => `${name} joins on loan.`,
   loanedOut: (name: string, club: string) => `${name} joins ${club} on loan.`,
@@ -184,8 +187,8 @@ export const NEW_EN = {
   matchDuty: ['Play the match', 'Always you.'] as [string, string],
   meT: 'Me',
   staffT: 'Staff',
-  delegateAll: 'Delegate everything',
-  takeAll: 'Take control of everything',
+  delegateAll: 'Hand everything to staff',
+  takeAll: 'Do it all myself',
   needStaff: (role: string) => `Hire a ${role.toLowerCase()} first`,
   staffLogT: 'What your staff did',
   staffLogEmpty: 'Nothing yet. Delegate a duty and your staff log what they do here.',
@@ -211,6 +214,19 @@ export const NEW_EN = {
   staffNames2: { director: 'Sporting director' } as Record<string, string>,
   staffEffects2: { director: 'Contracts, bids, signings, loans, sponsors and tickets when you delegate them' } as Record<string, string>,
   ledgerKeys2: { loans: 'Loan fees' } as Record<string, string>,
+
+  // G1 (integrity and UX fixes)
+  wagesOfCap: 'Wages, of cap',
+  newEnd: (y: number) => `New end: ${y}`,
+  resumedFrom: (min: number) => `Resumed from ${min}′`,
+  playingT: (what: string) => `Playing ${what}…`,
+  saveRefused: (why: string) => `Couldn’t save: ${why}`,
+  tacticsTabs: ['Shape', 'Style', 'Set pieces'] as [string, string, string],
+  confirmSub: (off: string, on: string) => `Confirm sub: ${off} ↔ ${on}`,
+  pickSubHint: 'Pick who goes off and who comes on.',
+  detailsT: 'Details',
+  hideDetailsT: 'Hide details',
+  radarLocked: 'Scout the opponent to see their profile.',
 
   // History
   histTabs: ['Seasons', 'Records', 'Trophies', 'Academy'],

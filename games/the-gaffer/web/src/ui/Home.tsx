@@ -11,6 +11,7 @@ import { xiFor } from '../sim/tactics';
 import { SLOTS } from '../sim/economy';
 import { DEV_COST } from '../sim/training';
 import { delegated } from '../sim/staff';
+import { balanceOf, sackLine } from '../sim/balance';
 import { isDeadlineDay, windowLeft, windowOf } from '../sim/windows';
 import { Kit } from '../components/Kit';
 import { Icon, Score, Stars } from './parts';
@@ -23,12 +24,20 @@ export type Go = 'offers' | 'contracts' | 'tactics' | 'transfers' | 'sponsors' |
 
 interface Item { key: keyof Strings['todayItems']; text: string; icon: string; go: Go; warn?: boolean }
 
+// Below this the board is a Today item: the sack should never be a surprise (GF-23).
+const BOARD_WARN = 30;
+
 export function todayItems(w: World, c: Career, t: Strings): Item[] {
   const club = w.clubs.find((x) => x.id === c.clubId)!;
   const squad = squadOf(w, c.clubId);
   const over = seasonOver(c);
   const items: Item[] = [];
   if (c.sacked) return items;
+  if (c.board.confidence < BOARD_WARN) {
+    // Roughly how many more defeats the board will take (each costs about six points of confidence).
+    const defeats = Math.max(1, Math.ceil((c.board.confidence - sackLine(balanceOf(c))) / 6));
+    items.push({ key: 'board', text: t.todayItems.board(Math.round(c.board.confidence), defeats), icon: ICONS.board, go: 'coach', warn: true });
+  }
   if (isDeadlineDay(c) && !delegated(c, 'signing')) items.push({ key: 'deadline', text: t.todayItems.deadline, icon: ICONS.alert, go: 'transfers', warn: true });
   if (c.offers.length && !delegated(c, 'selling')) items.push({ key: 'offers', text: t.todayItems.offers(c.offers.length), icon: ICONS.money, go: 'offers' });
   if (!delegated(c, 'lineup')) {
@@ -52,6 +61,8 @@ export function todayItems(w: World, c: Career, t: Strings): Item[] {
   return items;
 }
 
+const FORM_IDX: Record<string, number> = { W: 0, D: 1, L: 2 };
+
 export function Home({ world, career, lang, t, ui, myClub, myLeague, busy, matchLabel, langButton, onGo, onPlay, onFinishSeason, onNextSeason, onPlayer }: {
   world: World; career: Career; lang: Lang; t: Strings; ui: UiLang; myClub: Club; myLeague: League; busy: boolean;
   matchLabel: (m: LiveMatch) => string; langButton: ReactNode;
@@ -67,6 +78,8 @@ export function Home({ world, career, lang, t, ui, myClub, myLeague, busy, match
   const club = (id: string) => world.clubs.find((x) => x.id === id)!;
   const items = todayItems(world, career, t);
   const unread = career.inbox.filter((m) => !m.read).length;
+  // The manager's name keeps its own direction inside the sentence (GF-32).
+  const [welcomeA, welcomeB] = t.welcome('\u0000').split('\u0000');
   return (
     <>
       <div className="g-top">
@@ -88,14 +101,16 @@ export function Home({ world, career, lang, t, ui, myClub, myLeague, busy, match
             <Stars n={starsOf(world, myClub)} />
             {me.p > 0 && <span className="chip">{t.position} <b className="num">{t.ordinal(pos)}</b> · <span className="num">{me.pts}</span> {t.points}</span>}
             {me.form.length > 0 && (
-              <span className="g-form" aria-label={t.formT}>
-                {me.form.slice(-5).map((f, i) => <i key={i} className={`g-f${f}`}>{f === 'W' ? t.ftTitle.W[0] : f === 'D' ? t.ftTitle.D[0] : t.ftTitle.L[0]}</i>)}
+              <span className="g-formrun" aria-label={t.formT}>
+                {me.form.slice(-5).map((f, i) => <i key={i} className={`g-f${f}`}>{t.formLetters[FORM_IDX[f] ?? 1]}</i>)}
               </span>
             )}
           </div>
         </div>
       </section>
-      <button className="g-tagline g-linkish" style={{ marginTop: 0 }} onClick={() => onGo('coach')}>{t.welcome(career.managerName)} <b>{t.career} ›</b></button>
+      <button className="chip g-welcome" onClick={() => onGo('coach')}>
+        <span>{welcomeA}<span dir="auto">{career.managerName}</span>{welcomeB}</span> <b>{t.career} ›</b>
+      </button>
 
       {career.sacked && (
         <button className="card g-hero g-next" onClick={() => onGo('coach')}>
@@ -105,26 +120,27 @@ export function Home({ world, career, lang, t, ui, myClub, myLeague, busy, match
         </button>
       )}
 
-      {!career.sacked && (
-        <section className="card g-today">
-          <div className="g-today-head">
-            <h2 className="d4" style={{ margin: 0 }}>{t.today(items.length)}</h2>
-          </div>
-          {items.length === 0 ? <p className="muted" style={{ margin: 0 }}>{t.allClear}</p> : (
-            <div className="list g-today-list">
-              {items.slice(0, 5).map((it) => (
-                <button key={it.key} className={`cell g-today-item${it.warn ? ' warn' : ''}`} onClick={() => onGo(it.go)}>
-                  <span className="g-duty-ico"><Icon svg={it.icon} /></span>
-                  <span className="cmain"><b>{it.text}</b></span>
-                  <span className="g-today-act">{t.todayActions[it.key]} ›</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
       <div className="g-homecols">
+        <div>
+          {!career.sacked && (
+            <section className="card g-today">
+              <div className="g-today-head">
+                <h2 className="d4" style={{ margin: 0 }}>{t.today(items.length)}</h2>
+              </div>
+              {items.length === 0 ? <p className="muted" style={{ margin: 0 }}>{t.allClear}</p> : (
+                <div className="list g-today-list">
+                  {items.map((it) => (
+                    <button key={it.key} className={`cell g-today-item${it.warn ? ' warn' : ''}`} onClick={() => onGo(it.go)}>
+                      <span className="g-duty-ico"><Icon svg={it.icon} /></span>
+                      <span className="cmain"><b>{it.text}</b></span>
+                      <span className="g-today-act">{t.todayActions[it.key]} ›</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+        </div>
         <div>
           <div className="sechead"><span className="over">{over ? t.seasonOver : t.nextMatchT}</span></div>
           {nf && (
@@ -167,8 +183,6 @@ export function Home({ world, career, lang, t, ui, myClub, myLeague, busy, match
               <span className="chip">{t.lastResult} <Score f={last} me={myClub.id} /> {t.vs} {club(last[0] === myClub.id ? last[1] : last[0]).name[lang]}</span>
             </div>
           )}
-        </div>
-        <div>
           <div className="sechead"><span className="over">{t.boardFans}</span></div>
           <button className="card g-next g-boardcard" onClick={() => onGo('coach')}>
             {([[t.confidence, career.board.confidence], [t.fansT, career.board.fans]] as const).map(([k, v]) => (

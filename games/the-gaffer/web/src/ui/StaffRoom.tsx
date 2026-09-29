@@ -16,7 +16,7 @@ export function StaffRoom({ world, career, lang, t, onBack, onChange, onHire }: 
   const toggle = (d: Duty, on: boolean) => onChange(setDelegate(career, d, on));
   return (
     <>
-      <AppBar back={onBack} backLabel={t.back} title={t.staffRoomT} sub={t.staffRoomSub(n, DUTIES.length)} />
+      <AppBar back={onBack} backLabel={t.back} title={t.staffRoomT} sub={t.staffRoomSub(n, DUTIES.length)} wrapSub />
       <p className="muted g-intro">{t.staffIntro}</p>
 
       <div className="sechead"><span className="over">{t.staffYours}</span></div>

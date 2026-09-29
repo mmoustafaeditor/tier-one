@@ -66,7 +66,7 @@ export const FREE_AGENT = 'free';
 
 export interface SaveFile {
   format: 'SEMBA_GAFFER_SAVE';
-  version: 1;
+  version: number;       // SAVE_VERSION in sim/upgrade.ts (2 since G1); older files go through UPGRADES one step at a time
   savedAt: string;
   checksum: string;      // verified on import; a mismatch is REJECTED, never "migrated"
   world: { leagues: League[]; clubs: Club[]; players: Player[] };

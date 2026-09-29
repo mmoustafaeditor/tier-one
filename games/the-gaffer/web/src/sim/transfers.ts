@@ -1,6 +1,9 @@
 // Transfers and contracts for the user's club.
 // E2E lessons: a bid always gets a clear answer and a reason (#7), the fee charged is exactly the agreed fee (#22),
 // the fee box starts at a sensible number (#21), and counters update after a renewal (#20).
+// G1 (integrity audit S1/S4): every transaction validates itself. `buy`, `acceptOffer` and `tryRenew` re-run their own
+// judge and return `{ ok: false, reason }` without touching the world, so a caller that forgets the check can't push a
+// budget negative, break the wage cap, or strip an AI club below a playable squad.
 import { FREE_AGENT, type Career, type Deal, type Offer, type Player } from '../model/types';
 import { freeShirt, squadOf, wageOf, type World } from './world';
 import { roundFee } from './season';
@@ -50,15 +53,25 @@ const strengthOfClub = (w: World, clubId: string) => {
   return best.reduce((s, x) => s + x, 0) / Math.max(1, best.length);
 };
 
+// A player leaving the user's club leaves his XI slot empty (the best fit fills it), never a dangling id.
+export function dropFromXI(c: Career, playerId: string): Career {
+  const xi = c.tactics?.xi;
+  if (!xi || !xi.includes(playerId)) return c;
+  return { ...c, tactics: { ...c.tactics!, xi: xi.map((id) => (id === playerId ? '' : id)) } };
+}
+
 export interface Bid { fee: number; wage: number; years: number; role: Role }
-export type BidAnswer =
-  | { ok: true }
-  | { ok: false; reason: 'budget' | 'wageCap' | 'squadFull' | 'fee' | 'wage' | 'ambition' | 'role' | 'injured'; counter?: number };
+export type BidReason = 'budget' | 'wageCap' | 'squadFull' | 'fee' | 'wage' | 'ambition' | 'role' | 'injured' | 'sellerThin';
+export type BidAnswer = { ok: true } | { ok: false; reason: BidReason; counter?: number };
 
 // One clear answer for every bid.
 export function judgeBid(w: World, c: Career, p: Player, bid: Bid): BidAnswer {
-  const club = clubOf(w, c.clubId)!;
+  const club = clubOf(w, c.clubId);
+  if (!club) return { ok: false, reason: 'budget' };
+  if (p.clubId === c.clubId) return { ok: false, reason: 'ambition' };
   if (squadOf(w, c.clubId).length >= SQUAD_MAX) return { ok: false, reason: 'squadFull' };
+  // The seller keeps a playable squad: a club sold down to ten players can't field a side (audit S1).
+  if (p.clubId !== FREE_AGENT && squadOf(w, p.clubId).length <= SQUAD_SELL_MIN) return { ok: false, reason: 'sellerThin' };
   // Stars won't drop far below their level: say so first, whatever the money.
   if (p.rating > strengthOfClub(w, c.clubId) + 9) return { ok: false, reason: 'ambition' };
   if (bid.fee > club.budget) return { ok: false, reason: 'budget' };
@@ -86,41 +99,66 @@ function move(w: World, c: Career, p: Player, to: string, fee: number, wage: num
     if (to === c.clubId) ledger.transfersIn = (ledger.transfersIn ?? 0) - fee;
     else if (from === c.clubId) ledger.transfersOut = (ledger.transfersOut ?? 0) + fee;
   }
+  const base = from === c.clubId ? dropFromXI(c, p.id) : c;
   return {
     world: { ...w, clubs, players },
-    career: recordDeal({ ...c, deals: [deal, ...c.deals], offers: c.offers.filter((o) => o.playerId !== p.id), ...(ledger ? { ops: { ...c.ops, ledger } } : {}) }, deal),
+    career: recordDeal({ ...base, deals: [deal, ...c.deals], offers: c.offers.filter((o) => o.playerId !== p.id), ...(ledger ? { ops: { ...c.ops, ledger } } : {}) }, deal),
   };
 }
 
-export function buy(w: World, c: Career, p: Player, bid: Bid) {
+export type BuyResult = { world: World; career: Career } & BidAnswer;
+
+// Signs the player if the bid passes `judgeBid`; otherwise returns the same world and career with the reason.
+export function buy(w: World, c: Career, p: Player, bid: Bid): BuyResult {
+  const a = judgeBid(w, c, p, bid);
+  if (!a.ok) return { world: w, career: c, ...a };
   const r = move(w, c, p, c.clubId, bid.fee, bid.wage, bid.years);
   // Signing a player other clubs were chasing ends that rumour (a hijack).
   const career = addNews(hijacked(r.career, p.id), 'transfers', 'userSign', { player: p.id, pn: p.name, club: c.clubId, club2: p.clubId, s: String(bid.fee) });
-  return { world: r.world, career };
+  return { world: r.world, career, ok: true };
 }
 
-export type SellCheck = { ok: true } | { ok: false; reason: 'squadMin' | 'buyerBudget' };
+export type SellCheck = { ok: true } | { ok: false; reason: 'squadMin' | 'buyerBudget' | 'gone' };
 
 export function canSell(w: World, c: Career, o: Offer): SellCheck {
+  const p = w.players.find((x) => x.id === o.playerId);
+  if (!p || p.clubId !== c.clubId || !clubOf(w, o.clubId)) return { ok: false, reason: 'gone' };
   if (squadOf(w, c.clubId).length <= SQUAD_SELL_MIN) return { ok: false, reason: 'squadMin' };
   if ((clubOf(w, o.clubId)?.budget ?? 0) < o.fee) return { ok: false, reason: 'buyerBudget' };
   return { ok: true };
 }
 
-export function acceptOffer(w: World, c: Career, o: Offer) {
+export type SellResult = { world: World; career: Career } & SellCheck;
+
+// Sells the player if `canSell` agrees; otherwise nothing moves and the reason comes back.
+export function acceptOffer(w: World, c: Career, o: Offer): SellResult {
+  const ok = canSell(w, c, o);
+  if (!ok.ok) return { world: w, career: c, ...ok };
   const p = w.players.find((x) => x.id === o.playerId)!;
   const years = Math.max(2, p.contractUntil - c.season);
   const r = move(w, c, p, o.clubId, o.fee, Math.max(p.wage, wageOf(p.marketValue, leagueOfClub(w, o.clubId))), years);
-  return { world: r.world, career: addNews(r.career, 'transfers', 'userSell', { player: p.id, pn: p.name, club: o.clubId, club2: c.clubId, s: String(o.fee) }) };
+  return { world: r.world, career: addNews(r.career, 'transfers', 'userSell', { player: p.id, pn: p.name, club: o.clubId, club2: c.clubId, s: String(o.fee) }), ok: true };
 }
 
 export const rejectOffer = (c: Career, o: Offer): Career => ({ ...c, offers: c.offers.filter((x) => x.id !== o.id) });
 
 // Counter-offer: the buyer meets a raise of up to ~25% over market value, otherwise walks away.
+// `roll` is a seeded number in [0, 1) (see `dealRoll`), so the answer is part of the career's story, not luck of the reload.
 export function counterOffer(c: Career, o: Offer, p: Player, fee: number, roll: number): { career: Career; accepted: boolean } {
   const limit = p.marketValue * (1.1 + roll * 0.25);
   if (fee <= limit) return { career: { ...c, offers: c.offers.map((x) => (x.id === o.id ? { ...x, fee: roundFee(fee) } : x)) }, accepted: true };
   return { career: rejectOffer(c, o), accepted: false };
+}
+
+// One repeatable roll in [0, 1) per career, matchday and deal (audit S6: no Math.random() in commands).
+export function dealRoll(c: Pick<Career, 'seed' | 'season' | 'round'>, key: string): number {
+  let h = (c.seed ^ (c.season * 7919 + c.round * 104729)) >>> 0;
+  for (const ch of key) h = (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0;
+  h = (h + 0x6d2b79f5) >>> 0;
+  let t = h;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
 export const setListed = (w: World, id: string, listed: boolean): World =>
@@ -136,18 +174,33 @@ export function renewDemand(p: Player, season: number, m = 1): { wage: number; m
   return { wage, maxYears: age >= 33 ? 1 : age >= 30 ? 2 : 5 };
 }
 
-export type RenewAnswer = { ok: true } | { ok: false; reason: 'wage' | 'years' | 'wageCap' | 'unhappy'; counter?: number };
+export type RenewAnswer = { ok: true } | { ok: false; reason: 'wage' | 'years' | 'wageCap' | 'unhappy' | 'gone'; counter?: number };
 
 export function judgeRenewal(w: World, c: Career, p: Player, wage: number, years: number): RenewAnswer {
-  const d = renewDemand(p, c.season, balanceOf(c).wages);
-  if (p.morale < 25) return { ok: false, reason: 'unhappy' };
+  const club = clubOf(w, c.clubId);
+  const cur = w.players.find((x) => x.id === p.id);
+  if (!club || !cur || cur.clubId !== c.clubId) return { ok: false, reason: 'gone' };
+  const d = renewDemand(cur, c.season, balanceOf(c).wages);
+  if (cur.morale < 25) return { ok: false, reason: 'unhappy' };
   if (years > d.maxYears) return { ok: false, reason: 'years', counter: d.maxYears };
   if (wage < d.wage * 0.97) return { ok: false, reason: 'wage', counter: d.wage };
-  const club = clubOf(w, c.clubId)!;
-  if (wageBillOf(w, c.clubId) - p.wage + wage > club.wageCap) return { ok: false, reason: 'wageCap' };
+  if (wageBillOf(w, c.clubId) - cur.wage + wage > club.wageCap) return { ok: false, reason: 'wageCap' };
   return { ok: true };
 }
 
-// `years` are extra seasons after this one.
-export const renew = (w: World, c: Career, p: Player, wage: number, years: number): World =>
-  ({ ...w, players: w.players.map((x) => (x.id === p.id ? { ...x, wage, contractUntil: c.season + 1 + years, morale: Math.min(100, x.morale + 8) } : x)) });
+// A renewal EXTENDS the current deal: `years` extra seasons after the later of the current end and next summer (GF-03).
+export const newContractEnd = (p: Player, season: number, years: number) => Math.max(p.contractUntil, season + 1) + years;
+
+export type RenewResult = { world: World } & RenewAnswer;
+
+export function tryRenew(w: World, c: Career, p: Player, wage: number, years: number): RenewResult {
+  const a = judgeRenewal(w, c, p, wage, years);
+  if (!a.ok) return { world: w, ...a };
+  return {
+    ok: true,
+    world: { ...w, players: w.players.map((x) => (x.id === p.id ? { ...x, wage, contractUntil: newContractEnd(x, c.season, years), morale: Math.min(100, x.morale + 8) } : x)) },
+  };
+}
+
+// Same as `tryRenew` for callers that only want the world back: an unjudged renewal leaves the world untouched.
+export const renew = (w: World, c: Career, p: Player, wage: number, years: number): World => tryRenew(w, c, p, wage, years).world;

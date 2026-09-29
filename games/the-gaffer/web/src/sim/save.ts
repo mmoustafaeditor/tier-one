@@ -3,9 +3,62 @@
 // A client-side checksum only catches corruption and casual edits; online features must re-check on the server.
 import type { Career, SaveFile } from '../model/types';
 import { checkWorld, type World } from './world';
-import { upgradeCareer, upgradeWorld } from './upgrade';
+import { SAVE_VERSION, upgradeCareer, upgradeSave, upgradeWorld } from './upgrade';
 
 const KEY = 'gaffer.save.v1';
+
+// ---------- career invariants (G1, audit S2) ----------
+// Everything the career points at must exist: its club, the players in the live match, on loan, shortlisted, watched,
+// in the XI and in offers. A save that fails is refused with the reason, both when written and when read.
+export function checkCareer(w: World, c: Career): string[] {
+  const issues: string[] = [];
+  const clubs = new Set(w.clubs.map((x) => x.id));
+  const players = new Map(w.players.map((p) => [p.id, p]));
+  if (!clubs.has(c.clubId)) issues.push(`career club ${c.clubId} is not in the world`);
+  const player = (what: string, id: string) => { if (!players.has(id)) issues.push(`${what}: player ${id} not found`); };
+  const club = (what: string, id: string) => { if (!clubs.has(id)) issues.push(`${what}: club ${id} not found`); };
+  for (const id of c.shortlist ?? []) player('shortlist', id);
+  for (const id of Object.keys(c.watch ?? {})) player('watch', id);
+  for (const id of c.tactics?.xi ?? []) {
+    if (!id) continue; // an empty slot: the best fit plays there
+    player('xi', id);
+    const p = players.get(id);
+    if (p && p.clubId !== c.clubId) issues.push(`xi: ${id} is not at ${c.clubId}`);
+  }
+  for (const o of c.offers ?? []) { player('offers', o.playerId); club('offers', o.clubId); }
+  for (const l of c.loans ?? []) { player('loans', l.playerId); club('loans', l.from); club('loans', l.to); }
+  if (c.live) {
+    for (const s of c.live.sides) {
+      club('live', s.clubId);
+      for (const id of [...s.onPitch, ...s.bench]) if (id) player('live', id);
+    }
+    for (const id of c.live.played ?? []) player('live', id);
+  }
+  return issues;
+}
+
+// Drops references that stopped meaning anything (a shortlisted player who retired, a sold starter still named in the
+// XI, an offer for a player who left). Returns the same object when there is nothing to tidy. Run before every save,
+// so `checkCareer` only ever refuses states that are really broken.
+export function tidyCareer(w: World, c: Career): Career {
+  const players = new Map(w.players.map((p) => [p.id, p]));
+  const clubs = new Set(w.clubs.map((x) => x.id));
+  let out = c;
+  const shortlist = c.shortlist ?? [];
+  const keep = shortlist.filter((id) => players.has(id));
+  if (keep.length !== shortlist.length) out = { ...out, shortlist: keep };
+  const stale = Object.keys(c.watch ?? {}).filter((id) => !players.has(id));
+  if (stale.length) { const watch = { ...c.watch }; for (const id of stale) delete watch[id]; out = { ...out, watch }; }
+  const xi = c.tactics?.xi;
+  if (xi) {
+    const fixed = xi.map((id) => (id && players.get(id)?.clubId === c.clubId ? id : ''));
+    if (fixed.some((id, i) => id !== xi[i])) out = { ...out, tactics: { ...c.tactics!, xi: fixed } };
+  }
+  const offers = c.offers ?? [];
+  const live = offers.filter((o) => players.get(o.playerId)?.clubId === c.clubId && clubs.has(o.clubId));
+  if (live.length !== offers.length) out = { ...out, offers: live };
+  return out;
+}
 
 async function sha256(text: string): Promise<string> {
   const data = new TextEncoder().encode(text);
@@ -63,7 +116,11 @@ const body = (world: World, career: Career | null) => JSON.stringify({ world, ca
 export async function makeSave(world: World, career: Career | null): Promise<SaveFile> {
   const issues = checkWorld(world);
   if (issues.length) throw new Error(`World check failed: ${issues.slice(0, 3).join('; ')}`);
-  return { format: 'SEMBA_GAFFER_SAVE', version: 1, savedAt: new Date().toISOString(), checksum: await sha256(body(world, career)), world, career };
+  if (career) {
+    const bad = checkCareer(world, career);
+    if (bad.length) throw new Error(`Career check failed: ${bad.slice(0, 3).join('; ')}`);
+  }
+  return { format: 'SEMBA_GAFFER_SAVE', version: SAVE_VERSION, savedAt: new Date().toISOString(), checksum: await sha256(body(world, career)), world, career };
 }
 
 // ---------- packing ----------
@@ -100,7 +157,8 @@ export async function unpack(text: string): Promise<string> {
 
 export const saveText = async (world: World, career: Career | null) => pack(JSON.stringify(await makeSave(world, career)));
 
-export type LoadResult = { ok: true; save: SaveFile } | { ok: false; reason: 'none' | 'format' | 'checksum' | 'world' };
+export type LoadReason = 'none' | 'format' | 'checksum' | 'world' | 'career';
+export type LoadResult = { ok: true; save: SaveFile } | { ok: false; reason: LoadReason; detail?: string };
 
 export async function parseSave(text: string): Promise<LoadResult> {
   let s: SaveFile;
@@ -109,13 +167,21 @@ export async function parseSave(text: string): Promise<LoadResult> {
   } catch {
     return { ok: false, reason: 'format' };
   }
-  if (!s || s.format !== 'SEMBA_GAFFER_SAVE' || s.version !== 1 || !s.world || typeof s.checksum !== 'string') return { ok: false, reason: 'format' };
+  // Versions 1 (every build before G1) and 2 load; anything newer than this build is not ours to guess at.
+  if (!s || s.format !== 'SEMBA_GAFFER_SAVE' || !Number.isInteger(s.version) || s.version < 1 || s.version > SAVE_VERSION || !s.world || typeof s.checksum !== 'string') {
+    return { ok: false, reason: 'format' };
+  }
   if ((await sha256(body(s.world, s.career))) !== s.checksum) return { ok: false, reason: 'checksum' };
   // Checksum is good: now it's safe to bring an older save up to date.
   const world = upgradeWorld(s.world, s.career?.season ?? 2026);
   const career = s.career ? upgradeCareer(world, s.career) : null;
-  s = { ...s, format: 'SEMBA_GAFFER_SAVE', world, career };
+  s = upgradeSave({ ...s, format: 'SEMBA_GAFFER_SAVE', world, career });
+  if (s.career) s = { ...s, career: tidyCareer(s.world, s.career) };
   if (checkWorld(s.world).length) return { ok: false, reason: 'world' };
+  if (s.career) {
+    const bad = checkCareer(s.world, s.career);
+    if (bad.length) return { ok: false, reason: 'career', detail: bad.slice(0, 3).join('; ') };
+  }
   return { ok: true, save: s };
 }
 
@@ -128,14 +194,22 @@ export function readStored(): string | null {
   }
 }
 
-// Returns false when the browser refused the write (storage full or blocked): the game says so instead of failing silently.
-export async function store(world: World, career: Career | null): Promise<boolean> {
-  const text = await saveText(world, career);
+export type StoreResult = { ok: true } | { ok: false; reason: 'storage' | string };
+
+// Never throws. `storage`: the browser refused the write (full or blocked); any other reason is a failed world or
+// career check, worded for the toast. The game says so instead of failing silently (audit S1).
+export async function store(world: World, career: Career | null): Promise<StoreResult> {
+  let text: string;
+  try {
+    text = await saveText(world, career);
+  } catch (e) {
+    return { ok: false, reason: e instanceof Error ? e.message : String(e) };
+  }
   try {
     localStorage.setItem(KEY, text);
-    return true;
+    return { ok: true };
   } catch {
-    return false;
+    return { ok: false, reason: 'storage' };
   }
 }
 

@@ -174,7 +174,8 @@ div.g-alert { cursor: default; }
 .g-offer-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2); }
 .g-area { min-height: 110px; padding: var(--s3); font: 12px/1.4 ui-monospace, monospace; resize: vertical; }
 .g-ev.bad { background: color-mix(in srgb, var(--bad) 12%, transparent); }
-.g-toast { position: fixed; z-index: 90; top: 64px; left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px); }
+.g-toast { position: fixed; z-index: 90; top: auto; bottom: calc(var(--dock) + 12px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px); }
+.app.tabs .g-toast { bottom: calc(var(--tabbar) + 16px + env(safe-area-inset-bottom, 0px)); }
 
 /* ---------- tactics and live match (v0.5) ---------- */
 .g-predbar { display: flex; height: 10px; border-radius: var(--r-pill); overflow: hidden; background: var(--panel3); margin-top: var(--s2); }
@@ -182,7 +183,7 @@ div.g-alert { cursor: default; }
 .g-predbar .w { background: var(--ok); } .g-predbar .d { background: var(--muted); } .g-predbar .l { background: var(--bad); }
 .g-predlbl { display: flex; justify-content: space-between; margin-top: 6px; font-size: var(--fs-sm); color: var(--muted); }
 .g-predlbl b { color: var(--text); }
-.g-pitch { position: relative; aspect-ratio: 68 / 90; margin-top: var(--s3); border-radius: var(--r-lg); overflow: hidden;
+.g-pitch { position: relative; aspect-ratio: 68 / 90; width: min(100%, 640px, calc(60vh * 68 / 90)); margin: var(--s3) auto 0; border-radius: var(--r-lg); overflow: hidden;
   background:
     linear-gradient(transparent 49.6%, rgba(255,255,255,.18) 49.6% 50.4%, transparent 50.4%),
     radial-gradient(circle at 50% 50%, transparent 13%, rgba(255,255,255,.18) 13% 13.8%, transparent 13.8%),
@@ -198,8 +199,10 @@ div.g-alert { cursor: default; }
 .g-spot.on .g-spot-n { box-shadow: 0 0 0 3px #fff, 0 4px 10px rgba(0,0,0,.35); }
 .g-spot-name { max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 11px/1.1 var(--body); text-shadow: 0 1px 2px rgba(0,0,0,.8); }
 .g-spot-pos { font: 700 9px/1 var(--body); opacity: .8; }
-.g-seg-wrap { flex-wrap: wrap; }
-.g-seg-wrap button { min-width: 30%; }
+.g-seg-wrap { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.g-seg-wrap::-webkit-scrollbar { display: none; }
+.g-seg-wrap button { flex: 1 0 auto; min-width: 0; padding-inline: 12px; white-space: nowrap; }
+@media (min-width: 480px) { .g-seg-wrap button { flex: 1 1 0; padding-inline: 6px; } }
 .g-statrow { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: var(--s2); padding: 10px var(--s3); }
 .g-statrow + .g-statrow { border-top: 1px solid var(--line); }
 .g-statrow > b:last-child { text-align: end; }
@@ -213,13 +216,22 @@ div.g-alert { cursor: default; }
 .g-subcols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
 .g-subcols .cell { padding: 8px; gap: 6px; }
 .g-subcols .cmain b { font-size: 13px; }
+.g-subcols .cmain small { font-size: 11px; color: var(--muted); }
+.g-subcols .cell.g-sel { background: var(--accent); }
+.g-subcols .cell.g-sel .cmain b, .g-subcols .cell.g-sel .cmain small, .g-subcols .cell.g-sel .g-rating { color: var(--accent-ink); }
+.g-subcols .cell.g-sel .g-rating { background: rgba(18, 7, 43, .12); }
+.g-subcols .cell.g-sel .tag { background: var(--accent-ink); color: var(--accent); }
+.g-subfoot { position: sticky; bottom: 0; z-index: 2; display: grid; gap: var(--s2); margin: var(--s4) calc(-1 * var(--gutter)) calc(-16px - env(safe-area-inset-bottom, 0px));
+  padding: var(--s3) var(--gutter) calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--bg2); border-top: 1px solid var(--line); }
+.g-subfoot > b { font-size: var(--fs-sm); line-height: 1.3; }
 .g-ev.sub .cmain span { color: var(--accent-text); }
 
 /* ---------- cups, career, inbox (v0.6) ---------- */
 .g-bell { position: relative; }
 .g-bell svg { width: 22px; height: 22px; }
 .g-bell .badge { position: absolute; top: 2px; inset-inline-end: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
-  background: var(--news); color: #fff; font: 800 11px/18px var(--body); text-align: center; }
+  background: var(--news-fill); color: #fff; font: 800 11px/18px var(--body); text-align: center; }
+.cell .cmain .tag.dd, .cmain b .tag.dd { color: var(--accent-ink); }
 .g-linkish { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: start; cursor: pointer; font: inherit; }
 .g-linkish b { color: var(--accent-text); font-size: var(--fs-sm); }
 .bar.low i { background: var(--bad); }
@@ -250,7 +262,8 @@ div.g-alert { cursor: default; }
 .g-nick { color: var(--accent-text); font-size: var(--fs-sm); margin-bottom: 4px; }
 
 /* ---------- v0.8: pitch view, tactics depth, rankings, news ---------- */
-.g-pitch2d { display: block; width: 100%; border-radius: var(--r-lg); box-shadow: inset 0 0 0 2px rgba(255,255,255,.15); margin-bottom: var(--s3); }
+.g-pitch2d { display: block; width: 100%; max-width: 640px; max-height: 60vh; margin: 0 auto var(--s3); border-radius: var(--r-lg); box-shadow: inset 0 0 0 2px rgba(255,255,255,.15); }
+.g-pitchbtn { width: 100%; max-width: 640px; margin: var(--s3) auto 0; display: flex; }
 .g-dot { transition: transform .14s linear; }
 .g-speed { margin: 0 0 var(--s3); }
 .g-phil { align-items: flex-start; }
@@ -324,6 +337,18 @@ select.g-input { width: 100%; box-sizing: border-box; }
 /* Accessibility: visible keyboard focus everywhere, comfortable tap targets, calmer motion when asked. */
 :where(button, a, select, input, [tabindex]):focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; border-radius: 8px; }
 .chip.g-toggle, .seg button { min-height: 40px; }
+.btn.sm { min-height: 44px; }
+.appbar.g-tall { height: auto; min-height: var(--appbar); padding-block: 6px; }
+.appbar .ttl.g-wrap { white-space: normal; }
+.appbar .ttl.g-wrap small { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
+.g-fold > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: var(--s2); }
+.g-fold > summary::-webkit-details-marker { display: none; }
+.g-fold > summary::after { content: '▾'; color: var(--muted); font-size: var(--fs-sm); }
+.g-fold[open] > summary::after { content: '▴'; }
+.g-actions { display: grid; gap: var(--s2); margin-top: var(--s4); }
+.g-busy { margin: 0; text-align: center; font-size: var(--fs-sm); }
+.g-tshort { display: none; }
+@media (max-width: 479px) { .g-tname .g-tfull { display: none; } .g-tname .g-tshort { display: inline; } }
 .chip.g-toggle { padding-inline: 14px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
@@ -345,9 +370,12 @@ select.g-input { width: 100%; box-sizing: border-box; }
 /* Home: club header, Today list, two columns on wide screens */
 .g-clubmeta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); margin-top: 4px; }
 .g-clubmeta .chip { margin: 0; }
-.g-form { display: inline-flex; gap: 3px; direction: ltr; }
-.g-form i { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; font: 800 11px/1 var(--body); font-style: normal; color: #0B1224; }
-.g-form .g-fW { background: var(--ok); } .g-form .g-fD { background: var(--dim); } .g-form .g-fL { background: var(--bad); color: #fff; }
+.g-formrun { display: inline-flex; gap: 3px; direction: ltr; }
+.g-formrun i { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; font: 800 11px/1 var(--body); font-style: normal; color: #0B1224; }
+.g-formrun .g-fW { background: var(--ok); } .g-formrun .g-fD { background: var(--dim); } .g-formrun .g-fL { background: var(--bad); color: #fff; }
+/* The welcome line is a chip-sized target, not a 22px text link (GF-14). */
+.g-welcome { height: auto; min-height: 44px; margin: var(--s3) 0 0; padding: 8px 14px; white-space: normal; text-align: start; cursor: pointer; font-weight: 600; color: var(--muted); }
+.g-welcome b { color: var(--accent-text); }
 .g-today { margin-top: var(--s3); display: grid; gap: var(--s3); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
 .g-today .d4 { font: 800 var(--ital) 22px/1.05 var(--display); text-transform: var(--caps); }
 .g-today-list { margin: 0 calc(var(--s4) * -1) calc(var(--s4) * -1); border-radius: 0 0 var(--r-lg) var(--r-lg); border: 0; border-top: 1px solid var(--line); background: transparent; }
@@ -420,8 +448,9 @@ select.g-input { width: 100%; box-sizing: border-box; }
   --accent: #FF4D5E; --accent-ink: #1A0206; --accent-text: #FF8390; --cta-glow: 0 0 0 1px rgba(255, 77, 94, .38), 0 12px 30px -12px rgba(255, 77, 94, .6);
 }
 
-/* Wide screens: the app grows to two columns and the tab bar becomes a side rail. */
-@media (min-width: 1000px) {
+/* Tablets and desktops (GF-13): from 768px the app grows to two columns, the tab bar becomes a side rail,
+   and single-column lists and controls stop at 720px instead of stretching across the page. */
+@media (min-width: 768px) {
   .app { max-width: 1080px; }
   .app.tabs { padding-inline-start: calc(96px + var(--gutter)); }
   .tabbar { left: max(0px, calc(50% - 540px)); right: auto; bottom: 0; top: 0; transform: none; width: 88px; max-width: none; height: auto;
@@ -433,6 +462,14 @@ select.g-input { width: 100%; box-sizing: border-box; }
   .g-links { grid-template-columns: repeat(4, 1fr); }
   .dock { max-width: 1080px; }
   .sheet { max-width: 560px; }
+  .app.tabs .g-toast { bottom: 24px; }
+  .app > :is(.list, .seg, .g-filters, .g-stats, .g-links, .g-leagues, .sechead, .banner, .card, p, .g-input, section, .g-twobtn, .g-window, .g-doors,
+    .g-staffgrid, .g-cabinet, .g-intro, .g-setcard, .g-tiles, .g-tiles-2, .g-curve, .g-field, .g-chips, .g-ad, .g-support, .g-roundnav, .g-table, .g-fold) { max-width: 720px; }
+  .app > .g-homecols, .app > .g-matchcols, .app > .g-livecols { max-width: none; }
+}
+@media (min-width: 1000px) {
+  .g-livecols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 380px); gap: var(--s4); align-items: start; }
+  .g-livecols .g-pitch2d { margin-inline: 0; }
 }
 
 /* Live update banner: sits at the top, under the safe area, clear of the tab bar and the match dock. */
