@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Career · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .h-head { padding: var(--s-2) 0 var(--s-4); display: grid; gap: var(--s-3); }
+  .h-head .h-hero { color: var(--on-ground); }
+  .totals { display: grid; grid-template-columns: repeat(4, auto); justify-content: start; gap: var(--s-6); }
+  .totals .kpi .v { color: var(--on-ground); } .totals .kpi .l { color: var(--on-ground-3); }
+  @media (max-width: 520px) { .totals { grid-template-columns: repeat(2, 1fr); gap: var(--s-3); } }
+
+  /* Trophy lift: the one screen in the office that goes dark and loud. */
+  .lift { position: relative; overflow: hidden; border-radius: var(--r-lg); min-height: 420px; padding: var(--s-6) var(--s-5); display: grid; align-content: end; isolation: isolate;
+    background: radial-gradient(60% 55% at 50% 30%, rgba(170,255,225,.28), transparent 70%), linear-gradient(180deg, #06302A, #021311); box-shadow: var(--e2); color: #F2FFFB; }
+  .lift .cup { position: absolute; left: 50%; top: 20px; width: 190px; translate: -50% 0; z-index: -1; filter: drop-shadow(0 0 40px rgba(210,255,240,.35)); }
+  .lift .rays { position: absolute; inset: 0; z-index: -2; background: conic-gradient(from 180deg at 50% 32%, transparent 0 150deg, rgba(220,255,240,.08) 155deg 162deg, transparent 166deg 176deg, rgba(220,255,240,.1) 178deg 184deg, transparent 188deg 196deg, rgba(220,255,240,.08) 198deg 205deg, transparent 210deg); }
+  .lift .conf { position: absolute; inset: 0; z-index: -2; pointer-events: none; }
+  .lift .conf i { position: absolute; width: 9px; height: 9px; border-radius: 1px; opacity: .9; animation: fall 3.6s linear infinite; }
+  @keyframes fall { from { transform: translateY(-40px) rotate(0); } to { transform: translateY(460px) rotate(300deg); } }
+  @media (prefers-reduced-motion: reduce) { .lift .conf i { animation: none; } }
+  .lift .h-hero { font-size: clamp(34px, 5vw, 56px); margin-top: var(--s-2); }
+  .lift .eyebrow { color: var(--mint-300); }
+  .lift p { color: rgba(230,250,244,.8); margin-top: var(--s-2); max-width: 40ch; }
+  .lift .shade { position: absolute; inset: 45% 0 0; z-index: -1; background: linear-gradient(180deg, transparent, rgba(2,19,17,.95) 60%); }
+
+  /* Season timeline */
+  .seasons { display: grid; gap: 0; }
+  .ssn { display: grid; grid-template-columns: 56px 1fr auto; gap: var(--s-3); align-items: center; padding: var(--s-3) 0; border-top: 1px solid var(--line); position: relative; }
+  .ssn:first-child { border-top: 0; }
+  .ssn .yr { font: 800 13px/1.1 var(--f-display); color: var(--ink-3); font-feature-settings: "tnum" 1; }
+  .ssn .who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .ssn .who .crest { width: 30px; height: 30px; }
+  .ssn .who > div { min-width: 0; } .ssn .who b { display: block; font: 650 14.5px/1.2 var(--f-text); } .ssn .who span { display: block; font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ssn .fin { display: flex; align-items: center; gap: var(--s-3); }
+  .ssn .pos { font: 850 26px/1 var(--f-display); font-stretch: 110%; min-width: 48px; text-align: end; font-feature-settings: "tnum" 1; }
+  .ssn .pos sup { font-size: 12px; font-weight: 700; }
+  .ssn.won { background: linear-gradient(90deg, color-mix(in srgb, var(--warn-mark) 12%, transparent), transparent 70%); border-radius: 12px; }
+  .ssn.now .pos { color: var(--accent-text); }
+  .trophy { color: #B88A12; }
+  .path svg { width: 72px; height: 28px; }
+  @media (max-width: 420px) { .path { display: none; } }
+
+  .legends { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-3); }
+  .leg { display: grid; gap: 8px; align-content: start; }
+  .leg .portrait { width: 100%; border-radius: 14px; }
+  .leg b { font: 700 14px/1.2 var(--f-text); } .leg span { font-size: 12px; color: var(--ink-3); line-height: 1.35; }
+
+  .recs { display: grid; }
+  .rec { display: flex; justify-content: space-between; gap: var(--s-3); align-items: baseline; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .rec:first-child { border-top: 0; }
+  .rec b { font: 800 17px/1 var(--f-display); font-feature-settings: "tnum" 1; white-space: nowrap; }
+  .rec span small { display: block; font-size: 12px; color: var(--ink-3); }
+
+  .grid { display: grid; gap: var(--s-4); }
+  .grid > * { min-width: 0; }
+  @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } .g-lift { grid-column: 1 / -1; } .legends { grid-template-columns: repeat(4, 1fr); } .g-leg { grid-column: 1 / -1; } }
+  @media (min-width: 1100px) { .grid { grid-template-columns: 1.1fr 1fr 0.9fr; } .g-lift { grid-column: 1; grid-row: 1 / span 2; min-height: 100%; } .g-leg { grid-column: 2 / 4; } .lift { min-height: 560px; } .lift .cup { width: 240px; top: 40px; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" data-active="history"></nav>
+  <main class="main"><div class="page">
+    <header class="topbar on-ground">
+      <div class="club"><span data-crest="AVL" style="width:32px;height:32px"></span><div><b>Your career</b><small>Five seasons · three clubs</small></div></div>
+      <button class="btn btn--ghost on-ground btn--sm" data-i="doc">Share card</button>
+    </header>
+    <section class="h-head">
+      <h1 class="h-hero">From Home Park to Villa Park.</h1>
+      <div class="totals"><div class="kpi"><span class="v">221</span><span class="l">Matches</span></div><div class="kpi"><span class="v">54%</span><span class="l">Won</span></div><div class="kpi"><span class="v">2</span><span class="l">Trophies</span></div><div class="kpi"><span class="v">2</span><span class="l">Promotions</span></div></div>
+    </section>
+
+    <div class="grid">
+      <section class="g-lift lift" aria-label="Trophy: League One champions 2022/23">
+        <span class="rays"></span>
+        <svg class="cup" viewBox="0 0 200 240" aria-hidden="true">
+          <defs><linearGradient id="sv" x1="0" x2="1"><stop offset="0" stop-color="#8FA7A1"/><stop offset=".35" stop-color="#F4FFFB"/><stop offset=".55" stop-color="#C9DCD6"/><stop offset="1" stop-color="#6E8A83"/></linearGradient>
+          <linearGradient id="bs" x1="0" x2="1"><stop offset="0" stop-color="#0E2A26"/><stop offset=".5" stop-color="#1D4A43"/><stop offset="1" stop-color="#0A201D"/></linearGradient></defs>
+          <path d="M52 22h96c0 52-10 88-48 100C62 110 52 74 52 22z" fill="url(#sv)"/>
+          <path d="M52 34c-26 0-34 12-30 28 4 18 22 26 38 28M148 34c26 0 34 12 30 28-4 18-22 26-38 28" fill="none" stroke="url(#sv)" stroke-width="9" stroke-linecap="round"/>
+          <ellipse cx="100" cy="22" rx="48" ry="8" fill="#F4FFFB"/><ellipse cx="100" cy="22" rx="42" ry="5" fill="#9DB6AF"/>
+          <path d="M90 122h20l4 34H86z" fill="url(#sv)"/>
+          <rect x="70" y="156" width="60" height="12" rx="3" fill="url(#sv)"/>
+          <path d="M62 168h76l8 52H54z" fill="url(#bs)"/>
+          <rect x="74" y="184" width="52" height="16" rx="2" fill="#00533E"/><text x="100" y="196" text-anchor="middle" font-family="Archivo" font-weight="800" font-size="9" fill="#E6FFF7" letter-spacing="1">22 / 23</text>
+          <path d="M70 34c4 40 12 66 26 80" stroke="#fff" stroke-opacity=".7" stroke-width="4" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="conf" id="conf"></div>
+        <span class="shade"></span>
+        <span class="eyebrow">The day · 7 May 2023 · Home Park</span>
+        <h2 class="h-hero">League One champions.</h2>
+        <p>101 points. Plymouth's first title in nineteen years, and the season that got you noticed.</p>
+      </section>
+
+      <article class="panel" style="--i:1" aria-label="Seasons">
+        <div class="panel-h"><h2 class="h2">Season by season</h2></div>
+        <div class="seasons">
+          <div class="ssn now"><span class="yr">26/27</span><div class="who"><span data-crest="AVL"></span><div><b>Aston Villa</b><span>Premier League</span></div></div><div class="fin"><span class="path" data-path="6,4,5,4,4,3"></span><span class="pos">3<sup>rd</sup></span></div></div>
+          <div class="ssn"><span class="yr">25/26</span><div class="who"><span data-crest="SUN"></span><div><b>Sunderland</b><span>Premier League</span></div></div><div class="fin"><span class="path" data-path="14,17,12,11,10,10"></span><span class="pos">10<sup>th</sup></span></div></div>
+          <div class="ssn won"><span class="yr">24/25</span><div class="who"><span data-crest="SUN"></span><div><b>Sunderland</b><span>Play-off winners</span></div></div><div class="fin"><span class="trophy" data-i="history"></span><span class="pos">4<sup>th</sup></span></div></div>
+          <div class="ssn"><span class="yr">23/24</span><div class="who"><span data-crest="PLY"></span><div><b>Plymouth Argyle</b><span>Championship</span></div></div><div class="fin"><span class="path" data-path="12,9,11,8,9,9"></span><span class="pos">9<sup>th</sup></span></div></div>
+          <div class="ssn won"><span class="yr">22/23</span><div class="who"><span data-crest="PLY"></span><div><b>Plymouth Argyle</b><span>League One title</span></div></div><div class="fin"><span class="trophy" data-i="history"></span><span class="pos">1<sup>st</sup></span></div></div>
+        </div>
+      </article>
+
+      <article class="panel" style="--i:2" aria-label="Records">
+        <div class="panel-h"><h2 class="h2">Your records</h2></div>
+        <div class="recs">
+          <div class="rec"><span>Most points<small>Plymouth, 2022/23</small></span><b>101</b></div>
+          <div class="rec"><span>Unbeaten run<small>Sunderland, Jan–Apr 2025</small></span><b>19</b></div>
+          <div class="rec"><span>Record sale<small>Jobe Bellingham to Dortmund</small></span><b>£27m</b></div>
+          <div class="rec"><span>Biggest win<small>Villa 5–0, Sep 2026</small></span><b>5–0</b></div>
+        </div>
+      </article>
+
+      <article class="panel g-leg" style="--i:3" aria-label="Legends">
+        <div class="panel-h"><h2 class="h2">Your legends</h2><span class="eyebrow">Players who made your career</span></div>
+        <div class="legends">
+          <div class="leg"><span data-portrait="Morgan Whittaker" data-club="PLY" data-num="10"></span><b>Morgan Whittaker</b><span>Plymouth · the loan who scored the goals that won the league</span></div>
+          <div class="leg"><span data-portrait="Michael Cooper" data-club="PLY" data-num="1"></span><b>Michael Cooper</b><span>Plymouth · 46 games, 18 clean sheets</span></div>
+          <div class="leg"><span data-portrait="Jobe Bellingham" data-club="SUN" data-num="7"></span><b>Jobe Bellingham</b><span>Sunderland · Wembley, then £27m that built the academy</span></div>
+          <div class="leg"><span data-portrait="Morgan Rogers" data-num="27"></span><b>Morgan Rogers</b><span>Villa · the story still being written</span></div>
+        </div>
+      </article>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+<script>
+document.addEventListener("kit:ready", () => {
+  const conf = document.getElementById("conf"), cols = ["#00533E", "#FFFFFF", "#7DEBCB", "#E0A019"];
+  for (let i = 0; i < 34; i++) { const d = document.createElement("i"); d.style.left = ((i * 37) % 100) + "%"; d.style.top = ((i * 53) % 70) + "%"; d.style.background = cols[i % 4]; d.style.animationDelay = (-(i * 0.37) % 3.6) + "s"; d.style.width = d.style.height = (6 + (i % 3) * 3) + "px"; conf.appendChild(d); }
+  document.querySelectorAll("[data-path]").forEach((el) => { // league position through the season: lower is better
+    const d = el.dataset.path.split(",").map(Number), mx = 20; const pts = d.map((v, i) => `${2 + i * 13.6},${2 + (v / mx) * 24}`);
+    el.innerHTML = `<svg viewBox="0 0 72 28" aria-hidden="true"><path d="M${pts.join("L")}" fill="none" stroke="var(--dv-us)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`; });
+});
+</script>
+</body>
+</html>

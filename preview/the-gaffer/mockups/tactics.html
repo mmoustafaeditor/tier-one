@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tactics · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .t-head { display: grid; gap: var(--s-3); padding: var(--s-2) 0 var(--s-4); }
+  .t-head .h1 { color: var(--on-ground); }
+  .t-head .h1 span { color: var(--on-ground-3); font-weight: 600; }
+  .pred { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--s-3); padding: 10px 14px; border-radius: var(--r-md); background: var(--ground-panel); box-shadow: inset 0 0 0 1px var(--ground-line); }
+  .pred .bar { display: grid; grid-template-columns: 47fr 26fr 27fr; gap: 3px; height: 8px; }
+  .pred .bar i { border-radius: 3px; } .pred .bar i:nth-child(1) { background: var(--mint-500); } .pred .bar i:nth-child(2) { background: #6F8F88; } .pred .bar i:nth-child(3) { background: #E2694B; }
+  .pred .v { font: 800 18px/1 var(--f-display); font-feature-settings: "tnum" 1; color: var(--on-ground); white-space: nowrap; }
+  .pred .v small { font: 700 12px/1 var(--f-text); color: var(--mint-400); margin-inline-start: 4px; }
+  .pred .l { font-size: 12px; color: var(--on-ground-3); white-space: nowrap; }
+
+  .board-wrap { position: relative; }
+  .grid > * { min-width: 0; }
+  .board { width: 100%; max-width: 520px; margin: 0 auto; }
+  .board .note { position: absolute; font: 700 11px/1.15 var(--f-display); font-stretch: 100%; letter-spacing: .06em; text-transform: uppercase; color: rgba(236,250,244,.72); filter: url(#chalkt); pointer-events: none; }
+  .board-tools { display: flex; justify-content: space-between; align-items: center; gap: var(--s-2); margin-top: var(--s-3); }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; font: 600 13px/1 var(--f-text); color: var(--on-ground-2); }
+  .toggle .sw { width: 36px; height: 22px; border-radius: 11px; background: #E2694B; position: relative; flex: none; }
+  .toggle .sw::after { content: ""; position: absolute; top: 3px; inset-inline-end: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+  .hint { font-size: 12px; color: var(--on-ground-3); display: inline-flex; gap: 6px; align-items: center; }
+
+  .bench { display: flex; gap: var(--s-2); overflow-x: auto; scrollbar-width: none; padding: 2px; }
+  .bench .b { display: grid; justify-items: center; gap: 4px; min-width: 64px; }
+  .bench .b .disc { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--ground-3); color: var(--on-ground); font: 800 13px/1 var(--f-display); box-shadow: inset 0 0 0 1.5px var(--ground-line-2); }
+  .bench .b span { font-size: 11.5px; color: var(--on-ground-2); white-space: nowrap; }
+
+  /* Role sheet */
+  .role-h { display: flex; gap: var(--s-3); align-items: center; }
+  .role-h .portrait { width: 52px; }
+  .roles { display: grid; gap: var(--s-2); margin-top: var(--s-4); }
+  .role { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--s-3); padding: 10px 12px; border-radius: var(--r-md); background: var(--surface-solid); border: 1.5px solid var(--line); }
+  .role b { font: 650 14.5px/1.2 var(--f-text); } .role p { grid-column: 1; font-size: 12.5px; color: var(--ink-3); line-height: 1.35; }
+  .role .fitv { grid-row: 1 / 3; grid-column: 2; align-self: center; font: 800 20px/1 var(--f-display); font-feature-settings: "tnum" 1; }
+  .role.on { border-color: var(--primary); background: linear-gradient(0deg, color-mix(in srgb, var(--mint-400) 14%, var(--surface-solid)), var(--surface-solid)); }
+
+  /* Instructions with trade-offs */
+  .ins { display: grid; gap: var(--s-2); padding: var(--s-4) 0; border-top: 1px solid var(--line); }
+  .ins:first-of-type { border-top: 0; padding-top: 0; }
+  .ins .between b { font: 700 15px/1.2 var(--f-text); }
+  .steps { display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); gap: 3px; padding: 3px; border-radius: 12px; background: var(--surface-2); }
+  .steps button { min-height: 36px; border: 0; border-radius: 9px; background: none; font: 600 13px/1 var(--f-text); color: var(--ink-2); cursor: pointer; }
+  .steps button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
+  .steps button.was { box-shadow: inset 0 0 0 1.5px var(--line-2); }
+  .trade { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); font-size: 12.5px; line-height: 1.35; }
+  .trade div { padding: 8px 10px; border-radius: 10px; }
+  .trade .gain { background: var(--good-wash); color: var(--ink); } .trade .risk { background: var(--bad-wash); color: var(--ink); }
+  .trade b { display: flex; align-items: center; gap: 4px; font: 700 11px/1 var(--f-text); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .trade .gain b { color: var(--good); } .trade .risk b { color: var(--bad); }
+  html[lang="ar"] .trade b { letter-spacing: 0; }
+
+  /* Opponent */
+  .opp-top { display: flex; align-items: center; gap: var(--s-3); }
+  .threat { display: grid; grid-template-columns: 44px 1fr; gap: var(--s-3); align-items: center; padding: var(--s-3) 0; border-top: 1px solid var(--line); }
+  .threat .portrait { width: 44px; }
+  .threat b { font: 650 14.5px/1.2 var(--f-text); } .threat p { font-size: 12.5px; color: var(--ink-3); line-height: 1.35; margin-top: 2px; }
+  .match-ups { display: grid; gap: 10px; margin-top: var(--s-3); }
+  .mu { display: grid; grid-template-columns: 70px 1fr 64px; align-items: center; gap: var(--s-2); font-size: 12.5px; }
+  .mu .track { position: relative; height: 10px; }
+  .mu .track::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: 50%; width: 1.5px; background: var(--ink-3); }
+  .mu .track i { position: absolute; inset-block: 1px; border-radius: 3px; }
+  .mu .track i.us { inset-inline-end: 50%; background: var(--dv-us); }
+  .mu .track i.th { inset-inline-start: 50%; background: repeating-linear-gradient(135deg, var(--dv-them) 0 4px, color-mix(in srgb, var(--dv-them) 60%, transparent) 4px 7px); }
+  .mu span:last-child { text-align: end; color: var(--ink-3); }
+  .mu span:first-child { font-weight: 650; }
+
+  .grid { display: grid; gap: var(--s-4); }
+  .save { display: flex; gap: var(--s-2); margin-top: var(--s-4); }
+  .save .btn { flex: 1; }
+  @media (min-width: 1100px) {
+    .grid { grid-template-columns: minmax(300px, 1fr) minmax(420px, 520px) minmax(300px, 1fr); align-items: start; gap: var(--s-5); }
+    .c-left { order: 1; } .c-mid { order: 2; position: sticky; top: var(--s-4); } .c-right { order: 3; }
+    .t-head { grid-template-columns: 1fr minmax(360px, 460px); align-items: end; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="chalk" x="-5%" y="-5%" width="110%" height="110%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse"><feTurbulence type="fractalNoise" baseFrequency="2.4" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale=".45" result="d"/><feTurbulence type="fractalNoise" baseFrequency="6" numOctaves="1" seed="9" result="g"/><feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.7" result="m"/><feComposite in="d" in2="m" operator="in"/></filter>
+  <filter id="chalkt"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="1" seed="4" result="g"/><feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2 1.8" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter>
+  <marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M1 1 8 5 1 9" fill="none" stroke="rgba(236,250,244,.8)" stroke-width="1.6" stroke-linecap="round"/></marker>
+</svg>
+<div class="shell">
+  <nav class="nav" data-active="tactics"></nav>
+  <main class="main"><div class="page">
+    <header class="topbar on-ground">
+      <div class="club"><a class="icon-btn" href="home.html" aria-label="Back" data-i="back" data-i-cls="i--flip"></a><div><b data-ar="الخطة · ضد نيوكاسل">Tactics · v Newcastle</b><small data-ar="السبت 17:30 · فيلا بارك">Sat 17:30 · Villa Park</small></div></div>
+    </header>
+
+    <div class="t-head">
+      <h1 class="h1" data-ar-html="4-2-3-1 <span>· اضغط واركض خلفهم</span>">4-2-3-1 <span>· Press, then run in behind</span></h1>
+      <div class="pred" aria-label="Prediction">
+        <span class="l" data-ar="التوقّع">Forecast</span>
+        <div class="bar" aria-hidden="true"><i></i><i></i><i></i></div>
+        <span class="v" data-ar-html="47% <small>+3</small>">47% <small>+3</small></span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- the board -->
+      <section class="c-mid board-wrap on-ground">
+        <div class="board" id="board" aria-label="Tactics board. Drag a player to a new position.">
+          <svg class="chalk" viewBox="0 0 68 100" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="none" stroke="rgba(236,250,244,.55)" stroke-width="1.4" filter="url(#chalk)">
+              <rect x="3" y="3" width="62" height="94" rx=".5"/>
+              <line x1="3" y1="50" x2="65" y2="50"/>
+              <circle cx="34" cy="50" r="9.15"/>
+              <rect x="13.85" y="3" width="40.3" height="16.5"/><rect x="24.85" y="3" width="18.3" height="5.5"/>
+              <rect x="13.85" y="80.5" width="40.3" height="16.5"/><rect x="24.85" y="91.5" width="18.3" height="5.5"/>
+              <path d="M26.7 19.5a9.15 9.15 0 0 0 14.6 0M26.7 80.5a9.15 9.15 0 0 1 14.6 0"/>
+            </g>
+            <!-- the plan, in chalk: Rogers attacks the space behind Trippier -->
+            <g fill="none" stroke="rgba(236,250,244,.85)" stroke-width="2" stroke-linecap="round" filter="url(#chalk)">
+              <path d="M13 38 C 12 30, 12 25, 15 17" stroke-dasharray="3 3.4" marker-end="url(#ah)"/>
+              <path d="M34 22 C 30 22, 24 20, 19 16" marker-end="url(#ah)" stroke-width="1.5" opacity=".7"/>
+              <path d="M58 62 C 62 52, 63 44, 61 36" stroke-dasharray="3 3.4" marker-end="url(#ah)" opacity=".8"/>
+            </g>
+            <g filter="url(#chalk)"><ellipse cx="16" cy="15" rx="9" ry="6" fill="rgba(236,250,244,.07)" stroke="rgba(236,250,244,.6)" stroke-width="1.2" stroke-dasharray="1.5 2"/></g>
+          </svg>
+          <span class="note" style="left:30%;top:7.5%" data-ar="مساحة خلف تريبييه">Space behind<br>Trippier</span>
+          <span class="note" style="right:5%;top:44%;text-align:end" data-ar="كاش يتقدّم">Cash<br>overlaps</span>
+
+          <!-- opponent ghosts: Newcastle's press -->
+          <div class="tok opp" style="left:26%;top:28%"><span class="disc">2</span></div>
+          <div class="tok opp" style="left:44%;top:30%"><span class="disc">5</span></div>
+          <div class="tok opp" style="left:62%;top:44%"><span class="disc">8</span></div>
+          <div class="tok opp" style="left:40%;top:47%"><span class="disc">39</span></div>
+          <div class="tok opp" style="left:80%;top:60%"><span class="disc">10</span></div>
+
+          <div class="tok" style="left:50%;top:91%" data-slot="gk"><span class="disc">23</span><span class="nm" data-ar="مارتينيز">Martínez</span></div>
+          <div class="tok" style="left:84%;top:73%"><span class="disc">2<span class="fit">88</span></span><span class="nm" data-ar="كاش">Cash</span><span class="rl" data-ar="ظهير هجومي">WING-BACK</span></div>
+          <div class="tok" style="left:62%;top:78%"><span class="disc">4</span><span class="nm" data-ar="كونسا">Konsa</span></div>
+          <div class="tok" style="left:38%;top:78%"><span class="disc">14</span><span class="nm" data-ar="توريس">Torres</span></div>
+          <div class="tok" style="left:16%;top:73%"><span class="disc">22<span class="fit warn">71</span></span><span class="nm" data-ar="ماتسن">Maatsen</span></div>
+          <div class="tok" style="left:37%;top:59%"><span class="disc">24</span><span class="nm" data-ar="أونانا">Onana</span></div>
+          <div class="tok" style="left:63%;top:59%"><span class="disc">8</span><span class="nm" data-ar="تيليمانز">Tielemans</span></div>
+          <div class="tok" style="left:82%;top:38%"><span class="disc">7</span><span class="nm" data-ar="ماكغين">McGinn</span></div>
+          <div class="tok" style="left:50%;top:40%"><span class="disc">10</span><span class="nm" data-ar="بوينديا">Buendía</span></div>
+          <div class="tok" style="left:18%;top:38%" id="rogers"><span class="disc">27<span class="fit">94</span></span><span class="nm" data-ar="روجرز">Rogers</span><span class="rl" data-ar="جناح داخلي">INSIDE FWD</span></div>
+          <div class="tok" style="left:50%;top:21%"><span class="disc">11</span><span class="nm" data-ar="واتكينز">Watkins</span></div>
+        </div>
+        <div class="board-tools">
+          <span class="toggle"><span class="sw" aria-hidden="true"></span><span data-ar="ضغط نيوكاسل">Newcastle's press</span></span>
+          <span class="hint" data-i="drag" data-i-cls="i--sm"><span data-ar="اسحب لاعباً لتغيير مركزه">Drag to move · tap for roles</span></span>
+        </div>
+        <div class="section-h" style="margin-top:var(--s-5)"><span class="eyebrow" data-ar="البدلاء">Bench</span></div>
+        <div class="bench hscroll">
+          <div class="b"><span class="disc">44</span><span data-ar="كامارا">Kamara</span></div>
+          <div class="b"><span class="disc">31</span><span data-ar="بيلي">Bailey</span></div>
+          <div class="b"><span class="disc">29</span><span data-ar="غيساند">Guessand</span></div>
+          <div class="b"><span class="disc">12</span><span data-ar="دينيي">Digne</span></div>
+          <div class="b"><span class="disc">26</span><span data-ar="بوغارد">Bogarde</span></div>
+          <div class="b"><span class="disc">1</span><span data-ar="بيزو">Bizot</span></div>
+        </div>
+        <div class="save"><button class="btn btn--ghost on-ground btn--sm" data-ar="تراجع">Undo</button><button class="btn btn--accent" data-i="check"><span data-ar="اعتمد لمباراة السبت">Lock in for Saturday</span></button></div>
+      </section>
+
+      <!-- instructions -->
+      <section class="c-left stack">
+        <article class="panel" style="--i:1">
+          <div class="panel-h"><h2 class="h2" data-ar="كيف نلعب">How we play</h2><span class="eyebrow" data-ar="تغييران">2 changes</span></div>
+          <div class="ins">
+            <div class="between"><b data-ar="الضغط">Press</b><span class="tag tag--club" data-ar="تغيّر">Changed</span></div>
+            <div class="steps" style="--n:3"><button data-ar="انتظر">Sit off</button><button class="was" data-ar="متوسط">Mid-block</button><button aria-pressed="true" data-ar="عالٍ">Hunt high</button></div>
+            <div class="trade"><div class="gain"><b data-i="up" data-i-cls="i--sm"><span data-ar="تكسب">Gain</span></b><span data-ar="نسرق الكرة قرب مرماهم. تونالي يكره الضغط على قدمه اليسرى.">Win it near their box. Tonali hates being pressed onto his left.</span></div><div class="risk"><b data-i="alert" data-i-cls="i--sm"><span data-ar="تخاطر">Risk</span></b><span data-ar="نتعب بعد الدقيقة 70، وغوردون يهرب خلفنا.">Legs go around 70′, and Gordon gets a run at us.</span></div></div>
+          </div>
+          <div class="ins">
+            <div class="between"><b data-ar="خط الدفاع">Defensive line</b></div>
+            <div class="steps" style="--n:3"><button data-ar="عميق">Deep</button><button aria-pressed="true" data-ar="متوسط">Standard</button><button data-ar="مرتفع">High</button></div>
+            <div class="trade"><div class="gain"><b data-i="up" data-i-cls="i--sm"><span data-ar="تكسب">Gain</span></b><span data-ar="كونسا وتوريس مرتاحان هنا.">Konsa and Torres are comfortable here.</span></div><div class="risk"><b data-i="alert" data-i-cls="i--sm"><span data-ar="تخاطر">Risk</span></b><span data-ar="فجوة بين الخطوط إن ضغطنا عالياً.">A gap opens between the lines when we press.</span></div></div>
+          </div>
+          <div class="ins">
+            <div class="between"><b data-ar="أين نهاجم">Where we attack</b><span class="tag tag--club" data-ar="تغيّر">Changed</span></div>
+            <div class="steps" style="--n:3"><button aria-pressed="true" data-ar="يسار">Left</button><button class="was" data-ar="متوازن">Balanced</button><button data-ar="يمين">Right</button></div>
+            <div class="trade"><div class="gain"><b data-i="up" data-i-cls="i--sm"><span data-ar="تكسب">Gain</span></b><span data-ar="روجرز ضد تريبييه — أفضل مواجهة لدينا.">Rogers v Trippier: our best one-on-one.</span></div><div class="risk"><b data-i="alert" data-i-cls="i--sm"><span data-ar="تخاطر">Risk</span></b><span data-ar="ماتسن غير جاهز 100% للصعود والنزول.">Maatsen isn't fully fit to get up and down.</span></div></div>
+          </div>
+        </article>
+      </section>
+
+      <!-- role + opponent -->
+      <section class="c-right stack">
+        <article class="panel" style="--i:2" aria-label="Role for Morgan Rogers">
+          <div class="role-h"><span data-portrait="Morgan Rogers" data-num="27"></span><div class="grow"><span class="eyebrow" data-ar="الدور · يسار الوسط الهجومي">Role · left attacking mid</span><h2 class="h2" style="margin-top:4px" data-ar="مورغان روجرز">Morgan Rogers</h2></div></div>
+          <div class="roles">
+            <div class="role on"><b data-ar="جناح داخلي">Inside forward</b><span class="fitv num">94</span><p data-ar="يدخل على قدمه اليمنى ويصل إلى منطقة الجزاء.">Cuts in on his right, arrives in the box.</p></div>
+            <div class="role"><b data-ar="صانع لعب من الطرف">Wide playmaker</b><span class="fitv num">81</span><p data-ar="يتراجع للداخل ليصنع؛ يترك الطرف لماتسن.">Drifts inside to create, leaves the flank to Maatsen.</p></div>
+            <div class="role"><b data-ar="جناح تقليدي">Touchline winger</b><span class="fitv num" style="color:var(--warn)">68</span><p data-ar="يلتزم بالخط؛ لا يناسب قدمه.">Hugs the line. Wrong foot for it.</p></div>
+          </div>
+        </article>
+
+        <article class="panel" style="--i:3" aria-label="Opponent analysis">
+          <div class="opp-top"><span data-crest="NEW" class="crest"></span><div class="grow"><span class="eyebrow" data-ar="الخصم · 4-3-3 ضغط عالٍ">Opponent · 4-3-3 high press</span><h2 class="h2" style="margin-top:4px" data-ar="كيف يلعب نيوكاسل">How Newcastle play</h2></div></div>
+          <div class="match-ups" aria-label="Who wins each flank">
+            <div class="mu"><span data-ar="يسارنا">Our left</span><span class="track"><i class="us" style="width:36%"></i><i class="th" style="width:18%"></i></span><span data-ar="لنا">Ours</span></div>
+            <div class="mu"><span data-ar="العمق">Centre</span><span class="track"><i class="us" style="width:22%"></i><i class="th" style="width:34%"></i></span><span data-ar="لهم">Theirs</span></div>
+            <div class="mu"><span data-ar="يميننا">Our right</span><span class="track"><i class="us" style="width:26%"></i><i class="th" style="width:28%"></i></span><span data-ar="متكافئ">Even</span></div>
+          </div>
+          <div style="margin-top:var(--s-3)">
+            <div class="threat"><span data-portrait="Anthony Gordon" data-club="NEW" data-num="10"></span><div><b data-ar="أنتوني غوردون · خطر">Anthony Gordon · danger man</b><p data-ar="7 من آخر 10 تسديدات جاءت من ركضاته خلف الظهير الأيمن. لا تترك كاش وحيداً.">7 of their last 10 big chances came from his runs behind a right-back. Don't leave Cash alone.</p></div></div>
+            <div class="threat"><span data-portrait="Sandro Tonali" data-club="NEW" data-num="8"></span><div><b data-ar="ساندرو تونالي · المحرّك">Sandro Tonali · the engine</b><p data-ar="كل ضغطهم يبدأ منه. اضغطه ليلعب بيسراه.">Every press starts with him. Show him onto his left.</p></div></div>
+          </div>
+        </article>
+      </section>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+<script>
+document.addEventListener("kit:ready", () => {
+  const slots = [[50,91],[84,73],[62,78],[38,78],[16,73],[37,59],[63,59],[82,38],[50,40],[18,38],[50,21],[50,62],[50,30],[30,21],[70,21],[84,58],[16,58]].map(([x,y],i)=>({id:"s"+i,x,y}));
+  Kit.board(document.getElementById("board"), slots);
+});
+</script>
+</body>
+</html>

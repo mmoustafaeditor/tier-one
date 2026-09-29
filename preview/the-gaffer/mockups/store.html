@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Club Pass · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .p-head { padding: var(--s-2) 0 var(--s-5); display: grid; gap: var(--s-3); }
+  .p-head .h-hero { color: var(--on-ground); max-width: 16ch; }
+  .p-head p { color: var(--on-ground-2); max-width: 46ch; }
+
+  .pass { position: relative; overflow: hidden; padding: var(--s-6) var(--s-5); color: #F2FFFB; border-radius: var(--r-lg); isolation: isolate; box-shadow: var(--e2);
+    background: linear-gradient(135deg, #0E4F47 0%, #062421 55%, #3A1320 100%); }
+  .pass::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--mosaic) 0 0 / 216px auto; opacity: .9; }
+  .pass::after { content: ""; position: absolute; width: 140%; height: 60px; left: -20%; top: 38%; rotate: -14deg; z-index: -1; background: linear-gradient(90deg, transparent, rgba(220,255,240,.14), transparent); }
+  .pass .eyebrow { color: var(--mint-300); }
+  .pass .h1 { margin-top: var(--s-2); }
+  .pass .price { display: flex; align-items: baseline; gap: 8px; margin-top: var(--s-4); }
+  .pass .price b { font: 850 44px/1 var(--f-display); font-stretch: 112%; }
+  .pass .price span { color: rgba(230,250,244,.75); font-size: 14px; }
+  .pass ul { list-style: none; padding: 0; margin: var(--s-5) 0; display: grid; gap: 10px; }
+  .pass li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 14.5px; }
+  .pass li .i { color: var(--mint-400); margin-top: 1px; }
+  .pass li small { display: block; color: rgba(230,250,244,.65); font-size: 12.5px; }
+  .pass .btn { width: 100%; }
+  .pass .note { font-size: 12px; color: rgba(230,250,244,.6); margin-top: var(--s-3); text-align: center; }
+
+  .never { display: grid; gap: 10px; }
+  .never div { display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 14.5px; }
+  .never .i { color: var(--bad); }
+
+  .looks { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); }
+  .look { display: grid; gap: 8px; }
+  .look .sw { aspect-ratio: 3/4; border-radius: 14px; position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+  .look .sw::after { content: ""; position: absolute; inset: 22% 14% auto; height: 34%; border-radius: 8px; background: var(--c); opacity: .92; }
+  .look b { font: 650 13.5px/1.2 var(--f-text); } .look span { font-size: 12px; color: var(--ink-3); }
+
+  .item { display: grid; grid-template-columns: 44px 1fr auto; gap: var(--s-3); align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+  .item:first-of-type { border-top: 0; padding-top: 0; }
+  .item .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--surface-2); color: var(--accent-text); }
+  .item b { display: block; font: 650 14.5px/1.2 var(--f-text); } .item span.s { font-size: 12.5px; color: var(--ink-3); }
+
+  .grid { display: grid; gap: var(--s-4); }
+  .grid > * { min-width: 0; }
+  @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1100px) { .grid { grid-template-columns: 1fr 1fr 1fr; } .g-pass { grid-row: span 2; } .p-head { grid-template-columns: 1fr auto; align-items: end; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" data-active="store"></nav>
+  <main class="main"><div class="page">
+    <header class="topbar on-ground">
+      <div class="club"><span data-crest="AVL" style="width:32px;height:32px"></span><div><b>Club Pass</b><small>Optional · cosmetic and convenience only</small></div></div>
+    </header>
+    <section class="p-head">
+      <span class="concept" data-i="info" data-i-cls="i--sm" style="justify-self:start">Concept · not live</span>
+      <h1 class="h-hero">Support the club. Never buy a result.</h1>
+      <p>Everything here changes how the game looks or how you keep your story. Nothing here changes a match, a transfer or a player.</p>
+    </section>
+
+    <div class="grid">
+      <section class="g-pass pass" aria-label="Club Pass">
+        <span class="eyebrow">Club Pass · one season</span>
+        <h2 class="h1">The supporter's season ticket</h2>
+        <div class="price"><b>£3.99</b><span>per season · price is a placeholder</span></div>
+        <ul>
+          <li><span data-i="shirt"></span><span>Four club looks<small>Night Match, Derby Day, Retro 1982, Snow Game</small></span></li>
+          <li><span data-i="doc"></span><span>Three extra save slots<small>Run a second career side by side</small></span></li>
+          <li><span data-i="history"></span><span>Career book export<small>Your seasons, trophies and legends as a shareable PDF</small></span></li>
+          <li><span data-i="board"></span><span>No sponsor boards<small>Pitch-side boards go back to club colours</small></span></li>
+        </ul>
+        <button class="btn btn--accent" disabled aria-disabled="true" data-i="lock">Purchases not live yet</button>
+        <p class="note">Buttons are placeholders until a payment flow is built and verified.</p>
+      </section>
+
+      <article class="panel" style="--i:1" aria-label="What the pass never does">
+        <div class="panel-h"><h2 class="h2">What it never does</h2></div>
+        <div class="never">
+          <div><span data-i="x"></span><span>No better players, attributes or scouting</span></div>
+          <div><span data-i="x"></span><span>No bigger budgets or faster transfers</span></div>
+          <div><span data-i="x"></span><span>No match advantage, ever</span></div>
+          <div><span data-i="x"></span><span>No ads in the middle of a decision</span></div>
+        </div>
+      </article>
+
+      <article class="panel" style="--i:2" aria-label="Club looks">
+        <div class="panel-h"><h2 class="h2">Club looks</h2><span class="eyebrow">Preview free</span></div>
+        <div class="looks">
+          <div class="look"><span class="sw" style="background:linear-gradient(180deg,#0D0A26,#15103A);--c:#ECEBFB"></span><b>Night Match</b><span>Pass</span></div>
+          <div class="look"><span class="sw" style="background:linear-gradient(180deg,#1C070C,#2A0B12);--c:#F7E6E9"></span><b>Derby Day</b><span>Pass</span></div>
+          <div class="look"><span class="sw" style="background:linear-gradient(180deg,#062421,#0A302C);--c:#E4F3EE"></span><b>Pitchside</b><span>Included</span></div>
+        </div>
+      </article>
+
+      <article class="panel" style="--i:3" aria-label="One-off">
+        <div class="panel-h"><h2 class="h2">One-off</h2></div>
+        <div class="item"><span class="ic" data-i="board"></span><div><b>Remove sponsor boards</b><span class="s">For good. The only ads in the game.</span></div><span class="tag">£2.99</span></div>
+        <div class="item"><span class="ic" data-i="ticket"></span><div><b>Tip jar</b><span class="s">Buy the studio a pie at half-time</span></div><span class="tag">£1.49</span></div>
+      </article>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+</body>
+</html>

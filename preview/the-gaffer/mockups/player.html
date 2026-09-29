@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Morgan Rogers · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .hero { position: relative; display: grid; gap: var(--s-4); margin-top: var(--s-2); }
+  .hero-card { position: relative; border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--e2); aspect-ratio: 4 / 4.2; background: var(--ground-3); }
+  .hero-card .portrait { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; background: none; }
+  .hero-card .portrait svg { position: absolute; inset: 2% 0 auto 0; width: 100%; height: 66%; }
+  .hero-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(2,18,16,.92) 80%); }
+  .hero-card { background: linear-gradient(180deg, #11433C, #031A17); }
+  .hero-card .id { position: absolute; z-index: 2; inset-inline: var(--s-5); bottom: var(--s-5); color: #F2FFFB; }
+  .hero-card .id .h-hero { font-size: clamp(38px, 9vw, 64px); }
+  .hero-card .id .meta { color: rgba(230,250,244,.8); margin-top: var(--s-2); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .hero-card .flagc { display: inline-flex; gap: 6px; align-items: center; }
+  .hero-card .crest { position: absolute; z-index: 2; top: var(--s-4); inset-inline-end: var(--s-4); width: 44px; height: 44px; }
+  .strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; border-radius: var(--r-md); overflow: hidden; background: var(--ground-line); }
+  .strip .kpi { background: rgba(6,36,33,.92); padding: 12px 10px; color: var(--on-ground); }
+  .strip .kpi .l { color: var(--on-ground-3); } .strip .kpi .v { font-size: 24px; }
+  .strip .kpi .v small { font-size: 14px; color: var(--on-ground-3); font-weight: 700; }
+
+  .attr-groups { display: grid; gap: var(--s-5); }
+  .ag h3 { font: 700 12px/1 var(--f-text); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 var(--s-2); }
+  html[lang="ar"] .ag h3 { letter-spacing: 0; }
+  .at { display: grid; grid-template-columns: 1fr 88px 28px; align-items: center; gap: var(--s-3); min-height: 30px; font-size: 14px; }
+  .at .meter { height: 6px; }
+  .at .n { font: 800 15px/1 var(--f-display); text-align: end; font-feature-settings: "tnum" 1; }
+  .at .n.hi { color: var(--accent-text); }
+  .at span:first-child { display: flex; align-items: center; gap: 4px; }
+  .at .up { font: 700 11px/1 var(--f-text); }
+
+  .fits { display: grid; gap: var(--s-2); }
+  .fitrow { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--s-3); align-items: center; }
+  .fitrow b { font: 650 14px/1.2 var(--f-text); } .fitrow .num { font-weight: 800; font-size: 16px; }
+  .fitrow .meter { grid-column: 1 / -1; }
+
+  .rel { display: grid; grid-template-columns: 40px 1fr auto; gap: var(--s-3); align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  .rel:first-of-type { border-top: 0; }
+  .rel .portrait { width: 40px; border-radius: 10px; }
+  .rel b { font: 650 14px/1.2 var(--f-text); display: block; } .rel span.sub { font-size: 12.5px; color: var(--ink-3); }
+  .traits { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--s-3); }
+
+  .contract { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4) var(--s-3); }
+  .contract .kpi .v { font-size: 22px; }
+  .promise { display: flex; gap: var(--s-3); align-items: flex-start; margin-top: var(--s-4); padding: 12px; border-radius: var(--r-md); background: var(--good-wash); }
+  .promise b { display: block; font: 650 14px/1.25 var(--f-text); } .promise span { font-size: 12.5px; color: var(--ink-2); }
+
+  .grid { display: grid; gap: var(--s-4); margin-top: var(--s-4); }
+  .grid > * { min-width: 0; }
+  @media (min-width: 760px) { .hero { grid-template-columns: 320px 1fr; align-items: end; } .hero-card { aspect-ratio: 4/4.6; } .grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1100px) {
+    .layout { display: grid; grid-template-columns: 360px 1fr; gap: var(--s-6); align-items: start; }
+    .hero { grid-template-columns: 1fr; position: sticky; top: var(--s-4); margin-top: 0; }
+    .grid { grid-template-columns: 1fr 1fr; margin-top: 0; }
+    .g-dev { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" data-active="squad"></nav>
+  <main class="main"><div class="page">
+    <header class="topbar on-ground">
+      <div class="club"><a class="icon-btn" href="squad.html" aria-label="Back to squad" data-i="back" data-i-cls="i--flip"></a><div><b>Squad</b><small>Attacking midfielders · 3 of 4</small></div></div>
+      <button class="btn btn--ghost on-ground btn--sm" data-i="chat">Talk to him</button>
+    </header>
+
+    <div class="layout">
+      <section class="hero">
+        <div class="hero-card">
+          <span data-portrait="Morgan Rogers" data-num="27"></span>
+          <span data-crest="AVL"></span>
+          <div class="id">
+            <span class="eyebrow" style="color:rgba(230,250,244,.75)">Attacking midfield · Left / Centre</span>
+            <h1 class="h-hero" style="margin-top:6px">Morgan<br>Rogers</h1>
+            <div class="meta small"><span>24</span><span>·</span><span>England</span><span>·</span><span>Right foot</span><span>·</span><span>6′2″</span></div>
+          </div>
+        </div>
+        <div class="strip">
+          <div class="kpi"><span class="v">84</span><span class="l">Ability</span></div>
+          <div class="kpi"><span class="v">87<small>–91</small></span><span class="l">Ceiling</span></div>
+          <div class="kpi"><span class="v">7.4</span><span class="l">Form · 6 apps</span></div>
+          <div class="kpi"><span class="v">£78<small>m</small></span><span class="l">Value</span></div>
+        </div>
+      </section>
+
+      <div class="grid">
+        <article class="panel g-dev" style="--i:1">
+          <div class="panel-h"><div><span class="eyebrow">Development</span><h2 class="h2" style="margin-top:4px">Still climbing. Peak around 27.</h2></div><span class="tag tag--good" data-i="trend">+2 since July</span></div>
+          <div class="chart" id="dev"></div>
+          <div class="legend" style="margin-top:var(--s-3)"><span><i></i>Ability</span><span><i class="band" style="background:var(--dv-us)"></i>Coaches' projection</span><span><i style="background:var(--dv-4)"></i>Squad average</span></div>
+        </article>
+
+        <article class="panel" style="--i:2">
+          <div class="panel-h"><h2 class="h2">What he's good at</h2><span class="eyebrow">Known · own player</span></div>
+          <div class="attr-groups">
+            <div class="ag"><h3>With the ball</h3>
+              <div class="at"><span>Dribbling</span><span class="meter"><i style="--v:85%"></i></span><span class="n hi">17</span></div>
+              <div class="at"><span>First touch</span><span class="meter"><i style="--v:80%"></i></span><span class="n hi">16</span></div>
+              <div class="at"><span>Passing</span><span class="meter"><i style="--v:70%"></i></span><span class="n">14</span></div>
+              <div class="at"><span>Finishing <b class="up">↑1</b></span><span class="meter"><i style="--v:70%"></i></span><span class="n">14</span></div>
+            </div>
+            <div class="ag"><h3>Without it</h3>
+              <div class="at"><span>Work rate</span><span class="meter"><i style="--v:80%"></i></span><span class="n hi">16</span></div>
+              <div class="at"><span>Positioning</span><span class="meter meter--warn"><i style="--v:55%"></i></span><span class="n">11</span></div>
+            </div>
+            <div class="ag"><h3>Mind &amp; body</h3>
+              <div class="at"><span>Big-game temperament</span><span class="meter"><i style="--v:85%"></i></span><span class="n hi">17</span></div>
+              <div class="at"><span>Pace <b class="up">↑1</b></span><span class="meter"><i style="--v:75%"></i></span><span class="n">15</span></div>
+              <div class="at"><span>Strength</span><span class="meter"><i style="--v:80%"></i></span><span class="n hi">16</span></div>
+            </div>
+          </div>
+        </article>
+
+        <div class="stack">
+          <article class="panel" style="--i:3">
+            <div class="panel-h"><h2 class="h2">Where he fits</h2></div>
+            <div class="fits">
+              <div class="fitrow"><b>Inside forward · left</b><span class="num">94</span><span class="meter"><i style="--v:94%"></i></span></div>
+              <div class="fitrow"><b>Attacking midfielder · centre</b><span class="num">90</span><span class="meter"><i style="--v:90%"></i></span></div>
+              <div class="fitrow"><b>Second striker</b><span class="num">82</span><span class="meter"><i style="--v:82%"></i></span></div>
+            </div>
+          </article>
+
+          <article class="panel" style="--i:4">
+            <div class="panel-h"><h2 class="h2">The man</h2></div>
+            <div class="traits"><span class="tag tag--club" data-i="star">Big-game player</span><span class="tag" data-i="bolt">Driven</span><span class="tag" data-i="heart">Morale: flying</span></div>
+            <div class="rel"><span data-portrait="Ollie Watkins" data-num="11"></span><div><b>Ollie Watkins</b><span class="sub">Strike partner · they find each other</span></div><span class="tag tag--good">Chemistry</span></div>
+            <div class="rel"><span data-portrait="John McGinn" data-num="7"></span><div><b>John McGinn</b><span class="sub">Captain · took him under his wing</span></div><span class="tag tag--good">Mentor</span></div>
+          </article>
+
+          <article class="panel" style="--i:5">
+            <div class="panel-h"><h2 class="h2">Contract</h2><span class="tag tag--good" data-i="lock">Secure</span></div>
+            <div class="contract">
+              <div class="kpi"><span class="v num">2031</span><span class="l">Expires June</span></div>
+              <div class="kpi"><span class="v num">£110k</span><span class="l">Per week</span></div>
+              <div class="kpi"><span class="v num">None</span><span class="l">Release clause</span></div>
+              <div class="kpi"><span class="v num">5th</span><span class="l">Highest earner</span></div>
+            </div>
+            <div class="promise"><span data-i="check" style="color:var(--good)"></span><div><b>Promise kept: Champions League football</b><span>Made when he re-signed in 2025. He noticed.</span></div></div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+<script>
+document.addEventListener("kit:ready", () => {
+  const x = ["20/21","21/22","22/23","23/24","24/25","25/26","26/27","27/28","28/29","29/30","30/31"];
+  Kit.line(document.getElementById("dev"), {
+    x, h: 190, yMin: 50, yMax: 95, yTicks: [60, 75, 90], padL: 26,
+    series: [
+      { key: "us", name: "Ability", data: [58, 63, 67, 72, 79, 82, 84, null, null, null, null], w: 2.5, label: true },
+      { key: "us", name: "Projection", data: [null, null, null, null, null, null, 84, 86, 88, 89, 88], dash: true, w: 1.5 },
+      { name: "Squad avg", color: getComputedStyle(document.documentElement).getPropertyValue("--dv-4"), data: [78, 78, 79, 79, 80, 80, 80, null, null, null, null], w: 1.5 },
+    ],
+    band: { lo: [null, null, null, null, null, null, 84, 84, 85, 85, 84], hi: [null, null, null, null, null, null, 84, 88, 90, 91, 91] },
+    markers: [{ i: 3, label: "Joins Villa" }, { i: 6, label: "Now" }],
+  });
+});
+</script>
+</body>
+</html>

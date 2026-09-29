@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Club office · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .o-head { padding: var(--s-2) 0 var(--s-4); display: grid; gap: var(--s-3); }
+  .o-head .h-hero { color: var(--on-ground); }
+  .runway-k { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); margin-bottom: var(--s-4); }
+  .runway-k .kpi .v { font-size: 24px; }
+  .split { display: grid; gap: 10px; margin-top: var(--s-4); }
+  .split .row2 { display: grid; grid-template-columns: 96px 1fr 58px; gap: var(--s-3); align-items: center; font-size: 13px; }
+  .split .row2 b { text-align: end; font: 800 14px/1 var(--f-display); font-feature-settings: "tnum" 1; }
+  .split .bar { height: 10px; border-radius: 3px; background: var(--dv-us); width: var(--w); }
+  .split .bar.out { background: repeating-linear-gradient(135deg, var(--dv-them) 0 4px, color-mix(in srgb, var(--dv-them) 55%, transparent) 4px 7px); }
+
+  .obj { display: grid; gap: 8px; padding: var(--s-4) 0; border-top: 1px solid var(--line); }
+  .obj:first-of-type { border-top: 0; padding-top: 0; }
+  .obj .between b { font: 650 15px/1.25 var(--f-text); }
+  .obj p { font-size: 12.5px; color: var(--ink-3); }
+  .obj .meter { height: 8px; }
+  .trust { display: grid; grid-template-columns: auto 1fr; gap: var(--s-4); align-items: center; margin-top: var(--s-4); padding: 12px 14px; border-radius: var(--r-md); background: var(--surface-2); }
+  .trust .big { font: 850 34px/1 var(--f-display); font-stretch: 110%; color: var(--accent-text); }
+
+  .fac { display: grid; grid-template-columns: 40px 1fr auto; gap: var(--s-3); align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+  .fac:first-of-type { border-top: 0; padding-top: 0; }
+  .fac .ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--surface-2); color: var(--accent-text); }
+  .fac b { display: block; font: 650 14.5px/1.2 var(--f-text); } .fac span.s { font-size: 12.5px; color: var(--ink-3); }
+  .lv { display: flex; gap: 3px; } .lv i { width: 8px; height: 18px; border-radius: 2px; background: var(--surface-3); } .lv i.on { background: var(--dv-us); }
+  .proposal { margin-top: var(--s-4); padding: var(--s-4); border-radius: var(--r-md); border: 1.5px dashed var(--line-2); display: grid; gap: var(--s-3); }
+  .proposal .t-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); }
+  .proposal .kpi .v { font-size: 18px; }
+
+  .grid { display: grid; gap: var(--s-4); }
+  .grid > * { min-width: 0; }
+  @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } .g-fin { grid-column: 1 / -1; } }
+  @media (min-width: 1100px) { .grid { grid-template-columns: 1.5fr 1fr; } .g-fin { grid-column: 1; grid-row: 1 / span 2; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" data-active="club"></nav>
+  <main class="main"><div class="page">
+    <header class="topbar on-ground">
+      <div class="club"><span data-crest="AVL" style="width:32px;height:32px"></span><div><b>Club office</b><small>Villa Park · Bodymoor Heath</small></div></div>
+      <div class="chips on-ground"><button class="chip" aria-pressed="true">Office</button><a class="chip" href="history.html">Career</a></div>
+    </header>
+    <section class="o-head"><h1 class="h-hero">The money, the board, the bricks.</h1></section>
+
+    <div class="grid">
+      <article class="panel g-fin" style="--i:1" aria-label="Finances">
+        <div class="panel-h"><div><span class="eyebrow">Cash runway · to June 2027</span><h2 class="h2" style="margin-top:4px">Healthy until January. Then the Watkins deal decides it.</h2></div></div>
+        <div class="runway-k">
+          <div class="kpi"><span class="v num">£62m</span><span class="l">Cash today</span></div>
+          <div class="kpi"><span class="v num">68%</span><span class="l">Squad cost / revenue · limit 70%</span></div>
+          <div class="kpi"><span class="v num">£48m</span><span class="l">Transfer budget</span></div>
+        </div>
+        <div class="chart" id="run"></div>
+        <div class="legend" style="margin-top:var(--s-3)"><span><i></i>Projected cash</span><span><i class="band" style="background:var(--dv-3)"></i>Range if Samu signs</span><span><i style="background:var(--bad)"></i>Board's floor</span></div>
+        <div class="split" aria-label="This season in and out">
+          <div class="row2"><span>Broadcast</span><span class="bar" style="--w:92%"></span><b>£182m</b></div>
+          <div class="row2"><span>Matchday</span><span class="bar" style="--w:30%"></span><b>£58m</b></div>
+          <div class="row2"><span>Commercial</span><span class="bar" style="--w:48%"></span><b>£96m</b></div>
+          <div class="row2"><span>Wages</span><span class="bar out" style="--w:82%"></span><b>£161m</b></div>
+          <div class="row2"><span>Amortisation</span><span class="bar out" style="--w:34%"></span><b>£68m</b></div>
+        </div>
+      </article>
+
+      <article class="panel" style="--i:2" aria-label="Board objectives">
+        <div class="panel-h"><h2 class="h2">What the board wants</h2><span class="eyebrow">2026/27</span></div>
+        <div class="obj"><div class="between"><b>Finish in the top six</b><span class="tag tag--good" data-i="check">On track</span></div><div class="meter"><i style="--v:78%"></i></div><p>3rd after 7. They'd take 6th.</p></div>
+        <div class="obj"><div class="between"><b>Get out of the Champions League group</b><span class="tag" data-i="clock">2 of 8 played</span></div><div class="meter"><i style="--v:40%"></i></div><p>4 points. 10 usually does it.</p></div>
+        <div class="obj"><div class="between"><b>Keep squad cost under 70%</b><span class="tag tag--warn" data-i="alert">Close</span></div><div class="meter meter--warn"><i style="--v:97%"></i><span class="mark" style="--at:100%"></span></div><p>68% now. Samu's wage takes it to 69.6%.</p></div>
+        <div class="trust"><span class="big">75</span><div><b style="font:700 14.5px/1.2 var(--f-text)">Board trust · Confident</b><p class="small muted">Up 3 after Newcastle. Below 30 and they start looking.</p></div></div>
+      </article>
+
+      <article class="panel" style="--i:3" aria-label="Facilities">
+        <div class="panel-h"><h2 class="h2">Facilities</h2></div>
+        <div class="fac"><span class="ic" data-i="grow"></span><div><b>Training · Bodymoor Heath</b><span class="s">Players improve a little faster</span></div><span class="lv" aria-label="Level 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+        <div class="fac"><span class="ic" data-i="grad"></span><div><b>Academy</b><span class="s">One first-teamer every two years</span></div><span class="lv" aria-label="Level 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+        <div class="fac"><span class="ic" data-i="stadium"></span><div><b>Villa Park · 42,657</b><span class="s">North Stand rebuild approved</span></div><span class="lv" aria-label="Level 4 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+        <div class="proposal">
+          <span class="eyebrow">Proposal · head of academy</span>
+          <b style="font:700 15px/1.3 var(--f-text)">Academy to level 4</b>
+          <div class="t-facts"><div class="kpi"><span class="v num">£14m</span><span class="l">Cost</span></div><div class="kpi"><span class="v num">18 mo</span><span class="l">To build</span></div><div class="kpi"><span class="v num">+1</span><span class="l">Prospect / yr</span></div></div>
+          <div style="display:flex;gap:var(--s-2)"><button class="btn btn--primary btn--sm">Take it to the board</button><button class="btn btn--ghost btn--sm">Not now</button></div>
+        </div>
+      </article>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+<script>
+document.addEventListener("kit:ready", () => {
+  const x = ["Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun"];
+  Kit.line(document.getElementById("run"), { x, h: 200, yMin: 0, yMax: 100, yTicks: [0, 50, 100], fmt: (v) => "£" + Math.round(v) + "m", padL: 40,
+    series: [{ key: "us", name: "Cash", data: [62, 55, 49, 38, 44, 40, 46, 58, 71], w: 2.5, area: true, label: true }],
+    band: { lo: [62, 55, 49, 21, 26, 22, 27, 38, 50], hi: [62, 55, 49, 38, 44, 40, 46, 58, 71], color: getComputedStyle(document.documentElement).getPropertyValue("--dv-3") },
+    ref: { y: 20, label: "Board's floor £20m" }, markers: [{ i: 3, label: "Window" }, { i: 7, label: "Prize money" }] });
+});
+</script>
+</body>
+</html>
