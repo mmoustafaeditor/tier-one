@@ -6,6 +6,7 @@ import { levelOf } from '../lib/progress';
 import { chapterOf } from '../lib/storyMode';
 import { Icon, TopBar, GBtn } from '../ui/game';
 import type { Chrome } from '../App';
+import { startTutorial } from './Onboarding';
 
 const TROPHY_IC: Record<string, string> = { first: 'news', t1: 'crown', t1x3: 'crown', excl: 'bolt', excl3: 'bolt', clean: 'check', uturn: 'uturn', twist: 'uturn', dd: 'clock', silent: 'eye', fake: 'eye', hijack: 'arrow', agent: 'briefcase', echo: 'friends', physio: 'pulse', streak7: 'flame', streak30: 'flame', practice5: 'target', coach: 'target', career1: 'story', rank2: 'story', rank3: 'story', rank5: 'crown', trust5: 'phone', leak: 'fax', wire1: 'wire', wireRight: 'wire', room: 'friends', share: 'share', rich: 'gift' };
 
@@ -56,6 +57,7 @@ export function MeScreen(chrome: Chrome) {
       <div className="me__links" style={{ ['--i' as string]: 3 }}>
         <GBtn kind="gold" onClick={() => chrome.go({ n: 'pass' })}><Icon n="crown" size={22} />{t('g.me.pass')}</GBtn>
         <GBtn kind="dark" onClick={() => chrome.go({ n: 'howto' })}><Icon n="help" size={22} />{t('nav.howto')}</GBtn>
+        <GBtn kind="dark" onClick={() => startTutorial(chrome.go)}><Icon n="target" size={22} />{t('g.me.training')}</GBtn>
         <GBtn kind="dark" onClick={chrome.openSettings}><Icon n="gear" size={22} />{t('common.settings')}</GBtn>
       </div>
     </div>

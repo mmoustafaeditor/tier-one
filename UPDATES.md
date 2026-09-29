@@ -17,6 +17,31 @@ together with your change.
 
 ---
 
+## 2026-09-29 · mmoustafaeditor · Tier One 3.1: the newsroom game (classic spirit + v3 newspaper)
+- **What changed:** The v3 presentation layer is rebuilt as "paper on the newsroom desk" (spec: `games/tier-one/v3/HYBRID.md`). Dark desk with newsprint cards, chunky game buttons, colour per mode, motion everywhere, and the cheeky classic voice.
+  - **Home:** a press pass (level, XP, streak flame), Today's five with a live countdown and week dots, 3 daily missions with coin rewards, mode tiles and a wire ticker.
+  - **Navigation:** new tabs Home · Story · Wire · Friends · Me.
+  - **The saga file fits one screen:** What we know, a coach tip, source tiles, and Make the call with points printed on the buttons. The maths moves behind "How's this scored?".
+  - **Source calls are full-screen scenes** with the classic per-source sounds, ported unchanged in `lib/synth.ts`: animated backdrops, a mumbled voice, a typed subtitle and the clue stamped into the file. The first call per source plays in full; repeats play short.
+  - **Moments:** a publish burst with shake, an overnight time-lapse with rival breaking cards, taunts and a STOP PRESS twist, and a red Deadline Day takeover with a heartbeat.
+  - **Results reveal:** the press rolls, your front page drops, sagas flip in with their points, the tier stamp slams (confetti for Tier 1), then XP, coins and the streak.
+  - **Story mode replaces the Career Desk:** a disgraced-journalist prologue, 6 chapters mapped onto the career ranks, chapter intros, and editor and rival lines after each window.
+  - **First run:** a welcome card, your byline, then a guided first saga with a 5-step coach.
+  - Wire, Friends, Practice, Pass, How-to and Settings are restyled to match.
+  - Engine, scoring, the server-held Daily and the save format are unchanged. The new save fields are optional.
+- **Files:**
+  - Screens: `games/tier-one/v3/web/src/screens/{Home,Me,Story,Saga,Window,Results,Onboarding,Wire,Rooms,Practice,Pass,HowTo,Settings}.tsx`
+  - UI: `src/ui/{game.tsx,CallScene.tsx}`
+  - Logic: `src/lib/{synth,sfx,progress,storyMode}.ts`
+  - Styles: `src/styles/{game,home,play,story,screens}.css`
+  - Strings: `src/i18n/parts/*.ts`
+  - Spec: `games/tier-one/v3/HYBRID.md`
+  - Release build: `tier-one/`
+- **Heads-up for the team:**
+  - New UI strings go in `src/i18n/parts/<area>.ts` as `{ en, ar, es }`; they merge over the base editions.
+  - Character art slots are ready in `ui/CallScene.tsx` (`ART`). No drawn people anywhere until painted art lands.
+  - The Android app still bundles the classic build; an APK with 3.1 is a separate step.
+
 ## 2026-09-29 · mmoustafaeditor · Studio site: gamey rework
 - **What changed:** sembagames.app home rebuilt as a game-studio launcher. Animated studio hero (Semba mark with a spinning ring, "Pick a game. Hit play.") with two key-visual cards: Tier One on the newsroom desk (front page, slammed EXCLUSIVE stamp, ringing caller card, BREAKING ticker) and The Gaffer under floodlights (sweeping beams, drifting dust, chalk tactics drawing on a pitch). Each card has a 3-step "what you do" strip, live badges (Daily #N from days since 2026-09-01 UTC + 1, time to the next Daily, The Gaffer version read from `/the-gaffer/version.json`), a huge chunky PLAY button and the Android APK. Below, one tab strip (Games · Ranks · Updates · About, hash links `#games`, `#leaderboard`, `#updates`, `#about`, `#tier-one`, `#the-gaffer` still work) replaces the long scroll; Games has a Tier One / The Gaffer switcher with the phone explainer and feature cards. Leaderboard fetches, share, sticky play bar, privacy/terms and footer are unchanged in behaviour. Tier One tokens from HYBRID.md (desk, paper, vermilion, gold), The Gaffer's mint on dark green. Fonts are self-hosted (Archivo, Newsreader, IBM Plex Mono); Google Fonts is no longer loaded. Honors `prefers-reduced-motion`; no horizontal scroll at 360 px. Updates list gains The Gaffer 2.0 and 2.1.
 - **Files:** `index.html`, `assets/fonts/*` (3 woff2 + OFL licences, copied from `games/tier-one/v3/look/fonts/` because `/games` is not deployed), `UPDATES.md`

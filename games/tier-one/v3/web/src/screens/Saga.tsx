@@ -63,7 +63,7 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
         <div className="g-mono pcard__k">{t('common.saga', { n: i + 1, m: view.cast.length })}{c.player.star >= 3 ? <span className="g-chip g-chip--gold pcard__star"><Icon n="star" />{t('g.saga.star')}</span> : null}</div>
         <h1 className="pcard__n">{c.player.n}</h1>
         <div className="pcard__m g-mono">{[t('pos.' + c.player.pos), c.player.age > 0 ? String(c.player.age) : '', c.player.nat].filter(Boolean).join(' · ')}</div>
-        <div className="pcard__route"><Crest club={c.from} size={28} /><span className="pcard__arrow"><Icon n={t.rtl ? 'back' : 'arrow'} size={18} /></span><Crest club={c.to} size={28} /><span className="pcard__to"><b>{c.to.s}</b>?</span></div>
+        <div className="pcard__route"><Crest club={c.from} size={28} /><span className="pcard__arrow"><Icon n={t.rtl ? 'back' : 'arrow'} size={18} /></span><Crest club={c.to} size={28} /><span className="pcard__to"><bdi><b>{c.to.s}</b>?</bdi></span></div>
       </div>
       {call && <span key={call.o + ':' + call.s + ':' + (justFiled || 0)} className={'pcard__stamp g-stamp g-stamp--' + OUTS[call.o] + (justFiled ? ' is-slam' : '')}>{strWord(t.lang, call.s)} · {outWord(t.lang, call.o)}</span>}
     </div>

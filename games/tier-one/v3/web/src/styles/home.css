@@ -121,4 +121,4 @@
 .trophy.is-on { color: var(--on-desk); background: radial-gradient(100% 80% at 50% 0%, rgba(247, 185, 40, .22), transparent 70%), var(--desk-2); box-shadow: inset 0 0 0 1px rgba(247, 185, 40, .45); }
 .trophy.is-on .trophy__ic { background: linear-gradient(180deg, #FFD35C, var(--gold)); color: #3A2600; box-shadow: 0 4px 12px -4px rgba(247, 185, 40, .7); }
 .me__links { display: grid; gap: 12px; margin-top: 6px; }
-@media (min-width: 700px) { .me__stats { grid-template-columns: repeat(4, 1fr); } .shelf { grid-template-columns: repeat(5, minmax(0, 1fr)); } .me__links { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 700px) { .me__stats { grid-template-columns: repeat(4, 1fr); } .shelf { grid-template-columns: repeat(5, minmax(0, 1fr)); } .me__links { grid-template-columns: repeat(2, 1fr); } }

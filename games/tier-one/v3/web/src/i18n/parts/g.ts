@@ -28,7 +28,7 @@ export default {
       } },
       me: {
         pressCard: 'Press card', level: 'Level', maxed: 'Max level', streak: 'Day streak', best: 'Best {n}', dailies: 'Dailies', t1s: '{n} × Tier 1', bestScore: 'Best score', points: 'points',
-        followers: 'Followers', rep: 'Credibility {n}', noStory: 'Start Story mode', pass: 'Pass & store',
+        followers: 'Followers', rep: 'Credibility {n}', noStory: 'Start Story mode', pass: 'Pass & store', training: 'Replay the training',
       },
     },
   },
@@ -60,7 +60,7 @@ export default {
       } },
       me: {
         pressCard: 'كارنيه الصحافة', level: 'مستوى', maxed: 'أعلى مستوى', streak: 'أيام متتالية', best: 'الأفضل {n}', dailies: 'التحديات', t1s: '{n} × المستوى الأول', bestScore: 'أعلى نتيجة', points: 'نقطة',
-        followers: 'المتابعين', rep: 'المصداقية {n}', noStory: 'ابدأ وضع القصة', pass: 'الباس والمتجر',
+        followers: 'المتابعين', rep: 'المصداقية {n}', noStory: 'ابدأ وضع القصة', pass: 'الباس والمتجر', training: 'العب التدريب تاني',
       },
     },
   },
@@ -92,7 +92,7 @@ export default {
       } },
       me: {
         pressCard: 'Carné de prensa', level: 'Nivel', maxed: 'Nivel máximo', streak: 'Racha', best: 'Mejor {n}', dailies: 'Diarios', t1s: '{n} × Tier 1', bestScore: 'Mejor puntuación', points: 'puntos',
-        followers: 'Seguidores', rep: 'Credibilidad {n}', noStory: 'Empieza el modo historia', pass: 'Pase y tienda',
+        followers: 'Seguidores', rep: 'Credibilidad {n}', noStory: 'Empieza el modo historia', pass: 'Pase y tienda', training: 'Repetir el tutorial',
       },
     },
   },
