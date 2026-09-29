@@ -6,6 +6,7 @@ import { checkWorld, type World } from './world';
 import { SAVE_VERSION, upgradeCareer, upgradeSave, upgradeWorld } from './upgrade';
 import { renameSave } from './renames';
 import { checkEvents } from './events';
+import { checkRecruit, tidyRecruit } from './recruit/save';
 import { withNames, BUILD_NAMES } from './seed';
 import { activeSlot, clearSlot, migrate, readSlot, writeSlot } from './slots';
 
@@ -42,6 +43,7 @@ export function checkCareer(w: World, c: Career): string[] {
   for (const p of c.pending ?? []) { const id = (p.cmd as { playerId?: string }).playerId; if (id) player('pending', id); }
   for (const id of c.rested ?? []) player('rested', id);
   issues.push(...checkEvents(c));
+  issues.push(...checkRecruit(w, c)); // v2.5
   return issues;
 }
 
@@ -71,7 +73,7 @@ export function tidyCareer(w: World, c: Career): Career {
   const rested = c.rested ?? [];
   const okRest = rested.filter((id) => players.get(id)?.clubId === c.clubId);
   if (okRest.length !== rested.length) out = { ...out, rested: okRest };
-  return out;
+  return tidyRecruit(w, out); // v2.5
 }
 
 async function sha256(text: string): Promise<string> {

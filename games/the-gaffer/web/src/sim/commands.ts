@@ -18,6 +18,7 @@ import { makeReport } from './scouting';
 import { playerOf, type World } from './world';
 import { DEPTS } from './delegation';
 import { nextUserMatch } from './season';
+import { runRecruit, settleSellOn, DEPT_RC, type RcCommand } from './recruit/deals';
 
 export type Command =
   | { type: 'tactics.set'; tactics: UserTactics }
@@ -67,7 +68,8 @@ export type Command =
   | { type: 'inbox.read'; ids: string[] }
   | { type: 'inbox.clear' }
   | { type: 'world.edit'; world: World; version: number; swaps: [string, string][] }
-  | { type: 'match.save'; live: LiveMatch };
+  | { type: 'match.save'; live: LiveMatch }
+  | RcCommand; // v2.5 recruitment (sim/recruit/deals.ts)
 
 export type CommandType = Command['type'];
 export type Refusal = { ok: false; reason: string; counter?: number };
@@ -153,7 +155,9 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
       const o = c.offers.find((x) => x.id === cmd.offerId);
       if (!o) return no('gone');
       const r = acceptOffer(w, c, o);
-      return r.ok ? { world: r.world, career: r.career, note: { key: 'sold', s: o.playerId, n: o.fee } } : no(r.reason);
+      if (!r.ok) return no(r.reason);
+      const so = settleSellOn(r.world, r.career, o.playerId, o.fee); // v2.5: a sell-on clause we signed pays out now
+      return { world: so.world, career: so.career, note: { key: 'sold', s: o.playerId, n: o.fee } };
     }
     case 'offer.reject': {
       const o = c.offers.find((x) => x.id === cmd.offerId);
@@ -330,6 +334,8 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
       if (c.live && c.live.key !== m.key) return no('match');
       return { world: w, career: { ...c, live: m } };
     }
+    default:
+      return runRecruit(w, c, cmd);
   }
 }
 
@@ -340,6 +346,7 @@ const DEPT_OF: Partial<Record<CommandType, Dept>> = {
   'loan.in': 'recruitment', 'loan.out': 'recruitment', 'shortlist.toggle': 'recruitment', 'offer.accept': 'contracts', 'offer.reject': 'contracts',
   'offer.counter': 'contracts', 'contract.renew': 'contracts', 'player.list': 'contracts', 'sponsor.sign': 'commercial', 'sponsor.haggle': 'commercial',
   'sponsor.extend': 'commercial', 'sponsor.end': 'commercial', 'ticket.set': 'commercial',
+  ...DEPT_RC,
 };
 export const deptOfCommand = (t: CommandType) => DEPT_OF[t];
 

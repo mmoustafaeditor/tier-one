@@ -15,6 +15,7 @@ import { emit, stamp, compactEvents } from './events';
 import { keepRecord, toRecord } from './record';
 import { aftermath, type Aftermath } from './aftermath';
 import { windowOf } from './windows';
+import { recruitTick } from './recruit/tick';
 
 export interface Step { world: World; career: Career; mine: LiveMatch | null; after: Aftermath | null; ev: string }
 
@@ -30,6 +31,8 @@ export function advance(w0: World, c0: Career, played?: LiveMatch): Step {
   // 2 matchday
   const day = playDay(world, career, played);
   world = day.world; career = day.career;
+  // v2.5 recruitment: knowledge, negotiations (answers, hijacks, agents' deadlines), loans, the AI market.
+  ({ world, career } = recruitTick(world, career, day.mine ? day.mine.played.filter((id) => playerOf(world, id)?.clubId !== c0.clubId) : []));
   // 3 record
   let after: Aftermath | null = null;
   if (day.mine) {

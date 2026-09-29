@@ -9,6 +9,7 @@ import { roundFee } from './season';
 import { windowOf } from './windows';
 import { spend } from './economy';
 import { SQUAD_SELL_MIN, dropFromXI } from './transfers';
+import { spendingRoom, wageRoom } from './recruit/money';
 
 export const LOANS_MAX = 4; // each way
 const top = (w: World, clubId: string, n: number) => new Set(squadOf(w, clubId).sort((a, b) => b.rating - a.rating).slice(0, n).map((p) => p.id));
@@ -22,7 +23,8 @@ export type LoanReason = 'window' | 'budget' | 'wageCap' | 'squad' | 'key' | 'li
 export type LoanCheck = { ok: true } | { ok: false; reason: LoanReason };
 
 // Can the user borrow this player? Clubs lend players outside their best XI, and never below a playable squad.
-export function canLoanIn(w: World, c: Career, p: Player): LoanCheck {
+// v2.5: `share` is the part of his wage we pay; money checks use spending room and the wage bill we actually pay.
+export function canLoanIn(w: World, c: Career, p: Player, share = 1): LoanCheck {
   if (!windowOf(c)) return { ok: false, reason: 'window' };
   if (p.clubId === FREE_AGENT || p.clubId === c.clubId) return { ok: false, reason: 'free' };
   if (loanOf(c, p.id)) return { ok: false, reason: 'loaned' };
@@ -33,12 +35,12 @@ export function canLoanIn(w: World, c: Career, p: Player): LoanCheck {
   if (squadOf(w, c.clubId).length >= 32) return { ok: false, reason: 'squad' };
   const club = w.clubs.find((x) => x.id === c.clubId);
   if (!club) return { ok: false, reason: 'club' };
-  if (club.budget < loanFee(p)) return { ok: false, reason: 'budget' };
-  if (squadOf(w, c.clubId).reduce((s, x) => s + x.wage, 0) + p.wage > club.wageCap) return { ok: false, reason: 'wageCap' };
+  if (spendingRoom(w, c) < loanFee(p)) return { ok: false, reason: 'budget' };
+  if (wageRoom(w, c) < p.wage * share) return { ok: false, reason: 'wageCap' };
   return { ok: true };
 }
 
-function moveOnLoan(w: World, p: Player, to: string): World {
+export function moveOnLoan(w: World, p: Player, to: string): World {
   const shirt = to === FREE_AGENT ? 0 : freeShirt(w, to, p.position);
   return { ...w, players: w.players.map((x) => (x.id === p.id ? { ...x, clubId: to, shirtNumber: shirt, listed: undefined } : x)) };
 }
