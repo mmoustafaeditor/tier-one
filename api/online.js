@@ -48,7 +48,26 @@ function isoWeek(day) { // 'YYYY-Www' (ISO 8601, weeks start Monday)
   const y = d.getUTCFullYear(), w = Math.ceil(((d - Date.UTC(y, 0, 1)) / 86400000 + 1) / 7);
   return y + '-W' + String(w).padStart(2, '0');
 }
-const lbNick = (nick, dev) => clean(nick, 16) || 'Journo-' + dev.slice(0, 4).toUpperCase();
+// A nick is a name, not a link or an address: no "http", no "://", and an "@" only as a plain handle (@name, up to 15 word chars).
+const nickOk = s => !(/http|:\/\//i.test(s) || (s.includes('@') && !/^@[\w.]{1,15}$/.test(s)));
+const lbNick = (nick, dev) => { const n = clean(nick, 16); return n && nickOk(n) ? n : 'Journo-' + dev.slice(0, 4).toUpperCase(); };
+// Daily result bounds: 5 calls per window; the engine's ceiling is 5 × (40 + 24 + 20 + 10) × 1.5 ≈ 570 points, its floor 5 × −45 × 1.5 ≈ −340.
+const LB_SCORE_MIN = -600, LB_SCORE_MAX = 600, LB_CALLS = 5;
+// null when the counts cannot come from one window (right + wrong > 5 calls, or more exclusives than right calls)
+function lbEntry(b, nick) {
+  const right = int(b.right, 0, LB_CALLS), wrong = int(b.wrong, 0, LB_CALLS), ex = int(b.ex, 0, LB_CALLS);
+  if (right + wrong > LB_CALLS || ex > right) return null;
+  return { nick, score: int(b.score, LB_SCORE_MIN, LB_SCORE_MAX), tier: int(b.tier, 1, 9), row: clean(b.row, 40), ex, right, wrong, at: Date.now() };
+}
+// Per-IP rate limit on submits: RATE_MAX per RATE_WINDOW seconds (Redis INCR + EXPIRE on an hour bucket).
+const RATE_MAX = 60, RATE_WINDOW = 3600;
+const clientIp = req => { const xf = req && req.headers && req.headers['x-forwarded-for']; const raw = (Array.isArray(xf) ? xf[0] : String(xf || '')).split(',')[0].trim() || (req && req.socket && req.socket.remoteAddress) || ''; return raw.replace(/[^0-9a-fA-F.:]/g, '').slice(0, 45); };
+async function rateOk(ip) {
+  if (!ip) return true;
+  const key = 'rl:lb:' + ip + ':' + Math.floor(Date.now() / 1000 / RATE_WINDOW);
+  const [n] = await redis([['INCR', key], ['EXPIRE', key, RATE_WINDOW]]);
+  return Number(n) <= RATE_MAX;
+}
 const lbKeys = (period, day) => ({ week: isoWeek(day), key: period === 'weekly' ? 'lb:w:' + isoWeek(day) : 'lb:d:' + day });
 // rank = 1 + number of strictly higher scores (ties share the better rank); null when the device is not on the board
 async function lbRank(key, dev) {
@@ -91,7 +110,7 @@ const actions = {
   async 'room.create'(b) {
     const nick = clean(b.nick, 16), name = clean(b.name, 28) || 'Tier One room';
     const seasons = int(b.seasons, 1, MAX_SEASONS);
-    if (!nick) return { error: 'nick' };
+    if (!nick || !nickOk(nick)) return { error: 'nick' };
     for (let i = 0; i < 8; i++) {
       const c = code(5);
       const room = { code: c, name, seasons, seed: code(10), created: Date.now(), host: '' };
@@ -108,14 +127,14 @@ const actions = {
   },
   async 'room.join'(b) {
     const c = roomCode(b.code), nick = clean(b.nick, 16);
-    if (!nick) return { error: 'nick' };
+    if (!nick || !nickOk(nick)) return { error: 'nick' };
     const [meta, count] = await redis([['GET', 'room:' + c], ['SCARD', 'room:' + c + ':players']]);
     if (!meta) return { error: 'not found' };
     if (count >= MAX_PLAYERS) return { error: 'full' };
     const pid = code(10), sec = secret();
     await redis([
       ['SET', 'room:' + c + ':p:' + pid, JSON.stringify({ pid, nick, joined: Date.now(), results: [], sec }), 'EX', ROOM_TTL],
-      ['SADD', 'room:' + c + ':players', pid]
+      ['SADD', 'room:' + c + ':players', pid], ['EXPIRE', 'room:' + c + ':players', ROOM_TTL]
     ]);
     return { room: await readRoom(c), pid, sec };
   },
@@ -146,12 +165,14 @@ const actions = {
 
   // ---- Daily Challenge leaderboards ----
   // { day:'YYYY-MM-DD', dev, nick?, score, tier, row, ex, right, wrong } -> { rank, total, nick, weekRank, weekTotal, week, already? }
-  async 'lb.submit'(b) {
+  async 'lb.submit'(b, ctx) {
     const dev = devId(b.dev), day = lbDay(b.day);
     if (!dev) return { error: 'dev' };
     if (!day) return { error: 'day' };
+    if (!(await rateOk(ctx && ctx.ip))) return { error: 'rate' };
     const nick = lbNick(b.nick, dev);
-    const e = { nick, score: int(b.score, -2000, 5000), tier: int(b.tier, 1, 9), row: clean(b.row, 40), ex: int(b.ex, 0, 8), right: int(b.right, 0, 8), wrong: int(b.wrong, 0, 8), at: Date.now() };
+    const e = lbEntry(b, nick);
+    if (!e) return { error: 'result' };
     const dk = 'lb:d:' + day, ek = dk + ':e:' + dev, week = isoWeek(day), wk = 'lb:w:' + week, wek = wk + ':e:' + dev;
     let already = false;
     if (await one('SET', ek, JSON.stringify(e), 'EX', LB_DAY_TTL, 'NX')) {
@@ -202,6 +223,8 @@ const actions = {
   }
 };
 
+export { lbEntry, lbNick, nickOk, clientIp };
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-store');
@@ -217,8 +240,8 @@ export default async function handler(req, res) {
   const fn = body && actions[body.action];
   if (!fn) return res.status(400).json({ ok: false, error: 'action' });
   try {
-    const out = await fn(body);
-    return res.status(out.error ? 400 : 200).json(Object.assign({ ok: !out.error }, out));
+    const out = await fn(body, { ip: clientIp(req) });
+    return res.status(out.error ? (out.error === 'rate' ? 429 : 400) : 200).json(Object.assign({ ok: !out.error }, out));
   } catch (e) {
     return res.status(502).json({ ok: false, error: 'store' });
   }
