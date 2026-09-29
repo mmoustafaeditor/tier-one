@@ -11,6 +11,7 @@ import { Icon, Kit, GBtn, TopBar, shake } from '../ui/game';
 import { CallScene } from '../ui/CallScene';
 import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } from '../lib/meta';
 import { applyWindow, totalFavours, type CareerReport } from '../lib/career';
+import { storyBeats, pushBeats, type Beat } from '../lib/storyMode';
 import { Sheet, useNow, Crest } from '../ui/bits';
 import { SagaFile, RIVAL_IC } from './Saga';
 import { Results } from './Results';
@@ -28,6 +29,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const [last, setLast] = useState<{ i: number; c: Clue } | null>(null);
   const [night, setNight] = useState<Night | null>(null);
   const [report, setReport] = useState<CareerReport | null>(null);
+  const [beat, setBeat] = useState<Beat | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [calling, setCalling] = useState<{ i: number; c: Clue } | null>(null);
   const [burst, setBurst] = useState<{ k: number; kind: number } | null>(null);
@@ -49,7 +51,9 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       const d = driver as Driver & { game?: () => Game };
       const g = d.game ? d.game() : null;
       let rep: CareerReport | null = null;
-      update((s) => { if (s.career && g) rep = applyWindow(s.career, g, r, v.cast, s.milestones); });
+      let added: Beat[] = [];
+      update((s) => { if (s.career && g) { rep = applyWindow(s.career, g, r, v.cast, s.milestones); added = pushBeats(s, storyBeats(s.career, { ...r, cast: r.cast && r.cast.length ? r.cast : v.cast }, rep)); } });
+      if (added[0]) setBeat(added[0]);
       if (rep) {
         setReport(rep); onCareerDone(r, (rep as CareerReport).milestoneCredits);
         const cr = (rep as CareerReport);
@@ -117,7 +121,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <GBtn style={{ marginTop: 18 }} onClick={load}><Icon n="phone" />{t('common.retry')}</GBtn>
       <GBtn kind="paper" style={{ marginTop: 12 }} onClick={() => chrome.go({ n: 'practice' })}>{t('daily.practiceInstead')}</GBtn></div></div>;
   if (!view || !g) return <div className="g-screen play"><TopBar back={{ label: t('g.tabs.home'), onClick: home }} /><div className="loading-press"><span /><p className="g-mono">{t('common.loading')}</p></div></div>;
-  if (view.done && view.result) return <Results view={view} chrome={chrome} report={report} start={startRef.current} />;
+  if (view.done && view.result) return <Results view={view} chrome={chrome} report={report} start={startRef.current} beat={beat} />;
 
   const dd = view.state.day === view.R.DAYS;
   const mob = sel != null;

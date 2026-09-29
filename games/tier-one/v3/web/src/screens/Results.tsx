@@ -10,6 +10,7 @@ import { onShared } from '../lib/meta';
 import { RANKS } from '../lib/career';
 import type { CareerReport } from '../lib/career';
 import { levelOf } from '../lib/progress';
+import { beatKey, type Beat } from '../lib/storyMode';
 import { sfx, buzz } from '../lib/sfx';
 import { Icon, Kit, GBtn, TopBar, CountUp, confetti, shake } from '../ui/game';
 import { renderCard, shareText } from '../lib/share';
@@ -18,7 +19,7 @@ import type { Chrome } from '../App';
 const TIER_C: Record<string, string> = { T1: 'gold', T2: 'done', T3: 'done', T4: 'off', SPIKED: '' };
 export interface Start { pp: number; credits: number; streak: number }
 
-export function Results({ view, chrome, report, start }: { view: View; chrome: Chrome; report: CareerReport | null; start?: Start }) {
+export function Results({ view, chrome, report, start, beat }: { view: View; chrome: Chrome; report: CareerReport | null; start?: Start; beat?: Beat | null }) {
   const t = useT();
   const s = useSave();
   const r = view.result!;
@@ -98,7 +99,7 @@ export function Results({ view, chrome, report, start }: { view: View; chrome: C
           <span className="prog__bar"><b>{t('g.res.streak', { n: s.streak.n })}</b><span className="g-mono">{r.par != null ? t('results.par', { n: num(r.par) }) : ''}{r.weekRank ? ' · ' + t('results.week', { r: r.weekRank, n: r.weekPlayers || 1 }) : ''}</span></span>
           <span className="g-chip g-chip--gold">{t('results.league', { n: { T1: 30, T2: 20, T3: 12, T4: 6, SPIKED: 2 }[r.tier] })}</span>
         </div>}
-        {report && s.career && <StoryBlock report={report} style={{ ['--i' as string]: 2 }} />}
+        {report && s.career && <StoryBlock report={report} beat={beat || null} style={{ ['--i' as string]: 2 }} />}
         <ShareBlock view={view} r={r} cast={cast} what={what} hed={hed} bestDest={bestDest} bc={bc} />
         <div className="prog__acts" style={{ ['--i' as string]: 4 }}>
           <GBtn size="lg" shine onClick={view.mode === 'daily' ? () => chrome.go({ n: 'practice' }) : again}><Icon n={view.mode === 'daily' ? 'target' : 'phone'} />{view.mode === 'daily' ? t('g.res.practice') : view.mode === 'career' ? t('g.res.nextWindow') : t('results.again')}</GBtn>
@@ -144,7 +145,7 @@ function SagaRow({ p, c, R, k }: { p: ResultSaga; c: CastSaga; R: View['R']; k: 
 }
 const Line = ({ l, v, hot }: { l: string; v: number; hot?: boolean }) => <div className="lrow__line"><span>{l}</span><b className={v < 0 ? 'neg' : hot ? 'hot' : ''}>{num(v, true)}</b></div>;
 
-function StoryBlock({ report, style }: { report: CareerReport; style?: React.CSSProperties }) {
+function StoryBlock({ report, beat, style }: { report: CareerReport; beat: Beat | null; style?: React.CSSProperties }) {
   const t = useT();
   const s = useSave();
   const c = s.career!;
@@ -158,7 +159,7 @@ function StoryBlock({ report, style }: { report: CareerReport; style?: React.CSS
     </div>
     {report.promoted != null && <div className="storyres__promo"><span className="g-stamp g-stamp--gold is-slam">{t('g.res.promoted')}</span><b>{t('career.ranks.' + report.promoted)}</b><p>{t('career.unl.' + report.promoted)}</p></div>}
     {nx && report.promoted == null && <p className="storyres__next">{t('career.toNext', { w: Math.max(0, nx.gate[0] - c.windows), r: nx.gate[1], rank: t('career.ranks.' + (c.rank + 1)) })}</p>}
-    {s.story?.inbox && s.story.inbox[0] && s.story.inbox[0].at > Date.now() - 60000 && <div className="g-coach g-coach--editor storyres__beat"><b>{t('g.res.editor')}</b><p>{t('g.story.beat.' + s.story.inbox[0].key, s.story.inbox[0].v)}</p></div>}
+    {beat && <div className={'g-coach g-coach--editor storyres__beat from--' + beat.from}><b>{t('g.story.from.' + beat.from)}</b><p>{t(beatKey(beat), beat.v)}</p></div>}
   </div>;
 }
 
