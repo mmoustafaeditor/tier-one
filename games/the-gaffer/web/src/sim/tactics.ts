@@ -14,7 +14,37 @@ export interface Tactics {
   striker?: 0 | 1 | 2 | 3;  // advanced, target man, false 9, pressing forward
   trap?: 0 | 1 | 2 | 3;     // none, wings, centre, half-spaces
   philosophy?: Philosophy;
+  // Engine v2 instructions (missing = the middle setting, so old saves play exactly as "balanced").
+  line?: 0 | 1 | 2;         // defensive line: deep, normal, high
+  width?: 0 | 1 | 2;        // in possession: narrow, normal, wide
+  tempo?: 0 | 1 | 2;        // slow, normal, fast
+  counter?: boolean;        // break forward the moment the ball is won
+  waste?: boolean;          // slow every restart down (runs the clock, risks a booking)
+  mark?: string | null;     // opponent player id to man-mark
+  routine?: 0 | 1 | 2;      // corner routine: mixed, big men up (aerial), short
 }
+
+// Every instruction filled in: what the engine reads.
+export type FullTactics = Required<Omit<Tactics, 'mark'>> & { mark: string | null };
+export const fullTactics = (t: Tactics): FullTactics => ({
+  formation: t.formation, mentality: t.mentality ?? 0, pressing: t.pressing ?? 1, passing: t.passing ?? 1, fullback: t.fullback ?? 0,
+  striker: t.striker ?? 0, trap: t.trap ?? 0, philosophy: t.philosophy ?? 'balanced', line: t.line ?? 1, width: t.width ?? 1,
+  tempo: t.tempo ?? 1, counter: !!t.counter, waste: !!t.waste, mark: t.mark ?? null, routine: t.routine ?? 0,
+});
+
+// A philosophy is a starting set of instructions; mastery of it is the team's cohesion when playing it.
+export type Instructions = Pick<FullTactics, 'mentality' | 'pressing' | 'passing' | 'fullback' | 'striker' | 'trap' | 'line' | 'width' | 'tempo' | 'counter' | 'waste' | 'routine'>;
+const BASE: Instructions = { mentality: 0, pressing: 1, passing: 1, fullback: 0, striker: 0, trap: 0, line: 1, width: 1, tempo: 1, counter: false, waste: false, routine: 0 };
+export const PRESETS: Record<Philosophy, Instructions> = {
+  balanced: BASE,
+  possession: { ...BASE, passing: 0, tempo: 0, fullback: 2, width: 1, striker: 2 },
+  counter: { ...BASE, mentality: -1, pressing: 0, line: 0, passing: 2, tempo: 2, counter: true },
+  gegenpress: { ...BASE, mentality: 1, pressing: 2, line: 2, tempo: 2, striker: 3, trap: 2 },
+  bus: { ...BASE, mentality: -2, pressing: 0, line: 0, width: 0, passing: 2, counter: true },
+  wings: { ...BASE, width: 2, fullback: 1, routine: 1, trap: 1 },
+  direct: { ...BASE, passing: 2, striker: 1, tempo: 2, routine: 1 },
+};
+export const applyPreset = <X extends Tactics>(t: X, ph: Philosophy): X => ({ ...t, ...PRESETS[ph], philosophy: ph });
 
 // Playing philosophies (from the old game's list). Each beats two others; mastery grows with every game played with it.
 export type Philosophy = 'balanced' | 'possession' | 'counter' | 'gegenpress' | 'bus' | 'wings' | 'direct';
@@ -55,7 +85,7 @@ export const fmt = (f: FormationId) => `\u2066${f}\u2069`;
 
 export const DEFAULT_TACTICS: UserTactics = {
   formation: '4-3-3', mentality: 0, pressing: 1, passing: 1, xi: null, captain: null, penalties: null, freeKicks: null, corners: null,
-  fullback: 0, striker: 0, trap: 0, philosophy: 'balanced',
+  fullback: 0, striker: 0, trap: 0, philosophy: 'balanced', line: 1, width: 1, tempo: 1, counter: false, waste: false, mark: null, routine: 0,
 };
 
 // ---------- players in slots ----------
@@ -138,8 +168,10 @@ export function setPieces(xi: Player[], tac: UserTactics | Tactics, season: numb
   };
 }
 
-// AI clubs: a formation that suits the squad, and a mentality that suits the opponent.
-export function aiTactics(squad: Player[], myLevel: number, theirLevel: number): Tactics {
+// AI clubs: a formation that suits the squad, a philosophy that suits the club, and a plan for this opponent.
+// `opp` (the other squad) lets the AI read the matchup the way a manager would: pace in behind slow defenders,
+// sit deep and break against a much stronger side, keep the ball against a weaker one.
+export function aiTactics(squad: Player[], myLevel: number, theirLevel: number, opp?: Player[]): Tactics {
   const count = (ps: Position[]) => squad.filter((p) => ps.includes(p.position) && available(p)).length;
   const formation: FormationId = count(['LW', 'RW']) >= 3 ? '4-3-3' : count(['ST']) >= 3 ? '4-4-2' : count(['CAM']) >= 2 ? '4-2-3-1' : '4-1-4-1';
   const gap = myLevel - theirLevel;
@@ -147,9 +179,18 @@ export function aiTactics(squad: Player[], myLevel: number, theirLevel: number):
   const seed = squad.reduce((s, p) => s + p.id.length + p.shirtNumber, 0);
   const philosophy: Philosophy = myLevel >= 82 ? (['possession', 'gegenpress', 'wings'] as const)[seed % 3]
     : myLevel <= 68 ? (['bus', 'counter', 'direct'] as const)[seed % 3] : PHILOSOPHIES[1 + (seed % 6)];
-  return {
-    formation, mentality: gap > 5 ? 1 : gap < -6 ? -1 : 0, pressing: philosophy === 'gegenpress' ? 2 : philosophy === 'bus' ? 0 : 1,
-    passing: philosophy === 'possession' ? 0 : philosophy === 'direct' ? 2 : 1, fullback: philosophy === 'wings' ? 1 : 0,
-    striker: philosophy === 'direct' ? 1 : philosophy === 'gegenpress' ? 3 : 0, trap: 0, philosophy,
-  };
+  const t: Tactics = { formation, ...PRESETS[philosophy], philosophy };
+  t.mentality = Math.max(-2, Math.min(2, t.mentality + (gap > 5 ? 1 : gap < -6 ? -1 : 0)));
+  if (opp?.length) {
+    const top = [...opp].filter(available).sort((a, b) => b.rating - a.rating).slice(0, 11);
+    const avg = (ps: Player[], a: number) => (ps.length ? ps.reduce((s, p) => s + p.attrs[a], 0) / ps.length : 60);
+    const theirBack = top.filter((p) => ['CB', 'LB', 'RB'].includes(p.position));
+    const mine = [...squad].filter(available).sort((a, b) => b.rating - a.rating).slice(0, 11);
+    const myFront = mine.filter((p) => ['ST', 'LW', 'RW'].includes(p.position));
+    // Slow back line and quick forwards: play in behind.
+    if (avg(theirBack, 0) + 8 < avg(myFront, 0)) { t.tempo = 2; if (philosophy !== 'possession') t.passing = 2; }
+    // A much stronger opponent: drop the line and break.
+    if (gap < -7) { t.line = 0; t.counter = true; t.pressing = Math.min(t.pressing, 1) as 0 | 1 | 2; }
+  }
+  return t;
 }

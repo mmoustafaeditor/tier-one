@@ -3,7 +3,7 @@ import type { Lang, Strings } from '../i18n';
 import type { Career } from '../model/types';
 import { money, playerOf, type World } from '../sim/world';
 import { advice, makeReport, scoutReportCost, type Tip } from '../sim/scouting';
-import { DEFAULT_TACTICS, fmt } from '../sim/tactics';
+import { DEFAULT_TACTICS, applyPreset, fmt } from '../sim/tactics';
 import type { LiveMatch } from '../sim/match';
 
 export function ScoutPanel({ world, career, m, lossChance, lang, t, onChange, part = 'all' }: {
@@ -55,7 +55,7 @@ export function ScoutPanel({ world, career, m, lossChance, lang, t, onChange, pa
           <div className="g-report-row"><span>{t.counterPlan}</span><b>{t.philosophies[report.plan.philosophy]} · {t.pressing} {t.pressings[report.plan.pressing]} · {t.trapT} {t.traps[report.plan.trap]}</b></div>
           <button className="btn primary sm" onClick={() => {
             const tac = career.tactics ?? DEFAULT_TACTICS;
-            onChange(world, { ...career, tactics: { ...tac, philosophy: report.plan.philosophy, pressing: report.plan.pressing, trap: report.plan.trap } }, t.planApplied);
+            onChange(world, { ...career, tactics: applyPreset(tac, report.plan.philosophy) }, t.planApplied);
           }}>{t.applyPlan}</button>
         </div>
       )}

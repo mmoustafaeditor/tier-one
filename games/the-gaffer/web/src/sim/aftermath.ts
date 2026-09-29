@@ -5,6 +5,7 @@ import type { LiveMatch } from './match';
 import { matchRatings } from './ratings';
 import { table } from './season';
 import { playerOf, type World } from './world';
+import { explain, type Why } from './engine/story';
 
 export interface Aftermath {
   res: 'W' | 'D' | 'L'; mine: number; theirs: number; pens?: [number, number]; opp: string; home: boolean;
@@ -12,6 +13,7 @@ export interface Aftermath {
   out: { pn: LocalizedName; n: number; ban: boolean }[];
   motm: { pn: LocalizedName; rating: number; mine: boolean } | null;
   records: (keyof Records)[]; milestones: string[];
+  why?: Why;               // engine v2: why it happened (the user's recorded match)
 }
 
 export function aftermath(w0: World, c0: Career, w1: World, c1: Career, m: LiveMatch): Aftermath | null {
@@ -39,5 +41,6 @@ export function aftermath(w0: World, c0: Career, w1: World, c1: Career, m: LiveM
     res, mine, theirs, pens: m.pens ? [m.pens[k], m.pens[o]] : undefined, opp: m.sides[o].clubId, home: k === 0,
     pos, board: [c0.board.confidence, c1.board.confidence], fans: [c0.board.fans, c1.board.fans], dev: c1.ops.devPoints - c0.ops.devPoints,
     out, motm: mp ? { pn: mp.name, rating: rt.rating[rt.motm], mine: motmMine } : null, records, milestones,
+    why: m.full && m.tl ? explain(m, k, get) : undefined,
   };
 }
