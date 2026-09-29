@@ -45,7 +45,7 @@ const P: Record<string, string> = {
   ticket: 'M3 8a2 2 0 0 0 0 4v0a2 2 0 0 1 0 4v2h18v-2a2 2 0 0 1 0-4 2 2 0 0 1 0-4V6H3z',
 };
 export function Icon({ n, size, style, className }: { n: string; size?: number; style?: CSSProperties; className?: string }) {
-  return <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={style} className={className}><path d={P[n] || P.star} /></svg>;
+  return <svg viewBox="0 0 24 24" width={size ?? 20} height={size ?? 20} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={style} className={className}><path d={P[n] || P.star} /></svg>;
 }
 export const SRC_ICON: Record<string, string> = { kitman: 'shirt', barber: 'scissors', agent: 'briefcase', spotter: 'plane', physio: 'pulse', leak: 'fax' };
 export function SrcIcon({ k, size = 44 }: { k: string; size?: number }) {

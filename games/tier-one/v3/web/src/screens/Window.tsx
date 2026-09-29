@@ -33,6 +33,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const [burst, setBurst] = useState<{ k: number; kind: number } | null>(null);
   const [filedAt, setFiledAt] = useState<Record<number, number>>({});
   const rootRef = useRef<HTMLDivElement>(null);
+  const startRef = useRef({ pp: getSave().pp, credits: getSave().credits, streak: getSave().streak.n });
   const recorded = useRef(false);
   const ddLate = useRef(false);
   const deskSel = sel ?? 0;
@@ -116,7 +117,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <GBtn style={{ marginTop: 18 }} onClick={load}><Icon n="phone" />{t('common.retry')}</GBtn>
       <GBtn kind="paper" style={{ marginTop: 12 }} onClick={() => chrome.go({ n: 'practice' })}>{t('daily.practiceInstead')}</GBtn></div></div>;
   if (!view || !g) return <div className="g-screen play"><TopBar back={{ label: t('g.tabs.home'), onClick: home }} /><div className="loading-press"><span /><p className="g-mono">{t('common.loading')}</p></div></div>;
-  if (view.done && view.result) return <Results view={view} chrome={chrome} report={report} />;
+  if (view.done && view.result) return <Results view={view} chrome={chrome} report={report} start={startRef.current} />;
 
   const dd = view.state.day === view.R.DAYS;
   const mob = sel != null;
@@ -226,7 +227,7 @@ function NightScene({ night, view, onGo }: { night: Night; view: View; onGo: () 
         <div className="brk__b"><div className="brk__h"><b>{t('rival.' + p.id)}</b><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div><p>{postLine(t.lang, c, p)}</p><span className="g-mono">{c.player.n}</span></div>
       </div>; })}</div>}
       {stage >= 1 && lost.length > 0 && <div className="taunt"><Icon n="bolt" size={16} />{t('g.win.taunt.' + lost[0].id)}</div>}
-      {stage >= 2 && <GBtn kind={night.dd ? '' : 'gold'} size="lg" pulse onClick={onGo} sound={night.dd ? 'dd.siren' : 'open'} style={{ marginTop: 18 }}><Icon n={night.dd ? 'clock' : 'phone'} />{night.dd ? t('night.ddGo') : t('night.back', { n: night.day })}</GBtn>}
+      {stage >= 2 && <GBtn kind={night.dd ? '' : 'gold'} size="lg" pulse onClick={onGo} sound={night.dd ? 'dd.siren' : 'open'} style={{ marginTop: 18 }}><Icon n={night.dd ? 'clock' : 'phone'} />{night.dd ? t('night.ddGo') : t('g.win.nightGo', { n: night.day })}</GBtn>}
     </div>
   </div>;
 }

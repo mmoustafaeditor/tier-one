@@ -27,7 +27,7 @@ export default {
         rival: { name: 'Ch. 4 · The Rival' }, chronicle: { name: 'Ch. 5 · Back at The Chronicle' }, front: { name: 'Ch. 6 · The Front Page' },
       } },
       me: {
-        pressCard: 'Press card', maxed: 'Max level', streak: 'Day streak', best: 'Best {n}', dailies: 'Dailies', t1s: '{n} × Tier 1', bestScore: 'Best score', points: 'points',
+        pressCard: 'Press card', level: 'Level', maxed: 'Max level', streak: 'Day streak', best: 'Best {n}', dailies: 'Dailies', t1s: '{n} × Tier 1', bestScore: 'Best score', points: 'points',
         followers: 'Followers', rep: 'Credibility {n}', noStory: 'Start Story mode', pass: 'Pass & store',
       },
     },
@@ -59,7 +59,7 @@ export default {
         rival: { name: 'ف٤ · المنافس' }, chronicle: { name: 'ف٥ · راجع للكرونيكل' }, front: { name: 'ف٦ · الصفحة الأولى' },
       } },
       me: {
-        pressCard: 'كارنيه الصحافة', maxed: 'أعلى مستوى', streak: 'أيام متتالية', best: 'الأفضل {n}', dailies: 'التحديات', t1s: '{n} × المستوى الأول', bestScore: 'أعلى نتيجة', points: 'نقطة',
+        pressCard: 'كارنيه الصحافة', level: 'مستوى', maxed: 'أعلى مستوى', streak: 'أيام متتالية', best: 'الأفضل {n}', dailies: 'التحديات', t1s: '{n} × المستوى الأول', bestScore: 'أعلى نتيجة', points: 'نقطة',
         followers: 'المتابعين', rep: 'المصداقية {n}', noStory: 'ابدأ وضع القصة', pass: 'الباس والمتجر',
       },
     },
@@ -91,7 +91,7 @@ export default {
         rival: { name: 'Cap. 4 · El rival' }, chronicle: { name: 'Cap. 5 · De vuelta en The Chronicle' }, front: { name: 'Cap. 6 · La portada' },
       } },
       me: {
-        pressCard: 'Carné de prensa', maxed: 'Nivel máximo', streak: 'Racha', best: 'Mejor {n}', dailies: 'Diarios', t1s: '{n} × Tier 1', bestScore: 'Mejor puntuación', points: 'puntos',
+        pressCard: 'Carné de prensa', level: 'Nivel', maxed: 'Nivel máximo', streak: 'Racha', best: 'Mejor {n}', dailies: 'Diarios', t1s: '{n} × Tier 1', bestScore: 'Mejor puntuación', points: 'puntos',
         followers: 'Seguidores', rep: 'Credibilidad {n}', noStory: 'Empieza el modo historia', pass: 'Pase y tienda',
       },
     },

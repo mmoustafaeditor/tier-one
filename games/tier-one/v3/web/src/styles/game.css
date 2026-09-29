@@ -158,8 +158,10 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-i
 .g-coach--editor b { color: var(--red-deep); }
 .g-hand { position: absolute; font-size: 34px; pointer-events: none; animation: g-float 1s ease-in-out infinite; filter: drop-shadow(0 3px 3px rgba(0,0,0,.4)); z-index: 5; }
 
-/* ---------- toasts on the desk */
-.toasts { bottom: calc(var(--tabs-h) + 12px + env(safe-area-inset-bottom, 0)); }
+/* ---------- toasts on the desk: top of the screen, two at a time */
+.toasts { top: calc(8px + env(safe-area-inset-top, 0)); bottom: auto; z-index: 130; }
+.toasts .toast:nth-last-child(n+3) { display: none; }
+.toast { padding: 8px 12px; }
 .toast { background: var(--card); color: var(--card-ink); border-radius: 12px; border-inline-start: 5px solid var(--red); box-shadow: 0 12px 30px -12px rgba(0,0,0,.7); animation: g-pop .4s var(--ease-slam) both; }
 .toast .meta { color: var(--card-ink-3); }
 .toast--ach { border-inline-start-color: var(--gold); }
