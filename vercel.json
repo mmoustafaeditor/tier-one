@@ -2,15 +2,31 @@
   "functions": {
     "api/data/*.js": {
       "includeFiles": "data/seed/**"
+    },
+    "api/tier-one/v3/index.js": {
+      "includeFiles": "data/seed/**"
     }
   },
   "rewrites": [
     {
       "source": "/the-gaffer",
       "destination": "/the-gaffer/index.html"
+    },
+    {
+      "source": "/tier-one-v3",
+      "destination": "/tier-one-v3/index.html"
     }
   ],
   "headers": [
+    {
+      "source": "/tier-one-v3/(index.html|version.json)?",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
     {
       "source": "/the-gaffer/(index.html|version.json)?",
       "headers": [
