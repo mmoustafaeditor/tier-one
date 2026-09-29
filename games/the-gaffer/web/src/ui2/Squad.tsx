@@ -6,6 +6,8 @@ import { squadOf, wageBill } from '../sim/world';
 import { FORMATIONS, DEFAULT_TACTICS, available, slotValue, xiFor } from '../sim/tactics';
 import { avgRating } from '../sim/ratings';
 import { loanOf } from '../sim/loans';
+import { riskBand } from '../sim/youth';
+import { Y } from '../lang-youth-all';
 import { Chips, Panel, PanelHead } from './shell';
 import { I, Portrait, Ring } from './kit';
 import { useGame, money, sn } from './game';
@@ -47,6 +49,7 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
     const r = avgRating(c.ratings?.[p.id]);
     if (r) bits.push(x.squad.form(r.toFixed(1)));
     if (p.injured) bits.push(x.squad.sub2.inj(p.injured)); else if (p.banned) bits.push(x.squad.sub2.ban);
+    else if (riskBand(p) > 0) bits.push(`${Y[g.ui].cv.load} ${Y[g.ui].bands[riskBand(p)].toLowerCase()}`); // v2.6
     if (p.captain) bits.push(x.squad.sub2.captain);
     if (loanOf(c, p.id)) bits.push(x.squad.sub2.loan);
     if (p.listed) bits.push(x.squad.sub2.listed);
@@ -124,8 +127,8 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
           <div className="squad-doors">
             <button className="btn btn--primary btn--sm" onClick={() => g.go({ s: 'room' })}><I n="room" size="sm" />{D[g.ui].squad.door}</button>
             <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'train' })}><I n="bolt" size="sm" />{x.squad.training}</button>
-            <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'train' })}><I n="medic" size="sm" />{x.squad.medical}</button>
-            <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'train' })}><I n="grad" size="sm" />{x.squad.academy}</button>
+            <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'medical' })}><I n="medic" size="sm" />{x.squad.medical}</button>
+            <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'academy' })}><I n="grad" size="sm" />{x.squad.academy}</button>
           </div>
         </Panel>
       </div>

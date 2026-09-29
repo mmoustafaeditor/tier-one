@@ -13,6 +13,7 @@
 // own seeded random stream, so a match resumed after the app was closed plays out the same way for the same decisions.
 import type { Career, Player, Position } from '../model/types';
 import { bell, clamp, makeRng } from './rng';
+import { riskMult } from './youth';
 import { playerOf, squadOf, squadStrength, type World } from './world';
 import { balanceOf, oppBoost } from './balance';
 import {
@@ -71,6 +72,7 @@ export interface LiveMatch {
   cup?: string;        // cup id for a knockout tie: a draw goes to penalties
   group?: boolean;     // a cup group game: a draw stays a draw
   injuries?: number;   // injury chance × (balance settings, user's matches)
+  risk?: Record<string, number>; // v2.6: injury-risk multiplier per player from his load (1 = normal, up to 3)
   pens?: [number, number];
   kicks?: [0 | 1, string, boolean][]; // shootout: side, taker, scored
   xg?: [number, number]; // expected goals so far: the sum of every shot's xG (derived)
@@ -138,9 +140,10 @@ export function startMatch(w: World, c: Career | null, home: string, away: strin
     if (mine) mine.mods = { fatigue: mine.mods?.fatigue ?? 1, press: mine.mods?.press ?? 1, level: (mine.mods?.level ?? 0) + PREP_EDGE };
   }
   const fit: Record<string, number> = {};
-  for (const s of sides) for (const id of [...s.onPitch, ...s.bench]) fit[id] = playerOf(w, id)!.fitness;
+  const risk: Record<string, number> = {};
+  for (const s of sides) for (const id of [...s.onPitch, ...s.bench]) { const p = playerOf(w, id)!; fit[id] = p.fitness; const k = riskMult(p.load); if (k > 1) risk[id] = Math.round(k * 100) / 100; }
   return {
-    key, round, sides, minute: 0, goals: [0, 0], events: [], possSum: 0, fit, injuries: b?.injuries ?? 1,
+    key, round, sides, minute: 0, goals: [0, 0], events: [], possSum: 0, fit, injuries: b?.injuries ?? 1, risk,
     stats: [[50, 0, 0, 0, 0, 0, 0], [50, 0, 0, 0, 0, 0, 0]], played: [...sides[0].onPitch, ...sides[1].onPitch], xg: [0, 0],
     v: 2, full: full ?? !!(c && (home === c.clubId || away === c.clubId)), ball: { s: 0, n: 0, c: 0 }, tl: newTally(), rev: 0,
   };
@@ -412,9 +415,14 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
     }
     if (!n) continue;
     // Injuries: more likely when tired.
-    if (r() < 0.0014 * (m.injuries ?? 1) * (1 + Math.max(0, 75 - sum / n) / 40) * (t.pressing === 2 ? 1.12 : 1)) {
-      const on = s.onPitch.filter(Boolean);
-      const hurt = on[Math.floor(r() * on.length)];
+    // v2.6: a loaded player (sim/youth.ts riskMult) raises the side's chance and is likelier to be the one hurt.
+    const on = s.onPitch.filter(Boolean);
+    const rk = on.map((id) => m.risk?.[id] ?? 1);
+    const rsum = rk.reduce((a, v) => a + v, 0);
+    if (r() < 0.0014 * (m.injuries ?? 1) * (1 + Math.max(0, 75 - sum / n) / 40) * (t.pressing === 2 ? 1.12 : 1) * (rsum / Math.max(1, on.length))) {
+      let pickAt = r() * rsum, hi = 0;
+      while (hi < on.length - 1 && pickAt >= rk[hi]) pickAt -= rk[hi++];
+      const hurt = on[hi];
       const out = r() < 0.12 ? 6 + Math.floor(r() * 7) : 1 + Math.floor(r() * 5);
       m.events.push({ min: m.minute, side: i, kind: 'injury', playerId: hurt, out });
       const k = s.onPitch.indexOf(hurt);

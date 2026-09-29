@@ -1,6 +1,6 @@
 // Season-long loans, in and out of the user's club. The borrowing club pays the wage while the player is there;
 // loaned players go back to their club at the end of the season, before contracts are looked at.
-// Young players loaned out to get games come back a little better.
+// Young players loaned out to get games grow with their real minutes there (v2.6, sim/youth.ts).
 // G1: `loanIn` and `loanOut` validate themselves (audit S4) and a lender keeps at least 16 players (audit S1).
 import { FREE_AGENT, type Career, type Loan, type Player } from '../model/types';
 import { freeShirt, squadOf, strengthOf, type World } from './world';
@@ -95,11 +95,8 @@ export function returnLoans(w: World, c: Career): { world: World; career: Career
   for (const l of live) {
     const p = world.players.find((x) => x.id === l.playerId);
     if (!p || p.clubId !== l.to) continue;
+    // v2.6: no flat "came back better" bonus any more: he grew (or didn't) with his real minutes there (sim/youth.ts).
     world = moveOnLoan(world, p, l.from);
-    if (l.from === c.clubId && c.season - p.birthYear <= 22) {
-      const up = Math.min(2, Math.max(0, p.potential - p.rating));
-      world = { ...world, players: world.players.map((x) => (x.id === p.id ? { ...x, rating: x.rating + up } : x)) };
-    }
   }
   return { world, career: { ...c, loans: [] } };
 }

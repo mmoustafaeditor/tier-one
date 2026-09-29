@@ -18,6 +18,8 @@ export interface World {
   managers?: Record<string, Manager>;         // v2.1: the manager of every other club (name and style)
   data?: WorldKind;                           // v2.1: 'real2026' (the 2026/27 snapshot) or 'generated'
   names?: NamesMode;                          // v2.1: which names the world currently shows
+  academy?: Player[];                         // v2.6: every club's academy squad (clubId = the club); not in `players`,
+                                              // so squads, wages and the market never see them (sim/youth.ts)
 }
 
 // v2.1: every club has a manager with a style (his favourite philosophy). Names are invented (never real people).
@@ -303,6 +305,13 @@ export function checkWorld(w: World): string[] {
     if (s.has(p.shirtNumber)) issues.push(`${p.id}: shirt ${p.shirtNumber} taken at ${p.clubId}`);
     s.add(p.shirtNumber);
     shirts.set(p.clubId, s);
+  }
+  // v2.6: academy players belong to a real club and are nobody else's player.
+  for (const p of w.academy ?? []) {
+    if (seen.has(p.id)) issues.push(`${p.id}: duplicate player (academy)`);
+    seen.add(p.id);
+    if (!clubIds.has(p.clubId)) issues.push(`${p.id}: academy of unknown club ${p.clubId}`);
+    if (typeof p.rating !== 'number' || !Array.isArray(p.attrs) || p.attrs.length !== 7) issues.push(`${p.id}: broken academy player`);
   }
   return issues;
 }

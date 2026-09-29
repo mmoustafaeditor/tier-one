@@ -9,7 +9,8 @@ import { addMsg, afterMatch, coachSeasonEnd, newBoard, newCoach, sackCheck, sala
 import { available } from './tactics';
 import { aiEconomyWeek, economyWeek, newOps, sponsorBonus, staffQ } from './economy';
 import { applyElo } from './rankings';
-import { FOCUS_TACTICAL, academyWeek, earnDev, resetExams, trainingWeek } from './training';
+import { FOCUS_TACTICAL, earnDev, resetExams } from './training';
+import { academySeasonEnd, addMinutes, developDay, enc, pathwayDay, returnAcademyLoans, seasonDev } from './youth';
 import { makeAttrs, makeFreeAgents, objectiveOf, playerOf, shiftAttrs, squadOf, squadStrength, valueOf, wageOf, type World } from './world';
 import { playerName } from '../data/names';
 import { toRecord, type MatchRecord } from './record';
@@ -101,7 +102,7 @@ type Rate = (id: string, v: number, motm: boolean) => void;
 function applyMatch(rec: MatchRecord, get: (id: string) => Player, byClub: Map<string, Player[]>, stat: ((id: string) => PlayerStats) | null, r: Rng, calm: string | null,
   care: { clubId: string; cut: number } | null = null, rate: Rate | null = null) {
   if (rate) for (const [id, v] of Object.entries(rec.ratings)) rate(id, v, id === rec.motm);
-  for (const id of rec.played) { const p = get(id); if (stat) stat(id)[0]++; p.fitness = Math.round(rec.condition[id] ?? p.fitness); }
+  for (const id of rec.played) { const p = get(id); if (stat) stat(id)[0]++; p.fitness = Math.round(rec.condition[id] ?? p.fitness); addMinutes(p, rec.minutes[id] ?? 0); }
   const on = new Set(rec.played);
   rec.clubs.forEach((clubId, k) => {
     const diff = rec.goals[k] - rec.goals[1 - k];
@@ -117,6 +118,7 @@ function applyMatch(rec: MatchRecord, get: (id: string) => Player, byClub: Map<s
     if (e.kind === 'injury') {
       const out = care && p.clubId === care.clubId ? Math.max(1, Math.round((e.out ?? 1) * (1 - care.cut))) : e.out ?? 1;
       p.injured = Math.max(p.injured, out);
+      p.inj0 = Math.max(p.inj0 ?? 0, p.injured); // v2.6: the injury's full length (return window, rush-back rule)
     }
   }
 }
@@ -311,8 +313,9 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
   if (career.ops) {
     const home = res.mine ? res.mine.sides[0].clubId === career.clubId : false;
     ({ world, career } = economyWeek(world, career, home));
-    ({ world, career } = trainingWeek(world, career));
-    career = academyWeek(career);
+    // v2.6: one development tick for every player in the world, then the pathway calendar (Intake Day, loan reports).
+    ({ world, career } = developDay(world, career));
+    ({ world, career } = pathwayDay(before, world, career));
     // Duties handed to the staff.
     ({ world, career } = staffWeek(world, career));
     if (res.mine) {
@@ -475,7 +478,8 @@ export const PRIZE_STEEPNESS = 1.5;
 // free-agent pool, pays prize money and draws next season's fixtures.
 export function endSeason(w0: World, c0: Career): { world: World; career: Career; summary: SeasonSummary } {
   // Loaned players go back to their clubs before contracts are looked at.
-  const { world: w, career: c } = returnLoans(w0, c0);
+  const ya = returnAcademyLoans(w0, c0);
+  const { world: w, career: c } = returnLoans(ya.world, ya.career);
   const r = makeRng(c.seed ^ (c.season * 31337));
   const myLeague = leagueOf(w, c.clubId);
   const tables = new Map(w.leagues.map((l) => [l.id, table(w, c, l.id)]));
@@ -538,20 +542,15 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     const free = p.clubId === FREE_AGENT;
     if (age >= 37 || (age >= 34 && r() < (age - 33) * 0.25) || (free && age >= 34)) { retired++; continue; }
     const lid = free ? 'eng2' : byId.get(p.clubId)!.leagueId;
-    let change: number;
-    if (age <= 20) change = int(r, 2, 6);
-    else if (age <= 23) change = int(r, 1, 4);
-    else if (age <= 27) change = int(r, 0, 2);
-    else if (age <= 30) change = int(r, -1, 1);
-    else if (age <= 32) change = int(r, -3, 0);
-    else change = int(r, -5, -1);
-    const rating = clamp(Math.min(p.rating + change, Math.max(p.potential, p.rating)), 35, 97);
-    const potential = Math.max(rating, age >= 28 ? rating : p.potential);
+    // v2.6: every player grew (or declined) match by match in the unified development function (sim/youth.ts); the
+    // season end only settles the ceiling, writes the season's line in his history and gives the legs a summer off.
+    const rating = p.rating;
+    const { potential } = seasonDev(p, c.season, r);
     const value = valueOf(rating, age, potential);
-    // The user's squad already grew week by week in training; ageing still applies.
     const q: Player = {
-      ...p, rating: p.clubId === c.clubId && rating > p.rating ? p.rating : rating, potential, marketValue: value, wage: Math.max(p.wage, wageOf(value, lid)), attrs: shiftAttrs(p.attrs, rating - p.rating),
+      ...p, rating, potential, marketValue: value, wage: Math.max(p.wage, wageOf(value, lid)), attrs: shiftAttrs(p.attrs, 0),
       fitness: 100, morale: 65, injured: 0, banned: 0, listed: undefined,
+      rh: [...(p.rh ?? []), enc(c.season, 99, rating)].slice(-60), ms: undefined, run: undefined, load: undefined, m5: p.m5 ? Math.round(p.m5 * 0.3) : undefined, inj0: undefined, rr: undefined,
     };
     if (!free && p.contractUntil <= season) {
       if (p.clubId === c.clubId || r() < 0.15) {
@@ -568,10 +567,13 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     players.push(q);
   }
 
+  // v2.6: the academies first: AI clubs promote their ready kids (and fill thin squads); kids who never made it leave.
+  const acEnd = academySeasonEnd(w, c, players, clubs, season, SQUAD_SELL_MIN);
+  players.splice(0, players.length, ...acEnd.players);
   // Fill squads: academy kids up to SQUAD_SELL_MIN, then AI clubs sign the best free agents they can afford up to AI_SQUAD.
   const count = new Map<string, number>();
   for (const p of players) count.set(p.clubId, (count.get(p.clubId) ?? 0) + 1);
-  const academy: Player[] = [];
+  const academy: Player[] = [...acEnd.mine];
   const shirtsUsed = new Map<string, Set<number>>();
   for (const p of players) (shirtsUsed.get(p.clubId) ?? shirtsUsed.set(p.clubId, new Set()).get(p.clubId)!).add(p.shirtNumber);
   const nextShirt = (clubId: string) => {
@@ -596,6 +598,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
         id: `${club.id}_y${season}_${i}`, clubId: club.id, name: playerName(lg.country, r), nationality: lg.country,
         birthYear: season - kidAge, position: pos, rating, potential, marketValue: value, wage: wageOf(value, lg.id),
         contractUntil: season + 3, shirtNumber: nextShirt(club.id), attrs: makeAttrs(r, rating, pos), fitness: 100, morale: 70, injured: 0, banned: 0,
+        hg: club.id, rh: [enc(season, 0, rating)],
       };
       players.push(kid);
       have.push(kid);
@@ -645,7 +648,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
       ops = { ...ops, lastLedger: { ...ops.lastLedger, bonusSponsor: (ops.lastLedger?.bonusSponsor ?? 0) + bonus } };
     }
   }
-  const world: World = { ...w, clubs, players };
+  const world: World = { ...w, clubs, players, academy: acEnd.academy };
   const fixtures = seasonFixtures(world, c.seed, season);
   // Continental places come from this season's final tables.
   const finals = new Map([...tables.entries()].map(([lid, t]) => [lid, t.map((x) => x.clubId)]));

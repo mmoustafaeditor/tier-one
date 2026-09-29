@@ -77,6 +77,17 @@ export interface Player {
   reqNo?: boolean;       // the request was refused
   dt?: [number, string]; // last trust change and its cause
   dm?: [number, string]; // last morale change and its cause
+  // V2.6 training & pathway (sim/youth.ts). All optional: missing = 0 / none, so older players need no migration.
+  load?: number;         // accumulated training + match load 0-100: +0.3 per minute played, eases between matchdays
+  m5?: number;           // recent minutes (rolling, about the last five matchdays); drives development
+  ms?: number;           // minutes this season, all competitions (reset at season end)
+  run?: number;          // matchdays in a row with 80+ minutes
+  inj0?: number;         // length of the current injury when it happened (return window, rush-back rule)
+  rr?: [number, number, number]; // after a rush-back: re-injury chance in % per match, matches it still applies to, length of a relapse
+  alt?: Position;        // a second position learned in training (plays there without the out-of-position cost)
+  rh?: number[];         // rating history, each entry season*10000 + round*100 + rating (real samples only)
+  hg?: string;           // the club whose academy produced him (homegrown)
+  lmd?: number;          // minutes on the current matchday (cleared by the day's development tick)
 }
 
 export const FREE_AGENT = 'free';
@@ -191,6 +202,9 @@ export interface Career {
   names?: NamesMode;                              // real names or the fictional fallback
   lastDigest?: Digest | null;                     // "since you were away", after a multi-week sim
   room?: RoomState;                               // v2.4: the dressing room (sim/room.ts)
+  // V2.6 training & pathway (sim/youth.ts)
+  intake?: Intake;                                // this season's Intake Day for the user's club (prepared at the preview)
+  trainRep?: TrainReport;                         // last matchday's training report (growth, knocks, load)
 }
 
 // ---------- v2.4 dressing room (save v6) ----------
@@ -234,8 +248,14 @@ export interface RoomState {
   lead?: string[];                        // the leaders at the last tick (a leader sold is felt)
 }
 
+// Intake Day (V2.6): a yearly event at ~70 % of the season. Ten matchdays before, the Head of Youth previews the group
+// (the kids already exist here, hidden); on the day they join the club's academy as world players.
+export interface Intake { season: number; club: string; day: number; kids: Player[]; arrived?: boolean }
+// What one training week did: who grew (+1), who is closing in, who got a knock, whose load is high, what was dropped.
+export interface TrainReport { round: number; up: string[]; near: string[]; knocks: string[]; high: string[]; heavyDropped?: boolean; academyUp: string[] }
+
 // Loans last until the end of the season. `share`: part of the wage the borrowing club pays (0-1).
-export interface Loan { playerId: string; pn: LocalizedName; from: string; to: string; fee: number; share: number; season: number }
+export interface Loan { playerId: string; pn: LocalizedName; from: string; to: string; fee: number; share: number; season: number; ya?: boolean /* V2.6: from the academy, returns to it */; at?: number /* V2.6: matchday it started */ }
 
 export type Duty = 'lineup' | 'tactics' | 'scouting' | 'training' | 'medical' | 'morale' | 'academy' | 'contracts' | 'selling' | 'signing' | 'loans' | 'sponsors' | 'tickets';
 export interface StaffLog { season: number; round: number; duty: Duty; key: string; pn?: LocalizedName; n?: number; s?: string; ev?: string; b?: Bias }
@@ -282,8 +302,8 @@ export interface ClubOps {
   staffPool: Staff[];                    // candidates to hire
   sponsors: SponsorDeal[];
   sponsorOffers: SponsorDeal[];
-  training: { load: 0 | 1 | 2; focus: Record<string, number> }; // load: recovery, balanced, hard; focus: attribute index per player
-  academy: Player[];                     // prospects, not yet in the squad
+  training: { load: 0 | 1 | 2; focus: Record<string, number>; pos?: Record<string, Position>; posProg?: Record<string, number> }; // load: light, normal, heavy; individual plans (≤ 5 players): an attribute or a new position
+  academy: Player[];                     // v2.6: always empty; the academy is a world squad (World.academy, sim/youth.ts)
   devPoints: number;
   ledger: Record<string, number>;        // this season: income > 0, spending < 0
   lastLedger?: Record<string, number>;

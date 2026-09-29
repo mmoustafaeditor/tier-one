@@ -10,6 +10,8 @@ import { newCoach } from './coach';
 import { ensureDirector, newOps } from './economy';
 import { makeAttrs, makeFreeAgents, seedElo, type World } from './world';
 import { deptsFromDuties } from './delegation';
+import { seedAcademies } from './youth';
+import { addMsg } from './coach';
 import { ensureV2 } from './match';
 import { ensureRoom } from './room';
 
@@ -66,7 +68,7 @@ export function upgradeCareer(w: World, c: OldCareer): Career {
 // ---------- file versions ----------
 
 // The version `makeSave` writes. Bump it together with a new entry in UPGRADES.
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 8;
 
 // One step each: UPGRADES[n] turns a version-n file into version n+1. Applied in order by `upgradeSave`.
 export const UPGRADES: Record<number, (s: SaveFile) => SaveFile> = {
@@ -128,13 +130,41 @@ function upgrade5(s: SaveFile): SaveFile {
   return { ...s, version: 6, world: r.world, career: r.career };
 }
 UPGRADES[5] = upgrade5;
+// 7 → 8 (V2.6 "Training & pathway"). Written to run after 6 (dressing room) and 7 (recruitment) or without them: it reads
+// nothing they add. Documented defaults:
+//  - the academy becomes a world squad: `ops.academy` (and every managed club's in world.clubOps) moves to
+//    world.academy with the club's id; every other club gets a seeded academy of 4–6 kids (sim/youth.ts seedAcademies);
+//  - development points are retired for good: any left (in ops or a managed club's ops) become a one-off +5 squad morale
+//    and a note in the inbox (v4 already did this for most saves; this catches the rest);
+//  - load, recent minutes and rating history start empty and fill in from the next matchday (the profile curve shows
+//    real samples only, starting from here); no individual position plans; no Intake Day prepared yet (the preview
+//    fires ten matchdays before this season's Intake Day, or next season's if it has passed).
+function upgrade7(s: SaveFile): SaveFile {
+  const c = s.career;
+  const w0 = s.world as World;
+  if (!c) return { ...s, version: 8 };
+  const academy: Player[] = [...(w0.academy ?? [])];
+  const has = new Set([...academy.map((p) => p.id), ...w0.players.map((p) => p.id)]);
+  const take = (kids: Player[] | undefined, clubId: string) => { for (const k of kids ?? []) if (!has.has(k.id)) { has.add(k.id); academy.push({ ...k, clubId, shirtNumber: 0, hg: k.hg ?? clubId }); } };
+  take(c.ops?.academy, c.clubId);
+  const clubOps = w0.clubOps ? Object.fromEntries(Object.entries(w0.clubOps).map(([id, o]) => { take(o.academy, id); return [id, { ...o, academy: [], devPoints: 0 }]; })) : w0.clubOps;
+  const dev = (c.ops?.devPoints ?? 0) + Object.values(w0.clubOps ?? {}).reduce((a, o) => a + (o.devPoints ?? 0), 0);
+  let players = w0.players;
+  if (dev > 0) players = players.map((p) => (p.clubId === c.clubId ? { ...p, morale: Math.min(100, p.morale + 5) } : p));
+  let world: World = { ...w0, players, academy, ...(clubOps ? { clubOps } : {}) };
+  let career: Career = { ...c, ops: c.ops ? { ...c.ops, academy: [], devPoints: 0 } : c.ops };
+  world = seedAcademies(world, career);
+  if (dev > 0) career = addMsg(career, 'club', 'y_devGone', { n: dev });
+  return { ...s, version: 8, world, career };
+}
+UPGRADES[7] = upgrade7;
 
 export function upgradeSave(s: SaveFile): SaveFile {
   let out = s;
   while (out.version < SAVE_VERSION) {
     const step = UPGRADES[out.version];
-    if (!step) throw new Error(`no upgrade from save version ${out.version}`);
-    out = step(out);
+    // Three lanes add steps 6, 7 and 8 in parallel: a version with no step of its own (yet) carries over unchanged.
+    out = step ? step(out) : { ...out, version: out.version + 1 };
   }
   return out;
 }

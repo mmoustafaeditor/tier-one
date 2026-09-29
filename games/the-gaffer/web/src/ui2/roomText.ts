@@ -1,10 +1,11 @@
 // V2.4 dressing room words for shared surfaces: Today cards, news, inbox, the staff log and the Why card.
 // Everything here only reads; keys that start with 'dr.' belong to the dressing room.
+import { anyPlayer } from '../sim/youth';
 import type { Lang, Strings } from '../i18n';
 import type { Career, Msg, NewsItem, Pledge, RoomCause } from '../model/types';
 import type { Choice, Fx, Ref } from '../sim/decisions';
 import type { Point } from '../sim/engine/story';
-import { money, playerOf, type World } from '../sim/world';
+import { money, type World } from '../sim/world';
 import { D, dOf } from '../lang-dressing-all';
 import type { DStrings } from '../lang-dressing';
 import type { Game } from './game';
@@ -58,7 +59,7 @@ export const roomTag = (g: Game, kind: string) => D[g.ui].tag[kind] ?? kind;
 
 export function roomNews(t: Strings, lang: Lang, w: World, n: NewsItem): [string, string] {
   const d = dOf(t);
-  const p = n.player ? (playerOf(w, n.player)?.name ?? n.pn)?.[lang] ?? '' : (n.pn?.[lang] ?? '');
+  const p = n.player ? (anyPlayer(w, n.player)?.name ?? n.pn)?.[lang] ?? '' : (n.pn?.[lang] ?? '');
   const f = d.news[n.key];
   if (!f) return [n.key, ''];
   const what = n.s && (n.s.startsWith('role.') || ['contract', 'keep'].includes(n.s) || n.s.startsWith('sign')) ? pledgeWhat(d, n.s) : n.s ?? '';
@@ -70,7 +71,7 @@ export function roomNews(t: Strings, lang: Lang, w: World, n: NewsItem): [string
 
 export function roomMsg(t: Strings, lang: Lang, w: World, m: Msg): [string, string] {
   const d = dOf(t);
-  const p = m.player ? (playerOf(w, m.player)?.name ?? m.pn)?.[lang] ?? '' : '';
+  const p = m.player ? (anyPlayer(w, m.player)?.name ?? m.pn)?.[lang] ?? '' : '';
   const f = d.msg[m.key];
   if (!f) return [m.key, ''];
   if (m.key === 'dr.kept' || m.key === 'dr.broken') return f(p, pledgeWhat(d, m.s ?? ''));

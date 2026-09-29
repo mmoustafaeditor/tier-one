@@ -35,6 +35,8 @@ import { PassScreen } from './ui2/Pass';
 import { SettingsScreen } from './ui2/Settings';
 import { NewsScreen } from './ui2/News';
 import { TrainingScreen } from './ui2/Training';
+import { MedicalScreen, AcademyScreen } from './ui2/Pathway';
+import { Y } from './lang-youth-all';
 import { QuickMatch } from './ui2/QuickMatch';
 import { Sheets } from './ui2/Sheets';
 import { UpdateBanner } from './ui2/UpdateBanner';
@@ -44,7 +46,7 @@ import { D } from './lang-dressing-all';
 
 type Top = { s: 'title' } | { s: 'new'; slot: number } | { s: 'quick' };
 const TAB_OF: Partial<Record<Route['s'], Tab>> = {
-  today: 'today', squad: 'squad', player: 'squad', train: 'squad', match: 'match', transfers: 'transfers', club: 'club', settings: 'club', news: 'today', career: 'career', pass: 'pass', world: 'club', room: 'squad',
+  today: 'today', squad: 'squad', player: 'squad', train: 'squad', match: 'match', transfers: 'transfers', club: 'club', settings: 'club', news: 'today', career: 'career', pass: 'pass', world: 'club', room: 'squad', medical: 'squad', academy: 'squad',
 };
 const SOLO = new Set<Route['s']>(['pre', 'live', 'ft', 'digest']);
 
@@ -131,7 +133,7 @@ export function App() {
       case 'loanedIn': return N.loanedIn(pn); case 'loanedOut': return N.loanedOut(pn); case 'counterOk': return N.counterOk; case 'counterNo': return N.counterNo;
       case 'dr.talk': return D[ui].note.talk; case 'dr.stays': return D[ui].note.stays(pn); case 'dr.clauseGo': return D[ui].note.clauseGo(pn);
       case 'haggleOk': return N.haggleOk; case 'haggleNo': return N.haggleNo; case 'rightsSold': return N.rightsSold(String(n.n)); case 'scoutFound': return N.scoutFound(n.n ?? 0);
-      default: return N.done;
+      default: return Y[ui].note[n.key] ?? N.done;
     }
   };
 
@@ -140,7 +142,7 @@ export function App() {
     if (!w || !c) return { ok: false, reason: 'noCareer' };
     const r = dispatch(w, c, cmd);
     if (!r.ok) {
-      if (opt?.toast !== false) setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? D[ui].no[r.reason] ?? r.reason}`);
+      if (opt?.toast !== false) setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? D[ui].no[r.reason] ?? Y[ui].no[r.reason] ?? r.reason}`);
       return r;
     }
     await commit(r.world, r.career);
@@ -148,7 +150,7 @@ export function App() {
     else if (opt?.toast !== false && r.note) setToast(noteText(r.note, r.world));
     return r;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [commit, x, lang]);
+  }, [commit, x, lang, ui]);
 
   // ---------- starting and loading ----------
   const openSlot = async (n: number) => {
@@ -263,7 +265,7 @@ export function App() {
     let ww = w, cc = c;
     for (const cmd of ch.cmds) {
       const r = dispatch(ww, cc, cmd);
-      if (!r.ok) { setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? D[ui].no[r.reason] ?? r.reason}`); return false; }
+      if (!r.ok) { setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? D[ui].no[r.reason] ?? Y[ui].no[r.reason] ?? r.reason}`); return false; }
       ww = r.world; cc = r.career;
     }
     const r = dispatch(ww, cc, { type: 'decision.done', id: d.id });
@@ -339,6 +341,8 @@ export function App() {
         {route.s === 'squad' && <SquadScreen lens={route.lens} />}
         {route.s === 'player' && <PlayerScreen id={route.id} />}
         {route.s === 'train' && <TrainingScreen />}
+        {route.s === 'medical' && <MedicalScreen />}
+        {route.s === 'academy' && <AcademyScreen focus={route.focus} />}
         {route.s === 'match' && <MatchScreen tab={route.tab ?? 0} onTab={(n) => setRoute({ s: 'match', tab: n })} />}
         {route.s === 'pre' && <PreMatch />}
         {route.s === 'live' && live && <LiveScreen m={live} locked={locked} speed0={prefs.speed} onUpdate={setLive} onSave={(m) => void saveLive(m)} onFinish={(m) => void finishLive(m)} />}
