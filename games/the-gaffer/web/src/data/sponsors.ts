@@ -64,7 +64,6 @@ export function sponsorsOf(club: Club, country: CountryCode, tier: number): { ki
   return { kit: N(kit), shirt: N(shirt) };
 }
 
-<<<<<<< HEAD
 // One offer per brand in a slot: when the generator rolls the same brand twice, the better-paying offer stays (GF-21).
 export function dedupeOffers<T extends { slot: string; brand: LocalizedName; monthly: number }>(offers: T[]): T[] {
   const best = new Map<string, T>();
@@ -75,10 +74,9 @@ export function dedupeOffers<T extends { slot: string; brand: LocalizedName; mon
   }
   return offers.filter((o) => best.get(`${o.slot}:${o.brand.en}`) === o);
 }
-=======
+
 // For the save renamer: every list, by name, so an old save's brand maps to the brand at the same place today.
 export const _BRAND_LISTS: Record<string, S[]> = {
   KIT: KIT_MAKERS, GLOBAL, ...Object.fromEntries(Object.entries(LOCAL).map(([k, v]) => [`LOCAL_${k}`, v!])),
   ...Object.fromEntries(Object.entries(SLOT_BRANDS).map(([k, v]) => [`SLOT_${k}`, v])),
 };
->>>>>>> lane3/gf-names
