@@ -6,6 +6,7 @@ import { checkWorld, type World } from './world';
 import { SAVE_VERSION, upgradeCareer, upgradeSave, upgradeWorld } from './upgrade';
 import { renameSave } from './renames';
 import { checkEvents } from './events';
+import { checkRecruit, tidyRecruit } from './recruit/save';
 import { withNames, BUILD_NAMES } from './seed';
 import { activeSlot, clearSlot, migrate, readSlot, writeSlot } from './slots';
 
@@ -46,6 +47,7 @@ export function checkCareer(w: World, c: Career): string[] {
   for (const a of c.room?.asks ?? []) player('ask', a.playerId);
   for (const cl of c.room?.clauses ?? []) { player('clause', cl.playerId); club('clause', cl.clubId); }
   issues.push(...checkEvents(c));
+  issues.push(...checkRecruit(w, c)); // v2.5
   return issues;
 }
 
@@ -82,7 +84,7 @@ export function tidyCareer(w: World, c: Career): Career {
     const clauses = room.clauses.filter((cl) => players.get(cl.playerId)?.clubId === c.clubId && clubs.has(cl.clubId));
     if (pledges.length !== room.pledges.length || asks.length !== room.asks.length || clauses.length !== room.clauses.length) out = { ...out, room: { ...room, pledges, asks, clauses } };
   }
-  return out;
+  return tidyRecruit(w, out); // v2.5
 }
 
 async function sha256(text: string): Promise<string> {

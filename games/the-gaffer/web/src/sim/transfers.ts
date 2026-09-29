@@ -10,6 +10,7 @@ import { roundFee } from './season';
 import { addNews, hijacked } from './news';
 import { balanceOf } from './balance';
 import { recordDeal } from './records';
+import { spendingRoom, wageRoom } from './recruit/money';
 
 export const SQUAD_MAX = 32;
 export const SQUAD_SELL_MIN = 16;
@@ -74,8 +75,9 @@ export function judgeBid(w: World, c: Career, p: Player, bid: Bid): BidAnswer {
   if (p.clubId !== FREE_AGENT && squadOf(w, p.clubId).length <= SQUAD_SELL_MIN) return { ok: false, reason: 'sellerThin' };
   // Stars won't drop far below their level: say so first, whatever the money.
   if (p.rating > strengthOf(w, c.clubId) + 9) return { ok: false, reason: 'ambition' };
-  if (bid.fee > club.budget) return { ok: false, reason: 'budget' };
-  if (wageBillOf(w, c.clubId) + bid.wage > club.wageCap) return { ok: false, reason: 'wageCap' };
+  // v2.5: spending room (cash less what we already owe), and the wage bill we actually pay (loan shares).
+  if (bid.fee > spendingRoom(w, c)) return { ok: false, reason: 'budget' };
+  if (bid.wage > wageRoom(w, c)) return { ok: false, reason: 'wageCap' };
   const ask = askingPrice(w, p, balanceOf(c).prices);
   if (bid.fee < ask * 0.95) return { ok: false, reason: 'fee', counter: ask };
   if (bid.role === 'prospect' && c.season - p.birthYear > 21) return { ok: false, reason: 'role' };

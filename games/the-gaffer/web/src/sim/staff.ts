@@ -13,13 +13,17 @@ import { makeReport } from './scouting';
 import { treatmentCost } from './training';
 import { academyLoanSpots, academyOf, canRush, capOf, matchRisk, readyBar, riskBand, rushRisk } from './youth';
 import { SLOTS, attendance, refPrice, staffQ } from './economy';
-import { askingPrice, canSell, judgeBid, judgeRenewal, renewDemand, wageBillOf, wageDemand, SQUAD_MAX } from './transfers';
+import { canSell, judgeRenewal, renewDemand, SQUAD_MAX } from './transfers';
 import { balanceOf } from './balance';
 import { windowOf } from './windows';
 import { canLoanOut, loanClubs, loanOf, loansOut } from './loans';
-import { GROUP_OF } from './groups';
-import { nextUserMatch } from './season';
+import { nextUserMatch, roundFee } from './season';
 import { dispatch, type Command } from './commands';
+import { rcOf } from './recruit/state';
+import { needs } from './recruit/needs';
+import { scoutPicks } from './recruit/picks';
+import { spendingRoom } from './recruit/money';
+import { split } from './recruit/club';
 import { DEPT_OF_DUTY, DUTY_ROLE, asking, biasOf, delegated, levelOf } from './delegation';
 
 export { delegated, hasStaffFor, asking, levelOf } from './delegation';
@@ -270,41 +274,27 @@ function contracts(x: Ctx) {
   }
 }
 
-// Sporting director + chief scout: one signing per matchday while a window is open, for the thinnest position.
-const NEED: Record<number, number> = { 0: 2, 1: 7, 2: 6, 3: 4 }; // GK, DEF, MID, ATT
+// Sporting director + chief scout (v2.5): one chase at a time, for the top need, from the chief scout's picks (what the
+// club KNOWS, ranges not true ratings), through the same two-stage deal as the manager's: a bid first, the agent after.
+// A bold director bids the asking price, a cautious one 15 % under it (and skips some weeks); big fees go in instalments.
 function signing(x: Ctx) {
   const c = x.career;
-  const free = !windowOf(c);
   const squad = squadOf(x.world, c.clubId);
   if (squad.length >= SQUAD_MAX - 4) return;
+  if (rcOf(c).negs.some((n) => n.stage === 'club' || n.stage === 'terms')) return;
   const b = bias(c, 'signing');
-  const groups = [0, 1, 2, 3].map((g) => squad.filter((p) => GROUP_OF[p.position] === g));
-  const g = [0, 1, 2, 3].sort((a, z) => groups[a].length / NEED[a] - groups[z].length / NEED[z])[0];
-  if (groups[g].length >= NEED[g] && squad.length >= 22) return;
-  const club = clubOf(x.world, c);
-  const room = club.wageCap - wageBillOf(x.world, c.clubId);
-  const weakest = Math.min(...(groups[g].length ? groups[g].map((p) => p.rating) : [0]));
-  const scout = staffQ(c.ops, 'scout');
   const r = makeRng(c.seed ^ (c.season * 17 + c.round));
   if (b === 'cautious' && r() < 0.5) return; // a cautious director waits for a better week
-  const my = strengthOf(x.world, c.clubId);
-  // A better scout looks through more of the market.
-  const pool = x.world.players
-    .filter((p) => p.clubId !== c.clubId && GROUP_OF[p.position] === g && p.injured === 0 && !loanOf(c, p.id))
-    .filter((p) => (free ? p.clubId === FREE_AGENT : true))
-    .filter((p) => p.rating >= Math.max(weakest, my - 12) && p.rating <= my + 8)
-    .filter(() => r() < 0.25 + scout / 150);
-  const m = balanceOf(c);
+  const top = needs(x.world, c).find((n) => n.level === 'red' || squad.length < 22);
+  if (!top) return;
+  const free = !windowOf(c);
+  const room = spendingRoom(x.world, c);
   const share = b === 'money' ? 0.25 : b === 'bold' ? 0.45 : 0.35;
-  const age = (p: { birthYear: number }) => c.season - p.birthYear;
-  const tilt = (p: { birthYear: number }) => (b === 'youth' ? (age(p) <= 23 ? 3 : 0) : b === 'veteran' ? (age(p) >= 27 ? 3 : 0) : 0);
-  const options = pool
-    .map((p) => ({ p, fee: Math.round(askingPrice(x.world, p, m.prices) * (b === 'bold' ? 1.05 : 1)), wage: wageDemand(x.world, p, c.clubId, 'rotation', m.wages) }))
-    .filter((o) => o.fee <= club.budget * share && o.wage <= room)
-    .sort((a, z) => (z.p.rating + tilt(z.p) - a.p.rating - tilt(a.p)) * 1e7 - (z.fee - a.fee) / Math.max(1, z.p.rating) + (z.p.potential - a.p.potential));
-  for (const o of options.slice(0, 3)) {
-    const bid = { fee: o.fee, wage: o.wage, years: age(o.p) <= 26 ? 4 : 2, role: 'rotation' as const };
-    if (judgeBid(x.world, c, o.p, bid).ok && act(x, { type: 'transfer.bid', playerId: o.p.id, bid }, 'signed', { pn: o.p.name, n: o.fee, s: o.p.clubId })) return;
+  const picks = scoutPicks(x.world, c, 3, [top]).filter((pk) => (free ? pk.p.clubId === FREE_AGENT : true) && pk.fee <= room * share);
+  for (const pk of picks) {
+    const total = roundFee(pk.fee * (b === 'bold' ? 1 : b === 'cautious' ? 0.85 : 0.92));
+    const offer = total > 5e6 && b !== 'bold' ? split(total, 1, 0.6) : { upfront: total, inst: [], sellOn: 0 };
+    if (act(x, { type: 'rc.bid', playerId: pk.p.id, offer }, 'rcbid', { pn: pk.p.name, n: total, s: pk.p.clubId })) return;
   }
 }
 

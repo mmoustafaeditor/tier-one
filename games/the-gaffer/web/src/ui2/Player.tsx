@@ -6,18 +6,19 @@ import { FLAG } from '../data/names';
 import { squadOf, money as money0 } from '../sim/world';
 import { anyPlayer, inAcademy, potBand, riskBand, riskMult, matchRisk, roundsOf } from '../sim/youth';
 import { DevCurve } from './DevCurve';
-import { LoanSheet } from './Pathway';
+import { LoanSheet as KidLoanSheet } from './Pathway';
 import { Y } from '../lang-youth-all';
 import '../styles/youth.css';
 import { estimate, shortlisted } from '../sim/estimate';
 import { avgRating } from '../sim/ratings';
-import { askingPrice } from '../sim/transfers';
-import { balanceOf } from '../sim/balance';
+import { askOf } from '../sim/recruit/club';
+import { rcOf } from '../sim/recruit/state';
+import { LoanSheet, LoanOutSheet } from './Talks';
 import { slotValue } from '../sim/tactics';
-import { loanClubs, loanOf } from '../sim/loans';
+import { loanOf } from '../sim/loans';
 import { windowOf } from '../sim/windows';
 import { Crest, I, Kpi, Meter, Portrait } from './kit';
-import { Panel, PanelHead, Sheet } from './shell';
+import { Panel, PanelHead } from './shell';
 import { useGame, clubOf, cn, money, sn } from './game';
 import { ageOf } from './util';
 import { PlayerRoom } from './Room';
@@ -37,6 +38,7 @@ export function PlayerScreen({ id }: { id: string }) {
   const ac = !!inAcademy(w, id);
   const [acLoan, setAcLoan] = useState(false);
   const [loanPick, setLoanPick] = useState(false);
+  const [loanAsk, setLoanAsk] = useState(false);
   const est = useMemo(() => { if (!p) return null; const e = estimate(w, c, p); if (ac) { const [plo, phi] = potBand(c, p); return { ...e, plo, phi }; } return e; }, [w, c, p, ac]);
   if (!p || !est) return <div className="empty-state on-ground"><p>{x.bid.no.gone}</p><button className="btn btn--ghost on-ground" onClick={() => g.go({ s: 'squad' })}>{x.back}</button></div>;
   const mine = p.clubId === c.clubId && !ac;
@@ -61,7 +63,8 @@ export function PlayerScreen({ id }: { id: string }) {
     const v = a <= peakAge ? base + (top - base) * Math.min(1, i / Math.max(1, peakAge - age)) : top - (a - peakAge) * 1.2;
     return Math.round(Math.max(40, Math.min(99, v)));
   });
-  const ask = !mine && p.clubId !== FREE_AGENT ? askingPrice(w, p, balanceOf(c).prices) : 0;
+  const ask = !mine && p.clubId !== FREE_AGENT ? askOf(w, c, p) : 0;
+  const release = mine ? rcOf(c).clauses[p.id]?.release : null; // v2.5: a clause we signed
   const fitRows = NEAR[p.position].map((pos) => ({ pos, v: Math.round(slotValue({ ...p, fitness: 100, morale: 60 }, pos)) }));
   const range = (lo: number, hi: number) => (lo === hi ? String(lo) : `${lo}–${hi}`);
   const flag = FLAG[p.nationality] ?? '';
@@ -75,7 +78,7 @@ export function PlayerScreen({ id }: { id: string }) {
           <div className="grow"><b>{ac ? Yx.ac.title : mine ? P.back : x.tr.title}</b><small>{x.common.posLong[p.position]}</small></div>
         </div>
         <div className="p-acts">
-          {ac ? (
+          {ac && p.clubId !== c.clubId ? null /* another club's academy: not on the market (V2.5) */ : ac ? (
             <>
               <button className="btn btn--accent btn--sm" disabled={age < 16} onClick={() => void g.run({ type: 'academy.promote', id: p.id })}><I n="up" size="sm" />{Yx.ac.promote}</button>
               <button className="btn btn--ghost on-ground btn--sm" onClick={() => setAcLoan(true)}><I n="swap" size="sm" />{Yx.ac.loan}</button>
@@ -89,7 +92,7 @@ export function PlayerScreen({ id }: { id: string }) {
             </>
           ) : (
             <>
-              <button className="btn btn--accent btn--sm" disabled={windowShut} onClick={() => g.sheet({ k: 'bid', id: p.id })}><I n="handshake" size="sm" />{P.bid}</button>
+              <button className="btn btn--accent btn--sm" disabled={windowShut} onClick={() => g.go({ s: 'transfers', tab: 2, p: p.id })}><I n="handshake" size="sm" />{P.bid}</button>
               <button className="btn btn--ghost on-ground btn--sm" onClick={() => g.run({ type: 'shortlist.toggle', playerId: p.id }, { toast: x.saved })}><I n="star" size="sm" />{shortlisted(c, p.id) ? P.unshortlist : P.shortlist}</button>
             </>
           )}
@@ -181,7 +184,7 @@ export function PlayerScreen({ id }: { id: string }) {
                 <button className="btn btn--ghost btn--sm" onClick={() => g.sheet({ k: 'rename', kind: 'player', id: p.id })}>{P.rename}</button>
               </div>
             )}
-            {!mine && !ac && p.clubId !== FREE_AGENT && <div className="p-more"><button className="btn btn--ghost btn--sm" disabled={windowShut} onClick={() => g.run({ type: 'loan.in', playerId: p.id })}>{P.loanIn}</button></div>}
+            {!mine && !ac && p.clubId !== FREE_AGENT && <div className="p-more"><button className="btn btn--ghost btn--sm" disabled={windowShut} onClick={() => setLoanAsk(true)}>{P.loanIn}</button></div>}
           </Panel>
 
           {!ac && <Panel i={5} label={P.contract}>
@@ -189,7 +192,7 @@ export function PlayerScreen({ id }: { id: string }) {
             <div className="contract">
               <Kpi v={p.clubId === FREE_AGENT ? '—' : p.contractUntil + 1} l={P.expires} />
               <Kpi v={<span className="ltr">{money(p.wage)}</span>} l={P.perMonth} />
-              {mine ? <Kpi v={p.release ? <span className="ltr">{money(p.release)}</span> : P.none} l={P.release} /> : <Kpi v={<span className="ltr">{p.clubId === FREE_AGENT ? x.common.free : money0(ask)}</span>} l={x.tr.likely} />}
+              {mine ? <Kpi v={release ? <span className="ltr">{money0(release)}</span> : P.none} l={P.release} /> : <Kpi v={<span className="ltr">{p.clubId === FREE_AGENT ? x.common.free : money0(ask)}</span>} l={x.tr.likely} />}
               {mine ? <Kpi v={x.place(earnerRank)} l={P.rank} /> : <Kpi v={exact ? range(est.lo, est.hi) : `${est.lo}–${est.hi}`} l={P.ability} />}
               {mine && <Kpi v={D[g.ui].role[roleOf(w, c, p)]} l={D[g.ui].player.role} d={<span className="muted">{D[g.ui].roleSub[roleOf(w, c, p)]}</span>} />}
             </div>
@@ -197,20 +200,9 @@ export function PlayerScreen({ id }: { id: string }) {
         </div>
       </div>
 
-      {acLoan && <LoanSheet kid={p} onClose={() => setAcLoan(false)} />}
-      {loanPick && (
-        <Sheet label={P.loanOut} onClose={() => setLoanPick(false)}>
-          <h2 className="h2">{P.loanOut}</h2>
-          <div className="rows">
-            {loanClubs(w, c, p).map((cid) => { const cl = clubOf(w, cid); return (
-              <button key={cid} className="row linkrow" onClick={async () => { setLoanPick(false); await g.run({ type: 'loan.out', playerId: p.id, to: cid }); }}>
-                <Crest club={cl} size={32} /><span className="grow"><span className="name">{cn(cl, lang)}</span></span><I n="chev" size="sm" />
-              </button>
-            ); })}
-            {!loanClubs(w, c, p).length && <p className="muted">{x.bid.no.club}</p>}
-          </div>
-        </Sheet>
-      )}
+      {acLoan && <KidLoanSheet kid={p} onClose={() => setAcLoan(false)} />}
+      {loanPick && <LoanOutSheet id={p.id} onClose={() => setLoanPick(false)} />}
+      {loanAsk && <LoanSheet id={p.id} onClose={() => setLoanAsk(false)} />}
     </div>
   );
 }

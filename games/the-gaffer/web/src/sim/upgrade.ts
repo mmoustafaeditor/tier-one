@@ -14,6 +14,7 @@ import { seedAcademies } from './youth';
 import { addMsg } from './coach';
 import { ensureV2 } from './match';
 import { ensureRoom } from './room';
+import { upgradeRecruit } from './recruit/save';
 
 const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7);
 
@@ -130,6 +131,8 @@ function upgrade5(s: SaveFile): SaveFile {
   return { ...s, version: 6, world: r.world, career: r.career };
 }
 UPGRADES[5] = upgrade5;
+// 6 → 7 (V2.5 recruitment): knowledge from the old shortlist watch, loans keep share 1. See sim/recruit/save.ts.
+UPGRADES[6] = upgradeRecruit;
 // 7 → 8 (V2.6 "Training & pathway"). Written to run after 6 (dressing room) and 7 (recruitment) or without them: it reads
 // nothing they add. Documented defaults:
 //  - the academy becomes a world squad: `ops.academy` (and every managed club's in world.clubOps) moves to

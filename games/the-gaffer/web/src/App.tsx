@@ -43,6 +43,7 @@ import { UpdateBanner } from './ui2/UpdateBanner';
 import { OfficeBarInner } from './ui2/OfficeBar';
 import { RoomScreen } from './ui2/Room';
 import { D } from './lang-dressing-all';
+import { rcNote, rcReason } from './ui2/recruitText';
 
 type Top = { s: 'title' } | { s: 'new'; slot: number } | { s: 'quick' };
 const TAB_OF: Partial<Record<Route['s'], Tab>> = {
@@ -133,7 +134,7 @@ export function App() {
       case 'loanedIn': return N.loanedIn(pn); case 'loanedOut': return N.loanedOut(pn); case 'counterOk': return N.counterOk; case 'counterNo': return N.counterNo;
       case 'dr.talk': return D[ui].note.talk; case 'dr.stays': return D[ui].note.stays(pn); case 'dr.clauseGo': return D[ui].note.clauseGo(pn);
       case 'haggleOk': return N.haggleOk; case 'haggleNo': return N.haggleNo; case 'rightsSold': return N.rightsSold(String(n.n)); case 'scoutFound': return N.scoutFound(n.n ?? 0);
-      default: return Y[ui].note[n.key] ?? N.done;
+      default: return n.key.startsWith('rc.') ? rcNote(ui, n.key, pn) || N.done : Y[ui].note[n.key] ?? N.done;
     }
   };
 
@@ -142,7 +143,7 @@ export function App() {
     if (!w || !c) return { ok: false, reason: 'noCareer' };
     const r = dispatch(w, c, cmd);
     if (!r.ok) {
-      if (opt?.toast !== false) setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? D[ui].no[r.reason] ?? Y[ui].no[r.reason] ?? r.reason}`);
+      if (opt?.toast !== false) setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? D[ui].no[r.reason] ?? Y[ui].no[r.reason] ?? rcReason(ui, r.reason) ?? r.reason}`);
       return r;
     }
     await commit(r.world, r.career);
@@ -265,14 +266,14 @@ export function App() {
     let ww = w, cc = c;
     for (const cmd of ch.cmds) {
       const r = dispatch(ww, cc, cmd);
-      if (!r.ok) { setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? D[ui].no[r.reason] ?? Y[ui].no[r.reason] ?? r.reason}`); return false; }
+      if (!r.ok) { setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? D[ui].no[r.reason] ?? Y[ui].no[r.reason] ?? rcReason(ui, r.reason) ?? r.reason}`); return false; }
       ww = r.world; cc = r.career;
     }
     const r = dispatch(ww, cc, { type: 'decision.done', id: d.id });
     if (r.ok) { ww = r.world; cc = r.career; }
     setUndo({ id: d.id, w, c });
     await commit(ww, cc);
-    if (ch.open) { const o = ch.open; setRoute(o.to === 'transfers' ? { s: 'transfers' } : o.to === 'tactics' ? { s: 'match', tab: 0 } : { s: 'today' }); }
+    if (ch.open) { const o = ch.open; setRoute(o.to === 'transfers' ? { s: 'transfers' } : o.to === 'talks' ? { s: 'transfers', tab: 2, neg: o.id } : o.to === 'tactics' ? { s: 'match', tab: 0 } : { s: 'today' }); }
     return true;
   };
   const doUndo = async () => { if (undo) { await commit(undo.w, undo.c); setUndo(null); } };
@@ -348,7 +349,7 @@ export function App() {
         {route.s === 'live' && live && <LiveScreen m={live} locked={locked} speed0={prefs.speed} onUpdate={setLive} onSave={(m) => void saveLive(m)} onFinish={(m) => void finishLive(m)} />}
         {route.s === 'ft' && after && <FullTime a={after} onDone={() => { setAfter(null); setRoute({ s: 'today' }); }} />}
         {route.s === 'digest' && <Digest onDone={() => setRoute({ s: 'today' })} />}
-        {route.s === 'transfers' && <TransfersScreen tab={route.tab ?? 0} onTab={(n) => setRoute({ s: 'transfers', tab: n })} />}
+        {route.s === 'transfers' && <TransfersScreen tab={route.tab ?? 0} neg={route.neg} pid={route.p} onTab={(n) => setRoute({ s: 'transfers', tab: n })} />}
         {route.s === 'club' && <OfficeScreen tab={route.tab ?? 0} onTab={(n) => setRoute({ s: 'club', tab: n })} />}
         {route.s === 'career' && <CareerScreen />}
         {route.s === 'pass' && <PassScreen prefs={prefs} onPrefs={setPrefs} />}

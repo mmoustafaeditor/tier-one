@@ -22,6 +22,7 @@ import { windowOf, isDeadlineDay } from './windows';
 import { GROUP_OF } from './groups';
 import { COH0, cohLevel, cohesionOfClub } from './cohesion';
 import { acceptOffer, dropFromXI } from './transfers';
+import { settleSellOn } from './recruit/deals';
 import { roundFee } from './season';
 import { levelOf, biasOf, staffOf } from './delegation';
 import { matchRatings } from './ratings';
@@ -759,7 +760,8 @@ function clauseGo(x: Ctx, cl: { playerId: string; clubId: string; fee: number; e
   if (!p || p.clubId !== x.c.clubId) return;
   const r = acceptOffer(x.w, x.c, { id: `clause_${p.id}`, playerId: p.id, clubId: cl.clubId, fee: cl.fee, round: x.c.round });
   if (!r.ok) return;
-  x.w = r.world; x.c = r.career;
+  const so = settleSellOn(r.world, r.career, p.id, cl.fee); // V2.5: a sell-on clause we signed pays out on a clause sale too
+  x.w = so.world; x.c = so.career;
   x.news('dr.clauseMet', p, cl.ev ?? '', { club2: cl.clubId, n: cl.fee });
 }
 

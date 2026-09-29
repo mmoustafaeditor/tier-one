@@ -13,6 +13,8 @@ import { Panel, PanelHead, Seg, Stepper } from './shell';
 import { useGame, money } from './game';
 import { leagueRows } from './util';
 import { logText } from './text';
+import { spendingRoom, committed } from '../sim/recruit/money';
+import { R } from '../lang-recruit-all';
 
 const FAC_ICON: Record<Facility, string> = { stadium: 'stadium', medical: 'medic', training: 'grow', academy: 'grad', scouting: 'eye' };
 const ROLE_TONE: Record<StaffRole, string> = { assistant: '#0E4F47', director: '#0B3B5C', fitness: '#5A3A8A', doctor: '#7A2E3A', psychologist: '#3F5A1E', scout: '#8A5A12' };
@@ -67,7 +69,8 @@ function Money() {
         <div className="runway-k">
           <Kpi v={<span className="ltr">{money(club.budget)}</span>} l={O.cash} />
           <Kpi v={`${Math.round((bill / Math.max(1, club.wageCap)) * 100)}%`} l={O.wageUse} />
-          <Kpi v={<span className="ltr">{money(Math.max(0, club.budget))}</span>} l={O.transfer} />
+          <Kpi v={<span className="ltr">{money(spendingRoom(w, c))}</span>} l={R[g.ui].kpi.room} />
+          <Kpi v={<span className="ltr">{money(committed(c))}</span>} l={R[g.ui].kpi.committed} />
         </div>
         {months.length > 1 && (
           <LineChart h={170} rtl={g.rtl} x={months.map((d) => monthName(d, g.ui))} fmt={(v) => `${v}M`} yMin={Math.min(0, Math.floor(low))}
@@ -93,7 +96,7 @@ function Money() {
       <Panel i={3} label={O.ledger}>
         <PanelHead title={O.ledger} />
         <div className="rows">
-          {ledger.map(([k, v]) => <div key={k} className="row ledger"><span className="grow">{g.t.ledgerKeys[k] ?? k}</span><b className={`ltr ${v < 0 ? 'down' : 'up'}`}>{v < 0 ? '−' : '+'}{money(Math.abs(v))}</b></div>)}
+          {ledger.map(([k, v]) => <div key={k} className="row ledger"><span className="grow">{g.t.ledgerKeys[k] ?? R[g.ui].ledger[k] ?? k}</span><b className={`ltr ${v < 0 ? 'down' : 'up'}`}>{v < 0 ? '−' : '+'}{money(Math.abs(v))}</b></div>)}
           {!ledger.length && <p className="muted small">{x.office.logEmpty}</p>}
         </div>
       </Panel>

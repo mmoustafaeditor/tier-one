@@ -19,15 +19,18 @@ import { roomDecisions } from './room-decisions';
 import { pledgeOf } from './room';
 import { youthDecisions } from './youthDecisions';
 import { anyPlayer } from './youth';
+import { recruitDecisions } from './recruit/decide';
+import { rcOf } from './recruit/state';
 
 export type DecKind = 'welcome' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline'
   | 'talk' | 'request' | 'promise' | 'armband' | 'clause' // v2.4 dressing room (sim/room-decisions.ts)
+  | 'bidAnswer' | 'agent' | 'rival' | 'loanClause' | 'recall' // v2.5 recruitment (sim/recruit/decide.ts)
   | 'risk' | 'rush' | 'intake' | 'ready' | 'loanee' | 'benched' | 'full' | 'ageout'; // v2.6 (sim/youthDecisions.ts)
 export type FxTone = 'good' | 'warn' | 'bad' | 'plain';
 export interface Fx { tone: FxTone; icon: string; key: string; n?: number; s?: string }
 export interface Choice { id: string; key: string; pn?: LocalizedName; n?: number; s?: string; cmds: Command[]; pick?: boolean; fx: Fx[]; open?: Open }
 export type Open = { to: 'player'; id: string } | { to: 'transfers' } | { to: 'tactics' } | { to: 'office' } | { to: 'career' } | { to: 'squad' } | { to: 'staff' }
-  | { to: 'train' } | { to: 'medical' } | { to: 'academy' };
+  | { to: 'talks'; id: string } | { to: 'train' } | { to: 'medical' } | { to: 'academy' };
 export interface Ref { key: string; pn?: LocalizedName; n?: number; s?: string; club?: string; p?: string }
 export interface Decision {
   id: string; kind: DecKind; dept: Dept | null; role: StaffRole | null; icon: string;
@@ -71,9 +74,11 @@ export function decisions(w: World, c: Career): Decision[] {
       const want = p.marketValue * (core.has(p.id) ? 1.4 : p.listed ? 0.85 : 1.1) * (b === 'money' ? 0.87 : b === 'loyal' ? 1.2 : 1);
       const counter = roundFee(o.fee * 1.15);
       const call = o.fee >= want ? 'accept' : o.fee >= want * 0.8 ? 'counter' : 'reject';
+      // v2.5: a club that bid because it NEEDS him (and he's unhappy or running down his deal) is a rival bid.
+      const why = rcOf(c).aiWhy[o.id];
       add({
         id: `offer:${o.id}`, kind: 'offer', dept: 'contracts', role: 'director', icon: 'market', ev: undefined,
-        title: { key: 'offer', pn: P(p), n: o.fee, club: o.clubId, p: p.id },
+        title: { key: why ? 'rc.rivalBid' : 'offer', pn: P(p), n: o.fee, club: o.clubId, p: p.id, s: why },
         advice: { key: `offer_${call}${b === 'money' || b === 'loyal' ? `_${b}` : ''}`, pn: P(p), n: p.marketValue },
         due: days(o.round + 3 - c.round),
         choices: [
@@ -209,7 +214,10 @@ export function decisions(w: World, c: Career): Decision[] {
   // 9. The dressing room: a word, a request, a clause, a promise due, the armband.
   for (const d of roomDecisions(w, c)) add(d);
 
-  // 10. Training & pathway (v2.6): medical risk, rush-back, Intake Day, prospects, loanees, the academy.
+  // 10. Recruitment: bids answered, agents waiting, rivals in for our targets, loan clauses (v2.5).
+  for (const d of recruitDecisions(w, c)) add(d);
+
+  // 11. Training & pathway (v2.6): medical risk, rush-back, Intake Day, prospects, loanees, the academy.
   for (const d of youthDecisions(w, c)) add(d);
 
   return out.sort((a, z) => z.score - a.score);
@@ -234,6 +242,7 @@ function pendingCard(w: World, c: Career, pd: Pending): Decision {
   const cmd = pd.cmd as unknown as Command;
   const pid = (cmd as { playerId?: string }).playerId;
   const fx: Fx[] = [];
+  if (cmd.type === 'rc.bid') fx.push({ tone: 'plain', icon: 'pound', key: 'fee', n: cmd.offer.upfront + cmd.offer.inst.reduce((a, b) => a + b, 0) });
   if (cmd.type === 'transfer.bid') fx.push({ tone: 'plain', icon: 'pound', key: 'fee', n: cmd.bid.fee }, { tone: 'plain', icon: 'pound', key: 'wagesYear', n: cmd.bid.wage * 12 });
   if (cmd.type === 'contract.renew') fx.push({ tone: 'plain', icon: 'pound', key: 'wagesYear', n: cmd.wage * 12 }, { tone: 'good', icon: 'heart', key: 'moraleUp' });
   if (cmd.type === 'player.list') fx.push({ tone: 'warn', icon: 'market', key: 'listed' });
