@@ -1,0 +1,3 @@
+/* The Semba intro (src/boot) sets its words in Barlow 500/700: the studio's shared subsets from design/assets. */
+@font-face{ font-family:"Barlow"; font-style:normal; font-weight:500; font-display:swap; src:url(../../../../../design/assets/fonts/Barlow-500-latin.woff2) format("woff2"); unicode-range:U+0020-007E,U+00A0-00FF,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026; }
+@font-face{ font-family:"Barlow"; font-style:normal; font-weight:700; font-display:swap; src:url(../../../../../design/assets/fonts/Barlow-700-latin.woff2) format("woff2"); unicode-range:U+0020-007E,U+00A0-00FF,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026; }

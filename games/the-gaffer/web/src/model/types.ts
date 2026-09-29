@@ -4,7 +4,7 @@
 //  - a player belongs to exactly one club (duplicates like Konaté at two clubs)
 //  - the save carries the WHOLE world, not only the active league, and its checksum is verified (#41)
 
-import type { Philosophy, UserTactics } from '../sim/tactics';
+import type { Philosophy, Tactics, UserTactics } from '../sim/tactics';
 import type { LiveMatch } from '../sim/match';
 import type { ScoutReport } from '../sim/scouting';
 
@@ -36,6 +36,9 @@ export interface Club {
   budget: number;        // club cash
   wageCap: number;       // most the club will pay in wages per month
   elo?: number;          // ranking points, moved by every result (starts from reputation)
+  real?: string;         // v2.1: the data snapshot's club id (e.g. "eng-arsenal") when the club comes from the 2026/27 data
+  code?: string;         // three-letter code for crests and score bugs
+  city?: string;
 }
 
 export interface Player {
@@ -60,18 +63,66 @@ export interface Player {
   prog?: number;         // training progress towards the next +1 (0-100)
   savings?: number;      // bonuses paid to the player
   nick?: LocalizedName;  // nickname, editable
+  short?: string;        // v2.1: the name on the back of the shirt / in tight lists ("Saka")
+  captain?: boolean;     // v2.1: club captain in the data snapshot
 }
 
 export const FREE_AGENT = 'free';
 
 export interface SaveFile {
   format: 'SEMBA_GAFFER_SAVE';
-  version: number;       // SAVE_VERSION in sim/upgrade.ts (2 since G1); older files go through UPGRADES one step at a time
+  version: number;       // SAVE_VERSION in sim/upgrade.ts (4 since v2.0); older files go through UPGRADES one step at a time
   savedAt: string;
   checksum: string;      // verified on import; a mismatch is REJECTED, never "migrated"
   world: { leagues: League[]; clubs: Club[]; players: Player[] };
   career: Career | null;
+  meta?: SaveMeta;       // v4: outside the checksum's body, describes the slot (never read by the simulation)
 }
+
+// Which world a career was created with. Old careers (before v2.1) are 'generated' and stay fictional forever.
+export type WorldKind = 'real2026' | 'generated';
+export type NamesMode = 'real' | 'fictional';
+export interface SaveMeta { slot: number; build: number; data: WorldKind; names: NamesMode; club: string; clubName: string; colors: [string, string]; season: number; round: number; manager: string }
+
+// ---------- v2 foundation (save v4) ----------
+
+// One domain event: every command and every clock step appends one, with its cause. Inbox, news, the decision queue,
+// the staff log and the Why card point back at these ids. Ids are `s<season>.r<round>.n<seq>`, from career.tickSeq.
+export type EvType =
+  | 'cmd' | 'match' | 'result' | 'transfer' | 'contract' | 'injury' | 'board' | 'staff' | 'decision' | 'window' | 'season' | 'job' | 'world';
+export interface DomainEvent {
+  id: string;
+  t: [number, number];                 // season, round
+  type: EvType;
+  name: string;                        // command name or clock step, e.g. 'contract.renew', 'matchday'
+  refs?: { p?: string[]; c?: string[] };
+  cause?: string;                      // the event (or command) that led to this one
+  data?: Record<string, string | number | boolean | null>;
+}
+
+// Delegation: seven departments, three levels. 'me': nothing happens without you (a decision appears when one is due).
+// 'ask': staff prepare the command and it waits on Today with their reason; ignored, it lapses to the safe default.
+// 'staff': staff do it and log it.
+export type Dept = 'matchprep' | 'opposition' | 'fitness' | 'development' | 'recruitment' | 'contracts' | 'commercial';
+export type DeptLevel = 'me' | 'ask' | 'staff';
+export type Bias = 'cautious' | 'bold' | 'youth' | 'veteran' | 'money' | 'loyal';
+
+// A command a member of staff prepared and parked for the manager (the 'ask' level). It carries the reason in the
+// staff member's voice and lapses at `until` (a matchday index) with no change.
+export interface Pending { id: string; dept: Dept; cmd: Record<string, unknown> & { type: string }; key: string; pn?: LocalizedName; n?: number; s?: string; until: number; ev?: string }
+
+// The week's single training focus (V2.2): it costs the week, and it shows up somewhere real.
+export type PrepFocus = 'recovery' | 'tactical' | 'opposition' | 'development';
+
+// The engine's record of one of the user's matches, kept after full time (the last few, for Today, Career and the Why card).
+export interface MatchRecordLite {
+  key: string; season: number; round: number; cup?: string; home: string; away: string; goals: [number, number]; pens?: [number, number];
+  xg: [number, number]; scorers: { side: 0 | 1; pn: LocalizedName; min: number }[];
+  motm?: { pn: LocalizedName; rating: number; side: 0 | 1 };
+  why: { k: string; good: boolean; text?: string }[];
+}
+
+export interface Digest { from: [number, number]; to: [number, number]; results: { key: string; home: string; away: string; goals: [number, number]; cup?: string }[]; staff: number; stopped: string }
 
 export interface Career {
   managerName: string;
@@ -112,13 +163,28 @@ export interface Career {
   records?: Records;                              // club and manager records across the career
   grads?: string[];                               // academy graduates promoted by the user (their story is tracked)
   seenMilestones?: number;                        // milestones already shown in a pop-up
+  // v2 (save v4)
+  events?: DomainEvent[];                         // this season's domain events, oldest first (bounded)
+  tickSeq?: number;                               // next event number
+  dept?: Partial<Record<Dept, DeptLevel>>;        // delegation per department
+  pending?: Pending[];                            // staff proposals waiting on the manager ('ask')
+  done?: Record<string, number>;                  // decision ids already answered → the matchday they were answered on
+  planB?: Tactics;                                // the second plan (shape + instructions), one tap away in a match
+  prep?: PrepFocus;                               // this week's training focus
+  rested?: string[];                              // left out of the next match by the manager (cleared after it)
+  talk?: 0 | 1 | 2 | 3;                           // the last word before the next match (cleared after it)
+  matches?: MatchRecordLite[];                    // the last user matches, newest first
+  pulse?: [number, number, number, number][];     // [round, board, fans, dressing room] after each matchday (last 12)
+  data?: WorldKind;                               // the world this career was created with
+  names?: NamesMode;                              // real names or the fictional fallback
+  lastDigest?: Digest | null;                     // "since you were away", after a multi-week sim
 }
 
 // Loans last until the end of the season. `share`: part of the wage the borrowing club pays (0-1).
 export interface Loan { playerId: string; pn: LocalizedName; from: string; to: string; fee: number; share: number; season: number }
 
 export type Duty = 'lineup' | 'tactics' | 'scouting' | 'training' | 'medical' | 'morale' | 'academy' | 'contracts' | 'selling' | 'signing' | 'loans' | 'sponsors' | 'tickets';
-export interface StaffLog { season: number; round: number; duty: Duty; key: string; pn?: LocalizedName; n?: number; s?: string }
+export interface StaffLog { season: number; round: number; duty: Duty; key: string; pn?: LocalizedName; n?: number; s?: string; ev?: string; b?: Bias }
 
 export interface RecordEntry { v: number; season: number; s?: string; pn?: LocalizedName; club?: string }
 export interface Records {
@@ -143,14 +209,14 @@ export interface Balance {
 }
 
 export type NewsCat = 'results' | 'transfers' | 'managers' | 'youth' | 'records' | 'crisis';
-export interface NewsItem { id: string; season: number; round: number; cat: NewsCat; key: string; club?: string; club2?: string; player?: string; pn?: LocalizedName; n?: number; s?: string }
+export interface NewsItem { id: string; season: number; round: number; cat: NewsCat; key: string; club?: string; club2?: string; player?: string; pn?: LocalizedName; n?: number; s?: string; ev?: string }
 export interface Rumour { id: string; playerId: string; pn: LocalizedName; from: string; to: string; fee: number; chance: number; until: number }
 
 export type Facility = 'stadium' | 'medical' | 'training' | 'academy' | 'scouting';
 export type StaffRole = 'assistant' | 'fitness' | 'doctor' | 'psychologist' | 'scout' | 'director';
 export type SponsorSlot = 'shirt' | 'kit' | 'stadium' | 'sleeve' | 'commercial';
 
-export interface Staff { id: string; role: StaffRole; name: LocalizedName; quality: number; wage: number }
+export interface Staff { id: string; role: StaffRole; name: LocalizedName; quality: number; wage: number; bias?: Bias }
 export interface SponsorDeal { id: string; slot: SponsorSlot; brand: LocalizedName; monthly: number; months: number; bonusLeague: number; bonusCup: number }
 
 export interface ClubOps {
@@ -215,7 +281,7 @@ export interface Coach {
 export type MsgKind = 'board' | 'fans' | 'club' | 'scout' | 'contract' | 'offer' | 'cup' | 'coach' | 'job';
 // Messages store a key and references, and are written out in the reader's language when shown.
 // `pn` keeps the player's name, because a player can retire before the message is read.
-export interface Msg { id: string; season: number; round: number; kind: MsgKind; key: string; club?: string; player?: string; pn?: LocalizedName; n?: number; s?: string; read?: boolean }
+export interface Msg { id: string; season: number; round: number; kind: MsgKind; key: string; club?: string; player?: string; pn?: LocalizedName; n?: number; s?: string; read?: boolean; ev?: string }
 
 // [appearances, goals, assists, yellow cards, red cards]
 export type PlayerStats = [number, number, number, number, number];

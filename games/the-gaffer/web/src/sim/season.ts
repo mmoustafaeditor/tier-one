@@ -9,10 +9,10 @@ import { addMsg, afterMatch, coachSeasonEnd, newBoard, newCoach, sackCheck, sala
 import { available } from './tactics';
 import { aiEconomyWeek, economyWeek, newOps, sponsorBonus, staffQ } from './economy';
 import { applyElo } from './rankings';
-import { academyWeek, earnDev, resetExams, trainingWeek } from './training';
+import { FOCUS_TACTICAL, academyWeek, earnDev, resetExams, trainingWeek } from './training';
 import { makeAttrs, makeFreeAgents, objectiveOf, playerOf, shiftAttrs, squadOf, squadStrength, valueOf, wageOf, type World } from './world';
 import { playerName } from '../data/names';
-import { matchRatings } from './ratings';
+import { toRecord, type MatchRecord } from './record';
 import { recordMatch, recordSeason } from './records';
 import { returnLoans, loanOf } from './loans';
 import { isDeadlineDay, windowOf } from './windows';
@@ -96,18 +96,19 @@ export function userMatch(w: World, c: Career): LiveMatch | null {
 // Applies one finished match to the players: condition, morale, cards, injuries, and (league games only) season stats.
 // `care`: the user's club, where the doctor and medical centre shorten injuries.
 type Rate = (id: string, v: number, motm: boolean) => void;
-function applyMatch(m: LiveMatch, get: (id: string) => Player, byClub: Map<string, Player[]>, stat: ((id: string) => PlayerStats) | null, r: Rng, calm: string | null,
+// Aftermath reducer (V2.2): reads only the MatchRecord.
+function applyMatch(rec: MatchRecord, get: (id: string) => Player, byClub: Map<string, Player[]>, stat: ((id: string) => PlayerStats) | null, r: Rng, calm: string | null,
   care: { clubId: string; cut: number } | null = null, rate: Rate | null = null) {
-  if (rate) { const rt = matchRatings(m, get); for (const [id, v] of Object.entries(rt.rating)) rate(id, v, id === rt.motm); }
-  for (const id of m.played) { const p = get(id); if (stat) stat(id)[0]++; p.fitness = Math.round(m.fit[id] ?? p.fitness); }
-  const on = new Set(m.played);
-  m.sides.forEach((sd, k) => {
-    const diff = m.goals[k] - m.goals[1 - k];
+  if (rate) for (const [id, v] of Object.entries(rec.ratings)) rate(id, v, id === rec.motm);
+  for (const id of rec.played) { const p = get(id); if (stat) stat(id)[0]++; p.fitness = Math.round(rec.condition[id] ?? p.fitness); }
+  const on = new Set(rec.played);
+  rec.clubs.forEach((clubId, k) => {
+    const diff = rec.goals[k] - rec.goals[1 - k];
     // The psychology course takes the sting out of defeats for the user's squad.
-    const swing = diff > 0 ? 6 : diff < 0 ? (sd.clubId === calm ? -4 : -6) : 0;
-    for (const p of byClub.get(sd.clubId) ?? []) p.morale = clamp(p.morale + (on.has(p.id) ? swing : swing / 2 - 1), 5, 100);
+    const swing = diff > 0 ? 6 : diff < 0 ? (clubId === calm ? -4 : -6) : 0;
+    for (const p of byClub.get(clubId) ?? []) p.morale = clamp(p.morale + (on.has(p.id) ? swing : swing / 2 - 1), 5, 100);
   });
-  for (const e of m.events) {
+  for (const e of rec.events) {
     const p = get(e.playerId);
     if (e.kind === 'goal' && stat) { stat(e.playerId)[1]++; if (e.assistId) stat(e.assistId)[2]++; }
     if (e.kind === 'yellow' && stat) { const s = stat(e.playerId); s[3]++; if (s[3] % 5 === 0) p.banned = Math.max(p.banned, 1); }
@@ -118,6 +119,8 @@ function applyMatch(m: LiveMatch, get: (id: string) => Player, byClub: Map<strin
     }
   }
 }
+const recordFor = (m: LiveMatch, get: (id: string) => Player, userClub: string | null) =>
+  toRecord(m, get, userClub === m.sides[0].clubId ? 0 : userClub === m.sides[1].clubId ? 1 : -1);
 
 const careOf = (c: Career) => (c.ops ? { clubId: c.clubId, cut: Math.min(0.5, staffQ(c.ops, 'doctor') / 300 + (c.ops.facilities.medical - 1) * 0.05) } : null);
 
@@ -162,7 +165,7 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
         simulate(m, get);
       }
       if (isMine) mine = m;
-      applyMatch(m, get, byClub, stat, r, calm, careOf(c), rate);
+      applyMatch(recordFor(m, get, null), get, byClub, stat, r, calm, careOf(c), rate);
       return [f[0], f[1], m.goals[0], m.goals[1]];
     });
     next.fixtures[lid] = rounds.map((g, i) => (i === c.round ? results : g));
@@ -191,6 +194,9 @@ export function newCareer(w: World, seed: number, clubId: string, managerName: s
     managerName, clubId, season, seed, round: 0, fixtures, stats: {}, history: [], offers: [], deals: [], manager,
     cups: makeCups(w, { seed, season, fixtures }, null), cupDay: -1, coach: newCoach(club), board: newBoard(null), inbox: [], jobs: [],
     ops: newOps(w, club, season), mastery: { balanced: 100 },
+    // v2: the event log, delegation at its defaults (sim/delegation.ts), the world it was made with
+    events: [], tickSeq: 0, pending: [], done: {}, matches: [], pulse: [], rested: [], prep: 'tactical',
+    data: w.data ?? 'generated', names: w.names ?? (w.data === 'real2026' ? 'real' : 'fictional'),
   };
   return addMsg(c, 'club', 'welcome', { club: clubId });
 }
@@ -200,7 +206,7 @@ function practise(c: Career): Career {
   const ph = c.tactics?.philosophy ?? 'balanced';
   const mastery: Career['mastery'] = { ...(c.mastery ?? {}) };
   for (const k of Object.keys(mastery) as (keyof typeof mastery)[]) if (k !== ph && k !== 'balanced') mastery[k] = Math.max(20, (mastery[k] ?? 30) - 0.5);
-  mastery[ph] = Math.min(100, (mastery[ph] ?? 30) + 2);
+  mastery[ph] = Math.min(100, (mastery[ph] ?? 30) + 2 + (c.prep === 'tactical' ? FOCUS_TACTICAL : 0));
   return { ...c, mastery };
 }
 
@@ -242,7 +248,7 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
     const calm = c.coach?.courses.includes('psychology') ? c.clubId : null;
     const ratings = { ...(cd.career.ratings ?? {}) };
     const rate: Rate = (id, v, motm) => { const o = ratings[id] ?? [0, 0, 0]; ratings[id] = [Math.round((o[0] + v) * 10) / 10, o[1] + 1, o[2] + (motm ? 1 : 0)]; };
-    for (const m of cd.matches) applyMatch(m, get, byClub, null, r, calm, careOf(c), rate);
+    for (const m of cd.matches) applyMatch(recordFor(m, get, null), get, byClub, null, r, calm, careOf(c), rate);
     const clubs = w.clubs.map((x) => (cd.prizes.has(x.id) ? { ...x, budget: x.budget + cd.prizes.get(x.id)! } : x));
     const cupResults = cd.matches.map((m): [string, string, number, number] => [m.sides[0].clubId, m.sides[1].clubId, m.goals[0], m.goals[1]]);
     world = { ...w, players, clubs: applyElo(clubs, cupResults) };
@@ -452,7 +458,8 @@ export interface SeasonSummary {
   cups: { id: string; name: LocalizedName; round: number; rounds: number; won: boolean }[]; // the user's cup runs, from the real brackets (E2E #3)
 }
 
-const SQUAD_MIN = SQUAD_SELL_MIN;  // clubs promote academy kids up to this (the same floor selling stops at)
+// Clubs promote academy kids up to SQUAD_SELL_MIN (the same floor selling stops at). Read inside functions only: season
+// and transfers import each other, so a top-level copy would hit the temporal dead zone.
 const AI_SQUAD = 22;               // AI clubs sign free agents up to this
 // League prize money: a pot of PRIZE_POT months of the league's summed wage caps, shared by final place and size:
 // weight = own wage cap × (clubs below + 1)^PRIZE_STEEPNESS. The champion takes the most, the bottom next to nothing,
@@ -559,7 +566,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     players.push(q);
   }
 
-  // Fill squads: academy kids up to SQUAD_MIN, then AI clubs sign the best free agents they can afford up to AI_SQUAD.
+  // Fill squads: academy kids up to SQUAD_SELL_MIN, then AI clubs sign the best free agents they can afford up to AI_SQUAD.
   const count = new Map<string, number>();
   for (const p of players) count.set(p.clubId, (count.get(p.clubId) ?? 0) + 1);
   const academy: Player[] = [];
@@ -577,7 +584,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     const have = players.filter((p) => p.clubId === club.id);
     // Promote kids for the thinnest positions first.
     const need: Position[] = ['GK', 'CB', 'CB', 'LB', 'RB', 'CM', 'CM', 'CDM', 'CAM', 'LW', 'RW', 'ST', 'ST', 'CB', 'CM', 'GK'];
-    for (let i = count.get(club.id) ?? 0; i < SQUAD_MIN; i++) {
+    for (let i = count.get(club.id) ?? 0; i < SQUAD_SELL_MIN; i++) {
       const pos = need.find((ps) => have.filter((p) => p.position === ps).length < need.filter((x) => x === ps).length) ?? pick(r, need);
       const kidAge = int(r, 17, 19);
       const rating = clamp(Math.round((strength.get(club.id) ?? 60) - 9 + bell(r) * 5), 40, 80);
@@ -628,7 +635,8 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     const prize = mine.budget - (coachEnd?.cash ?? 0) - w.clubs.find((x) => x.id === c.clubId)!.budget;
     const ledger = { ...ops.ledger, prizes: (ops.ledger.prizes ?? 0) + prize, milestones: (ops.ledger.milestones ?? 0) + (coachEnd?.cash ?? 0) };
     const titles = (coachEnd?.career.coach.trophies.length ?? 0) - (c.coach?.trophies.length ?? 0);
-    ops = resetExams({ ...ops, lastLedger: ledger, ledger: {}, devPoints: ops.devPoints + (record.met ? 20 : 0) + Math.max(0, titles) * 30 });
+    ops = resetExams({ ...ops, lastLedger: ledger, ledger: {}, devPoints: 0 });
+    void titles;
     if (position === 1) {
       const bonus = ops.sponsors.reduce((s, d) => s + d.bonusLeague, 0);
       mine.budget += bonus;

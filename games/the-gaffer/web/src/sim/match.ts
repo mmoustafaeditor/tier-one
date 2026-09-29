@@ -84,6 +84,8 @@ export interface LiveMatch {
 }
 
 export const SUBS_MAX = 5;
+// Rating levels an Opposition prep week adds to the user's side (about half a rating point across the XI).
+export const PREP_EDGE = 0.5;
 export const BENCH_MAX = 9;
 
 const hash = (s: string) => { let h = 17; for (let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) >>> 0; return h; };
@@ -94,7 +96,7 @@ const level = squadStrength;
 function side(w: World, c: Career | null, clubId: string, oppLevel: number, form: number, opp: Player[]): SideState {
   const squad = squadOf(w, clubId);
   const mine = c?.clubId === clubId;
-  const tactics: Tactics = mine ? (c!.tactics ?? DEFAULT_TACTICS) : aiTactics(squad, level(squad), oppLevel, opp);
+  const tactics: Tactics = mine ? (c!.tactics ?? DEFAULT_TACTICS) : aiTactics(squad, level(squad), oppLevel, opp, w.managers?.[clubId]?.style);
   const xi = mine ? xiFor(w, c!).xi : autoXI(squad, tactics.formation);
   const inXI = new Set(xi.map((p) => p.id));
   const bench = squad.filter((p) => !inXI.has(p.id) && available(p)).sort((a, b) => formOf(b) - formOf(a)).slice(0, BENCH_MAX);
@@ -105,7 +107,7 @@ function side(w: World, c: Career | null, clubId: string, oppLevel: number, form
     clubId, ai: !mine, autoSubs: !mine,
     tactics: { ...(plain as Tactics), fullback: tactics.fullback ?? 0, striker: tactics.striker ?? 0, trap: tactics.trap ?? 0, philosophy: tactics.philosophy ?? 'balanced' },
     mastery: mine ? c!.mastery?.[tactics.philosophy ?? 'balanced'] ?? 60 : 60,
-    talk: 0, onPitch: xi.map((p) => p.id), bench: bench.map((p) => p.id), subs: 0,
+    talk: mine ? c!.talk ?? 0 : 0, onPitch: xi.map((p) => p.id), bench: bench.map((p) => p.id), subs: 0,
     pieces: { captain: sp.captain.id, penalties: sp.penalties.id, freeKicks: sp.freeKicks.id, corners: sp.corners.id }, form,
     mods: mine ? {
       fatigue: (c!.coach?.courses.includes('conditioning') ? 0.85 : 1) * (1 - (c!.ops?.staff.fitness?.quality ?? 0) / 500),
@@ -124,6 +126,11 @@ export function startMatch(w: World, c: Career | null, home: string, away: strin
   // Balance settings: stronger or weaker opponents in the user's matches.
   const b = c && (home === c.clubId || away === c.clubId) ? balanceOf(c) : null;
   if (b?.difficulty) for (const s of sides) if (s.clubId !== c!.clubId) s.mods = { fatigue: s.mods?.fatigue ?? 1, press: s.mods?.press ?? 1, level: (s.mods?.level ?? 0) + oppBoost(b) };
+  // v2.2: a week spent on the opposition (the analyst's report in hand) is worth a small, bounded edge on the day.
+  if (c?.prep === 'opposition' && c.scouted?.[key]) {
+    const mine = sides.find((s) => s.clubId === c.clubId);
+    if (mine) mine.mods = { fatigue: mine.mods?.fatigue ?? 1, press: mine.mods?.press ?? 1, level: (mine.mods?.level ?? 0) + PREP_EDGE };
+  }
   const fit: Record<string, number> = {};
   for (const s of sides) for (const id of [...s.onPitch, ...s.bench]) fit[id] = playerOf(w, id)!.fitness;
   return {

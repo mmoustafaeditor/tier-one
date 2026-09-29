@@ -16,6 +16,9 @@ const AGE_RATE = (age: number) => (age <= 19 ? 2 : age <= 21 ? 1.6 : age <= 24 ?
 // Hard training: +40% progress for −2 fitness a week (survivable with rotation), not a spiral.
 export const LOAD_PROGRESS = [1.5, 3.5, 5];
 export const LOAD_RECOVERY = [16, 12, 11];
+export const FOCUS_RECOVERY = 4;      // fitness points a Recovery week adds
+export const FOCUS_DEVELOPMENT = 1.25; // training progress with a Development week
+export const FOCUS_TACTICAL = 2;      // extra familiarity with the plan after a Tactical week
 export const HARD_KNOCK = 0.10; // chance per hard week that one player picks up a 1-2 matchday knock
 
 export const atCeiling = (p: Player) => p.rating >= p.potential;
@@ -34,10 +37,12 @@ export function trainingWeek(w: World, c: Career): { world: World; career: Caree
     if (!mine.has(p.id)) return p;
     const age = c.season - p.birthYear;
     // Fitness: the base recovery between matchdays is +12; recovery training adds, hard training takes.
-    let q: Player = { ...p, fitness: clamp(p.fitness + LOAD_RECOVERY[load] - 12, 20, 100) };
+    // v2.2 weekly focus: Recovery gives back legs, Development speeds up learning.
+    let q: Player = { ...p, fitness: clamp(p.fitness + LOAD_RECOVERY[load] - 12 + (c.prep === 'recovery' ? FOCUS_RECOVERY : 0), 20, 100) };
     if (p.injured === 0 && !atCeiling(p)) {
       const young = age <= 21 ? fellowship : 1;
-      const prog = (p.prog ?? 0) + LOAD_PROGRESS[load] * AGE_RATE(age) * facility * assistant * young;
+      const focusDev = c.prep === 'development' ? FOCUS_DEVELOPMENT : 1;
+      const prog = (p.prog ?? 0) + LOAD_PROGRESS[load] * AGE_RATE(age) * facility * assistant * young * focusDev;
       if (prog >= 100) {
         const focus = ops.training.focus[p.id];
         const attrs = shiftAttrs(p.attrs, 1).map((a, i) => (focus === i ? Math.min(99, a + 1) : a));
@@ -58,33 +63,10 @@ export function trainingWeek(w: World, c: Career): { world: World; career: Caree
 
 // ---------- development points (⚡) ----------
 
-export const DEV_COST = { rating: 50, potential: 35, fitness: 15, morale: 20 } as const;
-export type DevUse = keyof typeof DEV_COST;
-export type DevCheck = { ok: true } | { ok: false; reason: 'points' | 'ceiling' | 'age' | 'full' };
-
-export function canUseDev(c: Career, p: Player | null, use: DevUse): DevCheck {
-  if (c.ops.devPoints < DEV_COST[use]) return { ok: false, reason: 'points' };
-  if (use === 'rating' && p && atCeiling(p)) return { ok: false, reason: 'ceiling' };
-  if (use === 'potential' && p && c.season - p.birthYear > 26) return { ok: false, reason: 'age' };
-  if (use === 'fitness' && p && p.fitness >= 100) return { ok: false, reason: 'full' };
-  return { ok: true };
-}
-
-export function useDev(w: World, c: Career, p: Player | null, use: DevUse): { world: World; career: Career } {
-  const ops: ClubOps = { ...c.ops, devPoints: c.ops.devPoints - DEV_COST[use] };
-  const mine = new Set(squadOf(w, c.clubId).map((x) => x.id));
-  const players = w.players.map((x) => {
-    if (use === 'morale') return mine.has(x.id) ? { ...x, morale: clamp(x.morale + 10, 0, 100) } : x;
-    if (!p || x.id !== p.id) return x;
-    if (use === 'rating') return { ...x, rating: x.rating + 1, attrs: shiftAttrs(x.attrs, 1) };
-    if (use === 'potential') return { ...x, potential: Math.min(99, x.potential + 2) };
-    return { ...x, fitness: Math.min(100, x.fitness + 15) };
-  });
-  return { world: { ...w, players }, career: { ...c, ops } };
-}
-
 // Points come from results and achievements (called from playDay / season end).
-export const earnDev = (c: Career, n: number): Career => ({ ...c, ops: { ...c.ops, devPoints: c.ops.devPoints + n } });
+// v2: development points are retired (a side currency that bought ratings undercut training). Kept as a no-op so the
+// season code reads the same; the upgrade to save v4 turned any points left into a one-off squad morale lift.
+export const earnDev = (c: Career, _n: number): Career => c;
 
 // ---------- hospital ----------
 

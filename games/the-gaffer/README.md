@@ -12,18 +12,22 @@
 
 **Canonical product name:** The Gaffer.
 
-**v0.12.0: the manager overhaul.** Web and Android 0.12.0 (APK versionCode 29843669). Updates reach the site and installed apps by themselves: see Live updates below.
+**v2.0: the 2026/27 rebuild (V2.0–V2.3).** Spec: [`V2_DESIGN.md`](V2_DESIGN.md); look: [`v2/look/`](v2/look/).
 
-- **Five tabs:** Home · Squad · Match · Transfers · Club, one door per feature (settings behind the gear in Club).
-- **Home command center:** "Today: n things need you", each with one button; next match, form, board and fans, headlines.
-- **Staff room:** delegate any of 13 duties (line-up, tactics, reports, training, medical, morale, academy, contracts, selling,
-  signings, loans, sponsors, tickets) to your staff, or take control. Everything except playing the match. New sporting director.
-- **Matchday:** player ratings, man of the match, xG, varied commentary, and a full-time card with what the result changed.
-- **Transfers:** summer and winter windows with deadline day, shortlist, scout estimates for unknown players, season loans in and out.
-- **History and records:** seasons, club records, trophy cabinet, academy graduates.
-- **Support:** optional Supporter pack (club looks, no ads), rewarded ad for a free scout report, labelled sponsor card.
-  All off until configured: see [`MONETIZATION.md`](MONETIZATION.md).
-- Desktop: two columns and a side rail; keyboard focus, reduced motion and 44 px targets throughout.
+- **Real 2026/27 world:** the Premier League, LaLiga, Serie A, Bundesliga, Ligue 1 and the big clubs of Egypt and Saudi
+  Arabia, imported from `data/seed/` as facts (names, clubs, ages, positions). Ratings are ours: an in-house squad model
+  plus designer tiers (`web/scripts/tiers.mjs`); regenerate with `node web/scripts/import-seed.mjs`. Uncovered leagues
+  keep generated squads. A Settings switch (and the `VITE_WORLD_NAMES=fictional` build flag) swaps every name for a
+  fictional one, keeping every number.
+- **One engine contract:** screens send commands (`sim/commands.ts`), the clock (`sim/clock.ts`) moves time, every change
+  lands in one event log (`sim/events.ts`), and matches become a `MatchRecord` (`sim/record.ts`) that full-time, the
+  table, form and the board all read.
+- **Today:** at most five decisions with the staff's advice pre-picked, one tap each, undo; Continue plays on to the next
+  decision. Delegation per department (Me / Ask me / Staff) with staff personalities.
+- **Saves:** two slots in IndexedDB (save v4), mirrored for the Android shell. Old careers load through the upgrade
+  chain and stay in their old fictional world ("Continue old career"); nothing is deleted.
+- **Cut:** development points, the licence quiz, board donations, formation locks. Club Pass and Semba Credits are a
+  labelled concept on the web; rewarded ads only ever pay credits.
 
 - Web: `https://sembagames.app/the-gaffer`
 - APK in repo: `downloads/TheGaffer.apk`
@@ -48,7 +52,7 @@ Push a change to The Gaffer on `main` and it reaches everyone without anyone reb
    "Also publish a new APK"). Installed apps then show "App update x.y is out · Download".
 
 Every build has a number (minutes since 1970). It's the web build number, the APK versionCode and what the apps compare,
-so nobody bumps versions by hand; `web/package.json` holds the name shown to players (0.12.0).
+so nobody bumps versions by hand; `web/package.json` holds the name shown to players (2.0.0).
 
 **One-time setup (mmoustafaeditor):** Vercel only deploys commits made by members of the Vercel team, so the bot's
 publish commit needs a deploy hook. Vercel › tier-one › Settings › Git › Deploy Hooks › create one for `main`, then

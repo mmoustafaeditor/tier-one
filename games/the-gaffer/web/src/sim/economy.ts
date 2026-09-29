@@ -269,16 +269,6 @@ export function payBonus(w: World, c: Career, ids: string[], each: number, fromW
   return { world, career, ok: true };
 }
 
-// The coach gives his own money to the club. The board and fans react in proportion to the amount (E2E #4).
-export function donate(w: World, c: Career, amount: number): { world: World; career: Career; ok: boolean } {
-  if (amount <= 0 || c.coach.wallet < amount) return { world: w, career: c, ok: false };
-  const club = w.clubs.find((x) => x.id === c.clubId)!;
-  const weight = amount / Math.max(1, club.wageCap);
-  const r = spend(w, { ...c, coach: { ...c.coach, wallet: c.coach.wallet - amount } }, 'donations', amount);
-  const board = { ...c.board, confidence: clamp(c.board.confidence + Math.min(15, weight * 20), 0, 100), fans: clamp(c.board.fans + Math.min(10, weight * 12), 0, 100) };
-  return { world: r.world, career: { ...r.career, board }, ok: true };
-}
-
 // Turning budget into a higher monthly wage cap costs 12 months of it; lowering the cap gives 6 months back
 // (the cap also follows the wage bill at season end, so unused room is not a cash machine).
 export const CAP_MONTHS_UP = 12;

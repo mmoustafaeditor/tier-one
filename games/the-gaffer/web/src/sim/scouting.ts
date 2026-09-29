@@ -25,9 +25,10 @@ export interface ScoutReport {
 
 export const scoutReportCost = (w: World, c: Career) => roundFee(w.clubs.find((x) => x.id === c.clubId)!.wageCap * 0.1);
 
-export function makeReport(w: World, c: Career, m: LiveMatch): { world: World; career: Career; report: ScoutReport } | null {
+// `free`: the analyst's own report (v2.2: preparation costs the week's focus, not club money).
+export function makeReport(w: World, c: Career, m: LiveMatch, free = false): { world: World; career: Career; report: ScoutReport } | null {
   const club = w.clubs.find((x) => x.id === c.clubId)!;
-  const cost = scoutReportCost(w, c);
+  const cost = free ? 0 : scoutReportCost(w, c);
   if (club.budget < cost) return null;
   const them = m.sides.find((s) => s.clubId !== c.clubId)!;
   const accuracy = Math.round(60 + staffQ(c.ops, 'scout') * 0.4);
@@ -59,7 +60,7 @@ export function makeReport(w: World, c: Career, m: LiveMatch): { world: World; c
   const answer = (Object.keys(gains) as Philosophy[]).sort((a, b) => gains[b]! - gains[a]!)[0] ?? 'balanced';
   const plan = { philosophy: answer, pressing: PRESETS[answer].pressing as 0 | 1 | 2, trap: PRESETS[answer].trap as 0 | 1 | 2 | 3 };
   const report: ScoutReport = { key: m.key, opponent: them.clubId, formation, philosophy: ph, threats, weak, plan, accuracy, gains };
-  const s = spend(w, c, 'scouting', -cost);
+  const s = cost ? spend(w, c, 'scouting', -cost) : { world: w, career: c };
   return { world: s.world, career: { ...s.career, scouted: { ...(s.career.scouted ?? {}), [m.key]: report } }, report };
 }
 

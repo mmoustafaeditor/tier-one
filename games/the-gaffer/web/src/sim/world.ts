@@ -5,13 +5,23 @@ import { COUNTRIES, LEAGUES } from '../data/leagues';
 import { CLUB_ROWS, SECOND_TIER_TOWNS } from '../data/clubs';
 import { FOREIGN_NATIONS, playerName } from '../data/names';
 import { NICKS, STARS } from '../data/stars';
-import { FREE_AGENT, type Club, type League, type LocalizedName, type Objective, type Player, type Position } from '../model/types';
+import { FREE_AGENT, type Club, type ClubOps, type League, type LocalizedName, type NamesMode, type Objective, type Player, type Position, type WorldKind } from '../model/types';
+import type { Philosophy } from './tactics';
 import { bell, clamp, int, makeRng, pick, type Rng } from './rng';
 
 export interface World {
   leagues: League[]; clubs: Club[]; players: Player[];
   countries?: Record<string, LocalizedName>;  // country names changed in the world editor
+  // v2 (save v4): what belongs to a club stays with it when the manager moves on (V2_DESIGN §7.1)
+  clubOps?: Record<string, ClubOps>;          // operations of clubs the user managed before (academy, facilities, staff…)
+  clubFam?: Record<string, Partial<Record<Philosophy, number>>>; // their squads' familiarity with each philosophy
+  managers?: Record<string, Manager>;         // v2.1: the manager of every other club (name and style)
+  data?: WorldKind;                           // v2.1: 'real2026' (the 2026/27 snapshot) or 'generated'
+  names?: NamesMode;                          // v2.1: which names the world currently shows
 }
+
+// v2.1: every club has a manager with a style (his favourite philosophy). Names are invented (never real people).
+export interface Manager { name: LocalizedName; style: Philosophy; rep: number }
 
 export const FIRST_SEASON = 2026;
 
@@ -22,14 +32,14 @@ export function countryOf(w: Pick<World, 'countries'> | null | undefined, code: 
 }
 
 // Starting XI average for the weakest and strongest club of each league.
-const RATING_BAND: Record<string, [number, number]> = {
+export const RATING_BAND: Record<string, [number, number]> = {
   eng1: [72, 85], esp1: [70, 85], ita1: [70, 84], ger1: [69, 84], fra1: [68, 83],
   eng2: [62, 70], esp2: [61, 68], ita2: [60, 67], ger2: [61, 68], fra2: [59, 66],
   ksa1: [62, 77], egy1: [58, 72], egy2: [50, 58], mar1: [57, 67], tun1: [55, 67], alg1: [55, 66], uae1: [58, 69], qat1: [57, 69],
 };
 
 // Transfer budget of the richest club in each league, in euros. Poorer clubs get a steep fraction of it.
-const TOP_BUDGET: Record<string, number> = {
+export const TOP_BUDGET: Record<string, number> = {
   eng1: 250e6, esp1: 200e6, ita1: 140e6, ger1: 160e6, fra1: 120e6,
   eng2: 20e6, esp2: 8e6, ita2: 8e6, ger2: 10e6, fra2: 7e6,
   ksa1: 150e6, egy1: 12e6, egy2: 1.5e6, mar1: 4e6, tun1: 3.5e6, alg1: 3.5e6, uae1: 25e6, qat1: 30e6,
@@ -61,7 +71,7 @@ const CLUB_STYLES: Record<string, [string, string][]> = {
   FRA: [['FC {t}', 'إف سي {t}'], ['AS {t}', 'إيه إس {t}'], ['Stade {t}', 'ستاد {t}'], ['Olympique {t}', 'أولمبيك {t}'], ['US {t}', 'يو إس {t}']],
 };
 
-const round2 = (v: number) => {
+export const round2 = (v: number) => {
   // Two significant figures: 27,431,000 -> 27,000,000.
   if (v <= 0) return 0;
   const p = Math.pow(10, Math.floor(Math.log10(v)) - 1);

@@ -2,7 +2,9 @@
 import type { UiLang } from '../i18n';
 
 // look: club look (0 violet, free; 1-3 come with the Supporter pack). supporter: the pack was bought on this device.
-export interface Prefs { lang: UiLang; speed: 0 | 1 | 2; openOn: 0 | 1; camera: 0 | 1 | 2; look: 0 | 1 | 2 | 3; supporter: boolean; paid?: string[] }
+// stop: when "sim to the next decision" stops (0 any decision, 1 important ones, 2 important ones and big matches).
+// credits: Semba Credits earned on this device (concept on the web: local only, nothing is sold).
+export interface Prefs { lang: UiLang; speed: 0 | 1 | 2; openOn: 0 | 1; camera: 0 | 1 | 2; look: 0 | 1 | 2 | 3; supporter: boolean; paid?: string[]; stop?: 0 | 1 | 2; credits?: number; adsToday?: [string, number] }
 const KEY = 'gaffer.prefs.v1';
 const PHOTO = 'gaffer.photo.v1';
 const DEFAULT: Prefs = { lang: 'en', speed: 0, openOn: 0, camera: 0, look: 0, supporter: false };
@@ -18,6 +20,9 @@ export function loadPrefs(): Prefs {
       supporter: p.supporter === true,
       look: p.supporter === true && [1, 2, 3].includes(p.look) ? p.look : 0,
       paid: Array.isArray(p.paid) ? p.paid.filter((x: unknown) => typeof x === 'string').slice(-20) : [],
+      stop: [0, 1, 2].includes(p.stop) ? p.stop : 1,
+      credits: Number.isFinite(p.credits) ? Math.max(0, Math.floor(p.credits)) : 0,
+      adsToday: Array.isArray(p.adsToday) && typeof p.adsToday[0] === 'string' ? [p.adsToday[0], Number(p.adsToday[1]) || 0] : undefined,
     };
   } catch {
     return DEFAULT;

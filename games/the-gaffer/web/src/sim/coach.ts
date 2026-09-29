@@ -26,8 +26,8 @@ export const LICENCE_NEEDS: Record<Licence, { level: number; matches: number; fe
 };
 export const LICENCE_GAP = 10; // matchdays between two licences
 
-const FORMATION_LICENCE: Record<FormationId, Licence> = { '4-4-2': 'D', '4-3-3': 'D', '4-1-4-1': 'D', '4-2-3-1': 'C', '5-3-2': 'B', '3-5-2': 'A' };
-export const formationNeeds = (f: FormationId) => FORMATION_LICENCE[f];
+// v2: formation locks are retired (tactics follow the squad, not a badge). Every shape is open from day one.
+export const formationNeeds = (_f: FormationId): Licence => 'D';
 export const hasLicence = (have: Licence, need: Licence) => LICENCES.indexOf(have) >= LICENCES.indexOf(need);
 export const licenceFor = (clubRep: number): Licence => LICENCES.find((l) => LICENCE_CAP[l] >= clubRep) ?? 'ELITE';
 export const nextLicence = (l: Licence): Licence | null => LICENCES[LICENCES.indexOf(l) + 1] ?? null;
@@ -37,64 +37,15 @@ export const XP_PER_LEVEL = 60;
 export const levelOf = (xp: number) => Math.min(50, Math.floor(Math.sqrt(xp / XP_PER_LEVEL)) + 1);
 export const xpForLevel = (level: number) => XP_PER_LEVEL * (level - 1) ** 2;
 
-export type ExamCheck = { ok: true } | { ok: false; reason: 'max' | 'level' | 'matches' | 'fee' | 'wait' | 'trophy'; n?: number };
-
-export function canTakeExam(c: Career): ExamCheck {
+// v2: badges come from matches managed (V2_DESIGN §3.9), not from a quiz. C 20 · B 60 · A 120 · PRO 220; ELITE needs PRO
+// and a major trophy (a top-flight title or a continental cup).
+export const BADGE_MATCHES: Record<Licence, number> = { D: 0, C: 20, B: 60, A: 120, PRO: 220, ELITE: 220 };
+export function awardBadge(c: Career): Career {
   const next = nextLicence(c.coach.licence);
-  if (!next) return { ok: false, reason: 'max' };
-  const need = LICENCE_NEEDS[next];
-  if (c.coach.days - c.coach.licenceAt < LICENCE_GAP) return { ok: false, reason: 'wait', n: LICENCE_GAP - (c.coach.days - c.coach.licenceAt) };
-  if (levelOf(c.coach.xp) < need.level) return { ok: false, reason: 'level', n: need.level };
-  if (c.coach.record[0] < need.matches) return { ok: false, reason: 'matches', n: need.matches };
-  if (need.trophy && !c.coach.trophies.length) return { ok: false, reason: 'trophy' };
-  if (c.coach.wallet < need.fee) return { ok: false, reason: 'fee', n: need.fee };
-  return { ok: true };
-}
-
-// Exam: 3 questions from the pool, 2 right to pass. The fee is paid either way.
-// Questions and answers in [English, Arabic, Spanish, French].
-type Q4 = [string, string, string, string];
-export const EXAM_POOL: { q: Q4; a: Q4[]; right: number }[] = [
-  { q: ['Your side is tired after 60 minutes. What helps most?', 'فريقك تعبان بعد 60 دقيقة. إيه أكتر حاجة تفيد؟', 'Tu equipo está cansado a los 60 minutos. ¿Qué ayuda más?', 'Ton équipe est fatiguée après 60 minutes. Qu’est-ce qui aide le plus ?'],
-    a: [['High pressing', 'ضغط عالي', 'Presión alta', 'Pressing haut'], ['Fresh legs from the bench', 'دم جديد من الدكة', 'Piernas frescas del banquillo', 'Du sang neuf venu du banc'], ['All-out attack', 'هجوم كاسح', 'Todo al ataque', 'Tout pour l’attaque']], right: 1 },
-  { q: ['Which formation has three centre-backs?', 'أنهي خطة فيها 3 قلوب دفاع؟', '¿Qué formación tiene tres centrales?', 'Quel système a trois défenseurs centraux ?'],
-    a: [['4-3-3', '4-3-3', '4-3-3', '4-3-3'], ['3-5-2', '3-5-2', '3-5-2', '3-5-2'], ['4-4-2', '4-4-2', '4-4-2', '4-4-2']], right: 1 },
-  { q: ['Short passing works best with…', 'التمرير القصير بينفع أكتر مع…', 'El pase corto funciona mejor con…', 'Les passes courtes marchent mieux avec…'],
-    a: [['Good passers', 'لاعيبة تمريرهم حلو', 'Buenos pasadores', 'De bons passeurs'], ['Tall strikers', 'مهاجمين طوال', 'Delanteros altos', 'Des attaquants grands'], ['A tired team', 'فريق تعبان', 'Un equipo cansado', 'Une équipe fatiguée']], right: 0 },
-  { q: ['Direct play works best with…', 'اللعب المباشر بينفع أكتر مع…', 'El juego directo funciona mejor con…', 'Le jeu direct marche mieux avec…'],
-    a: [['Slow defenders', 'دفاع بطيء', 'Defensas lentos', 'Des défenseurs lents'], ['Fast forwards', 'هجوم سريع', 'Delanteros rápidos', 'Des attaquants rapides'], ['A small squad', 'قايمة صغيرة', 'Una plantilla corta', 'Un petit effectif']], right: 1 },
-  { q: ['A player gets a second yellow card. What happens?', 'لاعب خد كارت أصفر تاني. يحصل إيه؟', 'Un jugador ve la segunda amarilla. ¿Qué pasa?', 'Un joueur prend un deuxième carton jaune. Que se passe-t-il ?'],
-    a: [['Nothing', 'ولا حاجة', 'Nada', 'Rien'], ['He is sent off', 'بيطرد', 'Le expulsan', 'Il est expulsé'], ['A penalty', 'ضربة جزاء', 'Penalti', 'Un penalty']], right: 1 },
-  { q: ['Parking the bus mostly…', 'الأوتوبيس في الغالب…', 'Aparcar el autobús sobre todo…', 'Garer le bus, surtout…'],
-    a: [['Lowers goals at both ends', 'بيقلل الأجوان في المرميين', 'Reduce los goles en las dos áreas', 'Réduit les buts des deux côtés'], ['Wins every match', 'بيكسب كل ماتش', 'Gana todos los partidos', 'Gagne tous les matchs'], ['Tires the team more', 'بيتعب الفريق أكتر', 'Cansa más al equipo', 'Fatigue plus l’équipe']], right: 0 },
-  { q: ['High pressing costs…', 'الضغط العالي بيكلّف…', 'La presión alta cuesta…', 'Le pressing haut coûte…'],
-    a: [['Money', 'فلوس', 'Dinero', 'De l’argent'], ['Fitness', 'لياقة', 'Forma física', 'De la forme'], ['Morale', 'معنويات', 'Moral', 'Du moral']], right: 1 },
-  { q: ['A knockout tie ends level. What comes next here?', 'ماتش خروج المغلوب خلص تعادل. إيه اللي بعده هنا؟', 'Una eliminatoria acaba en empate. ¿Qué viene aquí?', 'Un match à élimination directe finit à égalité. Et ensuite ?'],
-    a: [['A replay', 'ماتش إعادة', 'Un partido de desempate', 'Un match à rejouer'], ['Penalties', 'ضربات ترجيح', 'Penaltis', 'Les tirs au but'], ['Both go through', 'الاتنين يطلعوا', 'Pasan los dos', 'Les deux se qualifient']], right: 1 },
-  { q: ['Playing a full-back as a striker…', 'تلعّب ظهير كمهاجم…', 'Poner a un lateral de delantero…', 'Faire jouer un latéral en attaquant…'],
-    a: [['Costs rating', 'بيقلل تقييمه', 'Le baja la media', 'Fait baisser sa note'], ['Adds rating', 'بيزود تقييمه', 'Le sube la media', 'Fait monter sa note'], ['Changes nothing', 'مش بيغيّر حاجة', 'No cambia nada', 'Ne change rien']], right: 0 },
-  { q: ['Most subs a side can make here?', 'أقصى عدد تبديلات هنا؟', '¿Cuántos cambios como máximo aquí?', 'Combien de changements au maximum ici ?'],
-    a: [['3', '3', '3', '3'], ['5', '5', '5', '5'], ['7', '7', '7', '7']], right: 1 },
-];
-
-export function examQuestions(c: Career) {
-  const start = (c.seed + c.coach.days * 7) % EXAM_POOL.length;
-  return [0, 3, 7].map((k) => EXAM_POOL[(start + k) % EXAM_POOL.length]);
-}
-
-export function takeExam(c: Career, answers: number[]): { career: Career; passed: boolean } {
-  const next = nextLicence(c.coach.licence)!;
-  const qs = examQuestions(c);
-  const right = qs.filter((q, i) => q.right === answers[i]).length;
-  const passed = right >= 2;
-  let coach: Coach = { ...c.coach, wallet: c.coach.wallet - LICENCE_NEEDS[next].fee };
-  let career: Career = { ...c, coach };
-  if (passed) {
-    coach = { ...coach, licence: next, licenceAt: coach.days, xp: coach.xp + 200 };
-    career = addMsg({ ...c, coach }, 'coach', 'licence', { s: next });
-    career = checkMilestones(career, null).career; // licence milestones carry no cash
-  }
-  return { career, passed };
+  if (!next || c.coach.record[0] < BADGE_MATCHES[next]) return c;
+  if (next === 'ELITE' && !c.coach.trophies.some((t) => t.kind === 'continental' || (t.kind === 'league' && t.id.endsWith('1')))) return c;
+  const coach: Coach = { ...c.coach, licence: next, licenceAt: c.coach.days, xp: c.coach.xp + 200 };
+  return checkMilestones(addMsg({ ...c, coach }, 'coach', 'licence', { s: next }), null).career;
 }
 
 // ---------- courses ----------
@@ -145,16 +96,25 @@ export const newBoard = (c: Career | null): Board => ({ confidence: BOARD_START,
 export const sinceHire = (c: Career) => c.coach.days - ((c.board as Board).hired ?? 0);
 
 // New club: fresh board, the tactics and transfer list start clean, and the new club says hello.
+// v2: what belongs to the club stays with the club (V2_DESIGN §0.8). The old club's operations (academy, facilities,
+// staff, sponsors) and its squad's familiarity with each philosophy are kept in world.clubOps / world.clubFam, and a
+// club you managed before picks up where you left it.
 export function moveTo(w: World, c: Career, clubId: string): { world: World; career: Career } {
   const players = w.players.map((p) => (p.listed && p.clubId === c.clubId ? { ...p, listed: undefined } : p));
+  const clubOps = { ...(w.clubOps ?? {}), [c.clubId]: c.ops };
+  const clubFam = { ...(w.clubFam ?? {}), [c.clubId]: c.mastery };
+  const ops = clubOps[clubId] ?? newOps(w, w.clubs.find((x) => x.id === clubId)!, c.season);
+  const mastery = clubFam[clubId] ?? { balanced: 100 };
+  delete clubOps[clubId];
+  delete clubFam[clubId];
   let career: Career = {
-    ...c, clubId, tactics: undefined, offers: [], jobs: [], sacked: false, live: null, ops: newOps(w, w.clubs.find((x) => x.id === clubId)!, c.season),
+    ...c, clubId, tactics: undefined, planB: undefined, rested: [], pending: [], offers: [], jobs: [], sacked: false, live: null, ops, mastery,
     board: newBoard(c),
     coach: { ...c.coach, clubs: c.coach.clubs.includes(clubId) ? c.coach.clubs : [...c.coach.clubs, clubId] },
   };
   career = addMsg(career, 'club', 'welcome', { club: clubId });
   career = addNews(career, 'managers', 'appointed', { club: clubId, s: c.managerName });
-  return { world: { ...w, players }, career };
+  return { world: { ...w, players, clubOps, clubFam }, career };
 }
 
 // Clubs that would hire this coach: within the licence cap and near the coach's reputation. When sacked, lower clubs only.
@@ -244,7 +204,7 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
   if (before.fans >= 30 && board.fans < 30) career = addMsg(career, 'fans', 'fansAngry');
   if (before.fans < 80 && board.fans >= 80) career = addMsg(career, 'fans', 'fansLove');
   const ms = checkMilestones(career, { beat: pts === 3 ? opp.reputation - me.reputation : null, rank: myWorldRank(w, career) });
-  career = ms.career;
+  career = awardBadge(ms.career);
   let world = w;
   if (ms.cash) world = { ...w, clubs: w.clubs.map((x) => (x.id === c.clubId ? { ...x, budget: x.budget + ms.cash } : x)) };
   return { world, career };

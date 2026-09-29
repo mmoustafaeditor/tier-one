@@ -41,7 +41,7 @@ export function restoreFromShell() {
   const sh = shell();
   if (!sh?.restoreSave) return;
   try {
-    if (localStorage.getItem('gaffer.save.v1')) return;
+    if (localStorage.getItem('gaffer.save.v1') || localStorage.getItem('gaffer.backup.v2')) return;
     const raw = sh.restoreSave();
     if (!raw) return;
     const data = JSON.parse(raw) as Record<string, string>;

@@ -1,10 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-// Shared Semba Games design system (repo root design/), then The Gaffer's accent layer.
-import '../../../../design/tokens.css';
-import '../../../../design/components.css';
-import './styles/fonts.css';
-import './styles/gaffer.css';
+// The Gaffer v2 look (games/the-gaffer/v2/look): tokens, components, the mocked screens, then the app layer.
+import './styles/look/fonts.css';
+import './styles/look/tokens.css';
+import './styles/look/components.css';
+import './styles/screens.css';
+import './styles/app.css';
+import './styles/boot-fonts.css';
 import './boot/boot.css';
 import { BOOT_MARKUP, playIntro } from './boot/intro';
 import { App } from './App';

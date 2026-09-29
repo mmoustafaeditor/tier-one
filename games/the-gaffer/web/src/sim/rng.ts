@@ -18,3 +18,15 @@ export const pick = <T,>(r: Rng, list: readonly T[]): T => list[Math.floor(r() *
 // Roughly bell-shaped noise in [-1, 1].
 export const bell = (r: Rng) => (r() + r() + r()) / 1.5 - 1;
 export const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+
+// ---------- v2: one seeded stream per purpose ----------
+// FNV-1a, 32 bit. The one string hash new code uses (the older per-file helpers stay only where changing them would
+// re-roll existing saves).
+export function hash32(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+// All new randomness goes through here: the same seed, stream and keys always give the same numbers, whatever else
+// happened in between (V2_DESIGN §7.5).
+export const rngFor = (seed: number, stream: string, ...keys: (string | number)[]): Rng => makeRng(hash32(`${seed >>> 0}|${stream}|${keys.join('|')}`));

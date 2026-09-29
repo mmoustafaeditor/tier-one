@@ -1,46 +1,68 @@
-// What one of the user's matches changed: result, table position, board, fans, development points, who's out,
-// the man of the match, new club records and milestones. Shown as a card after every match.
+// What one of the user's matches changed: result, table position, board, fans, dressing room, who's out, ratings,
+// the man of the match, new club records and milestones, and why it happened. Shown on the full-time screen.
+// V2.2: everything here is read from the MatchRecord (sim/record.ts) and the career before and after it.
 import type { Career, LocalizedName, Records } from '../model/types';
 import type { LiveMatch } from './match';
-import { matchRatings } from './ratings';
 import { table } from './season';
-import { playerOf, type World } from './world';
-import { explain, type Why } from './engine/story';
+import { playerOf, squadOf, type World } from './world';
+import type { Why } from './engine/story';
+import { toRecord, type KeyMoment } from './record';
 
 export interface Aftermath {
-  res: 'W' | 'D' | 'L'; mine: number; theirs: number; pens?: [number, number]; opp: string; home: boolean;
-  pos: [number, number] | null; board: [number, number]; fans: [number, number]; dev: number;
+  res: 'W' | 'D' | 'L'; mine: number; theirs: number; pens?: [number, number]; opp: string; home: boolean; me: 0 | 1;
+  pos: [number, number] | null; board: [number, number]; fans: [number, number]; room: [number, number]; dev: number;
   out: { pn: LocalizedName; n: number; ban: boolean }[];
-  motm: { pn: LocalizedName; rating: number; mine: boolean } | null;
+  motm: { pn: LocalizedName; rating: number; mine: boolean; id: string } | null;
+  ratings: { id: string; pn: LocalizedName; short?: string; num: number; rating: number; mins: number }[]; // the user's side, best first
   records: (keyof Records)[]; milestones: string[];
-  why?: Why;               // engine v2: why it happened (the user's recorded match)
+  xg: [number, number];                       // [ours, theirs]
+  xgLine: [number[], number[]];               // cumulative xG per minute 0..90, ours and theirs
+  scorers: { side: 0 | 1; pn: LocalizedName; min: number }[];
+  moments: KeyMoment[];
+  why?: Why;                                  // engine v2: why it happened (the user's recorded match)
+  key: string; cup?: string; round: number;
 }
+
+const moraleOf = (w: World, clubId: string) => { const s = squadOf(w, clubId); return Math.round(s.reduce((a, p) => a + p.morale, 0) / Math.max(1, s.length)); };
 
 export function aftermath(w0: World, c0: Career, w1: World, c1: Career, m: LiveMatch): Aftermath | null {
   const idx = m.sides[0].clubId === c0.clubId ? 0 : m.sides[1].clubId === c0.clubId ? 1 : -1;
   if (idx < 0) return null;
   const k = idx as 0 | 1;
   const o = (1 - k) as 0 | 1;
-  const mine = m.goals[k], theirs = m.goals[o];
-  const pk = m.pens ? (m.pens[k] > m.pens[o] ? 'W' : 'L') : null;
+  const get = (id: string) => playerOf(w1, id) ?? playerOf(w0, id)!;
+  const rec = toRecord(m, get, k);
+  const mine = rec.goals[k], theirs = rec.goals[o];
+  const pk = rec.pens ? (rec.pens[k] > rec.pens[o] ? 'W' : 'L') : null;
   const res: Aftermath['res'] = mine > theirs ? 'W' : mine < theirs ? 'L' : pk ?? 'D';
   const lid = w0.clubs.find((x) => x.id === c0.clubId)!.leagueId;
   const place = (w: World, c: Career) => table(w, c, lid).findIndex((x) => x.clubId === c0.clubId) + 1;
   const played = (c: Career) => (c.fixtures[lid] ?? []).some((g) => g.some((f) => f[2] >= 0 && (f[0] === c0.clubId || f[1] === c0.clubId)));
-  const pos: [number, number] | null = m.cup ? null : [played(c0) ? place(w0, c0) : 0, place(w1, c1)];
-  const get = (id: string) => playerOf(w1, id) ?? playerOf(w0, id)!;
-  const out = m.events
+  const pos: [number, number] | null = rec.cup ? null : [played(c0) ? place(w0, c0) : 0, place(w1, c1)];
+  const out = rec.events
     .filter((e) => (e.kind === 'injury' || e.kind === 'red') && e.side === k)
     .map((e) => ({ pn: get(e.playerId).name, n: e.kind === 'injury' ? playerOf(w1, e.playerId)?.injured ?? e.out ?? 1 : playerOf(w1, e.playerId)?.banned ?? 1, ban: e.kind === 'red' }));
-  const rt = matchRatings(m, get);
-  const mp = rt.motm ? get(rt.motm) : null;
-  const motmMine = !!rt.motm && m.sides[k].onPitch.concat(m.sides[k].bench).concat(m.events.filter((e) => e.side === k && e.inId).map((e) => e.inId!)).includes(rt.motm);
+  const mp = rec.motm ? get(rec.motm) : null;
   const records = (Object.keys(c1.records ?? {}) as (keyof Records)[]).filter((key) => JSON.stringify(c1.records?.[key]) !== JSON.stringify(c0.records?.[key]));
   const milestones = (c1.coach?.milestones ?? []).filter((id) => !(c0.coach?.milestones ?? []).includes(id));
+  const ratings = Object.entries(rec.ratings).filter(([id]) => rec.sideOf[id] === k)
+    .map(([id, v]) => { const p = get(id); return { id, pn: p.name, short: p.short, num: p.shirtNumber, rating: v, mins: rec.minutes[id] ?? 0 }; })
+    .sort((a, b) => b.rating - a.rating);
+  const line = (side: 0 | 1) => {
+    const pts = new Array(91).fill(0);
+    for (const e of rec.events) {
+      const shooter = (e.kind === 'save' ? 1 - e.side : e.side) as 0 | 1;
+      if ((e.kind === 'goal' || e.kind === 'miss' || e.kind === 'save' || e.kind === 'block') && shooter === side && e.xg) pts[Math.min(90, e.min)] += e.xg;
+    }
+    for (let i = 1; i < pts.length; i++) pts[i] += pts[i - 1];
+    return pts.map((v) => Math.round(v * 100) / 100);
+  };
   return {
-    res, mine, theirs, pens: m.pens ? [m.pens[k], m.pens[o]] : undefined, opp: m.sides[o].clubId, home: k === 0,
-    pos, board: [c0.board.confidence, c1.board.confidence], fans: [c0.board.fans, c1.board.fans], dev: c1.ops.devPoints - c0.ops.devPoints,
-    out, motm: mp ? { pn: mp.name, rating: rt.rating[rt.motm], mine: motmMine } : null, records, milestones,
-    why: m.full && m.tl ? explain(m, k, get) : undefined,
+    res, mine, theirs, pens: rec.pens ? [rec.pens[k], rec.pens[o]] : undefined, opp: m.sides[o].clubId, home: k === 0, me: k,
+    pos, board: [c0.board.confidence, c1.board.confidence], fans: [c0.board.fans, c1.board.fans], room: [moraleOf(w0, c0.clubId), moraleOf(w1, c1.clubId)], dev: 0,
+    out, motm: mp ? { pn: mp.name, rating: rec.ratings[rec.motm], mine: rec.sideOf[rec.motm] === k, id: rec.motm } : null, ratings, records, milestones,
+    xg: [rec.xg[k], rec.xg[o]], xgLine: [line(k), line(o)],
+    scorers: rec.events.filter((e) => e.kind === 'goal').map((e) => ({ side: e.side, pn: get(e.playerId).name, min: e.min })),
+    moments: rec.moments, why: rec.why ?? undefined, key: rec.key, cup: rec.cup, round: rec.round,
   };
 }

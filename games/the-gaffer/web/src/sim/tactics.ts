@@ -129,7 +129,10 @@ export function autoXI(squad: Player[], formation: FormationId): Player[] {
 // any hole is filled with the best available player for that slot. Returns the players and who was replaced.
 export function xiFor(w: World, c: Career): { xi: Player[]; replaced: Player[] } {
   const tac = c.tactics ?? DEFAULT_TACTICS;
-  const squad = squadOf(w, c.clubId);
+  // v2.3: players the manager rested for this match stay out of the XI (when there are still eleven others).
+  const all = squadOf(w, c.clubId);
+  const rest = new Set(c.rested ?? []);
+  const squad = rest.size && all.filter((p) => available(p) && !rest.has(p.id)).length >= 11 ? all.filter((p) => !rest.has(p.id)) : all;
   const byId = new Map(squad.map((p) => [p.id, p]));
   if (!tac.xi) return { xi: autoXI(squad, tac.formation), replaced: [] };
   const slots = FORMATIONS[tac.formation].slots;
@@ -171,14 +174,15 @@ export function setPieces(xi: Player[], tac: UserTactics | Tactics, season: numb
 // AI clubs: a formation that suits the squad, a philosophy that suits the club, and a plan for this opponent.
 // `opp` (the other squad) lets the AI read the matchup the way a manager would: pace in behind slow defenders,
 // sit deep and break against a much stronger side, keep the ball against a weaker one.
-export function aiTactics(squad: Player[], myLevel: number, theirLevel: number, opp?: Player[]): Tactics {
+// `style`: the club's manager's favourite philosophy (v2.1); without one the squad decides as before.
+export function aiTactics(squad: Player[], myLevel: number, theirLevel: number, opp?: Player[], style?: Philosophy): Tactics {
   const count = (ps: Position[]) => squad.filter((p) => ps.includes(p.position) && available(p)).length;
   const formation: FormationId = count(['LW', 'RW']) >= 3 ? '4-3-3' : count(['ST']) >= 3 ? '4-4-2' : count(['CAM']) >= 2 ? '4-2-3-1' : '4-1-4-1';
   const gap = myLevel - theirLevel;
   // Big sides keep the ball or press; small ones sit deep or break; the rest mix it (fixed per squad, so a club has an identity).
   const seed = squad.reduce((s, p) => s + p.id.length + p.shirtNumber, 0);
-  const philosophy: Philosophy = myLevel >= 82 ? (['possession', 'gegenpress', 'wings'] as const)[seed % 3]
-    : myLevel <= 68 ? (['bus', 'counter', 'direct'] as const)[seed % 3] : PHILOSOPHIES[1 + (seed % 6)];
+  const philosophy: Philosophy = style ?? (myLevel >= 82 ? (['possession', 'gegenpress', 'wings'] as const)[seed % 3]
+    : myLevel <= 68 ? (['bus', 'counter', 'direct'] as const)[seed % 3] : PHILOSOPHIES[1 + (seed % 6)]);
   const t: Tactics = { formation, ...PRESETS[philosophy], philosophy };
   t.mentality = Math.max(-2, Math.min(2, t.mentality + (gap > 5 ? 1 : gap < -6 ? -1 : 0)));
   if (opp?.length) {

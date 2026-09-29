@@ -1,12 +1,15 @@
 // Save and load. The save holds the WHOLE world plus the career, with a SHA-256 checksum.
 // Lesson from the old game (E2E #41): a save whose checksum does not match is REJECTED, never loaded or "migrated".
 // A client-side checksum only catches corruption and casual edits; online features must re-check on the server.
-import type { Career, SaveFile } from '../model/types';
+import type { Career, SaveFile, SaveMeta } from '../model/types';
 import { checkWorld, type World } from './world';
 import { SAVE_VERSION, upgradeCareer, upgradeSave, upgradeWorld } from './upgrade';
 import { renameSave } from './renames';
+import { checkEvents } from './events';
+import { withNames, BUILD_NAMES } from './seed';
+import { activeSlot, clearSlot, migrate, readSlot, writeSlot } from './slots';
 
-const KEY = 'gaffer.save.v1';
+declare const __BUILD__: number;
 
 // ---------- career invariants (G1, audit S2) ----------
 // Everything the career points at must exist: its club, the players in the live match, on loan, shortlisted, watched,
@@ -35,6 +38,10 @@ export function checkCareer(w: World, c: Career): string[] {
     }
     for (const id of c.live.played ?? []) player('live', id);
   }
+  // v2 invariants: pending staff commands and rests point at real players, event ids are unique and increasing.
+  for (const p of c.pending ?? []) { const id = (p.cmd as { playerId?: string }).playerId; if (id) player('pending', id); }
+  for (const id of c.rested ?? []) player('rested', id);
+  issues.push(...checkEvents(c));
   return issues;
 }
 
@@ -58,6 +65,12 @@ export function tidyCareer(w: World, c: Career): Career {
   const offers = c.offers ?? [];
   const live = offers.filter((o) => players.get(o.playerId)?.clubId === c.clubId && clubs.has(o.clubId));
   if (live.length !== offers.length) out = { ...out, offers: live };
+  const pending = c.pending ?? [];
+  const okPending = pending.filter((p) => { const id = (p.cmd as { playerId?: string }).playerId; return !id || players.has(id); });
+  if (okPending.length !== pending.length) out = { ...out, pending: okPending };
+  const rested = c.rested ?? [];
+  const okRest = rested.filter((id) => players.get(id)?.clubId === c.clubId);
+  if (okRest.length !== rested.length) out = { ...out, rested: okRest };
   return out;
 }
 
@@ -113,6 +126,15 @@ function sha256js(msg: Uint8Array): Uint8Array {
 export const _sha256js = (s: string) => [...sha256js(new TextEncoder().encode(s))].map((b) => b.toString(16).padStart(2, '0')).join('');
 
 const body = (world: World, career: Career | null) => JSON.stringify({ world, career });
+
+export function metaOf(world: World, career: Career | null, slot: number): SaveMeta | undefined {
+  if (!career) return undefined;
+  const club = world.clubs.find((x) => x.id === career.clubId);
+  return {
+    slot, build: typeof __BUILD__ === 'number' ? __BUILD__ : 0, data: career.data ?? 'generated', names: career.names ?? 'fictional', club: career.clubId,
+    clubName: club?.name.en ?? '', colors: club?.colors ?? ['#0E4F47', '#7DEBCB'], season: career.season, round: career.round, manager: career.managerName,
+  };
+}
 
 export async function makeSave(world: World, career: Career | null): Promise<SaveFile> {
   const issues = checkWorld(world);
@@ -176,10 +198,15 @@ export async function parseSave(text: string): Promise<LoadResult> {
   // Checksum is good: now it's safe to bring an older save up to date.
   let world = upgradeWorld(s.world, s.career?.season ?? 2026);
   let career = s.career ? upgradeCareer(world, s.career) : null;
-  // Rename old player names to fictional names from this build (Sep 2026).
-  const renamed = renameSave(world, career);
-  world = renamed.world;
-  career = renamed.career;
+  // Rename old player names to fictional names from this build (Sep 2026). Only for generated worlds: a real 2026/27
+  // career keeps its real names unless the names switch (build flag or the career's setting) says fictional.
+  if (career?.data !== 'real2026' && (world as World).data !== 'real2026') {
+    const renamed = renameSave(world, career);
+    world = renamed.world;
+    career = renamed.career;
+  } else {
+    world = withNames(world, BUILD_NAMES === 'fictional' ? 'fictional' : career?.names ?? 'real');
+  }
   s = upgradeSave({ ...s, format: 'SEMBA_GAFFER_SAVE', world, career });
   if (s.career) s = { ...s, career: tidyCareer(s.world, s.career) };
   if (checkWorld(s.world).length) return { ok: false, reason: 'world' };
@@ -190,43 +217,32 @@ export async function parseSave(text: string): Promise<LoadResult> {
   return { ok: true, save: s };
 }
 
-// Storage can be missing or throw (private mode, blocked site data); the game still runs, it just can't continue later.
-export function readStored(): string | null {
-  try {
-    return localStorage.getItem(KEY);
-  } catch {
-    return null;
-  }
-}
+// ---------- slots ----------
 
 export type StoreResult = { ok: true } | { ok: false; reason: 'storage' | string };
 
 // Never throws. `storage`: the browser refused the write (full or blocked); any other reason is a failed world or
 // career check, worded for the toast. The game says so instead of failing silently (audit S1).
-export async function store(world: World, career: Career | null): Promise<StoreResult> {
+export async function store(world: World, career: Career | null, slot = activeSlot()): Promise<StoreResult> {
   let text: string;
   try {
     text = await saveText(world, career);
   } catch (e) {
     return { ok: false, reason: e instanceof Error ? e.message : String(e) };
   }
-  try {
-    localStorage.setItem(KEY, text);
-    return { ok: true };
-  } catch {
-    return { ok: false, reason: 'storage' };
-  }
+  return (await writeSlot(slot, text, metaOf(world, career, slot) ?? null)) ? { ok: true } : { ok: false, reason: 'storage' };
+}
+
+export async function loadSlot(slot: number): Promise<LoadResult> {
+  const rec = await readSlot(slot);
+  return rec ? parseSave(rec.text) : { ok: false, reason: 'none' };
 }
 
 export async function loadStored(): Promise<LoadResult> {
-  const text = readStored();
-  return text ? parseSave(text) : { ok: false, reason: 'none' };
+  await migrate();
+  return loadSlot(activeSlot());
 }
 
-export function clearStored() {
-  try {
-    localStorage.removeItem(KEY);
-  } catch {
-    /* ignore */
-  }
+export async function clearStored(slot = activeSlot()) {
+  await clearSlot(slot);
 }
