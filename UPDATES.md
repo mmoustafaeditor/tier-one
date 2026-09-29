@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-29 · mmoustafaeditor · Tier One 2.4 APK published (Android 2.4, versionCode 15)
+- **What changed:** `downloads/TierOne.apk` is now the 2.4 build from CI run 84 (bundles the live 2.4.0 game with the retuned math). The update feed moves from 2.3 to 2.4 / versionCode 15, so installed apps get the prompt.
+- **Files:** `downloads/TierOne.apk`, `api/tier-one/latest.js`, `UPDATES.md`
+- **Heads-up for the team:** None.
+
 ## 2026-09-28 · saifsaber · The Gaffer: new APK and live updates for the site and the app
 - **What changed:** New APK (0.12.0, versionCode 29843669, same signing key, installs over 0.11). Live updates:
   - **Build numbers:** every web build gets one (minutes since 1970) plus `/the-gaffer/version.json`. The APK versionCode is that number, so versions never need bumping by hand.
