@@ -5,7 +5,8 @@ import type { Career } from '../model/types';
 import type { World } from '../sim/world';
 import { cupRun, cupWinner, groupTable } from '../sim/cups';
 import { Kit } from '../components/Kit';
-import { Empty } from './parts';
+import { Empty, Ic } from './parts';
+import { ICONS } from './icons';
 
 export function Cups({ world, career, lang, t }: { world: World; career: Career; lang: Lang; t: Strings }) {
   const country = world.leagues.find((l) => l.id === world.clubs.find((x) => x.id === career.clubId)!.leagueId)!.country;
@@ -23,7 +24,7 @@ export function Cups({ world, career, lang, t }: { world: World; career: Career;
       </div>
       {winner && (
         <div className="banner" style={{ marginBottom: 'var(--s3)' }}>
-          <span className="bic">🏆</span><div><b>{club(winner).name[lang]}</b></div>
+          <span className="bic"><Ic svg={ICONS.trophy} /></span><div><b>{club(winner).name[lang]}</b></div>
         </div>
       )}
       {cup.groups && cup.ties.length > 0 && <div className="sechead"><span className="over">{t.knockouts}</span></div>}

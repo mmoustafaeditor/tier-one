@@ -5,10 +5,13 @@ import type { Player } from '../model/types';
 import { FLAG } from '../data/names';
 import { ageOf, money } from '../sim/world';
 import backIcon from '../../../../../design/assets/icons/ui/back.svg?raw';
+import { ICONS, inlineIcon } from './icons';
 
 export { GROUP_OF as GROUP } from '../sim/groups';
 
 export const Icon = ({ svg }: { svg: string }) => <span aria-hidden="true" style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: svg }} />;
+// A 16px line icon inside text (replaces the old emoji).
+export const Ic = ({ svg }: { svg: string }) => <Icon svg={inlineIcon(svg)} />;
 export const Stars = ({ n }: { n: number }) => <span className="stars" aria-label={`${n}/5`}>{'★'.repeat(Math.floor(n))}{n % 1 ? '½' : ''}</span>;
 
 export function AppBar({ back, backLabel, title, sub, right, wrapSub = false }: { back?: () => void; backLabel?: string; title: string; sub?: string; right?: ReactNode; wrapSub?: boolean }) {
@@ -62,7 +65,7 @@ export function Badges({ p, t, season }: { p: Player; t: Strings; season: number
       {p.injured > 0 && <span className="tag g-down">✚ {p.injured}</span>}
       {p.banned > 0 && <span className="tag g-down">▮ {p.banned}</span>}
       {p.listed && <span className="tag dd">{t.listed}</span>}
-      {p.clubId !== 'free' && p.contractUntil <= season + 1 && <span className="tag g-warn">⏳</span>}
+      {p.clubId !== 'free' && p.contractUntil <= season + 1 && <span className="tag g-warn"><Ic svg={ICONS.hourglass} /></span>}
     </>
   );
 }

@@ -13,8 +13,9 @@ import { Radar } from './Radar';
 import { matchRatings } from '../sim/ratings';
 
 const CAM_NAMES = ['2D', '2.5D', '3D'];
-import { Sheet } from './parts';
+import { Ic, Sheet } from './parts';
 import { shareReport } from './MatchCard';
+import { ICONS } from './icons';
 
 const clone = (m: LiveMatch): LiveMatch => JSON.parse(JSON.stringify(m));
 // Real time per match minute: 1X lets you watch the pitch (about 36 s a match), 4X is the old quick pace.
@@ -110,11 +111,11 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
           <button className="chip g-toggle g-speed" onClick={() => setSpeed((speed + 1) % SPEEDS.length)} aria-label={t.speed}>{['1X', '2X', '4X'][speed]} ▸</button>
         )}
         {tab === 0 && (
-          <button className="chip g-toggle g-cam" aria-label={t.cameraT} onClick={() => { const c = ((camera + 1) % 3) as Camera; setCamera(c); onCamera?.(c); }}>🎥 {CAM_NAMES[camera]}</button>
+          <button className="chip g-toggle g-cam" aria-label={t.cameraT} onClick={() => { const c = ((camera + 1) % 3) as Camera; setCamera(c); onCamera?.(c); }}><Ic svg={ICONS.camera} /> {CAM_NAMES[camera]}</button>
         )}
       </div>
       {done && rt?.motm && (
-        <div className="banner g-motm"><span className="bic">⭐</span><div><b>{t.motm}: {name(rt.motm)}</b><p className="num">{t.ratingT} {rate(rt.motm)}{m.xg ? ` · xG ${m.xg[0].toFixed(1)}–${m.xg[1].toFixed(1)}` : ''}</p></div></div>
+        <div className="banner g-motm"><span className="bic"><Ic svg={ICONS.star} /></span><div><b>{t.motm}: {name(rt.motm)}</b><p className="num">{t.ratingT} {rate(rt.motm)}{m.xg ? ` · xG ${m.xg[0].toFixed(1)}–${m.xg[1].toFixed(1)}` : ''}</p></div></div>
       )}
       {tab === 0 && (
         <div className="g-livecols">
@@ -171,7 +172,7 @@ export function Live({ m, world, career, lang, t, locked, onUpdate, onSave, onCo
               {m.sides[i].onPitch.map((id, k) => id && (
                 <div key={id} className="cell g-row g-lu">
                   <span className="tag">{FORMATIONS[m.sides[i].tactics.formation].slots[k].pos}</span>
-                  <span className="cmain"><b>{rt?.motm === id && done ? '⭐ ' : ''}{name(id)}</b><small className="muted num">{Math.round(m.fit[id] ?? 0)}%</small></span>
+                  <span className="cmain"><b>{rt?.motm === id && done ? <><Ic svg={ICONS.star} /> </> : ''}{name(id)}</b><small className="muted num">{Math.round(m.fit[id] ?? 0)}%</small></span>
                   <span className={`g-rating num${rt && Number(rate(id)) >= 7.5 ? ' g-hot' : ''}`} title={t.ratingT}>{rate(id)}</span>
                 </div>
               ))}

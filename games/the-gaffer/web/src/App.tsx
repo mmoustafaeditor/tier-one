@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { UI, dataLang, type Lang, type UiLang } from './i18n';
 import { loadPrefs, savePrefs, type Prefs } from './sim/prefs';
 import { Settings, TextPage } from './ui/Settings';
@@ -14,7 +14,7 @@ import {
 } from './sim/world';
 import { clearStored, loadStored, store, tidyCareer } from './sim/save';
 import { Kit } from './components/Kit';
-import { AppBar, Empty, GROUP, Icon, PlayerRow, Stars, Stat } from './ui/parts';
+import { AppBar, Empty, GROUP, Ic, Icon, PlayerRow, Stars, Stat } from './ui/parts';
 import { PlayerSheet } from './ui/PlayerSheet';
 import { BidSheet, OffersSheet, RenewSheet, SaveSheet } from './ui/Deals';
 import { setListed } from './sim/transfers';
@@ -394,7 +394,7 @@ export function App() {
           </p>
           {badSave && (
             <div className="banner warn" style={{ marginBottom: 'var(--s4)' }}>
-              <span className="bic">⚠️</span>
+              <span className="bic"><Ic svg={ICONS.alert} /></span>
               <div><b>{t.badSave}</b></div>
             </div>
           )}
@@ -418,17 +418,17 @@ export function App() {
           <div className="sechead"><span className="over">{t.moreWays}</span></div>
           <div className="g-tiles">
             <button className="g-tile" disabled={!saved} onClick={continueCareer}>
-              {saved ? <Kit colors={saved.world.clubs.find((c) => c.id === saved.career.clubId)!.colors} size="sm" /> : <span className="ico">📋</span>}
+              {saved ? <Kit colors={saved.world.clubs.find((c) => c.id === saved.career.clubId)!.colors} size="sm" /> : <span className="ico"><Icon svg={ICONS.clipboard} /></span>}
               <span className="d5">{t.continue}</span>
               <small>{saved ? clubName(saved.world.clubs.find((c) => c.id === saved.career.clubId)!) : t.continueSub}</small>
             </button>
             <button className="g-tile" disabled>
-              <span className="ico">🏟️</span>
+              <span className="ico"><Icon svg={ICONS.stadium} /></span>
               <span className="d5">{t.friends}</span>
               <small>{t.friendsSub}</small>
             </button>
             <button className="g-tile" onClick={() => setScreen({ id: 'quick' })}>
-              <span className="ico">⚽</span>
+              <span className="ico"><Icon svg={ICONS.ball} /></span>
               <span className="d5">{t.quick}</span>
               <small>{t.quickSub}</small>
             </button>
@@ -448,7 +448,7 @@ export function App() {
       {screen.id === 'country' && (
         <>
           <AppBar back={() => setScreen({ id: 'home' })} backLabel={t.back} title={t.chooseCountry} sub={t.newCareer} />
-          <input className="g-input" style={{ width: '100%', marginTop: 'var(--s4)' }} placeholder={`🔍 ${t.searchClub}`} value={clubQuery} onChange={(e) => setClubQuery(e.target.value)} />
+          <input className="g-input g-search" style={{ width: '100%', marginTop: 'var(--s4)' }} placeholder={t.searchClub} value={clubQuery} onChange={(e) => setClubQuery(e.target.value)} />
           {draftWorld && clubQuery.trim().length >= 2 && (
             <div className="list" style={{ marginTop: 'var(--s3)' }}>
               {draftWorld.clubs.filter((c) => c.name.en.toLowerCase().includes(clubQuery.trim().toLowerCase()) || c.name.ar.includes(clubQuery.trim())).slice(0, 12).map((c) => (
@@ -594,10 +594,10 @@ export function App() {
               <div className="g-links">
                 {([
                   [ICONS.tactics, t.tactics, `${fmt((career.tactics ?? DEFAULT_TACTICS).formation)}`, () => { setTacticsBack('squad'); setScreen({ id: 'tactics' }); }],
-                  [ICONS.training, t.trainingT, `${t.loads[career.ops.training.load]} · ⚡${career.ops.devPoints}`, () => setScreen({ id: 'training' })],
+                  [ICONS.training, t.trainingT, <>{t.loads[career.ops.training.load]} · <Ic svg={ICONS.bolt} />{career.ops.devPoints}</>, () => setScreen({ id: 'training' })],
                   [ICONS.medical, t.hospitalT, t.hospitalSub(squad.filter((p) => p.injured > 0).length), () => setScreen({ id: 'hospital' })],
                   [ICONS.academy, t.academyT, t.academySub(career.ops.academy.length), () => setScreen({ id: 'academy' })],
-                ] as [string, string, string, () => void][]).map(([ico, title, sub, go]) => (
+                ] as [string, string, ReactNode, () => void][]).map(([ico, title, sub, go]) => (
                   <button key={title} className="g-link" onClick={go}>
                     <span className="g-duty-ico"><Icon svg={ico} /></span>
                     <span className="cmain"><b>{title}</b><small>{sub}</small></span>
@@ -857,7 +857,7 @@ export function App() {
                 <div className="list">
                   {summary.cups.map((cu) => (
                     <div key={cu.id} className="cell g-row">
-                      <span className="g-shirt">{cu.won ? '🏆' : '⚽'}</span>
+                      <span className="g-shirt"><Icon svg={cu.won ? ICONS.trophy : ICONS.ball} /></span>
                       <span className="cmain"><b>{cu.name[lang]}</b><span>{cu.won ? t.cupWonT : t.cupOut(t.roundName(cu.round, cu.rounds))}</span></span>
                     </div>
                   ))}

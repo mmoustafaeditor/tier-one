@@ -1,4 +1,4 @@
-// Live 2D pitch. Players move continuously (every animation frame) towards positions that follow their role and
+// Live 2D pitch (light "pitchside glass" turf since v0.13). Players move continuously (every animation frame) towards positions that follow their role and
 // whether their team has the ball; the ball is passed between players, won back by the other side, and shot at goal
 // for the chances the engine produced in that minute (goals go in, saves end with the keeper, misses go wide).
 // Everything is seeded by the match minute, so the same match always looks the same.
@@ -335,14 +335,14 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   const vh = viewHeight(camera);
   return (
     <svg className={`g-pitch2d cam${camera}`} viewBox={`-2 0 ${L + 4} ${vh}`} role="img" aria-label="pitch">
-      <rect x="-2" y="0" width={L + 4} height={vh} fill={camera ? '#0b2e1a' : '#14532d'} />
-      <path ref={pitchRef} fill="#14532d" />
-      <path ref={stripeRef} fill="#166534" />
-      <path ref={lineRef} fill="none" stroke="rgba(255,255,255,.55)" strokeWidth=".4" strokeLinejoin="round" />
+      <rect x="-2" y="0" width={L + 4} height={vh} fill={camera ? '#0A302C' : '#D9EFE4'} />
+      <path ref={pitchRef} fill="#D9EFE4" />
+      <path ref={stripeRef} fill="#CBE7DA" />
+      <path ref={lineRef} fill="none" stroke="rgba(11,60,52,.34)" strokeWidth=".4" strokeLinejoin="round" />
       <g ref={layer}>
         {([0, 1] as const).map((side) => m.sides[side].onPitch.map((_, k) => (
           <g key={`${side}-${k}`} ref={(el) => { dots.current[side][k] = el; }} className="g-dot2">
-            <circle r="2.3" fill={kit[side]} stroke="#fff" strokeWidth=".45" />
+            <circle r="2.3" fill={kit[side]} stroke="#0B2A26" strokeOpacity=".7" strokeWidth=".4" />
             <text className="g-dot-n" y=".85" textAnchor="middle" fill={ink(kit[side])}>{numbers[side][k]}</text>
           </g>
         )))}

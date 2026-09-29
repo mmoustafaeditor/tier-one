@@ -255,7 +255,7 @@ export const NEW_EN = {
   supporterBadge: 'Supporter',
   supportThanks: 'Thanks for backing The Gaffer. Everything is unlocked.',
   looksT: 'Look',
-  looks: ['Violet', 'Floodlight', 'Pitch', 'Derby red'],
+  looks: ['Teal', 'Floodlight', 'Pitch', 'Derby red'],
   looksLocked: 'Supporter pack',
   rewardedBtn: 'Watch a short ad: free report',
   rewardedHint: 'Optional. You can always buy the report with club money.',

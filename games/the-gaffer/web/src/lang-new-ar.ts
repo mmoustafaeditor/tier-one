@@ -237,7 +237,7 @@ export const NEW_AR: NewStrings = {
   supporterBadge: 'داعم',
   supportThanks: 'شكراً إنك بتدعم The Gaffer. كل حاجة اتفتحت.',
   looksT: 'الشكل',
-  looks: ['بنفسجي', 'كشافات', 'نجيلة', 'أحمر الديربي'],
+  looks: ['تركوازي', 'كشافات', 'نجيلة', 'أحمر الديربي'],
   looksLocked: 'باكدج الداعم',
   rewardedBtn: 'اتفرج على إعلان قصير: تقرير ببلاش',
   rewardedHint: 'اختياري. تقدر دايماً تشتري التقرير بفلوس النادي.',

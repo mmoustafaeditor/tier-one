@@ -8,7 +8,8 @@ import {
   type DevUse, type Treatment,
 } from '../sim/training';
 import { roundFee } from '../sim/season';
-import { AppBar, Empty } from './parts';
+import { AppBar, Empty, Ic } from './parts';
+import { ICONS } from './icons';
 
 type Done = (w: World, c: Career, msg?: string) => void;
 
@@ -24,7 +25,7 @@ export function TrainingScreen({ world, career, lang, t, onBack, onChange }: {
 
   return (
     <>
-      <AppBar back={onBack} backLabel={t.back} title={t.trainingT} sub={`⚡ ${ops.devPoints}`} />
+      <AppBar back={onBack} backLabel={t.back} title={t.trainingT} sub={`${t.devT} · ${ops.devPoints}`} />
       <div className="sechead"><span className="over">{t.loadT}</span></div>
       <div className="seg">
         {t.loads.map((l, i) => <button key={l} className={ops.training.load === i ? 'on' : ''} onClick={() => setOps({ training: { ...ops.training, load: i as 0 | 1 | 2 } })}>{l}</button>)}
@@ -38,7 +39,7 @@ export function TrainingScreen({ world, career, lang, t, onBack, onChange }: {
         {ops.report.hurt.map((id) => <p key={id} className="g-bad" style={{ margin: 0 }}>{t.hurtIn(playerOf(world, id)?.name[lang] ?? '')}</p>)}
       </div>
 
-      <div className="sechead"><span className="over">{t.devT} · ⚡ {ops.devPoints}</span></div>
+      <div className="sechead"><span className="over">{t.devT} · {ops.devPoints}</span></div>
       <div className="card g-form">
         <small className="muted">{t.devHint}</small>
         <select className="g-input g-select" value={who} onChange={(e) => setWho(e.target.value)} aria-label={t.choosePlayer}>
@@ -48,7 +49,7 @@ export function TrainingScreen({ world, career, lang, t, onBack, onChange }: {
           const check = canUseDev(career, u === 'morale' ? null : target, u);
           return (
             <div key={u} className="g-devrow">
-              <span>{t.devUses[u]} · ⚡{DEV_COST[u]}</span>
+              <span>{t.devUses[u]} · <Ic svg={ICONS.bolt} />{DEV_COST[u]}</span>
               <button className="btn sm" onClick={() => {
                 if (!check.ok) { setMsg(t.devWhy[check.reason]); return; }
                 const r = useDev(world, career, target, u);

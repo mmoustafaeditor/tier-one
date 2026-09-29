@@ -7,12 +7,13 @@ import { ageOf, money, type World } from '../sim/world';
 import { askingPrice } from '../sim/transfers';
 import { Kit } from '../components/Kit';
 import { useState } from 'react';
-import { Line, Sheet, Stat } from './parts';
+import { Ic, Line, Sheet, Stat } from './parts';
 import { balanceOf } from '../sim/balance';
 import { estimate, shortlisted, toggleShortlist } from '../sim/estimate';
 import { avgRating } from '../sim/ratings';
 import { windowOf } from '../sim/windows';
 import { loanClubs, loanFee, loanIn, loanOf, loanOut } from '../sim/loans';
+import { ICONS } from './icons';
 
 export function PlayerSheet({ p, world, career, lang, t, onClose, onOffer, onRenew, onList, onRename, onApply }: {
   p: Player; world: World; career: Career; lang: Lang; t: Strings;
@@ -125,13 +126,13 @@ export function PlayerSheet({ p, world, career, lang, t, onClose, onOffer, onRen
           {rt && rt[1] > 0 && (
             <div className="g-leagues" style={{ marginTop: 'var(--s3)' }}>
               <span className="chip">{t.avgRatingT} <b className="num">{avgRating(rt).toFixed(2)}</b></span>
-              {rt[2] > 0 && <span className="chip">⭐ {t.motmN(rt[2])}</span>}
+              {rt[2] > 0 && <span className="chip"><Ic svg={ICONS.star} /> {t.motmN(rt[2])}</span>}
             </div>
           )}
         </>
       )}
       <div className="g-actions" style={{ marginTop: 'var(--s4)' }}>
-        <button className="btn ghost" onClick={onRename}>✎ {t.editName}</button>
+        <button className="btn ghost" onClick={onRename}><Ic svg={ICONS.pen} /> {t.editName}</button>
         <button className="btn ghost" onClick={onClose}>{t.close}</button>
       </div>
     </Sheet>

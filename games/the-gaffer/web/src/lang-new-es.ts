@@ -239,7 +239,7 @@ export const NEW_ES: NewStrings = {
   supporterBadge: 'Socio',
   supportThanks: 'Gracias por apoyar a The Gaffer. Todo desbloqueado.',
   looksT: 'Estilo',
-  looks: ['Violeta', 'Focos', 'Césped', 'Rojo derbi'],
+  looks: ['Verde azulado', 'Focos', 'Césped', 'Rojo derbi'],
   looksLocked: 'Pack de Socio',
   rewardedBtn: 'Ver un anuncio corto: informe gratis',
   rewardedHint: 'Opcional. Siempre puedes pagar el informe con dinero del club.',

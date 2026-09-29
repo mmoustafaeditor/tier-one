@@ -38,7 +38,7 @@ export function Inbox({ world, career, lang, t, onBack, onChange }: {
           <button key={k} className={`chip g-toggle${kind === k ? ' on' : ''}`} onClick={() => setKind(k)}>{t.inboxKinds[k]}</button>
         ))}
       </div>
-      <input className="g-input" style={{ width: '100%', marginTop: 'var(--s3)' }} placeholder={`🔍 ${t.searchT}`} value={q} onChange={(e) => setQ(e.target.value)} />
+      <input className="g-input g-search" style={{ width: '100%', marginTop: 'var(--s3)' }} placeholder={t.searchT} value={q} onChange={(e) => setQ(e.target.value)} />
       <div className="g-filters" style={{ margin: 'var(--s3) 0' }}>
         <button className="btn sm" onClick={() => read(new Set(career.inbox.map((m) => m.id)))}>{t.markAllRead}</button>
         <button className="btn sm ghost" onClick={() => onChange({ ...career, inbox: [] })}>{t.clearAll}</button>
