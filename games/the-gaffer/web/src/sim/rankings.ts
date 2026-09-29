@@ -1,6 +1,7 @@
 // World rankings for clubs and coaches. One formula everywhere (E2E #13), regions that are really regions (E2E #57).
 import type { Career, Club, CountryCode } from '../model/types';
 import { playerName } from '../data/names';
+import { COACH_NAMES } from '../data/stars';
 import { makeRng } from './rng';
 import type { World } from './world';
 
@@ -30,15 +31,9 @@ export const countryOf = (w: World, clubId: string) => w.leagues.find((l) => l.i
 export const inRegion = (w: World, clubId: string, region: Region, home: CountryCode) =>
   region === 'world' || (region === 'country' ? countryOf(w, clubId) === home : REGION[countryOf(w, clubId)] === region);
 
-// A few near-real coaches for famous clubs; everyone else gets a generated name.
-const COACHES: Record<string, [string, string]> = {
-  eng_mcb: ['P. Guardiolla', 'ب. جوارديولا'], eng_lgu: ['M. Artetta', 'م. أرتيتا'], eng_lvr: ['A. Slott', 'أ. سلوت'], eng_lbl: ['E. Maresca', 'إ. ماريسكا'],
-  esp_mdw: ['C. Ancelotty', 'ك. أنشيلوتي'], esp_bcn: ['H. Flik', 'ه. فليك'], esp_mdr: ['D. Simeoni', 'د. سيميوني'], ger_mun: ['V. Kompanny', 'ف. كومباني'],
-  fra_par: ['L. Enrikey', 'ل. إنريكي'], ita_mnz: ['S. Inzagy', 'س. إنزاجي'], eg1_ahly: ['M. Koler', 'م. كولر'], eg1_zamalek: ['J. Gomez', 'ج. جوميز'],
-  ksa_hilal: ['J. Jesusz', 'ج. جيسوس'],
-};
+// Coaches of famous clubs (fictional) or generated names for everyone else.
 export function coachName(w: World, clubId: string) {
-  const [en, ar] = COACHES[clubId] ?? (() => { const n = playerName(countryOf(w, clubId), makeRng([...clubId].reduce((h, ch) => h * 31 + ch.charCodeAt(0), 7) >>> 0)); return [n.en, n.ar]; })();
+  const [en, ar] = COACH_NAMES[clubId] ?? (() => { const n = playerName(countryOf(w, clubId), makeRng([...clubId].reduce((h, ch) => h * 31 + ch.charCodeAt(0), 7) >>> 0)); return [n.en, n.ar]; })();
   return { en, ar };
 }
 

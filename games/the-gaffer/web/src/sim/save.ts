@@ -4,6 +4,7 @@
 import type { Career, SaveFile } from '../model/types';
 import { checkWorld, type World } from './world';
 import { SAVE_VERSION, upgradeCareer, upgradeSave, upgradeWorld } from './upgrade';
+import { renameSave } from './renames';
 
 const KEY = 'gaffer.save.v1';
 
@@ -173,8 +174,12 @@ export async function parseSave(text: string): Promise<LoadResult> {
   }
   if ((await sha256(body(s.world, s.career))) !== s.checksum) return { ok: false, reason: 'checksum' };
   // Checksum is good: now it's safe to bring an older save up to date.
-  const world = upgradeWorld(s.world, s.career?.season ?? 2026);
-  const career = s.career ? upgradeCareer(world, s.career) : null;
+  let world = upgradeWorld(s.world, s.career?.season ?? 2026);
+  let career = s.career ? upgradeCareer(world, s.career) : null;
+  // Rename old player names to fictional names from this build (Sep 2026).
+  const renamed = renameSave(world, career);
+  world = renamed.world;
+  career = renamed.career;
   s = upgradeSave({ ...s, format: 'SEMBA_GAFFER_SAVE', world, career });
   if (s.career) s = { ...s, career: tidyCareer(s.world, s.career) };
   if (checkWorld(s.world).length) return { ok: false, reason: 'world' };

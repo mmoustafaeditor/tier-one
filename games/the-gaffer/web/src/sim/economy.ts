@@ -2,7 +2,7 @@
 // Every amount is scaled to the club's size (its wage cap), so small systems matter at every club (E2E report §7),
 // and every movement goes into the ledger, so the monthly and season totals add up line by line (E2E #9, #29).
 import type { Career, Club, ClubOps, Facility, LocalizedName, SponsorDeal, SponsorSlot, Staff, StaffRole } from '../model/types';
-import { KIT_MAKERS, shirtBrands, sponsorsOf } from '../data/sponsors';
+import { KIT_MAKERS, SLOT_BRANDS, shirtBrands, sponsorsOf } from '../data/sponsors';
 import { playerName } from '../data/names';
 import { clamp, int, makeRng, pick, type Rng } from './rng';
 import { squadOf, type World } from './world';
@@ -101,20 +101,13 @@ function deal(r: Rng, club: Club, slot: SponsorSlot, brand: LocalizedName, month
   return { id: `sp_${slot}_${Math.floor(r() * 1e9)}`, slot, brand, monthly, months, bonusLeague: roundFee(monthly * 3), bonusCup: roundFee(monthly * 1.5) };
 }
 
-const BRANDS: Record<SponsorSlot, [string, string][]> = {
-  shirt: [], kit: KIT_MAKERS,
-  stadium: [['Samsong Arena', 'ساحة سامسونغ'], ['Emiratez Park', 'حديقة الإماراتز'], ['Orangi Stadium', 'استاد أورانجي'], ['Vodafun Dome', 'قبة فودافَن']],
-  sleeve: [['Rakutin', 'راكوتين'], ['Spotifly', 'سبوتيفلاي'], ['Koshary Express', 'كشري إكسبريس'], ['Kebab King', 'ملك الكباب'], ['Chipsi', 'شيبسيه']],
-  commercial: [['CIBB Bank', 'بنك سي آي بي بي'], ['Red Bool', 'ريد بوول'], ['Juhayma', 'جهايمة'], ['Pepsy', 'بيبسيه'], ['Aramcoo', 'أرامكوو']],
-};
-
 export function sponsorOffers(r: Rng, w: World, club: Club, ops: ClubOps): SponsorDeal[] {
   const lg = leagueOf(w, club);
   const out: SponsorDeal[] = [];
   for (const slot of SLOTS) {
     if (ops.sponsors.some((s) => s.slot === slot)) continue;
     for (let i = 0; i < 2; i++) {
-      const brands = slot === 'shirt' ? shirtBrands(lg.country, lg.tier, club.reputation) : BRANDS[slot];
+      const brands = slot === 'shirt' ? shirtBrands(lg.country, lg.tier, club.reputation) : slot === 'kit' ? KIT_MAKERS : SLOT_BRANDS[slot];
       const [en, ar] = pick(r, brands);
       out.push(deal(r, club, slot, { en, ar }, pick(r, [12, 24, 36])));
     }
