@@ -4,8 +4,10 @@ import type { XStrings } from '../lang-v2';
 import type { Career, Msg, NewsItem, PrepFocus, StaffLog } from '../model/types';
 import { money, playerOf, type World } from '../sim/world';
 import { fmt, type FormationId } from '../sim/tactics';
+import { isRoom, roomLog, roomMsg, roomNews } from './roomText';
 
 export function newsText(t: Strings, lang: Lang, w: World, c: Career, n: NewsItem): [string, string] {
+  if (isRoom(n.key)) return roomNews(t, lang, w, n);
   const club = (id?: string) => (id ? w.clubs.find((x) => x.id === id)?.name[lang] ?? '' : '');
   const player = n.player ? (playerOf(w, n.player)?.name ?? n.pn)?.[lang] ?? '' : '';
   const s = n.key === 'cupFinal' ? c.cups[n.s ?? '']?.name[lang] ?? '' : ['aiTransfer', 'userSign', 'userSell'].includes(n.key) ? money(Number(n.s)) : n.s ?? '';
@@ -23,6 +25,7 @@ export function newsText(t: Strings, lang: Lang, w: World, c: Career, n: NewsIte
 }
 
 export function msgText(t: Strings, lang: Lang, w: World, c: Career, m: Msg): [string, string] {
+  if (isRoom(m.key)) return roomMsg(t, lang, w, m);
   const club = m.club ? w.clubs.find((x) => x.id === m.club)?.name[lang] ?? '' : '';
   const player = m.player ? (playerOf(w, m.player)?.name ?? m.pn)?.[lang] ?? '' : '';
   let s = m.s ?? '';
@@ -36,6 +39,7 @@ export function msgText(t: Strings, lang: Lang, w: World, c: Career, m: Msg): [s
 
 export function logText(t: Strings, x: XStrings, lang: Lang, w: World, l: StaffLog): string {
   const club = l.s ? w.clubs.find((c) => c.id === l.s)?.name[lang] ?? '' : '';
+  if (isRoom(l.key)) return roomLog(t, l.key, l.pn?.[lang] ?? '');
   const k = `${l.duty}:${l.key}`;
   if (k === 'training:focus') return x.log[k](x.train.focusNames[l.s as PrepFocus] ?? l.s ?? '');
   if (k === 'tactics:plan') return x.log[k](x.tac.styles[l.s as keyof typeof x.tac.styles] ?? l.s ?? '');

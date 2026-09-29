@@ -7,6 +7,9 @@ import { Crest, I, LineChart, Portrait } from './kit';
 import { Panel, PanelHead } from './shell';
 import { useGame, clubOf, cn } from './game';
 import { verdictText } from './why';
+import { D } from '../lang-dressing-all';
+import { AI_COH, cohLevel } from '../sim/cohesion';
+import { levelText } from './roomText';
 
 export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
   const g = useGame();
@@ -55,6 +58,7 @@ export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
             )}
             <div className="chg"><span className="l"><I n="board" size="sm" />{F.board}</span><span className="v">{Math.round(a.board[1])}<small className={d(a.board) >= 0 ? 'up' : 'down'}>{delta(d(a.board))}</small></span><p>{F.boardQuote(a.board[1] - a.board[0])}</p></div>
             <div className="chg"><span className="l"><I n="fans" size="sm" />{F.fans}</span><span className="v">{Math.round(a.fans[1])}<small className={d(a.fans) >= 0 ? 'up' : 'down'}>{delta(d(a.fans))}</small></span><p>{F.fansQuote(a.fans[1] - a.fans[0])}</p></div>
+            {a.coh && <div className="chg chg-link" role="button" tabIndex={0} onClick={() => g.go({ s: 'room' })}><span className="l"><I n="handshake" size="sm" />{D[g.ui].ftCoh}</span><span className="v">{Math.round(a.coh[1])}<small className={a.coh[1] - a.coh[0] >= 0 ? 'up' : 'down'}>{delta(Math.round(a.coh[1] - a.coh[0]))}</small></span><p>{D[g.ui].ftCohQuote(levelText(cohLevel(a.coh[0]) - cohLevel(AI_COH)))}</p></div>}
             <div className="chg"><span className="l"><I n="room" size="sm" />{F.room}</span><span className="v">{a.room[1]}<small className={d(a.room) >= 0 ? 'up' : 'down'}>{delta(d(a.room))}</small></span><p>{F.roomQuote(a.room[1] - a.room[0])}</p></div>
           </div>
           {a.out.length > 0 && <div className="outs">{a.out.map((o, i) => <span key={i} className="tag tag--bad"><I n={o.ban ? 'x' : 'medic'} size="sm" />{o.ban ? F.bannedFor(o.pn[lang], o.n) : F.injuredFor(o.pn[lang], o.n)}</span>)}</div>}

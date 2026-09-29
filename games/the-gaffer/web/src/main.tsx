@@ -6,6 +6,7 @@ import './styles/look/tokens.css';
 import './styles/look/components.css';
 import './styles/screens.css';
 import './styles/app.css';
+import './styles/dressing.css';
 import './styles/boot-fonts.css';
 import './boot/boot.css';
 import { BOOT_MARKUP, playIntro } from './boot/intro';

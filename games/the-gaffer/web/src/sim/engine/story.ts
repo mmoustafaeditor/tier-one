@@ -5,6 +5,7 @@ import type { Player } from '../../model/types';
 import { FORMATIONS, FORMATION_IDS, fitPenalty, fullTactics, type FormationId, type Tactics } from '../tactics';
 import { SHOTS, type Model, type Rates, type ShotType } from './model';
 import { expected, modelOf, outcome, reshape, setTactics, type LiveMatch } from '../match';
+import { cohLevel } from '../cohesion';
 
 type Lookup = (id: string) => Player;
 
@@ -142,7 +143,7 @@ export function applyTip(m: LiveMatch, side: 0 | 1, tip: Tip, get: Lookup) {
 
 export type Verdict = 'deserved' | 'robbed' | 'smash' | 'beaten' | 'even' | 'clinical' | 'wasteful' | 'level';
 export interface Point {
-  k: 'source' | 'midfield' | 'pressed' | 'pressing' | 'duel' | 'finish' | 'keeper' | 'tired' | 'red' | 'change' | 'theyChanged' | 'setpiece';
+  k: 'source' | 'midfield' | 'pressed' | 'pressing' | 'duel' | 'finish' | 'keeper' | 'tired' | 'red' | 'change' | 'theyChanged' | 'setpiece' | 'cohesion';
   me: boolean;              // about us (true) or them
   theme?: Theme;
   n?: number; of?: number;  // counts
@@ -243,6 +244,12 @@ export function explain(m: LiveMatch, me: 0 | 1, get: Lookup, tips = true): Why 
   }
   const theirs = [...ev].reverse().find((e) => e.kind === 'tactic' && e.side === them && e.note?.includes('|read'));
   if (theirs) pts.push({ k: 'theyChanged', me: false, note: theirs.note, min: theirs.min, good: false, w: 0.9 });
+  // v2.4: the dressing room on the pitch. Cohesion is a real input (±2 levels); it makes the Why when it was big enough.
+  const coh = m.sides[me].coh;
+  if (coh !== undefined) {
+    const lv = cohLevel(coh) - (m.sides[them].coh !== undefined ? cohLevel(m.sides[them].coh!) : 0);
+    if (Math.abs(lv) >= 0.5) pts.push({ k: 'cohesion', me: true, n: Math.round(coh), x: Math.round(lv * 10) / 10, good: lv > 0, w: 0.5 + Math.abs(lv) * 0.5 });
+  }
   pts.sort((a, b) => b.w - a.w);
   return {
     goals: [m.goals[me], m.goals[them]], xg: [Math.round(xg[me] * 10) / 10, Math.round(xg[them] * 10) / 10], verdict,

@@ -41,6 +41,10 @@ export function checkCareer(w: World, c: Career): string[] {
   // v2 invariants: pending staff commands and rests point at real players, event ids are unique and increasing.
   for (const p of c.pending ?? []) { const id = (p.cmd as { playerId?: string }).playerId; if (id) player('pending', id); }
   for (const id of c.rested ?? []) player('rested', id);
+  // v2.4: promises, asks and release clauses point at real players (and clauses at real clubs).
+  for (const pl of c.room?.pledges ?? []) player('pledge', pl.playerId);
+  for (const a of c.room?.asks ?? []) player('ask', a.playerId);
+  for (const cl of c.room?.clauses ?? []) { player('clause', cl.playerId); club('clause', cl.clubId); }
   issues.push(...checkEvents(c));
   return issues;
 }
@@ -71,6 +75,13 @@ export function tidyCareer(w: World, c: Career): Career {
   const rested = c.rested ?? [];
   const okRest = rested.filter((id) => players.get(id)?.clubId === c.clubId);
   if (okRest.length !== rested.length) out = { ...out, rested: okRest };
+  const room = c.room;
+  if (room) {
+    const pledges = room.pledges.filter((pl) => players.has(pl.playerId));
+    const asks = room.asks.filter((a) => players.get(a.playerId)?.clubId === c.clubId);
+    const clauses = room.clauses.filter((cl) => players.get(cl.playerId)?.clubId === c.clubId && clubs.has(cl.clubId));
+    if (pledges.length !== room.pledges.length || asks.length !== room.asks.length || clauses.length !== room.clauses.length) out = { ...out, room: { ...room, pledges, asks, clauses } };
+  }
   return out;
 }
 

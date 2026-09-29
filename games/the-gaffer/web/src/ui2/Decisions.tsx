@@ -7,9 +7,10 @@ import { fmt, type FormationId } from '../sim/tactics';
 import { biasOf } from '../sim/delegation';
 import { I, initialsOf } from './kit';
 import { useGame, clubOf, cn, money, type Game } from './game';
+import { isRoom, roomAdvice, roomChoice, roomFx, roomTag, roomTitle } from './roomText';
 
-const TONE: Record<string, string> = { offer: 'tag--club', condition: 'tag--bad', contract: 'tag--club', staff: '', job: 'tag--good', tape: '', focus: '', deadline: 'tag--warn' };
-const KIND_ICON: Record<string, string> = { offer: 'market', condition: 'medic', contract: 'doc', staff: 'chat', job: 'club', tape: 'eye', focus: 'bolt', deadline: 'clock' };
+const TONE: Record<string, string> = { offer: 'tag--club', condition: 'tag--bad', contract: 'tag--club', staff: '', job: 'tag--good', tape: '', focus: '', deadline: 'tag--warn', talk: '', request: 'tag--bad', promise: 'tag--warn', armband: 'tag--club', clause: 'tag--bad' };
+const KIND_ICON: Record<string, string> = { offer: 'market', condition: 'medic', contract: 'doc', staff: 'chat', job: 'club', tape: 'eye', focus: 'bolt', deadline: 'clock', talk: 'chat', request: 'alert', promise: 'handshake', armband: 'star', clause: 'pound' };
 const ROLE_TONE: Record<StaffRole, string> = { assistant: '#0E4F47', director: '#0B3B5C', fitness: '#5A3A8A', doctor: '#7A2E3A', psychologist: '#3F5A1E', scout: '#8A5A12' };
 
 const pnOf = (g: Game, r: { pn?: { en: string; ar: string } }) => (r.pn ? r.pn[g.lang] || r.pn.en : '');
@@ -18,6 +19,7 @@ const call = (f: ((...a: any[]) => string) | undefined, ...a: unknown[]) => (f ?
 
 export function titleText(g: Game, d: Decision): string {
   const r = d.title, T = g.x.dec.titles;
+  if (isRoom(r.key)) return roomTitle(g, r);
   const pn = pnOf(g, r);
   switch (r.key) {
     case 'offer': return call(T.offer, clubName(g, r.club), money(r.n ?? 0), pn);
@@ -41,6 +43,7 @@ export function titleText(g: Game, d: Decision): string {
 
 function adviceText(g: Game, r: Ref): string {
   const A = g.x.dec.advice;
+  if (isRoom(r.key)) return roomAdvice(g, r);
   const pn = pnOf(g, r);
   if (r.key.startsWith('offer_')) return call(A[r.key], pn, money(r.n ?? 0));
   if (r.key.startsWith('rest')) return call(A[r.key], pn, r.n, r.s);
@@ -56,6 +59,7 @@ function adviceText(g: Game, r: Ref): string {
 
 export function choiceText(g: Game, ch: Choice): string {
   const C = g.x.dec.choices;
+  if (isRoom(ch.key)) return roomChoice(g, ch);
   if (ch.key === 'accept' || ch.key === 'counter') return call(C[ch.key], money(ch.n ?? 0));
   if (ch.key === 'restHim') return call(C.restHim, pnOf(g, ch));
   if (ch.key === 'renewYears') return call(C.renewYears, ch.n);
@@ -64,6 +68,7 @@ export function choiceText(g: Game, ch: Choice): string {
 
 function fxText(g: Game, f: Fx): string {
   const F = g.x.dec.fx;
+  if (isRoom(f.key)) return roomFx(g, f);
   if (['cash', 'fee', 'monthly'].includes(f.key)) return call(F[f.key], money(f.n ?? 0));
   if (f.key === 'wagesYear') return call(F.wagesYear, `${(f.n ?? 0) >= 0 ? '+' : '−'}${money(Math.abs(f.n ?? 0))}`);
   return call(F[f.key], f.n);
@@ -89,7 +94,7 @@ export function DecisionCard({ d, i, onResolve }: { d: Decision; i: number; onRe
       onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} aria-label={titleText(g, d)}>
       <div className="head">
         <div className="grow">
-          <span className={`tag ${TONE[d.kind] ?? ''}`}><I n={KIND_ICON[d.kind] ?? d.icon} size="sm" />{g.x.dec.tag[d.kind]}</span>
+          <span className={`tag ${TONE[d.kind] ?? ''}`}><I n={KIND_ICON[d.kind] ?? d.icon} size="sm" />{(g.x.dec.tag as Record<string, string>)[d.kind] ?? roomTag(g, d.kind)}</span>
           <h3>{titleText(g, d)}</h3>
         </div>
         <span className="due"><I n="clock" size="sm" />{typeof due === 'function' ? due(d.due.n ?? 1) : due}</span>

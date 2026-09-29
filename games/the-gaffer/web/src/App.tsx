@@ -39,10 +39,12 @@ import { QuickMatch } from './ui2/QuickMatch';
 import { Sheets } from './ui2/Sheets';
 import { UpdateBanner } from './ui2/UpdateBanner';
 import { OfficeBarInner } from './ui2/OfficeBar';
+import { RoomScreen } from './ui2/Room';
+import { D } from './lang-dressing-all';
 
 type Top = { s: 'title' } | { s: 'new'; slot: number } | { s: 'quick' };
 const TAB_OF: Partial<Record<Route['s'], Tab>> = {
-  today: 'today', squad: 'squad', player: 'squad', train: 'squad', match: 'match', transfers: 'transfers', club: 'club', settings: 'club', news: 'today', career: 'career', pass: 'pass', world: 'club',
+  today: 'today', squad: 'squad', player: 'squad', train: 'squad', match: 'match', transfers: 'transfers', club: 'club', settings: 'club', news: 'today', career: 'career', pass: 'pass', world: 'club', room: 'squad',
 };
 const SOLO = new Set<Route['s']>(['pre', 'live', 'ft', 'digest']);
 
@@ -127,6 +129,7 @@ export function App() {
     switch (n.key) {
       case 'signed': return N.signed(pn); case 'sold': return N.sold(pn); case 'renewed': return N.renewed(pn);
       case 'loanedIn': return N.loanedIn(pn); case 'loanedOut': return N.loanedOut(pn); case 'counterOk': return N.counterOk; case 'counterNo': return N.counterNo;
+      case 'dr.talk': return D[ui].note.talk; case 'dr.stays': return D[ui].note.stays(pn); case 'dr.clauseGo': return D[ui].note.clauseGo(pn);
       case 'haggleOk': return N.haggleOk; case 'haggleNo': return N.haggleNo; case 'rightsSold': return N.rightsSold(String(n.n)); case 'scoutFound': return N.scoutFound(n.n ?? 0);
       default: return N.done;
     }
@@ -137,7 +140,7 @@ export function App() {
     if (!w || !c) return { ok: false, reason: 'noCareer' };
     const r = dispatch(w, c, cmd);
     if (!r.ok) {
-      if (opt?.toast !== false) setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? r.reason}`);
+      if (opt?.toast !== false) setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? D[ui].no[r.reason] ?? r.reason}`);
       return r;
     }
     await commit(r.world, r.career);
@@ -260,7 +263,7 @@ export function App() {
     let ww = w, cc = c;
     for (const cmd of ch.cmds) {
       const r = dispatch(ww, cc, cmd);
-      if (!r.ok) { setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? r.reason}`); return false; }
+      if (!r.ok) { setToast(`${x.note.refused} ${x.bid.no[r.reason] ?? D[ui].no[r.reason] ?? r.reason}`); return false; }
       ww = r.world; cc = r.career;
     }
     const r = dispatch(ww, cc, { type: 'decision.done', id: d.id });
@@ -349,6 +352,7 @@ export function App() {
           onDelete={async () => { await clearSlot(slot); setWorld(null); setCareer(null); cur.current = { w: null, c: null }; toTitle(); }}
           onImported={async (w, c) => { await commit(w, c); setRoute({ s: 'today' }); setToast(x.set.importOk); }} />}
         {route.s === 'news' && <NewsScreen />}
+        {route.s === 'room' && <RoomScreen />}
       </Shell>
       <Sheets req={sheet} onClose={() => setSheet(null)} summary={summary} onSummaryDone={() => setSummary(null)}
         onTakeCalls={async () => { await takeStaffCalls(); setSheet(null); void cont(); }} onLeave={async () => { await leaveAll(); setSheet(null); void cont(); }} />

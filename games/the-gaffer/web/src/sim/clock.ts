@@ -15,6 +15,7 @@ import { emit, stamp, compactEvents } from './events';
 import { keepRecord, toRecord } from './record';
 import { aftermath, type Aftermath } from './aftermath';
 import { windowOf } from './windows';
+import { roomDay } from './room';
 
 export interface Step { world: World; career: Career; mine: LiveMatch | null; after: Aftermath | null; ev: string }
 
@@ -30,6 +31,8 @@ export function advance(w0: World, c0: Career, played?: LiveMatch): Step {
   // 2 matchday
   const day = playDay(world, career, played);
   world = day.world; career = day.career;
+  // 2b dressing room (v2.4): starts against roles and promises, cohesion, requests, asks, clauses
+  ({ world, career } = roomDay(pre.world, world, career, day.mine));
   // 3 record
   let after: Aftermath | null = null;
   if (day.mine) {

@@ -15,8 +15,11 @@ import { loanOf } from './loans';
 import { isDeadlineDay, windowOf } from './windows';
 import { GROUP_OF } from './groups';
 import { roundFee } from './season';
+import { roomDecisions } from './room-decisions';
+import { pledgeOf } from './room';
 
-export type DecKind = 'welcome' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline';
+export type DecKind = 'welcome' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline'
+  | 'talk' | 'request' | 'promise' | 'armband' | 'clause'; // v2.4 dressing room (sim/room-decisions.ts)
 export type FxTone = 'good' | 'warn' | 'bad' | 'plain';
 export interface Fx { tone: FxTone; icon: string; key: string; n?: number; s?: string }
 export interface Choice { id: string; key: string; pn?: LocalizedName; n?: number; s?: string; cmds: Command[]; pick?: boolean; fx: Fx[]; open?: Open }
@@ -70,7 +73,7 @@ export function decisions(w: World, c: Career): Decision[] {
         advice: { key: `offer_${call}${b === 'money' || b === 'loyal' ? `_${b}` : ''}`, pn: P(p), n: p.marketValue },
         due: days(o.round + 3 - c.round),
         choices: [
-          { id: 'accept', key: 'accept', n: o.fee, cmds: [{ type: 'offer.accept', offerId: o.id }], pick: call === 'accept', fx: [{ tone: 'good', icon: 'pound', key: 'cash', n: o.fee }, { tone: core.has(p.id) ? 'bad' : 'plain', icon: 'squad', key: core.has(p.id) ? 'loseStarter' : 'loseSquad' }] },
+          { id: 'accept', key: 'accept', n: o.fee, cmds: [{ type: 'offer.accept', offerId: o.id }], pick: call === 'accept' && pledgeOf(c, p.id)?.type !== 'keep', fx: [{ tone: 'good', icon: 'pound', key: 'cash', n: o.fee }, { tone: core.has(p.id) ? 'bad' : 'plain', icon: 'squad', key: core.has(p.id) ? 'loseStarter' : 'loseSquad' }, ...(pledgeOf(c, p.id)?.type === 'keep' ? [{ tone: 'bad' as const, icon: 'alert', key: 'dr.fx.keepWord' }] : [])] },
           { id: 'counter', key: 'counter', n: counter, cmds: [{ type: 'offer.counter', offerId: o.id, fee: counter }], pick: call === 'counter', fx: [{ tone: 'warn', icon: 'alert', key: 'mayWalk' }] },
           { id: 'reject', key: 'reject', cmds: [{ type: 'offer.reject', offerId: o.id }], pick: call === 'reject', fx: [{ tone: 'plain', icon: 'heart', key: 'stays' }] },
         ],
@@ -198,6 +201,9 @@ export function decisions(w: World, c: Career): Decision[] {
       });
     }
   }
+
+  // 9. The dressing room: a word, a request, a clause, a promise due, the armband.
+  for (const d of roomDecisions(w, c)) add(d);
 
   return out.sort((a, z) => z.score - a.score);
 }
