@@ -182,3 +182,8 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-i
 .g-rel i { width: 4px; border-radius: 1px; background: currentColor; opacity: .25; }
 .g-rel i:nth-child(1) { height: 5px; } .g-rel i:nth-child(2) { height: 8px; } .g-rel i:nth-child(3) { height: 12px; }
 .g-rel i.on { opacity: 1; }
+
+/* Arabic: tracking breaks letter joining, and the mono face has no Arabic glyphs. */
+:root:lang(ar) body * { letter-spacing: 0 !important; }
+:root:lang(ar) .g-mono, :root:lang(ar) .pass__rank, :root:lang(ar) .g-btn, :root:lang(ar) .g-stamp { font-family: var(--f-text); text-transform: none; }
+:root:lang(ar) .g-btn { font-weight: 800; }
