@@ -106,7 +106,8 @@ export function fitPenalty(player: Position, slot: Position): number {
   return NEAR[slot].includes(player) ? 4 : 12;
 }
 
-export const slotValue = (p: Player, slot: Position, fitness = p.fitness) => formOf(p, fitness) - fitPenalty(p.position, slot);
+// v2.6: a second position learned in training (p.alt) plays at almost full value (1 point off: still not his first).
+export const slotValue = (p: Player, slot: Position, fitness = p.fitness) => formOf(p, fitness) - (p.alt === slot && p.position !== slot ? 1 : fitPenalty(p.position, slot));
 
 // Best XI for a formation: goalkeeper first, then each slot takes its best free player.
 export function autoXI(squad: Player[], formation: FormationId): Player[] {

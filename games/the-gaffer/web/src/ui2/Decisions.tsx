@@ -7,8 +7,10 @@ import { fmt, type FormationId } from '../sim/tactics';
 import { biasOf } from '../sim/delegation';
 import { I, initialsOf } from './kit';
 import { useGame, clubOf, cn, money, type Game } from './game';
+import { Y } from '../lang-youth-all';
 
-const TONE: Record<string, string> = { offer: 'tag--club', condition: 'tag--bad', contract: 'tag--club', staff: '', job: 'tag--good', tape: '', focus: '', deadline: 'tag--warn' };
+const TONE: Record<string, string> = { offer: 'tag--club', condition: 'tag--bad', contract: 'tag--club', staff: '', job: 'tag--good', tape: '', focus: '', deadline: 'tag--warn',
+  risk: 'tag--bad', rush: 'tag--bad', intake: 'tag--good', ready: 'tag--good', loanee: '', benched: 'tag--warn', full: 'tag--warn', ageout: '' };
 const KIND_ICON: Record<string, string> = { offer: 'market', condition: 'medic', contract: 'doc', staff: 'chat', job: 'club', tape: 'eye', focus: 'bolt', deadline: 'clock' };
 const ROLE_TONE: Record<StaffRole, string> = { assistant: '#0E4F47', director: '#0B3B5C', fitness: '#5A3A8A', doctor: '#7A2E3A', psychologist: '#3F5A1E', scout: '#8A5A12' };
 
@@ -16,9 +18,27 @@ const pnOf = (g: Game, r: { pn?: { en: string; ar: string } }) => (r.pn ? r.pn[g
 const clubName = (g: Game, id?: string) => cn(id ? clubOf(g.w, id) : undefined, g.lang);
 const call = (f: ((...a: any[]) => string) | undefined, ...a: unknown[]) => (f ? f(...a) : '');
 
+// v2.6 training & pathway cards (sim/youthDecisions.ts) and their staff proposals: copy in lang-youth*.ts.
+const posName = (g: Game, s?: string) => (s ? (g.x.common.posLong as Record<string, string>)[s] ?? s : '');
+function youthTitle(g: Game, r: Ref): string {
+  const T = Y[g.ui].titles, pn = pnOf(g, r);
+  if (r.key === 'y_intake') return call(T[r.key], r.n ?? 0);
+  if (r.key === 'y_full') return call(T[r.key], r.n ?? 0, r.s);
+  if (r.key === 'y_loanee') return call(T[r.key], pn, r.n ?? 0, clubName(g, r.club));
+  if (r.key === 'y_benched') return call(T[r.key], pn, clubName(g, r.club));
+  if (r.key === 'ask_y_loan') return call(T[r.key], pn, clubName(g, r.club ?? r.s));
+  return call(T[r.key], pn, r.n ?? 0);
+}
+function youthAdvice(g: Game, r: Ref): string {
+  const A = Y[g.ui].advice, pn = pnOf(g, r);
+  if (r.key.startsWith('y_intake')) return call(A[r.key], pn, posName(g, r.s), r.n ?? 1);
+  return call(A[r.key], pn, r.n ?? 0, r.s ?? '');
+}
+
 export function titleText(g: Game, d: Decision): string {
   const r = d.title, T = g.x.dec.titles;
   const pn = pnOf(g, r);
+  if (r.key.includes('y_')) return youthTitle(g, r);
   switch (r.key) {
     case 'offer': return call(T.offer, clubName(g, r.club), money(r.n ?? 0), pn);
     case 'tired': return call(T.tired, pn, r.n);
@@ -42,6 +62,7 @@ export function titleText(g: Game, d: Decision): string {
 function adviceText(g: Game, r: Ref): string {
   const A = g.x.dec.advice;
   const pn = pnOf(g, r);
+  if (r.key.includes('y_')) return youthAdvice(g, r);
   if (r.key.startsWith('offer_')) return call(A[r.key], pn, money(r.n ?? 0));
   if (r.key.startsWith('rest')) return call(A[r.key], pn, r.n, r.s);
   if (r.key === 'play') return call(A.play, pn, r.n);
@@ -56,6 +77,13 @@ function adviceText(g: Game, r: Ref): string {
 
 export function choiceText(g: Game, ch: Choice): string {
   const C = g.x.dec.choices;
+  if (ch.key.startsWith('y_')) {
+    const Q = Y[g.ui].choices;
+    if (ch.key === 'y_ch_spec') return call(Q[ch.key], money(ch.n ?? 0));
+    if (ch.key === 'y_ch_loan') return call(Q[ch.key], clubName(g, ch.s));
+    if (ch.key === 'y_ch_release') return call(Q[ch.key], pnOf(g, ch));
+    return call(Q[ch.key], ch.n ?? 0);
+  }
   if (ch.key === 'accept' || ch.key === 'counter') return call(C[ch.key], money(ch.n ?? 0));
   if (ch.key === 'restHim') return call(C.restHim, pnOf(g, ch));
   if (ch.key === 'renewYears') return call(C.renewYears, ch.n);
@@ -64,6 +92,7 @@ export function choiceText(g: Game, ch: Choice): string {
 
 function fxText(g: Game, f: Fx): string {
   const F = g.x.dec.fx;
+  if (f.key.startsWith('y_')) return call(Y[g.ui].fx[f.key], f.n ?? 0, f.s ?? '');
   if (['cash', 'fee', 'monthly'].includes(f.key)) return call(F[f.key], money(f.n ?? 0));
   if (f.key === 'wagesYear') return call(F.wagesYear, `${(f.n ?? 0) >= 0 ? '+' : '−'}${money(Math.abs(f.n ?? 0))}`);
   return call(F[f.key], f.n);
@@ -89,7 +118,7 @@ export function DecisionCard({ d, i, onResolve }: { d: Decision; i: number; onRe
       onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} aria-label={titleText(g, d)}>
       <div className="head">
         <div className="grow">
-          <span className={`tag ${TONE[d.kind] ?? ''}`}><I n={KIND_ICON[d.kind] ?? d.icon} size="sm" />{g.x.dec.tag[d.kind]}</span>
+          <span className={`tag ${TONE[d.kind] ?? ''}`}><I n={KIND_ICON[d.kind] ?? d.icon} size="sm" />{g.x.dec.tag[d.kind] ?? Y[g.ui].tag[d.kind]}</span>
           <h3>{titleText(g, d)}</h3>
         </div>
         <span className="due"><I n="clock" size="sm" />{typeof due === 'function' ? due(d.due.n ?? 1) : due}</span>

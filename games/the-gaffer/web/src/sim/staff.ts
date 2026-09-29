@@ -7,10 +7,11 @@
 import { FREE_AGENT, type Career, type Dept, type Duty, type LocalizedName, type Pending, type PrepFocus, type StaffLog } from '../model/types';
 import { makeRng } from './rng';
 import { money, playerOf, squadOf, strengthOf, type World } from './world';
-import { DEFAULT_TACTICS, FORMATIONS, FORMATION_IDS, autoXI, slotValue, type FormationId } from './tactics';
+import { DEFAULT_TACTICS, FORMATIONS, FORMATION_IDS, autoXI, slotValue, xiFor, type FormationId } from './tactics';
 import { predict } from './match';
 import { makeReport } from './scouting';
-import { treatmentCost, ACADEMY_MAX, scoutCost, examsLeft } from './training';
+import { treatmentCost } from './training';
+import { academyLoanSpots, academyOf, canRush, capOf, matchRisk, readyBar, riskBand, rushRisk } from './youth';
 import { SLOTS, attendance, refPrice, staffQ } from './economy';
 import { askingPrice, canSell, judgeBid, judgeRenewal, renewDemand, wageBillOf, wageDemand, SQUAD_MAX } from './transfers';
 import { balanceOf } from './balance';
@@ -173,7 +174,8 @@ function training(x: Ctx) {
   if (focus !== x.career.prep) act(x, { type: 'prep.set', focus }, 'focus', { s: focus });
 }
 
-// Doctor: pays for rehab on longer injuries when the club can easily afford it.
+// Doctor: pays for rehab on longer injuries when the club can easily afford it; rushes a key man back when his bias
+// allows (a bold doctor always, a cautious one never); and (v2.6) rests the loaded ones before the next match.
 function medical(x: Ctx) {
   const b = bias(x.career, 'medical');
   const min = b === 'cautious' ? 2 : b === 'bold' ? 4 : 3;
@@ -181,6 +183,18 @@ function medical(x: Ctx) {
   for (const p of squadOf(x.world, x.career.clubId).filter((y) => y.injured >= min).slice(0, 2)) {
     if (clubOf(x.world, x.career).budget < cost * 8) break;
     act(x, { type: 'medical.treat', playerId: p.id, treatment: 'rehab' }, 'rehab', { pn: p.name });
+  }
+  const key = new Set(squadOf(x.world, x.career.clubId).sort((a, z) => z.rating - a.rating).slice(0, 11).map((p) => p.id));
+  const risk = rushRisk(x.career);
+  for (const p of squadOf(x.world, x.career.clubId).filter((y) => canRush(y) && key.has(y.id))) {
+    if (b === 'cautious' || (b !== 'bold' && risk > 20)) break;
+    act(x, { type: 'medical.treat', playerId: p.id, treatment: 'rush' }, 'y_rush', { pn: p.name, n: risk });
+  }
+  if (!nextUserMatch(x.world, x.career)) return;
+  const bar = b === 'cautious' ? 1 : 2;
+  for (const p of xiFor(x.world, x.career).xi) {
+    if (riskBand(p) < bar || (x.career.rested ?? []).includes(p.id) || (b === 'bold' && !p.rr)) continue;
+    act(x, { type: 'rest.set', playerId: p.id, rest: true }, 'y_rest', { pn: p.name, n: matchRisk(p) });
   }
 }
 
@@ -192,20 +206,28 @@ function morale(x: Ctx) {
   if (avg < floor) act(x, { type: 'squad.talk' }, 'talk', { n: Math.round(avg) });
 }
 
-// Chief scout: promotes the ready ones, moves on the weakest, keeps the academy stocked.
+// Head of Youth (the chief scout runs the academy, v2.6): promotes the ready ones, sends the next ones out on loan to
+// clubs where they'd start, and lets the least promising go when the academy is over capacity.
 function academy(x: Ctx) {
-  const squad = squadOf(x.world, x.career.clubId);
   const b = bias(x.career, 'academy');
-  const bar = (squad.map((p) => p.rating).sort((a, z) => z - a)[Math.min(17, squad.length - 1)] ?? 60) - (b === 'youth' ? 3 : b === 'veteran' ? -2 : 0);
-  for (const kid of [...x.career.ops.academy]) {
-    if (kid.rating >= bar - 2 && squadOf(x.world, x.career.clubId).length < 28) act(x, { type: 'academy.promote', id: kid.id }, 'promote', { pn: kid.name });
+  const bar = readyBar(x.world, x.career) - (b === 'youth' ? 3 : b === 'veteran' ? -2 : 0) - 1;
+  const age = (p: { birthYear: number }) => x.career.season - p.birthYear;
+  for (const kid of academyOf(x.world, x.career.clubId).sort((a, z) => z.rating - a.rating)) {
+    if (age(kid) >= 17 && kid.rating >= bar && squadOf(x.world, x.career.clubId).length < 28) act(x, { type: 'academy.promote', id: kid.id }, 'promote', { pn: kid.name });
   }
-  if (x.career.ops.academy.length >= ACADEMY_MAX) {
-    const weakest = [...x.career.ops.academy].sort((a, z) => a.potential - z.potential)[0];
-    if (weakest && weakest.potential < 70) act(x, { type: 'academy.sell', id: weakest.id }, 'sold', { pn: weakest.name, n: weakest.marketValue });
+  if (windowOf(x.career)) {
+    let sent = 0;
+    for (const kid of academyOf(x.world, x.career.clubId).filter((k) => age(k) >= 17 && k.rating >= 55).sort((a, z) => z.potential - a.potential)) {
+      if (sent >= 2) break;
+      const spot = academyLoanSpots(x.world, x.career, kid, 1)[0];
+      if (spot && spot.role <= (b === 'cautious' ? 0 : 1) && act(x, { type: 'academy.loan', id: kid.id, to: spot.clubId }, 'y_loan', { pn: kid.name, s: spot.clubId })) sent++;
+    }
   }
-  if (x.career.ops.academy.length < 3 && x.career.round % 4 === 1 && examsLeft(x.career.ops) > 0 && clubOf(x.world, x.career).budget > scoutCost(x.world, x.career) * 6) {
-    act(x, { type: 'academy.scout' }, 'scouted', {});
+  const mine = academyOf(x.world, x.career.clubId);
+  const cap = capOf(x.world, x.career, x.career.clubId);
+  if (mine.length > cap && b !== 'loyal') {
+    const weakest = [...mine].sort((a, z) => (a.potential - age(a)) - (z.potential - age(z)))[0];
+    if (weakest) act(x, { type: 'academy.release', id: weakest.id }, 'y_release', { pn: weakest.name });
   }
 }
 
