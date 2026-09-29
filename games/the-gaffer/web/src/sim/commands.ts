@@ -18,6 +18,8 @@ import { makeReport } from './scouting';
 import { playerOf, type World } from './world';
 import { DEPTS } from './delegation';
 import { nextUserMatch } from './season';
+import { cmdAnswer, cmdCaptain, cmdClause, cmdTalk, joinRoom, onRenewed, renewFactor, type PledgeReq, type RoomResult, type Tone } from './room';
+import type { SquadRole } from '../model/types';
 
 export type Command =
   | { type: 'tactics.set'; tactics: UserTactics }
@@ -35,7 +37,12 @@ export type Command =
   | { type: 'offer.accept'; offerId: string }
   | { type: 'offer.reject'; offerId: string }
   | { type: 'offer.counter'; offerId: string; fee: number }
-  | { type: 'contract.renew'; playerId: string; wage: number; years: number }
+  | { type: 'contract.renew'; playerId: string; wage: number; years: number; role?: SquadRole; release?: boolean }
+  // v2.4 dressing room (sim/room.ts)
+  | { type: 'room.talk'; playerId: string; tone: Tone; pledge?: PledgeReq }
+  | { type: 'room.captain'; playerId: string }
+  | { type: 'room.answer'; playerId: string; answer: 'list' | 'refuse' }
+  | { type: 'room.clause'; playerId: string; answer: 'go' | 'stay' }
   | { type: 'staff.hire'; staffId: string }
   | { type: 'sponsor.sign'; dealId: string }
   | { type: 'sponsor.haggle'; dealId: string }
@@ -75,6 +82,8 @@ export type Done = { ok: true; world: World; career: Career; events: string[]; n
 export type Result = Done | Refusal;
 
 const no = (reason: string, counter?: number): Refusal => ({ ok: false, reason, counter });
+const room = (r: RoomResult) => ('no' in r ? no(r.no) : r);
+const BID_ROLE: Record<string, SquadRole> = { star: 'star', regular: 'starter', rotation: 'rotation', prospect: 'prospect' };
 const clubOf = (w: World, c: Career) => w.clubs.find((x) => x.id === c.clubId);
 const sponsorById = (c: Career, id: string): SponsorDeal | undefined => c.ops.sponsors.find((d) => d.id === id) ?? c.ops.sponsorOffers.find((d) => d.id === id);
 
@@ -135,13 +144,16 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
       if (!p) return no('gone');
       const r = buy(w, c, p, cmd.bid);
       if (!r.ok) return no(r.reason, r.counter);
-      return { world: r.world, career: r.career, note: { key: 'signed', s: p.id } };
+      const j = joinRoom(r.world, r.career, p.id, 'signed', BID_ROLE[cmd.bid.role]);
+      return { world: j.world, career: j.career, note: { key: 'signed', s: p.id } };
     }
     case 'loan.in': {
       const p = playerOf(w, cmd.playerId);
       if (!p) return no('gone');
       const r = loanIn(w, c, p);
-      return r.ok ? { world: r.world, career: r.career, note: { key: 'loanedIn', s: p.id } } : no(r.reason);
+      if (!r.ok) return no(r.reason);
+      const j = joinRoom(r.world, r.career, p.id, 'loan');
+      return { world: j.world, career: j.career, note: { key: 'loanedIn', s: p.id } };
     }
     case 'loan.out': {
       const p = playerOf(w, cmd.playerId);
@@ -172,8 +184,12 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
       const p = playerOf(w, cmd.playerId);
       if (!p) return no('gone');
       if (!(cmd.years >= 1 && cmd.years <= 5) || !(cmd.wage > 0)) return no('terms');
-      const r = tryRenew(w, c, p, cmd.wage, cmd.years);
-      return r.ok ? { world: r.world, career: c, note: { key: 'renewed', s: p.id } } : no(r.reason, r.counter);
+      if (cmd.role && !['star', 'starter', 'rotation', 'prospect'].includes(cmd.role)) return no('terms');
+      if (cmd.role === 'prospect' && c.season - p.birthYear > 21) return no('role');
+      const r = tryRenew(w, c, p, cmd.wage, cmd.years, renewFactor(p, cmd.role, cmd.release));
+      if (!r.ok) return no(r.reason, r.counter);
+      const j = onRenewed(r.world, c, p.id, cmd.role, cmd.release);
+      return { world: j.world, career: j.career, note: { key: 'renewed', s: p.id } };
     }
     case 'staff.hire': {
       const s = c.ops.staffPool.find((x) => x.id === cmd.staffId);
@@ -245,7 +261,7 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
     }
     case 'academy.promote': {
       const r = promote(w, c, cmd.id);
-      return r.ok ? { world: r.world, career: r.career } : no('squadFull');
+      return r.ok ? joinRoom(r.world, r.career, cmd.id, 'grad') : no('squadFull');
     }
     case 'academy.release':
       if (!c.ops.academy.some((k) => k.id === cmd.id)) return no('gone');
@@ -323,6 +339,10 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
     case 'world.edit':
       if (!cmd.world.clubs.some((x) => x.id === c.clubId)) return no('club');
       return { world: cmd.world, career: { ...c, worldVersion: cmd.version, pendingSwaps: cmd.swaps.length ? cmd.swaps : undefined } };
+    case 'room.talk': return room(cmdTalk(w, c, cmd.playerId, cmd.tone, cmd.pledge));
+    case 'room.captain': return room(cmdCaptain(w, c, cmd.playerId));
+    case 'room.answer': return room(cmdAnswer(w, c, cmd.playerId, cmd.answer));
+    case 'room.clause': return room(cmdClause(w, c, cmd.playerId, cmd.answer));
     case 'match.save': {
       // The live match belongs to this career's next fixture and only its own clubs play in it.
       const m = cmd.live;
@@ -340,6 +360,7 @@ const DEPT_OF: Partial<Record<CommandType, Dept>> = {
   'loan.in': 'recruitment', 'loan.out': 'recruitment', 'shortlist.toggle': 'recruitment', 'offer.accept': 'contracts', 'offer.reject': 'contracts',
   'offer.counter': 'contracts', 'contract.renew': 'contracts', 'player.list': 'contracts', 'sponsor.sign': 'commercial', 'sponsor.haggle': 'commercial',
   'sponsor.extend': 'commercial', 'sponsor.end': 'commercial', 'ticket.set': 'commercial',
+  'room.talk': 'development', 'room.captain': 'matchprep', 'room.answer': 'contracts', 'room.clause': 'contracts',
 };
 export const deptOfCommand = (t: CommandType) => DEPT_OF[t];
 

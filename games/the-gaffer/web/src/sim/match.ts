@@ -21,6 +21,7 @@ import {
 import { TUNE, buildModel, patchSub, rates as modelRates, type Model, type Rates, type SideInput } from './engine/model';
 import { newTally, playMinute, type Ball, type Flow, type Rules, type Tally } from './engine/play';
 import { aiRead, reslot } from './engine/story';
+import { AI_COH, cohLevel, cohesionOfClub } from './cohesion';
 
 export type EventKind = 'goal' | 'miss' | 'save' | 'block' | 'yellow' | 'red' | 'injury' | 'sub' | 'corner' | 'foul' | 'offside' | 'duel' | 'tactic';
 export interface MatchEvent {
@@ -53,6 +54,7 @@ export interface SideState {
   form: number;        // match-day form, ~0.92 … 1.08
   mods?: { fatigue: number; press: number; level: number }; // the user's courses and staff
   mastery?: number;    // how well the side knows its philosophy, 0-100
+  coh?: number;        // v2.4: team cohesion at kick-off in a user match (its level is in mods.level; the Why reads it)
 }
 
 export interface LiveMatch {
@@ -112,8 +114,10 @@ function side(w: World, c: Career | null, clubId: string, oppLevel: number, form
     mods: mine ? {
       fatigue: (c!.coach?.courses.includes('conditioning') ? 0.85 : 1) * (1 - (c!.ops?.staff.fitness?.quality ?? 0) / 500),
       press: c!.coach?.courses.includes('gegenpress') ? 1.03 : 1,
-      level: (c!.ops?.staff.assistant?.quality ?? 0) / 100, // a great assistant is worth up to one rating point
+      // a great assistant is worth up to one rating point; v2.4: cohesion ±2 levels (sim/cohesion.ts)
+      level: (c!.ops?.staff.assistant?.quality ?? 0) / 100 + cohLevel(cohesionOfClub(w.clubs, clubId)),
     } : undefined,
+    ...(mine ? { coh: cohesionOfClub(w.clubs, clubId) } : {}),
   };
 }
 
@@ -126,6 +130,8 @@ export function startMatch(w: World, c: Career | null, home: string, away: strin
   // Balance settings: stronger or weaker opponents in the user's matches.
   const b = c && (home === c.clubId || away === c.clubId) ? balanceOf(c) : null;
   if (b?.difficulty) for (const s of sides) if (s.clubId !== c!.clubId) s.mods = { fatigue: s.mods?.fatigue ?? 1, press: s.mods?.press ?? 1, level: (s.mods?.level ?? 0) + oppBoost(b) };
+  // v2.4: the other side of a user match plays with a normal room's cohesion (sim/cohesion.ts AI_COH).
+  if (c && (home === c.clubId || away === c.clubId)) for (const s of sides) if (s.clubId !== c.clubId) { s.coh = AI_COH; s.mods = { fatigue: s.mods?.fatigue ?? 1, press: s.mods?.press ?? 1, level: (s.mods?.level ?? 0) + cohLevel(AI_COH) }; }
   // v2.2: a week spent on the opposition (the analyst's report in hand) is worth a small, bounded edge on the day.
   if (c?.prep === 'opposition' && c.scouted?.[key]) {
     const mine = sides.find((s) => s.clubId === c.clubId);

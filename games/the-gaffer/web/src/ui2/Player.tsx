@@ -15,6 +15,9 @@ import { Crest, I, Kpi, LineChart, Meter, Portrait } from './kit';
 import { Panel, PanelHead, Sheet } from './shell';
 import { useGame, clubOf, cn, money, sn } from './game';
 import { ageOf } from './util';
+import { PlayerRoom } from './Room';
+import { D } from '../lang-dressing-all';
+import { roleOf } from '../sim/room';
 
 const NEAR: Record<Position, Position[]> = {
   GK: ['GK'], CB: ['CB', 'CDM', 'RB'], LB: ['LB', 'LW', 'CB'], RB: ['RB', 'RW', 'CB'], CDM: ['CDM', 'CM', 'CB'], CM: ['CM', 'CDM', 'CAM'],
@@ -66,6 +69,7 @@ export function PlayerScreen({ id }: { id: string }) {
         <div className="p-acts">
           {mine ? (
             <>
+              <button className="btn btn--accent btn--sm" onClick={() => g.sheet({ k: 'talk', id: p.id })}><I n="chat" size="sm" />{D[g.ui].talk.btn}</button>
               <button className="btn btn--ghost on-ground btn--sm" onClick={() => g.sheet({ k: 'renew', id: p.id })}><I n="doc" size="sm" />{P.renew}</button>
               <button className="btn btn--ghost on-ground btn--sm" onClick={() => g.run({ type: 'player.list', playerId: p.id, listed: !p.listed }, { toast: x.saved })}><I n="market" size="sm" />{p.listed ? P.unlist : P.list}</button>
             </>
@@ -143,10 +147,11 @@ export function PlayerScreen({ id }: { id: string }) {
             <PanelHead title={P.man} />
             <div className="traits">
               {p.captain && <span className="tag tag--club"><I n="star" size="sm" />{P.captain}</span>}
-              <span className={`tag${p.morale < 45 ? ' tag--bad' : p.morale >= 70 ? ' tag--good' : ''}`}><I n="heart" size="sm" />{P.morale(P.moods[p.morale >= 75 ? 4 : p.morale >= 62 ? 3 : p.morale >= 50 ? 2 : p.morale >= 38 ? 1 : 0])}</span>
+              {!mine && <span className={`tag${p.morale < 45 ? ' tag--bad' : p.morale >= 70 ? ' tag--good' : ''}`}><I n="heart" size="sm" />{P.morale(P.moods[p.morale >= 75 ? 4 : p.morale >= 62 ? 3 : p.morale >= 50 ? 2 : p.morale >= 38 ? 1 : 0])}</span>}
               {mine && <span className={`tag${p.fitness < 80 ? ' tag--warn' : ''}`}><I n="bolt" size="sm" />{x.today.tired(p.fitness)}</span>}
               {p.injured > 0 && <span className="tag tag--bad"><I n="medic" size="sm" />{x.today.injured(p.injured)}</span>}
             </div>
+            {mine && <PlayerRoom p={p} />}
             <p className="small muted">{P.season}: {P.seasonStats(st[0], st[1], st[2])}</p>
             {mine && (
               <div className="p-more">
@@ -163,8 +168,9 @@ export function PlayerScreen({ id }: { id: string }) {
             <div className="contract">
               <Kpi v={p.clubId === FREE_AGENT ? '—' : p.contractUntil + 1} l={P.expires} />
               <Kpi v={<span className="ltr">{money(p.wage)}</span>} l={P.perMonth} />
-              {mine ? <Kpi v={P.none} l={P.release} /> : <Kpi v={<span className="ltr">{p.clubId === FREE_AGENT ? x.common.free : money0(ask)}</span>} l={x.tr.likely} />}
+              {mine ? <Kpi v={p.release ? <span className="ltr">{money(p.release)}</span> : P.none} l={P.release} /> : <Kpi v={<span className="ltr">{p.clubId === FREE_AGENT ? x.common.free : money0(ask)}</span>} l={x.tr.likely} />}
               {mine ? <Kpi v={x.place(earnerRank)} l={P.rank} /> : <Kpi v={exact ? range(est.lo, est.hi) : `${est.lo}–${est.hi}`} l={P.ability} />}
+              {mine && <Kpi v={D[g.ui].role[roleOf(w, c, p)]} l={D[g.ui].player.role} d={<span className="muted">{D[g.ui].roleSub[roleOf(w, c, p)]}</span>} />}
             </div>
           </Panel>
         </div>

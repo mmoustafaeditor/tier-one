@@ -17,6 +17,10 @@ import { titleText } from './Decisions';
 import { logText } from './text';
 import { Bids } from './Transfers';
 import { nextMatch, ageOf } from './util';
+import { ArmbandSheet, TalkSheet } from './Room';
+import { releaseFor, renewFactor, roleOf } from '../sim/room';
+import { D } from '../lang-dressing-all';
+import type { SquadRole } from '../model/types';
 
 export function Sheets({ req, onClose, summary, onSummaryDone, onTakeCalls, onLeave }: {
   req: import('./game').SheetReq | null; onClose: () => void; summary: SeasonSummary | null; onSummaryDone: () => void;
@@ -33,6 +37,8 @@ export function Sheets({ req, onClose, summary, onSummaryDone, onTakeCalls, onLe
     case 'desk': return <DeskSheet onClose={onClose} onTake={onTakeCalls} onLeave={onLeave} />;
     case 'report': return <ReportSheet onClose={onClose} />;
     case 'rename': return <RenameSheet kind={req.kind} id={req.id} onClose={onClose} />;
+    case 'talk': return <TalkSheet id={req.id} onClose={onClose} key={req.id} />;
+    case 'armband': return <ArmbandSheet onClose={onClose} />;
   }
 }
 
@@ -97,14 +103,22 @@ function BidSheet({ p, onClose }: { p: Player; onClose: () => void }) {
 
 function RenewSheet({ p, onClose }: { p: Player; onClose: () => void }) {
   const g = useGame();
-  const { c, x, lang } = g;
+  const { w, c, x, lang } = g;
   const B = x.bid;
-  const d = renewDemand(p, c.season, balanceOf(c).wages);
+  const DR = D[g.ui];
+  // v2.4: the deal carries a squad role (a promise) and, if you want one, a release clause; both move his demand.
+  const role0 = roleOf(w, c, p);
+  const [role, setRole] = useState<SquadRole>(role0);
+  const [release, setRelease] = useState(!!p.release);
+  const d0 = renewDemand(p, c.season, balanceOf(c).wages);
+  const d = { ...d0, wage: roundFee(d0.wage * renewFactor(p, role, release)) };
   const [wage, setWage] = useState(d.wage);
   const [years, setYears] = useState(Math.min(3, d.maxYears));
   const [no, setNo] = useState<{ reason: string; counter?: number } | null>(null);
+  const young = c.season - p.birthYear <= 21;
+  const setTerms = (r: SquadRole, rel: boolean) => { setRole(r); setRelease(rel); setWage(roundFee(d0.wage * renewFactor(p, r, rel))); };
   const send = async () => {
-    const r = await g.run({ type: 'contract.renew', playerId: p.id, wage, years }, { toast: false });
+    const r = await g.run({ type: 'contract.renew', playerId: p.id, wage, years, role, release }, { toast: false });
     if (r.ok) { g.toast(x.note.renewed(nm(p, lang))); onClose(); } else setNo({ reason: r.reason, counter: r.counter });
   };
   return (
@@ -118,9 +132,14 @@ function RenewSheet({ p, onClose }: { p: Player; onClose: () => void }) {
           <Stepper label={B.wage} value={wage} step={Math.max(1e3, roundFee(d.wage * 0.05))} min={0} onChange={setWage} format={money} /></div>
         <div className="field-row"><span className="grow"><b>{B.years}</b></span>
           <Steps label={B.years} value={years - 1} options={Array.from({ length: Math.max(1, d.maxYears) }, (_, i) => String(i + 1))} onChange={(v) => setYears(v + 1)} /></div>
+        <div className="field-row"><span className="grow"><b>{DR.renew.role}</b>{role !== role0 && <small className="muted">{DR.renew.promiseNote}</small>}</span>
+          <Chips<SquadRole> label={DR.renew.role} value={role} onChange={(r) => setTerms(r, release)}
+            options={(['star', 'starter', 'rotation', ...(young ? ['prospect'] : [])] as SquadRole[]).map((r) => ({ v: r, label: DR.role[r] }))} /></div>
+        <div className="field-row"><span className="grow"><b>{DR.renew.release}</b><small className="muted">{release ? DR.renew.releaseOn(money(releaseFor(p))) : DR.renew.off}</small></span>
+          <Steps label={DR.renew.release} value={release ? 1 : 0} options={[DR.renew.off, money(releaseFor(p))]} onChange={(v) => setTerms(role, v === 1)} /></div>
         {no && (
           <div className="refusal" role="alert">
-            <I n="alert" size="sm" /><span className="grow">{reasonText(B.no, no.reason)}</span>
+            <I n="alert" size="sm" /><span className="grow">{B.no[no.reason] ?? DR.no[no.reason] ?? no.reason}</span>
             {no.counter ? <button className="btn btn--ghost btn--sm" onClick={() => { setWage(no.counter!); setNo(null); }}>{B.counter(money(no.counter))}</button> : null}
           </div>
         )}

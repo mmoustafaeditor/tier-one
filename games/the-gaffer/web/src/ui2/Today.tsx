@@ -17,6 +17,8 @@ import { useGame, clubOf, cn, sn, matchLabel } from './game';
 import { formOf, leagueRows, upcoming, avgMorale } from './util';
 import { DecisionCard, Receipt, choiceText, titleText } from './Decisions';
 import { newsText } from './text';
+import { D } from '../lang-dressing-all';
+import { cohesionOf } from '../sim/room';
 
 export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision, ch: Choice) => Promise<boolean>; onUndo: () => void; canUndo: string | null }) {
   const g = useGame();
@@ -191,14 +193,14 @@ function PulsePanel({ pos }: { pos: number }) {
   const rows: [string, string, string, string, number, number[]][] = [
     ['board', x.today.board, x.today.mood(board), x.today.boardWhy(obj.toLowerCase(), x.place(pos)), board, last(1, board)],
     ['fans', x.today.fans, x.today.fansMood(fans), res, fans, last(2, fans)],
-    ['room', x.today.room, x.today.roomMood(room), x.today.roomWhy(low && low.morale < 50 ? sn(low, g.lang) : null), room, last(3, room)],
+    ['room', x.today.room, x.today.roomMood(room), `${D[g.ui].today.roomWhy(Math.round(cohesionOf(w, c.clubId)))} · ${x.today.roomWhy(low && low.morale < 50 ? sn(low, g.lang) : null)}`, room, last(3, room)],
   ];
   return (
     <Panel i={4} className="a-pulse" label={x.today.pulse}>
       <PanelHead title={x.today.pulse} right={<button className="link" onClick={() => g.go({ s: 'club' })}>{x.today.office}<I n="chev" size="sm" /></button>} />
       <div className="pulse">
         {rows.map(([k, label, mood, why, v, data]) => (
-          <div key={k} className={`p${v < 45 ? ' soft' : ''}`}>
+          <div key={k} className={`p${v < 45 ? ' soft' : ''}${k === 'room' ? ' p-link' : ''}`} {...(k === 'room' ? { role: 'button', tabIndex: 0, onClick: () => g.go({ s: 'room' }), onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter') g.go({ s: 'room' }); } } : {})}>
             <span className="ic"><I n={k} /></span>
             <div><b>{label} · <em>{mood}</em></b><div className="why">{why}</div></div>
             <span className="spark"><Spark data={data} tone={data.length > 1 && data[data.length - 1] < data[0] ? 'down' : 'up'} rtl={g.rtl} /></span>

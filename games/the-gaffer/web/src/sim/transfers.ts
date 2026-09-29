@@ -174,14 +174,17 @@ export function renewDemand(p: Player, season: number, m = 1): { wage: number; m
   return { wage, maxYears: age >= 33 ? 1 : age >= 30 ? 2 : 5 };
 }
 
-export type RenewAnswer = { ok: true } | { ok: false; reason: 'wage' | 'years' | 'wageCap' | 'unhappy' | 'gone'; counter?: number };
+export type RenewAnswer = { ok: true } | { ok: false; reason: 'wage' | 'years' | 'wageCap' | 'unhappy' | 'gone' | 'trust'; counter?: number };
 
-export function judgeRenewal(w: World, c: Career, p: Player, wage: number, years: number): RenewAnswer {
+// `factor`: what the terms beyond the wage do to his demand (v2.4: a squad role, a release clause; sim/room.ts).
+export function judgeRenewal(w: World, c: Career, p: Player, wage: number, years: number, factor = 1): RenewAnswer {
   const club = clubOf(w, c.clubId);
   const cur = w.players.find((x) => x.id === p.id);
   if (!club || !cur || cur.clubId !== c.clubId) return { ok: false, reason: 'gone' };
-  const d = renewDemand(cur, c.season, balanceOf(c).wages);
+  const d0 = renewDemand(cur, c.season, balanceOf(c).wages);
+  const d = { ...d0, wage: roundFee(d0.wage * factor) };
   if (cur.morale < 25) return { ok: false, reason: 'unhappy' };
+  if ((cur.trust ?? 50) < 25) return { ok: false, reason: 'trust' }; // v2.4: he doesn't believe a word you say
   if (years > d.maxYears) return { ok: false, reason: 'years', counter: d.maxYears };
   if (wage < d.wage * 0.97) return { ok: false, reason: 'wage', counter: d.wage };
   if (wageBillOf(w, c.clubId) - cur.wage + wage > club.wageCap) return { ok: false, reason: 'wageCap' };
@@ -193,8 +196,8 @@ export const newContractEnd = (p: Player, season: number, years: number) => Math
 
 export type RenewResult = { world: World } & RenewAnswer;
 
-export function tryRenew(w: World, c: Career, p: Player, wage: number, years: number): RenewResult {
-  const a = judgeRenewal(w, c, p, wage, years);
+export function tryRenew(w: World, c: Career, p: Player, wage: number, years: number, factor = 1): RenewResult {
+  const a = judgeRenewal(w, c, p, wage, years, factor);
   if (!a.ok) return { world: w, ...a };
   return {
     ok: true,

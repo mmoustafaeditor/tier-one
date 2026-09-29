@@ -39,6 +39,7 @@ export interface Club {
   real?: string;         // v2.1: the data snapshot's club id (e.g. "eng-arsenal") when the club comes from the 2026/27 data
   code?: string;         // three-letter code for crests and score bugs
   city?: string;
+  cohesion?: number;     // v2.4: how together the squad is, 0-100 (sim/cohesion.ts); stays with the club, missing = 55
 }
 
 export interface Player {
@@ -65,6 +66,17 @@ export interface Player {
   nick?: LocalizedName;  // nickname, editable
   short?: string;        // v2.1: the name on the back of the shirt / in tight lists ("Saka")
   captain?: boolean;     // v2.1: club captain in the data snapshot
+  // v2.4 dressing room (sim/room.ts). Missing = the defaults (trust 50, role from squad rank), so the rest of the world
+  // carries nothing extra; the user's squad gets them as things happen.
+  trust?: number;        // 0-100, moves over seasons: kept and broken promises, minutes against his role, how he's handled
+  role?: SquadRole;      // the squad role in his contract (a playing-time promise)
+  release?: number;      // release clause in his contract (a club that pays it can take him)
+  since?: number;        // season he joined his club
+  jc?: string;           // the club `since` refers to (a player at another club is a new arrival)
+  req?: number;          // matchday (coach days) he asked to leave; missing = no transfer request
+  reqNo?: boolean;       // the request was refused
+  dt?: [number, string]; // last trust change and its cause
+  dm?: [number, string]; // last morale change and its cause
 }
 
 export const FREE_AGENT = 'free';
@@ -89,7 +101,7 @@ export interface SaveMeta { slot: number; build: number; data: WorldKind; names:
 // One domain event: every command and every clock step appends one, with its cause. Inbox, news, the decision queue,
 // the staff log and the Why card point back at these ids. Ids are `s<season>.r<round>.n<seq>`, from career.tickSeq.
 export type EvType =
-  | 'cmd' | 'match' | 'result' | 'transfer' | 'contract' | 'injury' | 'board' | 'staff' | 'decision' | 'window' | 'season' | 'job' | 'world';
+  | 'cmd' | 'match' | 'result' | 'transfer' | 'contract' | 'injury' | 'board' | 'staff' | 'decision' | 'window' | 'season' | 'job' | 'world' | 'room';
 export interface DomainEvent {
   id: string;
   t: [number, number];                 // season, round
@@ -178,6 +190,48 @@ export interface Career {
   data?: WorldKind;                               // the world this career was created with
   names?: NamesMode;                              // real names or the fictional fallback
   lastDigest?: Digest | null;                     // "since you were away", after a multi-week sim
+  room?: RoomState;                               // v2.4: the dressing room (sim/room.ts)
+}
+
+// ---------- v2.4 dressing room (save v6) ----------
+export type SquadRole = 'star' | 'starter' | 'rotation' | 'prospect';
+export type Archetype = 'driven' | 'steady' | 'volatile' | 'loyal' | 'mercenary' | 'leader';
+export type Tier = 'leader' | 'core' | 'fringe';
+// Your word: a squad role (a share of league starts, or appearances for a prospect), a signing at a position by the end
+// of the window, not selling him this window, a new contract within 8 matchdays.
+export type PledgeType = 'role' | 'sign' | 'keep' | 'contract';
+export interface Pledge {
+  id: string; playerId: string; pn: LocalizedName; type: PledgeType;
+  role?: SquadRole; group?: number;       // role pledges; sign pledges (0 GK, 1 DEF, 2 MID, 3 ATT)
+  made: number; season: number;           // coach days when made; the season it was made in
+  due: number;                            // contract: coach days; role: league matchdays to count (10, prospects 20)
+  n: number; st: number; el: number; apps: number; // league matchdays counted, starts, matchdays he was fit, appearances
+  cu0?: number; d0?: number;              // contract end when made; deals on the books when made
+  status: 'open' | 'kept' | 'broken'; closed?: number; ev?: string;
+}
+export type TalkWhy = 'asked' | 'request' | 'broken' | 'minutes' | 'role' | 'contract' | 'unhappy' | 'doubts' | 'new' | 'form';
+export interface RoomAsk { playerId: string; pn: LocalizedName; why: TalkWhy; made: number; until: number; ev?: string }
+export interface RoomCause { k: string; d: number; at: number; pn?: LocalizedName }
+export interface RoomClause { playerId: string; pn: LocalizedName; clubId: string; fee: number; until: number; ev?: string }
+export interface RoomState {
+  club: string;                           // the club this state belongs to (a new job starts a new room)
+  squad: string[];                        // who was in the squad at the last tick (arrivals and departures)
+  xi: string[];                           // the last league XI (continuity builds cohesion)
+  pledges: Pledge[];                      // open, and the last closed ones
+  asks: RoomAsk[];                        // players waiting for a word
+  causes: RoomCause[];                    // what moved cohesion, newest first
+  talks: Record<string, number>;          // last one-to-one per player (coach days)
+  asked: Record<string, number>;          // last time each player asked for a word
+  roll: Record<string, string>;           // last 10 league matchdays per player: 1 started, 0 fit and left out
+  under: Record<string, number>;          // matchdays in a row under his role's share of starts
+  low: Record<string, number>;            // matchdays in a row with trust < 25 and morale < 40
+  heard: Record<string, number>;          // empty reassurances this season
+  debt: number[];                         // new arrivals still unsettling the room (matchdays left each)
+  story: Record<string, number>;          // homegrown players' stage: 2 core, 3 leader, 4 captain
+  exits: { id: string; pn: LocalizedName; season: number; why: 'req' | 'leader' | 'word' }[];
+  clauses: RoomClause[];                  // release clauses met, waiting on the player
+  arm?: number;                           // season the armband question was last asked
+  lead?: string[];                        // the leaders at the last tick (a leader sold is felt)
 }
 
 // Loans last until the end of the season. `share`: part of the wage the borrowing club pays (0-1).
@@ -208,7 +262,7 @@ export interface Balance {
   patience: -1 | 0 | 1;   // the board: patient, normal, strict
 }
 
-export type NewsCat = 'results' | 'transfers' | 'managers' | 'youth' | 'records' | 'crisis';
+export type NewsCat = 'results' | 'transfers' | 'managers' | 'youth' | 'records' | 'crisis' | 'room';
 export interface NewsItem { id: string; season: number; round: number; cat: NewsCat; key: string; club?: string; club2?: string; player?: string; pn?: LocalizedName; n?: number; s?: string; ev?: string }
 export interface Rumour { id: string; playerId: string; pn: LocalizedName; from: string; to: string; fee: number; chance: number; until: number }
 
@@ -278,7 +332,7 @@ export interface Coach {
   days: number;          // matchdays managed in total
 }
 
-export type MsgKind = 'board' | 'fans' | 'club' | 'scout' | 'contract' | 'offer' | 'cup' | 'coach' | 'job';
+export type MsgKind = 'board' | 'fans' | 'club' | 'scout' | 'contract' | 'offer' | 'cup' | 'coach' | 'job' | 'room';
 // Messages store a key and references, and are written out in the reader's language when shown.
 // `pn` keeps the player's name, because a player can retire before the message is read.
 export interface Msg { id: string; season: number; round: number; kind: MsgKind; key: string; club?: string; player?: string; pn?: LocalizedName; n?: number; s?: string; read?: boolean; ev?: string }

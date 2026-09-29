@@ -11,6 +11,7 @@ import { ensureDirector, newOps } from './economy';
 import { makeAttrs, makeFreeAgents, seedElo, type World } from './world';
 import { deptsFromDuties } from './delegation';
 import { ensureV2 } from './match';
+import { ensureRoom } from './room';
 
 const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7);
 
@@ -65,7 +66,7 @@ export function upgradeCareer(w: World, c: OldCareer): Career {
 // ---------- file versions ----------
 
 // The version `makeSave` writes. Bump it together with a new entry in UPGRADES.
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 6;
 
 // One step each: UPGRADES[n] turns a version-n file into version n+1. Applied in order by `upgradeSave`.
 export const UPGRADES: Record<number, (s: SaveFile) => SaveFile> = {
@@ -111,6 +112,22 @@ function upgrade3(s: SaveFile): SaveFile {
   return { ...s, version: 4, world: { ...w, players }, career };
 }
 UPGRADES[3] = upgrade3;
+
+// 4 → 5: nothing to change (V2.3 shipped inside version 4). A plain bridge so the increments' own steps chain in order.
+UPGRADES[4] ??= (s) => ({ ...s, version: 5 });
+
+// 5 → 6 (v2.4 dressing room, sim/room.ts). Documented defaults (V2_DESIGN §8):
+//  - the user's squad: trust 50 (60 for players signed this season), a contract role from the current squad rank
+//    (top 3 Star, 4–11 Starter, the rest Rotation, 21 and under Prospect), a guessed tenure for the hierarchy;
+//  - the club's cohesion 55; an empty room (no promises, asks, requests or release clauses yet);
+//  - other clubs' players carry nothing (the defaults apply). Every field is optional, so the steps of the other
+//    increments (7 recruitment, 8 training) neither read nor clash with these, in whichever order they were merged.
+function upgrade5(s: SaveFile): SaveFile {
+  if (!s.career) return { ...s, version: 6 };
+  const r = ensureRoom(s.world as World, s.career);
+  return { ...s, version: 6, world: r.world, career: r.career };
+}
+UPGRADES[5] = upgrade5;
 
 export function upgradeSave(s: SaveFile): SaveFile {
   let out = s;
