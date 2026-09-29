@@ -1,0 +1,9 @@
+[
+{"id":"eng1","name":"Premier League","country":"ENG","tier":1,"season":"2026/27","partial":false},
+{"id":"esp1","name":"La Liga","country":"ESP","tier":1,"season":"2026/27","partial":false},
+{"id":"ita1","name":"Serie A","country":"ITA","tier":1,"season":"2026/27","partial":false},
+{"id":"ger1","name":"Bundesliga","country":"GER","tier":1,"season":"2026/27","partial":false},
+{"id":"fra1","name":"Ligue 1","country":"FRA","tier":1,"season":"2026/27","partial":false},
+{"id":"egy1","name":"Egyptian Premier League","country":"EGY","tier":1,"season":"2026/27","partial":true},
+{"id":"ksa1","name":"Saudi Pro League","country":"KSA","tier":1,"season":"2026/27","partial":true}
+]

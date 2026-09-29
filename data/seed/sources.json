@@ -1,0 +1,1456 @@
+{
+ "clubs": {
+  "eng-arsenal": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Arsenal_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:26.452Z",
+   "checks": {
+    "first": 23,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-aston-villa": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Aston_Villa_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:28.496Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 11,
+    "arrivalsListed": 11
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-bournemouth": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/AFC_Bournemouth"
+   ],
+   "fetchedAt": "2026-09-29T16:06:30.176Z",
+   "checks": {
+    "first": 28,
+    "departedListed": 0,
+    "arrivals": 3,
+    "arrivalsListed": 3
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-brentford": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Brentford_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:32.148Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-brighton": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Brighton_%26_Hove_Albion_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:34.148Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 10,
+    "arrivalsListed": 9
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-chelsea": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Chelsea_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:36.208Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 15,
+    "arrivalsListed": 11
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-coventry": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Coventry_City_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:38.252Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 12,
+    "arrivalsListed": 12
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-crystal-palace": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Crystal_Palace_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:40.208Z",
+   "checks": {
+    "first": 28,
+    "departedListed": 0,
+    "arrivals": 10,
+    "arrivalsListed": 10
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-everton": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Everton_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:42.196Z",
+   "checks": {
+    "first": 21,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-fulham": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Fulham_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:44.204Z",
+   "checks": {
+    "first": 26,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-hull": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Hull_City_A.F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:46.220Z",
+   "checks": {
+    "first": 33,
+    "departedListed": 0,
+    "arrivals": 18,
+    "arrivalsListed": 18
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-ipswich": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Ipswich_Town_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:48.228Z",
+   "checks": {
+    "first": 28,
+    "departedListed": 0,
+    "arrivals": 16,
+    "arrivalsListed": 14
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-leeds": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Leeds_United_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:50.196Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-liverpool": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Liverpool_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:52.240Z",
+   "checks": {
+    "first": 35,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 4
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-man-city": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Manchester_City_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:54.196Z",
+   "checks": {
+    "first": 34,
+    "departedListed": 0,
+    "arrivals": 9,
+    "arrivalsListed": 8
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-man-utd": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Manchester_United_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:56.224Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 4
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-newcastle": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Newcastle_United_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:06:58.336Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 8,
+    "arrivalsListed": 8
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-nottm-forest": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Nottingham_Forest_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:07:00.344Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 4,
+    "arrivalsListed": 4
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-sunderland": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Sunderland_A.F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:07:02.216Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 6
+   },
+   "kitUpdatedFor2627": true
+  },
+  "eng-tottenham": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Tottenham_Hotspur_F.C."
+   ],
+   "fetchedAt": "2026-09-29T16:07:04.220Z",
+   "checks": {
+    "first": 35,
+    "departedListed": 0,
+    "arrivals": 10,
+    "arrivalsListed": 10
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-real-madrid": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Real_Madrid_CF"
+   ],
+   "fetchedAt": "2026-09-29T16:07:14.464Z",
+   "checks": {
+    "first": 26,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-barcelona": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/FC_Barcelona"
+   ],
+   "fetchedAt": "2026-09-29T16:07:16.528Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 4,
+    "arrivalsListed": 4
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-atletico": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Atl%C3%A9tico_Madrid"
+   ],
+   "fetchedAt": "2026-09-29T16:07:18.532Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-athletic": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Athletic_Bilbao"
+   ],
+   "fetchedAt": "2026-09-29T16:07:20.428Z",
+   "checks": {
+    "first": 26,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-villarreal": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Villarreal_CF"
+   ],
+   "fetchedAt": "2026-09-29T16:07:22.412Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 1,
+    "arrivalsListed": 1
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-real-sociedad": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Real_Sociedad"
+   ],
+   "fetchedAt": "2026-09-29T16:07:24.424Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 1,
+    "arrivalsListed": 1
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-betis": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Real_Betis"
+   ],
+   "fetchedAt": "2026-09-29T16:07:26.440Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 3,
+    "arrivalsListed": 3
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-sevilla": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Sevilla_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:07:28.488Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-valencia": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Valencia_CF"
+   ],
+   "fetchedAt": "2026-09-29T16:07:30.552Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 1,
+    "arrivalsListed": 1
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-celta": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/RC_Celta_de_Vigo"
+   ],
+   "fetchedAt": "2026-09-29T16:07:32.500Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 4
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-osasuna": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/CA_Osasuna"
+   ],
+   "fetchedAt": "2026-09-29T16:07:34.448Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-rayo": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Rayo_Vallecano"
+   ],
+   "fetchedAt": "2026-09-29T16:07:36.420Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 2,
+    "arrivalsListed": 2
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-getafe": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Getafe_CF"
+   ],
+   "fetchedAt": "2026-09-29T16:07:38.484Z",
+   "checks": {
+    "first": 23,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 6
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-espanyol": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/RCD_Espanyol"
+   ],
+   "fetchedAt": "2026-09-29T16:07:40.428Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 4,
+    "arrivalsListed": 4
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-alaves": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Deportivo_Alav%C3%A9s"
+   ],
+   "fetchedAt": "2026-09-29T16:07:42.620Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 4,
+    "arrivalsListed": 4
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-levante": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Levante_UD"
+   ],
+   "fetchedAt": "2026-09-29T16:07:44.444Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 1,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-elche": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Elche_CF"
+   ],
+   "fetchedAt": "2026-09-29T16:07:46.456Z",
+   "checks": {
+    "first": 28,
+    "departedListed": 0,
+    "arrivals": 2,
+    "arrivalsListed": 2
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-deportivo": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Deportivo_de_A_Coru%C3%B1a"
+   ],
+   "fetchedAt": "2026-09-29T16:07:50.496Z",
+   "checks": {
+    "first": 26,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 6
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-malaga": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/M%C3%A1laga_CF"
+   ],
+   "fetchedAt": "2026-09-29T16:07:52.424Z",
+   "checks": {
+    "first": 28,
+    "departedListed": 0,
+    "arrivals": 3,
+    "arrivalsListed": 3
+   },
+   "kitUpdatedFor2627": true
+  },
+  "esp-racing": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Racing_de_Santander"
+   ],
+   "fetchedAt": "2026-09-29T16:07:54.488Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-inter": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Inter_Milan"
+   ],
+   "fetchedAt": "2026-09-29T16:07:56.456Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-napoli": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/SSC_Napoli"
+   ],
+   "fetchedAt": "2026-09-29T16:07:58.504Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 4,
+    "arrivalsListed": 4
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-juventus": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Juventus_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:08:00.476Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 9,
+    "arrivalsListed": 9
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-milan": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/AC_Milan"
+   ],
+   "fetchedAt": "2026-09-29T16:08:02.636Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-atalanta": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Atalanta_BC"
+   ],
+   "fetchedAt": "2026-09-29T16:08:04.484Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-roma": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/AS_Roma"
+   ],
+   "fetchedAt": "2026-09-29T16:08:06.500Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 8,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-lazio": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/SS_Lazio"
+   ],
+   "fetchedAt": "2026-09-29T16:08:08.500Z",
+   "checks": {
+    "first": 34,
+    "departedListed": 0,
+    "arrivals": 8,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-fiorentina": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/ACF_Fiorentina"
+   ],
+   "fetchedAt": "2026-09-29T16:08:10.480Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 13,
+    "arrivalsListed": 13
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-bologna": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Bologna_FC_1909"
+   ],
+   "fetchedAt": "2026-09-29T16:08:12.452Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 9,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-como": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Como_1907"
+   ],
+   "fetchedAt": "2026-09-29T16:08:14.460Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 11,
+    "arrivalsListed": 10
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-torino": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Torino_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:08:16.476Z",
+   "checks": {
+    "first": 31,
+    "departedListed": 0,
+    "arrivals": 12,
+    "arrivalsListed": 11
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-udinese": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Udinese_Calcio"
+   ],
+   "fetchedAt": "2026-09-29T16:08:18.520Z",
+   "checks": {
+    "first": 28,
+    "departedListed": 0,
+    "arrivals": 8,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-genoa": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Genoa_CFC"
+   ],
+   "fetchedAt": "2026-09-29T16:08:20.452Z",
+   "checks": {
+    "first": 32,
+    "departedListed": 0,
+    "arrivals": 13,
+    "arrivalsListed": 12
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-cagliari": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Cagliari_Calcio"
+   ],
+   "fetchedAt": "2026-09-29T16:08:22.480Z",
+   "checks": {
+    "first": 31,
+    "departedListed": 0,
+    "arrivals": 14,
+    "arrivalsListed": 12
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-parma": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Parma_Calcio_1913"
+   ],
+   "fetchedAt": "2026-09-29T16:08:24.512Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 13,
+    "arrivalsListed": 12
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-lecce": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/US_Lecce"
+   ],
+   "fetchedAt": "2026-09-29T16:08:26.464Z",
+   "checks": {
+    "first": 35,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 6
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-sassuolo": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/US_Sassuolo_Calcio"
+   ],
+   "fetchedAt": "2026-09-29T16:08:28.476Z",
+   "checks": {
+    "first": 36,
+    "departedListed": 0,
+    "arrivals": 11,
+    "arrivalsListed": 11
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-venezia": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Venezia_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:08:30.468Z",
+   "checks": {
+    "first": 36,
+    "departedListed": 0,
+    "arrivals": 19,
+    "arrivalsListed": 17
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-frosinone": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Frosinone_Calcio"
+   ],
+   "fetchedAt": "2026-09-29T16:08:32.508Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 19,
+    "arrivalsListed": 19
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ita-monza": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/AC_Monza"
+   ],
+   "fetchedAt": "2026-09-29T16:08:34.552Z",
+   "checks": {
+    "first": 31,
+    "departedListed": 0,
+    "arrivals": 14,
+    "arrivalsListed": 13
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-bayern": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/FC_Bayern_Munich"
+   ],
+   "fetchedAt": "2026-09-29T16:08:36.496Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 3,
+    "arrivalsListed": 3
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-leverkusen": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Bayer_04_Leverkusen"
+   ],
+   "fetchedAt": "2026-09-29T16:08:38.472Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-dortmund": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Borussia_Dortmund"
+   ],
+   "fetchedAt": "2026-09-29T16:08:40.500Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-leipzig": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/RB_Leipzig"
+   ],
+   "fetchedAt": "2026-09-29T16:08:42.592Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-frankfurt": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Eintracht_Frankfurt"
+   ],
+   "fetchedAt": "2026-09-29T16:08:44.472Z",
+   "checks": {
+    "first": 26,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-stuttgart": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/VfB_Stuttgart"
+   ],
+   "fetchedAt": "2026-09-29T16:08:46.772Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-freiburg": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/SC_Freiburg"
+   ],
+   "fetchedAt": "2026-09-29T16:08:48.752Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-hoffenheim": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/TSG_1899_Hoffenheim"
+   ],
+   "fetchedAt": "2026-09-29T16:08:50.738Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 6
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-gladbach": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Borussia_M%C3%B6nchengladbach",
+    "https://en.wikipedia.org/wiki/2026%E2%80%9327_Borussia_M%C3%B6nchengladbach_season"
+   ],
+   "fetchedAt": "2026-09-29T16:08:52.508Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 10,
+    "arrivalsListed": 10
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-mainz": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/1._FSV_Mainz_05"
+   ],
+   "fetchedAt": "2026-09-29T16:08:54.472Z",
+   "checks": {
+    "first": 26,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 6
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-bremen": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/SV_Werder_Bremen"
+   ],
+   "fetchedAt": "2026-09-29T16:08:56.536Z",
+   "checks": {
+    "first": 35,
+    "departedListed": 0,
+    "arrivals": 14,
+    "arrivalsListed": 13
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-union": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/1._FC_Union_Berlin"
+   ],
+   "fetchedAt": "2026-09-29T16:08:58.568Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-augsburg": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/FC_Augsburg"
+   ],
+   "fetchedAt": "2026-09-29T16:09:00.560Z",
+   "checks": {
+    "first": 28,
+    "departedListed": 0,
+    "arrivals": 9,
+    "arrivalsListed": 8
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-koln": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/1._FC_K%C3%B6ln"
+   ],
+   "fetchedAt": "2026-09-29T16:09:02.476Z",
+   "checks": {
+    "first": 31,
+    "departedListed": 0,
+    "arrivals": 13,
+    "arrivalsListed": 12
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-hamburg": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Hamburger_SV"
+   ],
+   "fetchedAt": "2026-09-29T16:09:04.528Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 10,
+    "arrivalsListed": 10
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-schalke": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/FC_Schalke_04"
+   ],
+   "fetchedAt": "2026-09-29T16:09:06.508Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-elversberg": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/SV_Elversberg"
+   ],
+   "fetchedAt": "2026-09-29T16:09:08.452Z",
+   "checks": {
+    "first": 28,
+    "departedListed": 0,
+    "arrivals": 9,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ger-paderborn": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/SC_Paderborn_07"
+   ],
+   "fetchedAt": "2026-09-29T16:09:10.464Z",
+   "checks": {
+    "first": 32,
+    "departedListed": 0,
+    "arrivals": 12,
+    "arrivalsListed": 11
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-psg": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Paris_Saint-Germain_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:12.516Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 5,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-marseille": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Olympique_de_Marseille"
+   ],
+   "fetchedAt": "2026-09-29T16:09:14.532Z",
+   "checks": {
+    "first": 22,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-monaco": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/AS_Monaco_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:16.540Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 5
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-lille": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Lille_OSC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:18.564Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-lyon": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Olympique_Lyonnais"
+   ],
+   "fetchedAt": "2026-09-29T16:09:20.620Z",
+   "checks": {
+    "first": 26,
+    "departedListed": 0,
+    "arrivals": 9,
+    "arrivalsListed": 9
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-nice": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/OGC_Nice"
+   ],
+   "fetchedAt": "2026-09-29T16:09:22.616Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-lens": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/RC_Lens"
+   ],
+   "fetchedAt": "2026-09-29T16:09:24.488Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 9,
+    "arrivalsListed": 9
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-rennes": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Stade_Rennais_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:26.548Z",
+   "checks": {
+    "first": 26,
+    "departedListed": 0,
+    "arrivals": 9,
+    "arrivalsListed": 9
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-strasbourg": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/RC_Strasbourg_Alsace"
+   ],
+   "fetchedAt": "2026-09-29T16:09:28.524Z",
+   "checks": {
+    "first": 30,
+    "departedListed": 0,
+    "arrivals": 16,
+    "arrivalsListed": 15
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-toulouse": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Toulouse_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:30.520Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 8,
+    "arrivalsListed": 6
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-brest": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Stade_Brestois_29"
+   ],
+   "fetchedAt": "2026-09-29T16:09:32.512Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 8,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": false
+  },
+  "fra-auxerre": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/AJ_Auxerre"
+   ],
+   "fetchedAt": "2026-09-29T16:09:34.544Z",
+   "checks": {
+    "first": 31,
+    "departedListed": 0,
+    "arrivals": 12,
+    "arrivalsListed": 12
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-angers": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Angers_SCO"
+   ],
+   "fetchedAt": "2026-09-29T16:09:36.544Z",
+   "checks": {
+    "first": 24,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 6
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-le-havre": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Le_Havre_AC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:38.492Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 13,
+    "arrivalsListed": 12
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-lorient": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/FC_Lorient"
+   ],
+   "fetchedAt": "2026-09-29T16:09:40.500Z",
+   "checks": {
+    "first": 27,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 7
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-paris-fc": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Paris_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:42.520Z",
+   "checks": {
+    "first": 25,
+    "departedListed": 0,
+    "arrivals": 6,
+    "arrivalsListed": 4
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-troyes": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/ES_Troyes_AC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:44.496Z",
+   "checks": {
+    "first": 28,
+    "departedListed": 0,
+    "arrivals": 7,
+    "arrivalsListed": 6
+   },
+   "kitUpdatedFor2627": true
+  },
+  "fra-le-mans": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Le_Mans_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:46.516Z",
+   "checks": {
+    "first": 29,
+    "departedListed": 0,
+    "arrivals": 10,
+    "arrivalsListed": 10
+   },
+   "kitUpdatedFor2627": true
+  },
+  "egy-al-ahly": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Al_Ahly_SC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:48.580Z",
+   "checks": {
+    "first": 36,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": true
+  },
+  "egy-zamalek": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Zamalek_SC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:50.564Z",
+   "checks": {
+    "first": 35,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": true
+  },
+  "egy-pyramids": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Pyramids_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:52.592Z",
+   "checks": {
+    "first": 32,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": false
+  },
+  "egy-al-masry": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Al_Masry_SC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:54.716Z",
+   "checks": {
+    "first": 32,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": false
+  },
+  "egy-ceramica": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Ceramica_Cleopatra_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:56.488Z",
+   "checks": {
+    "first": 33,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": true
+  },
+  "egy-smouha": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Smouha_SC"
+   ],
+   "fetchedAt": "2026-09-29T16:09:58.508Z",
+   "checks": {
+    "first": 0,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": false
+  },
+  "ksa-al-hilal": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Al_Hilal_SFC"
+   ],
+   "fetchedAt": "2026-09-29T16:10:02.660Z",
+   "checks": {
+    "first": 31,
+    "departedListed": 0,
+    "arrivals": 3,
+    "arrivalsListed": 3
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ksa-al-nassr": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Al-Nassr_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:10:04.552Z",
+   "checks": {
+    "first": 35,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ksa-al-ittihad": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Al-Ittihad_Club_(Jeddah)"
+   ],
+   "fetchedAt": "2026-09-29T16:10:06.552Z",
+   "checks": {
+    "first": 31,
+    "departedListed": 0,
+    "arrivals": 1,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ksa-al-ahli": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Al-Ahli_Saudi_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:10:08.540Z",
+   "checks": {
+    "first": 32,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ksa-al-qadsiah": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Al_Qadsiah_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:10:12.524Z",
+   "checks": {
+    "first": 32,
+    "departedListed": 0,
+    "arrivals": 1,
+    "arrivalsListed": 1
+   },
+   "kitUpdatedFor2627": true
+  },
+  "ksa-al-shabab": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/Al_Shabab_Club"
+   ],
+   "fetchedAt": "2026-09-29T16:10:16.528Z",
+   "checks": {
+    "first": 39,
+    "departedListed": 0,
+    "arrivals": 1,
+    "arrivalsListed": 1
+   },
+   "kitUpdatedFor2627": false
+  },
+  "egy-zed": {
+   "urls": [
+    "https://en.wikipedia.org/wiki/ZED_FC"
+   ],
+   "fetchedAt": "2026-09-29T16:21:47.061Z",
+   "checks": {
+    "first": 36,
+    "departedListed": 0,
+    "arrivals": 0,
+    "arrivalsListed": 0
+   },
+   "kitUpdatedFor2627": false
+  }
+ },
+ "transferLists": {
+  "eng1": {
+   "title": "List of English football transfers summer 2026",
+   "url": "https://en.wikipedia.org/wiki/List_of_English_football_transfers_summer_2026",
+   "fetchedAt": "2026-09-29T16:10:18.628Z",
+   "rows": 1069
+  },
+  "esp1": {
+   "title": "List of Spanish football transfers summer 2026",
+   "url": "https://en.wikipedia.org/wiki/List_of_Spanish_football_transfers_summer_2026",
+   "fetchedAt": "2026-09-29T16:10:20.824Z",
+   "rows": 374
+  },
+  "ita1": {
+   "title": "List of Italian football transfers summer 2026",
+   "url": "https://en.wikipedia.org/wiki/List_of_Italian_football_transfers_summer_2026",
+   "fetchedAt": "2026-09-29T16:10:22.936Z",
+   "rows": 712
+  },
+  "ger1": {
+   "title": "List of German football transfers summer 2026",
+   "url": "https://en.wikipedia.org/wiki/List_of_German_football_transfers_summer_2026",
+   "fetchedAt": "2026-09-29T16:10:24.944Z",
+   "rows": 779
+  },
+  "fra1": {
+   "title": "List of French football transfers summer 2026",
+   "url": "https://en.wikipedia.org/wiki/List_of_French_football_transfers_summer_2026",
+   "fetchedAt": "2026-09-29T16:10:26.844Z",
+   "rows": 612
+  }
+ },
+ "rumours": "per rumour, in rumours.json › outlets[].url",
+ "licence": "Facts only. Squad/transfer facts cross-read from English Wikipedia (CC BY-SA) article revisions fetched on the dates shown; birth dates from Wikidata (CC0)."
+}
