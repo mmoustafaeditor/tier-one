@@ -7,6 +7,7 @@ import { table } from './season';
 import { playerOf, squadOf, type World } from './world';
 import type { Why } from './engine/story';
 import { toRecord, type KeyMoment } from './record';
+import { cohesionOfClub } from './cohesion';
 
 export interface Aftermath {
   res: 'W' | 'D' | 'L'; mine: number; theirs: number; pens?: [number, number]; opp: string; home: boolean; me: 0 | 1;
@@ -21,6 +22,7 @@ export interface Aftermath {
   moments: KeyMoment[];
   why?: Why;                                  // engine v2: why it happened (the user's recorded match)
   key: string; cup?: string; round: number;
+  coh?: [number, number];                     // v2.4: team cohesion before and after (the engine played it at [0])
 }
 
 const moraleOf = (w: World, clubId: string) => { const s = squadOf(w, clubId); return Math.round(s.reduce((a, p) => a + p.morale, 0) / Math.max(1, s.length)); };
@@ -64,5 +66,6 @@ export function aftermath(w0: World, c0: Career, w1: World, c1: Career, m: LiveM
     xg: [rec.xg[k], rec.xg[o]], xgLine: [line(k), line(o)],
     scorers: rec.events.filter((e) => e.kind === 'goal').map((e) => ({ side: e.side, pn: get(e.playerId).name, min: e.min })),
     moments: rec.moments, why: rec.why ?? undefined, key: rec.key, cup: rec.cup, round: rec.round,
+    coh: [m.sides[k].coh ?? cohesionOfClub(w0.clubs, c0.clubId), cohesionOfClub(w1.clubs, c0.clubId)],
   };
 }

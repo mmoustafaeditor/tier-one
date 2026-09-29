@@ -10,6 +10,8 @@ import { Chips, Panel, PanelHead } from './shell';
 import { I, Portrait, Ring } from './kit';
 import { useGame, money, sn } from './game';
 import { ageOf, moodOf } from './util';
+import { D } from '../lang-dressing-all';
+import { pledgeOf, roomOf } from '../sim/room';
 
 type Lens = 'all' | 'starters' | 'ending' | 'unhappy' | 'injured' | 'loans' | 'listed';
 const MOOD_ICON = ['alert', 'alert', 'chat', 'heart', 'heart'];
@@ -48,6 +50,9 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
     if (p.captain) bits.push(x.squad.sub2.captain);
     if (loanOf(c, p.id)) bits.push(x.squad.sub2.loan);
     if (p.listed) bits.push(x.squad.sub2.listed);
+    if (p.req !== undefined) bits.push(D[g.ui].squad.req);
+    else if (roomOf(c).asks.some((a) => a.playerId === p.id)) bits.push(D[g.ui].squad.ask);
+    else if (pledgeOf(c, p.id)) bits.push(D[g.ui].squad.word);
     return bits.join(' · ');
   };
   return (
@@ -117,6 +122,7 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
             <button className="row linkrow" onClick={() => setLens('loans')}><I n="swap" /><span className="grow"><span className="name">{x.squad.loansOut((c.loans ?? []).filter((l) => l.from === c.clubId && l.season === c.season).length)}</span></span><I n="chev" size="sm" /></button>
           </div>
           <div className="squad-doors">
+            <button className="btn btn--primary btn--sm" onClick={() => g.go({ s: 'room' })}><I n="room" size="sm" />{D[g.ui].squad.door}</button>
             <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'train' })}><I n="bolt" size="sm" />{x.squad.training}</button>
             <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'train' })}><I n="medic" size="sm" />{x.squad.medical}</button>
             <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'train' })}><I n="grad" size="sm" />{x.squad.academy}</button>

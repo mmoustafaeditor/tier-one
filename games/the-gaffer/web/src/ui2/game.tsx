@@ -11,7 +11,7 @@ import { cupOfDay, type LiveMatch } from './util';
 export type Route =
   | { s: 'today' } | { s: 'squad'; lens?: string } | { s: 'player'; id: string } | { s: 'match'; tab?: number } | { s: 'pre' } | { s: 'live' } | { s: 'ft' }
   | { s: 'digest' } | { s: 'transfers'; tab?: number } | { s: 'club'; tab?: number } | { s: 'career' } | { s: 'pass' } | { s: 'settings' }
-  | { s: 'news' } | { s: 'train' } | { s: 'world' } | { s: 'quick' };
+  | { s: 'news' } | { s: 'train' } | { s: 'world' } | { s: 'quick' } | { s: 'room' };
 
 export interface Game {
   w: World; c: Career; t: Strings; x: XStrings; lang: Lang; ui: UiLang; rtl: boolean;
@@ -24,7 +24,8 @@ export interface Game {
   play: (mode: 'live' | 'quick' | 'sim') => void;
   cont: () => void;
 }
-export type SheetReq = { k: 'bid'; id: string } | { k: 'renew'; id: string } | { k: 'offers' } | { k: 'staffLog' } | { k: 'desk' } | { k: 'report' } | { k: 'rename'; kind: 'club' | 'player'; id: string };
+export type SheetReq = { k: 'bid'; id: string } | { k: 'renew'; id: string } | { k: 'offers' } | { k: 'staffLog' } | { k: 'desk' } | { k: 'report' } | { k: 'rename'; kind: 'club' | 'player'; id: string }
+  | { k: 'talk'; id: string } | { k: 'armband' }; // v2.4 dressing room (ui2/Room.tsx)
 
 export const GameCtx = createContext<Game | null>(null);
 export const useGame = () => useContext(GameCtx)!;

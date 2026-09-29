@@ -3,6 +3,7 @@ import type { Strings } from '../i18n';
 import { fmt, type FormationId, type Tactics } from '../sim/tactics';
 import type { Point, Tip, Why } from '../sim/engine/story';
 import { describeChange } from './commentary';
+import { roomPoint } from './roomText';
 
 const fill = (s: string, v: Record<string, string | number | undefined>) => s.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
 const x1 = (v: number | undefined) => (v ?? 0).toFixed(1);
@@ -22,6 +23,7 @@ export function pointText(p: Point, t: Strings, name: (id: string) => string): s
     case 'red': return fill(p.me ? P.redMe : P.redThem, v);
     case 'change': return fill(p.good ? P.changeGood : P.changeBad, { ...v, what: describeChange(t, p.note, name).what });
     case 'theyChanged': return fill(P.theyChanged, { ...v, what: describeChange(t, p.note, name).what });
+    case 'cohesion': return roomPoint(p, t);
   }
   return '';
 }

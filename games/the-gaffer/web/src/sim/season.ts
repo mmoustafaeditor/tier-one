@@ -18,6 +18,7 @@ import { returnLoans, loanOf } from './loans';
 import { isDeadlineDay, windowOf } from './windows';
 import { staffWeek } from './staff';
 import { SQUAD_SELL_MIN } from './transfers';
+import { roomPull } from './room';
 
 // ---------- fixtures ----------
 
@@ -150,7 +151,8 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
   const next: Career = { ...c, fixtures: { ...c.fixtures }, stats, ratings, round: c.round + 1, live: null, cupDay: Math.max(c.cupDay ?? -1, c.round) };
   const calm = c.coach?.courses.includes('psychology') ? c.clubId : null;
   // The user's squad settles at a higher morale with the psychology course and a good psychologist.
-  const moraleTarget = 60 + (calm ? 5 : 0) + Math.round(staffQ(c.ops, 'psychologist') / 20);
+  // v2.4: the leaders pull the room's settle point with their own mood (sim/room.ts roomPull).
+  const moraleTarget = 60 + (calm ? 5 : 0) + Math.round(staffQ(c.ops, 'psychologist') / 20) + Math.round(roomPull(w, c));
   let mine: LiveMatch | null = null;
 
   for (const [lid, rounds] of Object.entries(c.fixtures)) {
