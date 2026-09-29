@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Gaffer v2 · Look</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .main { padding-bottom: var(--s-16); }
+  .intro { padding: var(--s-8) 0 var(--s-6); display: grid; gap: var(--s-4); }
+  .intro .h-hero { font-size: clamp(40px, 6vw, 84px); max-width: 14ch; }
+  .intro .h-hero em { font-style: normal; color: var(--accent); }
+  .intro p { color: var(--on-ground-2); max-width: 60ch; font-size: 16px; }
+  .shots { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .shot { display: grid; gap: var(--s-3); padding: var(--s-3); border-radius: var(--r-lg); background: var(--ground-panel); box-shadow: inset 0 0 0 1px var(--ground-line); color: var(--on-ground); transition: transform var(--d-quick) var(--ease-out), box-shadow var(--d-quick); }
+  .shot:hover { transform: translateY(-3px); box-shadow: inset 0 0 0 1px var(--ground-line-2), 0 20px 40px -24px rgba(0,0,0,.8); }
+  .frame { position: relative; aspect-ratio: 390 / 600; border-radius: 16px; overflow: hidden; background: var(--ground); }
+  .frame iframe { position: absolute; top: 0; left: 0; width: 390px; height: 600px; border: 0; transform-origin: 0 0; pointer-events: none; }
+  .shot b { font: 700 16px/1.2 var(--f-text); } .shot span { font-size: 13px; color: var(--on-ground-3); line-height: 1.4; }
+  .shot .n { font: 800 12px/1 var(--f-display); color: var(--accent); letter-spacing: .06em; }
+  .shot .links { display: flex; gap: 12px; font: 600 13px/1 var(--f-text); color: var(--accent); }
+
+  .spec { display: grid; gap: var(--s-4); margin-top: var(--s-4); }
+  @media (min-width: 900px) { .spec { grid-template-columns: 1fr 1fr; } }
+  .sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: var(--s-2); }
+  .sw div { display: grid; gap: 4px; font-size: 11.5px; color: var(--ink-3); }
+  .sw i { height: 52px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); }
+  .type > * + * { margin-top: var(--s-3); }
+  .row-c { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" data-active=""></nav>
+  <main class="main"><div class="page">
+    <section class="intro on-ground">
+      <span class="eyebrow">Semba Games · The Gaffer v2 · visual & interaction direction</span>
+      <h1 class="h-hero">A club <em>command center</em>, lit for matchday.</h1>
+      <p>Pitchside glass, grown up. The office stays in deep teal with frosted glass cards. On matchday the lights go down and the floodlights come up. Players appear as their shirts, never as faces. The tactics board is chalk on slate. Every number is there to help you make a decision.</p>
+    </section>
+
+    <div class="section-h"><h2 class="h2">Screens</h2><span class="eyebrow on-ground">Mobile-first · tablet and desktop restructure</span></div>
+    <div class="shots" id="shots"></div>
+
+    <div class="section-h"><h2 class="h2">System at a glance</h2><a class="eyebrow on-ground" href="../LOOK.md">LOOK.md →</a></div>
+    <div class="spec">
+      <article class="panel">
+        <div class="panel-h"><h3 class="h3">Office light</h3><span class="eyebrow">tokens.css</span></div>
+        <div class="sw">
+          <div><i style="background:var(--teal-850)"></i>ground</div><div><i style="background:var(--teal-800)"></i>ground-2</div><div><i style="background:var(--mint-400)"></i>accent</div><div><i style="background:var(--primary)"></i>primary</div>
+          <div><i style="background:var(--mint-50)"></i>surface</div><div><i style="background:var(--mint-100)"></i>well</div><div><i style="background:var(--dv-us)"></i>data · us</div><div><i style="background:var(--dv-them)"></i>data · them</div>
+          <div><i style="background:var(--good)"></i>good</div><div><i style="background:var(--warn-mark)"></i>warn</div><div><i style="background:var(--bad)"></i>bad</div><div><i style="background:linear-gradient(90deg,var(--club-1) 50%,var(--club-2) 50%)"></i>club inputs</div>
+        </div>
+      </article>
+      <article class="panel type">
+        <div class="panel-h"><h3 class="h3">Type</h3><span class="eyebrow">Archivo wide · Instrument Sans</span></div>
+        <div class="h-hero">Villa go third.</div>
+        <div class="h2">Where the ball has lived</div>
+        <p>Rest him Saturday and he's right for Porto on Wednesday.</p>
+        <div class="row-c"><span class="score" style="font-size:56px">2–1</span><span class="eyebrow">Tabular numerals · 118% width display</span></div>
+      </article>
+      <article class="panel">
+        <div class="panel-h"><h3 class="h3">Controls</h3></div>
+        <div class="stack-3">
+          <div class="row-c"><button class="btn btn--primary" data-i="tactics">Pick the XI</button><button class="btn btn--ghost">Report</button><button class="btn btn--sm">Later</button></div>
+          <div class="seg" style="max-width:360px"><button>Sit off</button><button>Mid-block</button><button aria-pressed="true">Hunt high</button></div>
+          <div class="row-c"><span class="tag tag--good" data-i="check">On track</span><span class="tag tag--warn" data-i="alert">Close</span><span class="tag tag--bad" data-i="medic">Doubt</span><span class="tag tag--club" data-i="doc">Contract</span><span class="form"><b class="w">W</b><b class="d">D</b><b class="l">L</b></span></div>
+          <div class="fog" style="max-width:360px"><span class="band" style="--lo:30%;--hi:70%"></span></div>
+        </div>
+      </article>
+      <article class="panel">
+        <div class="panel-h"><h3 class="h3">Identity, never likeness</h3><span class="eyebrow">Original crests · kit-back portraits</span></div>
+        <div class="row-c"><span data-crest="AVL" class="crest--lg"></span><span data-crest="NEW" class="crest--lg"></span><span data-crest="POR" class="crest--lg"></span><span data-crest="PLY" class="crest--lg"></span><span data-crest="SUN" class="crest--lg"></span></div>
+        <div class="row-c" style="margin-top:var(--s-4)"><span data-portrait="Morgan Rogers" data-num="27" style="width:72px"></span><span data-portrait="Anthony Gordon" data-club="NEW" data-num="10" style="width:72px"></span><span data-portrait="Samu Aghehowa" data-club="POR" data-num="9" style="width:72px"></span><span data-portrait="Michael Cooper" data-club="PLY" data-num="1" style="width:72px"></span></div>
+      </article>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+<script>
+const S = [
+  ["home", "Today", "What needs me today? Next match, three decisions with staff advice, club pulse.", true],
+  ["squad", "Squad", "Depth on a pitch, fitness, mood and contract at a glance, promises kept and broken."],
+  ["tactics", "Tactics", "Chalk-on-slate board with weighted drag, roles by fit, trade-offs in plain words, the opponent beside you."],
+  ["player", "Player", "Kit-back portrait, what he's good at, where he fits, development with a projection band, the man, the contract."],
+  ["recruitment", "Recruitment", "A search that exists for a reason. Scouting knowledge shown as ranges; the less we know, the wider the bar."],
+  ["negotiation", "Negotiation", "Offer and counter, round by round. Clauses with their cost. The deal's effect on the wage bill before you send it."],
+  ["matchday-pre", "Matchday · tunnel", "The walk-out moment. Team sheets, the last word in the dressing room."],
+  ["matchday-live", "Matchday · live", "Floodlight mode. Zone territory, momentum, live xG, touchline shouts."],
+  ["halftime", "Half-time · why", "Why it happened: three causes with evidence, fixes with predicted effect, one-tap changes."],
+  ["fulltime", "Full-time", "The result, the xG story, and what it changed across the club."],
+  ["history", "Career", "Trophy lift, season by season, records, legends."],
+  ["office", "Club office", "Cash runway against the board's floor, objectives, facilities."],
+  ["store", "Club Pass", "Honest premium: cosmetic and convenience only, clearly marked as a concept."],
+];
+document.getElementById("shots").innerHTML = S.map(([f, t, d, ar], i) => `<a class="shot" href="${f}.html"><div class="frame"><iframe src="${f}.html" tabindex="-1" aria-hidden="true" title=""></iframe></div><span class="n">${String(i + 1).padStart(2, "0")}</span><b>${t}</b><span>${d}</span><span class="links">Open →${ar ? ' <span onclick="event.preventDefault();location.href=\'home.html?lang=ar\'">العربية →</span>' : ""}</span></a>`).join("");
+const fit = () => document.querySelectorAll(".frame").forEach((f) => { const k = f.clientWidth / 390; f.querySelector("iframe").style.transform = `scale(${k})`; });
+fit(); addEventListener("resize", fit);
+</script>
+</body>
+</html>

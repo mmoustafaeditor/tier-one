@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Negotiation · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .n-head { display: grid; grid-template-columns: 64px 1fr; gap: var(--s-4); align-items: center; padding: var(--s-2) 0 var(--s-5); }
+  .n-head .portrait { width: 64px; }
+  .n-head .h1 { color: var(--on-ground); }
+  .n-head .sub { color: var(--on-ground-2); font-size: var(--t-small); margin-top: 4px; }
+  .stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: var(--s-4); }
+  .stages div { display: grid; gap: 6px; font: 600 12px/1.2 var(--f-text); color: var(--on-ground-3); }
+  .stages div::before { content: ""; height: 4px; border-radius: 2px; background: var(--ground-line-2); }
+  .stages .done { color: var(--on-ground-2); } .stages .done::before { background: var(--mint-500); }
+  .stages .now { color: var(--on-ground); } .stages .now::before { background: linear-gradient(90deg, var(--mint-400) 60%, var(--ground-line-2) 60%); }
+
+  /* rounds: the conversation, as offer / counter */
+  .rounds { display: grid; gap: var(--s-3); }
+  .rd { display: grid; gap: 6px; max-width: 88%; }
+  .rd .who { font: 700 11px/1 var(--f-text); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+  .rd .bub { padding: 12px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; }
+  .rd.us { justify-self: end; text-align: end; }
+  .rd.us .bub { background: var(--primary); color: var(--on-primary); border-end-end-radius: 4px; }
+  .rd.them .bub { background: var(--surface-2); border-end-start-radius: 4px; }
+  .rd .terms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .rd.us .terms { justify-content: flex-end; }
+  .rd .terms span { font: 700 12px/1 var(--f-text); padding: 5px 8px; border-radius: 6px; background: rgba(255,255,255,.14); font-feature-settings: "tnum" 1; }
+  .rd.them .terms span { background: var(--surface-solid); box-shadow: inset 0 0 0 1px var(--line); }
+  .rd .terms s { opacity: .6; }
+  .patience { display: grid; grid-template-columns: auto 1fr auto; gap: var(--s-3); align-items: center; font-size: 12.5px; color: var(--ink-2); padding: 10px 12px; border-radius: 12px; background: var(--warn-wash); }
+  .patience .dots { display: flex; gap: 4px; } .patience .dots i { width: 18px; height: 6px; border-radius: 3px; background: var(--warn-mark); } .patience .dots i.off { background: var(--surface-3); }
+
+  /* composer */
+  .field { display: grid; gap: var(--s-2); padding: var(--s-4) 0; border-top: 1px solid var(--line); }
+  .field:first-of-type { border-top: 0; padding-top: 0; }
+  .field .between b { font: 700 15px/1.2 var(--f-text); }
+  .field .val { font: 800 22px/1 var(--f-display); font-feature-settings: "tnum" 1; }
+  .slider { position: relative; height: 36px; }
+  .slider .rail { position: absolute; inset-inline: 0; top: 15px; height: 6px; border-radius: 3px; background: var(--surface-3); }
+  .slider .zone { position: absolute; top: 13px; height: 10px; border-radius: 5px; inset-inline-start: var(--a); width: calc(var(--b) - var(--a)); background: color-mix(in srgb, var(--dv-us) 30%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dv-us) 60%, transparent); }
+  .slider .fill { position: absolute; top: 15px; height: 6px; border-radius: 3px; inset-inline-start: 0; width: var(--v); background: var(--primary); }
+  .slider .knob { position: absolute; top: 4px; inset-inline-start: calc(var(--v) - 14px); width: 28px; height: 28px; border-radius: 50%; background: var(--surface-solid); box-shadow: 0 0 0 2px var(--primary), 0 6px 12px -4px rgba(0,0,0,.35); }
+  .slider .lbl { position: absolute; top: 30px; font-size: 11px; color: var(--ink-3); }
+  .sl-foot { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-3); margin-top: 6px; }
+  .clause { display: grid; grid-template-columns: 1fr auto; gap: 2px var(--s-3); align-items: center; padding: 10px 0; }
+  .clause + .clause { border-top: 1px dashed var(--line-2); }
+  .clause b { font: 650 14px/1.25 var(--f-text); } .clause p { font-size: 12.5px; color: var(--ink-3); grid-column: 1; }
+  .sw { grid-row: 1 / 3; grid-column: 2; width: 46px; height: 28px; border-radius: 14px; background: #AFC8C1; position: relative; border: 0; }
+  .sw::after { content: ""; position: absolute; top: 3px; inset-inline-start: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: inset-inline-start var(--d-quick) var(--ease-out); }
+  .sw[aria-checked="true"] { background: var(--primary); } .sw[aria-checked="true"]::after { inset-inline-start: 21px; }
+
+  .verdict { display: grid; gap: var(--s-3); }
+  .gauge { display: grid; grid-template-columns: auto 1fr; gap: var(--s-4); align-items: center; }
+  .gauge .big { font: 850 48px/1 var(--f-display); font-stretch: 112%; font-feature-settings: "tnum" 1; color: var(--accent-text); }
+  .impact { display: grid; gap: 8px; }
+  .impact div { display: flex; justify-content: space-between; font-size: 13.5px; } .impact b { font-feature-settings: "tnum" 1; }
+  .send { display: grid; grid-template-columns: auto 1fr; gap: var(--s-2); }
+
+  .grid { display: grid; gap: var(--s-4); }
+  .grid > * { min-width: 0; }
+  @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; align-items: start; } .g-v { grid-column: 2; } }
+  @media (min-width: 1100px) { .grid { grid-template-columns: 1fr 1.1fr 0.8fr; } .g-v { grid-column: 3; position: sticky; top: var(--s-4); } .n-head { grid-template-columns: 72px 1fr auto; } .n-head .portrait { width: 72px; } .stages { max-width: 520px; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" data-active="market"></nav>
+  <main class="main"><div class="page">
+    <header class="topbar on-ground">
+      <div class="club"><a class="icon-btn" href="recruitment.html" aria-label="Back" data-i="back" data-i-cls="i--flip"></a><div><b>Talks · Samu Aghehowa</b><small>Fee agreed with Porto · £48m + £6m</small></div></div>
+    </header>
+    <section class="n-head">
+      <span data-portrait="Samu Aghehowa" data-club="POR" data-num="9"></span>
+      <div><h1 class="h1">Personal terms</h1><div class="sub">With his agent, Javier Ortega · round 3 of 5</div></div>
+    </section>
+    <div class="stages on-ground" aria-label="Deal stages"><div class="done">Club fee</div><div class="now">Personal terms</div><div>Medical</div></div>
+
+    <div class="grid">
+      <article class="panel" style="--i:1" aria-label="Rounds so far">
+        <div class="panel-h"><h2 class="h2">The table so far</h2></div>
+        <div class="rounds">
+          <div class="rd us"><span class="who">You · round 1</span><div class="bub">Starter's role, four years.<div class="terms"><span>£80k/wk</span><span>4 yrs</span><span>£2m bonus</span></div></div></div>
+          <div class="rd them"><span class="who">Ortega · counter</span><div class="bub">He's Spain's No.&nbsp;9. Porto pay him more than that.<div class="terms"><span>£120k/wk</span><span>5 yrs</span><span>£60m release clause</span></div></div></div>
+          <div class="rd us"><span class="who">You · round 2</span><div class="bub">We can move on wages. No release clause.<div class="terms"><span>£92k/wk</span><span>5 yrs</span><span><s>Release clause</s></span></div></div></div>
+          <div class="rd them"><span class="who">Ortega · counter</span><div class="bub">Then make it worth his while if you're in the Champions League. And he wants the 9 shirt.<div class="terms"><span>£105k/wk</span><span>+15% in UCL</span><span>Shirt 9</span></div></div></div>
+        </div>
+        <div class="patience" style="margin-top:var(--s-4)"><span data-i="clock"></span><span>Agent's patience</span><span class="dots"><i></i><i></i><i class="off"></i><i class="off"></i></span></div>
+      </article>
+
+      <article class="panel" style="--i:2" aria-label="Your offer">
+        <div class="panel-h"><h2 class="h2">Round 3 · your offer</h2><span class="eyebrow">Drag to adjust</span></div>
+        <div class="field">
+          <div class="between"><b>Weekly wage</b><span class="val">£98k</span></div>
+          <div class="slider" style="--v:45%;--a:38%;--b:62%"><span class="rail"></span><span class="zone" title="Where he'd likely sign"></span><span class="fill"></span><span class="knob" role="slider" aria-valuenow="98" aria-valuemin="70" aria-valuemax="140" aria-label="Weekly wage"></span></div>
+          <div class="sl-foot"><span>£70k</span><span style="color:var(--accent-text);font-weight:700">He'd likely sign in the green</span><span>£140k</span></div>
+        </div>
+        <div class="field">
+          <div class="between"><b>Length</b></div>
+          <div class="seg"><button>3 yrs</button><button>4 yrs</button><button aria-pressed="true">5 yrs</button></div>
+        </div>
+        <div class="field">
+          <div class="between"><b>Clauses</b><span class="eyebrow">What each one costs you</span></div>
+          <div class="clause"><b>+10% wage in Champions League seasons</b><button class="sw" role="switch" aria-checked="true" aria-label="Champions League rise"></button><p>He asked for 15. 10 meets him and costs £0.5m a year when it triggers.</p></div>
+          <div class="clause"><b>Release clause</b><button class="sw" role="switch" aria-checked="false" aria-label="Release clause"></button><p>Off. Any clause under £90m and Real Madrid pay it next summer.</p></div>
+          <div class="clause"><b>Shirt number 9</b><button class="sw" role="switch" aria-checked="true" aria-label="Shirt 9"></button><p>Free. Nobody's wearing it.</p></div>
+        </div>
+      </article>
+
+      <aside class="panel g-v verdict" style="--i:3" aria-label="Likely outcome">
+        <span class="eyebrow">If you send this</span>
+        <div class="gauge"><span class="big">71%</span><div><b style="font:700 15px/1.25 var(--f-text)">He'll probably sign</b><p class="small muted" style="margin-top:3px">Wage is inside his range, and the UCL rise shows you rate him.</p></div></div>
+        <div class="well impact">
+          <div><span>Wage bill</span><b>+£5.1m / yr</b></div>
+          <div><span>Squad-cost ratio</span><b style="color:var(--warn)">68% → 69.6% of 70</b></div>
+          <div><span>Cash runway</span><b>stays positive</b></div>
+        </div>
+        <div class="advice"><span class="staff">DM</span><div><div class="who">Director of football</div><q>Don't go past £100k. It sets the bar for Watkins's talks next week.</q></div></div>
+        <div class="send"><button class="btn btn--ghost" aria-label="Walk away" data-i="x"></button><button class="btn btn--primary btn--block" data-i="handshake">Send round 3</button></div>
+      </aside>
+    </div>
+  </div></main>
+</div>
+<script src="../kit.js"></script>
+</body>
+</html>

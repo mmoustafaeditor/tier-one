@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" data-light="flood">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Full-time · Villa 2–1 Newcastle · The Gaffer</title>
+<link rel="stylesheet" href="../components.css">
+<style>
+  .ft { position: relative; overflow: hidden; text-align: center; padding: var(--s-8) var(--s-5) var(--s-6); isolation: isolate; }
+  .ft::before { content: ""; position: absolute; inset: 0; z-index: -1; background:
+    radial-gradient(50% 60% at 50% 0%, rgba(125,235,203,.25), transparent 70%),
+    conic-gradient(from 200deg at 50% -10%, transparent 0 10deg, rgba(220,255,240,.08) 12deg 18deg, transparent 20deg 40deg, rgba(220,255,240,.06) 42deg 47deg, transparent 50deg); }
+  .ft .eyebrow { color: var(--mint-300); }
+  .ft .line { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--s-4); margin-top: var(--s-4); }
+  .ft .line .crest { width: 60px; height: 60px; justify-self: center; }
+  .ft .score { font-size: clamp(64px, 12vw, 128px); text-shadow: 0 0 60px rgba(170,255,225,.3); }
+  .ft .head { font: 800 clamp(22px, 3vw, 32px)/1.1 var(--f-display); font-stretch: 112%; margin-top: var(--s-4); letter-spacing: -.01em; }
+  .ft .goals { display: flex; justify-content: center; gap: var(--s-5); margin-top: var(--s-3); font-size: 13px; color: var(--ink-2); flex-wrap: wrap; }
+
+  .changes { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-3); }
+  .chg { display: grid; gap: 4px; padding: 12px; border-radius: var(--r-md); background: var(--surface-2); }
+  .chg .l { font-size: 12px; color: var(--ink-3); display: flex; gap: 6px; align-items: center; }
+  .chg .l .i { width: 15px; height: 15px; }
+  .chg .v { font: 800 20px/1.1 var(--f-display); font-feature-settings: "tnum" 1; }
+  .chg .v small { font: 700 13px/1 var(--f-text); color: var(--good); margin-inline-start: 4px; }
+  .chg p { font-size: 12px; color: var(--ink-2); }
+
+  .ratings { display: grid; }
+  .rt { display: grid; grid-template-columns: 40px 1fr auto; gap: var(--s-3); align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+  .rt:first-child { border-top: 0; }
+  .rt .portrait { width: 40px; border-radius: 10px; }
+  .rt b { font: 650 14.5px/1.2 var(--f-text); display: block; } .rt span.s { font-size: 12px; color: var(--ink-3); }
+  .rt .r { font: 850 18px/1 var(--f-display); font-feature-settings: "tnum" 1; padding: 6px 8px; border-radius: 8px; background: var(--surface-3); min-width: 46px; text-align: center; }
+  .rt .r.top { background: var(--mint-400); color: #04211C; }
+  .motm { font: 700 10px/1 var(--f-text); letter-spacing: .08em; color: var(--mint-300); text-transform: uppercase; margin-inline-start: 6px; }
+
+  .grid { display: grid; gap: var(--s-4); }
+  .grid > * { min-width: 0; }
+  @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } .g-ft, .g-xg { grid-column: 1 / -1; } }
+  @media (min-width: 1100px) { .grid { grid-template-columns: 1.3fr 1fr 1fr; } .g-ft { grid-column: 1 / -1; } .g-xg { grid-column: 1; } }
+</style>
+</head>
+<body>
+<div class="shell solo">
+  <main class="main"><div class="page">
+    <div class="grid" style="margin-top:var(--s-4)">
+      <section class="panel ft g-ft" style="--i:0" aria-label="Full-time">
+        <span class="eyebrow">Full-time · Villa Park</span>
+        <div class="line"><span data-crest="AVL"></span><span class="score">2–1</span><span data-crest="NEW"></span></div>
+        <div class="head">Rogers wins it late. Villa go third.</div>
+        <div class="goals"><span>Watkins 24′</span><span>Gordon 44′</span><span>Rogers 78′</span></div>
+      </section>
+
+      <section class="panel g-xg" style="--i:1" aria-label="How the match flowed">
+        <div class="panel-h"><div><span class="eyebrow">Expected goals · 90 min</span><h2 class="h2" style="margin-top:4px">The half-time changes turned it</h2></div><div class="legend"><span><i></i>Villa 2.04</span><span><i class="them"></i>Newcastle 1.21</span></div></div>
+        <div class="chart" id="xg"></div>
+      </section>
+
+      <section class="panel" style="--i:2" aria-label="What changed">
+        <div class="panel-h"><h2 class="h2">What it changed</h2></div>
+        <div class="changes">
+          <div class="chg"><span class="l" data-i="trend">League</span><span class="v">3rd<small>↑1</small></span><p>Newcastle drop to 7th</p></div>
+          <div class="chg"><span class="l" data-i="board">Board</span><span class="v">75<small>+3</small></span><p>“A statement result.”</p></div>
+          <div class="chg"><span class="l" data-i="fans">Fans</span><span class="v">86<small>+5</small></span><p>Holte End sang his name</p></div>
+          <div class="chg"><span class="l" data-i="room">Dressing room</span><span class="v">69<small>+5</small></span><p>Bailey still unhappy</p></div>
+        </div>
+        <div class="advice" style="margin-top:var(--s-4)"><span class="staff" style="background:#5A3A8A">AP</span><div><div class="who">Head physio</div><q>Resting Kamara before the break paid off. He's fine for Porto.</q></div></div>
+      </section>
+
+      <section class="panel" style="--i:3" aria-label="Player ratings">
+        <div class="panel-h"><h2 class="h2">Ratings</h2><a class="link" href="#">All 14</a></div>
+        <div class="ratings">
+          <div class="rt"><span data-portrait="Morgan Rogers" data-num="27"></span><div><b>Rogers<span class="motm">Player of the match</span></b><span class="s">Goal · 5 of 7 duels v Trippier</span></div><span class="r top">8.7</span></div>
+          <div class="rt"><span data-portrait="Ollie Watkins" data-num="11"></span><div><b>Watkins</b><span class="s">Goal · pressed till he dropped</span></div><span class="r">7.9</span></div>
+          <div class="rt"><span data-portrait="Boubacar Kamara" data-num="44"></span><div><b>Kamara</b><span class="s">On at 45′ · Tonali quiet after</span></div><span class="r">7.6</span></div>
+          <div class="rt"><span data-portrait="Matty Cash" data-num="2"></span><div><b>Cash</b><span class="s">Beaten for the goal</span></div><span class="r">6.1</span></div>
+        </div>
+      </section>
+    </div>
+  </div></main>
+  <div class="mbar" role="toolbar" aria-label="After the match">
+    <button class="btn btn--ghost" style="--b-ink:var(--ink)" data-i="chat">Press conference</button>
+    <span class="grow"></span>
+    <a class="btn btn--accent" href="home.html" data-i="arrowr" data-i-pos="end" data-i-cls="i--flip">Continue</a>
+  </div>
+</div>
+<script src="../kit.js"></script>
+<script>
+document.addEventListener("kit:ready", () => {
+  const x = Array.from({ length: 91 }, (_, i) => i % 15 === 0 ? i + "′" : "");
+  const step = (pts) => { const a = []; let v = 0; for (let m = 0; m <= 90; m++) { if (pts[m]) v += pts[m]; a.push(+v.toFixed(2)); } return a; };
+  Kit.line(document.getElementById("xg"), { x, h: 170, yMin: 0, yMax: 2.4, yTicks: [0, 1, 2], step: true, fmt: (v) => (+v).toFixed(1), padL: 22, tipX: (i) => i + "′",
+    series: [ { key: "us", name: "Villa", data: step({ 6: .08, 11: .12, 17: .06, 24: .38, 28: .31, 33: .17, 52: .09, 61: .22, 70: .14, 78: .41, 84: .06 }), w: 2.5, label: true },
+              { key: "them", name: "Newcastle", data: step({ 9: .05, 19: .07, 30: .11, 35: .41, 44: .33, 58: .06, 73: .08, 88: .10 }), dash: true, w: 2, label: true } ],
+    markers: [{ i: 45, label: "HT · changes" }, { i: 78, label: "Rogers" }] });
+});
+</script>
+</body>
+</html>
