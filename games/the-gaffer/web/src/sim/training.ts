@@ -15,7 +15,8 @@ import { SQUAD_MAX } from './transfers';
 const AGE_RATE = (age: number) => (age <= 19 ? 2 : age <= 21 ? 1.6 : age <= 24 ? 1.2 : age <= 28 ? 0.6 : 0.2);
 // Hard training: +40% progress for −2 fitness a week (survivable with rotation), not a spiral.
 export const LOAD_PROGRESS = [1.5, 3.5, 5];
-export const LOAD_RECOVERY = [16, 12, 10];
+export const LOAD_RECOVERY = [16, 12, 11];
+export const HARD_KNOCK = 0.10; // chance per hard week that one player picks up a 1-2 matchday knock
 
 export const atCeiling = (p: Player) => p.rating >= p.potential;
 
@@ -47,7 +48,7 @@ export function trainingWeek(w: World, c: Career): { world: World; career: Caree
     return q;
   });
   // Hard weeks carry a small injury risk; a good fitness coach lowers it.
-  if (load === 2 && r() < 0.18 * (1 - staffQ(ops, 'fitness') / 200)) {
+  if (load === 2 && r() < HARD_KNOCK * (1 - staffQ(ops, 'fitness') / 200)) {
     const pool = players.filter((p) => mine.has(p.id) && p.injured === 0);
     const who = pool[Math.floor(r() * pool.length)];
     if (who) { who.injured = int(r, 1, 2); hurt.push(who.id); }

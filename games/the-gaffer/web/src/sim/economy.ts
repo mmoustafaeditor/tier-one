@@ -228,7 +228,8 @@ export function aiEconomyWeek(w: World, c: Career): World {
     const tier1 = leagueOf(w, x).tier === 1;
     const lvl = clamp(1 + Math.floor((x.reputation - 50) / 12), 1, 5);
     const monthly = x.wageCap * (tier1 ? 0.35 : 0.25) + x.wageCap * 0.5 * AI_SPONSOR_SHARE - (bills.get(x.id) ?? 0) - x.wageCap * 0.004 * (5 * lvl - 1);
-    return { ...x, budget: Math.round(x.budget + monthly / 4) };
+    // The owner covers a shortfall: a club never goes below zero on wages alone.
+    return { ...x, budget: Math.max(0, Math.round(x.budget + monthly / 4)) };
   });
   return { ...w, clubs };
 }
