@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-29 · mmoustafaeditor · Tier One reskin "Pitch Night" (dark sports UI)
+- **What changed:** Restyle only, no features, screens or data changed. A theme layer (`@@LANE CSS:t1ui`, loads last) gives the default look charcoal-navy surfaces, one green accent (#3DDC6E) with red for negatives, and thin Barlow type (light big numbers and names, no italics/caps). Buttons and tabs are pills; the board and feed are headline lists with hairline dividers; cards lose their outlines; results/leaderboard use round W/L/exclusive dots. `@@LANE JS:t1ui` swaps emoji UI icons (sources, rivals, crown, phone, How to play, More, medals…) for one set of inline line-SVG icons as they render (tweet/news bodies and share text keep their emoji). Barlow 300/600 Latin subsets are embedded, so it works offline. Theme **Auto** now always shows the dark look (the explicit Light option still works, with green accents). Deadline Day keeps its red palette. Scoring was checked unchanged (same seeds give the same points).
+- **Files:** `tier-one/index.html` (new font block, CSS slot `t1ui`, JS slot `t1ui`, theme-color meta), `UPDATES.md`
+- **Heads-up for the team:** New UI CSS should use the tokens (`--panel`, `--accent`…). Emoji added to UI labels get turned into icons automatically if they're in the `t1ui` map. The APK needs a rebuild to ship this.
+
 ## 2026-09-29 · mmoustafaeditor · Tier One 2.4 APK published (Android 2.4, versionCode 15)
 - **What changed:** `downloads/TierOne.apk` is now the 2.4 build from CI run 84 (bundles the live 2.4.0 game with the retuned math). The update feed moves from 2.3 to 2.4 / versionCode 15, so installed apps get the prompt.
 - **Files:** `downloads/TierOne.apk`, `api/tier-one/latest.js`, `UPDATES.md`
