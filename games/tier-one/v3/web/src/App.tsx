@@ -31,7 +31,7 @@ function initialRoute(): Route {
   const q = new URLSearchParams(location.search);
   if (q.get('room')) return { n: 'rooms', code: q.get('room')!.toUpperCase().slice(0, 8) };
   const tab = q.get('tab');
-  if (tab === 'daily' || tab === 'wire' || tab === 'desk' || tab === 'pass' || tab === 'practice' || tab === 'howto') return { n: tab } as Route;
+  if (tab === 'daily' || tab === 'wire' || tab === 'desk' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms') return { n: tab } as Route;
   return { n: 'front' };
 }
 
