@@ -29,7 +29,7 @@ export function NewsroomScreen({ code, ...chrome }: Chrome & { code?: string }) 
   const [leaving, setLeaving] = useState(false);
   const saveNick = () => { if (nick.trim()) update((x) => { x.nick = nick.trim().slice(0, 16); }); return nick.trim(); };
   const apply = (r: { ok: boolean; error?: string } & Partial<Data>) => {
-    if (!r.ok) { setErr(t('so.nr.errors.' + r.error) || t('err.generic')); return false; }
+    if (!r.ok) { setErr(t.or('so.nr.errors.' + r.error, 'err.generic')); return false; }
     setErr(''); setD({ newsroom: r.newsroom || null, top: r.top || [] }); syncNewsroom(r.newsroom || null); return true;
   };
   const load = async () => apply(await v3<Data>('newsroom.get', { ...identity(), code: undefined }));
@@ -46,7 +46,7 @@ export function NewsroomScreen({ code, ...chrome }: Chrome & { code?: string }) 
   };
   const leave = async () => {
     setBusy(true); const r = await v3('newsroom.leave', { dev: s.dev, code: d?.newsroom?.code }); setBusy(false); setLeaving(false);
-    if (r.ok) { sfx('shred'); syncNewsroom(null); load(); } else setErr(t('so.nr.errors.' + r.error) || t('err.generic'));
+    if (r.ok) { sfx('shred'); syncNewsroom(null); load(); } else setErr(t.or('so.nr.errors.' + r.error, 'err.generic'));
   };
   const nr = d?.newsroom || null;
   const wantsJoin = !!code && (!nr || nr.code !== code);

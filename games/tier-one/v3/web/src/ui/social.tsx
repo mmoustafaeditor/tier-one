@@ -53,7 +53,7 @@ export function ChallengeButton({ view, size = 'sm', className = '', style }: { 
     if (st === 'busy') return;
     sfx('ui.tap'); setSt('busy'); setErr('');
     const r = await mintChallenge(m);
-    if (!r.ok) { setSt('err'); setErr(t('so.ch.errors.' + r.error) || t('err.generic')); return; }
+    if (!r.ok) { setSt('err'); setErr(t.or('so.ch.errors.' + r.error, 'err.generic')); return; }
     const url = challengeUrl(r.challenge.code), text = t('so.ch.share', { s: m.score, w: m.label, u: url });
     try { await navigator.clipboard?.writeText(url); } catch { /* clipboard blocked */ }
     setSt('done'); sfx('ui.pop'); buzz(15);
