@@ -425,7 +425,7 @@ button:disabled { cursor: not-allowed; }
 :root.reduce { --d-tap: 0ms; --d-quick: 0ms; --d-base: 0ms; --d-stamp: 0ms; --d-turn: 0ms; }
 :root.reduce .ticker__track, :root.reduce .stamp.is-slam, :root.reduce .jolt, :root.reduce .set > *, :root.reduce .toast, :root.reduce .transcript, :root.reduce .sheet--float, :root.reduce .live-dot::before, :root.reduce .clock.is-last .colon { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { .toast, .transcript, .sheet--float, .clock.is-last .colon { animation: none; } }
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--d-turn); }
+/* Page transitions live in motion.css. */
 
 /* ---------- Arabic */
 :lang(ar) .contact__rule, :lang(ar) .ct__trend, :lang(ar) .reads li b, :lang(ar) .card__ed, :lang(ar) .card__stat span, :lang(ar) .card__foot, :lang(ar) .pass__row, :lang(ar) .window-strip span, :lang(ar) .breaking__t { font-family: var(--f-text); }

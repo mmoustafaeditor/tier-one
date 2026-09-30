@@ -18,6 +18,8 @@ const MAP = {
 export type Sfx = keyof typeof MAP;
 
 export function sfx(name: Sfx, arg?: unknown) {
+  // Publishing and stamping also buzz (where the device supports it), so every caller gets haptics for free.
+  if (name.startsWith('publish.')) haptic('publish'); else if (name.startsWith('stamp.')) haptic('stamp');
   if (!getSave().sound) return;
   try { SYN.play(MAP[name], arg); } catch { /* audio unavailable */ }
 }
@@ -25,3 +27,8 @@ export function sfx(name: Sfx, arg?: unknown) {
 export const VOICE: Record<string, number> = { kitman: 118, barber: 142, agent: 128, spotter: 205, physio: 190, leak: 210, editor: 104, tabloid: 150, itk: 135, insider: 112 };
 export function voice(who: string, dur = 1.2) { sfx('voice', { base: VOICE[who] || 150, dur }); }
 export function buzz(ms: number | number[]) { try { if (!getSave().reduced) navigator.vibrate?.(ms); } catch { /* */ } }
+
+// Haptics (GOTY.md §4): short, distinct patterns. Off with Reduce motion; silently absent where vibrate isn't supported (iOS Safari, desktop).
+const HAPTIC = { tap: 8, publish: [14, 50, 28], stamp: [26] } as const;
+export type Haptic = keyof typeof HAPTIC;
+export function haptic(kind: Haptic) { buzz(HAPTIC[kind] as number | number[]); }
