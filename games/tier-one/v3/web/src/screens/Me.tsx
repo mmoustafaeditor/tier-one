@@ -7,6 +7,7 @@ import type { Chrome } from '../App';
 import { startTutorial } from './Onboarding';
 import { PressPass } from './Home';
 import { useLeague } from '../lib/leagueData';
+import { BylineCard } from '../ui/connect';
 
 const TROPHY_IC: Record<string, string> = { first: 'news', t1: 'crown', t1x3: 'crown', excl: 'bolt', excl3: 'bolt', clean: 'check', uturn: 'uturn', twist: 'uturn', dd: 'clock', silent: 'eye', fake: 'eye', hijack: 'arrow', agent: 'briefcase', echo: 'friends', physio: 'pulse', streak7: 'flame', streak30: 'flame', practice5: 'target', coach: 'target', career1: 'story', rank2: 'story', rank3: 'story', rank5: 'crown', trust5: 'phone', leak: 'fax', wire1: 'wire', wireRight: 'wire', room: 'friends', share: 'share', rich: 'gift' };
 
@@ -22,13 +23,14 @@ export function MeScreen(chrome: Chrome) {
     <TopBar title={t('g.tabs.me')} onMenu={chrome.openSettings} />
     <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <PressPass chrome={chrome} s={s} lg={lg} onTop={() => chrome.go({ n: 'pass' })} />
+      <BylineCard s={s} go={chrome.go} style={{ ['--i' as string]: 1 }} />
 
       <section className="me__stats" style={{ ['--i' as string]: 1 }}>
         {[
           { k: 'g.me.streak', v: s.streak.n, sub: t('g.me.best', { n: s.streak.best }), ic: 'flame' },
           { k: 'g.me.dailies', v: dailies.length, sub: t('g.me.t1s', { n: t1s }), ic: 'news' },
           { k: 'g.me.bestScore', v: best, sub: t('g.me.points'), ic: 'star' },
-          { k: 'g.me.followers', v: s.career ? s.career.followers : 0, sub: s.career ? t('g.me.rep', { n: Math.round(s.career.rep) }) : t('g.me.noStory'), ic: 'friends' },
+          { k: 'cn.me.storyF', v: s.career ? s.career.followers : 0, sub: s.career ? t('g.me.rep', { n: Math.round(s.career.rep) }) : t('g.me.noStory'), ic: 'friends' },
         ].map((x) => <div key={x.k} className="g-card g-card--desk me__stat"><Icon n={x.ic} /><b className="g-num">{num(x.v)}</b><span className="g-mono">{t(x.k)}</span><span className="me__sub">{x.sub}</span></div>)}
       </section>
 

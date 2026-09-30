@@ -1,0 +1,165 @@
+/* One Byline (GOTY.md §1): Feed, Rivals, Contacts, Home's next-up slip, the byline card, the bell.
+   Paper on the desk, like the rest. Each screen spends its boldness once: the feed's copy prints in, the rival record
+   is set in wood type with the scalp stamp, the contact card fills. Everything else stays quiet. */
+
+.cn-screen { --cn-rule: rgba(21, 19, 15, .12); }
+.cn-screen :is(button, a):focus-visible, .cn-row:focus-visible, .cn-bell:focus-visible, .cn-strip:focus-visible, .cn-byline__links button:focus-visible, .cn-link:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* ---------- screen head: a headline and one plain sentence, no kicker */
+.cn-head { margin: 6px 2px 16px; max-width: 60ch; }
+.cn-head h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(28px, 4vw + 12px, 40px); line-height: 1.02; letter-spacing: -.02em; color: var(--on-desk); }
+.cn-head p { margin-top: 8px; color: var(--on-desk-2); font-size: 15px; line-height: 1.45; }
+
+/* ---------- the wire sheet: dispatches on one sheet of paper, a rule between each, a coloured edge per kind */
+.cn-sheet { background: var(--card); color: var(--card-ink); border-radius: var(--r-card); box-shadow: var(--shadow-card); overflow: hidden; }
+.cn-row { --kc: var(--card-ink-3); position: relative; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: start; width: 100%; padding: 13px 14px 13px 16px; text-align: start; color: inherit; border-inline-start: 4px solid var(--kc); }
+.cn-row + .cn-row { box-shadow: inset 0 1px 0 rgba(21, 19, 15, .12); }
+.cn-row:hover { background: rgba(21, 19, 15, .04); }
+.cn-row__ic { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: var(--kc); background: color-mix(in srgb, var(--kc) 14%, transparent); }
+.cn-row__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cn-row__who { font-weight: 800; font-size: 13.5px; }
+.cn-row__txt { font-family: var(--f-text); font-size: 15px; line-height: 1.4; color: var(--card-ink-2); }
+.cn-row.is-new .cn-row__txt { color: var(--card-ink); font-weight: 600; }
+.cn-row__at { font-size: 12px; color: var(--card-ink-2); white-space: nowrap; padding-top: 2px; }
+.cn-row.is-new .cn-row__at::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--red); margin-inline-end: 6px; vertical-align: 1px; }
+
+/* The one moment on the Feed: new copy types out of the teleprinter, line by line. */
+.cn-feed .cn-row[style*="--k"] { animation: cn-print .5s steps(14, end) both; animation-delay: calc(var(--k) * 120ms + 150ms); }
+@keyframes cn-print { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+[dir="rtl"] .cn-feed .cn-row[style*="--k"] { animation-name: cn-print-rtl; }
+@keyframes cn-print-rtl { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0 0 0 0); } }
+
+.cn-feed { max-width: 720px; }
+.cn-day { margin-top: 10px; }
+.cn-day__h { display: flex; align-items: baseline; gap: 10px; margin: 14px 2px 8px; font-family: var(--f-display); font-style: italic; font-weight: 700; font-size: 21px; color: var(--on-desk); }
+.cn-day__new { font-family: var(--f-text); font-style: normal; font-size: 12.5px; font-weight: 800; color: #fff; background: var(--red-deep); padding: 2px 8px; border-radius: 999px; }
+
+.cn-empty { display: flex; flex-direction: column; align-items: center; gap: 14px; margin: 48px auto; max-width: 34ch; text-align: center; color: var(--on-desk-2); font-size: 15.5px; line-height: 1.45; }
+.cn-empty svg { color: var(--on-desk-3); }
+.cn-empty .g-btn { width: auto; }
+.cn-empty--inline { margin: 20px auto 0; }
+
+/* ---------- the bell */
+.cn-bell { position: relative; }
+.cn-bell__n { position: absolute; top: -5px; inset-inline-end: -5px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: var(--red); color: #fff; font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 12px; line-height: 19px; text-align: center; box-shadow: 0 0 0 2px var(--desk); }
+.cn-bell.is-pop svg { animation: cn-ring .6s var(--ease-out); transform-origin: 50% 10%; }
+.cn-bell.is-pop .cn-bell__n { animation: g-pop .45s var(--ease-slam) both; }
+@keyframes cn-ring { 20% { transform: rotate(16deg); } 40% { transform: rotate(-12deg); } 60% { transform: rotate(8deg); } 80% { transform: rotate(-4deg); } }
+
+/* ---------- Home: the assignment slip, taped to the desk */
+.cn-slip { --kc: var(--red); position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "t b" "s b"; gap: 4px 14px; align-items: center; padding: 18px 16px 16px; background: var(--card); color: var(--card-ink); border-radius: 4px; box-shadow: var(--shadow-card); transform: rotate(-.6deg); }
+.cn-slip--wire { --kc: var(--m-wire); } .cn-slip--career { --kc: var(--m-story); } .cn-slip--room { --kc: var(--m-rooms); } .cn-slip--practice { --kc: var(--m-practice); } .cn-slip--mission { --kc: var(--gold); }
+.cn-slip__tape { position: absolute; top: -9px; inset-inline-start: 22px; width: 78px; height: 20px; background: color-mix(in srgb, var(--kc) 55%, rgba(255, 255, 255, .5)); opacity: .85; transform: rotate(-3deg); box-shadow: 0 1px 2px rgba(0, 0, 0, .2); }
+.cn-slip__t { grid-area: t; font-family: var(--f-display); font-weight: 800; font-size: 22px; line-height: 1.08; letter-spacing: -.015em; }
+.cn-slip__s { grid-area: s; font-size: 14.5px; line-height: 1.4; color: var(--card-ink-2); }
+.cn-slip .g-btn { grid-area: b; width: auto; white-space: nowrap; }
+@media (max-width: 420px) { .cn-slip { grid-template-areas: "t" "s" "b"; grid-template-columns: 1fr; } .cn-slip .g-btn { margin-top: 10px; width: 100%; } }
+
+.cn-foryou__h { display: flex; align-items: baseline; justify-content: space-between; margin: 0 2px 8px; }
+.cn-foryou__h h2 { font-family: var(--f-display); font-style: italic; font-weight: 700; font-size: 22px; color: var(--on-desk); }
+.cn-link { color: var(--on-desk-2); font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--desk-line); }
+.cn-link:hover { color: var(--on-desk); }
+
+.cn-strip { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border-radius: var(--r-card); background: var(--desk-2); color: var(--on-desk); box-shadow: inset 0 0 0 1px var(--desk-line); text-align: start; }
+.cn-strip__k { font-weight: 800; font-size: 14px; margin-inline-end: auto; }
+.cn-strip__i { display: inline-flex; align-items: center; gap: 6px; }
+.cn-strip__i b { font-size: 20px; color: var(--on-desk-2); }
+.cn-strip__i.is-up b { color: var(--c-done); }
+.cn-strip__i.is-down b { color: #FF7A5C; }
+
+/* ---------- rival marks: initials in the rival's ink, never a face */
+.cn-rmark { --rc: var(--red); width: var(--sz, 40px); height: var(--sz, 40px); border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--rc); color: #fff; font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; font-size: calc(var(--sz, 40px) * .42); letter-spacing: .02em; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2); }
+.cn-rmark--itk { --rc: #1F8FB0; } .cn-rmark--insider { --rc: #2E2A24; }
+
+/* ---------- Me: the byline */
+.cn-byline { background: var(--card); color: var(--card-ink); border-radius: var(--r-card); box-shadow: var(--shadow-card); padding: 16px; }
+.cn-byline__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 2px solid var(--card-ink); }
+.cn-byline__by { font-family: var(--f-display); font-style: italic; font-weight: 700; font-size: 26px; line-height: 1.05; letter-spacing: -.01em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cn-byline__stamp { font-size: 18px; flex: none; }
+.cn-tier--blogger { --sc: var(--c-off-deep); } .cn-tier--stringer { --sc: var(--c-done-deep); } .cn-tier--correspondent { --sc: #1F7FA0; } .cn-tier--chief { --sc: var(--red-deep); } .cn-tier--tierone { --sc: var(--gold-deep); }
+.cn-byline__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.cn-byline__stats dt { font-size: 12.5px; font-weight: 700; color: var(--card-ink-2); }
+.cn-byline__stats dd { display: flex; align-items: center; gap: 6px; font-size: 32px; margin-top: 4px; }
+.cn-byline__rep { flex: 1; min-width: 30px; }
+.cn-hot dd svg { color: var(--card-ink-3); }
+.cn-hot.is-lit dd svg { color: #E8650F; fill: rgba(255, 176, 31, .55); animation: g-flame 1.4s ease-in-out infinite; }
+.cn-hot small { display: block; font-size: 12px; color: var(--card-ink-2); margin-top: 2px; }
+.cn-byline__links { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.cn-byline__links button { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border-radius: 10px; font-weight: 800; font-size: 14px; color: var(--card-ink); box-shadow: inset 0 0 0 1.5px var(--cn-rule, rgba(21, 19, 15, .18)); }
+.cn-byline__links button:hover { background: rgba(21, 19, 15, .05); }
+.cn-byline__links .g-badge { height: 19px; min-width: 19px; font-size: 12px; }
+
+/* ---------- Results: what the window did to the byline */
+.cn-resline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; padding: 12px 14px; border-radius: var(--r-card); background: var(--desk-2); color: var(--on-desk); box-shadow: inset 0 0 0 1px var(--desk-line); }
+.cn-resline__k { font-weight: 800; font-size: 14px; margin-inline-end: 4px; }
+.cn-resline__f { font-size: 28px; color: var(--c-done); }
+.cn-resline__f.neg { color: #FF7A5C; }
+.cn-resline__hot { display: inline-flex; align-items: center; gap: 4px; color: #FF9A1F; font-weight: 800; font-size: 14px; }
+.cn-resline__lv { flex-basis: 100%; font-size: 14px; font-weight: 700; color: var(--gold); animation: g-pop .45s var(--ease-slam) both; animation-delay: .9s; }
+
+/* ---------- Rivals: a dossier each; the record set big in wood type */
+.cn-rgrid { display: grid; gap: 14px; }
+@media (min-width: 1024px) { .cn-rgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; } }
+.cn-rival { --rc: var(--red); position: relative; padding: 16px; background: var(--card); color: var(--card-ink); border-radius: var(--r-card); box-shadow: var(--shadow-card); border-top: 6px solid var(--rc); }
+.cn-rival--itk { --rc: #1F8FB0; } .cn-rival--insider { --rc: #2E2A24; }
+.cn-rival__h { display: flex; gap: 12px; align-items: center; }
+.cn-rival__h h2 { font-weight: 800; font-size: 18px; }
+.cn-rival__h p { font-size: 13.5px; line-height: 1.35; color: var(--card-ink-2); margin-top: 2px; }
+.cn-rec { position: relative; display: flex; align-items: flex-end; gap: 12px; margin: 16px 0 6px; padding: 10px 0; border-top: 1px solid rgba(21, 19, 15, .15); border-bottom: 1px solid rgba(21, 19, 15, .15); }
+.cn-rec__side { display: flex; flex-direction: column; align-items: center; min-width: 56px; }
+.cn-rec__side b { font-size: 68px; line-height: .85; }
+.cn-rec__side small { font-size: 12.5px; font-weight: 700; color: var(--card-ink-2); margin-top: 4px; }
+.cn-rec__dash { font-family: var(--f-cond); font-weight: 900; font-size: 44px; color: var(--card-ink-3); padding-bottom: 22px; }
+.cn-rec__d { font-weight: 500; font-size: 13px; color: var(--card-ink-2); margin-inline-start: 8px; }
+.cn-rival__stamp { position: absolute; inset-inline-end: 4px; top: 50%; margin-top: -20px; font-size: 26px; --rot: -12deg; }
+.cn-rival__streak { font-size: 14.5px; font-weight: 700; margin-top: 8px; }
+.cn-rival.is-losing .cn-rival__streak { color: var(--red-deep); }
+.cn-rival.is-winning .cn-rival__streak { color: var(--c-done-deep); }
+.cn-rival__goal { margin-top: 10px; }
+.cn-rival__goal small { display: block; margin-top: 5px; font-size: 12.5px; color: var(--card-ink-2); }
+.cn-rival__said { margin-top: 14px; padding-inline-start: 12px; border-inline-start: 3px solid var(--rc); }
+.cn-rival__said small { font-size: 12px; font-weight: 700; color: var(--card-ink-2); }
+.cn-rival__said p { font-family: var(--f-display); font-style: italic; font-size: 17px; line-height: 1.3; margin-top: 2px; }
+
+/* ---------- Contacts: index cards from the book */
+.cn-cgrid { display: grid; gap: 14px; }
+@media (min-width: 700px) { .cn-cgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .cn-cgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.cn-contact { --sc: var(--red); position: relative; display: flex; flex-direction: column; gap: 12px; padding: 16px; background: var(--card); color: var(--card-ink); border-radius: 6px; box-shadow: var(--shadow-card);
+  background-image: repeating-linear-gradient(transparent 0 27px, rgba(53, 120, 190, .10) 27px 28px); background-position: 0 70px; }
+.cn-contact.has-frame { box-shadow: var(--shadow-card), inset 0 0 0 3px color-mix(in srgb, var(--sc) 60%, transparent), inset 0 0 0 6px var(--card), inset 0 0 0 7px color-mix(in srgb, var(--sc) 40%, transparent); }
+.cn-contact.is-gold { background-color: #FBEBC0; box-shadow: var(--shadow-card), inset 0 0 0 3px var(--gold), inset 0 0 0 6px #FBEBC0, inset 0 0 0 7px var(--gold-deep); }
+.cn-contact__h { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.cn-contact__id h2 { font-family: var(--f-display); font-weight: 800; font-size: 20px; line-height: 1.1; }
+.cn-contact__id p { font-size: 13px; line-height: 1.35; color: var(--card-ink-2); margin-top: 2px; }
+.cn-contact__nick { font-family: var(--f-display); font-style: italic; font-size: 15px !important; color: var(--card-ink) !important; }
+.cn-lv { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.cn-lv b { font-size: 40px; color: var(--sc); animation: g-pop .45s var(--ease-slam) both; }
+.cn-lv__pips { display: flex; gap: 3px; }
+.cn-lv__pips i { width: 7px; height: 7px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--card-ink-3); }
+.cn-lv__pips i.on { background: var(--sc); box-shadow: none; }
+.cn-xp { position: relative; }
+.cn-xp .g-bar { background: rgba(21, 19, 15, .12); }
+.cn-xp small { display: block; margin-top: 5px; font-size: 12.5px; color: var(--card-ink-2); }
+.cn-xp__pop { position: absolute; inset-inline-end: 0; top: -26px; font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 22px; color: var(--c-done-deep); animation: cn-float 1.1s var(--ease-out) both; pointer-events: none; }
+@keyframes cn-float { 0% { transform: translateY(8px) scale(.6); opacity: 0; } 25% { transform: translateY(0) scale(1.1); opacity: 1; } 100% { transform: translateY(-14px); opacity: 0; } }
+.cn-perks { display: flex; flex-wrap: wrap; gap: 6px; font-size: 13px; }
+.cn-perk { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 3px 7px; border-radius: 999px; background: color-mix(in srgb, var(--sc) 12%, transparent); font-weight: 700; }
+.cn-perk svg { color: var(--sc); }
+.cn-perks em { font-style: normal; font-size: 11.5px; font-weight: 700; margin-inline-start: 4px; color: #6B4A00; }
+.cn-perks__next { flex-basis: 100%; display: flex; align-items: center; gap: 6px; margin-top: 2px; color: var(--card-ink-2); }
+.cn-contact__f { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px dashed rgba(21, 19, 15, .2); }
+.cn-contact__f > small { font-size: 12.5px; color: var(--card-ink-2); }
+.cn-contact__f .g-btn { width: auto; font-size: 15px; }
+.cn-contact__f .g-btn--ghost { --bt: var(--card-ink-2); box-shadow: inset 0 0 0 2px rgba(21, 19, 15, .15); }
+.cn-price { display: inline-flex; align-items: center; gap: 4px; margin-inline-start: 4px; }
+.cn-contact__why { flex-basis: 100%; text-align: end; }
+.cn-fair { margin: 18px 2px 0; max-width: 62ch; font-size: 13.5px; line-height: 1.45; color: var(--on-desk-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cn-feed .cn-row[style*="--k"], .cn-bell.is-pop svg, .cn-bell.is-pop .cn-bell__n, .cn-lv b, .cn-xp__pop, .cn-resline__lv, .cn-hot.is-lit dd svg { animation: none; }
+}
+:root:lang(ar) .cn-rmark { font-family: var(--f-cond); }
+
+/* Buttons in these screens read as sentences, per the design addendum. */
+.cn-screen .g-btn, .cn-slip .g-btn, .cn-contact .g-btn { text-transform: none; letter-spacing: .01em; }

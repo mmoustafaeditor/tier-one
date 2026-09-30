@@ -17,10 +17,11 @@ import { RoomsScreen } from './screens/Rooms';
 import { HowTo } from './screens/HowTo';
 import { SettingsSheet } from './screens/Settings';
 import { Onboarding } from './screens/Onboarding';
+import { FeedScreen, RivalsScreen, ContactsScreen, setNav } from './screens/Connect';
 
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
-  | { n: 'rooms'; code?: string } | { n: 'howto' }
+  | { n: 'rooms'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' }
   | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
 
@@ -28,14 +29,14 @@ const TABS: { n: Route['n']; k: string; icon: string; c: string }[] = [
   { n: 'front', k: 'g.tabs.home', icon: 'home', c: 'var(--red)' }, { n: 'story', k: 'g.tabs.story', icon: 'story', c: 'var(--m-story)' }, { n: 'wire', k: 'g.tabs.wire', icon: 'wire', c: 'var(--m-wire)' },
   { n: 'rooms', k: 'g.tabs.friends', icon: 'friends', c: 'var(--m-rooms)' }, { n: 'me', k: 'g.tabs.me', icon: 'me', c: 'var(--gold)' },
 ];
-const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' ? 'rooms' : r.n === 'pass' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' ? 'front' : r.n);
+const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' ? 'rooms' : r.n === 'pass' || r.n === 'rivals' || r.n === 'contacts' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' ? 'front' : r.n);
 
 function initialRoute(): Route {
   const q = new URLSearchParams(location.search);
   if (q.get('room')) return { n: 'rooms', code: q.get('room')!.toUpperCase().slice(0, 8) };
   const tab = q.get('tab');
   if (tab === 'desk') return { n: 'story' };
-  if (tab === 'daily' || tab === 'wire' || tab === 'story' || tab === 'me' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms') return { n: tab } as Route;
+  if (tab === 'daily' || tab === 'wire' || tab === 'story' || tab === 'me' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms' || tab === 'feed' || tab === 'rivals' || tab === 'contacts') return { n: tab } as Route;
   return { n: 'front' };
 }
 
@@ -87,6 +88,7 @@ export function App() {
   const tab = tabOf(route);
   const inWindow = (route.n === 'daily' || route.n === 'room' || route.n === 'play') && !!driver;
   const chrome = { go, openSettings: () => setSettings(true), edition };
+  setNav(go);
 
   let screen;
   switch (route.n) {
@@ -99,6 +101,9 @@ export function App() {
     case 'practice': screen = <PracticeScreen {...chrome} />; break;
     case 'rooms': screen = <RoomsScreen {...chrome} code={route.code} />; break;
     case 'howto': screen = <HowTo {...chrome} />; break;
+    case 'feed': screen = <FeedScreen {...chrome} />; break;
+    case 'rivals': screen = <RivalsScreen {...chrome} />; break;
+    case 'contacts': screen = <ContactsScreen {...chrome} />; break;
   }
   return <>
     {screen}

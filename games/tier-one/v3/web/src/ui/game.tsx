@@ -5,6 +5,7 @@ import { sfx, type Sfx } from '../lib/sfx';
 import { getSave, useSave } from '../lib/save';
 import { useT } from '../lib/i18n';
 import { levelOf } from '../lib/progress';
+import { Bell } from './connect';
 
 // ---------- icons (24px line icons, currentColor)
 const P: Record<string, string> = {
@@ -148,6 +149,7 @@ export function TopBar({ back, title, onHelp, onMenu, children }: { back?: { lab
     {title && <span className="g-top__title">{title}</span>}
     <span className="g-top__end">
       {children}
+      <Bell />
       <span className="g-pill" aria-label={t('g.coins', { n: s.credits })}><span className="g-coin" />{s.credits}</span>
       <span className="g-pill g-pill--lv" aria-label={t('g.level', { n: lv.n })}>{t('g.lv', { n: lv.n })}</span>
       {onHelp && <button className="g-icbtn" onClick={onHelp} aria-label={t('nav.howto')}><Icon n="help" /></button>}
