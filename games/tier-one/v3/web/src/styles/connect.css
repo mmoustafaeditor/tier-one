@@ -89,8 +89,10 @@
 .cn-ladder__rungs .is-past i { background: color-mix(in srgb, var(--sc) 55%, transparent); }
 .cn-ladder__rungs .is-now i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--into, 0%); background: var(--sc); border-radius: 4px; transition: width var(--d-slow, .52s) var(--ease-out); }
 [dir="rtl"] .cn-ladder__rungs .is-now i::after { inset: 0 0 0 auto; }
-.cn-ladder__rungs span { font-size: 11px; font-weight: 700; color: var(--card-ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cn-ladder__rungs span { font-size: 11px; font-weight: 700; color: var(--card-ink-2); white-space: nowrap; }
 .cn-ladder__rungs .is-now span { color: var(--card-ink); font-weight: 800; }
+/* On a phone the five names don't fit under five rungs: only the rung you're on is named (the line below names the next). */
+@media (max-width: 559px) { .cn-ladder__rungs li:not(.is-now) span { visibility: hidden; } .cn-ladder__rungs .is-now span { overflow: visible; } }
 .cn-ladder__next { margin-top: 8px; font-size: 13.5px; font-weight: 700; color: var(--card-ink-2); }
 .cn-byline__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 2px solid var(--card-ink); }
 .cn-byline__stats dt { font-size: 12.5px; font-weight: 700; color: var(--card-ink-2); }

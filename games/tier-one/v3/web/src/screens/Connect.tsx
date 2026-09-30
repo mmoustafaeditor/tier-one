@@ -2,7 +2,7 @@
 // Each screen has one moment: the feed prints its new copy, the rivals' scalp stamps slam, a contact's card fills.
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useT, num } from '../lib/i18n';
-import { useSave } from '../lib/save';
+import { useSave, type Save } from '../lib/save';
 import { spend } from '../lib/meta';
 import { sfx, buzz } from '../lib/sfx';
 import {
@@ -44,13 +44,18 @@ export function FeedScreen(chrome: Chrome) {
 }
 
 // ---------------------------------------------------------------- Rivals
+// GOTY.md §7 slot: friendRivals(save) from lib/social.ts (social lane) lists the friends you duel with, under the three
+// house rivals. A no-op until that lane lands: the list is empty, so nothing renders.
+const friendRivals = (_s: Save): { id: string; nick: string }[] => [];
 export function RivalsScreen(chrome: Chrome) {
   const t = useT(); const s = useSave();
+  const friends = friendRivals(s);
   return <div className="g-screen g-screen--wide cn-screen cn-rivals">
     <TopBar back={{ label: t('g.tabs.me'), onClick: () => chrome.go({ n: 'me' }) }} title={t('cn.rivals.title')} />
     <header className="cn-head"><h1>{t('cn.rivals.hed')}</h1><p>{t('cn.rivals.sub')}</p></header>
     <RivalsTotal />
     <div className="cn-rgrid">{RIVALS.map((id, i) => <RivalCard key={id} id={id} i={i} />)}</div>
+    {friends.length > 0 && <div className="cn-rgrid cn-rgrid--friends">{/* social lane: one card per friend rival */}</div>}
     {!RIVALS.some((id) => { const r = rivalOf(s, id); return r.w + r.l + r.d; }) && <div className="cn-empty cn-empty--inline">
       <p>{t('cn.rivals.none')}</p>
       <GBtn size="sm" onClick={() => chrome.go({ n: 'daily' })}><Icon n="phone" />{t('cn.feed.play')}</GBtn>

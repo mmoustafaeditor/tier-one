@@ -2,7 +2,7 @@
 // name (Feed, Rivals, Contacts, Pass, replays), your record, the trophy shelf and the films. The sub-screens each do
 // one job and don't repeat what's here.
 import { useT, num } from '../lib/i18n';
-import { useSave } from '../lib/save';
+import { useSave, type Save } from '../lib/save';
 import { ACH, ACH_IDS } from '../lib/meta';
 import { levelOf } from '../lib/progress';
 import { unreadOf, rivalOf, RIVALS, BOOK_SRC, bookOf } from '../lib/byline';
@@ -12,6 +12,10 @@ import type { Chrome } from '../App';
 import { startTutorial } from './Onboarding';
 import { BylineCard, tn } from '../ui/connect';
 import { ScenesGallery } from '../film/ScenesGallery';
+
+// GOTY.md §7 slot: the playstyle card (<StyleCard/> from ui/live.tsx, live lane) mounts under the byline. A no-op until
+// that lane lands, so Me keeps its shape either way.
+const StyleCard = (_p: { s: Save }) => null;
 
 const TROPHY_IC: Record<string, string> = { first: 'news', t1: 'crown', t1x3: 'crown', excl: 'bolt', excl3: 'bolt', clean: 'check', uturn: 'uturn', twist: 'uturn', dd: 'clock', silent: 'eye', fake: 'eye', hijack: 'arrow', agent: 'briefcase', echo: 'friends', physio: 'pulse', streak7: 'flame', streak30: 'flame', practice5: 'target', coach: 'target', career1: 'story', rank2: 'story', rank3: 'story', rank5: 'crown', trust5: 'phone', leak: 'fax', wire1: 'wire', wireRight: 'wire', room: 'friends', share: 'share', rich: 'gift' };
 
@@ -38,6 +42,7 @@ export function MeScreen(chrome: Chrome) {
     <TopBar title={t('g.tabs.me')} onMenu={chrome.openSettings} />
     <div className="stagger me__grid">
       <BylineCard s={s} style={{ ['--i' as string]: 0 }} />
+      <StyleCard s={s} />
 
       <nav className="cn-hub" aria-label={t('cn.me.hub')} style={{ ['--i' as string]: 1 }}>
         {tiles.map((x) => <button key={x.k} className={'cn-hub__t cn-hub__t--' + x.k + (x.tone ? ' is-' + x.tone : '')} onClick={() => { sfx('ui.tap'); x.go(); }}>
