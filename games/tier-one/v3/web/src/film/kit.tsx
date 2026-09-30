@@ -104,16 +104,17 @@ const GRAIN_MASK = 'radial-gradient(circle at 20% 30%, #000 0 60%, rgba(0,0,0,.8
 
 /**
  * Typesetting: letters drop in one by one like metal sorts (Latin/Cyrillic), or the line is inked in by a wipe for
- * connected scripts (Arabic must never be split into letters). `cpf` = characters per frame.
+ * connected scripts (Arabic must never be split into letters), right to left. The text's script decides, not the UI
+ * direction, so a Latin byline in the Arabic game still sets left to right. `cpf` = characters per frame.
  */
-export function Typeset({ text, at, cpf = 0.6, rtl, style }: { text: string; at: number; cpf?: number; rtl?: boolean; style?: CSSProperties }) {
+export function Typeset({ text, at, cpf = 0.6, style }: { text: string; at: number; cpf?: number; rtl?: boolean; style?: CSSProperties }) {
   const { f } = useStage();
   const chars = Array.from(text);
   const n = Math.max(0, (f - at) * cpf);
   if (f < at) return <span style={{ ...style, visibility: 'hidden' }}>{text}</span>;
-  if (rtl || /[؀-ۿ]/.test(text)) {
+  if (/[؀-ۿ]/.test(text)) {
     const p = Math.min(1, n / Math.max(1, chars.length));
-    return <span style={{ display: 'inline-block', clipPath: rtl ? `inset(-20% 0 -20% ${100 - p * 100}%)` : `inset(-20% ${100 - p * 100}% -20% 0)`, ...style }}>{text}</span>;
+    return <span style={{ display: 'inline-block', clipPath: `inset(-20% 0 -20% ${100 - p * 100}%)`, ...style }}>{text}</span>;
   }
   // Words stay whole (no line break inside a word); each letter is its own sort.
   let i = 0;

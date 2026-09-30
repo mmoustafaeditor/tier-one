@@ -1,0 +1,24 @@
+{
+  "name": "tier-one-film",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Tier One cutscenes, trailer and share clips as Remotion compositions. The scene files live in ../web/src/film/scenes and are shared with the game.",
+  "scripts": {
+    "studio": "remotion studio",
+    "sfx": "node scripts/bake-sfx.mjs",
+    "render:trailer": "remotion render Trailer out/tier-one-trailer.mp4",
+    "render:clip": "remotion render HereWeGoClip out/here-we-go-clip.mp4",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.531",
+    "@remotion/media": "4.0.531",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "remotion": "4.0.531"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.12",
+    "typescript": "5.9.2"
+  }
+}
