@@ -243,3 +243,51 @@ game changes state for you, and nothing is a dead end.
 | **live** | `lib/desk.ts` (assignments, morning papers), `lib/live.ts` + server `live.*` (presence, first-to-break, DD Live board), `ui/live.tsx`, `lib/style.ts` (playstyle), Window.tsx additive (Daily brief sheet, DD Live ticker), `i18n/parts/live.ts`; season.ts additive (DD dates) |
 | **onecareer** (after story merges) | `lib/byline.ts` + `lib/career.ts` data unification, save migration, Me/Story readouts |
 | **film3d** | all clips, including the new `moment-*` ids above (queued after the calls/moments/story sets) |
+
+## 8. Platform, business and smoothness (3.4)
+Owner's brief: super smooth on mobile and desktop; an updated API; think business without a cash grab; a platform
+that new features drop into; credits that mean something; still a simple game to understand.
+
+### 8.1 Simple to understand (a rule for every lane)
+- One screen, one job, one primary action. If a screen needs a paragraph to explain itself, cut the screen.
+- Plain words: "call", "publish", "right", "wrong", "followers". No jargon in the UI; a glossary lives in How to play.
+- Every number on screen answers "how is my name doing?"; anything that doesn't is hidden behind a tap.
+
+### 8.2 Smoothness (`perf` lane)
+- Targets on a mid-range Android phone over slow 4G: first interaction under 3 s, 60 fps on every screen and film,
+  input-to-feedback under 100 ms, no layout jank on route changes. Lighthouse mobile Performance ≥ 90.
+- The web build is code-split (routes, films, world data lazy); the single-file build stays for the Android APK.
+  A service worker caches the shell and today's Daily, so the game opens offline and installs as a PWA.
+- Animations use transform/opacity only; long lists use content-visibility; the 1,026-player world data parses off
+  the boot path; fonts don't block first paint; films are preloaded one step ahead (poster first).
+- Push: web push and the Android bridge for "your Daily is ready", "results are in", "Deadline Day Live opens".
+
+### 8.3 The platform API (`api` lane): `api/tier-one/v4`
+- Identity: a device token becomes a Semba account (optional email magic link; no passwords). Cloud save sync with
+  versioned blobs and additive-counter merging, so a name, credits and cosmetics follow the player across phone,
+  desktop and the app.
+- Wallet: a server-authoritative credits ledger (earn, buy, spend, refund, gift) with purchase verification adapters
+  (Google Play Billing, Stripe Checkout on the web, a sandbox mode) and entitlements for Gold and cosmetics.
+- Catalog and remote config: items, prices, featured rotations, weekly events, Deadline Day Live dates, feature flags
+  and A/B buckets come from the server, so new features and events ship without a client release.
+- Telemetry: batched, privacy-minded events (no PII) for retention funnels, mode mix, conversion points.
+- Rate limits, idempotency keys on writes, versioned OpenAPI at `docs/api/v4.yaml`; v3 actions stay mounted
+  unchanged so the live game never breaks. The Daily stays server-scored and fair.
+
+### 8.4 Credits and customization (`economy` lane)
+- Two currencies, plainly named: **Coins** (earned by playing, spent on small things) and **Credits** (bought, rarely
+  earned: season end, a 30-day streak, a first Tier 1). Credits buy things that are seen: Gold, byline card designs,
+  mastheads for newsrooms, stamp inks, ringtones, press-pass skins, desk editions, film poster frames, share-card
+  styles, and naming your paper. Never a Daily advantage; Career conveniences only as §1.2 allows.
+- "Your desk" (`screens/Customize.tsx`): one place to dress the byline, the desk and the newsroom, with a live
+  preview. Everything bought appears everywhere: share cards, room tables, films' overlays.
+- Value and fairness: a featured rotation, season-limited sets, gifting inside a newsroom, referral codes (both
+  players get credits when the friend finishes their first window), and credit packs at honest tiers (`docs/BUSINESS.md`).
+- Entitlements live on the server (8.3) so purchases survive reinstalls and devices.
+
+### 8.5 Lanes (own disjoint files)
+| Lane | Owns |
+|---|---|
+| **api** | `api/tier-one/v4/**`, `api/_lib/**`, `docs/api/**`, client `lib/api.ts` (additive `v4()`), new `lib/account.ts`, `lib/sync.ts`, `lib/flags.ts` |
+| **economy** | new `lib/wallet.ts`, `lib/catalog.ts`, `screens/Customize.tsx`, `ui/customize.tsx`, `i18n/parts/economy.ts`, `docs/BUSINESS.md`, App route (additive); not Pass.tsx / monet.ts / season.ts (onbpass lane) |
+| **perf** | `vite.config.ts`, `index.html`, new `src/sw.ts`, `lib/perf.ts`, `lib/push.ts`, `styles/motion.css`, package.json scripts, `tier-one/` deploy layout; main.tsx additive only |
