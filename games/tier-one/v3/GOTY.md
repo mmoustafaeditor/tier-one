@@ -412,3 +412,23 @@ pick up. It must not feel AI-built, and it must earn a real business.
 - The Android APK ships from the same build: `tier-one/apk/index.html`, versionCode/versionName bumped, the update
   feed pointed at 3.4, CI green.
 - Ship only when: builds green, all server suites green, QA verdict "one career", every viewport clean.
+
+## 12. It's a game (owner's number-one rule)
+The 3.1 "newspaper" look was hard to look at and hard to play; it lost the spirit of a game. That never happens again.
+- **Game first, newsprint second.** The newspaper is flavour (results, mastheads, stamps). The interface is a game:
+  big, bright, readable, one thumb, instant feedback. If a screen looks like a document, it is wrong.
+- **Easy to look at:** high contrast, generous type, few things on screen, one clear next action, colour that means
+  something (mode colours, outcome colours), and space. No walls of small text, no dense columns, no hairline UI.
+- **Juice:** every tap answers (press-scale, sound, haptic), every result lands (stamps, counters rolling, confetti
+  when earned), every screen change moves (page turns, slides), and rewards pop. Motion is 90–260 ms and never in
+  the way.
+- **Ten-second rule:** a new player understands what to do on any screen within ten seconds without reading a
+  paragraph. Copy is one line. The How to play is the fallback, not the onboarding.
+- **The loop is the star:** pick a saga → ring a source → make the call → publish → see it land → your name moves →
+  next. Everything else (feed, rivals, contacts, desk, pass) is one tap away and one tap back.
+- **The catchphrase system replaces "HERE WE GO":** a Confirmed call that lands fires *your* catchphrase (stamp,
+  sound, share card, film title). You start with a house line, unlock more by playing (rank, streaks, chapters),
+  buy signature lines with credits (`catchphrase` item kind), and at Chief rank write your own (24 chars, moderated,
+  server-validated). Nothing in the game uses another person's catchphrase.
+- **The test:** the design panel and the Final Cut judge every screen on "is this a game I want to keep playing"
+  before craft. A beautiful screen that isn't fun to use fails.
