@@ -41,8 +41,9 @@ rebuilt.
   - Rooms: violet
   - Practice: green
 - **Morning edition** (light) stays as an option. The desk becomes pale wood, and the paper is the same.
-- **People:** no hand-drawn people anywhere. Characters appear only as painted art (the art pack, when it arrives) or as
-  icon-based caller cards until then. Real footballers never appear as faces: kits, numbers and crests only.
+- **People:** the films (cutscenes and moment clips) may show stylised characters: flat paper-cut or ink figures, or
+  stylised 3D, with simple or no faces. Nobody speaks in them: no dialogue or subtitles. Real footballers never appear:
+  a player is a generic figure in club colours and a number. Outside films, characters are icon-based caller cards.
 
 ## 3. Shell and navigation
 - **Tabs:**

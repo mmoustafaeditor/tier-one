@@ -11,6 +11,11 @@
 // Already hooked here: the cold open after onboarding (Onboarding.tsx) and the short cut on a new Career slot
 // (slots.ts newSlot, Story.tsx create). The season opener needs no hook: SceneHost starts it on the first Home visit.
 // Dev preview: ?scene=coldopen | coldopen-career | career | source:<id> | season
+//   moments: paper | paper-short | tier:<blogger..tierone> | contact:<src> | scalp:<rival> | trophy:<rival> | deadline |
+//   deadline-short | official
+//
+// Moment films (lib/moments.ts): game logic raises them with moment(id); they wait until the player is off the play
+// surface (Results finished revealing, or the route left a window), then play one at a time and unskippable.
 //
 // Seen scenes are stored in `save.film` (optional string[] in tierone_v3, no version bump). Not `save.scenes`: that
 // name is already taken by CallScene's per-source timestamps (Record<string, number>).
@@ -20,6 +25,8 @@ import { getSave, update, useSave, type Save } from './save';
 import { ScenePlayer } from '../film/ScenePlayer';
 import { buildScene } from '../film/registry';
 import { seasonOf } from '../film/season';
+import { takeMoments, onMoment } from './moments';
+import { ymdUTC } from './meta';
 
 type FilmSave = Save & { film?: string[] };
 export const seen = (id: string) => !!(getSave() as FilmSave).film?.includes(id);
@@ -27,15 +34,25 @@ export function markSeen(id: string) {
   if (seen(id)) return;
   update((x) => { const s = x as FilmSave; s.film = [...(s.film || []), id].slice(-60); });
 }
+/** True the first time today `key` is asked for (then false until tomorrow). One entry per key in save.film. */
+export function firstToday(key: string): boolean {
+  const tag = key + '@' + ymdUTC();
+  if (seen(tag)) return false;
+  update((x) => { const s = x as FilmSave; s.film = [...(s.film || []).filter((k) => !k.startsWith(key + '@')), tag].slice(-60); });
+  return true;
+}
+/** Which save.film entry a scene id marks: cuts share their film's entry. */
+const seenKey = (id: string) => id.replace(/-short$/, '');
 
 // ---------- the queue
 let queue: string[] = [];
+const extras = new Map<string, Record<string, unknown>>();
 const deferred: string[] = [];
 const subs = new Set<() => void>();
 let waiters: (() => void)[] = [];
 const emit = () => subs.forEach((f) => f());
-/** Play a scene now (or after the one playing). Replays ignore `seen`. */
-export function playScene(id: string) { if (!queue.includes(id)) { queue = [...queue, id]; emit(); } }
+/** Play a scene now (or after the one playing). Replays ignore `seen`. `props` fill in what the save can't know. */
+export function playScene(id: string, props?: Record<string, unknown>) { if (props) extras.set(id, props); if (!queue.includes(id)) { queue = [...queue, id]; emit(); } }
 export const scenePlaying = () => queue.length > 0;
 /** Run `fn` once no scene is playing (right away if none is). */
 export function afterScenes(fn: () => void) { if (!queue.length) fn(); else waiters.push(fn); }
@@ -47,10 +64,25 @@ export function maybeSourceIntro(src: string, mode: string): void {
   if (mode === 'daily') { if (!deferred.includes(id)) deferred.push(id); return; }
   playScene(id);
 }
-/** After results: play whatever the Daily held back. */
+/** After results: play whatever the Daily held back, then the moment films the window raised. */
 export function flushDeferredScenes(): void {
   const ids = deferred.splice(0).filter((id) => !seen(id));
   if (ids.length) { queue = [...queue, ...ids.filter((id) => !queue.includes(id))]; emit(); }
+  flushMoments();
+}
+const inWindow = () => { const r = document.documentElement.dataset.route; return r === 'daily' || r === 'room' || r === 'play'; };
+/** Queue held moments (skipping once-only ones already seen). */
+function flushMoments() {
+  for (const m of takeMoments()) {
+    if (m.once && seen(seenKey(m.id))) continue;
+    playScene(m.id, m.v);
+  }
+}
+// A moment raised off the play surface plays straight away; one raised mid-window waits for Results or the exit.
+if (typeof document !== 'undefined') {
+  const check = () => { if (getSave().onboarded && !inWindow()) flushMoments(); };
+  onMoment(check);
+  new MutationObserver(check).observe(document.documentElement, { attributes: true, attributeFilter: ['data-route'] });
 }
 
 /** The whole game's opening, right after the byline is set. */
@@ -93,11 +125,11 @@ export function SceneHost({ fallback = false }: { fallback?: boolean }) {
   }, [s.onboarded, queue.length, idle]);
 
   const id = idle ? undefined : queue[0];
-  const spec = id ? buildScene(id.startsWith('season:') ? 'season' : id, s) : null;
+  const spec = id ? buildScene(id.startsWith('season:') ? 'season' : id, s, extras.get(id)) : null;
   useEffect(() => { if (id && !spec) { queue = queue.slice(1); emit(); } }, [id, !spec]);
   if (!id || !spec) return null;
   const done = () => {
-    markSeen(id);
+    markSeen(seenKey(id)); extras.delete(id);
     // A new player's opening doubles as this season's: no second film straight after it.
     if (id === 'coldopen') { markSeen('coldopen-career'); markSeen(seasonSceneId()); }
     queue = queue.slice(1); emit();
