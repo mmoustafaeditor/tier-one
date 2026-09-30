@@ -3,6 +3,8 @@ plugins { id 'com.android.application' }
 // The app bundles Tier One 3.x: tier-one/apk/index.html at the repo root, the single-file build made by `npm run build:min`
 // in games/tier-one/v3/web (sembagames.app/tier-one itself serves the code-split `build:web`, which needs its assets/ folder
 // and a real origin, so the app keeps the one-file build). It talks to the live API at www.sembagames.app, so play needs internet.
+// From a file:// page the game skips the service worker and the web manifest (lib/perf.ts swSupported → isApp) and loads
+// its film clips from https://www.sembagames.app/tier-one/films/ (film/clips.ts FILM_BASE), so nothing else is bundled.
 // The legacy intro video still comes from tier-one-classic/ (the CI check expects it; 3.x draws its intro live).
 def webGameSrc = rootProject.file('../../tier-one/apk')
 def introSrc = rootProject.file('../../tier-one-classic')
@@ -22,8 +24,8 @@ android {
         applicationId "com.tierone.game"
         minSdk 24
         targetSdk 34
-        versionCode 17
-        versionName "3.1.0"
+        versionCode 18
+        versionName "3.4.0"
     }
 
     signingConfigs {

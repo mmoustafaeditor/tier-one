@@ -42,7 +42,7 @@ export function RoomsScreen({ code, challenge, ...chrome }: Chrome & { code?: st
   const create = async () => {
     const n = saveNick(); if (!n) { setErr(t('rooms.errors.nick')); return; }
     setBusy(true); const r = await v3<{ room: Room; pid: string; sec: string }>('room.create', { ...identity(), nick: n, name: name || t('so.box.k'), rounds, cadence }); setBusy(false);
-    if (!r.ok) { setErr(t('rooms.errors.' + r.error) || t('err.generic')); return; }
+    if (!r.ok) { setErr(t.or('rooms.errors.' + r.error, 'err.generic')); return; }
     remember(r, n);
   };
   const join = async () => {
@@ -50,7 +50,7 @@ export function RoomsScreen({ code, challenge, ...chrome }: Chrome & { code?: st
     const c = joinCode.trim().toUpperCase();
     if (getSave().rooms.some((r) => r.code === c)) { setOpen(c); return; }
     setBusy(true); const r = await v3<{ room: Room; pid: string; sec: string }>('room.join', { ...identity(), nick: n, code: c }); setBusy(false);
-    if (!r.ok) { setErr(t('rooms.errors.' + r.error) || t('err.generic')); return; }
+    if (!r.ok) { setErr(t.or('rooms.errors.' + r.error, 'err.generic')); return; }
     remember(r, n);
   };
   if (mine) return <RoomPage key={mine.code} room={mine} chrome={chrome} onBack={() => setOpen(undefined)} />;
@@ -167,7 +167,7 @@ function ChallengeCard({ code, chrome, style }: { code: string; chrome: Chrome; 
   const [busy, setBusy] = useState(false);
   const load = async () => {
     const r = await v3<{ challenge: Challenge; seed?: string; played?: { score: number } }>('challenge.get', { code, dev: s.dev });
-    if (!r.ok) { setErr(t('so.ch.errors.' + r.error) || t('err.generic')); return; }
+    if (!r.ok) { setErr(t.or('so.ch.errors.' + r.error, 'err.generic')); return; }
     setCh(r.challenge); setSeed(r.seed || ''); setPlayed(r.played || null); settleChallenge(r.challenge);
   };
   useEffect(() => { load(); }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -183,7 +183,7 @@ function ChallengeCard({ code, chrome, style }: { code: string; chrome: Chrome; 
     if (r !== 'ok') { setNote(t('so.ch.' + (r === 'own' ? 'own' : 'expired'))); return; }
     sfx('open'); buzz(15); chrome.go({ n: 'play', mode: 'practice', key: Date.now() });
   };
-  const answerDaily = async () => { setBusy(true); const r = await submitChallenge(ch.code); setBusy(false); if (r.ok) { sfx('stamp.done'); load(); } else setNote(t('so.ch.errors.' + r.error) || t('err.generic')); };
+  const answerDaily = async () => { setBusy(true); const r = await submitChallenge(ch.code); setBusy(false); if (r.ok) { sfx('stamp.done'); load(); } else setNote(t.or('so.ch.errors.' + r.error, 'err.generic')); };
   const dailyToday = ch.kind === 'daily' && !seed;
   return <section className={'so-ch g-card' + (ch.open ? '' : ' is-closed')} style={style} aria-labelledby="so-ch-h">
     <span className="so-ch__tape" aria-hidden="true" />
@@ -228,8 +228,11 @@ function RoomPage({ room, chrome, onBack }: { room: { code: string; name: string
   const [tauntMsg, setTauntMsg] = useState('');
   const load = async () => {
     const x = await v3<{ room: Room }>('room.get', { code: room.code, pid: room.pid, sec: room.sec, ...identity() });
-    if (!x.ok) { setErr(x.error === 'net' ? t('rooms.needNet') : t('rooms.errors.' + x.error) || t('err.generic')); return; }
-    setR(x.room); syncRoom(x.room, room.pid);
+    if (!x.ok) { setErr(x.error === 'net' ? t('rooms.needNet') : t.or('rooms.errors.' + x.error, 'err.generic')); return; }
+    // A room from a 3.3 server carries no cadence, feed or step: it ran a round a day, and its feed is simply empty.
+    const old = x.room as Partial<Room> & Pick<Room, 'code' | 'name' | 'rounds' | 'created' | 'host' | 'players' | 'roundHours'>;
+    const rm: Room = { ...old, cadence: old.cadence || 'daily', stepMs: old.stepMs || 864e5, feed: old.feed || [], now: old.now || Date.now() };
+    setR(rm); syncRoom(rm, room.pid);
   };
   useEffect(() => { load(); }, [room.code]); // eslint-disable-line react-hooks/exhaustive-deps
   const invite = roomUrl(room.code);
@@ -341,7 +344,7 @@ function Spectate({ room, round, onBack, chrome }: { room: { code: string; pid: 
   const timer = useRef(0);
   useEffect(() => {
     v3<RoomRound & { waiting?: number }>('room.round', { code: room.code, pid: room.pid, sec: room.sec, round }).then((x) => {
-      if (!x.ok) { if (x.error === 'not yet') setWaiting(Number(x.waiting) || 0); else setErr(t('rooms.errors.' + x.error) || t('err.generic')); return; }
+      if (!x.ok) { if (x.error === 'not yet') setWaiting(Number(x.waiting) || 0); else setErr(t.or('rooms.errors.' + x.error, 'err.generic')); return; }
       setRr(x);
     });
   }, [room.code, round]); // eslint-disable-line react-hooks/exhaustive-deps
