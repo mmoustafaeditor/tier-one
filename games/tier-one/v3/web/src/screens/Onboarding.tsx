@@ -5,6 +5,7 @@ import { update, useSave } from '../lib/save';
 import { sfx } from '../lib/sfx';
 import { Icon, GBtn } from '../ui/game';
 import type { Go } from '../App';
+import { playColdOpen } from '../lib/scenes';
 
 export const TUT_SEED = 'TRAIN1';
 export function startTutorial(go: Go) {
@@ -20,6 +21,7 @@ export function Onboarding({ go }: { go: Go }) {
   const finish = (tut: boolean) => {
     update((x) => { x.onboarded = true; x.nick = nick.trim().slice(0, 16); if (!tut) x.tut = { ...(x.tut || {}), done: true }; });
     if (tut) startTutorial(go); else go({ n: 'front' });
+    playColdOpen(); // 3.3: "First Day at the Paper" opens the game once the byline is set
   };
   return <div className="onb2" role="dialog" aria-modal="true" aria-label={t('g.onb.k')}>
     <div className="onb2__glow" aria-hidden="true" />
