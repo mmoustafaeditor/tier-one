@@ -59,10 +59,17 @@ are kept per game and never mixed:
 
 - **First identify the target game** from the request and repo context (paths, screens, features). Don't ask about spelling
   variants like "TierOne" vs "Tier One"; ask only if the actual game is unclear. Then read **that game's** file.
-- When working for **mmoustafaeditor**, **before implementing** a new request: acknowledge it in a line, briefly summarize
-  Saif's open proposals for that game (highlight any that relate to the task), and ask whether to include any or keep to
-  his request. E.g. "Got it, Mostafa. I'll work on X. Saif also has a few open proposals for Tier One: … TIERONE-SAIF-0n is
-  relevant here. Include any, or keep this focused on your request?" Skip this if the game's file has no open proposals.
+- When working for **mmoustafaeditor**, **before implementing** a new request, in one short message:
+  1. acknowledge the request in a line;
+  2. **what Saif updated**: the session hook lists Saif's `UPDATES.md` entries since Mostafa's last entry. Summarize those
+     for the game he's working on first (a line each: what changed, anything he must know or do), then one line for the
+     other game and site/docs, and say what is already live;
+  3. **what Saif recommends**: Saif's open proposals for that game (the hook lists them; highlight any that relate to the
+     task);
+  4. ask whether to include any proposal or keep to his request.
+  E.g. "Got it, Mostafa. I'll work on X in Tier One. Since your last update, Saif: shipped Android 3.1.0 (the app now runs
+  v3 and needs internet), new app icons, README redesign. Saif also recommends: TIERONE-SAIF-01 … (relevant here), -02 …
+  Include any, or keep this focused on your request?" Skip a part when it's empty. Once per new task.
 - Attribute them to Saif; they are proposals, not approved requirements. Once per new task, not repeatedly within it.
 - Don't implement a proposal or widen scope unless he picks it or already approved a scope that includes it; don't
   re-ask for ones already approved in the current scope. If he says to proceed with only his request, do so.

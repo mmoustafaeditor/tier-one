@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-30 · saifsaber · Mostafa's sessions now open with Saif's updates + recommendations
+- **What changed:** The session hook (`.claude/hooks/team-sync.sh`) now lists Saif's `UPDATES.md` entries since mmoustafaeditor's latest entry (title, files, heads-up) and Saif's open proposals per game, read from `origin/main`. `CLAUDE.md` § 1c now says: when working for mmoustafaeditor, before starting a task, tell him in one message what Saif updated (his game first), what Saif recommends for that game, and ask whether to include any proposal.
+- **Files:** `.claude/hooks/team-sync.sh`, `CLAUDE.md`, `UPDATES.md`
+- **Heads-up for the team:** Saif's list resets once mmoustafaeditor adds his own `UPDATES.md` entry, so keep logging every change there.
+
 ## 2026-09-30 · saifsaber · README looks like the sembagames.app home page
 - **What changed:** The root README now opens with the home page hero ("Pick a game. Hit play.", with the Semba mark) and shows Tier One and The Gaffer side by side, as on the site. Their key-visual cards are rendered from `index.html` and link to each game. Under each card: Play, Android APK (from the site) and the game page. The old studio banner and Tier One card (old T1 art, "Open the game") are no longer used in the README. The images are 2× PNGs captured from the home page, with the countdown hidden so they don't go stale.
 - **Files:** `README.md`, `.github/assets/{readme-hero,readme-tier-one,readme-the-gaffer}.png` (new), `UPDATES.md`
