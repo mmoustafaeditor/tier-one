@@ -121,6 +121,14 @@ const NEW: Item[] = [
   { id: 'fp.redtop', kind: 'frontpage', nameKey: 'eco.items.fp.redtop', price: { coins: 350, credits: 70 }, source: 'store', rarity: 'rare', set: 'redtop', drop: utc(2026, 10, 19), preview: { k: 'frontpage', cols: 1, hed: 'wood', kicker: '#C8102E', rule: 'thick', paper: '#FFFFFF', ink: '#15130F' } },
   { id: 'fp.wire', kind: 'frontpage', nameKey: 'eco.items.fp.wire', price: { credits: 110 }, source: 'store', rarity: 'epic', set: 'wire', drop: utc(2026, 11, 2), preview: { k: 'frontpage', cols: 2, hed: 'mono', kicker: '#35C3E6', rule: 'single', paper: '#0E1A20', ink: '#E6F7FC' } },
   { id: 'fp.gilt', kind: 'frontpage', nameKey: 'eco.items.fp.gilt', price: { credits: 280 }, source: 'store', rarity: 'legendary', set: 'gilt', drop: utc(2026, 12, 7), preview: { k: 'frontpage', cols: 2, hed: 'serif', kicker: '#B8830B', rule: 'double', paper: '#F4EFE4', ink: '#3A2600' } },
+  // signature catchphrases (GOTY §12): lines you buy with credits. They fire on a Confirmed call that lands: the stamp,
+  // the sound, the share card, the film title. Words only: a line never changes a board, a source or a score.
+  { id: 'cp.shades', kind: 'catchphrase', nameKey: 'cp.sig.shades', price: { credits: 60 }, source: 'store', rarity: 'rare', set: 'lines', drop: utc(2026, 9, 28), preview: { k: 'catchphrase', key: 'cp.sig.shades', tone: 'cool', c: '#35C3E6' } },
+  { id: 'cp.pens', kind: 'catchphrase', nameKey: 'cp.sig.pens', price: { credits: 60 }, source: 'store', rarity: 'rare', set: 'lines', drop: utc(2026, 9, 28), preview: { k: 'catchphrase', key: 'cp.sig.pens', tone: 'dry', c: '#15130F' } },
+  { id: 'cp.boots', kind: 'catchphrase', nameKey: 'cp.sig.boots', price: { credits: 80 }, source: 'store', rarity: 'rare', set: 'lines', drop: utc(2026, 10, 5), preview: { k: 'catchphrase', key: 'cp.sig.boots', tone: 'loud', c: '#C8102E' } },
+  { id: 'cp.photos', kind: 'catchphrase', nameKey: 'cp.sig.photos', price: { credits: 100 }, source: 'store', rarity: 'epic', set: 'lines', drop: utc(2026, 10, 19), preview: { k: 'catchphrase', key: 'cp.sig.photos', tone: 'loud', c: '#FF5A36' } },
+  { id: 'cp.shut', kind: 'catchphrase', nameKey: 'cp.sig.shut', price: { credits: 100 }, source: 'store', rarity: 'epic', set: 'lines', drop: utc(2026, 11, 2), preview: { k: 'catchphrase', key: 'cp.sig.shut', tone: 'cool', c: '#7147D6' } },
+  { id: 'cp.kettle', kind: 'catchphrase', nameKey: 'cp.sig.kettle', price: { credits: 150 }, source: 'store', rarity: 'legendary', set: 'lines', drop: utc(2026, 11, 30), preview: { k: 'catchphrase', key: 'cp.sig.kettle', tone: 'gold', c: '#B8830B' } },
 ];
 
 // ---------------------------------------------------------------- earned-only items (never purchasable, never gifted)
@@ -142,6 +150,19 @@ const EARNED: Item[] = [
   { id: 'rf.3', kind: 'lamp', nameKey: 'eco.items.rf.3', price: {}, source: 'earned', rarity: 'rare', set: 'referral', earn: { via: 'referral', n: 3 }, preview: { k: 'lamp', glow: '#7FCB6A', pool: '#15260F', warmth: 'cool' } },
   { id: 'dd.2027-02-02', kind: 'masthead', nameKey: 'eco.items.dd.winter', nameVars: { y: '’27' }, price: {}, source: 'earned', rarity: 'epic', set: 'ddlive', earn: { via: 'ddlive', ref: '2027-02-02' }, preview: { k: 'masthead', bg: '#0E2231', ink: '#FFD35C', face: 'cond', rule: 'thick', orn: '⏱' } },
   { id: 'dd.2027-09-01', kind: 'poster', nameKey: 'eco.items.dd.summer', nameVars: { y: '’27' }, price: {}, source: 'earned', rarity: 'epic', set: 'ddlive', earn: { via: 'ddlive', ref: '2027-09-01' }, preview: { k: 'poster', c: '#FFD35C', c2: '#2A1206', style: 'neon' } },
+  // house catchphrases you earn by playing (GOTY §12): rank, streaks, story chapters. `cp.custom` is the line you write
+  // yourself once you reach Chief (lib/catchphrase.ts setCustomCatchphrase; server-checked by v4 catchphrase.set).
+  { id: 'cp.pen', kind: 'catchphrase', nameKey: 'cp.house.pen', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'rank', ref: 'stringer' }, preview: { k: 'catchphrase', key: 'cp.house.pen', tone: 'dry', c: '#15130F' } },
+  { id: 'cp.dusted', kind: 'catchphrase', nameKey: 'cp.house.dusted', price: {}, source: 'earned', rarity: 'rare', set: 'lines', earn: { via: 'rank', ref: 'correspondent' }, preview: { k: 'catchphrase', key: 'cp.house.dusted', tone: 'loud', c: '#C9381A' } },
+  { id: 'cp.announce', kind: 'catchphrase', nameKey: 'cp.house.announce', price: {}, source: 'earned', rarity: 'epic', set: 'lines', earn: { via: 'rank', ref: 'chief' }, preview: { k: 'catchphrase', key: 'cp.house.announce', tone: 'loud', c: '#FF5A36' } },
+  { id: 'cp.sealed', kind: 'catchphrase', nameKey: 'cp.house.sealed', price: {}, source: 'earned', rarity: 'legendary', set: 'lines', earn: { via: 'rank', ref: 'tierone' }, preview: { k: 'catchphrase', key: 'cp.house.sealed', tone: 'gold', c: '#F7B928' } },
+  { id: 'cp.medical', kind: 'catchphrase', nameKey: 'cp.house.medical', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'streak', n: 7 }, preview: { k: 'catchphrase', key: 'cp.house.medical', tone: 'cool', c: '#2FBF71' } },
+  { id: 'cp.bags', kind: 'catchphrase', nameKey: 'cp.house.bags', price: {}, source: 'earned', rarity: 'rare', set: 'lines', earn: { via: 'streak', n: 30 }, preview: { k: 'catchphrase', key: 'cp.house.bags', tone: 'dry', c: '#5B3E96' } },
+  { id: 'cp.front', kind: 'catchphrase', nameKey: 'cp.house.front', price: {}, source: 'earned', rarity: 'legendary', set: 'lines', earn: { via: 'streak', n: 100 }, preview: { k: 'catchphrase', key: 'cp.house.front', tone: 'gold', c: '#FFD35C' } },
+  { id: 'cp.shirt', kind: 'catchphrase', nameKey: 'cp.house.shirt', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'story', n: 1 }, preview: { k: 'catchphrase', key: 'cp.house.shirt', tone: 'loud', c: '#2657C9' } },
+  { id: 'cp.inkdry', kind: 'catchphrase', nameKey: 'cp.house.inkdry', price: {}, source: 'earned', rarity: 'rare', set: 'lines', earn: { via: 'story', n: 3 }, preview: { k: 'catchphrase', key: 'cp.house.inkdry', tone: 'dry', c: '#1B1A17' } },
+  { id: 'cp.wheels', kind: 'catchphrase', nameKey: 'cp.house.wheels', price: {}, source: 'earned', rarity: 'epic', set: 'lines', earn: { via: 'story', n: 5 }, preview: { k: 'catchphrase', key: 'cp.house.wheels', tone: 'cool', c: '#35C3E6' } },
+  { id: 'cp.custom', kind: 'catchphrase', nameKey: 'cp.custom.name', descKey: 'cp.custom.desc', price: {}, source: 'earned', rarity: 'legendary', set: 'lines', earn: { via: 'rank', ref: 'chief' }, preview: { k: 'catchphrase', key: 'cp.custom.name', tone: 'gold', c: '#F7B928' } },
 ];
 
 // ---------------------------------------------------------------- season-limited sets (generated per season id)
@@ -150,7 +171,7 @@ const EARNED: Item[] = [
 // vault brings it back for a week); next winter's set is a different item. This is the template every future season
 // fills: add a SeasonKey block and the four years of ids exist at once.
 type Slot = Omit<Item, 'id' | 'nameKey' | 'nameVars' | 'window' | 'set' | 'source'>;
-export const SEASON_SLOTS = ['by', 'mh', 'po', 'hd', 'lp', 'fs'] as const;
+export const SEASON_SLOTS = ['by', 'mh', 'po', 'hd', 'lp', 'fs', 'cp'] as const;
 export type SeasonSlot = typeof SEASON_SLOTS[number];
 const SEASON_NEW: Record<SeasonKey, Record<SeasonSlot, Slot>> = {
   rumour: {
@@ -160,6 +181,7 @@ const SEASON_NEW: Record<SeasonKey, Record<SeasonSlot, Slot>> = {
     hd: { kind: 'headline', price: { credits: 120 }, rarity: 'epic', preview: { k: 'headline', face: 'serif', ink: '#D9913A' } },
     lp: { kind: 'lamp', price: { credits: 120 }, rarity: 'epic', preview: { k: 'lamp', glow: '#D9913A', pool: '#2B1C11', warmth: 'warm' } },
     fs: { kind: 'feedskin', price: { credits: 120 }, rarity: 'epic', preview: { k: 'feedskin', style: 'memo', rule: '#D9913A', bg: '#F2E3C9', ink: '#3A2310' } },
+    cp: { kind: 'catchphrase', price: { credits: 90 }, rarity: 'epic', preview: { k: 'catchphrase', key: 'cp.season.rumour', tone: 'cool', c: '#D9913A' } },
   },
   winter: {
     by: { kind: 'byline', price: { credits: 180 }, rarity: 'epic', preview: { k: 'byline', bg: '#0E2231', ink: '#DDEFF8', accent: '#5BB8E8', rule: 'single', face: 'cond', tex: 'halftone' } },
@@ -168,6 +190,7 @@ const SEASON_NEW: Record<SeasonKey, Record<SeasonSlot, Slot>> = {
     hd: { kind: 'headline', price: { credits: 120 }, rarity: 'epic', preview: { k: 'headline', face: 'stencil', upper: true, ink: '#5BB8E8' } },
     lp: { kind: 'lamp', price: { credits: 120 }, rarity: 'epic', preview: { k: 'lamp', glow: '#9AD6F5', pool: '#0E2231', warmth: 'cool' } },
     fs: { kind: 'feedskin', price: { credits: 120 }, rarity: 'epic', preview: { k: 'feedskin', style: 'ticker', rule: '#5BB8E8', bg: '#0E2231', ink: '#DDEFF8' } },
+    cp: { kind: 'catchphrase', price: { credits: 90 }, rarity: 'epic', preview: { k: 'catchphrase', key: 'cp.season.winter', tone: 'loud', c: '#5BB8E8' } },
   },
   spring: {
     by: { kind: 'byline', price: { credits: 180 }, rarity: 'epic', preview: { k: 'byline', bg: '#F6FBF1', ink: '#15260F', accent: '#C2477A', rule: 'double', face: 'display' } },
@@ -176,6 +199,7 @@ const SEASON_NEW: Record<SeasonKey, Record<SeasonSlot, Slot>> = {
     hd: { kind: 'headline', price: { credits: 120 }, rarity: 'epic', preview: { k: 'headline', face: 'slab', ink: '#C2477A' } },
     lp: { kind: 'lamp', price: { credits: 120 }, rarity: 'epic', preview: { k: 'lamp', glow: '#F2A7C3', pool: '#15260F', warmth: 'cool' } },
     fs: { kind: 'feedskin', price: { credits: 120 }, rarity: 'epic', preview: { k: 'feedskin', style: 'memo', rule: '#7FCB6A', bg: '#F6FBF1', ink: '#15260F' } },
+    cp: { kind: 'catchphrase', price: { credits: 90 }, rarity: 'epic', preview: { k: 'catchphrase', key: 'cp.season.spring', tone: 'dry', c: '#C2477A' } },
   },
   summer: {
     by: { kind: 'byline', price: { credits: 180 }, rarity: 'epic', preview: { k: 'byline', bg: '#FFF3E0', ink: '#2A1206', accent: '#E0552A', rule: 'thick', face: 'cond' } },
@@ -184,17 +208,18 @@ const SEASON_NEW: Record<SeasonKey, Record<SeasonSlot, Slot>> = {
     hd: { kind: 'headline', price: { credits: 120 }, rarity: 'epic', preview: { k: 'headline', face: 'wood', upper: true, ink: '#E0552A' } },
     lp: { kind: 'lamp', price: { credits: 120 }, rarity: 'epic', preview: { k: 'lamp', glow: '#FFB02E', pool: '#2A1206', warmth: 'warm' } },
     fs: { kind: 'feedskin', price: { credits: 120 }, rarity: 'epic', preview: { k: 'feedskin', style: 'redtop', rule: '#E0552A', bg: '#FFF3E0', ink: '#2A1206' } },
+    cp: { kind: 'catchphrase', price: { credits: 90 }, rarity: 'epic', preview: { k: 'catchphrase', key: 'cp.season.summer', tone: 'gold', c: '#E0552A' } },
   },
 };
 export const GOLD_CREDITS = 350; // exactly the €4.99 credit pack (lib/wallet.ts CREDIT_PACKS)
-const SEASON_RE = /^((rumour|winter|spring|summer)-(\d{4}))\.(by|mh|po|hd|lp|fs)$/;
+const SEASON_RE = /^((rumour|winter|spring|summer)-(\d{4}))\.(by|mh|po|hd|lp|fs|cp)$/;
 const GOLD_RE = /^gold\.((rumour|winter|spring|summer)-(\d{4}))$/;
 function seasonNew(id: string): Item | null {
   const m = SEASON_RE.exec(id); if (!m) return null;
   const def = seasonById(m[1]); if (!def) return null;
   const slot = SEASON_NEW[m[2] as SeasonKey][m[4] as SeasonSlot];
   const vault = VAULT.filter((v) => v.id === id).map((v) => ({ from: v.from, to: v.to }));
-  return { ...slot, id, source: 'store', set: m[1], window: { from: def.start, to: def.end }, drop: def.start, ...(vault.length ? { vault } : {}), nameKey: 'eco.items.season.' + m[2] + '.' + m[4], nameVars: { y: '’' + m[3].slice(2) } };
+  return { ...slot, id, source: 'store', set: m[1], window: { from: def.start, to: def.end }, drop: def.start, ...(vault.length ? { vault } : {}), ...(m[4] === 'cp' ? { nameKey: 'cp.season.' + m[2] } : { nameKey: 'eco.items.season.' + m[2] + '.' + m[4], nameVars: { y: '’' + m[3].slice(2) } }) };
 }
 function goldItem(id: string): Item | null {
   const m = GOLD_RE.exec(id); if (!m) return null;
@@ -392,6 +417,7 @@ function validatePreview(it: Item): string[] {
     case 'poster': col('c'); col('c2'); break;
     case 'ink': col('c'); break;
     case 'flair': col('c'); break;
+    case 'catchphrase': if (!/^cp\.[a-z]+\.[a-z]+$/.test(it.preview.key)) e.push(`${it.id}: a catchphrase is an i18n key cp.<group>.<id>`); if (!['loud', 'cool', 'dry', 'gold'].includes(it.preview.tone)) e.push(`${it.id}: bad catchphrase tone`); col('c'); break;
     default: break;
   }
   return e;

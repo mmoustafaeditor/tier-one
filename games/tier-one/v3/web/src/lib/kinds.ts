@@ -90,7 +90,7 @@ export const REGISTRY = {
   flair:     { group: 'byline', order: 1, surfaces: ['byline', 'roomtable', 'sharecard'], preview: 'byline', store: 'legacy', slot: { one: true }, showcase: true, std: { k: 'flair', g: '', c: INK } },
   presspass: { group: 'byline', order: 2, surfaces: ['presspass', 'byline'], preview: 'presspass', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'presspass', c1: '#FF7A52', c2: RED, ink: '#FFFFFF' } },
   headline:  { group: 'byline', order: 3, surfaces: ['sharecard', 'frontpage'], preview: 'headline', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'headline', face: 'wood', upper: true } },
-  catchphrase: { group: 'byline', order: 4, surfaces: ['byline', 'sharecard', 'stamp', 'film'], preview: 'catch', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'catchphrase', key: 'cp.house.hwg', tone: 'loud', c: '#F7B928' } },
+  catchphrase: { group: 'byline', order: 4, surfaces: ['byline', 'sharecard', 'stamp', 'film'], preview: 'catch', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'catchphrase', key: 'cp.house.default', tone: 'loud', c: '#F7B928' } },
   // ---- the desk
   frame:     { group: 'desk', order: 0, surfaces: ['sharecard', 'stamp'], preview: 'post', store: 'legacy', slot: { one: true }, showcase: true, std: { k: 'frame', c: INK, c2: P, pat: 'solid' } },
   ink:       { group: 'desk', order: 1, surfaces: ['stamp', 'sharecard', 'byline'], preview: 'post', store: 'legacy', slot: { one: true }, showcase: true, std: { k: 'ink', c: RED } },
@@ -117,7 +117,7 @@ export const kindDef = (k: Kind): KindDef => REGISTRY[k];
 export const kindsOf = (g: Group): Kind[] => KINDS.filter((k) => REGISTRY[k].group === g);
 export const isKind = (x: string): x is Kind => Object.prototype.hasOwnProperty.call(REGISTRY, x);
 /** The kind whose equipped item silences `k` (a ring pack over a single ringtone), or null. */
-export const overriddenBy = (k: Kind): Kind | null => (KINDS.find((x) => REGISTRY[x].slot.overrides === k) as Kind | undefined) || null;
+export const overriddenBy = (k: Kind): Kind | null => (KINDS.find((x) => (REGISTRY[x].slot as KindDef['slot']).overrides === k) as Kind | undefined) || null;
 
 const SURFACES: Surface[] = ['byline', 'sharecard', 'frontpage', 'roomtable', 'masthead', 'presspass', 'poster', 'stamp', 'phone', 'desk', 'home', 'feed', 'film', 'newsroom', 'paper'];
 const PREVIEWS: PreviewKey[] = ['byline', 'post', 'sharecard', 'presspass', 'masthead', 'poster', 'ring', 'headline', 'lamp', 'ringpack', 'feed', 'frontpage', 'catch'];

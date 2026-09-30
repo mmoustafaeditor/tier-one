@@ -104,6 +104,18 @@ asserts it): a purchase can never change a score.
 - `ent.list` → `{ entitlements, gold: { season, active }, cosmetics }`. Entitlements are `gold:<season>`, `cos:<id>`,
   `name:paper`.
 
+## Catchphrases (`catchphrase.set`)
+
+GOTY.md §12: a Confirmed call that lands fires the player's catchphrase. House, earned, signature and season lines are
+catalog looks on the client (`lib/catchphrase.ts`); only a line the player writes themselves reaches the server.
+
+- `catchphrase.set { text }` (auth, write, 20/min) → `{ text }` cleaned. Refusals: `CATCHPHRASE_EMPTY`,
+  `CATCHPHRASE_LONG` (over 24 characters after cleaning), `CATCHPHRASE_BLOCKED` (the nick moderation list in
+  `api/_lib/moderation.mjs` plus `BRAND_BLOCK` in `api/tier-one/v4/catchphrase.mjs`: brands, broadcasters, our own
+  name and other people's catchphrases, matched on the leet-normalised form). Stored at `t1v4:cp:<account>` for 400 days.
+- The Chief-rank gate is client-side (rank lives in the save); the server only decides whether the words may go out.
+  A client whose line is refused falls back to the house line ("Book it.").
+
 ## Catalog, events, flags (`api/tier-one/v4/config/*.json`)
 
 `config.get { client: { ver } }` → `{ catalog, featured, events: { weekly, ddlive }, flags, ab, minClientVersion,

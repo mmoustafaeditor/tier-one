@@ -21,6 +21,7 @@ import { createTelemetry } from '../../_lib/telemetry.mjs';
 import { cmpVer } from '../../_lib/config.mjs';
 import { clean, devId, sha256 } from '../../_lib/util.mjs';
 import * as v3 from '../v3/index.js';
+import { createCatchphrase } from './catchphrase.mjs';
 
 export const V4 = '4.0.0';
 const V3_BODY_MAX = 4000;
@@ -76,6 +77,10 @@ export function createApi(deps = {}) {
   R('wallet.checkout.start', { auth: true, write: true, limit: 30, fn: wallet.checkoutStart });
   R('wallet.coins.claim', { auth: true, write: true, fn: wallet.claimCoins });
   R('ent.list', { auth: true, fn: wallet.entList });
+
+  // ---- your own catchphrase (GOTY §12): moderated, 24 characters (./catchphrase.mjs)
+  const catchphrase = createCatchphrase({ kv });
+  R('catchphrase.set', { auth: true, write: true, limit: 20, fn: catchphrase.set });
 
   // ---- telemetry and ops
   R('telemetry.batch', { auth: 'optional', write: false, limit: 720, fn: telemetry.batch });
