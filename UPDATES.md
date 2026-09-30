@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-30 · saifsaber · README brought up to date with the live site
+- **What changed:** Root `README.md` now links sembagames.app at the top (plus a badge), shows the current versions that are live (Tier One web 3.1.0 / Android 2.4 classic; The Gaffer web 2.1.0 / Android app 0.12.0, which self-updates to the latest web build), lists the current repo layout (tier-one-classic, the-gaffer, api/the-gaffer, api/data, design, both APKs) and mentions both games in the Arabic section. Versions checked against the live sembagames.app version files and update feeds on 2026-09-30.
+- **Files:** `README.md`, `UPDATES.md`
+- **Heads-up for the team:** Site/docs only. When a game version changes, update its row in the README table.
+
 ## 2026-09-30 · saifsaber · Saif's proposal files per game + CLAUDE.md hook-up (docs only)
 - **What changed:** Saif's improvement proposals are now recorded per game. `games/tier-one/SAIF_IMPROVEMENTS.md` holds four Tier One proposals (TIERONE-SAIF-01 deal comments/reactions, -02 humor/personality, -03 leaderboards/prizes/achievements/badges, -04 overlapping publish controls), all `Proposed`: unverified observations pending Mostafa's review. `games/the-gaffer/SAIF_IMPROVEMENTS.md` sets up the same workflow for The Gaffer with an empty list (`GAFFER-SAIF-nn` IDs). `CLAUDE.md` gains section 1c: identify the target game, read that game's file, and for mmoustafaeditor briefly list Saif's open proposals for it and ask whether to include any before starting; keep the two games apart; check the deploy target belongs to the right game. No game, UI or build change.
 - **Files:** `games/tier-one/SAIF_IMPROVEMENTS.md` (new), `games/the-gaffer/SAIF_IMPROVEMENTS.md` (new), `CLAUDE.md`, `.claude/requests.md`, `UPDATES.md`
