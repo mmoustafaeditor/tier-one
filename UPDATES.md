@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-30 · saifsaber · New app icons for Tier One and The Gaffer (Android)
+- **What changed:** Both Android launcher icons and Play Store icons are redrawn in each game's new look. Tier One: a tilted newsprint card with a Newsreader "T1" and a vermilion rule on the dark newsroom desk, with a gold dot. The Gaffer: the slanted panel and "G" kept, recoloured to mint on floodlit dark green with pitch lines (was purple). SVG sources in `store/icon.svg`; PNGs rendered with the site fonts. No game code changed.
+- **Files:** `games/tier-one/app/src/main/res/mipmap-*/ic_launcher.png`, `games/tier-one/store/{play-store-icon-512.png,icon.svg}`, `games/the-gaffer/android/app/src/main/res/mipmap-*/ic_launcher.png`, `games/the-gaffer/android/store/{play-store-icon-512.png,icon.svg}`, `.claude/requests.md`
+- **Heads-up for the team:** Tier One's icon is a game path: waiting for Mostafa's OK (request filed), and the published APK only changes when he does a release. The Gaffer: when this reaches `main`, its workflow builds and publishes a new APK (android/ changed), updates its feed and asks Vercel to deploy, so installed apps will be offered the update.
+
 ## 2026-09-30 · saifsaber · README brought up to date with the live site
 - **What changed:** Root `README.md` now links sembagames.app at the top (plus a badge), shows the current versions that are live (Tier One web 3.1.0 / Android 2.4 classic; The Gaffer web 2.1.0 / Android app 0.12.0, which self-updates to the latest web build), lists the current repo layout (tier-one-classic, the-gaffer, api/the-gaffer, api/data, design, both APKs) and mentions both games in the Arabic section. Versions checked against the live sembagames.app version files and update feeds on 2026-09-30.
 - **Files:** `README.md`, `UPDATES.md`

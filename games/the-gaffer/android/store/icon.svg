@@ -1,9 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- App icon source. Text uses the site fonts in assets/fonts (Newsreader / Archivo); render the PNGs with those fonts loaded. -->
   <defs>
-    <radialGradient id="glow" cx="50%" cy="0%" r="90%"><stop offset="0" stop-color="#A78BFA" stop-opacity=".45"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></radialGradient>
+    <radialGradient id="flood" cx="50%" cy="0%" r="95%"><stop offset="0" stop-color="#0F8A70" stop-opacity=".75"/><stop offset="1" stop-color="#0F8A70" stop-opacity="0"/></radialGradient>
   </defs>
-  <rect width="512" height="512" rx="112" fill="#070B16"/>
-  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
-  <polygon points="150,96 432,96 362,416 80,416" fill="#A78BFA"/>
-  <text x="258" y="372" text-anchor="middle" font-family="Barlow Condensed" font-style="italic" font-weight="800" font-size="330" fill="#070B16">G</text>
+  <rect width="512" height="512" rx="112" fill="#02201A"/>
+  <rect width="512" height="512" rx="112" fill="url(#flood)"/>
+  <g stroke="#7DEBCB" stroke-opacity=".18" stroke-width="6" fill="none">
+    <line x1="0" y1="440" x2="512" y2="440"/><circle cx="256" cy="512" r="96"/>
+  </g>
+  <polygon points="150,96 432,96 362,416 80,416" fill="#7DEBCB"/>
+  <text x="0" y="0" transform="translate(262 368) skewX(-12)" text-anchor="middle" font-family="Archivo" font-weight="900" font-stretch="condensed" font-size="310" fill="#02201A">G</text>
 </svg>
