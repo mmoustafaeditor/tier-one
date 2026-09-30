@@ -1,9 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- App icon source, matching the title-screen wordmark (Archivo 900 at 125% width, white-to-mint gradient on the teal ground). Text uses assets/fonts/Archivo; render the PNGs with it loaded. -->
   <defs>
-    <radialGradient id="glow" cx="50%" cy="0%" r="90%"><stop offset="0" stop-color="#A78BFA" stop-opacity=".45"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></radialGradient>
+    <radialGradient id="ground" cx="50%" cy="8%" r="95%"><stop offset="0" stop-color="#0F3D38"/><stop offset=".55" stop-color="#062421"/><stop offset="1" stop-color="#021311"/></radialGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="0" y2="1"><stop offset=".3" stop-color="#F4FFFB"/><stop offset="1" stop-color="#9DEFD6"/></linearGradient>
   </defs>
-  <rect width="512" height="512" rx="112" fill="#070B16"/>
-  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
-  <polygon points="150,96 432,96 362,416 80,416" fill="#A78BFA"/>
-  <text x="258" y="372" text-anchor="middle" font-family="Barlow Condensed" font-style="italic" font-weight="800" font-size="330" fill="#070B16">G</text>
+  <rect width="512" height="512" rx="112" fill="url(#ground)"/>
+  <text x="269" y="150" text-anchor="middle" font-family="Archivo" font-weight="700" font-stretch="125%" font-size="58" letter-spacing="26" fill="#7DEBCB">THE</text>
+  <text x="256" y="408" text-anchor="middle" font-family="Archivo" font-weight="900" font-stretch="125%" font-size="300" letter-spacing="-8" fill="url(#mark)">G</text>
 </svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- App icon source. Text uses the site fonts in assets/fonts (Newsreader / Archivo); render the PNGs with those fonts loaded. -->
+  <defs>
+    <radialGradient id="lamp" cx="50%" cy="18%" r="85%"><stop offset="0" stop-color="#3A3226"/><stop offset=".6" stop-color="#1D1913"/><stop offset="1" stop-color="#0E0C09"/></radialGradient>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#000" flood-opacity=".55"/></filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#lamp)"/>
+  <g transform="rotate(-6 256 262)" filter="url(#sh)">
+    <rect x="96" y="112" width="320" height="300" rx="10" fill="#F2EEE5"/>
+    <rect x="124" y="140" width="264" height="8" fill="#15130F" opacity=".85"/>
+    <text x="256" y="330" text-anchor="middle" font-family="Newsreader" font-weight="800" font-size="186" letter-spacing="-4" fill="#15130F">T1</text>
+    <rect x="124" y="364" width="264" height="18" fill="#D2381B"/>
+  </g>
+  <circle cx="404" cy="104" r="26" fill="#F7B928"/>
+</svg>

@@ -1,11 +1,14 @@
 plugins { id 'com.android.application' }
 
-// The app bundles the classic game: the tier-one-classic/ folder in the repo root (sembagames.app/tier-one-classic).
-// Its index.html and the Semba intro video are bundled into the app's assets.
-def webGameSrc = rootProject.file('../../tier-one-classic')
+// The app bundles Tier One 3.x: tier-one/index.html at the repo root (the same build as sembagames.app/tier-one, made by
+// `npm run build:min` in games/tier-one/v3/web). It talks to the live API at www.sembagames.app, so play needs internet.
+// The legacy intro video still comes from tier-one-classic/ (the CI check expects it; 3.x draws its intro live).
+def webGameSrc = rootProject.file('../../tier-one')
+def introSrc = rootProject.file('../../tier-one-classic')
 def webGameDir = layout.buildDirectory.dir('generated/webgame').get().asFile
 def copyWebGame = tasks.register('copyWebGame', Copy) {
-    from(webGameSrc) { include 'index.html', 'semba-intro.*' }
+    from(webGameSrc) { include 'index.html' }
+    from(introSrc) { include 'semba-intro.*' }
     into webGameDir
     doFirst { if (!new File(webGameSrc, 'index.html').exists()) throw new GradleException("Missing game file: ${webGameSrc}/index.html") }
 }
@@ -18,8 +21,8 @@ android {
         applicationId "com.tierone.game"
         minSdk 24
         targetSdk 34
-        versionCode 15
-        versionName "2.4"
+        versionCode 17
+        versionName "3.1.0"
     }
 
     signingConfigs {
