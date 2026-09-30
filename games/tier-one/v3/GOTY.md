@@ -388,3 +388,27 @@ connected, intuitive and simple, with room to grow.
   returning player always finds something changed.
 - Customization is a long tail, not a checklist: item kinds are a registry; seasons drop new sets; collections show
   what's missing; nothing "maxes out". New feature kinds slot in without touching the store.
+
+## 11. The final build (3.4 "Final Cut")
+Owner's brief: this is the last version. Every pixel of every page on phone, desktop and the Android app. Simple to
+pick up. It must not feel AI-built, and it must earn a real business.
+
+### 11.1 Not AI-built: the craft tells
+- The identity is editorial, not "app": newsprint, ink, stamps, a serif masthead, condensed headlines, mono
+  captions. No gradient blobs, no glassmorphism, no emoji as icons, no purple-to-blue, no identical rounded cards
+  in a grid, no lorem-flavoured copy, no "Welcome back, user!".
+- Asymmetry and hierarchy on purpose: one hero, one loud thing per screen, quiet everything else; typographic scale
+  with intent; real margins; ragged, human copy with a point of view (the editor's voice).
+- Details that only a person would bother with: a masthead date that is right, a folio number, a coffee ring on a
+  desk edition, a stamp that never lands in the same place twice, the pull of paper when a sheet closes.
+- Motion says "printed and posted", never "loading spinner": stamps, presses, tickers, page turns.
+- Every screen passes this test at 390x664, 390x844, 768x1024, 1280x800, 1920x1080 and in the Android WebView:
+  no overlap, nothing cut off, nothing horizontally scrollable, every action reachable with one thumb.
+
+### 11.2 The Final Cut process
+- A pixel pass per screen (Home, Window/Saga, Results, Story, Wire, Press box, Newsroom, Me, Feed/Rivals/Contacts,
+  Pass/Store, Your desk, Editor's desk/DD Live, Practice, Settings/How to play, Onboarding) at every viewport, fixing
+  overlap, spacing, type, copy and dead ends; then an independent verifier per screen; then one cohesion pass.
+- The Android APK ships from the same build: `tier-one/apk/index.html`, versionCode/versionName bumped, the update
+  feed pointed at 3.4, CI green.
+- Ship only when: builds green, all server suites green, QA verdict "one career", every viewport clean.
