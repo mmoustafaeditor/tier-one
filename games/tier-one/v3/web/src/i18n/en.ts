@@ -173,8 +173,8 @@ const en = {
     start: 'Start your career', startD: 'A laptop, a blog and three people who answer the phone. Rep 50 of 100.', window: 'Work a window', resume: 'Back to your window',
     rep: 'Reputation', repEq: 'Sustain {d} a window and you settle at {r}.', toNext: '{w} windows and Rep {r} to {rank}', top: 'Top of the tree.',
     right: 'Right', calls: 'of {n} calls', scoops: 'Scoops', exclusives: 'Exclusives', uturns: 'U-turns', ownedUp: 'Owned up', followers: 'Followers', windows: 'Windows',
-    book: 'The contact book', bookAside: 'Trust · with you', level: 'L{n}', trustNext: '{n} to L{l}', trustMax: 'Maxed',
-    trustFx: ['New contact.', '12% fewer mistakes.', '24% fewer mistakes, and opens a day early.', '36% fewer mistakes, early access.', '48% fewer mistakes, early access.', '60% fewer mistakes, early access, a second opinion.'],
+    book: 'The contact book', bookAside: 'Trust · with you', level: 'L{n}', trustNext: '{n} XP to L{l}', trustMax: 'Gold card', trustEarly: 'opens a day early at L{l}', trustAgain: 'a second opinion at L{l}',
+    trustFx: ['Picks up. Plays it straight.', '12% fewer mistakes.', '24% fewer mistakes, and opens a day early.', '36% fewer mistakes, early access.', '48% fewer mistakes, early access, a second opinion.'],
     barberFx: 'Right {p}% of the time with you.', locked: 'Opens at {rank}',
     clubs: 'Clubs', clubsAside: 'Relations', clubsEmpty: 'No club knows your name yet. Publish a right call about one.', leak: 'Returning your calls', frozen: 'Frozen you out', neutral: 'Neutral',
     unlocks: 'Unlocks', unlocksAside: 'Earned, not bought', favours: 'Favours', favoursAside: '{n} of 5', burner: 'Burner', burnerD: '+1 contact today', tipoff: 'Tip-off', tipoffD: 'Tells you if one saga is Fake',
@@ -224,6 +224,7 @@ const en = {
     s7: ['U-turns', 'Once per saga. The old call costs its penalty; the new one scores from today and can’t be an exclusive.'],
     s8: ['Deadline Day', 'Sixty seconds on a real clock, three contacts, at most three posts. The last fifteen seconds open Quick post.'],
     s9: ['Tiers', 'Tier 1: {t1}+ and at least one exclusive. Tier 2: {t2}+. Tier 3: {t3}+. Tier 4: 0+. Below zero: Spiked.'],
+    s10: ['One name', 'Your followers, reputation, contacts book and rivals are the same in every mode: the Daily, Story, the Wire, rooms and Practice all move them. Your name is yours; each Career slot is a different story (its chapter, favours and inbox), not a different you. None of it changes a Daily board or score.'],
     table: ['Strength', 'Right', 'Per day left', 'Exclusive', 'Wrong', 'U-turn'], srcTable: ['Source', 'Cost', 'Opens', 'Card tally'], thumb: 'Confirmed when you’d bet 3-to-2. Advanced when it’s more likely than not. Talks when you just have a lean.',
   },
   onb: {

@@ -3,7 +3,14 @@
 import { E, RULES, castFor, type Act, type CastSaga, type Clue, type Game, type Pub, type Result, type Rules, type Board } from './engine';
 import { v3 } from './api';
 import { getSave, update, type LocalWindow } from './save';
-import { careerRules, castOpts } from './career';
+import { careerRules, castOpts, TRUST_AGAIN, careerTrust } from './career';
+
+// Practice rules: the plain Daily rules plus the Contacts Book's one Practice perk (GOTY.md §1.2): a source at Lv5 can
+// be asked a second time per saga. Never for the Daily or rooms, whose rules come from the server.
+export function practiceRules(s = getSave()): Rules {
+  const AGAIN = Object.keys(RULES.SOURCES).filter((k) => careerTrust(s, k) >= TRUST_AGAIN);
+  return AGAIN.length ? { ...RULES, AGAIN } : RULES;
+}
 
 export type Mode = 'daily' | 'room' | 'practice' | 'career';
 export interface View {
@@ -51,7 +58,7 @@ function localView(mode: Mode, g: Game, cast: CastSaga[], lw: LocalWindow): View
 export function localDriver(mode: 'practice' | 'career', lw: LocalWindow, onDone?: (g: Game, v: View) => void): Driver & { game: () => Game } {
   const car = mode === 'career' ? getSave().career : null;
   const cast = mode === 'career' && car ? castFor(lw.seed, castOpts(car)) : castFor(lw.seed, { n: RULES.SAGAS });
-  const R = mode === 'career' && car ? careerRules(car, cast) : RULES;
+  const R = mode === 'career' && car ? careerRules(car, cast) : practiceRules();
   const board: Board = E.buildBoard(lw.seed, R);
   let g = E.replay(board, lw.log, R) || E.newGame(board, R);
   let settled = E.isOver(g);

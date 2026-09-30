@@ -3,7 +3,7 @@ export default {
   en: {
     g: {
       coins: '{n} coins', level: 'Level {n}', lv: 'Lv {n}',
-      bar: { daily: 'Daily', career: 'Career', room: 'Room', toPlay: 'Play today', ch: 'Ch {c} · Lv {n}', noRank: 'Unranked', start: 'Start', rank: '#{r}' },
+      bar: { daily: 'Daily', career: 'Career', room: 'Room', toPlay: 'Play today', ch: 'Chapter {c}', noRank: 'Unranked', start: 'Start', rank: '#{r}' },
       tabs: { home: 'Home', story: 'Story', wire: 'Wire', friends: 'Friends', me: 'Me' },
       home: {
         noName: 'New reporter', freelance: 'Out of work since Deadline Day', xp: 'XP {a}/{b}', followers: '{n} followers', streak: 'Streak',
@@ -38,7 +38,7 @@ export default {
   ar: {
     g: {
       coins: '{n} عملة', level: 'المستوى {n}', lv: 'مستوى {n}',
-      bar: { daily: 'اليومي', career: 'المسيرة', room: 'الأوضة', toPlay: 'العب النهارده', ch: 'فصل {c} · مستوى {n}', noRank: 'من غير ترتيب', start: 'ابدأ', rank: '#{r}' },
+      bar: { daily: 'اليومي', career: 'المسيرة', room: 'الأوضة', toPlay: 'العب النهارده', ch: 'الفصل {c}', noRank: 'من غير ترتيب', start: 'ابدأ', rank: '#{r}' },
       tabs: { home: 'الرئيسية', story: 'القصة', wire: 'الوكالة', friends: 'الصحاب', me: 'أنا' },
       home: {
         noName: 'صحفي جديد', freelance: 'قاعد من غير شغل من آخر يوم', xp: 'خبرة {a}/{b}', followers: '{n} متابع', streak: 'السلسلة',
@@ -72,7 +72,7 @@ export default {
   es: {
     g: {
       coins: '{n} monedas', level: 'Nivel {n}', lv: 'Nv {n}',
-      bar: { daily: 'Diario', career: 'Carrera', room: 'Sala', toPlay: 'Juega hoy', ch: 'Cap {c} · Nv {n}', noRank: 'Sin puesto', start: 'Empezar', rank: '#{r}' },
+      bar: { daily: 'Diario', career: 'Carrera', room: 'Sala', toPlay: 'Juega hoy', ch: 'Capítulo {c}', noRank: 'Sin puesto', start: 'Empezar', rank: '#{r}' },
       tabs: { home: 'Inicio', story: 'Historia', wire: 'Teletipo', friends: 'Amigos', me: 'Yo' },
       home: {
         noName: 'Nuevo periodista', freelance: 'En paro desde el último día de mercado', xp: 'XP {a}/{b}', followers: '{n} seguidores', streak: 'Racha',

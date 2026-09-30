@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef, lazy, Suspense } from 'react';
 import { flushSync } from 'react-dom';
-import { useSave, update, getSave } from './lib/save';
+import { useSaveSel, shallowEq, update, getSave } from './lib/save';
 import { useT } from './lib/i18n';
 import { sfx } from './lib/sfx';
 import { onToasts } from './lib/meta';
@@ -8,26 +8,32 @@ import { checkPurchase } from './lib/monet';
 import { bootPlatform } from './lib/account';
 import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
-import { MeScreen } from './screens/Me';
 import { Icon, installTilt, prefersReducedMotion } from './ui/game';
-import { WindowScreen } from './screens/Window';
-import { WireScreen } from './screens/Wire';
-import { StoryScreen } from './screens/Story';
-import { PassScreen } from './screens/Pass';
-import { PracticeScreen } from './screens/Practice';
-import { RoomsScreen } from './screens/Rooms';
-import { NewsroomScreen } from './screens/Newsroom';
+// Code-split web build (GOTY.md §8.2): Home ships with the shell; every other screen, the settings sheet, onboarding
+// and the scene host (with the films) are their own chunks, fetched on first use (the service worker keeps the play
+// loop's chunks cached after its install; nothing is evaluated early, so idle time stays free for scrolling).
+// The single-file build inlines them all the same (Vite folds dynamic imports into one bundle there).
+const MeScreen = lazy(() => import('./screens/Me').then((m) => ({ default: m.MeScreen })));
+const WindowScreen = lazy(() => import('./screens/Window').then((m) => ({ default: m.WindowScreen })));
+const WireScreen = lazy(() => import('./screens/Wire').then((m) => ({ default: m.WireScreen })));
+const StoryScreen = lazy(() => import('./screens/Story').then((m) => ({ default: m.StoryScreen })));
+const PassScreen = lazy(() => import('./screens/Pass').then((m) => ({ default: m.PassScreen })));
+const PracticeScreen = lazy(() => import('./screens/Practice').then((m) => ({ default: m.PracticeScreen })));
+const RoomsScreen = lazy(() => import('./screens/Rooms').then((m) => ({ default: m.RoomsScreen })));
+const NewsroomScreen = lazy(() => import('./screens/Newsroom').then((m) => ({ default: m.NewsroomScreen })));
+const HowTo = lazy(() => import('./screens/HowTo').then((m) => ({ default: m.HowTo })));
+const SettingsSheet = lazy(() => import('./screens/Settings').then((m) => ({ default: m.SettingsSheet })));
+const Onboarding = lazy(() => import('./screens/Onboarding').then((m) => ({ default: m.Onboarding })));
+const SceneHost = lazy(() => import('./lib/scenes').then((m) => ({ default: m.SceneHost })));
+const FeedScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.FeedScreen })));
+const RivalsScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.RivalsScreen })));
+const ContactsScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.ContactsScreen })));
+const CustomizeScreen = lazy(() => import('./screens/Customize').then((m) => ({ default: m.CustomizeScreen })));
+const DDLiveScreen = lazy(() => import('./screens/DDLive').then((m) => ({ default: m.DDLiveScreen })));
+const EditorDeskScreen = lazy(() => import('./screens/Editor').then((m) => ({ default: m.EditorDeskScreen })));
+import { setNav } from './screens/Connect';
 import { SocialWatch } from './ui/social';
-import { HowTo } from './screens/HowTo';
-import { SettingsSheet } from './screens/Settings';
-import { Onboarding } from './screens/Onboarding';
-import { SceneHost } from './lib/scenes';
-import { FeedScreen, RivalsScreen, ContactsScreen, setNav } from './screens/Connect';
-import { CustomizeScreen } from './screens/Customize';
 import { captureReferral } from './lib/wallet';
-// The editor's desk (GOTY.md §7.1): Deadline Day Live, the full desk, and the morning papers sheet on Home.
-import { DDLiveScreen } from './screens/DDLive';
-import { EditorDeskScreen } from './screens/Editor';
 import { MorningPapers } from './ui/live';
 // Shell layer (GOTY.md §4): motion tokens + view transitions, then the tablet/desktop layouts. Loaded after the screen styles.
 import './styles/motion.css';
@@ -57,7 +63,8 @@ function initialRoute(): Route {
 }
 
 export function App() {
-  const s = useSave();
+  // Only the fields the shell reads: a save update elsewhere (a call, coins, a mission) doesn't re-render the whole App.
+  const s = useSaveSel((x) => ({ lang: x.lang, edition: x.edition, theme: x.theme, reduced: x.reduced, onboarded: x.onboarded }), shallowEq);
   const t = useT();
   const [route, setRoute] = useState<Route>(initialRoute);
   const [settings, setSettings] = useState(false);
@@ -165,17 +172,19 @@ export function App() {
     case 'editor': screen = <EditorDeskScreen {...chrome} />; break;
   }
   return <>
-    {screen}
+    <Suspense fallback={null}>{screen}</Suspense>
     {!inWindow && <nav className="g-tabs" aria-label="Sections" style={{ ['--tab-i' as string]: Math.max(0, TABS.findIndex((x) => x.n === tab)), ['--tab-c' as string]: TABS.find((x) => x.n === tab)?.c }}>
       <span className="g-tabs__brand" aria-hidden="true">T<b>1</b></span>
       {TABS.map((x) => <a key={x.n} href={'?tab=' + x.n} style={{ ['--tab-c' as string]: x.c }} aria-current={tab === x.n ? 'page' : undefined} onClick={(e) => { e.preventDefault(); go({ n: x.n } as Route); }}><Icon n={x.icon} /><span>{t(x.k)}</span></a>)}
     </nav>}
     <div className="toasts" aria-live="polite">{toasts.map((x) => <div key={x.id} className={'toast toast--' + x.kind}><b>{x.title}</b>{x.body && <span className="meta">{x.body}</span>}</div>)}</div>
-    <SettingsSheet open={settings} onClose={() => setSettings(false)} go={go} />
-    {!s.onboarded && <Onboarding go={go} />}
-    <MorningPapers route={route.n} />
-    <SceneHost />
-    <SocialWatch />
+    <Suspense fallback={null}>
+      {settings && <SettingsSheet open={settings} onClose={() => setSettings(false)} go={go} />}
+      {!s.onboarded && <Onboarding go={go} />}
+      <MorningPapers route={route.n} />
+      <SceneHost />
+      <SocialWatch />
+    </Suspense>
   </>;
 }
 const TAB_ORDER = TABS.map((x) => x.n);

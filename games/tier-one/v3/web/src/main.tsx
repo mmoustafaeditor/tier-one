@@ -13,6 +13,8 @@ import './styles/screens.css';
 import '../../../../the-gaffer/web/src/boot/boot.css';
 import { BOOT_MARKUP, playIntro } from '../../../../the-gaffer/web/src/boot/intro';
 import { App } from './App';
+// Smoothness (GOTY.md §8.2): service worker + update/install chips, film prefetch, boot marks. Nothing here blocks the render.
+import { initPerf, mark } from './lib/perf';
 
 // The sting plays once per browser session, and never on an invite or deep link (?room=, ?tab=, ?challenge=) once this
 // browser has seen it: a friend's link opens the room, not an 8-second logo. Gated here, so The Gaffer's intro is unchanged.
@@ -31,3 +33,5 @@ if (boot) {
 }
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
+mark('render');
+initPerf();

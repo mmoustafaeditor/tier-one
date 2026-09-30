@@ -109,7 +109,7 @@ export function onCareerDone(r: Result, milestoneCredits: number) {
     if (c.rank >= 1) grant(s, 'rank2');
     if (c.rank >= 2) grant(s, 'rank3');
     if (c.rank >= 4) grant(s, 'rank5');
-    if (Object.values(c.contacts).some((x) => x.trust >= 70)) grant(s, 'trust5');
+    if (Object.values(s.book || {}).some((x) => x.xp >= 560)) grant(s, 'trust5'); // a gold card in the Contacts Book
     if (Object.values(c.relations).some((x) => x.v >= 3)) grant(s, 'leak');
     if (milestoneCredits) credit(s, milestoneCredits, 'followers');
     addPP(s, 10);

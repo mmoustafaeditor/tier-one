@@ -2,10 +2,13 @@
 // A cover, the prologue film and its title card for new players, then the chapter screen, whose heart is the goal, the
 // case file (evidence pinned by each chapter's reveal) and the inbox; and a card (with its film) for each new chapter.
 // Career rules and rank gates are unchanged (lib/career.ts); chapters are the ranks (lib/storyMode.ts).
+// One career (GOTY.md §7.2): credibility is the byline's reputation, followers are the byline's, the sources' trust is
+// the Contacts Book level, all read from lib/byline.ts. The hub owns only the story: chapter, goal, favours, clubs.
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { useT, num, fmtDate } from '../lib/i18n';
 import { useSave, update } from '../lib/save';
-import { RANKS, TRUST_LV, trustLevel, newCareer, totalFavours, VINCE_RANK } from '../lib/career';
+import { RANKS, newCareer, totalFavours, VINCE_RANK, careerTrust, TRUST_EARLY, TRUST_AGAIN } from '../lib/career';
+import { bylineOf, bookOf, bookProgress, repTier } from '../lib/byline';
 import { chapterFor, chapterNew, chapterScene, CHAPTERS, EPILOGUE, EVIDENCE, evidenceOpen, revealAt, beatKey, beatFrom, type Chapter, type Beat } from '../lib/storyMode';
 import { clubById, RULES } from '../lib/engine';
 import { randomSeed } from '../lib/driver';
@@ -52,7 +55,7 @@ export function StoryScreen(chrome: Chrome) {
   // whatever film is playing (onboarding's prologue).
   const needCard = !!c && !s.story?.prologue;
   useEffect(() => { if (needCard) afterScenes(() => setPro((p) => p || (c!.windows > 0 ? 'replay' : 'start'))); }, [needCard]); // eslint-disable-line react-hooks/exhaustive-deps
-  const ch = c ? chapterFor(c) : null;
+  const ch = c ? chapterFor(c, bylineOf(s).rep) : null;
   const intro = !!(c && ch && !pro && !needCard && (s.story?.chapterSeen ?? -1) < ch.i);
 
   return <>
@@ -269,6 +272,7 @@ function ChapterScreen({ chrome, ch, onPrologue }: { chrome: Chrome; ch: Chapter
     ? { from: beatFrom(latest), text: t(beatKey(latest as Beat), latest.v), fresh: true }
     : { from: t('g.story.ch.' + ch.id + '.briefBy'), text: t('g.story.ch.' + ch.id + '.brief'), fresh: false };
   const rightPct = c.calls ? Math.round((100 * c.right) / c.calls) : 0;
+  const b = bylineOf(s); // one career: credibility is the byline's reputation, followers are the byline's
   const clubs = Object.entries(c.relations).filter(([, r]) => r.v !== 0).sort((a, b) => b[1].v - a[1].v);
   const g = ch.goal;
   const beats = s.story?.beats || {};
@@ -347,12 +351,20 @@ function ChapterScreen({ chrome, ch, onPrologue }: { chrome: Chrome; ch: Chapter
         </Drawer>
 
         {/* ---------- the record: stats, favours, clubs, recent windows */}
-        <Drawer title={t('g.story.stats.title')} aside={t('g.story.stats.cred') + ' ' + Math.round(c.rep) + ' · ' + fmtK(c.followers)} style={vi(4)}>
+        <Drawer title={t('g.story.stats.title')} aside={t('g.story.stats.cred') + ' ' + Math.round(b.rep) + ' · ' + fmtK(b.followers)} style={vi(4)}>
+          {/* the byline's numbers, the same in every mode; one line, and a door to Me */}
+          <button className="sm-byline" onClick={() => { sfx('ui.tap'); chrome.go({ n: 'me' }); }}>
+            <span className="g-stamp sm-byline__stamp">{t('cn.tier.' + repTier(b.rep))}</span>
+            <span className="sm-byline__n"><b className="g-num">{Math.round(b.rep)}</b><small className="g-mono">{t('g.story.stats.cred')}</small></span>
+            <span className="sm-byline__n"><b className="g-num">{fmtK(b.followers)}</b><small className="g-mono">{t('g.story.stats.followers')}</small></span>
+            <span className="sm-byline__same g-mono">{t('g.story.stats.same')}</span>
+            <Icon n={t.rtl ? 'back' : 'arrow'} size={16} />
+          </button>
           <div className="sm-stats">
-            <Stat icon="target" v={String(Math.round(c.rep))} k={t('g.story.stats.cred')} sub={t('g.story.goal.k') + ' ' + (g?.rep || 100)} />
+            <Stat icon="news" v={String(c.windows)} k={t('career.windows')} sub={epi ? t('g.story.epilogue') : t('g.story.chapterOf', { n: ch.n })} />
             <Stat icon="check" v={rightPct + '%'} k={t('g.story.stats.right')} sub={t('g.story.stats.of', { n: c.calls })} />
             <Stat icon="bolt" v={String(c.exclusives)} k={t('g.story.stats.excl')} sub={t('g.story.stats.uturns', { n: c.uturns })} />
-            <Stat icon="friends" v={fmtK(c.followers)} k={t('g.story.stats.followers')} sub={c.t1 ? c.t1 + ' × ' + t('tier.T1') : ''} />
+            <Stat icon="star" v={String(c.t1)} k={t('g.story.goal.t1')} sub={g && g.t1 != null ? (g.haveT1 || 0) + '/' + g.t1 + ' · ' + t('career.ranks.' + (RANKS.length - 1)) : ''} />
           </div>
           <h3 className="sm-sub">{t('g.story.favours.title')}<span className="g-mono">{t('g.story.favours.aside', { n: totalFavours(c) })}</span></h3>
           <div className="sm-favs">
@@ -382,18 +394,20 @@ function ChapterScreen({ chrome, ch, onPrologue }: { chrome: Chrome; ch: Chapter
         <Drawer title={t('g.story.src.title')} aside={rk.src.map((k) => t('g.story.who.' + k).split(' ')[0]).join(', ')} style={vi(5)}>
           <div className="sm-srcs">
             {SRC.map((k) => {
-              const open = rk.src.includes(k), tr = (c.contacts[k] || { trust: 0 }).trust, lv = trustLevel(tr);
+              // The Contacts Book (lib/byline.ts): one level per source, every mode. The story shows what it does here.
+              const open = rk.src.includes(k), lv = careerTrust(s, k), p = bookProgress(bookOf(s, k));
               const need = RANKS.findIndex((r) => r.src.includes(k));
-              const toNext = lv >= 5 ? 1 : (tr - (TRUST_LV[lv - 1] || 0)) / (TRUST_LV[lv] - (TRUST_LV[lv - 1] || 0));
+              const steps = lv - 1;
               return <div key={k} className={'sm-src' + (open ? '' : ' is-locked')}>
                 <div className="sm-src__top"><SrcIcon k={k} size={40} />{open ? <span className="sm-src__lv"><Rel n={Math.ceil((lv * 3) / 5)} /><b className="g-num">{t('career.level', { n: lv })}</b></span> : <Icon n="lock" size={18} className="sm-src__lock" />}</div>
                 <b className="sm-src__n">{open ? t('g.story.who.' + k) : '?'}<span className="sm-src__role g-mono">{t('src.' + k)}</span></b>
-                <span className="sm-src__d">{open ? (k === 'barber' ? t('career.barberFx', { p: Math.round(100 * Math.min(0.95, (RULES.SOURCES.barber.rel || 0.45) + 0.05 * lv)) }) : t('career.trustFx.' + lv)) : t('g.story.src.locked', { n: need + 1 })}</span>
-                {open && <><span className="g-bar g-bar--sm" style={{ ['--bar' as string]: 'var(--gold)' }}><i style={{ width: Math.round(Math.max(0, Math.min(1, toNext)) * 100) + '%' }} /></span>
-                  <span className="sm-src__next g-mono">{lv >= 5 ? t('career.trustMax') : t('career.trustNext', { n: TRUST_LV[lv] - tr, l: lv + 1 })}</span></>}
+                <span className="sm-src__d">{open ? (k === 'barber' ? t('career.barberFx', { p: Math.round(100 * Math.min(0.95, (RULES.SOURCES.barber.rel || 0.45) + 0.05 * steps)) }) : t('career.trustFx.' + steps)) : t('g.story.src.locked', { n: need + 1 })}</span>
+                {open && <><span className="g-bar g-bar--sm" style={{ ['--bar' as string]: p.max ? 'linear-gradient(90deg,#FFD35C,#F7B928)' : 'var(--gold)' }}><i style={{ width: p.pct + '%' }} /></span>
+                  <span className="sm-src__next g-mono">{p.max ? t('career.trustMax') : t('career.trustNext', { n: p.need - p.into, l: lv + 1 })}{lv < TRUST_EARLY && (k === 'spotter' || k === 'physio') ? ' · ' + t('career.trustEarly', { l: TRUST_EARLY }) : lv < TRUST_AGAIN && c.rank >= 3 ? ' · ' + t('career.trustAgain', { l: TRUST_AGAIN }) : ''}</span></>}
               </div>;
             })}
           </div>
+          <button className="sm-link sm-link--desk" onClick={() => { sfx('ui.tap'); chrome.go({ n: 'contacts' }); }}>{t('g.story.src.book')}<Icon n={t.rtl ? 'back' : 'arrow'} size={14} /></button>
         </Drawer>
 
         {/* ---------- the desk drawer: the prologue, save slots, starting over */}
