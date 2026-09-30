@@ -9,6 +9,8 @@ import { bootPlatform } from './lib/account';
 import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
 import { Icon, installTilt, prefersReducedMotion } from './ui/game';
+// Surface films (GOTY.md §9, ui/film.tsx): filmed page turns in go(); the ambient loops are placed by each screen.
+import { filmTurn } from './ui/film';
 // Code-split web build (GOTY.md §8.2): Home ships with the shell; every other screen, the settings sheet, onboarding
 // and the scene host (with the films) are their own chunks, fetched on first use (the service worker keeps the play
 // loop's chunks cached after its install; nothing is evaluated early, so idle time stays free for scrolling).
@@ -93,7 +95,11 @@ export function App() {
     const h = document.documentElement;
     sfx('page.turn');
     h.dataset.route = r.n;
-    h.dataset.vt = reduce ? 'none' : vtDir(routeRef.current, r);
+    const dir = reduce ? 'none' : vtDir(routeRef.current, r);
+    // Filmed page turn (GOTY.md §9): on capable devices the sheet sweeps over the page and the route swaps while it
+    // covers the frame; the View Transition / CSS slide below is the fallback whenever the clip isn't there.
+    if (!reduce && filmTurn(dir, swap, h.dir === 'rtl')) { h.dataset.vt = 'none'; return; }
+    h.dataset.vt = dir;
     if (!reduce && d.startViewTransition) {
       try { d.startViewTransition(() => flushSync(swap)).finished.finally(() => { if (h.dataset.vt !== 'none') delete h.dataset.vt; }); return; } catch { /* fall through */ }
     }
