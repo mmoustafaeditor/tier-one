@@ -17,6 +17,17 @@ together with your change.
 
 ---
 
+## 2026-09-30 · mmoustafaeditor (Claude session) · Tier One: home bar, career slots, blog pencil, Wire rework
+- **What changed:** Home top bar adds coins and Daily / Career / Room chips (Me press card reuses it); pages no longer
+  scroll past their content; Today's five shows kits + player names (from `daily.start`'s cast; "?" offline);
+  missions show their coin reward; reset/close times in local time instead of "00:00 UTC"; "byline" → "name"
+  (EN/AR/ES). Career: no league card, 3 save slots each with a transfer code (`/api/online` save codes, 30 days,
+  needs Redis), old saves migrate to slot 1. Prologue replay removed; blog renamed via a pencil by the title (first
+  free, then 250 coins). Wire: real-market explainer, transfer-window countdown, coin rewards by star level (15/25/40/70),
+  collapsible groups by stars/league/team, and a Wire board on the v3 server leaderboard (built from server scores).
+  The Gaffer (same push window): tactics v3 roles, referee/VAR/discipline, slower live pace, green rebrand.
+- **Files:** `games/tier-one/v3/web/src/**`, `api/tier-one/v3/index.js`, `tier-one/index.html`, `tier-one/version.json`.
+
 ## 2026-09-30 · lane9 (Claude session) · The Gaffer: purple mark replaced by the green banner mark
 - **What changed:** The violet "THE [GAFFER]" banner and violet launcher "G" (v0.12, still in the published APK) are
   replaced by a refreshed mark in The Gaffer's own greens: same Barlow Condensed ExtraBold Italic letterforms and
