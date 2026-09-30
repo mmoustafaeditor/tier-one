@@ -1,84 +1,70 @@
 // The catalog (GOTY.md §8.4): ONE list of everything that can be bought, unlocked or equipped, whatever screen shows it.
-// It wraps the season lane's cosmetics (lib/season.ts) without changing their ids, and adds the new kinds: byline card
-// designs, newsroom mastheads, press-pass skins, film poster frames, share-card styles, naming your paper, and Gold.
+// It wraps the season lane's cosmetics (lib/season.ts) without changing their ids, and adds every other kind from the
+// kind registry (lib/kinds.ts): byline card designs, mastheads, press-pass skins, poster frames, share-card styles,
+// naming your paper, Gold, and the 3.4 long-tail kinds (headline fonts, desk lamps, ring packs, feed skins, front pages).
 //
 // The fairness line, made structural: an Item has no field that could hold an effect. Nothing here reaches a Daily
 // board, its sources or its score; the Career conveniences in §1.2 are not catalog items. `validateCatalog()` (run by
-// scripts/economy-test.mjs) refuses any item that grows such a field.
+// scripts/economy-test.mjs and scripts/longtail-test.mjs) refuses any item that grows such a field.
 //
-// INTEGRATOR (onbpass lane, screens/Pass.tsx): the store sheet can read `itemsOf(kind)` / `storeCatalog()` instead of
-// season.storeItems(); ids are identical, `legacy(item)` returns the season.ts Cosmetic for CosSwatch, and
-// wallet.buy(id, 'coins') replaces season.buyCosmetic(id) (same save fields, plus the wallet ledger).
-// v4 (api lane): `config.get` returns the same shape as `Item[]` plus a featured list; `applyRemoteCatalog()` below is
-// the one place to merge it. Until then the catalog is this file.
+// The long tail (§10.3): items carry a `drop` (when they arrived, for the "new this week" rail), a `window` (season-
+// limited: "leaves at season end"), `vault` windows ("back for one week") and, for earned-only items, an `earn` rule
+// that says how they are won and marks them never purchasable. lib/drops.ts reads these for the rails and the
+// collection book; lib/earned.ts grants the earned ones.
+//
+// v4 (api lane): `config.get` hands over `catalog.looks` (this Item shape), `drops`, `vault` and `rails`;
+// `applyRemoteCatalog()` below is the one place to merge them. Until then the catalog is this file.
 import {
   cosmetic as seasonCosmetic, storeItems as seasonStore, seasonItems, seasonAt, seasonById, isoWeek,
-  type Cosmetic, type CosKind, type FramePat, type SeasonKey,
+  type Cosmetic, type CosKind, type SeasonKey,
 } from './season';
-import type { Sfx } from './sfx';
+import { REGISTRY, KINDS, GROUPS, kindDef, kindsOf, isKind, overriddenBy, validateRegistry, type Kind, type Preview, type Group } from './kinds';
+
+export { KINDS, GROUPS, REGISTRY, kindDef, kindsOf, isKind, overriddenBy, validateRegistry, type Kind, type Preview, type Group };
 
 // ---------------------------------------------------------------- types
 export type LegacyKind = CosKind; // 'frame' | 'ink' | 'theme' | 'ringtone' | 'flair' (lib/season.ts)
-export type NewKind = 'byline' | 'masthead' | 'presspass' | 'poster' | 'sharecard' | 'paper' | 'gold';
-export type Kind = LegacyKind | NewKind;
-/** Tab order on "Your desk": the byline first (it is you), then the desk, then the newsroom, then Gold. */
-export const KINDS: Kind[] = ['byline', 'flair', 'frame', 'ink', 'theme', 'ringtone', 'presspass', 'poster', 'sharecard', 'masthead', 'paper', 'gold'];
 export const LEGACY_KINDS: LegacyKind[] = ['frame', 'ink', 'theme', 'ringtone', 'flair'];
 export const isLegacyKind = (k: Kind): k is LegacyKind => (LEGACY_KINDS as string[]).includes(k);
 
 export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
-/** Where an item comes from. 'store' is the only one with a price; 'standard' is the built-in look everyone owns. */
-export type Source = 'store' | 'track' | 'gold' | 'event' | 'standard';
+/** Where an item comes from. 'store' is the only one with a price; 'standard' is the built-in look everyone owns;
+ *  'earned' is never purchasable and carries an `earn` rule. */
+export type Source = 'store' | 'track' | 'gold' | 'event' | 'standard' | 'earned';
 export interface Price { coins?: number; credits?: number }
 export interface SaleWindow { from: number; to: number } // ms UTC, `to` exclusive
-
-export type Preview =
-  | { k: 'frame'; c: string; c2: string; pat: FramePat }
-  | { k: 'ink'; c: string }
-  | { k: 'theme'; desk?: [string, string, string]; paper?: boolean }
-  | { k: 'ringtone'; sfx: Sfx }
-  | { k: 'flair'; g: string; c: string }
-  | { k: 'byline'; bg: string; ink: string; accent: string; rule: 'single' | 'double' | 'thick' | 'none'; face: 'display' | 'cond'; tex?: 'halftone' | 'foil' }
-  | { k: 'masthead'; bg: string; ink: string; face: 'display' | 'cond' | 'mono'; rule: 'single' | 'double' | 'thick'; orn?: string }
-  | { k: 'presspass'; c1: string; c2: string; ink: string; stripe?: string }
-  | { k: 'poster'; c: string; c2: string; style: 'film' | 'ticket' | 'gilt' | 'tape' | 'neon' }
-  | { k: 'sharecard'; paper: string; ink: string; accent: string; style: 'classic' | 'redtop' | 'broadsheet' | 'night' | 'wire' }
-  | { k: 'paper' }
-  | { k: 'gold'; season: string };
+/** How an earned-only item is won. `via` is a closed list; the evaluator is lib/earned.ts. */
+export type EarnVia = 'story' | 'rank' | 'streak' | 'rivalry' | 'referral' | 'event' | 'ddlive' | 'anniversary' | 'pass' | 'gold';
+export interface Earn { via: EarnVia; n?: number; ref?: string }
+export const EARN_VIAS: EarnVia[] = ['story', 'rank', 'streak', 'rivalry', 'referral', 'event', 'ddlive', 'anniversary', 'pass', 'gold'];
 
 export interface Item {
   id: string; kind: Kind;
   nameKey: string; nameVars?: Record<string, string | number>; descKey?: string;
   price: Price; source: Source; rarity: Rarity;
-  set?: string;          // a family shown together ("redtop", "gilt", a season id)
+  set?: string;          // a family shown together ("redtop", "gilt", a season id, "story")
   window?: SaleWindow;   // season-limited: on sale only inside it (honest countdown in the UI)
+  vault?: SaleWindow[];  // vault returns: extra sale windows after `window` closed ("back for one week")
+  drop?: number;         // ms UTC the item arrived (the "new this week" rail); absent = launch stock
+  earn?: Earn;           // earned-only rule (source 'earned'); never priced, never gifted
   featured?: boolean;    // pinned by remote config; the weekly rotation adds to this
   preview: Preview;
 }
 /** The only keys an item may carry. validateCatalog() fails on anything else, so an "effect" can never sneak in. */
-export const ITEM_KEYS = ['id', 'kind', 'nameKey', 'nameVars', 'descKey', 'price', 'source', 'rarity', 'set', 'window', 'featured', 'preview'] as const;
+export const ITEM_KEYS = ['id', 'kind', 'nameKey', 'nameVars', 'descKey', 'price', 'source', 'rarity', 'set', 'window', 'vault', 'drop', 'earn', 'featured', 'preview'] as const;
+
+const utc = (y: number, m: number, d: number) => Date.UTC(y, m - 1, d);
+const DAY = 864e5;
 
 // ---------------------------------------------------------------- the standard look of every kind (owned by all)
-const STD: Record<Kind, Item> = {
-  byline: { id: 'std.byline', kind: 'byline', nameKey: 'eco.items.std.byline', price: {}, source: 'standard', rarity: 'common', preview: { k: 'byline', bg: '#F4EFE4', ink: '#15130F', accent: '#C9381A', rule: 'thick', face: 'display' } },
-  frame: { id: 'std.frame', kind: 'frame', nameKey: 'eco.items.std.frame', price: {}, source: 'standard', rarity: 'common', preview: { k: 'frame', c: '#15130F', c2: '#F4EFE4', pat: 'solid' } },
-  ink: { id: 'std.ink', kind: 'ink', nameKey: 'eco.items.std.ink', price: {}, source: 'standard', rarity: 'common', preview: { k: 'ink', c: '#C9381A' } },
-  theme: { id: 'std.theme', kind: 'theme', nameKey: 'eco.items.std.theme', price: {}, source: 'standard', rarity: 'common', preview: { k: 'theme', desk: ['#17140F', '#211D17', '#2C271F'] } },
-  ringtone: { id: 'std.ringtone', kind: 'ringtone', nameKey: 'eco.items.std.ringtone', price: {}, source: 'standard', rarity: 'common', preview: { k: 'ringtone', sfx: 'phone.ring' } },
-  flair: { id: 'std.flair', kind: 'flair', nameKey: 'eco.items.std.flair', price: {}, source: 'standard', rarity: 'common', preview: { k: 'flair', g: '', c: '#15130F' } },
-  masthead: { id: 'std.masthead', kind: 'masthead', nameKey: 'eco.items.std.masthead', price: {}, source: 'standard', rarity: 'common', preview: { k: 'masthead', bg: '#F4EFE4', ink: '#15130F', face: 'display', rule: 'double' } },
-  presspass: { id: 'std.presspass', kind: 'presspass', nameKey: 'eco.items.std.presspass', price: {}, source: 'standard', rarity: 'common', preview: { k: 'presspass', c1: '#FF7A52', c2: '#C9381A', ink: '#FFFFFF' } },
-  poster: { id: 'std.poster', kind: 'poster', nameKey: 'eco.items.std.poster', price: {}, source: 'standard', rarity: 'common', preview: { k: 'poster', c: '#15130F', c2: '#F4EFE4', style: 'film' } },
-  sharecard: { id: 'std.sharecard', kind: 'sharecard', nameKey: 'eco.items.std.sharecard', price: {}, source: 'standard', rarity: 'common', preview: { k: 'sharecard', paper: '#F2EEE5', ink: '#15130F', accent: '#D2381B', style: 'classic' } },
-  paper: { id: 'std.paper', kind: 'paper', nameKey: 'eco.items.std.paper', price: {}, source: 'standard', rarity: 'common', preview: { k: 'paper' } },
-  gold: { id: 'std.gold', kind: 'gold', nameKey: 'eco.items.std.gold', price: {}, source: 'standard', rarity: 'common', preview: { k: 'gold', season: '' } },
-};
+const STD = Object.fromEntries(KINDS.map((k) => [k, { id: 'std.' + k, kind: k, nameKey: 'eco.items.std.' + k, price: {}, source: 'standard', rarity: 'common', preview: REGISTRY[k].std }])) as Record<Kind, Item>;
 export const standardOf = (kind: Kind): Item => STD[kind];
 export const isStandard = (id: string) => id.startsWith('std.');
 
-// ---------------------------------------------------------------- new evergreen items (credits, some also coins)
+// ---------------------------------------------------------------- evergreen items (credits, some also coins)
 // Coins buy the small things (rare and under); credits buy the things that are seen most: epic and legendary looks,
 // season sets, Gold and your paper's name. Every price is fixed; the weekly featured price is the only discount.
+// `drop` dates put an item on the "new this week" rail for its first week; launch stock has none.
 const NEW: Item[] = [
   // byline card designs: the card on Me, in the press box tables and on results
   { id: 'by.redtop', kind: 'byline', nameKey: 'eco.items.by.redtop', price: { coins: 400, credits: 80 }, source: 'store', rarity: 'rare', set: 'redtop', preview: { k: 'byline', bg: '#C8102E', ink: '#FFFFFF', accent: '#FFD35C', rule: 'thick', face: 'cond' } },
@@ -109,48 +95,126 @@ const NEW: Item[] = [
   { id: 'sc.gilt', kind: 'sharecard', nameKey: 'eco.items.sc.gilt', price: { credits: 260 }, source: 'store', rarity: 'legendary', set: 'gilt', preview: { k: 'sharecard', paper: '#F4EFE4', ink: '#3A2600', accent: '#B8830B', style: 'classic' } },
   // naming your paper: one purchase, then rename whenever you like (the name is stored in save.desk.paper)
   { id: 'paper.name', kind: 'paper', nameKey: 'eco.items.paper.name', descKey: 'eco.items.paper.nameD', price: { credits: 150 }, source: 'store', rarity: 'rare', preview: { k: 'paper' } },
+
+  // ---- 3.4 long tail: kinds that ride on features already built. Each arrives on a Monday (its `drop`), one or two
+  // a week through the Rumour Mill '26, so the desk has something new to look at every week (docs/GROWTH.md).
+  // headline fonts: the wood type on the share card and the results front page
+  { id: 'hd.serif', kind: 'headline', nameKey: 'eco.items.hd.serif', price: { coins: 300, credits: 60 }, source: 'store', rarity: 'rare', set: 'broadsheet', drop: utc(2026, 9, 28), preview: { k: 'headline', face: 'serif' } },
+  { id: 'hd.slab', kind: 'headline', nameKey: 'eco.items.hd.slab', price: { coins: 300, credits: 60 }, source: 'store', rarity: 'rare', set: 'redtop', drop: utc(2026, 10, 12), preview: { k: 'headline', face: 'slab', upper: true } },
+  { id: 'hd.mono', kind: 'headline', nameKey: 'eco.items.hd.mono', price: { credits: 110 }, source: 'store', rarity: 'epic', set: 'wire', drop: utc(2026, 10, 26), preview: { k: 'headline', face: 'mono', upper: true, ink: '#35C3E6' } },
+  { id: 'hd.stencil', kind: 'headline', nameKey: 'eco.items.hd.stencil', price: { credits: 130 }, source: 'store', rarity: 'epic', set: 'night', drop: utc(2026, 11, 9), preview: { k: 'headline', face: 'stencil', upper: true } },
+  // desk lamps: the pool of light on Home's film stage
+  { id: 'lp.amber', kind: 'lamp', nameKey: 'eco.items.lp.amber', price: { coins: 180 }, source: 'store', rarity: 'common', drop: utc(2026, 9, 28), preview: { k: 'lamp', glow: '#FFC46B', pool: '#3A2610', warmth: 'warm' } },
+  { id: 'lp.dawn', kind: 'lamp', nameKey: 'eco.items.lp.dawn', price: { coins: 300, credits: 60 }, source: 'store', rarity: 'rare', drop: utc(2026, 10, 5), preview: { k: 'lamp', glow: '#F7B0C8', pool: '#2A1A2E', warmth: 'cool' } },
+  { id: 'lp.neon', kind: 'lamp', nameKey: 'eco.items.lp.neon', price: { coins: 300, credits: 60 }, source: 'store', rarity: 'rare', set: 'night', drop: utc(2026, 10, 19), preview: { k: 'lamp', glow: '#35C3E6', pool: '#0E1A20', warmth: 'neon' } },
+  { id: 'lp.gilt', kind: 'lamp', nameKey: 'eco.items.lp.gilt', price: { credits: 200 }, source: 'store', rarity: 'legendary', set: 'gilt', drop: utc(2026, 11, 23), preview: { k: 'lamp', glow: '#FFE08A', pool: '#3A2600', warmth: 'warm' } },
+  // ring packs v2: one ring per source, so you know who is calling before the card lands
+  { id: 'rp.newsroom', kind: 'ringpack', nameKey: 'eco.items.rp.newsroom', descKey: 'eco.items.rp.newsroomD', price: { coins: 350, credits: 70 }, source: 'store', rarity: 'rare', drop: utc(2026, 10, 5), preview: { k: 'ringpack', rings: { kitman: 'dd.whistle', barber: 'scene.barber', agent: 'scene.agent', spotter: 'scene.spotter', physio: 'scene.physio', leak: 'scene.leak' }, fallback: 'phone.ring' } },
+  { id: 'rp.stadium', kind: 'ringpack', nameKey: 'eco.items.rp.stadium', descKey: 'eco.items.rp.stadiumD', price: { credits: 120 }, source: 'store', rarity: 'epic', drop: utc(2026, 11, 2), preview: { k: 'ringpack', rings: { kitman: 'dd.whistle', barber: 'sparkle', agent: 'fanfare', spotter: 'dd.siren', physio: 'dd.heart', leak: 'typewriter' }, fallback: 'dd.whistle' } },
+  // feed skins: the rows of the Feed and Home's "For you"
+  { id: 'fs.memo', kind: 'feedskin', nameKey: 'eco.items.fs.memo', price: { coins: 180 }, source: 'store', rarity: 'common', drop: utc(2026, 9, 28), preview: { k: 'feedskin', style: 'memo', rule: '#F7B928', bg: '#FFF7D6', ink: '#3A2600' } },
+  { id: 'fs.ticker', kind: 'feedskin', nameKey: 'eco.items.fs.ticker', price: { coins: 300, credits: 60 }, source: 'store', rarity: 'rare', set: 'wire', drop: utc(2026, 9, 28), preview: { k: 'feedskin', style: 'ticker', rule: '#35C3E6', bg: '#0E1A20', ink: '#E6F7FC' } },
+  { id: 'fs.redtop', kind: 'feedskin', nameKey: 'eco.items.fs.redtop', price: { coins: 300, credits: 60 }, source: 'store', rarity: 'rare', set: 'redtop', drop: utc(2026, 10, 12), preview: { k: 'feedskin', style: 'redtop', rule: '#C8102E', bg: '#FFFFFF', ink: '#15130F' } },
+  { id: 'fs.night', kind: 'feedskin', nameKey: 'eco.items.fs.night', price: { credits: 110 }, source: 'store', rarity: 'epic', set: 'night', drop: utc(2026, 11, 16), preview: { k: 'feedskin', style: 'night', rule: '#F7B928', bg: '#15130F', ink: '#F4EFE4' } },
+  // front pages: the newsroom's shared style (the founder equips it; the press box lane reads newsroomStyle())
+  { id: 'fp.broadsheet', kind: 'frontpage', nameKey: 'eco.items.fp.broadsheet', price: { coins: 350, credits: 70 }, source: 'store', rarity: 'rare', set: 'broadsheet', drop: utc(2026, 10, 19), preview: { k: 'frontpage', cols: 3, hed: 'serif', kicker: '#1B1A17', rule: 'single', paper: '#FBF6EA', ink: '#1B1A17' } },
+  { id: 'fp.redtop', kind: 'frontpage', nameKey: 'eco.items.fp.redtop', price: { coins: 350, credits: 70 }, source: 'store', rarity: 'rare', set: 'redtop', drop: utc(2026, 10, 19), preview: { k: 'frontpage', cols: 1, hed: 'wood', kicker: '#C8102E', rule: 'thick', paper: '#FFFFFF', ink: '#15130F' } },
+  { id: 'fp.wire', kind: 'frontpage', nameKey: 'eco.items.fp.wire', price: { credits: 110 }, source: 'store', rarity: 'epic', set: 'wire', drop: utc(2026, 11, 2), preview: { k: 'frontpage', cols: 2, hed: 'mono', kicker: '#35C3E6', rule: 'single', paper: '#0E1A20', ink: '#E6F7FC' } },
+  { id: 'fp.gilt', kind: 'frontpage', nameKey: 'eco.items.fp.gilt', price: { credits: 280 }, source: 'store', rarity: 'legendary', set: 'gilt', drop: utc(2026, 12, 7), preview: { k: 'frontpage', cols: 2, hed: 'serif', kicker: '#B8830B', rule: 'double', paper: '#F4EFE4', ink: '#3A2600' } },
+];
+
+// ---------------------------------------------------------------- earned-only items (never purchasable, never gifted)
+// Story chapter completions, the Tier One rank, long streaks, rivalry trophies, a referred trio, Deadline Day Live.
+// lib/earned.ts evaluates `earn` against the save and grants into save.owned; the collection book shows how.
+const EARNED: Item[] = [
+  { id: 'st.ch1', kind: 'flair', nameKey: 'eco.items.st.ch1', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 1 }, preview: { k: 'flair', g: '¶', c: '#2657C9' } },
+  { id: 'st.ch2', kind: 'ink', nameKey: 'eco.items.st.ch2', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 2 }, preview: { k: 'ink', c: '#5B3E96' } },
+  { id: 'st.ch3', kind: 'frame', nameKey: 'eco.items.st.ch3', price: {}, source: 'earned', rarity: 'epic', set: 'story', earn: { via: 'story', n: 3 }, preview: { k: 'frame', c: '#1B1A17', c2: '#FBF6EA', pat: 'double' } },
+  { id: 'st.ch4', kind: 'poster', nameKey: 'eco.items.st.ch4', price: {}, source: 'earned', rarity: 'epic', set: 'story', earn: { via: 'story', n: 4 }, preview: { k: 'poster', c: '#5B3E96', c2: '#F4EFE4', style: 'tape' } },
+  { id: 'st.ch5', kind: 'byline', nameKey: 'eco.items.st.ch5', price: {}, source: 'earned', rarity: 'legendary', set: 'story', earn: { via: 'story', n: 5 }, preview: { k: 'byline', bg: '#1B1A17', ink: '#FBF6EA', accent: '#D9913A', rule: 'double', face: 'display', tex: 'foil' } },
+  { id: 'rk.chief', kind: 'presspass', nameKey: 'eco.items.rk.chief', price: {}, source: 'earned', rarity: 'epic', set: 'rank', earn: { via: 'rank', ref: 'chief' }, preview: { k: 'presspass', c1: '#3A2600', c2: '#15130F', ink: '#FFD35C', stripe: '#F7B928' } },
+  { id: 'rk.tierone', kind: 'byline', nameKey: 'eco.items.rk.tierone', price: {}, source: 'earned', rarity: 'legendary', set: 'rank', earn: { via: 'rank', ref: 'tierone' }, preview: { k: 'byline', bg: '#15130F', ink: '#F4EFE4', accent: '#FF5A36', rule: 'thick', face: 'cond', tex: 'halftone' } },
+  { id: 'sk.30', kind: 'ink', nameKey: 'eco.items.sk.30', price: {}, source: 'earned', rarity: 'rare', set: 'streak', earn: { via: 'streak', n: 30 }, preview: { k: 'ink', c: '#FF5A36' } },
+  { id: 'sk.100', kind: 'presspass', nameKey: 'eco.items.sk.100', price: {}, source: 'earned', rarity: 'legendary', set: 'streak', earn: { via: 'streak', n: 100 }, preview: { k: 'presspass', c1: '#FF5A36', c2: '#C9381A', ink: '#FFF3E0', stripe: '#FFD35C' } },
+  { id: 'rv.tabloid', kind: 'flair', nameKey: 'eco.items.rv.tabloid', price: {}, source: 'earned', rarity: 'epic', set: 'rivalry', earn: { via: 'rivalry', ref: 'tabloid' }, preview: { k: 'flair', g: '♛', c: '#C8102E' } },
+  { id: 'rv.itk', kind: 'flair', nameKey: 'eco.items.rv.itk', price: {}, source: 'earned', rarity: 'epic', set: 'rivalry', earn: { via: 'rivalry', ref: 'itk' }, preview: { k: 'flair', g: '♛', c: '#35C3E6' } },
+  { id: 'rv.insider', kind: 'flair', nameKey: 'eco.items.rv.insider', price: {}, source: 'earned', rarity: 'epic', set: 'rivalry', earn: { via: 'rivalry', ref: 'insider' }, preview: { k: 'flair', g: '♛', c: '#7147D6' } },
+  { id: 'rf.3', kind: 'lamp', nameKey: 'eco.items.rf.3', price: {}, source: 'earned', rarity: 'rare', set: 'referral', earn: { via: 'referral', n: 3 }, preview: { k: 'lamp', glow: '#7FCB6A', pool: '#15260F', warmth: 'cool' } },
+  { id: 'dd.2027-02-02', kind: 'masthead', nameKey: 'eco.items.dd.winter', nameVars: { y: '’27' }, price: {}, source: 'earned', rarity: 'epic', set: 'ddlive', earn: { via: 'ddlive', ref: '2027-02-02' }, preview: { k: 'masthead', bg: '#0E2231', ink: '#FFD35C', face: 'cond', rule: 'thick', orn: '⏱' } },
+  { id: 'dd.2027-09-01', kind: 'poster', nameKey: 'eco.items.dd.summer', nameVars: { y: '’27' }, price: {}, source: 'earned', rarity: 'epic', set: 'ddlive', earn: { via: 'ddlive', ref: '2027-09-01' }, preview: { k: 'poster', c: '#FFD35C', c2: '#2A1206', style: 'neon' } },
 ];
 
 // ---------------------------------------------------------------- season-limited sets (generated per season id)
-// One byline design, one masthead and one poster frame per season, sold for credits only inside the season window.
-// Ids carry the year, so "winter-2027.by" is gone for good on 3 Feb 2027; next winter's set is a different item.
+// Per season: a byline design, a masthead, a poster frame, a headline font, a lamp and a feed skin, sold for credits
+// only inside the season window. Ids carry the year, so "winter-2027.by" is gone for good on 3 Feb 2027 (unless the
+// vault brings it back for a week); next winter's set is a different item. This is the template every future season
+// fills: add a SeasonKey block and the four years of ids exist at once.
 type Slot = Omit<Item, 'id' | 'nameKey' | 'nameVars' | 'window' | 'set' | 'source'>;
-const SEASON_NEW: Record<SeasonKey, Record<'by' | 'mh' | 'po', Slot>> = {
+export const SEASON_SLOTS = ['by', 'mh', 'po', 'hd', 'lp', 'fs'] as const;
+export type SeasonSlot = typeof SEASON_SLOTS[number];
+const SEASON_NEW: Record<SeasonKey, Record<SeasonSlot, Slot>> = {
   rumour: {
     by: { kind: 'byline', price: { credits: 180 }, rarity: 'epic', preview: { k: 'byline', bg: '#2B1C11', ink: '#F2E3C9', accent: '#D9913A', rule: 'double', face: 'display', tex: 'halftone' } },
     mh: { kind: 'masthead', price: { credits: 160 }, rarity: 'epic', preview: { k: 'masthead', bg: '#F2E3C9', ink: '#3A2310', face: 'display', rule: 'double', orn: '❝' } },
     po: { kind: 'poster', price: { credits: 150 }, rarity: 'epic', preview: { k: 'poster', c: '#D9913A', c2: '#3A2310', style: 'gilt' } },
+    hd: { kind: 'headline', price: { credits: 120 }, rarity: 'epic', preview: { k: 'headline', face: 'serif', ink: '#D9913A' } },
+    lp: { kind: 'lamp', price: { credits: 120 }, rarity: 'epic', preview: { k: 'lamp', glow: '#D9913A', pool: '#2B1C11', warmth: 'warm' } },
+    fs: { kind: 'feedskin', price: { credits: 120 }, rarity: 'epic', preview: { k: 'feedskin', style: 'memo', rule: '#D9913A', bg: '#F2E3C9', ink: '#3A2310' } },
   },
   winter: {
     by: { kind: 'byline', price: { credits: 180 }, rarity: 'epic', preview: { k: 'byline', bg: '#0E2231', ink: '#DDEFF8', accent: '#5BB8E8', rule: 'single', face: 'cond', tex: 'halftone' } },
     mh: { kind: 'masthead', price: { credits: 160 }, rarity: 'epic', preview: { k: 'masthead', bg: '#DDEFF8', ink: '#1B3F66', face: 'display', rule: 'thick', orn: '❄' } },
     po: { kind: 'poster', price: { credits: 150 }, rarity: 'epic', preview: { k: 'poster', c: '#5BB8E8', c2: '#0E2231', style: 'neon' } },
+    hd: { kind: 'headline', price: { credits: 120 }, rarity: 'epic', preview: { k: 'headline', face: 'stencil', upper: true, ink: '#5BB8E8' } },
+    lp: { kind: 'lamp', price: { credits: 120 }, rarity: 'epic', preview: { k: 'lamp', glow: '#9AD6F5', pool: '#0E2231', warmth: 'cool' } },
+    fs: { kind: 'feedskin', price: { credits: 120 }, rarity: 'epic', preview: { k: 'feedskin', style: 'ticker', rule: '#5BB8E8', bg: '#0E2231', ink: '#DDEFF8' } },
   },
   spring: {
     by: { kind: 'byline', price: { credits: 180 }, rarity: 'epic', preview: { k: 'byline', bg: '#F6FBF1', ink: '#15260F', accent: '#C2477A', rule: 'double', face: 'display' } },
     mh: { kind: 'masthead', price: { credits: 160 }, rarity: 'epic', preview: { k: 'masthead', bg: '#15260F', ink: '#F2A7C3', face: 'display', rule: 'single', orn: '✿' } },
     po: { kind: 'poster', price: { credits: 150 }, rarity: 'epic', preview: { k: 'poster', c: '#7FCB6A', c2: '#F2A7C3', style: 'ticket' } },
+    hd: { kind: 'headline', price: { credits: 120 }, rarity: 'epic', preview: { k: 'headline', face: 'slab', ink: '#C2477A' } },
+    lp: { kind: 'lamp', price: { credits: 120 }, rarity: 'epic', preview: { k: 'lamp', glow: '#F2A7C3', pool: '#15260F', warmth: 'cool' } },
+    fs: { kind: 'feedskin', price: { credits: 120 }, rarity: 'epic', preview: { k: 'feedskin', style: 'memo', rule: '#7FCB6A', bg: '#F6FBF1', ink: '#15260F' } },
   },
   summer: {
     by: { kind: 'byline', price: { credits: 180 }, rarity: 'epic', preview: { k: 'byline', bg: '#FFF3E0', ink: '#2A1206', accent: '#E0552A', rule: 'thick', face: 'cond' } },
     mh: { kind: 'masthead', price: { credits: 160 }, rarity: 'epic', preview: { k: 'masthead', bg: '#E0552A', ink: '#FFF3E0', face: 'cond', rule: 'thick', orn: '☀' } },
     po: { kind: 'poster', price: { credits: 150 }, rarity: 'epic', preview: { k: 'poster', c: '#FFD35C', c2: '#E0552A', style: 'tape' } },
+    hd: { kind: 'headline', price: { credits: 120 }, rarity: 'epic', preview: { k: 'headline', face: 'wood', upper: true, ink: '#E0552A' } },
+    lp: { kind: 'lamp', price: { credits: 120 }, rarity: 'epic', preview: { k: 'lamp', glow: '#FFB02E', pool: '#2A1206', warmth: 'warm' } },
+    fs: { kind: 'feedskin', price: { credits: 120 }, rarity: 'epic', preview: { k: 'feedskin', style: 'redtop', rule: '#E0552A', bg: '#FFF3E0', ink: '#2A1206' } },
   },
 };
 export const GOLD_CREDITS = 350; // exactly the €4.99 credit pack (lib/wallet.ts CREDIT_PACKS)
-const SEASON_RE = /^((rumour|winter|spring|summer)-(\d{4}))\.(by|mh|po)$/;
+const SEASON_RE = /^((rumour|winter|spring|summer)-(\d{4}))\.(by|mh|po|hd|lp|fs)$/;
 const GOLD_RE = /^gold\.((rumour|winter|spring|summer)-(\d{4}))$/;
 function seasonNew(id: string): Item | null {
   const m = SEASON_RE.exec(id); if (!m) return null;
   const def = seasonById(m[1]); if (!def) return null;
-  const slot = SEASON_NEW[m[2] as SeasonKey][m[4] as 'by' | 'mh' | 'po'];
-  return { ...slot, id, source: 'store', set: m[1], window: { from: def.start, to: def.end }, nameKey: 'eco.items.season.' + m[2] + '.' + m[4], nameVars: { y: '’' + m[3].slice(2) } };
+  const slot = SEASON_NEW[m[2] as SeasonKey][m[4] as SeasonSlot];
+  const vault = VAULT.filter((v) => v.id === id).map((v) => ({ from: v.from, to: v.to }));
+  return { ...slot, id, source: 'store', set: m[1], window: { from: def.start, to: def.end }, drop: def.start, ...(vault.length ? { vault } : {}), nameKey: 'eco.items.season.' + m[2] + '.' + m[4], nameVars: { y: '’' + m[3].slice(2) } };
 }
 function goldItem(id: string): Item | null {
   const m = GOLD_RE.exec(id); if (!m) return null;
   const def = seasonById(m[1]); if (!def) return null;
-  return { id, kind: 'gold', nameKey: 'eco.items.gold', nameVars: { s: def.nameKey, y: m[3] }, descKey: 'eco.items.goldD', price: { credits: GOLD_CREDITS }, source: 'store', rarity: 'epic', set: m[1], window: { from: def.start, to: def.end }, preview: { k: 'gold', season: m[1] } };
+  return { id, kind: 'gold', nameKey: 'eco.items.gold', nameVars: { s: def.nameKey, y: m[3] }, descKey: 'eco.items.goldD', price: { credits: GOLD_CREDITS }, source: 'store', rarity: 'epic', set: m[1], window: { from: def.start, to: def.end }, drop: def.start, preview: { k: 'gold', season: m[1] } };
 }
+
+// ---------------------------------------------------------------- the vault: "back for one week"
+// A season-limited item can return for exactly one ISO week, at its usual price, once a season at most, never in the
+// season it belongs to. The list is data (remote config `vault[]` replaces it); honest by construction: the item, its
+// price and its dates are all shown, and `validateCatalog()` refuses a vault window longer than seven days.
+export interface VaultReturn { id: string; from: number; to: number }
+export const VAULT_MAX_DAYS = 7;
+let VAULT: VaultReturn[] = [
+  { id: 'summer-2026.mh', from: utc(2026, 9, 28), to: utc(2026, 10, 5) },
+  { id: 'spring-2026.by', from: utc(2026, 10, 12), to: utc(2026, 10, 19) },
+  { id: 'winter-2026.po', from: utc(2026, 11, 16), to: utc(2026, 11, 23) },
+  { id: 'summer-2026.by', from: utc(2027, 3, 1), to: utc(2027, 3, 8) },
+];
+export const vaultList = (): VaultReturn[] => VAULT;
 
 // ---------------------------------------------------------------- legacy cosmetics (lib/season.ts), same ids
 const RARITY_LEGACY = (c: Cosmetic): Rarity => {
@@ -176,6 +240,7 @@ export function fromLegacy(c: Cosmetic): Item {
     source: typeof c.price === 'number' ? 'store' : c.price, rarity: RARITY_LEGACY(c),
     set: c.season || (c.id.startsWith('ev.') ? 'event' : undefined),
     window: def && c.price === 'gold' ? { from: def.start, to: def.end } : undefined,
+    ...(def ? { drop: def.start } : {}),
     preview: previewLegacy(c),
   };
 }
@@ -184,24 +249,36 @@ export const legacy = (it: Item | string): Cosmetic | null => seasonCosmetic(typ
 
 // ---------------------------------------------------------------- lookups
 export function item(id: string): Item | null {
-  if (isStandard(id)) { const k = id.slice(4) as Kind; return STD[k] || null; }
-  const n = NEW.find((x) => x.id === id); if (n) return n;
+  if (isStandard(id)) { const k = id.slice(4); return isKind(k) ? STD[k] : null; }
+  const n = NEW.find((x) => x.id === id) || EARNED.find((x) => x.id === id); if (n) return n;
   return seasonNew(id) || goldItem(id) || (() => { const c = seasonCosmetic(id); return c ? fromLegacy(c) : null; })();
 }
-export const inWindow = (it: Item, ms = Date.now()) => !it.window || (ms >= it.window.from && ms < it.window.to);
-export const onSale = (it: Item, ms = Date.now()) => it.source === 'store' && inWindow(it, ms) && (it.price.coins != null || it.price.credits != null);
-/** This season's limited set: the three credits items plus the season lane's track/Gold items. */
+export const earnedItems = (): Item[] => EARNED.slice();
+/** Every sale window of an item: its season window, then any vault returns. Empty = evergreen. */
+export const windowsOf = (it: Item): SaleWindow[] => [...(it.window ? [it.window] : []), ...(it.vault || [])];
+/** The sale window open at `ms`, or null. Evergreen items have none (and are always "in window"). */
+export const activeWindow = (it: Item, ms = Date.now()): SaleWindow | null => windowsOf(it).find((w) => ms >= w.from && ms < w.to) || null;
+export const inWindow = (it: Item, ms = Date.now()) => windowsOf(it).length === 0 || !!activeWindow(it, ms);
+/** True while a vault return (not the original season window) is the open window. */
+export const inVault = (it: Item, ms = Date.now()) => { const w = activeWindow(it, ms); return !!w && !!it.vault && it.vault.includes(w); };
+export const dropped = (it: Item, ms = Date.now()) => it.drop == null || it.drop <= ms;
+export const onSale = (it: Item, ms = Date.now()) => it.source === 'store' && dropped(it, ms) && inWindow(it, ms) && (it.price.coins != null || it.price.credits != null);
+export const isEarnedOnly = (it: Item) => it.source === 'earned';
+/** This season's limited set: the six credits items plus Gold and the season lane's track/Gold items. */
 export function seasonSet(sid = seasonAt().id): Item[] {
-  return [...(['by', 'mh', 'po'] as const).map((k) => seasonNew(sid + '.' + k)!), goldItem('gold.' + sid)!, ...seasonItems(sid).map(fromLegacy)].filter(Boolean);
+  return [...SEASON_SLOTS.map((k) => seasonNew(sid + '.' + k)!), goldItem('gold.' + sid)!, ...seasonItems(sid).map(fromLegacy)].filter(Boolean);
 }
-/** Everything with a price today (evergreen + this season's set), catalog order. */
+/** Everything with a price today (evergreen + this season's set + vault returns), catalog order. */
 export function storeCatalog(ms = Date.now()): Item[] {
-  return [...seasonStore().map(fromLegacy), ...NEW, ...seasonSet(seasonAt(ms).id)].filter((x) => onSale(x, ms));
+  const vault = VAULT.map((v) => item(v.id)).filter((x): x is Item => !!x);
+  const seen = new Set<string>();
+  return [...seasonStore().map(fromLegacy), ...NEW, ...seasonSet(seasonAt(ms).id), ...vault].filter((x) => onSale(x, ms) && !seen.has(x.id) && seen.add(x.id));
 }
-/** Every item that can exist right now (for a tab): the standard look, the store, then this season's earned items. */
+/** Every item that can exist right now (for a tab): the standard look, the store, this season's set, the earned ones. */
 export function itemsOf(kind: Kind, ms = Date.now()): Item[] {
   const sid = seasonAt(ms).id;
-  const all = [STD[kind], ...seasonStore().map(fromLegacy), ...NEW, ...seasonSet(sid), ...seasonCosmeticsAll()];
+  const vault = VAULT.filter((v) => v.to > ms - 90 * DAY).map((v) => item(v.id)).filter((x): x is Item => !!x);
+  const all = [STD[kind], ...seasonStore().map(fromLegacy), ...NEW.filter((x) => dropped(x, ms)), ...seasonSet(sid), ...vault, ...EARNED, ...seasonCosmeticsAll()];
   const seen = new Set<string>();
   return all.filter((x) => x.kind === kind && !seen.has(x.id) && seen.add(x.id));
 }
@@ -209,6 +286,8 @@ export function itemsOf(kind: Kind, ms = Date.now()): Item[] {
 function seasonCosmeticsAll(): Item[] {
   return ['ev.rival', 'ev.medical', 'ev.frenzy', 'ev.barber', 'ev.local'].map((id) => seasonCosmetic(id)).filter((c): c is Cosmetic => !!c).map(fromLegacy);
 }
+/** Items that are part of a named set (evergreen families, seasons, earned families). */
+export const setOf = (set: string, ms = Date.now()): Item[] => KINDS.flatMap((k) => itemsOf(k, ms)).filter((x) => x.set === set);
 
 // ---------------------------------------------------------------- the featured rotation
 // Three items a week, deterministic by ISO week, one per kind, never the same item two weeks running, at an honest
@@ -240,46 +319,95 @@ export function priceNow(it: Item, ms = Date.now()): Price {
 }
 
 // ---------------------------------------------------------------- remote config (v4 adapter point)
-// The api lane's config.get can hand over `{ items?: Item[]; featured?: string[] }`. Items replace same-id entries
-// (price or window changes) or add new ones; `featured` pins ids. Additive only: it can never remove an owned id.
+// The api lane's config.get hands over `{ looks?: Item[]; featured?: string[]; vault?: VaultReturn[] }` (lib/drops.ts
+// installRemoteDrops wires it). Looks replace same-id entries (price, window or drop changes) or add new ones; earned
+// looks go to the earned list; `featured` pins ids; `vault` replaces the return calendar. Additive only: it can never
+// remove an owned id, and every look is validated first, so an effect can't arrive from the server either.
 let remote: { items: Item[]; featured: string[] } = { items: [], featured: [] };
-export function applyRemoteCatalog(cfg: { items?: Item[]; featured?: string[] }) {
-  remote = { items: (cfg.items || []).filter((x) => validateItem(x).length === 0), featured: cfg.featured || [] };
-  for (const it of remote.items) { const k = NEW.findIndex((x) => x.id === it.id); if (k >= 0) NEW[k] = it; else NEW.push(it); }
+export function applyRemoteCatalog(cfg: { items?: Item[]; looks?: Item[]; featured?: string[]; vault?: { id: string; from: number | string; to: number | string }[] }) {
+  const looks = (cfg.looks || cfg.items || []).filter((x) => validateItem(x).length === 0);
+  remote = { items: looks, featured: cfg.featured || [] };
+  for (const it of looks) {
+    const list = it.source === 'earned' ? EARNED : NEW;
+    const k = list.findIndex((x) => x.id === it.id); if (k >= 0) list[k] = it; else list.push(it);
+  }
   for (const it of NEW) it.featured = remote.featured.includes(it.id) || undefined;
+  if (cfg.vault) {
+    const ms = (x: number | string) => (typeof x === 'number' ? x : Date.parse(String(x).length === 10 ? x + 'T00:00:00Z' : x));
+    const v = cfg.vault.map((x) => ({ id: x.id, from: ms(x.from), to: ms(x.to) })).filter((x) => Number.isFinite(x.from) && Number.isFinite(x.to) && x.from < x.to && x.to - x.from <= VAULT_MAX_DAYS * DAY + 1 && !!item(x.id));
+    VAULT = v;
+  }
 }
 
-// ---------------------------------------------------------------- validation (scripts/economy-test.mjs)
+// ---------------------------------------------------------------- validation (scripts/economy-test.mjs, scripts/longtail-test.mjs)
 const RARITIES: Rarity[] = ['common', 'rare', 'epic', 'legendary'];
-const SOURCES: Source[] = ['store', 'track', 'gold', 'event', 'standard'];
+const SOURCES: Source[] = ['store', 'track', 'gold', 'event', 'standard', 'earned'];
 export function validateItem(it: Item): string[] {
   const e: string[] = [];
   const extra = Object.keys(it).filter((k) => !(ITEM_KEYS as readonly string[]).includes(k));
   if (extra.length) e.push(`${it.id}: unknown keys ${extra.join(',')} (an item can carry no effect)`);
   if (!it.id || !/^[a-z0-9.’'\-]+$/i.test(it.id)) e.push(`${it.id}: bad id`);
-  if (!(KINDS as string[]).includes(it.kind)) e.push(`${it.id}: bad kind ${it.kind}`);
+  if (!isKind(it.kind)) e.push(`${it.id}: bad kind ${it.kind}`);
   if (!it.nameKey) e.push(`${it.id}: no nameKey`);
   if (!RARITIES.includes(it.rarity)) e.push(`${it.id}: bad rarity`);
   if (!SOURCES.includes(it.source)) e.push(`${it.id}: bad source`);
-  const pk = Object.keys(it.price).filter((k) => k !== 'coins' && k !== 'credits');
-  if (pk.length) e.push(`${it.id}: price has ${pk.join(',')}`);
-  for (const k of ['coins', 'credits'] as const) { const v = it.price[k]; if (v != null && (!Number.isInteger(v) || v <= 0)) e.push(`${it.id}: ${k} price must be a positive integer`); }
-  const priced = it.price.coins != null || it.price.credits != null;
+  const pk = Object.keys(it.price || {}).filter((k) => k !== 'coins' && k !== 'credits');
+  if (!it.price) e.push(`${it.id}: no price object`); else if (pk.length) e.push(`${it.id}: price has ${pk.join(',')}`);
+  for (const k of ['coins', 'credits'] as const) { const v = it.price?.[k]; if (v != null && (!Number.isInteger(v) || v <= 0)) e.push(`${it.id}: ${k} price must be a positive integer`); }
+  const priced = it.price?.coins != null || it.price?.credits != null;
   if (it.source === 'store' && !priced) e.push(`${it.id}: store item without a price`);
   if (it.source !== 'store' && priced) e.push(`${it.id}: ${it.source} item with a price`);
-  if (it.window && !(it.window.from < it.window.to)) e.push(`${it.id}: bad window`);
+  for (const w of windowsOf(it)) if (!(Number.isFinite(w.from) && Number.isFinite(w.to) && w.from < w.to)) e.push(`${it.id}: bad window`);
+  for (const w of it.vault || []) { if (w.to - w.from > VAULT_MAX_DAYS * DAY + 1) e.push(`${it.id}: a vault return is one week at most`); if (it.window && w.from < it.window.to) e.push(`${it.id}: a vault return must come after the season window`); }
+  if (it.vault && !it.window) e.push(`${it.id}: only a season-limited item can return from the vault`);
+  if (it.drop != null && !Number.isFinite(it.drop)) e.push(`${it.id}: bad drop date`);
   if (!it.preview || it.preview.k !== it.kind) e.push(`${it.id}: preview kind mismatch`);
   if (isStandard(it.id) !== (it.source === 'standard')) e.push(`${it.id}: std ids are the standard source, and only they are`);
+  if ((it.source === 'earned') !== !!it.earn) e.push(`${it.id}: earned items carry an earn rule, and only they do`);
+  if (it.earn) {
+    const ek = Object.keys(it.earn).filter((k) => !['via', 'n', 'ref'].includes(k));
+    if (ek.length) e.push(`${it.id}: earn has ${ek.join(',')}`);
+    if (!EARN_VIAS.includes(it.earn.via)) e.push(`${it.id}: bad earn.via`);
+    if (it.earn.n != null && (!Number.isInteger(it.earn.n) || it.earn.n <= 0)) e.push(`${it.id}: earn.n must be a positive integer`);
+    if (it.earn.ref != null && !/^[a-z0-9\-]{1,24}$/i.test(it.earn.ref)) e.push(`${it.id}: bad earn.ref`);
+  }
+  if (it.preview && isKind(it.kind)) e.push(...validatePreview(it));
+  return e;
+}
+// A preview is colours, faces and cues: strings from closed lists. A number that isn't a column count is refused.
+const HEX = /^#[0-9a-f]{6}$/i;
+function validatePreview(it: Item): string[] {
+  const e: string[] = []; const p = it.preview as Record<string, unknown>;
+  const col = (k: string) => { if (p[k] != null && !HEX.test(String(p[k]))) e.push(`${it.id}: preview.${k} is not a colour`); };
+  switch (it.preview.k) {
+    case 'headline': if (!['wood', 'serif', 'slab', 'stencil', 'mono'].includes(it.preview.face)) e.push(`${it.id}: bad headline face`); col('ink'); break;
+    case 'lamp': col('glow'); col('pool'); if (!['warm', 'cool', 'neon'].includes(it.preview.warmth)) e.push(`${it.id}: bad lamp warmth`); break;
+    case 'ringpack': if (!it.preview.rings || typeof it.preview.rings !== 'object') e.push(`${it.id}: ring pack needs rings`); else for (const [src, cue] of Object.entries(it.preview.rings)) if (!['kitman', 'barber', 'agent', 'spotter', 'physio', 'leak'].includes(src) || typeof cue !== 'string') e.push(`${it.id}: bad ring for ${src}`); break;
+    case 'feedskin': if (!['wire', 'ticker', 'memo', 'redtop', 'night'].includes(it.preview.style)) e.push(`${it.id}: bad feed skin style`); col('rule'); col('bg'); col('ink'); break;
+    case 'frontpage': if (![1, 2, 3].includes(it.preview.cols)) e.push(`${it.id}: front page columns are 1–3`); col('kicker'); col('paper'); col('ink'); break;
+    case 'byline': col('bg'); col('ink'); col('accent'); break;
+    case 'masthead': col('bg'); col('ink'); break;
+    case 'sharecard': col('paper'); col('ink'); col('accent'); break;
+    case 'presspass': col('c1'); col('c2'); col('ink'); col('stripe'); break;
+    case 'poster': col('c'); col('c2'); break;
+    case 'ink': col('c'); break;
+    case 'flair': col('c'); break;
+    default: break;
+  }
   return e;
 }
 export function validateCatalog(ms = Date.now()): string[] {
-  const errs: string[] = [];
+  const errs: string[] = [...validateRegistry()];
   const ids = new Set<string>();
   const all = KINDS.flatMap((k) => itemsOf(k, ms));
   for (const it of all) { if (ids.has(it.id)) errs.push(`${it.id}: duplicate id`); ids.add(it.id); errs.push(...validateItem(it)); }
   for (const k of KINDS) if (!all.some((x) => x.id === 'std.' + k)) errs.push(`no standard item for ${k}`);
   // Every legacy id still resolves through the catalog, unchanged.
   for (const c of [...seasonStore(), ...seasonItems(seasonAt(ms).id)]) { const it = item(c.id); if (!it || it.kind !== c.kind) errs.push(`legacy ${c.id} lost`); }
+  // Every vault return names a season-limited item, lasts a week at most, and never overlaps that item's own season.
+  for (const v of VAULT) { const it = item(v.id); if (!it || !it.window) errs.push(`vault ${v.id}: not a season-limited item`); else if (v.from < it.window.to) errs.push(`vault ${v.id}: inside its own season`); if (v.to - v.from > VAULT_MAX_DAYS * DAY + 1) errs.push(`vault ${v.id}: longer than a week`); }
+  // Earned-only items are never on sale, whatever the date, and never carry a window (a rule is not a countdown).
+  for (const it of EARNED) { if (onSale(it, ms) || onSale(it, ms + 400 * DAY)) errs.push(`${it.id}: earned item on sale`); if (it.window || it.vault) errs.push(`${it.id}: earned item with a window`); }
   const f = featuredView(ms);
   if (f.items.filter((x) => !x.pinned).length !== 3) errs.push('featured rotation is not three items');
   for (const x of f.items) for (const k of ['coins', 'credits'] as const) if (x.was[k] != null && (x.price[k]! > x.was[k]!)) errs.push(`${x.item.id}: featured price above the usual price`);
