@@ -18,7 +18,7 @@ together with your change.
 ---
 
 ## 2026-09-30 · saifsaber · New app icons for Tier One and The Gaffer (Android)
-- **What changed:** Both Android launcher icons and Play Store icons are redrawn in each game's new look. Tier One: a tilted newsprint card with a Newsreader "T1" and a vermilion rule on the dark newsroom desk, with a gold dot. The Gaffer: the slanted panel and "G" kept, recoloured to mint on floodlit dark green with pitch lines (was purple). SVG sources in `store/icon.svg`; PNGs rendered with the site fonts. No game code changed.
+- **What changed:** Both Android launcher icons and Play Store icons are redrawn in each game's new look. Tier One: a tilted newsprint card with a Newsreader "T1" and a vermilion rule on the dark newsroom desk, with a gold dot. The Gaffer: matches the v2.1 title-screen wordmark: "THE" in letterspaced mint over a wide Archivo 900 "G" with the white-to-mint gradient, on the dark teal ground (was a purple slanted panel). SVG sources in `store/icon.svg`; PNGs rendered with the site fonts. No game code changed.
 - **Files:** `games/tier-one/app/src/main/res/mipmap-*/ic_launcher.png`, `games/tier-one/store/{play-store-icon-512.png,icon.svg}`, `games/the-gaffer/android/app/src/main/res/mipmap-*/ic_launcher.png`, `games/the-gaffer/android/store/{play-store-icon-512.png,icon.svg}`, `.claude/requests.md`
 - **Heads-up for the team:** Tier One's icon is a game path: waiting for Mostafa's OK (request filed), and the published APK only changes when he does a release. The Gaffer: when this reaches `main`, its workflow builds and publishes a new APK (android/ changed), updates its feed and asks Vercel to deploy, so installed apps will be offered the update.
 
