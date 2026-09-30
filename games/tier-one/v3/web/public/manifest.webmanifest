@@ -1,0 +1,26 @@
+{
+  "name": "Tier One",
+  "short_name": "Tier One",
+  "description": "The transfer-journalist game. Five sagas, seven days, one window.",
+  "id": "/tier-one/",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "en",
+  "dir": "auto",
+  "background_color": "#F2EEE5",
+  "theme_color": "#F2EEE5",
+  "categories": ["games", "sports", "news"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ],
+  "shortcuts": [
+    { "name": "Today's Daily", "url": "./?tab=daily&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "The Wire", "url": "./?tab=wire&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Story", "url": "./?tab=story&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
