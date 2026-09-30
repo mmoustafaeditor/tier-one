@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '2.4.1',
-  versionCode: 16,
+  version: '3.1.0',
+  versionCode: 17,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'A new app icon in the Tier One newsroom look. The game itself is unchanged from 2.4.',
+  changelog: 'Tier One 3.1 comes to the app: the newsroom redesign with Story mode, Today\'s five, the Wire, Friends and full-screen source calls, plus a new app icon. Needs an internet connection.',
 };
 
 export default function handler(req, res) {
