@@ -213,7 +213,7 @@ function CaseFile({ ch, style }: { ch: Chapter; style?: CSSProperties }) {
   // Folded on phones (the hub stays one screen); a fresh lead opens it.
   const fresh = s.story?.inbox?.some((m) => !m.read && /^reveal\d$/.test(m.key));
   const [unfold, setUnfold] = useState(() => wide() || !!fresh);
-  return <section className={'sm-case g-card' + (solved ? ' is-solved' : '') + (unfold ? ' is-open' : '')} style={style} aria-labelledby="sm-case-h">
+  return <section className={'sm-case g-card' + (solved ? ' is-solved' : '') + (unfold ? ' is-open' : '') + (fresh ? ' is-fresh' : '')} style={style} aria-labelledby="sm-case-h">
     <button className="sm-case__h" aria-expanded={unfold} onClick={() => { sfx('ui.tap'); setUnfold(!unfold); }}>
       <span className="sm-case__ht"><h2 id="sm-case-h">{t('g.story.caseFile.title')}</h2><span className="g-mono">{t('g.story.caseFile.aside')}</span></span>
       <span className="sm-case__count g-num" aria-label={n + '/4'}>{n}<small>/4</small></span>
@@ -436,7 +436,7 @@ function ChapterScreen({ chrome, ch, onPrologue }: { chrome: Chrome; ch: Chapter
 const wide = () => typeof matchMedia !== 'undefined' && matchMedia('(min-width: 900px)').matches;
 function Drawer({ title, aside, hot, style, className, children }: { title: string; aside?: string; hot?: boolean; style?: CSSProperties; className?: string; children: ReactNode }) {
   const [open, setOpen] = useState(wide);
-  return <section className={'sm-box sm-drawer g-card g-card--desk' + (open ? ' is-open' : '') + (className ? ' ' + className : '')} style={style}>
+  return <section className={'sm-box sm-drawer g-card g-card--desk' + (open ? ' is-open' : '') + (hot ? ' is-fresh' : '') + (className ? ' ' + className : '')} style={style}>
     <button className="sm-drawer__h" aria-expanded={open} onClick={() => { sfx('ui.tap'); setOpen(!open); }}>
       <h2>{title}</h2>
       {aside && <span className={'g-mono sm-drawer__a' + (hot ? ' is-hot' : '')}>{aside}</span>}

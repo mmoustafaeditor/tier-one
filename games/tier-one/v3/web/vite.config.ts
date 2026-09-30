@@ -85,7 +85,9 @@ const publishWeb = (): Plugin => ({
     // every stylesheet, the manifest and icons, and the Latin fonts: what an offline open of Home and a practice window
     // needs. Other screens, Arabic and Latin-extended fonts and art are cached the first time they're used, so the
     // install stays small (~1 MB) and never crowds out a first tap on slow 4G.
-    const CORE = /^assets\/(index|vendor|boot|world|i18n|Window|scenes|Settings|Onboarding|screenbits|banter)-[\w-]{8}\.js$/;
+    // The play loop's route chunks ride along (Story → Window → Results → Wire / Feed / Rivals → Me), so a tab's first
+    // open never waits on the network and App's route stage only flashes on a cold, uncached first visit.
+    const CORE = /^assets\/(index|vendor|boot|world|i18n|Window|scenes|Settings|Onboarding|screenbits|banter|Story|Results|Wire|Connect|Me|Rooms|Practice|HowTo)-[\w-]{8}\.js$/;
     const shell = files.filter((f) => CORE.test(f) || /\.(css|webmanifest)$/.test(f) || f === 'index.html' || /^icons\//.test(f) || /-latin-[\w-]{8}\.woff2$/.test(f));
     const rev = (f: string) => sha(readFileSync(resolve(out, f))).slice(0, 8);
     const precache = shell.map((f) => ({ url: f, rev: /\/[\w.-]+-[\w-]{8}\.\w+$/.test(f) ? null : rev(f) }));
