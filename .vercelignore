@@ -10,3 +10,5 @@
 /data/curated
 /data/tests
 /data/*.md
+# Audit reports and evidence (repo-only)
+/audit-the-gaffer

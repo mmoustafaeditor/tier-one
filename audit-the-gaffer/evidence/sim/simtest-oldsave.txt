@@ -1,0 +1,1 @@
+{"SAVE_VERSION":8,"version":3,"tactics":{"line":1,"width":1,"tempo":1,"counter":false,"waste":false,"mark":null,"routine":0,"formation":"4-3-3","mentality":0,"pressing":1,"passing":1,"xi":null,"captain":null,"penalties":null,"freeKicks":null,"corners":null},"minute":90,"goals":[1,1],"stats":[[46,12,6,9,19,4,0],[54,10,3,6,15,2,0]],"xg":[2.05,1.42],"v":2}

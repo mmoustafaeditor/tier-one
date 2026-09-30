@@ -1,0 +1,21 @@
+ok   fog monotone and honest over 3000 players × K 10..100 (0 violations)
+  needs 4-3-3: CM:amber RW:amber 
+  needs 3-5-2: CM:amber
+ok   changing the shape changes the needs
+  picks: Andy Diouf CM 30% 66000000 | Nico Paz CM 30% 79000000 | Sergej Milinković-Savić CM 30% 26000000 | Giovane RW 30% 55000000 | Bruno Fernandes RW 65% 58000000 | Brajan Gruda RW 30% 44000000
+ok   bid waits for the next matchday
+  after md1: club us:,them:counter63000000 rival - K 0 → undefined
+  today: offer, rc.rivalBid, rc.counter, ask_listed
+  stage now: terms 
+  insult → patience 3 insulted,insulted
+  demand wage 340000 wage room 396300
+ok   meeting the demand signs him
+ok   instalments committed 0 (instalment deal: false)
+ok   spending room 84000000 → 16527575
+ok   invariants: 
+  instalment bid: terms ,accept
+ok   instalment committed 6600000; room 16909709 → 2459709
+  offers for us: none
+  threads: Yasin Ayari: bid>agreed>signed | Leon Goretzka: bid_expiring | John McGinn: bid_expiring | Taylor Harwood-Bellis: bid_need | Andy Diouf: bid>counter>agreed>signed | Aaron Wan-Bissaka: bid_need
+ok   invariants after 6 matchdays
+ok   v6 → v7: watched ≥ 2 md → K 80
