@@ -8,7 +8,7 @@
 //
 // The Daily is scored here: the client never holds the truth. Every request replays the stored action log through the
 // rules engine (_lib/engine.mjs), applies one new action and stores the log again.
-import { RULES, buildBoard, newGame, apply, replay, pub, resolve, isOver, finish, gridRow, OUT } from './_lib/engine.mjs';
+import { RULES, buildBoard, newGame, apply, replay, pub, resolve, isOver, finish, gridRow, OUT, truthAt } from './_lib/engine.mjs';
 import { compactWorld, buildCast } from './_lib/world.mjs';
 import { hashStr } from './_lib/rng.mjs';
 import { WIRE, marketOf, rumourState, wirePoints, hitRate, ghostRumour } from './_lib/wire.mjs';
@@ -29,6 +29,12 @@ const SESSION_TTL = 3 * DAY, ROOM_TTL = 90 * DAY, LB_DAY_TTL = 40 * DAY, LB_WEEK
 const DAILY_EPOCH = Date.parse('2026-09-01T00:00:00Z'); // Daily No. 1
 const DD_GRACE_MS = 4000;            // network grace on the Deadline Day clock
 const LB_TOP = 25, MAX_ROOM = 24, ROUND_OPEN_H = 48;
+// 3.4 the press box (GOTY.md §7.3): weekly rooms on the real calendar, room feeds, challenges, newsrooms, live presence.
+const WEEK_OPEN_H = 7 * 24, ROOM_FEED = 60, TAUNTS = 8, TAUNT_GAP = 45;
+const CH_TTL = 8 * DAY, CH_OPEN_MS = 24 * 3600e3, CH_MAX_RES = 20, CH_LOG_MAX = 160, CH_MINE = 20;
+const NR_TTL = 200 * DAY, NR_MAX = 20, NR_TOP = 10;
+const LIVE_WINDOW_S = 10 * 60, LIVE_TTL = 2 * DAY;
+const REP_TIERS = ['blogger', 'stringer', 'correspondent', 'chief', 'tierone'];
 const LEAGUE = { SIZE: 30, UP: 6, DOWN: 6, DIVS: ['stringer', 'reporter', 'correspondent', 'editor', 'tierone'], TIER_PTS: { T1: 30, T2: 20, T3: 12, T4: 6, SPIKED: 2 }, WIRE_CAP: 150 };
 const RATE_MAX = 900, RATE_WINDOW = 3600;
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -51,6 +57,31 @@ const devId = (d) => { const s = String(d == null ? '' : d); return /^[A-Za-z0-9
 const nickOk = (s) => !(/http|:\/\//i.test(s) || (s.includes('@') && !/^@[\w.]{1,15}$/.test(s)));
 const nickOf = (nick, dev) => { const n = clean(nick, 16); return n && nickOk(n) ? n : 'Journo-' + String(dev).slice(0, 4).toUpperCase(); };
 const roomCode = (c) => clean(c, 8).toUpperCase().replace(/[^A-Z0-9]/g, '');
+// A player's public id: what friends' ledgers key on across rooms, challenges and newsrooms. One-way from the device id.
+const pubId = (dev) => (hashStr((SALT || DEV_SALT) + '|pub|' + dev) >>> 0).toString(36).padStart(7, '0').slice(0, 8);
+const flairOf = (f) => { const s = clean(f, 24); return /^[a-z0-9][a-z0-9.\-]{1,23}$/i.test(s) ? s : ''; };
+const tierOf = (x) => (REP_TIERS.includes(x) ? x : '');
+const seedOf = (s) => { const x = clean(s, 12).toUpperCase(); return /^[A-Z0-9]{4,12}$/.test(x) ? x : ''; };
+const dayOf = (d) => { const s = clean(d, 10); return /^\d{4}-\d{2}-\d{2}$/.test(s) && s >= '2026-09-01' && s <= today() ? s : ''; };
+// A window's action log from the client (challenges): shape-checked, then replayed here so the score is ours.
+function parseLog(log) {
+  if (!Array.isArray(log) || log.length > CH_LOG_MAX) return null;
+  const out = []; for (const a of log) { const p = parseAct(a); if (!p) return null; out.push(p); }
+  return out;
+}
+function scoreLog(seed, log) {
+  const g = replay(buildBoard(seed, RULES), log, RULES);
+  if (!g || !isOver(g)) return null;
+  const r = resolve(g);
+  if (r.total < RULES.SCORE_MIN || r.total > RULES.SCORE_MAX) return null;
+  return { score: r.total, tier: r.tier, row: gridRow(r), ex: r.ex, hwg: hwgOf(r) };
+}
+// HERE WE GO cards (GOTY.md §2): right Done calls at Confirmed, by saga index.
+const hwgOf = (r) => r.per.filter((p) => p.right && p.call && p.call.o === 0 && p.call.s === 2).map((p) => p.i);
+const mondayOf = (day) => { const t = Date.parse(day + 'T00:00:00Z'); const dow = (new Date(t).getUTCDay() + 6) % 7; return t - dow * DAY_MS; };
+const roomStep = (room) => (room.cadence === 'weekly' ? 7 * DAY_MS : DAY_MS);
+const roomOpenH = (room) => (room.cadence === 'weekly' ? WEEK_OPEN_H : ROUND_OPEN_H);
+const roundOpens = (room, k) => room.created + k * roomStep(room);
 function code(n) { let s = ''; const b = new Uint8Array(n); crypto.getRandomValues(b); for (const x of b) s += ALPHA[x % ALPHA.length]; return s; }
 function secret() { const b = new Uint8Array(18); crypto.getRandomValues(b); return Buffer.from(b).toString('base64url'); }
 const ymd = (ms) => new Date(ms).toISOString().slice(0, 10);
@@ -126,12 +157,22 @@ async function settle(sc, who, sess, g, cast, nick) {
     await redis(cmds);
     if (first) await leagueAdd(who, nick, sc.day, LEAGUE.TIER_PTS[r.tier] || 0, 'daily');
     Object.assign(res, await rankInfo(sc.day, who));
+    // First to break it (GOTY.md §7.3): the act-time candidate stands only if that Confirmed call survived to the end.
+    const fk = 't1v3:live:first:' + sc.day, brk = await getJ(fk);
+    if (brk && brk.dev === who) { const p = r.per[brk.i]; if (!(p && p.right && p.call && p.call.s === 2)) await one('DEL', fk); }
   } else {
     const key = 'room:v3:' + sc.code + ':p:' + who, p = await getJ(key);
     if (p) { p.results[sc.round] = { score: r.total, tier: r.tier, ex: r.ex, row: res.row, at: Date.now() }; await setJ(key, p, ROOM_TTL); }
+    // The room feed: the call lands, and every HERE WE GO gets its own gold card.
+    const hwg = hwgOf(r).map((i) => cast.sagas[i] && cast.sagas[i].player ? cast.sagas[i].player.s || cast.sagas[i].player.n : '').filter(Boolean);
+    await roomFeed(sc.code, { t: 'filed', pid: who, nick, round: sc.round, score: r.total, tier: r.tier, ex: r.ex, row: res.row, hwg });
   }
   sess.res = res;
   return res;
+}
+async function roomFeed(code, ev) {
+  const k = 'room:v3:' + code + ':feed';
+  await redis([['LPUSH', k, JSON.stringify({ ...ev, at: Date.now() })], ['LTRIM', k, 0, ROOM_FEED - 1], ['EXPIRE', k, ROOM_TTL]]);
 }
 async function rankInfo(day, who) {
   const dk = 't1v3:lb:d:' + day, wk = 't1v3:lb:w:' + isoWeek(day);
@@ -155,9 +196,9 @@ async function scopeOf(b) {
     const room = JSON.parse(meta), p = JSON.parse(doc);
     if (!b.room.sec || b.room.sec !== p.sec) return { error: 'forbidden' };
     if (round >= room.rounds) return { error: 'round' };
-    const opens = room.created + round * DAY_MS;
+    const opens = roundOpens(room, round);
     if (Date.now() < opens) return { error: 'not open' };
-    if (Date.now() > opens + ROUND_OPEN_H * 3600e3 && !(p.results && p.results[round])) return { error: 'closed' };
+    if (Date.now() > opens + roomOpenH(room) * 3600e3 && !(p.results && p.results[round])) return { error: 'closed' };
     return { sc: { kind: 'r', code: c, round }, who: pid, nick: p.nick };
   }
   const dev = devId(b.dev);
@@ -207,6 +248,11 @@ const actions = {
     x.sess.log = x.g.log.slice();
     const extra = {};
     if (a[0] === 'a') extra.answer = x.g.clues[a[1]][x.g.clues[a[1]].length - 1];
+    // Live presence: a Confirmed call that is right as of today's truth is the day's "first to break it" candidate.
+    if (x.sc.kind === 'd' && a[0] === 'c' && a[3] === 2) {
+      const sg = x.g.board.sagas[a[1]];
+      if (sg && a[2] === truthAt(sg, x.g.day)) await one('SET', 't1v3:live:first:' + x.sc.day, JSON.stringify({ dev: x.who, nick: x.sess.nick || x.nick, i: a[1], at: Date.now() }), 'EX', LIVE_TTL, 'NX');
+    }
     if (isOver(x.g)) await settle(x.sc, x.who, x.sess, x.g, x.cast, x.sess.nick || x.nick);
     await setJ(x.key, x.sess, x.ttl);
     return view(x.sc, x.sess, x.g, x.cast, extra);
@@ -347,15 +393,20 @@ const actions = {
   },
 
   // ---- Friends rooms: Daily rules exactly, one shared board per round, scored here ----
+  // 3.4: a room is a press box. `cadence` 'weekly' (default) runs one round per ISO week from the Monday of creation,
+  // open all week; 'daily' is the 2.x room (a round a day, open 48 h). Players carry a public id, flair and rep tier.
   async 'room.create'(b) {
     const nick = clean(b.nick, 16), name = clean(b.name, 28) || 'Tier One room';
     const rounds = [5, 10, 20].includes(Number(b.rounds)) ? Number(b.rounds) : 5;
+    const cadence = b.cadence === 'daily' ? 'daily' : 'weekly';
     if (!nick || !nickOk(nick)) return { error: 'nick' };
     for (let i = 0; i < 8; i++) {
       const c = code(5), pid = code(10), sec = secret();
-      const room = { code: c, name, rounds, created: Date.parse(today() + 'T00:00:00Z'), host: pid };
+      const created = cadence === 'weekly' ? mondayOf(today()) : Date.parse(today() + 'T00:00:00Z');
+      const room = { code: c, name, rounds, created, host: pid, cadence, season: season(Date.now()), v: 2 };
       if (await one('SET', 'room:v3:' + c, JSON.stringify(room), 'EX', ROOM_TTL, 'NX')) {
-        await redis([['SET', 'room:v3:' + c + ':p:' + pid, JSON.stringify({ pid, nick, joined: Date.now(), results: [], sec }), 'EX', ROOM_TTL], ['SADD', 'room:v3:' + c + ':players', pid], ['EXPIRE', 'room:v3:' + c + ':players', ROOM_TTL]]);
+        await redis([['SET', 'room:v3:' + c + ':p:' + pid, JSON.stringify(roomPlayer(pid, nick, sec, b)), 'EX', ROOM_TTL], ['SADD', 'room:v3:' + c + ':players', pid], ['EXPIRE', 'room:v3:' + c + ':players', ROOM_TTL]]);
+        await roomFeed(c, { t: 'open', pid, nick, name });
         return { room: await readRoom(c), pid, sec };
       }
     }
@@ -368,10 +419,228 @@ const actions = {
     if (!meta) return { error: 'not found' };
     if (Number(count) >= MAX_ROOM) return { error: 'full' };
     const pid = code(10), sec = secret();
-    await redis([['SET', 'room:v3:' + c + ':p:' + pid, JSON.stringify({ pid, nick, joined: Date.now(), results: [], sec }), 'EX', ROOM_TTL], ['SADD', 'room:v3:' + c + ':players', pid], ['EXPIRE', 'room:v3:' + c + ':players', ROOM_TTL]]);
+    await redis([['SET', 'room:v3:' + c + ':p:' + pid, JSON.stringify(roomPlayer(pid, nick, sec, b)), 'EX', ROOM_TTL], ['SADD', 'room:v3:' + c + ':players', pid], ['EXPIRE', 'room:v3:' + c + ':players', ROOM_TTL]]);
+    await roomFeed(c, { t: 'join', pid, nick });
     return { room: await readRoom(c), pid, sec };
   },
-  async 'room.get'(b) { const room = await readRoom(roomCode(b.code)); return room ? { room } : { error: 'not found' }; },
+  // With { pid, sec } the caller's card is refreshed first (nick, flair, rep tier, public id, last seen).
+  async 'room.get'(b) {
+    const c = roomCode(b.code);
+    if (b.pid && b.sec) {
+      const key = 'room:v3:' + c + ':p:' + clean(b.pid, 12), p = await getJ(key);
+      if (p && p.sec === b.sec) {
+        const nick = clean(b.nick, 16);
+        Object.assign(p, { seen: Date.now(), flair: flairOf(b.flair), tier: tierOf(b.tier) }, devId(b.dev) ? { pub: pubId(devId(b.dev)) } : {}, nick && nickOk(nick) ? { nick } : {});
+        await setJ(key, p, ROOM_TTL);
+      }
+    }
+    const room = await readRoom(c);
+    return room ? { room } : { error: 'not found' };
+  },
+  // The room feed: a taunt from the pool (i18n `so.taunts[k]`), aimed at one reporter or the room. One per 45 s.
+  async 'room.post'(b) {
+    const c = roomCode(b.code), pid = clean(b.pid, 12);
+    const [meta, doc] = await redis([['GET', 'room:v3:' + c], ['GET', 'room:v3:' + c + ':p:' + pid]]);
+    if (!meta || !doc) return { error: 'not found' };
+    const p = JSON.parse(doc); if (!b.sec || b.sec !== p.sec) return { error: 'forbidden' };
+    const k = int(b.k, 0, TAUNTS - 1);
+    let to = null, toNick = '';
+    if (b.to) { const td = await getJ('room:v3:' + c + ':p:' + clean(b.to, 12)); if (td) { to = td.pid; toNick = td.nick; } }
+    if (!(await one('SET', 'room:v3:' + c + ':gap:' + pid, '1', 'EX', TAUNT_GAP, 'NX'))) return { error: 'slow' };
+    await roomFeed(c, { t: 'taunt', pid, nick: p.nick, k, to, toNick });
+    return { feed: await readFeed(c) };
+  },
+  // Spectate (§7.3): everyone's calls for one round, day by day. Only once you've filed and the round is over for all.
+  async 'room.round'(b) {
+    const c = roomCode(b.code), pid = clean(b.pid, 12), round = int(b.round, 0, 19);
+    const [meta, doc, ids] = await redis([['GET', 'room:v3:' + c], ['GET', 'room:v3:' + c + ':p:' + pid], ['SMEMBERS', 'room:v3:' + c + ':players']]);
+    if (!meta || !doc) return { error: 'not found' };
+    const room = JSON.parse(meta), me = JSON.parse(doc);
+    if (!b.sec || b.sec !== me.sec) return { error: 'forbidden' };
+    if (round >= room.rounds || !(me.results && me.results[round])) return { error: 'not yet' };
+    const docs = await one('MGET', ...ids.map((id) => 'room:v3:' + c + ':p:' + id));
+    const players = docs.filter(Boolean).map((d) => JSON.parse(d));
+    const closed = Date.now() > roundOpens(room, round) + roomOpenH(room) * 3600e3;
+    if (!closed && players.some((p) => !(p.results && p.results[round]))) return { error: 'not yet', waiting: players.filter((p) => !(p.results && p.results[round])).length };
+    const sess = await one('MGET', ...players.map((p) => sessKey({ kind: 'r', code: c, round }, p.pid)));
+    let cast = null;
+    const rows = players.map((p, k) => {
+      let s = null; try { s = JSON.parse(sess[k]); } catch { s = null; }
+      const res = s && s.res; if (!res) return null;
+      if (!cast) cast = res.cast;
+      return { pid: p.pid, nick: p.nick, pub: p.pub || p.pid, flair: p.flair || '', tier: p.tier || '', score: res.total, tier2: res.tier, ex: res.ex, row: res.row, per: res.per.map((x) => ({ i: x.i, call: x.call ? { day: x.call.day, o: x.call.o, s: x.call.s, ut: !!x.call.ut } : null, right: x.right, excl: x.excl, pts: x.pts, truth: x.truth })) };
+    }).filter(Boolean);
+    return { code: c, round, cast, players: rows, days: RULES.DAYS };
+  },
+
+  // ---- Beat my board (§7.3): a finished window becomes a 24 h challenge link. The seed of a live Daily never leaves
+  // the server: a Daily challenge is settled from the players' own ranked results, or replayed once the seed is public.
+  async 'challenge.create'(b) {
+    const dev = devId(b.dev); if (!dev) return { error: 'dev' };
+    const nick = nickOf(b.nick, dev), by = { pub: pubId(dev), nick, flair: flairOf(b.flair), tier: tierOf(b.tier) };
+    const mode = b.mode === 'daily' || b.mode === 'career' ? b.mode : 'practice';
+    let doc;
+    if (mode === 'daily') {
+      const day = dayOf(b.day); if (!day) return { error: 'day' };
+      const mine = await getJ('t1v3:lb:d:' + day + ':e:' + dev); if (!mine) return { error: 'played' };
+      doc = { kind: 'daily', day, no: dailyNo(day), target: { score: mine.score, tier: mine.tier, row: mine.row || '', ex: mine.ex || 0 } };
+    } else {
+      const seed = seedOf(b.seed); if (!seed) return { error: 'seed' };
+      if (mode === 'practice') {
+        const log = parseLog(b.log); if (!log) return { error: 'log' };
+        const sc = scoreLog(seed, log); if (!sc) return { error: 'log' };
+        doc = { kind: 'practice', seed, target: { score: sc.score, tier: sc.tier, row: sc.row, ex: sc.ex } };
+      } else {
+        // Career runs its own rules locally; the score to beat is the reporter's word, and the board replays under Daily rules.
+        const score = int(b.score, RULES.SCORE_MIN, RULES.SCORE_MAX);
+        doc = { kind: 'career', seed, target: { score, tier: ['T1', 'T2', 'T3', 'T4', 'SPIKED'].includes(b.tier) ? b.tier : 'T4', row: clean(b.row, 8), ex: int(b.ex, 0, 5) } };
+      }
+    }
+    for (let i = 0; i < 8; i++) {
+      const c = code(6), now = Date.now();
+      const full = { ...doc, code: c, by, byDev: dev, at: now, exp: now + CH_OPEN_MS, label: clean(b.label, 40), res: [] };
+      if (await one('SET', 't1v3:ch:' + c, JSON.stringify(full), 'EX', CH_TTL, 'NX')) {
+        await redis([['LPUSH', 't1v3:ch:by:' + dev, c], ['LTRIM', 't1v3:ch:by:' + dev, 0, CH_MINE - 1], ['EXPIRE', 't1v3:ch:by:' + dev, CH_TTL]]);
+        return { challenge: chView(full, dev) };
+      }
+    }
+    return { error: 'busy' };
+  },
+  async 'challenge.get'(b) {
+    const c = roomCode(b.code), dev = devId(b.dev);
+    const ch = await getJ('t1v3:ch:' + c); if (!ch) return { error: 'not found' };
+    const out = { challenge: chView(ch, dev) };
+    if (ch.kind === 'daily' && ch.day < today()) out.seed = saltedSeed('daily-' + ch.day);
+    if (ch.kind !== 'daily') out.seed = ch.seed;
+    if (ch.kind === 'daily' && dev) { const mine = await getJ('t1v3:lb:d:' + ch.day + ':e:' + dev); if (mine) out.played = { score: mine.score, tier: mine.tier }; }
+    return out;
+  },
+  async 'challenge.submit'(b) {
+    const c = roomCode(b.code), dev = devId(b.dev); if (!dev) return { error: 'dev' };
+    const key = 't1v3:ch:' + c, ch = await getJ(key); if (!ch) return { error: 'not found' };
+    if (ch.byDev === dev) return { error: 'own' };
+    const pub = pubId(dev);
+    if (ch.res.some((r) => r.pub === pub)) return { error: 'done', challenge: chView(ch, dev) };
+    if (Date.now() > ch.exp) return { error: 'expired', challenge: chView(ch, dev) };
+    if (ch.res.length >= CH_MAX_RES) return { error: 'full' };
+    let sc;
+    if (ch.kind === 'daily') {
+      const mine = await getJ('t1v3:lb:d:' + ch.day + ':e:' + dev);
+      if (mine) sc = { score: mine.score, tier: mine.tier, row: mine.row || '', ex: mine.ex || 0 };
+      else if (ch.day === today()) return { error: 'play' };
+      else { const log = parseLog(b.log); if (!log) return { error: 'log' }; sc = scoreLog(saltedSeed('daily-' + ch.day), log); if (!sc) return { error: 'log' }; }
+    } else {
+      const log = parseLog(b.log); if (!log) return { error: 'log' };
+      sc = scoreLog(ch.seed, log); if (!sc) return { error: 'log' };
+    }
+    const r = { pub, nick: nickOf(b.nick, dev), flair: flairOf(b.flair), tier: tierOf(b.tier), score: sc.score, rtier: sc.tier, row: sc.row, ex: sc.ex, at: Date.now(), r: sc.score > ch.target.score ? 'w' : sc.score < ch.target.score ? 'l' : 'd' };
+    ch.res.push(r);
+    const ttl = Math.max(60, Math.floor((ch.at + CH_TTL * 1000 - Date.now()) / 1000));
+    await setJ(key, ch, ttl);
+    return { challenge: chView(ch, dev), me: r };
+  },
+  async 'challenge.mine'(b) {
+    const dev = devId(b.dev); if (!dev) return { error: 'dev' };
+    const codes = await one('LRANGE', 't1v3:ch:by:' + dev, 0, CH_MINE - 1);
+    const docs = codes && codes.length ? await one('MGET', ...codes.map((c) => 't1v3:ch:' + c)) : [];
+    const list = docs.map((d) => { try { return JSON.parse(d); } catch { return null; } }).filter(Boolean).map((ch) => chView(ch, dev));
+    return { list };
+  },
+
+  // ---- Newsroom (§7.3): up to 20 reporters under one masthead. The weekly table sums each member's league week
+  // (Daily tier points + Wire points, both scored here), and newsrooms rank against each other on that total.
+  async 'newsroom.create'(b) {
+    const dev = devId(b.dev); if (!dev) return { error: 'dev' };
+    const nick = clean(b.nick, 16); if (!nick || !nickOk(nick)) return { error: 'nick' };
+    const name = clean(b.name, 28); if (!name || !nickOk(name)) return { error: 'name' };
+    if (await one('GET', 't1v3:nr:of:' + dev)) return { error: 'member' };
+    for (let i = 0; i < 8; i++) {
+      const c = code(6);
+      const nr = { code: c, name, motto: clean(b.motto, 60), created: Date.now(), host: pubId(dev), hostDev: dev, masthead: mastheadOf(b.masthead) };
+      if (await one('SET', 't1v3:nr:' + c, JSON.stringify(nr), 'EX', NR_TTL, 'NX')) {
+        await nrJoin(c, dev, nick, b);
+        return actions['newsroom.get']({ code: c, dev });
+      }
+    }
+    return { error: 'busy' };
+  },
+  async 'newsroom.join'(b) {
+    const dev = devId(b.dev); if (!dev) return { error: 'dev' };
+    const nick = clean(b.nick, 16); if (!nick || !nickOk(nick)) return { error: 'nick' };
+    const c = roomCode(b.code);
+    const [meta, n, cur] = await redis([['GET', 't1v3:nr:' + c], ['SCARD', 't1v3:nr:' + c + ':m'], ['GET', 't1v3:nr:of:' + dev]]);
+    if (!meta) return { error: 'not found' };
+    if (cur && cur !== c) return { error: 'member' };
+    if (cur !== c && Number(n) >= NR_MAX) return { error: 'full' };
+    await nrJoin(c, dev, nick, b);
+    return actions['newsroom.get']({ code: c, dev });
+  },
+  async 'newsroom.leave'(b) {
+    const dev = devId(b.dev); if (!dev) return { error: 'dev' };
+    const c = roomCode(b.code) || (await one('GET', 't1v3:nr:of:' + dev)); if (!c) return { error: 'not found' };
+    const nr = await getJ('t1v3:nr:' + c); if (!nr) return { error: 'not found' };
+    await redis([['SREM', 't1v3:nr:' + c + ':m', dev], ['DEL', 't1v3:nr:' + c + ':m:' + dev], ['DEL', 't1v3:nr:of:' + dev]]);
+    const left = await one('SMEMBERS', 't1v3:nr:' + c + ':m');
+    if (!left.length) { await redis([['DEL', 't1v3:nr:' + c], ['ZREM', 't1v3:nr:w:' + isoWeek(today()), c]]); return { gone: true }; }
+    if (nr.hostDev === dev) { const next = await getJ('t1v3:nr:' + c + ':m:' + left[0]); nr.hostDev = left[0]; nr.host = next ? next.pub : pubId(left[0]); await setJ('t1v3:nr:' + c, nr, NR_TTL); }
+    return { gone: false };
+  },
+  // Host only: the masthead's cosmetic slots (frame, ink, flair: cosmetic ids the Pass sells; the client renders what it knows).
+  async 'newsroom.masthead'(b) {
+    const dev = devId(b.dev); if (!dev) return { error: 'dev' };
+    const c = roomCode(b.code), nr = await getJ('t1v3:nr:' + c); if (!nr) return { error: 'not found' };
+    if (nr.hostDev !== dev) return { error: 'forbidden' };
+    nr.masthead = mastheadOf(b.masthead);
+    if (typeof b.motto === 'string') nr.motto = clean(b.motto, 60);
+    if (typeof b.name === 'string') { const name = clean(b.name, 28); if (name && nickOk(name)) nr.name = name; }
+    await setJ('t1v3:nr:' + c, nr, NR_TTL);
+    return actions['newsroom.get']({ code: c, dev });
+  },
+  async 'newsroom.get'(b) {
+    const dev = devId(b.dev);
+    const c = roomCode(b.code) || (dev ? await one('GET', 't1v3:nr:of:' + dev) : '');
+    if (!c) return { newsroom: null, top: await nrTop(isoWeek(today())) };
+    const [meta, ids] = await redis([['GET', 't1v3:nr:' + c], ['SMEMBERS', 't1v3:nr:' + c + ':m']]);
+    if (!meta) return { error: 'not found' };
+    const nr = JSON.parse(meta), week = isoWeek(today()), prev = prevWeek(today());
+    if (dev && b.nick) { const md = await getJ('t1v3:nr:' + c + ':m:' + dev); if (md) { const nick = clean(b.nick, 16); Object.assign(md, { flair: flairOf(b.flair), tier: tierOf(b.tier), seen: Date.now() }, nick && nickOk(nick) ? { nick } : {}); await setJ('t1v3:nr:' + c + ':m:' + dev, md, NR_TTL); } }
+    const keys = ids.flatMap((d) => ['t1v3:nr:' + c + ':m:' + d, 't1v3:lg:seat:' + week + ':' + d, 't1v3:lg:seat:' + prev + ':' + d]);
+    const docs = keys.length ? await one('MGET', ...keys) : [];
+    const J = (x) => { try { return JSON.parse(x); } catch { return null; } };
+    const members = ids.map((d, k) => {
+      const m = J(docs[3 * k]), s = J(docs[3 * k + 1]), p = J(docs[3 * k + 2]);
+      if (!m) return null;
+      const pts = s ? Math.round((s.daily || 0) + (s.wire || 0)) : 0, last = p ? Math.round((p.daily || 0) + (p.wire || 0)) : 0;
+      return { pub: m.pub, nick: m.nick, flair: m.flair || '', tier: m.tier || '', joined: m.joined, seen: m.seen || m.joined, daily: s ? s.daily || 0 : 0, wire: s ? Math.round((s.wire || 0) * 10) / 10 : 0, pts, last, me: !!dev && d === dev, host: m.pub === nr.host };
+    }).filter(Boolean).sort((a, b2) => b2.pts - a.pts || a.joined - b2.joined);
+    const total = members.reduce((a, m) => a + m.pts, 0), lastTotal = members.reduce((a, m) => a + m.last, 0);
+    const wk = 't1v3:nr:w:' + week;
+    await redis([['ZADD', wk, total, c], ['EXPIRE', wk, LG_TTL], ['SET', 't1v3:nr:name:' + c, JSON.stringify({ name: nr.name, n: members.length }), 'EX', NR_TTL]]);
+    const rank = 1 + Number(await one('ZCOUNT', wk, '(' + total, '+inf'));
+    const lastRank = lastTotal > 0 ? 1 + Number(await one('ZCOUNT', 't1v3:nr:w:' + prev, '(' + lastTotal, '+inf')) : null;
+    const { hostDev, ...pubNr } = nr;
+    return { newsroom: { ...pubNr, members, week, prevWeek: prev, total, lastTotal, rank, lastRank, mine: !!dev && ids.includes(dev), isHost: !!dev && hostDev === dev, max: NR_MAX }, top: await nrTop(week) };
+  },
+  async 'newsroom.top'() { const week = isoWeek(today()); return { week, top: await nrTop(week) }; },
+
+  // ---- Live presence (§7.3): who is on this board now, and who broke it first (only shown once you have results).
+  async 'live.count'(b) {
+    const dev = devId(b.dev), board = liveBoard(b.board), key = 't1v3:live:' + board, now = Date.now();
+    const cmds = [['ZREMRANGEBYSCORE', key, '-inf', now - LIVE_WINDOW_S * 1000]];
+    if (dev) cmds.push(['ZADD', key, now, dev], ['EXPIRE', key, LIVE_TTL]);
+    cmds.push(['ZCARD', key]);
+    const out = await redis(cmds);
+    return { board, n: Number(out[out.length - 1]) || 0, windowMin: LIVE_WINDOW_S / 60 };
+  },
+  async 'live.first'(b) {
+    const dev = devId(b.dev), day = today();
+    const first = await getJ('t1v3:live:first:' + day);
+    const sess = dev ? await getJ(sessKey({ kind: 'd', day }, dev)) : null;
+    if (!(sess && sess.res)) return { day, first: null, locked: true, any: !!first };
+    if (!first) return { day, first: null, locked: false };
+    const cast = boardFor({ kind: 'd', day }).cast, sg = cast.sagas[first.i];
+    return { day, first: { nick: first.nick, p: sg && sg.player ? sg.player.s || sg.player.n : '', i: first.i, at: first.at, me: first.dev === dev }, locked: false };
+  },
 };
 
 const hashObj = (h) => { if (!h) return {}; if (!Array.isArray(h)) return h; const o = {}; for (let i = 0; i < h.length; i += 2) o[h[i]] = h[i + 1]; return o; };
@@ -381,14 +650,35 @@ async function wireCalls(dev) {
   for (const [k, v] of Object.entries(h)) { try { out[k] = JSON.parse(v); } catch { /* skip */ } }
   return out;
 }
+const roomPlayer = (pid, nick, sec, b) => ({ pid, nick, joined: Date.now(), seen: Date.now(), results: [], sec, pub: devId(b.dev) ? pubId(devId(b.dev)) : pid, flair: flairOf(b.flair), tier: tierOf(b.tier) });
+async function readFeed(c) {
+  const raw = await one('LRANGE', 'room:v3:' + c + ':feed', 0, ROOM_FEED - 1);
+  return (raw || []).map((x) => { try { return JSON.parse(x); } catch { return null; } }).filter(Boolean);
+}
 async function readRoom(c) {
-  const [meta, ids] = await redis([['GET', 'room:v3:' + c], ['SMEMBERS', 'room:v3:' + c + ':players']]);
+  const [meta, ids, feedRaw] = await redis([['GET', 'room:v3:' + c], ['SMEMBERS', 'room:v3:' + c + ':players'], ['LRANGE', 'room:v3:' + c + ':feed', 0, ROOM_FEED - 1]]);
   if (!meta) return null;
   const room = JSON.parse(meta);
   const docs = ids && ids.length ? await one('MGET', ...ids.map((id) => 'room:v3:' + c + ':p:' + id)) : [];
-  room.players = docs.filter(Boolean).map((d) => { const p = JSON.parse(d); delete p.sec; return p; });
-  room.now = Date.now(); room.roundHours = ROUND_OPEN_H;
+  room.players = docs.filter(Boolean).map((d) => { const p = JSON.parse(d); delete p.sec; p.pub = p.pub || p.pid; return p; });
+  room.cadence = room.cadence || 'daily';
+  room.now = Date.now(); room.roundHours = roomOpenH(room); room.stepMs = roomStep(room);
+  room.feed = (feedRaw || []).map((x) => { try { return JSON.parse(x); } catch { return null; } }).filter(Boolean);
   return room;
+}
+// Challenges: what either side may see (never the maker's device id).
+const chView = (ch, dev) => { const { byDev, ...v } = ch; return { ...v, open: Date.now() < ch.exp, mine: !!dev && byDev === dev }; };
+const liveBoard = (x) => { const s = clean(x, 24).toLowerCase().replace(/[^a-z0-9:\-]/g, ''); return !s || s === 'daily' ? 'daily:' + today() : s; };
+const mastheadOf = (m) => { const o = m && typeof m === 'object' ? m : {}; return { frame: flairOf(o.frame), ink: flairOf(o.ink), flair: flairOf(o.flair) }; };
+async function nrJoin(c, dev, nick, b) {
+  const doc = { pub: pubId(dev), nick, joined: Date.now(), seen: Date.now(), flair: flairOf(b.flair), tier: tierOf(b.tier) };
+  await redis([['SET', 't1v3:nr:' + c + ':m:' + dev, JSON.stringify(doc), 'EX', NR_TTL], ['SADD', 't1v3:nr:' + c + ':m', dev], ['EXPIRE', 't1v3:nr:' + c + ':m', NR_TTL], ['SET', 't1v3:nr:of:' + dev, c, 'EX', NR_TTL]]);
+}
+async function nrTop(week) {
+  const z = await one('ZREVRANGE', 't1v3:nr:w:' + week, 0, NR_TOP - 1, 'WITHSCORES');
+  const codes = []; for (let i = 0; i < (z || []).length; i += 2) codes.push(z[i]);
+  const docs = codes.length ? await one('MGET', ...codes.map((c) => 't1v3:nr:name:' + c)) : [];
+  return codes.map((c, i) => { let d = null; try { d = JSON.parse(docs[i]); } catch { d = null; } return { code: c, name: (d && d.name) || c, n: (d && d.n) || 0, pts: Number(z[2 * i + 1]) || 0 }; });
 }
 
 // League seats: first activity in a week seats you in a group of 30 in your division; last week's finish moves you.
@@ -424,7 +714,7 @@ async function leagueAdd(dev, nick, day, pts, kind) {
   await redis([['ZINCRBY', groupKey(s.week, s.div, s.grp), add, dev], ['SET', 't1v3:lg:seat:' + s.week + ':' + dev, JSON.stringify(s), 'EX', LG_TTL]]);
 }
 
-export { actions, parseAct, saltedSeed, isoWeek, dailyNo, OUT };
+export { actions, parseAct, saltedSeed, isoWeek, dailyNo, OUT, pubId };
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

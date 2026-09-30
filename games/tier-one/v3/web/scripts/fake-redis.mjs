@@ -26,6 +26,14 @@ export function fakeRedis() {
       case 'SADD': { const ss = s(a[0]); a.slice(1).forEach((x) => ss.add(x)); return 1; }
       case 'SMEMBERS': return [...(live(a[0]) || new Set())];
       case 'SCARD': return (live(a[0]) || new Set()).size;
+      case 'DEL': { let n = 0; for (const k of a) { if (kv.has(k)) n++; kv.delete(k); exp.delete(k); } return n; }
+      case 'LPUSH': { let l = live(a[0]); if (!Array.isArray(l)) { l = []; kv.set(a[0], l); } for (const v of a.slice(1)) l.unshift(String(v)); return l.length; }
+      case 'LTRIM': { const l = live(a[0]); if (Array.isArray(l)) { const en = Number(a[2]) < 0 ? l.length + Number(a[2]) : Number(a[2]); kv.set(a[0], l.slice(Number(a[1]), en + 1)); } return 'OK'; }
+      case 'LRANGE': { const l = live(a[0]); if (!Array.isArray(l)) return []; const en = Number(a[2]) < 0 ? l.length + Number(a[2]) : Number(a[2]); return l.slice(Number(a[1]), en + 1); }
+      case 'SREM': { const ss = live(a[0]); let n = 0; if (ss) for (const x of a.slice(1)) { if (ss.delete(x)) n++; } return n; }
+      case 'ZREM': { const zz = live(a[0]); let n = 0; if (zz) for (const x of a.slice(1)) { if (zz.delete(x)) n++; } return n; }
+      case 'ZREMRANGEBYSCORE': { const zz = live(a[0]); if (!zz) return 0; const [lo, lx] = rng(a[1]), [hi, hx] = rng(a[2]); let n = 0; for (const [m, v] of [...zz.entries()]) if ((lx ? v > lo : v >= lo) && (hx ? v < hi : v <= hi)) { zz.delete(m); n++; } return n; }
+      case 'ZREVRANK': { const l = sorted(a[0]).reverse().map(([m]) => m); const i = l.indexOf(a[1]); return i < 0 ? null : i; }
       default: throw new Error('fake redis: ' + cmd);
     }
   }
