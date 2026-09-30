@@ -165,7 +165,7 @@ const en = {
   lb: { title: 'Today’s table', aside: '{n} filed', empty: 'Nobody has filed yet. Be first.', you: 'You’re {r} of {n}' },
   practice: {
     kicker: 'Practice · off the record', hed: 'Nothing here counts. Everything here teaches.', coach: 'Coach mode', coachD: 'Shows the exact odds on every saga, worked out from what you can see.',
-    random: 'New random board', archive: 'Replay a past Daily', archiveD: 'Last seven days free. The full archive comes with the Semba Pass.', code: 'Board code', codeD: 'Same code, same board. Send one to a friend.',
+    random: 'New random board', archive: 'Replay a past Daily', archiveD: 'Yesterday’s board and the six before it, exactly as everyone played them. Off the record, so it never touches your Daily.', code: 'Board code', codeD: 'Same code, same board. Send one to a friend.',
     play: 'Play this board', resume: 'Resume practice', archiveNeedNet: 'Past Dailies need a connection to fetch the board.', played: '{n} practice windows',
   },
   career: {
