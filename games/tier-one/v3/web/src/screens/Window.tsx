@@ -20,6 +20,8 @@ import { hereWeGo } from '../lib/share';
 import { Results } from './Results';
 import { playScene, afterScenes, firstToday } from '../lib/scenes';
 import type { Chrome } from '../App';
+// The editor's desk (GOTY.md §7.1): the Daily brief before day 1 and the Deadline Day Live ticker (ui/live.tsx).
+import { DailyBriefSheet, DDLiveTicker } from '../ui/live';
 
 // The rival ledger (GOTY.md §1.3) lives in the connect lane's lib/byline.ts. Picked up here if that module exists and
 // exports rivalRecord(id); otherwise the race strip and overnight taunts simply run without it.
@@ -163,6 +165,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     {dd && <DDHead view={view} onZero={finish} />}
     <div className="play__cols">
       <main className={mob ? 'only-desk' : ''}>
+        {view.mode === 'daily' && !dd && <DDLiveTicker go={chrome.go} />}
         {!dd && <section className="dayhead">
           <DayStrip day={view.state.day} days={view.R.DAYS} />
           <div className="dayhead__row">
@@ -193,6 +196,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
         <GBtn kind="dark" style={{ marginTop: 16 }} onClick={endDay}><Icon n="moon" />{t('daily.endConfirmOk')}</GBtn><GBtn kind="paper" style={{ marginTop: 12 }} onClick={() => setConfirmEnd(false)}>{t('common.cancel')}</GBtn></div>
     </Sheet>
     {night && createPortal(<NightScene night={night} view={view} onGo={() => (night.dd ? startDD() : setNight(null))} />, document.body)}
+    {view.mode === 'daily' && !night && !calling && <DailyBriefSheet view={view} go={chrome.go} />}
   </div>;
 }
 

@@ -222,6 +222,11 @@ export function recordWindow(w: WindowIn): WindowSummary | null {
     if (w.ppBefore != null) { const a = levelOf(w.ppBefore).n, c = levelOf(s.pp).n; if (c > a) pushFeed(s, { kind: 'level', key: 'cn.feed.level', v: { n: c }, to: { n: 'pass' }, tone: 'gold' }); }
     missionFeed(s);
     b.last = sum; out = sum;
+    // §7.1 cross-mode consequences: the desk (lib/desk.ts) listens and writes into this same draft.
+    emitByline({ kind: 'window', sum, w, save: s });
+    if (mode === 'daily' && w.tier === 'T1') emitByline({ kind: 'daily-t1', no: w.no || 0, save: s });
+    if (mode === 'room' && w.room) emitByline({ kind: 'room-window', code: w.room.code, round: w.room.round, sum, tier: w.tier, total: w.total, save: s });
+    const promo = w.beat && /^promo(\d)$/.exec(w.beat.key); if (promo) emitByline({ kind: 'career-promo', rank: Number(promo[1]), save: s });
   });
   for (const [a, c] of toasts) toast('ach', a, c);
   return out;
@@ -259,12 +264,15 @@ export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: strin
     list.forEach((c, k) => {
       mark(b, 'wire:' + c.rid + ':' + c.at);
       const st = Math.max(0, Math.min(2, (c.s || 1) - 1));
-      const d = followerDelta('wire', st, !!c.right, false, b.hot);
+      // §7.1: a Wire credit (earned by a Daily Tier 1) shields one wrong call's followers and rep; the hot hand still resets.
+      const shielded = !c.right && !!wireShield && wireShield(s, c);
+      const d = shielded ? 0 : followerDelta('wire', st, !!c.right, false, b.hot);
       if (c.right) { b.hot++; b.best = Math.max(b.best, b.hot); b.rep = Math.min(100, b.rep + 1); official = nameOf?.(c.rid) || c.player || ''; }
-      else { b.hot = 0; if (st === 2) b.rep = Math.max(0, b.rep - 2); }
+      else { b.hot = 0; if (st === 2 && !shielded) b.rep = Math.max(0, b.rep - 2); }
       b.followers = Math.max(0, b.followers + d);
       // Old backlog lands quietly; the newest few make the feed.
-      if (k >= list.length - 5) pushFeed(s, { id: 'wire:' + c.rid + ':' + c.at, kind: 'wire', key: c.right ? 'cn.feed.wireRight' : 'cn.feed.wireWrong', v: { p: nameOf?.(c.rid) || c.player || '?', f: (d > 0 ? '+' : '−') + Math.abs(d).toLocaleString('en') }, to: { n: 'wire', rid: c.rid }, tone: c.right ? 'good' : 'bad' });
+      if (k >= list.length - 5) pushFeed(s, { id: 'wire:' + c.rid + ':' + c.at, kind: 'wire', key: c.right ? 'cn.feed.wireRight' : shielded ? 'cn.feed.wireShield' : 'cn.feed.wireWrong', v: { p: nameOf?.(c.rid) || c.player || '?', f: (d > 0 ? '+' : d < 0 ? '−' : '') + Math.abs(d).toLocaleString('en') }, to: { n: 'wire', rid: c.rid }, tone: c.right ? 'good' : shielded ? undefined : 'bad' });
+      emitByline({ kind: 'wire', call: c, player: nameOf?.(c.rid) || c.player || '', d, shielded, save: s });
     });
   });
   // Film: the newest call that settled your way gets its OFFICIAL broadcast (one per refresh).
@@ -321,4 +329,26 @@ export function nextUp(s: Save, event?: string): NextUp {
   const ready = (missionsView(s) || []).filter((m) => m.done && !m.claimed).length;
   if (ready) return { kind: 'mission', to: { n: 'front' }, v: { n: ready } };
   return { kind: 'practice', to: { n: 'practice' }, v: event ? { e: event } : undefined };
+}
+
+// ---------------------------------------------------------------- §7.1 cross-mode events (the desk in lib/desk.ts listens)
+// Emitted from inside the save mutators above, so a listener writes into the same draft and lands in the same save.
+// Listeners never change a board, a score or the follower maths; they add consequences (an inbox line, a favour, a
+// credit, a film) and stay idempotent by their own keys.
+export type BylineEvent =
+  | { kind: 'window'; sum: WindowSummary; w: WindowIn; save: Save }
+  | { kind: 'daily-t1'; no: number; save: Save }
+  | { kind: 'room-window'; code: string; round: number; sum: WindowSummary; tier?: Tier; total?: number; save: Save }
+  | { kind: 'career-promo'; rank: number; save: Save }
+  | { kind: 'wire'; call: WireResolved; player: string; d: number; shielded: boolean; save: Save };
+const bylineSubs = new Set<(e: BylineEvent) => void>();
+export function onByline(f: (e: BylineEvent) => void) { bylineSubs.add(f); return () => { bylineSubs.delete(f); }; }
+function emitByline(e: BylineEvent) { for (const f of bylineSubs) { try { f(e); } catch { /* a listener never breaks the record */ } } }
+/** A Wire credit hook: return true to shield one wrong call (consume the credit in the same draft). */
+let wireShield: ((s: Save, c: WireResolved) => boolean) | null = null;
+export const setWireShield = (f: ((s: Save, c: WireResolved) => boolean) | null) => { wireShield = f; };
+/** Your record against a rival, for the saga screen's rival strip and the overnight taunts (Window.tsx reads it if present). */
+export function rivalRecord(id: string): { w: number; l: number; d: number } {
+  const r = rivalOf(getSave(), id);
+  return { w: r.w, l: r.l, d: r.d };
 }

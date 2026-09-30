@@ -22,13 +22,17 @@ import { SceneHost } from './lib/scenes';
 import { FeedScreen, RivalsScreen, ContactsScreen, setNav } from './screens/Connect';
 import { CustomizeScreen } from './screens/Customize';
 import { captureReferral } from './lib/wallet';
+// The editor's desk (GOTY.md §7.1): Deadline Day Live, the full desk, and the morning papers sheet on Home.
+import { DDLiveScreen } from './screens/DDLive';
+import { EditorDeskScreen } from './screens/Editor';
+import { MorningPapers } from './ui/live';
 // Shell layer (GOTY.md §4): motion tokens + view transitions, then the tablet/desktop layouts. Loaded after the screen styles.
 import './styles/motion.css';
 import './styles/desktop.css';
 
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
-  | { n: 'rooms'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize' }
+  | { n: 'rooms'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize' } | { n: 'ddlive' } | { n: 'editor' }
   | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
 
@@ -36,14 +40,14 @@ const TABS: { n: Route['n']; k: string; icon: string; c: string }[] = [
   { n: 'front', k: 'g.tabs.home', icon: 'home', c: 'var(--red)' }, { n: 'story', k: 'g.tabs.story', icon: 'story', c: 'var(--m-story)' }, { n: 'wire', k: 'g.tabs.wire', icon: 'wire', c: 'var(--m-wire)' },
   { n: 'rooms', k: 'g.tabs.friends', icon: 'friends', c: 'var(--m-rooms)' }, { n: 'me', k: 'g.tabs.me', icon: 'me', c: 'var(--gold)' },
 ];
-const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' ? 'rooms' : r.n === 'pass' || r.n === 'rivals' || r.n === 'contacts' || r.n === 'customize' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' ? 'front' : r.n);
+const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' ? 'rooms' : r.n === 'pass' || r.n === 'rivals' || r.n === 'contacts' || r.n === 'customize' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' || r.n === 'ddlive' || r.n === 'editor' ? 'front' : r.n);
 
 function initialRoute(): Route {
   const q = new URLSearchParams(location.search);
   if (q.get('room')) return { n: 'rooms', code: q.get('room')!.toUpperCase().slice(0, 8) };
   const tab = q.get('tab');
   if (tab === 'desk') return { n: 'story' };
-  if (tab === 'daily' || tab === 'wire' || tab === 'story' || tab === 'me' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms' || tab === 'feed' || tab === 'rivals' || tab === 'contacts' || tab === 'customize') return { n: tab } as Route;
+  if (tab === 'daily' || tab === 'wire' || tab === 'story' || tab === 'me' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms' || tab === 'feed' || tab === 'rivals' || tab === 'contacts' || tab === 'customize' || tab === 'ddlive' || tab === 'editor') return { n: tab } as Route;
   return { n: 'front' };
 }
 
@@ -151,6 +155,8 @@ export function App() {
     case 'rivals': screen = <RivalsScreen {...chrome} />; break;
     case 'contacts': screen = <ContactsScreen {...chrome} />; break;
     case 'customize': screen = <CustomizeScreen {...chrome} />; break;
+    case 'ddlive': screen = <DDLiveScreen {...chrome} />; break;
+    case 'editor': screen = <EditorDeskScreen {...chrome} />; break;
   }
   return <>
     {screen}
@@ -161,6 +167,7 @@ export function App() {
     <div className="toasts" aria-live="polite">{toasts.map((x) => <div key={x.id} className={'toast toast--' + x.kind}><b>{x.title}</b>{x.body && <span className="meta">{x.body}</span>}</div>)}</div>
     <SettingsSheet open={settings} onClose={() => setSettings(false)} go={go} />
     {!s.onboarded && <Onboarding go={go} />}
+    <MorningPapers route={route.n} />
     <SceneHost />
   </>;
 }
