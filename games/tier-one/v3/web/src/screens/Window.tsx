@@ -1,7 +1,7 @@
 // A transfer window: the board, the file, the overnight sheet, Deadline Day and the results. The same screen runs the
 // Daily and rooms (server-held) and Practice/Career (local). Layout: look/mockups/challenge.html + deadline.html.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { E, OUTS, shadow, type Act, type Clue, type Post, type Game } from '../lib/engine';
+import { E, OUTS, shadow, type Act, type Call, type Clue, type Post, type Game } from '../lib/engine';
 import type { Driver, View } from '../lib/driver';
 import { useT, fmtDate } from '../lib/i18n';
 import { getSave, update, useSave } from '../lib/save';
@@ -14,9 +14,19 @@ import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } 
 import { applyWindow, totalFavours, type CareerReport } from '../lib/career';
 import { storyBeats, pushBeats, type Beat } from '../lib/storyMode';
 import { Sheet, useNow, Crest } from '../ui/bits';
-import { SagaFile, RIVAL_IC } from './Saga';
+import { SagaFile, RIVAL_IC, type RivalRecord } from './Saga';
+import { hereWeGo } from '../lib/share';
 import { Results } from './Results';
 import type { Chrome } from '../App';
+
+// The rival ledger (GOTY.md §1.3) lives in the connect lane's lib/byline.ts. Picked up here if that module exists and
+// exports rivalRecord(id); otherwise the race strip and overnight taunts simply run without it.
+const BYLINE = Object.values(import.meta.glob('../lib/byline.ts', { eager: true })) as { rivalRecord?: (id: string) => unknown }[];
+export function rivalRecordOf(id: string): RivalRecord | null {
+  const f = BYLINE[0]?.rivalRecord; if (typeof f !== 'function') return null;
+  try { const r = f(id) as Partial<RivalRecord> | null | undefined; return r && typeof r.w === 'number' && typeof r.l === 'number' ? { w: r.w, l: r.l, d: r.d || 0 } : null; } catch { return null; }
+}
+const hasRecords = () => typeof BYLINE[0]?.rivalRecord === 'function';
 
 interface Night { day: number; posts: Post[]; twist: View['state']['twist']; noTwist: boolean; dd: boolean }
 
@@ -33,9 +43,9 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const [beat, setBeat] = useState<Beat | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [calling, setCalling] = useState<{ i: number; c: Clue } | null>(null);
-  const [burst, setBurst] = useState<{ k: number; kind: number } | null>(null);
+  const [burst, setBurst] = useState<{ k: number; kind: number; hwg: boolean } | null>(null);
   const [filedAt, setFiledAt] = useState<Record<number, number>>({});
-  const [posting, setPosting] = useState<{ i: number; o: number; s: number; ut: boolean; k: number } | null>(null);
+  const [posting, setPosting] = useState<{ i: number; o: number; s: number; ut: boolean; k: number; prev: Call | null; hwg: boolean } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const startRef = useRef({ pp: getSave().pp, credits: getSave().credits, streak: getSave().streak.n });
   const recorded = useRef(false);
@@ -91,14 +101,16 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     if (out && out.answer) { setLast({ i, c: out.answer }); setCalling({ i, c: out.answer }); }
   };
   const postCall = async (i: number, o: number, s: number, ut: boolean) => {
+    const prev = g && g.calls[i] ? { ...g.calls[i]! } : null;
     const out = await act(ut ? ['u', i, o, s] : ['c', i, o, s]);
     if (out && !out.error) {
       const late = view && view.state.day === view.R.DAYS;
       if (late) {
         // Deadline Day: the clock is running, so the quick burst instead of the full post.
-        sfx((['publish.talks', 'publish.advanced', 'publish.confirmed'] as const)[s]); setTimeout(() => sfx('stamp.done'), 120); buzz(s === 2 ? [20, 40, 30] : 18);
-        setFiledAt((f) => ({ ...f, [i]: Date.now() })); setBurst({ k: Date.now(), kind: s }); setTimeout(() => setBurst(null), 1700); shake(rootRef.current);
-      } else setPosting({ i, o, s, ut, k: Date.now() });
+        const hwg = hereWeGo({ o, s });
+        sfx(hwg ? 'publish.hwg' : (['publish.talks', 'publish.advanced', 'publish.confirmed'] as const)[s]); setTimeout(() => sfx('stamp.done'), 120); buzz(s === 2 ? [20, 40, 30] : 18);
+        setFiledAt((f) => ({ ...f, [i]: Date.now() })); setBurst({ k: Date.now(), kind: s, hwg }); setTimeout(() => setBurst(null), 1700); shake(rootRef.current);
+      } else setPosting({ i, o, s, ut, k: Date.now(), prev, hwg: hereWeGo({ o, s }) });
       if (view && view.state.day === view.R.DAYS && view.ddEndsAt && view.ddEndsAt - Date.now() <= 15000) ddLate.current = true;
     }
   };
@@ -133,7 +145,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const mob = sel != null;
   const tutor = view.mode === 'practice' && view.label === 'tutorial' && !(sv.tut && sv.tut.done);
   const favours = view.mode === 'career' ? <FavourTray g={g} i={deskSel} onUse={(k) => act(['f', k, deskSel])} /> : null;
-  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} />;
+  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
 
   return <div className={'g-screen g-screen--wide play' + (dd ? ' is-dd' : '')} ref={rootRef}>
     <TopBar back={mob ? { label: t('g.win.board'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : title} />
@@ -162,8 +174,8 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
 
     {tutor && !calling && !night && <TutorCoach g={g} sel={sel} onDone={() => update((x) => { x.tut = { ...(x.tut || {}), done: true }; })} />}
     {calling && view.cast[calling.i] && <CallScene src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} onDone={() => setCalling(null)} />}
-    {burst && <Burst key={burst.k} kind={burst.kind} />}
-    {posting && view.cast[posting.i] && <PostScene key={posting.k} c={view.cast[posting.i]} o={posting.o} s={posting.s} ut={posting.ut} onDone={() => { const p = posting; setPosting(null); setFiledAt((f) => ({ ...f, [p.i]: Date.now() })); shake(rootRef.current); }} />}
+    {burst && <Burst key={burst.k} kind={burst.kind} hwg={burst.hwg} />}
+    {posting && view.cast[posting.i] && <PostScene key={posting.k} c={view.cast[posting.i]} o={posting.o} s={posting.s} ut={posting.ut} prev={posting.prev} onDone={() => { const p = posting; setPosting(null); setFiledAt((f) => ({ ...f, [p.i]: Date.now() })); shake(rootRef.current); }} />}
 
     <Sheet open={confirmEnd} onClose={() => setConfirmEnd(false)} label={t('daily.endConfirmOk')}>
       <div className="sheet__body"><h2 className="g-h2">{t('daily.endConfirm', { n: view.state.day, c: view.state.left })}</h2><p className="g-sub" style={{ marginTop: 8 }}>{t('daily.contactsNote')}</p>
@@ -199,12 +211,12 @@ function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Ga
       <span className="scard__n">{c.player.n}</span>
       <span className="scard__r"><Crest club={c.from} size={18} /><Icon n={t.rtl ? 'back' : 'arrow'} size={14} /><Crest club={c.to} size={18} /><span>{c.to.s}</span></span>
       <span className="scard__st">
-        {tw && <span className="g-chip g-chip--red">{t('stamp.twist')}</span>}
-        {!call && (ln.none ? <span className="g-chip">{t('g.win.notRung')}</span> : <span className={'g-chip g-chip--' + OUTS[ln.o]}>{ln.split ? t('daily.split') : t('daily.lean', { o: outWord(t.lang, ln.o) })}{circ >= 2 ? ' ✓✓' : ''}</span>)}
-        {posted > 0 && !call && <span className="g-chip scard__riv"><Icon n="bolt" />{t('g.win.rivalPosted', { n: posted })}</span>}
+        {tw && <span key="tw" className="g-chip g-chip--red chip-in">{t('stamp.twist')}</span>}
+        {!call && (ln.none ? <span className="g-chip">{t('g.win.notRung')}</span> : <span key={'ln' + ln.o + (ln.split ? 's' : '') + circ} className={'g-chip chip-in g-chip--' + OUTS[ln.o]}>{ln.split ? t('daily.split') : t('daily.lean', { o: outWord(t.lang, ln.o) })}{circ >= 2 ? ' ✓✓' : ''}</span>)}
+        {posted > 0 && !call && <span key={'rv' + posted} className="g-chip scard__riv chip-in"><Icon n="bolt" />{t('g.win.rivalPosted', { n: posted })}</span>}
       </span>
     </span>
-    <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + OUTS[call.o] + (filed ? ' is-slam' : '')}>{outWord(t.lang, call.o)}</span> : <Icon n={t.rtl ? 'back' : 'arrow'} size={22} />}</span>
+    <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + (hereWeGo(call) ? 'gold scard__hwg' : OUTS[call.o]) + (filed ? ' is-slam' : '')}>{hereWeGo(call) ? t('calls.hwg.stamp') : outWord(t.lang, call.o)}</span> : <Icon n={t.rtl ? 'back' : 'arrow'} size={22} />}</span>
   </button>;
 }
 
@@ -224,43 +236,69 @@ function TutorCoach({ g, sel, onDone }: { g: Game; sel: number | null; onDone: (
 }
 
 // A publish goes out: reactions float up off the page.
-function Burst({ kind }: { kind: number }) {
+function Burst({ kind, hwg }: { kind: number; hwg?: boolean }) {
   const t = useT();
   const bits = ['share', 'flame', 'eye', 'share', 'star', 'flame', 'eye', 'bolt', 'share', 'flame'];
-  return <div className="burst" aria-hidden="true">
-    <span className="burst__word">{t('g.win.published.' + kind)}</span>
+  return <div className={'burst' + (hwg ? ' is-hwg' : '')} aria-hidden="true">
+    <span className="burst__word">{hwg ? t('calls.hwg.burst') : t('g.win.published.' + kind)}</span>
     {bits.map((b, k) => <i key={k} style={{ left: 10 + (k * 83) % 80 + '%', animationDelay: k * 70 + 'ms' }}><Icon n={b} /></i>)}
   </div>;
 }
 
+// Overnight (GOTY.md §2): dusk to dawn, then each rival post lands as a BREAKING card with the rival's avatar and a
+// taunt that fits your call (and the ledger when the connect lane provides one). A twist glitches the screen and slams
+// STOP PRESS. ~2 s at most; a tap skips straight to the end state; reduced motion shows it static.
+const NIGHT_SKY = 700, NIGHT_STEP = 140, NIGHT_TWIST = 450;
+function tauntFor(t: ReturnType<typeof useT>, g: Game, p: Post): string {
+  const mine = g.calls[p.i], rec = rivalRecordOf(p.id);
+  let mood = !mine ? 'beat' : mine.o === p.claim ? 'copy' : 'clash';
+  if (mood === 'beat' && rec && rec.l > rec.w + 1) mood = 'ahead';
+  const l = (t.list('calls.night.' + mood) as string[] | undefined) || [];
+  return l.length ? l[(p.i * 7 + p.day * 3 + p.id.length) % l.length] : '';
+}
 function NightScene({ night, view, onGo }: { night: Night; view: View; onGo: () => void }) {
   const t = useT();
   const g = shadow(view.state, view.R);
-  const lost = night.posts.filter((p) => !g.calls[p.i]);
-  const [stage, setStage] = useState(getSave().reduced ? 2 : 0);
+  const reduced = getSave().reduced;
+  const [stage, setStage] = useState(reduced ? 2 : 0);
+  const [skip, setSkip] = useState(reduced);
+  const lead = night.twist ? NIGHT_TWIST : 0;
+  const cardsMs = Math.min(night.posts.length * NIGHT_STEP, 700);
   useEffect(() => {
     if (stage >= 2) return;
-    const id = setTimeout(() => { setStage(stage + 1); if (stage === 0) sfx(night.twist ? 'twist' : night.dd ? 'dd.siren' : 'dayhit'); }, stage === 0 ? 900 : 500);
-    return () => clearTimeout(id);
+    if (stage === 0) {
+      const id = setTimeout(() => {
+        setStage(1);
+        if (night.twist) { sfx('stop.press'); buzz([40, 30, 80]); } else sfx(night.dd ? 'dd.siren' : 'dayhit');
+      }, NIGHT_SKY);
+      return () => clearTimeout(id);
+    }
+    const pops = night.posts.slice(0, 5).map((_, k) => setTimeout(() => sfx('ui.pop'), lead + k * NIGHT_STEP + 120));
+    const id = setTimeout(() => setStage(2), lead + cardsMs + 250);
+    return () => { clearTimeout(id); pops.forEach(clearTimeout); };
   }, [stage]);
-  return <div className={'night2' + (night.dd ? ' is-dd' : '') + (night.twist ? ' is-twist' : '') + ' st-' + stage} role="dialog" aria-modal="true" aria-label={t('night.title')}>
+  const skipAll = () => { if (stage < 2) { setSkip(true); setStage(2); } };
+  return <div className={'night2' + (night.dd ? ' is-dd' : '') + (night.twist ? ' is-twist' : '') + (night.twist && stage === 1 && !skip ? ' is-glitch' : '') + (skip ? ' is-skip' : '') + ' st-' + stage} role="dialog" aria-modal="true" aria-label={t('night.title')} onClick={skipAll}>
     <div className="night2__sky" aria-hidden="true"><span className="night2__moon" /><span className="night2__sun" />{Array.from({ length: 24 }, (_, k) => <i key={k} className="night2__star" style={{ left: (k * 41) % 100 + '%', top: (k * 23) % 60 + '%', animationDelay: k * 90 + 'ms' }} />)}<span className="night2__city" /></div>
     <div className="night2__body">
       <div className="g-mono night2__k">{t('night.kicker', { n: night.day })}</div>
       <h2 className="night2__h">{night.dd ? t('g.win.ddIncoming') : night.posts.length ? t('g.win.overnight', { n: night.posts.length }) : t('night.none')}</h2>
-      {stage >= 1 && night.twist && <div className="twistcard"><span className="g-stamp g-stamp--xl is-slam" style={{ ['--sc' as string]: '#fff' }}>{t('g.saga.stopPress')}</span><b>{t('night.twist', { p: view.cast[night.twist.i].player.s })}</b><p>{t('night.twistBody')}</p></div>}
+      {stage >= 1 && night.twist && <div className="twistcard"><span className={'g-stamp g-stamp--xl' + (skip ? '' : ' is-slam')} style={{ ['--sc' as string]: '#fff' }}>{t('g.saga.stopPress')}</span><b>{t('night.twist', { p: view.cast[night.twist.i].player.s })}</b><p>{t('night.twistBody')}</p></div>}
       {stage >= 1 && night.dd && <p className="night2__dd">{t('night.ddBody')}</p>}
-      {stage >= 1 && <div className="breaks">{night.posts.map((p, k) => { const c = view.cast[p.i]; return <div key={k} className="brk" style={{ animationDelay: k * 180 + 'ms' }}>
+      {stage >= 1 && night.posts.length > 0 && <div className="breaks">{night.posts.map((p, k) => { const c = view.cast[p.i]; const tn = tauntFor(t, g, p); return <div key={k} className="brk" style={{ animationDelay: skip ? '0ms' : lead + Math.min(k, 5) * NIGHT_STEP + 'ms' }}>
         <span className={'rv-av rv-av--' + p.id}>{RIVAL_IC[p.id]}</span>
-        <div className="brk__b"><div className="brk__h"><b>{t('rival.' + p.id)}</b><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div><p>{postLine(t.lang, c, p)}</p><span className="g-mono">{c.player.n}</span></div>
+        <div className="brk__b">
+          <div className="brk__h"><span className="brk__tag">{t('calls.night.breaking')}</span><b>{t('rival.' + p.id)}</b><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div>
+          <p>{postLine(t.lang, c, p)}</p>
+          {tn && <p className="brk__taunt">“{tn}”</p>}
+          <span className="g-mono">{c.player.n}</span>
+        </div>
       </div>; })}</div>}
-      {stage >= 1 && lost.length > 0 && <div className="taunt"><Icon n="bolt" size={16} />{t('g.win.taunt.' + lost[0].id)}</div>}
       {stage >= 2 && <GBtn kind={night.dd ? '' : 'gold'} size="lg" pulse onClick={onGo} sound={night.dd ? 'dd.siren' : 'open'} style={{ marginTop: 18 }}><Icon n={night.dd ? 'clock' : 'phone'} />{night.dd ? t('night.ddGo') : t('g.win.nightGo', { n: night.day })}</GBtn>}
+      {stage < 2 && <p className="night2__skip g-mono">{t('calls.night.skip')}</p>}
     </div>
   </div>;
 }
-
-
 
 // ---------- Deadline Day: a red takeover, a heartbeat, one-tap posts.
 function DDHead({ view, onZero }: { view: View; onZero: () => void }) {

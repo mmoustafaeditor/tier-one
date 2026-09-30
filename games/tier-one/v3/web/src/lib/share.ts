@@ -1,11 +1,21 @@
 // The scoop card as a 1080×1350 PNG, drawn on a canvas with the bundled fonts. Always morning newsprint (it's a
 // physical object), whatever edition the app is in. No network.
 import { portraitSVG } from './kit';
-import type { WClub } from './engine';
+import type { WClub, Result } from './engine';
 import type { T } from './i18n';
 
-export interface Card { hed: string; sub: string; kick: string; no: string; date: string; by: string; url: string; stats: [string, string][]; stamp: string; stampKind: string; club: WClub; no2: number; who: string; rtl: boolean }
-const PAPER = '#F2EEE5', INK = '#15130F', INK2 = '#47423A', ACC = '#D2381B', ACC_T = '#B42E14', GO = '#17613F', FAKE = '#5B3E96', DEAD = '#8B857A';
+// hwg (3.3): when set, the card leads with a gold "HERE WE GO!" band (e.g. t('calls.hwg.card', { p })) above the kicker.
+export interface Card { hed: string; sub: string; kick: string; no: string; date: string; by: string; url: string; stats: [string, string][]; stamp: string; stampKind: string; club: WClub; no2: number; who: string; rtl: boolean; hwg?: string }
+const PAPER = '#F2EEE5', INK = '#15130F', INK2 = '#47423A', ACC = '#D2381B', ACC_T = '#B42E14', GO = '#17613F', FAKE = '#5B3E96', DEAD = '#8B857A', GOLD = '#F7B928', GOLD_D = '#7A5200';
+
+// HERE WE GO (GOTY.md §2): a Done call at Confirmed. Feel only; the engine scores it like any other Confirmed Done.
+export const hereWeGo = (c?: { o: number; s: number } | null) => !!c && c.o === 0 && c.s === 2;
+// The saga a share card should lead with: the first right HERE WE GO call in a result, or -1. Results sets
+// `hwg: t('calls.hwg.card', { p: cast[i].player.s })` on the Card when this is >= 0.
+export function hereWeGoOf(r: Pick<Result, 'per'>): number {
+  const p = r.per.find((x) => x.right && hereWeGo(x.call));
+  return p ? p.i : -1;
+}
 
 export function shareText(t: T, v: { what: string; tier: string; pts: string; row: string; url: string }) {
   return t('share.text', v);
@@ -50,8 +60,12 @@ export async function renderCard(c: Card): Promise<Blob | null> {
   ctx.font = `500 26px ${mono}`; ctx.fillStyle = INK2; ctx.textAlign = alignE;
   ctx.fillText(c.no.toUpperCase(), E, P + 44); ctx.fillText(c.date.toUpperCase(), E, P + 80);
   ctx.fillStyle = INK; ctx.fillRect(P, P + 104, W - 2 * P, 10); ctx.fillRect(P, P + 122, W - 2 * P, 3);
-  // kicker
-  ctx.fillStyle = ACC_T; ctx.font = `800 31px ${text}`; ctx.textAlign = alignS; ctx.fillText(c.kick.toUpperCase(), S, P + 196);
+  // kicker (or the gold HERE WE GO band, which leads the card)
+  if (c.hwg) {
+    ctx.fillStyle = GOLD; ctx.fillRect(P, P + 150, W - 2 * P, 62);
+    ctx.fillStyle = GOLD_D; ctx.font = `900 40px ${cond}`; ctx.textAlign = alignS;
+    ctx.fillText(c.hwg.toUpperCase(), ar ? S - 18 : S + 18, P + 196, W - 2 * P - 36);
+  } else { ctx.fillStyle = ACC_T; ctx.font = `800 31px ${text}`; ctx.textAlign = alignS; ctx.fillText(c.kick.toUpperCase(), S, P + 196); }
   // headline (wood type)
   ctx.fillStyle = INK;
   const hed = c.hed.toUpperCase();
