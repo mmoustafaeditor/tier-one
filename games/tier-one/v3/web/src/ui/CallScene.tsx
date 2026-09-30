@@ -9,6 +9,7 @@ import { getSave, update } from '../lib/save';
 import { sfx, voice, buzz, type Sfx } from '../lib/sfx';
 import { voiceLine, saysWord, addsText, GRADE } from '../lib/story';
 import { Icon, SRC_ICON, Rel, kitSVG, useTyped } from './game';
+import { ringtoneSfx } from '../lib/season';
 
 // Painted character art slots (the art pack). Keys: source id → image URL. Empty until the art lands.
 export const ART: Record<string, string> = {};
@@ -38,7 +39,7 @@ export function CallScene({ src, clue, c, R, onDone, mode }: { src: string; clue
     if (mode && mode !== 'daily') maybeSourceIntro(src, mode);
     update((s) => { s.scenes = { ...(s.scenes || {}), [src]: Date.now() }; });
     if (full) { sfx(('scene.' + src) as Sfx); buzz(src === 'agent' ? [60, 120, 60, 500, 60, 120, 60] : 30); const id = setTimeout(() => setPhase('talk'), RING_MS[src] || 1200); return () => clearTimeout(id); }
-    sfx('phone.ring');
+    sfx(ringtoneSfx());
   }, []);
   useEffect(() => { if (phase === 'talk') voice(src, Math.min(2.2, 0.5 + line.length / 45)); }, [phase]);
   useEffect(() => { if (phase === 'talk' && typed.length >= line.length) { const id = setTimeout(() => { setPhase('said'); sfx('stamp.done'); buzz(18); }, full ? 350 : 120); return () => clearTimeout(id); } }, [typed, phase]);

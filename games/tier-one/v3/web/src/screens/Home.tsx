@@ -16,6 +16,7 @@ import { useNow } from '../ui/bits';
 import { dailyNoToday } from './Front';
 import { chapterOf } from '../lib/storyMode';
 import type { Chrome } from '../App';
+import { WeekEventBanner } from '../ui/season';
 
 const hms = (ms: number) => { const s = Math.max(0, Math.floor(ms / 1000)); return [s / 3600, (s % 3600) / 60, s % 60].map((x) => String(Math.floor(x)).padStart(2, '0')).join(':'); };
 const TIER_STAMP: Record<string, string> = { T1: 'gold', T2: 'done', T3: 'done', T4: 'off', SPIKED: '' };
@@ -89,6 +90,9 @@ export function Home(chrome: Chrome) {
             : <span className="mission__r g-mono">{m.claimed ? t('g.home.claimed') : <>{m.have + '/' + m.n}<span className="mission__c"><span className="g-coin" />+{m.coins}</span></>}</span>}
         </div>)}
       </section>}
+
+      {/* ---------- weekly event banner */}
+      <WeekEventBanner onPlay={(mode: string) => chrome.go({ n: mode })} />
 
       {/* ---------- modes */}
       <div className="g-sec" style={{ ['--i' as string]: 3 }}><h2>{t('g.home.modes')}</h2></div>
