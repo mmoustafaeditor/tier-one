@@ -17,6 +17,16 @@ together with your change.
 
 ---
 
+## 2026-09-30 · mmoustafaeditor (Claude session) · Tier One: post animation, call gate, no hints, banter results
+- **What changed:** Publishing plays a new post animation (`ui/PostScene.tsx`, rebuilt from the classic composer;
+  tap to skip, reduced-motion static). The call panel opens with "Make a call" / "Decide later"; loudness chips no
+  longer overlap (points under labels); outcome no longer pre-selected. Source-order hint banner and "next source"
+  glow removed; locked sources say "Opens day N". Results screen (Daily, Rooms, Practice, Career) rebuilt: verdict,
+  your calls as tweet cards with 1–3 best replies, the rest behind "See all replies" / "Full breakdown" / leaderboard /
+  share sheets. Banter pools restored from the classic game + `lane/content` and extended natively (EN 741, AR 711
+  Egyptian, ES 721 lines) in `i18n/parts/banter.ts`, picked per result by `lib/banter.ts`. SAIF-01/02 → In Progress.
+- **Files:** `games/tier-one/v3/web/src/**`, `games/tier-one/SAIF_IMPROVEMENTS.md`, `tier-one/index.html`, `tier-one/version.json`.
+
 ## 2026-09-30 · mmoustafaeditor (Claude session) · Tier One: home bar, career slots, blog pencil, Wire rework
 - **What changed:** Home top bar adds coins and Daily / Career / Room chips (Me press card reuses it); pages no longer
   scroll past their content; Today's five shows kits + player names (from `daily.start`'s cast; "?" offline);
