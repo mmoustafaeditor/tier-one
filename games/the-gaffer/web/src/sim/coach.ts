@@ -12,6 +12,7 @@ import { myWorldRank } from './rankings';
 import { addNews } from './news';
 import { balanceOf, sackLine, seasonSackLine } from './balance';
 import { strictness, userObjective } from './vision';
+import { settleClaim } from './press';
 import { DERBY_WEIGHT, isDerby } from './rivalry';
 
 // `board.hired` (coach days at the hire) is written by newBoard and read by sinceHire; saves from before this change have none.
@@ -203,7 +204,7 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
     // favourite's fans "muttering" all season (audit GF-004).
     fans: clamp(Math.round((before.fans + (FANS_RESULT[pts] + surprise * FANS_PER_SURPRISE) * k + (o.mine >= 3 ? 1 : 0) + (FANS_REST - before.fans) * FANS_SETTLE) * 10) / 10, 0, 100),
   };
-  let career: Career = { ...c, coach, board };
+  let career: Career = settleClaim({ ...c, coach, board }, o.oppId, pts); // V2.9: a presser's public claim
   // Messages that match what really happened (E2E #19).
   if (o.mine - o.theirs >= 3) career = addMsg(career, 'fans', 'bigWin', { club: opp.id, s: `${o.mine}-${o.theirs}` });
   if (o.theirs - o.mine >= 3) career = addMsg(career, 'board', 'badLoss', { club: opp.id, s: `${o.mine}-${o.theirs}` });

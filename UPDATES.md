@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-30 · saifsaber · The Gaffer V2.9: press conferences (branch only)
+- **What changed:** Rare press conferences on Today: before the matchweek's big match (a derby, a top-three clash, a cup final) or after a controversy (our red card, a defeat by 3+, a lost derby); at most one a matchweek (8–9 of 46 in a season), up to 3 questions with Measured (free, the assistant's pick) / Confident / Deflect, plus "name a player" when asking who's to blame. Each answer shows its cost before you tap it (squad or player morale/trust, board, fans). A confident claim costs board −3 and fans −4 more if you then lose to that side. The Tier One link part of V2.9 is not built: it would touch Tier One, so it waits for Mostafa.
+- **Files:** `games/the-gaffer/web/src/sim/{press,pressDecisions}.ts` (new), `sim/{coach,commands,decisions}.ts`, `model/types.ts`, `ui2/Decisions.tsx`, `lang-club*.ts`, `lang-dressing*.ts`, `sim-tests/press.ts` (new)
+- **Heads-up for the team:** None (optional save field `claim`).
+
 ## 2026-09-30 · saifsaber · The Gaffer V2.7–V2.8: club vision, facility builds, awards, legends, AI boards, derbies (branch only)
 - **What changed:** V2.7: a pre-season board meeting on Today (Expected = board goodwill, Ambitious = target one step up, the owner adds 15% of cash, a stricter board), facility upgrades now take 6–24 matchdays to build (one at a time), 6 months of parachute money after relegation, and renewals no longer ratchet wages (GF-015). V2.8: an awards night at the season's end (Player/Young Player of the Season, Golden Boot, Goalkeeper, Manager, Team of the Season for your league and the real top flights; winners +10% value), club legends (200 league games, 80 goals, or 100 games + 2 trophies) on the Career screen, AI managers who get sacked by their boards (mid-season and at the season's end, ~14% a season, in the news), and derbies that count 1.5× with the board and fans.
 - **Files:** `games/the-gaffer/web/src/sim/{vision,awards,legends,managers,rivalry}.ts` (new), `sim/{season,coach,commands,decisions,economy}.ts`, `model/types.ts`, `ui2/{Office,Today,PreMatch,Sheets,Career,Decisions,text}.*`, `lang-club*.ts` (new, EN/AR/ES/FR), `styles/app.css`, `sim-tests/{vision,world}.ts` (new)

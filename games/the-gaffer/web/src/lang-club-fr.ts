@@ -42,4 +42,33 @@ export const CL_FR: CLStrings = {
     way: 'En route',
     line: (apps: number, goals: number, trophies: number) => `${apps} ${P(apps, 'match', 'matchs')} · ${goals} ${P(goals, 'but', 'buts')} · ${trophies} ${P(trophies, 'trophée', 'trophées')}`,
   },
+  press: {
+    tag: 'Conférence de presse',
+    q: {
+      predict: (opp: string) => `Pouvez-vous battre ${opp} ?`,
+      star: (pn: string) => `${pn} est-il l’homme de ce match ?`,
+      rival: (opp: string) => `L’entraîneur de ${opp} dit que vous sentez la pression.`,
+      blame: (opp: string) => `Qu’est-ce qui n’a pas marché contre ${opp} ?`,
+      ref: (opp: string) => `Ce carton rouge contre ${opp}. Juste ?`,
+    },
+    adv: {
+      predict: 'Une réponse mesurée ne coûte jamais rien. Promettez une victoire et il faudra la livrer.',
+      star: 'Soutenez-le en public et il grandira. Les autres aiment entendre que c’est collectif.',
+      rival: 'Il cherche une réaction. Répondez et les supporters adorent, mais il faudra gagner.',
+      blame: 'Gardez ça dans le vestiaire si possible. Nommez un joueur en public et il le prendra mal.',
+      ref: 'S’en prendre à l’arbitre : les supporters applaudissent, la direction grimace.',
+    },
+    a: {
+      predict: { measured: 'On les respecte. On sera prêts', confident: 'On va gagner', deflect: 'Demandez-moi après le match' },
+      star: { measured: 'C’est l’affaire de toute l’équipe', confident: (pn: string) => `${pn} fera la différence`, deflect: 'Je ne parle pas des individus' },
+      rival: { measured: 'Qu’il parle. On se concentre sur nous', confident: 'On lui répondra sur le terrain, en gagnant', deflect: 'Je n’ai pas entendu ce qu’il a dit' },
+      blame: { measured: 'On va l’analyser ensemble', confident: 'C’est ma faute', deflect: 'Mauvais jour. On passe à autre chose', name: (pn: string) => `${pn} nous a laissés tomber` },
+      ref: { measured: 'Je laisse ça aux arbitres', confident: 'L’arbitre s’est trompé', deflect: 'Je ne l’ai pas bien vu' },
+    },
+    fx: {
+      squad: (n: string) => `Moral du groupe ${n}`, morale: (n: string) => `Son moral ${n}`, trust: (n: string) => `Sa confiance ${n}`,
+      board: (n: string) => `Direction ${n}`, fans: (n: string) => `Supporters ${n}`,
+      claim: 'Promesse publique : une défaite contre eux et c’est direction −3, supporters −4', safe: 'Ne coûte rien',
+    },
+  },
 };

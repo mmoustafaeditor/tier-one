@@ -43,4 +43,33 @@ export const CL_AR: CLStrings = {
     way: 'في الطريق',
     line: (apps: number, goals: number, trophies: number) => `${apps} ماتش · ${goals} جول · ${trophies} بطولة`,
   },
+  press: {
+    tag: 'مؤتمر صحفي',
+    q: {
+      predict: (opp: string) => `تقدر تكسب ${opp}؟`,
+      star: (pn: string) => `${pn} هو راجل الماتش ده؟`,
+      rival: (opp: string) => `مدرب ${opp} بيقول إنك متوتر.`,
+      blame: (opp: string) => `إيه اللي حصل قدام ${opp}؟`,
+      ref: (opp: string) => `الكارت الأحمر قدام ${opp}. كان صح؟`,
+    },
+    adv: {
+      predict: 'الرد الهادي عمره ما بيخسرنا. لو وعدت بالفوز لازم نكسب.',
+      star: 'لو سندته قدام الناس هيكبر. وباقي اللاعيبة بيحبوا يسمعوا إن الفريق كله مهم.',
+      rival: 'هو عايز رد فعل. لو رديت عليه الجمهور هيحبها، بس ساعتها لازم نكسب.',
+      blame: 'خليها جوه غرفة اللبس لو تقدر. لو سميت لاعب قدام الناس هيزعل جامد.',
+      ref: 'لو هاجمت الحكم الجمهور هيسقف والإدارة هتتضايق.',
+    },
+    a: {
+      predict: { measured: 'بنحترمهم وهنكون جاهزين', confident: 'هنكسب', deflect: 'اسألني بعد الماتش' },
+      star: { measured: 'الموضوع موضوع فريق', confident: (pn: string) => `${pn} هو اللي هيحسمها`, deflect: 'مش هتكلم عن أفراد' },
+      rival: { measured: 'سيبه يتكلم، إحنا مركزين في نفسنا', confident: 'هنرد عليه في الملعب بالفوز', deflect: 'ماسمعتش هو قال إيه' },
+      blame: { measured: 'هنراجعها مع بعض', confident: 'دي غلطتي أنا', deflect: 'يوم وحش وهنكمل', name: (pn: string) => `${pn} خذلنا` },
+      ref: { measured: 'هسيبها للحكام', confident: 'الحكم غلط', deflect: 'ماشفتهاش كويس' },
+    },
+    fx: {
+      squad: (n: string) => `معنويات الفريق ${n}`, morale: (n: string) => `معنوياته ${n}`, trust: (n: string) => `ثقته ${n}`,
+      board: (n: string) => `الإدارة ${n}`, fans: (n: string) => `الجمهور ${n}`,
+      claim: 'وعد قدام الناس: لو خسرنا منهم الإدارة −3 والجمهور −4', safe: 'مش هتكلفنا حاجة',
+    },
+  },
 };

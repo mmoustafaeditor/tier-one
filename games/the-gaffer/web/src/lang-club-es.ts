@@ -42,4 +42,33 @@ export const CL_ES: CLStrings = {
     way: 'En camino',
     line: (apps: number, goals: number, trophies: number) => `${apps} ${P(apps, 'partido', 'partidos')} · ${goals} ${P(goals, 'gol', 'goles')} · ${trophies} ${P(trophies, 'título', 'títulos')}`,
   },
+  press: {
+    tag: 'Rueda de prensa',
+    q: {
+      predict: (opp: string) => `¿Puede ganar al ${opp}?`,
+      star: (pn: string) => `¿Es ${pn} el hombre para este partido?`,
+      rival: (opp: string) => `El entrenador del ${opp} dice que usted está nervioso.`,
+      blame: (opp: string) => `¿Qué falló contra el ${opp}?`,
+      ref: (opp: string) => `Esa roja contra el ${opp}. ¿Justa?`,
+    },
+    adv: {
+      predict: 'Una respuesta prudente nunca cuesta nada. Si promete una victoria, hay que cumplir.',
+      star: 'Si lo respalda en público, crecerá. Al resto le gusta oír que es cosa de todos.',
+      rival: 'Busca una reacción. Si responde, la afición lo celebra, pero entonces hay que ganar.',
+      blame: 'Mejor dentro del vestuario. Si señala a un jugador en público, le dolerá.',
+      ref: 'Cargar contra el árbitro: la afición aplaude y la directiva se tensa.',
+    },
+    a: {
+      predict: { measured: 'Los respetamos. Estaremos listos', confident: 'Vamos a ganar', deflect: 'Pregúnteme después del partido' },
+      star: { measured: 'Es cosa de todo el equipo', confident: (pn: string) => `${pn} lo decidirá`, deflect: 'No hablo de individualidades' },
+      rival: { measured: 'Que hable. Nosotros a lo nuestro', confident: 'Le responderemos en el campo, ganando', deflect: 'No he oído lo que dijo' },
+      blame: { measured: 'Lo analizaremos juntos', confident: 'La culpa es mía', deflect: 'Mal día. Pasamos página', name: (pn: string) => `${pn} nos falló` },
+      ref: { measured: 'Lo dejo en manos de los árbitros', confident: 'El árbitro se equivocó', deflect: 'No lo vi bien' },
+    },
+    fx: {
+      squad: (n: string) => `Moral del equipo ${n}`, morale: (n: string) => `Su moral ${n}`, trust: (n: string) => `Su confianza ${n}`,
+      board: (n: string) => `Directiva ${n}`, fans: (n: string) => `Afición ${n}`,
+      claim: 'Promesa pública: si perdemos con ellos, directiva −3 y afición −4', safe: 'No cuesta nada',
+    },
+  },
 };

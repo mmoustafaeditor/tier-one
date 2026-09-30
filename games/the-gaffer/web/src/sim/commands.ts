@@ -4,6 +4,7 @@
 // they build a Command and hand it to the App, which dispatches it and saves.
 import type { Balance, Career, Dept, DeptLevel, Facility, LocalizedName, NamesMode, PrepFocus, SponsorDeal, VisionLevel } from '../model/types';
 import { setVision } from './vision';
+import { answer, type PressQ, type PressTone } from './press';
 import { withNames } from './seed';
 import type { UserTactics, Tactics, Philosophy } from './tactics';
 import type { LiveMatch } from './match';
@@ -58,6 +59,7 @@ export type Command =
   | { type: 'facility.upgrade'; facility: Facility }
   | { type: 'wagecap.move'; perMonth: number }
   | { type: 'vision.set'; level: VisionLevel } // V2.7: the pre-season board meeting
+  | { type: 'press.answer'; q: PressQ; tone: PressTone; pid?: string; opp?: string } // V2.9: one presser question
   | { type: 'squad.bonus'; ids: string[]; each: number; fromWallet: boolean }
   | { type: 'squad.talk' }
   | { type: 'training.set'; load?: 0 | 1 | 2; focus?: { playerId: string; attr: number | null }; pos?: { playerId: string; pos: Position | null } }
@@ -251,6 +253,8 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
       const r = upgradeFacility(w, c, cmd.facility);
       return r.ok ? { world: r.world, career: r.career } : no(r.reason ?? 'budget');
     }
+    case 'press.answer':
+      return answer(w, c, cmd.q, cmd.tone, cmd.pid, cmd.opp);
     case 'vision.set': {
       const r = setVision(w, c, cmd.level);
       return r ?? no('gone');

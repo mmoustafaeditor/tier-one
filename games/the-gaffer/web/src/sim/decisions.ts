@@ -7,6 +7,7 @@ import type { Career, Dept, LocalizedName, Pending, Player, PrepFocus, StaffRole
 import type { Command } from './commands';
 import { available, formOf, slotValue, xiFor, FORMATIONS, DEFAULT_TACTICS } from './tactics';
 import { objectiveOf, playerOf, squadOf, strengthOf, type World } from './world';
+import { pressDecisions } from './pressDecisions';
 import { VISION_DEADLINE, kittyFor, needsMeeting, raiseObjective } from './vision';
 import { renewDemand, wageBillOf, SQUAD_COMFORT, SQUAD_THIN } from './transfers';
 import { balanceOf } from './balance';
@@ -24,7 +25,7 @@ import { anyPlayer } from './youth';
 import { recruitDecisions } from './recruit/decide';
 import { rcOf } from './recruit/state';
 
-export type DecKind = 'welcome' | 'vision' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline'
+export type DecKind = 'welcome' | 'vision' | 'presser' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline'
   | 'talk' | 'request' | 'promise' | 'armband' | 'clause' // v2.4 dressing room (sim/room-decisions.ts)
   | 'bidAnswer' | 'agent' | 'rival' | 'loanClause' | 'recall' // v2.5 recruitment (sim/recruit/decide.ts)
   | 'risk' | 'rush' | 'intake' | 'ready' | 'loanee' | 'benched' | 'full' | 'ageout'; // v2.6 (sim/youthDecisions.ts)
@@ -86,6 +87,9 @@ export function decisions(w: World, c: Career): Decision[] {
       score: 80, open: { to: 'office' },
     });
   }
+
+  // 0c. V2.9 a press conference, when there's a reason for one (sim/pressDecisions.ts): up to three question cards.
+  for (const d of pressDecisions(w, c)) add(d);
 
   // 1. Bids for your players (unless the director answers them on his own).
   if (levelOf(c, 'contracts') !== 'staff') {

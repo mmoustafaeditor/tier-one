@@ -217,6 +217,7 @@ export interface Career {
   awards?: import('../sim/awards').AwardSet[];     // V2.8: recent awards nights, newest first (last 30 league sets)
   clubTally?: Record<string, [number, number, number]>; // V2.8: '<club>:<player>' -> league apps, goals, trophies there
   legends?: Legend[];                             // V2.8: club legends (they stay listed after they leave or retire)
+  claim?: import('../sim/press').PressClaim;      // V2.9: a public claim from a presser, settled by the next result against that side
 }
 
 // V2.8 a club legend: 200 league apps, or 80 league goals, or 100 apps and 2 trophies at the club.

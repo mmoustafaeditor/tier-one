@@ -42,5 +42,35 @@ export const CL_EN = {
     way: 'On the way',
     line: (apps: number, goals: number, trophies: number): string => `${apps} ${P(apps, 'game', 'games')} · ${goals} ${P(goals, 'goal', 'goals')} · ${trophies} ${P(trophies, 'trophy', 'trophies')}`,
   },
+  // V2.9 press conferences (sim/press.ts): one card per question; Measured never costs anything.
+  press: {
+    tag: 'Press conference',
+    q: {
+      predict: (opp: string): string => `Can you beat ${opp}?`,
+      star: (pn: string): string => `Is ${pn} the man for this one?`,
+      rival: (opp: string): string => `${opp}’s manager says you’re feeling the heat.`,
+      blame: (opp: string): string => `What went wrong against ${opp}?`,
+      ref: (opp: string): string => `That red card against ${opp}. Fair?`,
+    },
+    adv: {
+      predict: 'A measured answer never costs us. Promise a win and we’d better deliver.',
+      star: 'Back him in public and he’ll grow. The rest of the lads like to hear it’s about the team.',
+      rival: 'He wants a reaction. Fire back and the fans love it, but then we have to win.',
+      blame: 'Keep it in the dressing room if you can. Name a player in public and he’ll take it hard.',
+      ref: 'Go after the referee and the fans cheer, the board winces.',
+    } as Record<string, string>,
+    a: {
+      predict: { measured: 'We respect them. We’ll be ready', confident: 'We’ll win it', deflect: 'Ask me after the game' },
+      star: { measured: 'It’s about the whole team', confident: (pn: string): string => `${pn} will decide it`, deflect: 'No talk about individuals' },
+      rival: { measured: 'Let him talk. We focus on us', confident: 'We’ll answer him on the pitch, with a win', deflect: 'I haven’t heard what he said' },
+      blame: { measured: 'We’ll look at it together', confident: 'That one’s on me', deflect: 'Bad day. We move on', name: (pn: string): string => `${pn} let us down` },
+      ref: { measured: 'I’ll leave it to the officials', confident: 'The referee got it wrong', deflect: 'I didn’t see it properly' },
+    },
+    fx: {
+      squad: (n: string): string => `Squad morale ${n}`, morale: (n: string): string => `His morale ${n}`, trust: (n: string): string => `His trust ${n}`,
+      board: (n: string): string => `Board ${n}`, fans: (n: string): string => `Fans ${n}`,
+      claim: 'Public claim: lose to them and it’s board −3, fans −4', safe: 'Costs nothing',
+    },
+  },
 };
 export type CLStrings = typeof CL_EN;
