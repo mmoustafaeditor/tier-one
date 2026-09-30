@@ -18,6 +18,7 @@ import { stampBeat } from '../film/surfaces/manifest';
 import type { View } from '../lib/driver';
 import { vinceOf } from '../lib/career';
 import { srcNamed } from '../lib/storyMode';
+import { catchphraseOf } from '../lib/catchphrase';
 
 // Your head-to-head ledger against one rival (GOTY.md §1.3). Filled by the connect lane's rivalRecord(id).
 export interface RivalRecord { w: number; l: number; d: number }
@@ -87,7 +88,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
         <div className="pcard__m g-mono">{[t('pos.' + c.player.pos), c.player.age > 0 ? String(c.player.age) : '', c.player.nat].filter(Boolean).join(' · ')}</div>
         <div className="pcard__route"><Crest club={c.from} size={28} /><span className="pcard__arrow"><Icon n={t.rtl ? 'back' : 'arrow'} size={18} /></span><Crest club={c.to} size={28} /><span className="pcard__to"><bdi><b>{c.to.s}</b>?</bdi></span></div>
       </div>
-      {call && <span key={call.o + ':' + call.s + ':' + (justFiled || 0)} className={'pcard__stamp g-stamp g-stamp--' + (hereWeGo(call) ? 'gold' : OUTS[call.o]) + (justFiled ? ' is-slam' : '')}>{hereWeGo(call) ? t('calls.hwg.stamp') : strWord(t.lang, call.s) + ' · ' + outWord(t.lang, call.o)}</span>}
+      {call && <span key={call.o + ':' + call.s + ':' + (justFiled || 0)} className={'pcard__stamp g-stamp g-stamp--' + (hereWeGo(call) ? 'gold' : OUTS[call.o]) + (justFiled ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : strWord(t.lang, call.s) + ' · ' + outWord(t.lang, call.o)}</span>}
     </div>
 
     {tw && <div className="stoppress"><b>{t('g.saga.stopPress')}</b><span>{t('saga.twistBanner', { p: c.player.s })} {t('saga.twistNote')}</span></div>}
@@ -180,7 +181,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
         {pv && <p className="stake" aria-live="polite"><span className="stake__w">{t('calls.stake.right', { n: pv.win })}</span><span className="stake__l">{t('calls.stake.wrong', { n: num(pv.lose) })}</span>{exTail}</p>}
         <HoldPublish disabled={selO == null || busy || (!!call && call.o === selO)} shine={selO != null} gold={selO === 0 && s === 2 && !call} onCommit={post}
           label={selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}>
-          <Icon n={call ? 'uturn' : 'news'} size={24} /><span className="publish__t">{selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : selO === 0 && s === 2 ? <><b>{t('calls.hwg.word')}</b><em>{t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}</em></> : (() => { const [h, ...rest] = t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) }).split(' · '); return rest.length ? <><b>{h}</b><em>{rest.join(' · ')}</em></> : h; })()}</span>
+          <Icon n={call ? 'uturn' : 'news'} size={24} /><span className="publish__t">{selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : selO === 0 && s === 2 ? <><b>{catchphraseOf().text.toUpperCase()}</b><em>{t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}</em></> : (() => { const [h, ...rest] = t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) }).split(' · '); return rest.length ? <><b>{h}</b><em>{rest.join(' · ')}</em></> : h; })()}</span>
         </HoldPublish>
       </div>}
       {cs === 'nosource' && !call && <p className="callbox__none"><Icon n="phone" size={16} /> {t('g.saga.noStory')}</p>}

@@ -1,5 +1,5 @@
 // 3.4 motion pieces (src/film, GOTY.md §10/§12): the few words printed on things (departures board, day-end card,
-// moment captions) and the house catchphrase that stands in until the player picks their own. Never "HERE WE GO".
+// moment captions) and the house catchphrase that stands in until the player picks their own. Never "DONE DEAL".
 export default {
   en: {
     film: { name: { catchphrase: 'Your line' }, m: { motion: { onAir: 'ON AIR', cp: 'Called it', promo: 'Promoted' } } },

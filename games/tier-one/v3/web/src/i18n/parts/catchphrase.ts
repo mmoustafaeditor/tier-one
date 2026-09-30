@@ -1,4 +1,4 @@
-// Catchphrases (GOTY.md §12): your line replaces "HERE WE GO". A Confirmed call that lands fires it (stamp, share
+// Catchphrases (GOTY.md §12): your line replaces "DONE DEAL". A Confirmed call that lands fires it (stamp, share
 // card, film title). cp.house.<id>: the ten house originals (default "Book it."); cp.unlock.<id>: how each one is
 // earned (rank, streak, chapter); cp.react.*: fans and rivals reacting, templated on {phrase} (+ {p} player, {name} you).
 // Nothing here is anyone else's catchphrase: every line is an original (docs/LEGAL_NAMES.md).

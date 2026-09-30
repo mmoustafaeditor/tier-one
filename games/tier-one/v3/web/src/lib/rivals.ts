@@ -20,7 +20,7 @@
 import { trList, tr, fill, type Vars } from './i18n';
 import { getConfig, flag } from './flags';
 import { getSave } from './save';
-import { myCatchphrase } from './banter';
+import { catchphraseOf } from './catchphrase';
 
 export type RivalKind = 'press' | 'creator';
 export interface RivalCard {
@@ -109,7 +109,7 @@ export type RivalLineKind = 'cp.right' | 'cp.wrong' | 'uturn' | 'dd' | 'ddlive.o
 export function rivalLine(lang: string, id: string, kind: RivalLineKind, seed: string | number, v: Vars = {}): string {
   const l = trList(lang, 'rv.' + voiceOf(id) + '.' + kind) as string[] | undefined;
   if (!Array.isArray(l) || !l.length) return '';
-  const vars: Vars = { name: getSave().nick || tr(lang, 'd2.post.you'), phrase: myCatchphrase(lang), ...v };
+  const vars: Vars = { name: getSave().nick || tr(lang, 'd2.post.you'), phrase: catchphraseOf().text, ...v };
   return fill(l[hash(id + '|' + kind + '|' + seed) % l.length], vars);
 }
 /** A feed-style taunt for any state, outside the ledger flow (DD Live tables, creator cards, previews). */

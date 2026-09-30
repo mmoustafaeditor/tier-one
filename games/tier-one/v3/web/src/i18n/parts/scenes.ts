@@ -25,7 +25,7 @@ export default {
         names: { rumour: 'The Rumour Mill', winter: 'Winter Window', spring: 'Spring Whispers', summer: 'Summer Window' },
         clips: ['Striker spotted at the airport', 'Agent flies in for talks', 'Medical booked for Monday', 'Barber says the fee is agreed', 'New shirt number printed', 'Club denies everything'],
       },
-      hwg: { hwg: 'HERE WE GO!', called: 'Called it first', post: '{p} to {c}. Contracts signed, medical done.' },
+      hwg: { hwg: 'DONE DEAL!', called: 'Called it first', post: '{p} to {c}. Contracts signed, medical done.' },
     },
   },
   ar: {
@@ -51,7 +51,7 @@ export default {
         names: { rumour: 'طاحونة الإشاعات', winter: 'ميركاتو الشتا', spring: 'همسات الربيع', summer: 'ميركاتو الصيف' },
         clips: ['المهاجم اتشاف في المطار', 'الوكيل جاي بطيارة عشان يتفاوض', 'الكشف الطبي يوم الاتنين', 'الحلاق بيقول اتفقوا على المبلغ', 'رقم فانلة جديد اتطبع', 'النادي بينفي كل حاجة'],
       },
-      hwg: { hwg: 'HERE WE GO!', called: 'أنا اللي قلتها الأول', post: '{p} رايح {c}. العقود اتمضت والكشف الطبي خلص.' },
+      hwg: { hwg: 'DONE DEAL!', called: 'أنا اللي قلتها الأول', post: '{p} رايح {c}. العقود اتمضت والكشف الطبي خلص.' },
     },
   },
   es: {
@@ -77,7 +77,7 @@ export default {
         names: { rumour: 'El Molino de Rumores', winter: 'Mercado de Invierno', spring: 'Susurros de Primavera', summer: 'Mercado de Verano' },
         clips: ['Ven al delantero en el aeropuerto', 'El agente vuela para negociar', 'Reconocimiento médico el lunes', 'El barbero dice que hay acuerdo', 'Imprimen un dorsal nuevo', 'El club lo niega todo'],
       },
-      hwg: { hwg: 'HERE WE GO!', called: 'Lo dije primero', post: '{p} al {c}. Contratos firmados, reconocimiento superado.' },
+      hwg: { hwg: 'DONE DEAL!', called: 'Lo dije primero', post: '{p} al {c}. Contratos firmados, reconocimiento superado.' },
     },
   },
 };

@@ -83,7 +83,7 @@ export default {
         'story-ch5-open': 'The lift doors open onto the old newsroom.',
         'story-finale': 'The clock hits 23:58. Vince rings. Same pitch, word for word.',
         'story-epilogue': 'Vince’s phone lights up. Unknown number: “Nothing personal.”',
-        // 3.4 motion pieces (film/story/*): words printed on things. Short, big, one line each. Never "HERE WE GO".
+        // 3.4 motion pieces (film/story/*): words printed on things. Short, big, one line each. Never "DONE DEAL".
         pro: {
           clock: 'DEADLINE DAY', caller: 'Vince Marlow', calling: 'Incoming call', masthead: 'The Chronicle', draft: 'Draft',
           board: ['STAR TO SIGN BY MIDNIGHT', 'STAR SIGNS FOR RIVALS'], headline: 'Star signs tonight. Pen on paper by midnight.', stamp: 'DONE DEAL',

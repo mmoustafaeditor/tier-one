@@ -28,6 +28,7 @@ import { DayEnd } from '../film/calls/DayEnd'; // GOTY.md §10: the 1.5 s day en
 // The editor's desk (GOTY.md §7.1): the Daily brief before day 1 and the Deadline Day Live ticker (ui/live.tsx).
 import { DailyBriefSheet, DDLiveTicker } from '../ui/live';
 import { LivePresence } from '../ui/social';
+import { catchphraseOf } from '../lib/catchphrase';
 
 // The rival ledger (GOTY.md §1.3) lives in the connect lane's lib/byline.ts. Picked up here if that module exists and
 // exports rivalRecord(id); otherwise the race strip and overnight taunts simply run without it.
@@ -251,7 +252,7 @@ function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Ga
         {posted > 0 && !call && <span key={'rv' + posted} className="g-chip scard__riv chip-in"><Icon n="bolt" />{t('g.win.rivalPosted', { n: posted })}</span>}
       </span>
     </span>
-    <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + (hereWeGo(call) ? 'gold scard__hwg' : OUTS[call.o]) + (filed ? ' is-slam' : '')}>{hereWeGo(call) ? t('calls.hwg.stamp') : outWord(t.lang, call.o)}</span> : <Icon n={t.rtl ? 'back' : 'arrow'} size={22} />}</span>
+    <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + (hereWeGo(call) ? 'gold scard__hwg' : OUTS[call.o]) + (filed ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : outWord(t.lang, call.o)}</span> : <Icon n={t.rtl ? 'back' : 'arrow'} size={22} />}</span>
   </button>;
 }
 
@@ -402,7 +403,7 @@ function Burst({ kind, hwg }: { kind: number; hwg?: boolean }) {
   const t = useT();
   const bits = ['share', 'flame', 'eye', 'share', 'star', 'flame', 'eye', 'bolt', 'share', 'flame'];
   return <div className={'burst' + (hwg ? ' is-hwg' : '')} aria-hidden="true">
-    <span className="burst__word">{hwg ? t('calls.hwg.burst') : t('g.win.published.' + kind)}</span>
+    <span className="burst__word">{hwg ? catchphraseOf().text.toUpperCase() : t('g.win.published.' + kind)}</span>
     {bits.map((b, k) => <i key={k} style={{ left: 10 + (k * 83) % 80 + '%', animationDelay: k * 70 + 'ms' }}><Icon n={b} /></i>)}
   </div>;
 }

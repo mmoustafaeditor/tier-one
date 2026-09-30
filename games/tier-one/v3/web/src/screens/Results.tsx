@@ -28,6 +28,7 @@ import '../styles/results.css';
 import { flushDeferredScenes, playScene, afterScenes, firstToday } from '../lib/scenes';
 import { windowKey, bylineOf, repTier, REP_TIERS, type WindowSummary } from '../lib/byline';
 import { ChallengeButton as SocialChallengeButton } from '../ui/social';
+import { catchphraseOf } from '../lib/catchphrase';
 
 /** SLOT (social lane, ui/social.tsx): `<ChallengeButton/>`. Assign the real component here; it renders beside Share.
  *  Props: { view, result }. */
@@ -410,7 +411,7 @@ function useShare(view: View, r: Result, what: string, hed: string, bestDest: Ca
   const url = 'sembagames.app/tier-one';
   const text = shareText(t, { what, tier: t('tier.' + r.tier), pts: num(r.total), row: r.row || '', url: 'https://' + url });
   const hwgIdx = hereWeGoOf(r);
-  const card = () => ({ hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl, hwg: hwgIdx >= 0 ? t('calls.hwg.card', { p: bc.player.s }) : undefined });
+  const card = () => ({ hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl, hwg: hwgIdx >= 0 ? catchphraseOf().text.toUpperCase() + ' · ' + bc.player.s : undefined });
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 2400); };
   const send = async () => {
     onShared();
