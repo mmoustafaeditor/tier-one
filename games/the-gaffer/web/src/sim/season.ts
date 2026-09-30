@@ -96,6 +96,17 @@ export function userMatch(w: World, c: Career): LiveMatch | null {
   return startMatch(w, c, f[0], f[1], matchKey(c, lid, i), c.round);
 }
 
+// Between matchdays morale settles a share of the way back to its normal level (at least one point), the same rule
+// for every squad. A fixed ±1 a matchday could not keep up with ±6 a result, so a side losing more than a third of its
+// games sank to the floor and lost ~2.5 on every attribute (audit GF-003). With a 20% pull a poor side settles in the
+// mid-40s and a dominant one in the high 70s.
+export const MORALE_SETTLE = 0.2;
+export function settleMorale(morale: number, target: number): number {
+  const gap = target - morale;
+  if (!gap) return morale;
+  return morale + Math.sign(gap) * Math.max(1, Math.round(Math.abs(gap) * MORALE_SETTLE));
+}
+
 // Applies one finished match to the players: condition, morale, cards, injuries, and (league games only) season stats.
 // `care`: the user's club, where the doctor and medical centre shorten injuries.
 type Rate = (id: string, v: number, motm: boolean) => void;
@@ -190,7 +201,7 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
       if (p.banned > 0) p.banned--;
     }
     p.fitness = Math.min(100, p.fitness + 12);
-    p.morale += Math.sign((p.clubId === c.clubId ? moraleTarget : 60) - p.morale);
+    p.morale = settleMorale(p.morale, p.clubId === c.clubId ? moraleTarget : 60);
   }
 
   const world: World = { ...w, players, clubs: applyElo(w.clubs, Object.values(next.fixtures).map((rs) => rs[c.round] ?? []).flat()) };
