@@ -191,6 +191,7 @@ export const NEW_FR: NewStrings = {
     'selling:rejected': (a) => `A refusé ${a.money(a.n)} pour ${a.pn}.`,
     'selling:listed': (a) => `A placé ${a.pn} sur la liste des transferts.`,
     'contracts:renewed': (a) => `A prolongé ${a.pn} de ${a.n} ${P(a.n, 'saison', 'saisons')}.`,
+    'contracts:capRaise': (a) => `A relevé le plafond salarial de ${a.money(a.n)} par mois pour garder ${a.pn}.`,
     'signing:signed': (a) => `A recruté ${a.pn} ${a.club ? `de ${a.club}` : 'libre'} pour ${a.n ? a.money(a.n) : '0'}.`,
     'loans:out': (a) => `A prêté ${a.pn} à ${a.club}.`,
     'sponsors:signed': (a) => `A signé ${a.pn} comme sponsor : ${a.money(a.n)} par mois.`,

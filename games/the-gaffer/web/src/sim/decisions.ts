@@ -7,8 +7,9 @@ import type { Career, Dept, LocalizedName, Pending, Player, PrepFocus, StaffRole
 import type { Command } from './commands';
 import { available, formOf, slotValue, xiFor, FORMATIONS, DEFAULT_TACTICS } from './tactics';
 import { playerOf, squadOf, strengthOf, type World } from './world';
-import { renewDemand, wageBillOf } from './transfers';
+import { renewDemand, wageBillOf, SQUAD_COMFORT, SQUAD_THIN } from './transfers';
 import { balanceOf } from './balance';
+import { CAP_MONTHS_UP } from './economy';
 import { nextUserMatch } from './season';
 import { levelOf, biasOf, DEPT_ROLE, staffOf } from './delegation';
 import { loanOf } from './loans';
@@ -76,7 +77,10 @@ export function decisions(w: World, c: Career): Decision[] {
       const lean = p.listed ? null : b === 'money' || b === 'loyal' ? b : null;
       const want = p.marketValue * (core.has(p.id) ? 1.4 : p.listed ? 0.85 : 1.1) * (lean === 'money' ? 0.87 : lean === 'loyal' ? 1.2 : 1);
       const counter = roundFee(o.fee * 1.15);
-      const call = o.fee >= want ? 'accept' : o.fee >= want * 0.8 ? 'counter' : 'reject';
+      const senior = squad.filter((x) => !loanOf(c, x.id)).length;
+      const price = o.fee >= want ? 'accept' : o.fee >= want * 0.8 ? 'counter' : 'reject';
+      // A thin squad keeps its players unless we listed them (GF-005).
+      const call = p.listed || senior > SQUAD_COMFORT ? price : senior <= SQUAD_THIN ? 'reject' : price === 'accept' ? 'counter' : price;
       // v2.5: a club that bid because it NEEDS him (and he's unhappy or running down his deal) is a rival bid.
       const why = rcOf(c).aiWhy[o.id];
       add({
@@ -250,6 +254,7 @@ function pendingCard(w: World, c: Career, pd: Pending): Decision {
   if (cmd.type === 'contract.renew') fx.push({ tone: 'plain', icon: 'pound', key: 'wagesYear', n: cmd.wage * 12 }, { tone: 'good', icon: 'heart', key: 'moraleUp' });
   if (cmd.type === 'player.list') fx.push({ tone: 'warn', icon: 'market', key: 'listed' });
   if (cmd.type === 'loan.out') fx.push({ tone: 'good', icon: 'grow', key: 'minutes' });
+  if (cmd.type === 'wagecap.move') fx.push({ tone: 'warn', icon: 'pound', key: 'fee', n: (pd.n ?? 0) * CAP_MONTHS_UP });
   if (cmd.type === 'sponsor.sign') fx.push({ tone: 'good', icon: 'pound', key: 'monthly', n: pd.n ?? 0 });
   if (cmd.type === 'medical.treat') fx.push({ tone: 'good', icon: 'medic', key: 'backSooner' });
   if (cmd.type === 'squad.talk') fx.push({ tone: 'good', icon: 'heart', key: 'moraleUp' });

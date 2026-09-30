@@ -189,6 +189,7 @@ export const NEW_AR: NewStrings = {
     'selling:rejected': (a) => `رفض ${a.money(a.n)} في ${a.pn}.`,
     'selling:listed': (a) => `عرض ${a.pn} للبيع.`,
     'contracts:renewed': (a) => `جدد لـ${a.pn} ${a.n} ${a.n === 1 ? 'موسم' : 'مواسم'} كمان.`,
+    'contracts:capRaise': (a) => `زوّد سقف المرتبات ${a.money(a.n)} في الشهر عشان يمسك في ${a.pn}.`,
     'signing:signed': (a) => `جاب ${a.pn} من ${a.club || 'الأحرار'} بـ${a.n ? a.money(a.n) : 'ببلاش'}.`,
     'loans:out': (a) => `عار ${a.pn} لـ${a.club}.`,
     'sponsors:signed': (a) => `مضى مع ${a.pn} كراعي: ${a.money(a.n)} في الشهر.`,

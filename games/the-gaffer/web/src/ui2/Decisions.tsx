@@ -58,6 +58,7 @@ export function titleText(g: Game, d: Decision): string {
     case 'deadline': return call(T.deadline, g.x.dec.groups[r.n ?? 1]);
     case 'ask_signed': return call(T.ask_signed, pn, money(r.n ?? 0));
     case 'ask_renewed': return call(T.ask_renewed, pn, r.n ?? 1);
+    case 'ask_capRaise': return call(T.ask_capRaise, pn, money(r.n ?? 0), Number(r.s ?? 1));
     case 'ask_out': return call(T.ask_out, pn, clubName(g, r.club ?? r.s));
     case 'ask_load': return call(T.ask_load, g.x.train.loads[r.n ?? 1].toLowerCase());
     case 'ask_focus': return call(T.ask_focus, (g.x.train.focusNames as Record<string, string>)[r.s ?? ''] ?? r.s);
