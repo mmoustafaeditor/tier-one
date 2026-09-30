@@ -5,7 +5,7 @@ import type { Pub, Tier, Act } from './engine';
 import type { MissionState } from './progress';
 
 export const SAVE_KEY = 'tierone_v3';
-export const SAVE_V = 1;
+export const SAVE_V = 2;
 
 export interface DailyRecord { no: number; total: number; tier: Tier; row: string; ex: number; rank?: number | null; players?: number; par?: number | null }
 export interface LocalWindow { seed: string; mode: 'practice' | 'career'; log: Act[]; started: number; coach?: boolean; label?: string; favours?: { kind: string; i: number; day: number; info?: number }[]; ddAt?: number }
@@ -15,7 +15,9 @@ export interface CareerSave {
   contacts: Record<string, Contact>; relations: Record<string, { v: number; last: number }>; t1: number; exclusives: number; right: number; calls: number; uturns: number;
   history: { n: number; total: number; tier: Tier; repAfter: number; at: number }[]; live: LocalWindow | null; restarts: number;
   t1Top?: number; // Tier 1 windows played at the top rank (Story finale)
+  renames?: number; // blog renames so far (the first is free)
 }
+export interface CareerSlot { career: CareerSave; story?: Save['story'] }
 export interface Save {
   v: number; dev: string; nick: string; lang: 'en' | 'ar' | 'es'; edition: '' | 'morning' | 'late'; sound: boolean; reduced: boolean; onboarded: boolean;
   daily: Record<string, DailyRecord>;
@@ -33,6 +35,9 @@ export interface Save {
   story?: { prologue?: boolean; chapterSeen?: number; beats?: Record<string, number>; inbox?: { at: number; from: string; key: string; v?: Record<string, string | number>; read?: boolean }[] };
   tut?: { done?: boolean; seen?: Record<string, boolean> };
   scenes?: Record<string, number>;
+  // v2: career save slots. `career`/`story` are the live copy of slots[slot]; the others sit here.
+  slots?: (CareerSlot | null)[];
+  slot?: number;
 }
 
 const rid = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; let s = ''; const b = new Uint8Array(16); crypto.getRandomValues(b); for (const x of b) s += a[x % a.length]; return s; };
@@ -41,6 +46,7 @@ export function fresh(): Save {
     v: SAVE_V, dev: rid(), nick: '', lang: guessLang(), edition: '', sound: true, reduced: false, onboarded: false,
     daily: {}, streak: { n: 0, best: 0, last: '', grace: 0 }, credits: 0, ledger: [], owned: [], theme: 'standard', pp: 0,
     ach: {}, stats: {}, practice: { coach: true, live: null, played: 0, day: '', today: 0 }, career: null, rooms: [], milestones: {}, wireSeen: [],
+    slots: [null, null, null], slot: 0,
   };
 }
 function guessLang(): Save['lang'] {
@@ -51,6 +57,8 @@ function guessLang(): Save['lang'] {
 // Migrations: MIG[n] turns a version-n save into version n+1. Add one per format change; never edit an old one.
 const MIG: Record<number, (s: any) => any> = {
   0: (s) => ({ ...fresh(), ...s, v: 1 }),
+  // v1 -> v2: the single career becomes slot 1 of 3.
+  1: (s) => ({ ...s, v: 2, slot: 0, slots: [s.career ? { career: s.career, story: s.story } : null, null, null] }),
 };
 export function migrate(raw: any): Save {
   let s = raw && typeof raw === 'object' ? raw : fresh();

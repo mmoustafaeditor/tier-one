@@ -239,8 +239,9 @@ const actions = {
 
   // ---- leaderboards ----
   async 'lb.top'(b) {
-    const period = b.period === 'weekly' ? 'weekly' : 'daily', day = today(), dev = devId(b.dev);
-    const key = period === 'weekly' ? 't1v3:lb:w:' + isoWeek(day) : 't1v3:lb:d:' + day;
+    // period 'wire': the season's Wire credibility board (scored on the server in wire.mine).
+    const period = b.period === 'weekly' || b.period === 'wire' ? b.period : 'daily', day = today(), dev = devId(b.dev);
+    const key = period === 'wire' ? 't1v3:cred:' + season(Date.now()) : period === 'weekly' ? 't1v3:lb:w:' + isoWeek(day) : 't1v3:lb:d:' + day;
     const [z, total] = await redis([['ZREVRANGE', key, 0, LB_TOP - 1, 'WITHSCORES'], ['ZCARD', key]]);
     const ids = []; for (let i = 0; i < (z || []).length; i += 2) ids.push(z[i]);
     const docs = ids.length ? await one('MGET', ...ids.map((d) => key + ':e:' + d)) : [];
@@ -329,6 +330,7 @@ const actions = {
     const doneL = list.filter((c) => c.done && c.outcome !== 'void');
     const hits = doneL.filter((c) => c.right).reduce((a, c) => a + c.s, 0), n = doneL.reduce((a, c) => a + c.s, 0);
     const cred = Number(await one('ZSCORE', 't1v3:cred:' + season(now), dev)) || 0;
+    if (list.length) await one('SET', 't1v3:cred:' + season(now) + ':e:' + dev, JSON.stringify({ nick }), 'EX', 200 * DAY);
     return { calls: list, cred, hitRate: hitRate(hits, n), resolved: doneL.length, season: season(now) };
   },
 

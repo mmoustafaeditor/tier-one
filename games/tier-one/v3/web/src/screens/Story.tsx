@@ -8,7 +8,8 @@ import { RANKS, TRUST_LV, trustLevel, newCareer, totalFavours } from '../lib/car
 import { chapterFor, chapterNew, CHAPTERS, beatKey, type Chapter, type Beat } from '../lib/storyMode';
 import { clubById, RULES, type WClub } from '../lib/engine';
 import { randomSeed } from '../lib/driver';
-import { useLeague } from '../lib/leagueData';
+import { slotList, switchSlot, newSlot, deleteSlot, slotCode, restoreCode } from '../lib/slots';
+import { spend, toast } from '../lib/meta';
 import { sfx, voice } from '../lib/sfx';
 import { Icon, Kit, GBtn, TopBar, SrcIcon, Rel, confetti, shake, useTyped } from '../ui/game';
 import { Crest } from '../ui/bits';
@@ -25,25 +26,25 @@ const vi = (i: number) => ({ ['--i' as string]: i });
 export function StoryScreen(chrome: Chrome) {
   const s = useSave();
   const c = s.career;
-  const [pro, setPro] = useState<null | 'start' | 'replay'>(null);
+  const [pro, setPro] = useState<null | 'start'>(null);
   const create = () => update((x) => {
     x.story = x.story || {}; x.story.prologue = true;
     if (!x.career) { x.career = newCareer(); x.story.chapterSeen = 0; }
   });
   const start = () => { if (!s.story?.prologue) setPro('start'); else { sfx('open'); create(); } };
-  const done = () => { if (pro === 'start') create(); else update((x) => { x.story = x.story || {}; x.story.prologue = true; }); setPro(null); };
+  const done = () => { create(); setPro(null); };
   const ch = c ? chapterFor(c) : null;
   const intro = !!(c && ch && !pro && (s.story?.chapterSeen ?? -1) < ch.i);
 
   return <>
-    {c && ch ? <ChapterScreen chrome={chrome} ch={ch} onReplay={() => setPro('replay')} /> : <Cover chrome={chrome} onStart={start} onReplay={s.story?.prologue ? () => setPro('replay') : undefined} />}
+    {c && ch ? <ChapterScreen chrome={chrome} ch={ch} /> : <Cover chrome={chrome} onStart={start} />}
     {pro && <Prologue onDone={done} />}
     {intro && ch && <ChapterIntro ch={ch} onGo={() => update((x) => { x.story = x.story || {}; x.story.chapterSeen = ch.i; })} />}
   </>;
 }
 
 // ---------------------------------------------------------------- cover (no career yet)
-function Cover({ chrome, onStart, onReplay }: { chrome: Chrome; onStart: () => void; onReplay?: () => void }) {
+function Cover({ chrome, onStart }: { chrome: Chrome; onStart: () => void }) {
   const t = useT();
   return <div className="g-screen sm">
     <TopBar onHelp={() => chrome.go({ n: 'howto' })} onMenu={chrome.openSettings} />
@@ -66,8 +67,7 @@ function Cover({ chrome, onStart, onReplay }: { chrome: Chrome; onStart: () => v
         </div>
       </section>
       <Trail at={-1} style={vi(1)} />
-      {onReplay && <GBtn kind="ghost" size="sm" onClick={onReplay} style={vi(2)}><Icon n="uturn" size={18} />{t('g.story.cover.replay')}</GBtn>}
-      <p className="sm-note" style={vi(3)}>{t('career.slotNote')}</p>
+      <Slots style={vi(2)} />
     </div>
   </div>;
 }
@@ -242,7 +242,7 @@ function ChapterIntro({ ch, onGo }: { ch: Chapter; onGo: () => void }) {
 }
 
 // ---------------------------------------------------------------- the chapter screen (career exists)
-function ChapterScreen({ chrome, ch, onReplay }: { chrome: Chrome; ch: Chapter; onReplay: () => void }) {
+function ChapterScreen({ chrome, ch }: { chrome: Chrome; ch: Chapter }) {
   const t = useT();
   const s = useSave();
   const c = s.career!;
@@ -253,7 +253,13 @@ function ChapterScreen({ chrome, ch, onReplay }: { chrome: Chrome; ch: Chapter; 
   const [sure, setSure] = useState(false);
   useEffect(() => { if (unread) update((x) => { x.story?.inbox?.forEach((m) => { m.read = true; }); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const saveName = () => { const v = name.trim().slice(0, 28); update((x) => { if (x.career) x.career.paper = v; }); setEditing(false); };
+  const cost = (c.renames || 0) > 0 ? RENAME_COST : 0;
+  const saveName = () => {
+    const v = name.trim().slice(0, 28);
+    if (v === c.paper) { setEditing(false); return; }
+    if (cost && !spend(cost, 'rename')) { toast('warn', t('m.rename.broke', { n: cost })); return; }
+    update((x) => { if (x.career) { x.career.paper = v; x.career.renames = (x.career.renames || 0) + 1; } }); setEditing(false);
+  };
   const play = () => {
     update((x) => { if (x.career && !x.career.live) x.career.live = { seed: 'car-' + randomSeed(), mode: 'career', log: [], started: Date.now() }; });
     chrome.go({ n: 'play', mode: 'career', key: Date.now() });
@@ -276,8 +282,13 @@ function ChapterScreen({ chrome, ch, onReplay }: { chrome: Chrome; ch: Chapter; 
         <section className="sm-head g-card" style={vi(0)}>
           <div className="sm-head__band">
             <span className="g-mono">{t('g.story.chapterOf', { n: ch.n })}</span>
-            <span className="sm-head__paper">{paper}</span>
+            <span className="sm-head__paper">{paper}<button className="g-icbtn" style={{ width: 28, height: 28, marginInlineStart: 6, verticalAlign: 'middle' }} aria-label={t('g.story.rename')} onClick={() => { setName(c.paper); setEditing(!editing); }}><Icon n="pen" size={14} /></button></span>
           </div>
+          {editing && <form className="sm-rename" style={{ padding: '10px 14px 0' }} onSubmit={(e) => { e.preventDefault(); saveName(); }}>
+            <input value={name} maxLength={28} autoFocus placeholder={t('g.story.paperPh')} onChange={(e) => setName(e.target.value)} aria-label={t('g.story.paperPh')} />
+            <GBtn kind="gold" size="sm" onClick={saveName} sound="ui.pop">{t('g.story.save')}{cost ? <> · <span className="g-coin" />{cost}</> : ''}</GBtn>
+            <p className="sm-note" style={{ width: '100%' }}>{cost ? t('m.rename.cost', { n: cost, have: s.credits }) : t('m.rename.free', { n: RENAME_COST })}</p>
+          </form>}
           <div className="sm-head__body">
             <div className="sm-head__row">
               <span className="sm-head__num g-num" aria-hidden="true">{ch.n}</span>
@@ -388,22 +399,17 @@ function ChapterScreen({ chrome, ch, onReplay }: { chrome: Chrome; ch: Chapter; 
           </div>)}
         </section>}
 
-        <League style={vi(9)} />
+        <Slots style={vi(9)} />
 
-        {/* ---------- the paper: rename, replay, restart */}
-        <section className="sm-box g-card g-card--desk sm-acts" style={vi(10)}>
-          {editing ? <form className="sm-rename" onSubmit={(e) => { e.preventDefault(); saveName(); }}>
-            <input value={name} maxLength={28} autoFocus placeholder={t('g.story.paperPh')} onChange={(e) => setName(e.target.value)} aria-label={t('g.story.paperPh')} />
-            <GBtn kind="gold" size="sm" onClick={saveName} sound="ui.pop">{t('g.story.save')}</GBtn>
-          </form> : <GBtn kind="dark" size="sm" onClick={() => { setName(c.paper); setEditing(true); }}><Icon n="news" size={18} /><span>{t('g.story.rename')} · {paper}</span></GBtn>}
-          <GBtn kind="dark" size="sm" onClick={onReplay}><Icon n="uturn" size={18} />{t('g.story.cover.replay')}</GBtn>
+        {/* ---------- restart */}
+        {c.rank >= RANKS.length - 1 && <section className="sm-box g-card g-card--desk sm-acts" style={vi(10)}>
           {c.rank >= RANKS.length - 1 && (sure
             ? <div className="sm-sure"><p>{t('g.story.restart.sure')}</p>
-              <div className="sm-sure__b"><GBtn size="sm" onClick={() => { update((x) => { x.career = newCareer(1, (x.career?.restarts || 0) + 1); x.story = { ...(x.story || {}), chapterSeen: -1 }; }); setSure(false); }}>{t('g.story.restart.yes')}</GBtn>
+              <div className="sm-sure__b"><GBtn size="sm" onClick={() => { update((x) => { x.career = newCareer((x.slot || 0) + 1, (x.career?.restarts || 0) + 1); x.story = { ...(x.story || {}), chapterSeen: -1 }; }); setSure(false); }}>{t('g.story.restart.yes')}</GBtn>
                 <GBtn kind="ghost" size="sm" onClick={() => setSure(false)}>{t('g.story.restart.no')}</GBtn></div></div>
             : <GBtn kind="ghost" size="sm" onClick={() => setSure(true)}><Icon n="briefcase" size={18} />{t('g.story.restart.go')}</GBtn>)}
           {c.rank >= RANKS.length - 1 && !sure && <p className="sm-note">{t('career.rivalD')}</p>}
-        </section>
+        </section>}
       </div>
     </div>
   </div>;
@@ -423,16 +429,36 @@ function Stat({ icon, v, k, sub }: { icon: string; v: string; k: string; sub?: s
   return <div className="sm-stat"><Icon n={icon} /><b className="g-num">{v}</b><span className="g-mono">{k}</span>{sub ? <em>{sub}</em> : null}</div>;
 }
 
-function League({ style }: { style?: CSSProperties }) {
+// ---------------------------------------------------------------- career save slots (solo, never ranked)
+const RENAME_COST = 250;
+function Slots({ style }: { style?: CSSProperties }) {
   const t = useT();
-  const lg = useLeague();
-  if (!lg || !lg.rows.length) return null;
+  const s = useSave();
+  const list = slotList(s), cur = s.slot || 0;
+  const [codes, setCodes] = useState<Record<number, string>>({});
+  const [sure, setSure] = useState(-1);
+  const [busy, setBusy] = useState(false);
+  const err = (e?: string) => toast('warn', e === 'offline' || e === 'net' ? t('err.net') : t('m.slots.bad'));
+  const getCode = async (k: number) => { setBusy(true); const r = await slotCode(k); setBusy(false); if (r.code) setCodes({ ...codes, [k]: r.code }); else err(r.error); };
+  const restore = async (k: number) => {
+    const code = window.prompt(t('m.slots.enter'));
+    if (!code) return;
+    setBusy(true); const r = await restoreCode(k, code); setBusy(false);
+    if (r.ok) { sfx('ui.pop'); toast('info', t('m.slots.restored', { n: k + 1 })); } else err(r.error);
+  };
   return <section className="sm-box g-card g-card--desk" style={style}>
-    <div className="g-sec" style={{ margin: '0 0 6px' }}><h2>{t('league.title')}</h2><span className="g-mono">{t('league.divs.' + lg.div)}</span></div>
-    {lg.rows.slice(0, 8).map((r, k) => <div key={k} className={'sm-row sm-lg' + (r.me ? ' is-me' : '') + (lg.up && k < lg.up ? ' is-up' : '')}>
-      <span className="sm-lg__r g-num">{k + 1}</span><span className="sm-row__b"><b>{r.me ? t('common.you') : r.nick}</b></span><span className="sm-lg__p g-num">{Math.round(r.pts)}</span>
+    <div className="g-sec" style={{ margin: '0 0 6px' }}><h2>{t('m.slots.title')}</h2><span className="g-mono">{t('m.slots.aside')}</span></div>
+    {list.map((v, k) => <div key={k} className="sm-row" style={{ flexWrap: 'wrap', gap: 8 }}>
+      <span className="sm-row__b"><b>{t('m.slots.n', { n: k + 1 })}{k === cur ? ' · ' + t('m.slots.active') : ''}</b>
+        <span>{v ? (v.career.paper || t('g.story.paperDefault', { n: s.nick || t('common.you') })) + ' · ' + t('career.ranks.' + v.career.rank) + ' · ' + t('career.windows') + ' ' + v.career.windows : t('m.slots.empty')}</span>
+        {codes[k] && <span className="g-mono">{t('m.slots.code', { c: codes[k] })}</span>}</span>
+      {v && k !== cur && <GBtn kind="gold" size="sm" onClick={() => switchSlot(k)}>{t('m.slots.play')}</GBtn>}
+      {!v && <GBtn kind="gold" size="sm" onClick={() => newSlot(k)}>{t('m.slots.new')}</GBtn>}
+      {!v && <GBtn kind="dark" size="sm" disabled={busy} onClick={() => restore(k)}>{t('m.slots.restore')}</GBtn>}
+      {v && <GBtn kind="dark" size="sm" disabled={busy} onClick={() => getCode(k)}>{t('m.slots.getCode')}</GBtn>}
+      {v && (sure === k ? <GBtn size="sm" onClick={() => { deleteSlot(k); setSure(-1); }}>{t('m.slots.sure')}</GBtn>
+        : <GBtn kind="ghost" size="sm" onClick={() => setSure(k)}>{t('m.slots.del')}</GBtn>)}
     </div>)}
-    <p className="sm-note" style={{ marginTop: 8 }}>{t('league.note')}</p>
+    <p className="sm-note" style={{ marginTop: 8 }}>{t('m.slots.note')}</p>
   </section>;
 }
-
