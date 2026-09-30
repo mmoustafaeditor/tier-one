@@ -21,6 +21,19 @@ const STR = ['talks', 'advanced', 'confirmed'];
 const STAGES = ['interest', 'talks', 'bid', 'agreed'];
 const stageKey = (s: string) => (STAGES.includes(s) ? s : 'interest');
 const pct = (x: number) => Math.round(x * 100);
+// Real transfer windows (UK deadlines, UTC). Keep this table current.
+const WINDOWS: [string, string][] = [['2027-01-01T00:00:00Z', '2027-02-02T23:00:00Z'], ['2027-06-15T23:00:00Z', '2027-09-01T18:00:00Z']];
+// Coins for a right call, by the player's star level (0 = unrated).
+const STAR_COINS = [15, 25, 40, 70];
+const starOf = (r?: Rumour) => (r && WORLD.players.find((x) => x.id === r.playerId)?.star) || 0;
+function windowLine(now: number): { k: 'opens' | 'closes'; left: string } | null {
+  for (const [a, b] of WINDOWS) {
+    const o = Date.parse(a), c = Date.parse(b);
+    if (now < o || now < c) { const ms = (now < o ? o : c) - now, d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4); return { k: now < o ? 'opens' : 'closes', left: d ? d + 'd ' + h + 'h' : h + 'h ' + m + 'm' }; }
+  }
+  return null;
+}
+type Group = 'star' | 'league' | 'team';
 
 export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
   const t = useT();
@@ -30,12 +43,22 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
   const rs = w.rumours || [];
   const cur = sel ? rs.find((r) => r.id === sel) : undefined;
   useEffect(() => {
-    if (!w.mine) return;
+    if (!w.mine || !w.rumours) return;
     const fresh = w.mine.calls.filter((c) => c.done && c.right && !getSave().stats['wr:' + c.rid]);
     if (!fresh.length) return;
-    update((s) => { for (const c of fresh) s.stats['wr:' + c.rid] = 1; });
+    const coins = fresh.reduce((a, c) => a + STAR_COINS[starOf(rs.find((r) => r.id === c.rid))], 0);
+    update((s) => { for (const c of fresh) s.stats['wr:' + c.rid] = 1; s.credits += coins; s.ledger = [{ at: Date.now(), d: coins, why: 'wire' }, ...s.ledger].slice(0, 30); });
     fresh.forEach(() => onWireRight());
-  }, [w.mine]);
+    toast('info', t('m.wire.paid', { n: coins }));
+  }, [w.mine, w.rumours]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const i = setInterval(() => setNow(Date.now()), 30e3); return () => clearInterval(i); }, []);
+  const win = windowLine(now);
+  const [group, setGroup] = useState<Group>('star');
+  const keyOf = (r: Rumour) => group === 'star' ? String(starOf(r)) : group === 'team' ? r.currentClubName || '—' : clubById(r.currentClubId)?.l || '—';
+  const groups: [string, Rumour[]][] = [];
+  for (const r of rs) { const k = keyOf(r); const g = groups.find((x) => x[0] === k); if (g) g[1].push(r); else groups.push([k, [r]]); }
+  groups.sort((a, b) => group === 'star' ? Number(b[0]) - Number(a[0]) : b[1].length - a[1].length || a[0].localeCompare(b[0]));
   const open = (id: string, yes?: boolean) => { sfx('sheet.open'); setPre(yes); setSel(id); };
   const m = w.mine;
   const openCalls = m ? m.calls.filter((c) => !c.done).length : 0;
@@ -48,6 +71,8 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
         <span className="g-hero__art" aria-hidden="true"><Icon n="wire" /></span>
         <span className="g-mono g-hero__k"><i className="g-dot" />{t('g.wire.k')}</span>
         <h1 className="g-hero__t">{t('g.wire.hed')}</h1>
+        <p className="g-hero__s"><b>{t('m.wire.real')}</b> {t('m.wire.realSub', { a: STAR_COINS[1], b: STAR_COINS[3] })}</p>
+        {win && <span className="g-chip g-chip--gold" style={{ alignSelf: 'flex-start' }}><Icon n="clock" size={14} />{t('m.wire.' + win.k, { t: win.left })}</span>}
         <ol className="wire3__how">{(t.list('g.wire.how') as string[]).map((x, k) => <li key={k}><span className="g-num">{k + 1}</span>{x}</li>)}</ol>
         <div className="kpis3">
           <span><b className="g-num">{m ? num(Math.round(m.cred)) : '–'}</b><small className="g-mono">{t('wire.cred')}</small></span>
@@ -62,12 +87,40 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
       <div className="g-sec" style={{ ['--i' as string]: 2 }}><h2>{t('g.wire.wall')}</h2><span className="g-mono">{w.asOf ? t('wire.asOfD', { d: w.asOf }) : t('g.wire.wallAside')}</span></div>
       {!w.rumours && <p className="g-empty" style={{ ['--i' as string]: 2 }}>{w.loading ? t('common.loading') : t('wire.needNet')}</p>}
       {w.rumours && !w.online && <p className="g-empty">{t('wire.needNet')}</p>}
-      <div className="wall" style={{ ['--i' as string]: 3 }}>
-        {rs.map((r, k) => <RumourCard key={r.id} r={r} k={k} onOpen={(yes) => open(r.id, yes)} />)}
-      </div>
+      {rs.length > 0 && <div className="pick" style={{ ['--i' as string]: 3 }} role="group" aria-label={t('m.wire.group')}>
+        <span className="g-mono">{t('m.wire.group')}</span>
+        {(['star', 'league', 'team'] as const).map((g) => <button key={g} className="pick__c" aria-pressed={group === g} onClick={() => { sfx('ui.tap'); setGroup(g); }}>{t('m.wire.by.' + g)}</button>)}
+      </div>}
+      {groups.map(([k, list], gi) => <details key={group + k} className="g-more" open={gi === 0} style={{ ['--i' as string]: 3 }}>
+        <summary>{group === 'star' ? (Number(k) ? '★'.repeat(Number(k)) + ' ' + t('m.wire.stars', { n: k }) : t('m.wire.unrated')) : group === 'league' ? t('m.wire.lg.' + k) === 'm.wire.lg.' + k ? k : t('m.wire.lg.' + k) : k} <span className="g-mono">· {list.length}</span></summary>
+        <div className="wall" style={{ padding: '0 10px 12px' }}>
+          {list.map((r, j) => <RumourCard key={r.id} r={r} k={j} onOpen={(yes) => open(r.id, yes)} />)}
+        </div>
+      </details>)}
+
+      <WireBoard style={{ ['--i' as string]: 4 }} />
     </div>
     {cur && <RumourSheet key={cur.id} r={cur} pre={pre} onClose={() => setSel(undefined)} />}
   </div>;
+}
+
+// ---------- the Wire leaderboard (season credibility, settled on the server)
+function WireBoard({ style }: { style?: CSSProperties }) {
+  const t = useT();
+  const s = useSave();
+  const [rows, setRows] = useState<{ nick: string; score: number; me: boolean }[] | null>(null);
+  const [me, setMe] = useState<{ rank: number; score: number } | null>(null);
+  useEffect(() => { v3<{ rows: { nick: string; score: number; me: boolean }[]; me?: { rank: number; score: number } }>('lb.top', { period: 'wire', dev: s.dev }).then((r) => { if (r.ok) { setRows(r.rows); setMe(r.me || null); } }); }, [s.dev]);
+  return <section style={style}>
+    <div className="g-sec"><h2>{t('m.wire.board')}</h2><span className="g-mono">{me ? t('m.wire.you', { r: me.rank }) : t('m.wire.boardAside')}</span></div>
+    {rows && rows.length ? <div className="ltable g-card">
+      <div className="ltable__h g-mono"><span>#</span><span>{t('league.reporter')}</span><span /><span>{t('wire.cred')}</span></div>
+      {rows.slice(0, 10).map((p, k) => <div key={k} className={'lrow' + (p.me ? ' is-me' : '') + (k === 0 ? ' is-top' : '')}>
+        <span className="lrow__n g-num">{k === 0 ? <Icon n="crown" size={18} /> : k + 1}</span>
+        <span className="lrow__who"><b>{p.me ? t('common.you') : p.nick}</b></span><span className="lrow__x" /><b className="lrow__p g-num">{num(Math.round(p.score))}</b>
+      </div>)}
+    </div> : <p className="g-empty">{rows ? t('m.wire.boardEmpty') : t('wire.needNet')}</p>}
+  </section>;
 }
 
 // ---------- live calls strip

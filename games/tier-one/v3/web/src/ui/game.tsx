@@ -10,6 +10,7 @@ import { levelOf } from '../lib/progress';
 const P: Record<string, string> = {
   home: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
   story: 'M4 5a2 2 0 0 1 2-2h5v17H6a2 2 0 0 0-2 2zM20 5a2 2 0 0 0-2-2h-5v17h5a2 2 0 0 1 2 2z',
+  pen: 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
   wire: 'M3 17l5-6 4 4 5-7 4 5M3 21h18',
   friends: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c0-4 3-7 7-7s7 3 7 7M17 11a3 3 0 1 0 0-6M19 14c2 1 3 3 3 6',
   me: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 4-7 8-7s8 3 8 7',
