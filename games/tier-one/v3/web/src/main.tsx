@@ -13,8 +13,12 @@ import './styles/screens.css';
 import '../../../../the-gaffer/web/src/boot/boot.css';
 import { BOOT_MARKUP, playIntro } from '../../../../the-gaffer/web/src/boot/intro';
 import { App } from './App';
+// Smoothness (GOTY.md §8.2): service worker + update/install chips, film prefetch, boot marks. Nothing here blocks the render.
+import { initPerf, mark } from './lib/perf';
 
 const boot = document.getElementById('boot');
 if (boot) { boot.innerHTML = BOOT_MARKUP; playIntro(); }
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
+mark('render');
+initPerf();

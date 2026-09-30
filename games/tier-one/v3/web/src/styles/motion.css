@@ -121,3 +121,17 @@
 .mode:focus-visible, .mbar__i:focus-visible { outline: 3px solid var(--mc, var(--red)); outline-offset: 3px; }
 .g-card--tap:focus-visible, .scard:focus-visible, .rcard:focus-visible, .g-ticker:focus-visible, .pass__id:focus-visible, .claim:focus-visible, .door:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .g-icbtn:focus-visible, .g-top__back:focus-visible { outline: 2.5px solid var(--gold); outline-offset: 2px; }
+
+/* ---------- perf lane (lib/perf.ts): the update / install chip. Transform + opacity only; sits above the tab bar. */
+.t1-chip { position: fixed; z-index: 95; inset-inline: var(--gutter, 16px); bottom: calc(76px + env(safe-area-inset-bottom, 0)); margin-inline: auto; max-width: 440px; display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--invert, #15130F); color: var(--on-invert, #F2EEE5); border-inline-start: 4px solid var(--red, #D2381B); box-shadow: 0 10px 30px rgba(0, 0, 0, .28); animation: t1-chip-in var(--d-ui2) var(--ease-out) both; }
+.t1-chip.is-out { animation: t1-chip-out var(--d-ui) var(--ease-in-out) forwards; }
+.t1-chip__txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.3; }
+.t1-chip__txt b { font-family: var(--f-display, Georgia, serif); font-size: 16px; }
+.t1-chip__txt span { opacity: .75; }
+.t1-chip__row { display: flex; gap: 6px; flex-shrink: 0; }
+.t1-chip__row button { font: inherit; font-weight: 600; font-size: 13px; padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--on-invert, #fff) 35%, transparent); background: transparent; color: inherit; border-radius: 6px; cursor: pointer; transition: transform var(--tr-tap); }
+.t1-chip__row button.is-primary { background: var(--red, #D2381B); border-color: var(--red, #D2381B); color: #fff; }
+.t1-chip__row button:active { transform: scale(.96); }
+@keyframes t1-chip-in { from { opacity: 0; transform: translateY(12px); } }
+@keyframes t1-chip-out { to { opacity: 0; transform: translateY(8px); } }
+@media (min-width: 960px) { .t1-chip { bottom: 24px; inset-inline-start: calc(var(--rail-w, 0px) + 16px); } }

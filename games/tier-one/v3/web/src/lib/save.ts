@@ -1,6 +1,6 @@
 // The local save: one JSON document under `tierone_v3`, versioned from day one with a real migration chain.
 // Ranked results live on the server; this holds settings, history, Career, Practice, the wallet and achievements.
-import { useSyncExternalStore } from 'react';
+import { useRef, useSyncExternalStore } from 'react';
 import type { Pub, Tier, Act } from './engine';
 import type { MissionState } from './progress';
 import type { SeasonSave, SeasonRecap, WeekEvState, CosKind } from './season';
@@ -94,15 +94,30 @@ function load(): Save {
     return fromV2(fresh());
   } catch { return fresh(); }
 }
-let timer = 0;
+// Writes are batched and land when the main thread is idle (never inside a frame during a reveal or a film): a burst
+// of update() calls costs one stringify. The pagehide/hidden flush keeps the last state safe on the way out.
+let timer = 0, idleId = 0, dirty = false;
+type IdleWindow = Window & { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+function flush() {
+  clearTimeout(timer); timer = 0;
+  const w = window as IdleWindow;
+  if (idleId && w.cancelIdleCallback) w.cancelIdleCallback(idleId);
+  idleId = 0;
+  if (!dirty) return;
+  dirty = false;
+  try {
+    const cur = localStorage.getItem(SAVE_KEY);
+    if (cur) localStorage.setItem(SAVE_KEY + '_bak', cur);
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  } catch { /* storage full or blocked: the session still plays */ }
+}
 function persist() {
-  clearTimeout(timer);
+  dirty = true;
+  if (timer) return;
   timer = window.setTimeout(() => {
-    try {
-      const cur = localStorage.getItem(SAVE_KEY);
-      if (cur) localStorage.setItem(SAVE_KEY + '_bak', cur);
-      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-    } catch { /* storage full or blocked: the session still plays */ }
+    timer = 0;
+    const w = window as IdleWindow;
+    if (w.requestIdleCallback) { if (!idleId) idleId = w.requestIdleCallback(flush, { timeout: 1500 }); } else flush();
   }, 120);
 }
 export const getSave = () => state;
@@ -111,5 +126,33 @@ export function update(fn: (s: Save) => Save | void) {
   const next = fn(draft) || draft;
   state = next; persist(); subs.forEach((f) => f());
 }
-export function useSave(): Save { return useSyncExternalStore((f) => { subs.add(f); return () => subs.delete(f); }, () => state); }
-if (typeof window !== 'undefined') window.addEventListener('pagehide', () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch { /* */ } });
+const subscribe = (f: () => void) => { subs.add(f); return () => { subs.delete(f); }; };
+export function useSave(): Save { return useSyncExternalStore(subscribe, () => state); }
+/**
+ * Subscribe to a slice: the component re-renders only when `sel(save)` changes (Object.is, or `eq`). For a slice that
+ * is an object or array, pass `shallowEq`. Same store, same timing as useSave(); only the re-render count differs.
+ *   const lang = useSaveSel((s) => s.lang);
+ *   const [nick, credits] = useSaveSel((s) => [s.nick, s.credits] as const, shallowEq);
+ */
+export function useSaveSel<T>(sel: (s: Save) => T, eq: (a: T, b: T) => boolean = Object.is): T {
+  const ref = useRef<{ st: Save; v: T } | null>(null);
+  const get = () => {
+    const c = ref.current;
+    if (c && c.st === state) return c.v;
+    const v = sel(state);
+    const keep = c && eq(c.v, v) ? c.v : v;
+    ref.current = { st: state, v: keep };
+    return keep;
+  };
+  return useSyncExternalStore(subscribe, get);
+}
+export function shallowEq(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+  const ka = Object.keys(a), kb = Object.keys(b);
+  return ka.length === kb.length && ka.every((k) => Object.is((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
+}
