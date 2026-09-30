@@ -166,7 +166,7 @@ const es: Dict = {
   lb: { title: 'La tabla de hoy', aside: '{n} publicados', empty: 'Nadie ha publicado aún. Sé el primero.', you: 'Eres {r} de {n}' },
   practice: {
     kicker: 'Práctica · sin que cuente', hed: 'Aquí nada cuenta. Aquí todo enseña.', coach: 'Modo Entrenador', coachD: 'Muestra las probabilidades exactas de cada culebrón, con lo que tú ves.',
-    random: 'Tablero aleatorio', archive: 'Rejugar un Diario pasado', archiveD: 'Últimos siete días gratis. El archivo completo viene con el Semba Pass.', code: 'Código de tablero', codeD: 'Mismo código, mismo tablero. Mándaselo a un amigo.',
+    random: 'Tablero aleatorio', archive: 'Rejugar un Diario pasado', archiveD: 'El tablero de ayer y los seis anteriores, tal y como los jugó todo el mundo. Sin registro, así que nunca toca tu Diario.', code: 'Código de tablero', codeD: 'Mismo código, mismo tablero. Mándaselo a un amigo.',
     play: 'Jugar este tablero', resume: 'Seguir practicando', archiveNeedNet: 'Los Diarios pasados necesitan conexión para descargar el tablero.', played: '{n} mercados de práctica',
   },
   career: {

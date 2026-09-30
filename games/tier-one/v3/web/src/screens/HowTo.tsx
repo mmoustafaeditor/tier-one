@@ -11,7 +11,9 @@ import type { Chrome } from '../App';
 export function HowTo(chrome: Chrome) {
   const t = useT();
   const R = RULES;
-  const v = { c: R.CONTACTS, dd: R.DD_CONTACTS, x: R.EXCL[2], t1: R.TIERS.T1, t2: R.TIERS.T2, t3: R.TIERS.T3, b: R.BASE[2], e: R.EARLY[2], l: R.LOSS[2] };
+  // What a right call pays if you file it on day 1 (base + the early bonus for every day left): the numbers the call panel shows.
+  const day1 = [0, 1, 2].map((k) => R.BASE[k] + R.EARLY[k] * (R.DAYS - 1));
+  const v = { c: R.CONTACTS, dd: R.DD_CONTACTS, x: R.EXCL[2], t1: R.TIERS.T1, t2: R.TIERS.T2, t3: R.TIERS.T3, b: R.BASE[2], e: R.EARLY[2], l: R.LOSS[2], b0: day1[0], b1: day1[1], b2: day1[2] };
   const fillV = (s: string) => s.replace(/\{(\w+)\}/g, (m, x) => String((v as Record<string, number>)[x] ?? m));
   const steps = t.list('g.howto.steps') as string[][];
   const [cur, setCur] = useState(0);
@@ -35,7 +37,7 @@ export function HowTo(chrome: Chrome) {
     <div className="hart hart--ring" key={0}><SrcIcon k="barber" size={54} /><span className="hart__phone"><Icon n="phone" /></span><SrcIcon k="physio" size={54} /><SrcIcon k="agent" size={54} /></div>,
     <div className="hart hart--ev" key={1}>{['done', 'hijack', 'off', 'fake'].map((o, i) => <span key={o} className={'hchip hchip--' + o}><b>{t('out.' + o)}</b><span>{[2, 1, 0, 0][i] ? Array.from({ length: [2, 1, 0, 0][i] }, (_, j) => <Icon key={j} n="check" size={14} />) : '–'}</span></span>)}</div>,
     <div className="hart hart--pick" key={2}>{['done', 'hijack', 'off', 'fake'].map((o, i) => <span key={o} className={'hpick hpick--' + o + (i === 0 ? ' is-on' : '')}>{t('out.' + o)}</span>)}</div>,
-    <div className="hart hart--loud" key={3}>{[0, 1, 2].map((k) => <span key={k} className={'hloud' + (k === 2 ? ' is-on' : '')}><span className="loud__bars">{[0, 1, 2].map((i) => <i key={i} className={i <= k ? 'on' : ''} />)}</span><b>{t('str.' + STRENGTHS[k])}</b><em className="g-num">+{R.BASE[k]}</em><small className="g-num">−{R.LOSS[k]}</small></span>)}</div>,
+    <div className="hart hart--loud" key={3}>{[0, 1, 2].map((k) => <span key={k} className={'hloud' + (k === 2 ? ' is-on' : '')}><span className="loud__bars">{[0, 1, 2].map((i) => <i key={i} className={i <= k ? 'on' : ''} />)}</span><b>{t('str.' + STRENGTHS[k])}</b><em className="g-num">+{day1[k]}</em><small className="g-num">−{R.LOSS[k]}</small></span>)}</div>,
     <div className="hart hart--race" key={4}><span className="hrivals">{['tabloid', 'itk', 'insider'].map((r) => <Avatar key={r} name={t('rival.' + r).replace(/^@/, '').replace(/([a-z])([A-Z])/g, '$1 $2')} size={40} />)}</span><span className="hclock"><Icon n="clock" /><b className="g-num">0:{String(R.DD_SECONDS).padStart(2, '0')}</b></span></div>,
   ];
   return <div className="g-screen howto3">
@@ -53,6 +55,7 @@ export function HowTo(chrome: Chrome) {
           <h2 className="stepc__h">{h}</h2>
           <p className="stepc__s">{fillV(s)}</p>
           <p className="stepc__ex"><Icon n="bolt" size={14} />{fillV(ex)}</p>
+          {k === 3 && <p className="stepc__early"><Icon n="clock" size={14} />{t('g.howto.early')}</p>}
         </article>)}
       </div>
       <div className="stepnav" style={{ ['--i' as string]: 2 }}>
@@ -72,7 +75,7 @@ export function HowTo(chrome: Chrome) {
           <h3 className="fullrules__t">{head[0]}</h3>
           <div className="tscroll"><table className="gtable"><thead><tr>{head.map((h, k) => <th key={k}>{h}</th>)}</tr></thead>
             <tbody>{[0, 1, 2].map((s) => <tr key={s}><td><b>{t('str.' + STRENGTHS[s])}</b></td><td>+{R.BASE[s]}</td><td>+{R.EARLY[s]}</td><td>{R.EXCL[s] ? '+' + R.EXCL[s] : '—'}</td><td>−{R.LOSS[s]}</td><td>−{R.UT_PEN[s]}</td></tr>)}</tbody></table></div>
-          <p className="fullrules__thumb">{t('howto.thumb')}</p>
+          <p className="fullrules__thumb">{t('g.howto.early')} {t('howto.thumb')}</p>
           <h3 className="fullrules__t">{sh[0]}</h3>
           <div className="srcl">{Object.entries(R.SOURCES).map(([k, so]) => <div key={k} className="srcl__r">
             <SrcIcon k={k} size={36} />
