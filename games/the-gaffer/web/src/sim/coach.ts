@@ -173,6 +173,8 @@ export function cupAimMet(w: World, c: Career, aim: CupAim): boolean | null {
 export interface MatchOutcome { mine: number; theirs: number; oppId: string; home: boolean; myLevel: number; oppLevel: number; cup: boolean; expected?: number }
 export const BOARD_PER_SURPRISE = 1.8;
 export const FANS_PER_SURPRISE = 2;
+export const FANS_REST = 55; // where the fans drift back to: 3% of the gap a match keeps a winning side's fans near 80 and
+export const FANS_SETTLE = 0.03; // a struggling side's near 35, instead of running to 100 or 0
 export const FANS_PER_TROPHY = 8; // a trophy (league, cup, promotion) lifts the fans at the season's end
 export const FANS_RESULT: Record<number, number> = { 0: -1.5, 1: 0, 3: 1.5 };
 
@@ -196,7 +198,7 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
     confidence: clamp(Math.round((before.confidence + surprise * BOARD_PER_SURPRISE) * 10) / 10, 0, 100),
     // Fans enjoy winning whatever the odds said, and a surprise moves them on top: odds alone left a winning
     // favourite's fans "muttering" all season (audit GF-004).
-    fans: clamp(Math.round((before.fans + FANS_RESULT[pts] + surprise * FANS_PER_SURPRISE + (o.mine >= 3 ? 1 : 0)) * 10) / 10, 0, 100),
+    fans: clamp(Math.round((before.fans + FANS_RESULT[pts] + surprise * FANS_PER_SURPRISE + (o.mine >= 3 ? 1 : 0) + (FANS_REST - before.fans) * FANS_SETTLE) * 10) / 10, 0, 100),
   };
   let career: Career = { ...c, coach, board };
   // Messages that match what really happened (E2E #19).
