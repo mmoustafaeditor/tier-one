@@ -188,3 +188,53 @@
   .store { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .goldc__preview { grid-template-columns: 1fr; }
 }
+
+/* ---------- 3.3 compact Pass: the season on top, where you are and the next three rewards, the store in a sheet */
+.shero--compact { gap: 12px; }
+.shero--compact .shero__k { font-size: 11px; color: var(--on-desk-3); margin-bottom: 2px; }
+.shero--compact .shero__name { font-size: clamp(32px, 9vw, 52px); }
+.shero--compact .shero__num { font-size: 60px; }
+.snext__grid { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
+.snext__keys { display: grid; grid-template-rows: 44px 92px; gap: 6px; font-size: 12px; font-weight: 700; color: var(--on-desk-2); }
+.snext__grid.has-gold .snext__keys { grid-template-rows: 44px 92px 92px; }
+.snext__keys span { align-self: center; }
+.snext__keys .is-gold { color: var(--gold); }
+.snext__run { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.nslip { display: grid; grid-template-rows: 44px 92px; gap: 6px; min-width: 0; }
+.snext__grid.has-gold .nslip { grid-template-rows: 44px 92px 92px; }
+.nslip__n { display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 9px; background: var(--desk-2); color: var(--on-desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); line-height: 1; }
+.nslip__n small { font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+.nslip__n .g-num { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; font-size: 22px; }
+.nslip.is-now .nslip__n { background: var(--sa); color: #15130F; box-shadow: none; }
+.nslip__cell { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; border-radius: 10px; background: var(--desk-2); color: var(--on-desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); min-width: 0; text-align: center; }
+.nslip__cell.is-gold { background: color-mix(in srgb, var(--gold) 10%, var(--desk-2)); }
+.nslip__cell.is-empty { background: transparent; box-shadow: inset 0 0 0 1px var(--desk-line); }
+.nslip__cell.is-empty .nslip__what { color: var(--on-desk-3); }
+.nslip__what { font-size: 11px; font-weight: 600; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.nslip__cell.is-claimed { opacity: .75; }
+.nslip__cell.is-ready { cursor: pointer; background: var(--card); color: var(--card-ink); box-shadow: 0 4px 0 var(--gold-deep); transition: transform 90ms, box-shadow 90ms; }
+.nslip__cell.is-ready:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--gold-deep); }
+.nslip__cell.is-ready .slip__coins { color: var(--gold-deep); }
+.nslip__cell .slip__tick { top: 4px; inset-inline-end: 4px; }
+.storec { display: grid; gap: 10px; padding: 16px; }
+.storec__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.storec__h { font-family: var(--f-display); font-weight: 800; font-size: 24px; line-height: 1.1; color: var(--on-desk); }
+.storec__dek { font-size: 14px; line-height: 1.45; color: var(--on-desk-2); max-width: 60ch; }
+.storec__peek { display: flex; gap: 8px; flex-wrap: wrap; }
+.storec__peek .cos { width: 52px; height: 40px; }
+.storec > .g-btn { width: 100%; }
+.sheet--float:has(.storesheet) { background: var(--desk); color: var(--on-desk); box-shadow: 0 -20px 50px -20px rgba(0,0,0,.8), inset 0 1px 0 var(--desk-line); }
+.sheet--float:has(.storesheet) .sheet__grip { background: var(--desk-3); }
+.storesheet__head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.storesheet__head .g-h2 { flex: 1; color: var(--on-desk); }
+.storesheet__sec { margin-top: 18px; }
+.storesheet .g-sub { color: var(--on-desk-2); font-size: 13.5px; }
+.storesheet button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+@media (min-width: 1024px) {
+  .pass3__cols.has-gold { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .snext__keys, .nslip { grid-template-rows: 48px 104px; }
+  .snext__grid.has-gold .snext__keys, .snext__grid.has-gold .nslip { grid-template-rows: 48px 104px 104px; }
+  .nslip__what { font-size: 12.5px; }
+}
+@media (prefers-reduced-motion: reduce) { .nslip__cell.is-ready { transition: none; } }
+:root.reduce .nslip__cell.is-ready { transition: none; }
