@@ -1,0 +1,590 @@
+openapi: 3.1.0
+info:
+  title: Tier One platform API
+  version: 4.0.0
+  summary: Identity, cloud save, wallet, catalog/remote config and telemetry for Tier One, with every v3 action mounted underneath.
+  description: |
+    One endpoint, `POST /api/tier-one/v4`, takes `{ action, ...fields }` and answers `{ ok, rid, ... }`.
+    The request body is a discriminated union on `action` (see `components.schemas.Request`). Authenticated actions
+    carry `dev` (the device id) and `token` (the device token from `account.hello`). Writes accept an
+    `Idempotency-Key` header (or `idem` in the body). Every v3 action is reachable as `v3.<name>` and, when v4 has
+    no action of that name, as `<name>`; their bodies and replies are v3's own (`api/tier-one/v3/index.js`).
+    Rules, key layout and env: docs/api/README.md.
+servers:
+  - url: https://www.sembagames.app
+paths:
+  /api/tier-one/v4:
+    post:
+      operationId: v4
+      summary: Run one action
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema: { type: string, maxLength: 80 }
+          description: 'Replays the first reply of a write for 24 h (`replay: true` on the repeat).'
+        - in: header
+          name: X-Request-Id
+          schema: { type: string, maxLength: 40 }
+          description: 'Chosen request id; echoed as `rid` and as a response header.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Request' }
+      responses:
+        '200':
+          description: The action ran (ok true), or answered a domain failure with `ok:false` (OFFLINE, V3_*).
+          headers:
+            X-Request-Id: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Response' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '413': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+        '502': { $ref: '#/components/responses/Error' }
+    options:
+      operationId: v4Preflight
+      summary: CORS preflight
+      responses:
+        '204': { description: 'Allow POST with Content-Type, Idempotency-Key, X-Request-Id from any origin.' }
+  /api/tier-one/v4/stripe-webhook:
+    post:
+      operationId: stripeWebhook
+      summary: Stripe webhook (checkout.session.completed grants the session's catalog item once)
+      parameters:
+        - in: header
+          name: Stripe-Signature
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, description: 'A Stripe event; raw body is verified against STRIPE_WEBHOOK_SECRET.' }
+      responses:
+        '200':
+          description: Received.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { ok: { const: true }, received: { const: true }, granted: { type: boolean }, duplicate: { type: boolean }, ignored: { type: string } }
+        '400': { description: Bad signature or timestamp. }
+        '503': { description: STRIPE_WEBHOOK_SECRET not set (Stripe retries) or store offline. }
+
+components:
+  responses:
+    Error:
+      description: Structured failure.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorReply' }
+
+  schemas:
+    # ------------------------------------------------------------ envelopes
+    ErrorReply:
+      type: object
+      required: [ok, error, code, rid]
+      properties:
+        ok: { const: false }
+        error: { type: string, description: 'Short reason, lower case.' }
+        code:
+          type: string
+          description: |
+            BAD_REQUEST 400, UNAUTHORIZED 401, FORBIDDEN 403, NOT_FOUND 404, CONFLICT 409, IDEM_IN_PROGRESS 409,
+            PAYLOAD_TOO_LARGE 413, RATE_LIMITED 429, UNKNOWN_ACTION 400, NOT_IMPLEMENTED 501, STORE 502, OFFLINE 200,
+            V3_<ERROR> 200 (a v3 action's `{ error }`).
+        rid: { type: string }
+      additionalProperties: true
+    OkBase:
+      type: object
+      required: [ok, rid]
+      properties:
+        ok: { const: true }
+        rid: { type: string }
+        v: { type: integer, description: Handler version that answered. }
+        replay: { type: boolean, description: Set when an Idempotency-Key replayed a stored reply. }
+    Response:
+      oneOf:
+        - $ref: '#/components/schemas/ErrorReply'
+        - $ref: '#/components/schemas/HealthReply'
+        - $ref: '#/components/schemas/ConfigReply'
+        - $ref: '#/components/schemas/HelloReply'
+        - $ref: '#/components/schemas/MeReply'
+        - $ref: '#/components/schemas/DevicesReply'
+        - $ref: '#/components/schemas/LinkStartReply'
+        - $ref: '#/components/schemas/LinkFinishReply'
+        - $ref: '#/components/schemas/SavePushReply'
+        - $ref: '#/components/schemas/SavePullReply'
+        - $ref: '#/components/schemas/WalletGetReply'
+        - $ref: '#/components/schemas/WalletEarnReply'
+        - $ref: '#/components/schemas/WalletSpendReply'
+        - $ref: '#/components/schemas/WalletGiftReply'
+        - $ref: '#/components/schemas/PurchaseVerifyReply'
+        - $ref: '#/components/schemas/CheckoutStartReply'
+        - $ref: '#/components/schemas/CoinsClaimReply'
+        - $ref: '#/components/schemas/EntListReply'
+        - $ref: '#/components/schemas/TelemetryReply'
+        - $ref: '#/components/schemas/OpsStatsReply'
+        - $ref: '#/components/schemas/V3Reply'
+
+    # ------------------------------------------------------------ requests (discriminated on `action`)
+    Request:
+      oneOf:
+        - $ref: '#/components/schemas/Health'
+        - $ref: '#/components/schemas/ConfigGet'
+        - $ref: '#/components/schemas/AccountHello'
+        - $ref: '#/components/schemas/AccountMe'
+        - $ref: '#/components/schemas/AccountDevices'
+        - $ref: '#/components/schemas/AccountRename'
+        - $ref: '#/components/schemas/AccountLinkStart'
+        - $ref: '#/components/schemas/AccountLinkFinish'
+        - $ref: '#/components/schemas/SavePush'
+        - $ref: '#/components/schemas/SavePull'
+        - $ref: '#/components/schemas/WalletGet'
+        - $ref: '#/components/schemas/WalletEarn'
+        - $ref: '#/components/schemas/WalletSpend'
+        - $ref: '#/components/schemas/WalletGift'
+        - $ref: '#/components/schemas/WalletPurchaseVerify'
+        - $ref: '#/components/schemas/WalletCheckoutStart'
+        - $ref: '#/components/schemas/WalletCoinsClaim'
+        - $ref: '#/components/schemas/EntList'
+        - $ref: '#/components/schemas/TelemetryBatch'
+        - $ref: '#/components/schemas/OpsStats'
+        - $ref: '#/components/schemas/V3Action'
+      discriminator:
+        propertyName: action
+        mapping:
+          health: '#/components/schemas/Health'
+          config.get: '#/components/schemas/ConfigGet'
+          account.hello: '#/components/schemas/AccountHello'
+          account.me: '#/components/schemas/AccountMe'
+          account.devices: '#/components/schemas/AccountDevices'
+          account.rename: '#/components/schemas/AccountRename'
+          account.link.start: '#/components/schemas/AccountLinkStart'
+          account.link.finish: '#/components/schemas/AccountLinkFinish'
+          save.push: '#/components/schemas/SavePush'
+          save.pull: '#/components/schemas/SavePull'
+          wallet.get: '#/components/schemas/WalletGet'
+          wallet.earn: '#/components/schemas/WalletEarn'
+          wallet.spend: '#/components/schemas/WalletSpend'
+          wallet.gift: '#/components/schemas/WalletGift'
+          wallet.purchase.verify: '#/components/schemas/WalletPurchaseVerify'
+          wallet.checkout.start: '#/components/schemas/WalletCheckoutStart'
+          wallet.coins.claim: '#/components/schemas/WalletCoinsClaim'
+          ent.list: '#/components/schemas/EntList'
+          telemetry.batch: '#/components/schemas/TelemetryBatch'
+          ops.stats: '#/components/schemas/OpsStats'
+
+    Base:
+      type: object
+      required: [action]
+      properties:
+        action: { type: string, description: 'Action name, optionally `name@version` (e.g. `save.push@1`).' }
+        idem: { type: string, maxLength: 80, description: Idempotency key (alternative to the header). }
+    Auth:
+      description: Device credentials from account.hello.
+      type: object
+      required: [dev, token]
+      properties:
+        dev: { $ref: '#/components/schemas/DeviceId' }
+        token: { type: string, maxLength: 200 }
+    DeviceId: { type: string, pattern: '^[A-Za-z0-9]{8,24}$', description: 'The device id (`save.dev`), also the v3 identity.' }
+    AccountId: { type: string, pattern: '^a_[A-Z2-9]{12}$' }
+    Day: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+    Client:
+      type: object
+      properties:
+        ver: { type: string, pattern: '^\d+\.\d+\.\d+$' }
+        platform: { type: string, enum: [web, android, ios, pwa, desktop] }
+
+    # ---- health / config
+    Health:
+      allOf: [{ $ref: '#/components/schemas/Base' }]
+      properties: { action: { const: health } }
+    HealthReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties:
+            api: { type: string, example: 4.0.0 }
+            store: { type: boolean }
+            storeName: { type: string }
+            email: { type: string, enum: [sandbox, resend] }
+            sandbox: { type: boolean, description: Purchase sandbox on. }
+            stripe: { type: boolean }
+            google: { type: boolean }
+            config: { type: boolean }
+            actions: { type: integer }
+            v3: { type: integer, description: Number of v3 actions mounted. }
+    ConfigGet:
+      allOf: [{ $ref: '#/components/schemas/Base' }]
+      description: 'Auth optional; with `dev`+`token` the A/B buckets are per account, otherwise per device.'
+      properties:
+        action: { const: config.get }
+        dev: { $ref: '#/components/schemas/DeviceId' }
+        token: { type: string }
+        client: { $ref: '#/components/schemas/Client' }
+    CatalogItem:
+      type: object
+      required: [id, kind, name, price, grants]
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [credits, gold, cosmetic, coins, name] }
+        name: { type: string }
+        desc: { type: string }
+        price:
+          type: object
+          properties: { credits: { type: integer }, eur: { type: integer, description: cents }, usd: { type: integer, description: cents } }
+        grants:
+          type: object
+          properties: { credits: { type: integer }, coins: { type: integer }, ent: { type: string, description: 'gold:<season> | cos:<id> | name:paper' } }
+        season: { type: string }
+        featured: { type: boolean }
+        from: { $ref: '#/components/schemas/Day' }
+        until: { $ref: '#/components/schemas/Day' }
+        giftable: { type: boolean }
+    ConfigReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          required: [catalog, featured, events, flags, ab, minClientVersion, latest]
+          properties:
+            catalog:
+              type: object
+              properties:
+                items: { type: array, items: { $ref: '#/components/schemas/CatalogItem' } }
+                earn: { type: object, additionalProperties: { type: integer }, description: Credits per earn reason. }
+                gift: { type: object, properties: { max: { type: integer }, perDay: { type: integer } } }
+            featured: { type: array, items: { type: string } }
+            events:
+              type: object
+              properties:
+                weekly:
+                  type: array
+                  items:
+                    type: object
+                    properties: { id: { type: string }, week: { type: string, pattern: '^\d{4}-W\d{2}$' }, title: { type: string }, rules: { type: object }, reward: { type: string }, live: { type: boolean } }
+                ddlive:
+                  type: array
+                  description: 'Deadline Day Live dates (winter 2027-02-02, summer 2027-09-01 shipped).'
+                  items:
+                    type: object
+                    properties: { id: { type: string }, day: { $ref: '#/components/schemas/Day' }, title: { type: string }, closesLocal: { type: string }, window: { type: string }, live: { type: boolean } }
+            flags: { type: object, additionalProperties: { oneOf: [{ type: boolean }, { type: number }, { type: string }] } }
+            ab: { type: object, additionalProperties: { type: string }, description: 'Experiment id to bucket, deterministic per account.' }
+            minClientVersion: { type: string }
+            latest: { type: string }
+            message: { type: string }
+            update: { type: string, enum: [required, available, none, unknown] }
+            telemetry: { type: object, properties: { sample: { type: number }, maxBatch: { type: integer } } }
+            season: { type: string, example: 2026-autumn }
+            week: { type: string, example: 2026-W40 }
+            now: { type: integer }
+            subject: { type: string, enum: [account, anon] }
+
+    # ---- identity
+    AccountHello:
+      allOf: [{ $ref: '#/components/schemas/Base' }]
+      required: [dev]
+      properties:
+        action: { const: account.hello }
+        dev: { $ref: '#/components/schemas/DeviceId' }
+        token: { type: string, description: Required once the device has an account. }
+        gameDev: { $ref: '#/components/schemas/DeviceId' }
+        nick: { type: string, maxLength: 16, description: Used only when the account is created. }
+        client: { $ref: '#/components/schemas/Client' }
+    Profile:
+      type: object
+      required: [id, nick, created, linked]
+      properties:
+        id: { $ref: '#/components/schemas/AccountId' }
+        nick: { type: string }
+        created: { type: integer }
+        linked: { type: boolean }
+        email: { type: [string, 'null'], description: 'Masked, e.g. r***@example.com' }
+        renames: { type: integer }
+    HelloReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          required: [account, created]
+          properties:
+            account: { $ref: '#/components/schemas/Profile' }
+            created: { type: boolean }
+            token: { type: string, description: 'Returned once, on creation. Keep it.' }
+    AccountMe:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      properties: { action: { const: account.me } }
+    MeReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties: { account: { $ref: '#/components/schemas/Profile' }, devices: { type: integer } }
+    AccountDevices:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      properties: { action: { const: account.devices } }
+    DevicesReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties:
+            devices:
+              type: array
+              items:
+                type: object
+                properties: { dev: { type: string }, platform: { type: string }, ver: { type: string }, created: { type: integer }, seen: { $ref: '#/components/schemas/Day' }, current: { type: boolean } }
+    AccountRename:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      required: [nick]
+      properties: { action: { const: account.rename }, nick: { type: string, minLength: 2, maxLength: 16 } }
+    AccountLinkStart:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      required: [email]
+      properties: { action: { const: account.link.start }, email: { type: string, format: email, maxLength: 120 } }
+    LinkStartReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties:
+            sent: { type: boolean }
+            sandbox: { type: boolean }
+            link: { type: string, description: Only in sandbox mode (no mail configured). }
+            expiresIn: { type: integer, example: 900 }
+            email: { type: string, description: Masked. }
+    AccountLinkFinish:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      required: [link]
+      properties: { action: { const: account.link.finish }, link: { type: string, description: 'The `?link=` token from the mail.' } }
+    LinkFinishReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties:
+            account: { $ref: '#/components/schemas/Profile' }
+            merged: { type: boolean, description: This device joined the account that already owned the email. }
+            previous: { type: [string, 'null'], description: The account id this device left when merged. }
+
+    # ---- cloud save
+    SavePush:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      required: [blob, base]
+      properties:
+        action: { const: save.push }
+        blob: { type: string, maxLength: 320000, description: gzip + base64 of the save JSON (raw ≤ 2.5 MB). }
+        base: { type: integer, minimum: 0, description: The version this client last synced from (0 = never). }
+        updatedAt: { type: integer, description: Local last-change time (ms). }
+        deltas:
+          type: object
+          description: 'Counter deltas since `base` (lib/sync.ts diff()); paths like `byline.followers`.'
+          properties: { counters: { type: object, additionalProperties: { type: number } } }
+    SavePushReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          required: [version, updatedAt, merged]
+          properties:
+            version: { type: integer }
+            updatedAt: { type: integer }
+            hash: { type: string }
+            merged: { type: boolean, description: 'A race was merged; `blob` holds the result to apply locally.' }
+            blob: { type: string }
+    SavePull:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      properties: { action: { const: save.pull } }
+    SavePullReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          required: [version, blob]
+          properties:
+            version: { type: integer, description: 0 when nothing is stored. }
+            updatedAt: { type: integer }
+            deviceId: { type: [string, 'null'] }
+            hash: { type: string }
+            blob: { type: [string, 'null'] }
+
+    # ---- wallet
+    Wallet:
+      type: object
+      properties:
+        balance: { type: integer, description: Credits. }
+        coinsPending: { type: integer, description: Coins bought but not yet claimed into the local save. }
+        entitlements: { type: array, items: { type: string } }
+    LedgerLine:
+      type: object
+      properties: { at: { type: integer }, d: { type: integer }, why: { type: string }, ref: { type: [string, 'null'] }, item: { type: string }, note: { type: string } }
+    WalletGet:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      properties: { action: { const: wallet.get }, n: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+    WalletGetReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties: { wallet: { $ref: '#/components/schemas/Wallet' }, ledger: { type: array, items: { $ref: '#/components/schemas/LedgerLine' } } }
+    WalletEarn:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      required: [reason]
+      properties:
+        action: { const: wallet.earn }
+        reason: { type: string, enum: [season_end, streak_30, first_t1], description: 'Validated server-side (README › Wallet rules).' }
+        ref: { type: string, description: 'season id for season_end, day for first_t1, optional end day for streak_30' }
+    WalletEarnReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties: { earned: { type: integer }, balance: { type: integer }, reason: { type: string } }
+    WalletSpend:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      required: [item]
+      properties: { action: { const: wallet.spend }, item: { type: string, description: Catalog item id priced in credits. } }
+    Granted:
+      type: object
+      properties: { credits: { type: integer }, coins: { type: integer }, ent: { type: string } }
+    WalletSpendReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties: { item: { type: string }, granted: { $ref: '#/components/schemas/Granted' }, wallet: { $ref: '#/components/schemas/Wallet' } }
+    WalletGift:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      required: [to, newsroom]
+      properties:
+        action: { const: wallet.gift }
+        to: { $ref: '#/components/schemas/AccountId' }
+        newsroom: { type: string, maxLength: 16, description: Both accounts must be members. }
+        amount: { type: integer, minimum: 1, description: Credits (or give `item`). }
+        item: { type: string, description: A giftable catalog item id. }
+        note: { type: string, maxLength: 60 }
+    WalletGiftReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties: { to: { type: string }, amount: { type: integer }, item: { type: [string, 'null'] }, wallet: { $ref: '#/components/schemas/Wallet' } }
+    WalletPurchaseVerify:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      required: [provider]
+      properties:
+        action: { const: wallet.purchase.verify }
+        provider: { type: string, enum: [stripe, google, sandbox] }
+        sessionId: { type: string, description: 'stripe: Checkout session id (cs_…)' }
+        productId: { type: string, description: 'google: product sku' }
+        purchaseToken: { type: string, description: 'google: purchase token (sandbox: `sandbox:<sku>`)' }
+        packageName: { type: string }
+        item: { type: string, description: 'sandbox (and sandbox stripe sessions): catalog item id' }
+        nonce: { type: string, maxLength: 20, description: 'sandbox: makes a distinct receipt' }
+    PurchaseVerifyReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties:
+            provider: { type: string }
+            sandbox: { type: boolean }
+            duplicate: { type: boolean, description: 'Receipt already granted (nothing changed).' }
+            item: { type: string }
+            granted: { $ref: '#/components/schemas/Granted' }
+            wallet: { $ref: '#/components/schemas/Wallet' }
+    WalletCheckoutStart:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      required: [item]
+      properties:
+        action: { const: wallet.checkout.start }
+        item: { type: string }
+        currency: { type: string, enum: [eur, usd], default: eur }
+        successUrl: { type: string, maxLength: 300 }
+        cancelUrl: { type: string, maxLength: 300 }
+    CheckoutStartReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties: { item: { type: string }, url: { type: [string, 'null'] }, sessionId: { type: string }, sandbox: { type: boolean } }
+    WalletCoinsClaim:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      properties: { action: { const: wallet.coins.claim } }
+    CoinsClaimReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties: { coins: { type: integer, description: 'Add these to the local save; zero afterwards.' } }
+    EntList:
+      allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/Auth' }]
+      properties: { action: { const: ent.list } }
+    EntListReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties:
+            entitlements: { type: array, items: { type: string } }
+            gold: { type: object, properties: { season: { type: string }, active: { type: boolean } } }
+            cosmetics: { type: array, items: { type: string } }
+
+    # ---- telemetry / ops
+    TelemetryBatch:
+      allOf: [{ $ref: '#/components/schemas/Base' }]
+      description: 'Auth optional (a device id is enough before hello). No PII; see README › Telemetry.'
+      required: [events]
+      properties:
+        action: { const: telemetry.batch }
+        dev: { $ref: '#/components/schemas/DeviceId' }
+        token: { type: string }
+        events:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            required: [name]
+            properties:
+              t: { type: integer, description: 'Client time (ms); older than 36 h is dropped.' }
+              name: { type: string, pattern: '^[a-z][a-z0-9_.]{1,39}$' }
+              props: { type: object, maxProperties: 12, additionalProperties: { oneOf: [{ type: string, maxLength: 80 }, { type: number }, { type: boolean }] } }
+    TelemetryReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties: { accepted: { type: integer }, stored: { type: integer }, sampled: { type: boolean } }
+    OpsStats:
+      allOf: [{ $ref: '#/components/schemas/Base' }]
+      required: [token]
+      properties: { action: { const: ops.stats }, token: { type: string, description: OPS_TOKEN }, days: { type: integer, minimum: 1, maximum: 30, default: 14 } }
+    OpsStatsReply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          properties:
+            days:
+              type: array
+              items:
+                type: object
+                properties:
+                  day: { $ref: '#/components/schemas/Day' }
+                  dau: { type: integer }
+                  d1: { type: integer, description: Accounts seen today first seen yesterday. }
+                  d7: { type: integer }
+                  events: { type: object, additionalProperties: { type: integer } }
+                  modes: { type: object, additionalProperties: { type: integer } }
+                  conv: { type: object, additionalProperties: { type: integer } }
+            totals: { type: object, properties: { dau: { type: integer }, conv: { type: object }, modes: { type: object } } }
+            generated: { type: integer }
+
+    # ---- v3 passthrough
+    V3Action:
+      allOf: [{ $ref: '#/components/schemas/Base' }]
+      description: |
+        Any action of api/tier-one/v3/index.js, as `v3.<name>` or the bare name when v4 has none of its own
+        (health is v4's; use `v3.health` for v3's). Bodies are capped at 4,000 characters like v3. Shipped names:
+        daily.start, daily.act, daily.dd, daily.finish, daily.seed, lb.top, wire.board, wire.file, wire.correct,
+        wire.mine, league.me, room.create, room.join, room.get; other lanes add room.*, newsroom.*, challenge.*, live.*.
+      properties:
+        action: { type: string, pattern: '^(v3\.)?[a-z][a-z0-9.]*$' }
+      additionalProperties: true
+    V3Reply:
+      allOf:
+        - $ref: '#/components/schemas/OkBase'
+        - type: object
+          description: v3's own reply fields. A v3 `{ error }` becomes `{ ok:false, code:'V3_<ERROR>', error, ...rest }` with status 200.
+          additionalProperties: true
