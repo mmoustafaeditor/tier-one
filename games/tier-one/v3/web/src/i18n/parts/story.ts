@@ -33,7 +33,7 @@ export default {
       favours: { title: 'Favours', aside: '{n} of 5 in the drawer' },
       clubs: { title: 'Club relations' },
       hist: { title: 'Recent windows', w: 'W{n}', cred: 'Cred {n}' },
-      restart: { go: 'Start again at a rival paper', sure: 'Sure? Your career starts over at chapter 1. Trophies stay.', yes: 'Yes, new byline', no: 'Keep my career' },
+      restart: { go: 'Start again at a rival paper', sure: 'Sure? Your career starts over at chapter 1. Trophies stay.', yes: 'Yes, new name', no: 'Keep my career' },
       intro: {
         k: 'New chapter', new: 'What’s new', go: 'Let’s go', finaleGo: 'Take a bow', rivalsNew: 'New rival', srcNew: 'New source', nothing: 'No new toys. Just higher stakes.',
       },
@@ -43,7 +43,7 @@ export default {
         stringer: { premise: 'National stringer. Big clubs, big names, bigger mistakes.', brief: 'The physio talks now. Top-flight sagas. One wrong Confirmed and it’s last season again.', intro: 'The nationals pay by the story. Every story. Right ones pay better.' },
         rival: { premise: 'Chief correspondent. And @BackPageBants wants you gone.', brief: 'The tabloid’s gunning for you. Beat them to it or eat their replies.', intro: '@BackPageBants remembers last season. They’ve made a highlight reel.' },
         chronicle: { premise: 'The Chronicle wants you back. Three Tier 1 windows to prove it.', brief: 'Same desk. Same chair. Different ending. Tier 1, three times.', intro: 'Same building. Same editor. He called you. Not the other way round.' },
-        front: { premise: 'Front page, byline, “Here we go”. And this time it’s right.', brief: 'You did it. Keep them honest. Keep being right.', intro: 'Your “Here we go” is on the front page. It’s right. Frame it.' },
+        front: { premise: 'Front page, your name, “Here we go”. And this time it’s right.', brief: 'You did it. Keep them honest. Keep being right.', intro: 'Your “Here we go” is on the front page. It’s right. Frame it.' },
       },
       beat: {
         firstRight: 'A right call. First one in a while. Don’t get cocky.',
@@ -56,7 +56,7 @@ export default {
         promo3: 'Chief correspondent. The tabloid’s noticed. Watch your back.',
         promo4: 'The Chronicle wants you back. Three Tier 1 windows. Then we talk.',
         t1Top: 'Tier 1. That’s {n} of {of}. Keep going.',
-        finale: 'Front page. Your byline. It’s right. Welcome back.',
+        finale: 'Front page. Your name. It’s right. Welcome back.',
         followers: '{m} followers. Somebody’s listening again.',
         followersBack: 'You’ve won back all 38,200. And then some.',
         quiet: 'Nothing filed? Blogs don’t write themselves.',
@@ -159,7 +159,7 @@ export default {
       favours: { title: 'Favores', aside: '{n} de 5 en el cajón' },
       clubs: { title: 'Relación con los clubes' },
       hist: { title: 'Últimas ventanas', w: 'V{n}', cred: 'Cred {n}' },
-      restart: { go: 'Empezar de nuevo en un medio rival', sure: '¿Seguro? Tu carrera vuelve al capítulo 1. Los trofeos se quedan.', yes: 'Sí, nueva firma', no: 'Me quedo como estoy' },
+      restart: { go: 'Empezar de nuevo en un medio rival', sure: '¿Seguro? Tu carrera vuelve al capítulo 1. Los trofeos se quedan.', yes: 'Sí, nuevo nombre', no: 'Me quedo como estoy' },
       intro: {
         k: 'Nuevo capítulo', new: 'Novedades', go: 'Vamos', finaleGo: 'Saluda al público', rivalsNew: 'Nuevo rival', srcNew: 'Nueva fuente', nothing: 'Nada nuevo. Solo más en juego.',
       },
@@ -169,7 +169,7 @@ export default {
         stringer: { premise: 'Colaborador nacional. Clubes grandes, nombres grandes, errores más grandes.', brief: 'El fisio ya habla. Culebrones de primera. Un Confirmado fallado y vuelves a la temporada pasada.', intro: 'Los nacionales pagan por pieza. Cada pieza. Las buenas, mejor.' },
         rival: { premise: 'Jefe de corresponsales. Y @BackPageBants te quiere fuera.', brief: 'El tabloide va a por ti. Adelántate o trágate sus respuestas.', intro: '@BackPageBants se acuerda de la temporada pasada. Tiene un vídeo resumen.' },
         chronicle: { premise: 'The Chronicle te quiere de vuelta. Tres ventanas Tier 1 para demostrarlo.', brief: 'La misma mesa. La misma silla. Otro final. Tier 1, tres veces.', intro: 'El mismo edificio. El mismo director. Esta vez te ha llamado él.' },
-        front: { premise: 'Portada, firma y “Here we go”. Y esta vez, acertado.', brief: 'Lo has hecho. Que no se relajen. Sigue acertando.', intro: 'Tu “Here we go” está en portada. Y es verdad. Enmárcalo.' },
+        front: { premise: 'Portada, tu nombre y “Here we go”. Y esta vez, acertado.', brief: 'Lo has hecho. Que no se relajen. Sigue acertando.', intro: 'Tu “Here we go” está en portada. Y es verdad. Enmárcalo.' },
       },
       beat: {
         firstRight: 'Un acierto. El primero en mucho tiempo. No te vengas arriba.',
@@ -182,7 +182,7 @@ export default {
         promo3: 'Jefe de corresponsales. El tabloide ya se ha fijado. Cuidado.',
         promo4: 'The Chronicle te quiere de vuelta. Tres ventanas Tier 1. Luego hablamos.',
         t1Top: 'Tier 1. Llevas {n} de {of}. Sigue.',
-        finale: 'Portada. Tu firma. Y es verdad. Has vuelto.',
+        finale: 'Portada. Tu nombre. Y es verdad. Has vuelto.',
         followers: '{m} seguidores. Alguien vuelve a escucharte.',
         followersBack: 'Has recuperado los 38.200. Y alguno más.',
         quiet: '¿Nada publicado? El blog no se escribe solo.',

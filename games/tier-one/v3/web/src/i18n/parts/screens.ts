@@ -16,7 +16,7 @@ export default {
       },
       rooms: {
         tabs: { rooms: 'Rooms', league: 'League' }, k: 'Play friends', hed: 'Same board. One table. Bragging rights.', sub: 'Daily rules exactly. One shared board per round, open 48 hours.',
-        byline: 'Your byline', joinT: 'Got a code?', joinSub: 'A mate sent you one', createT: 'Start a room', createSub: 'Name it, pick the rounds, send the code',
+        byline: 'Your name', joinT: 'Got a code?', joinSub: 'A mate sent you one', createT: 'Start a room', createSub: 'Name it, pick the rounds, send the code',
         reporters: '{n} reporters', copy: 'Copy invite', copied: 'Invite copied', roundsT: 'Rounds', table: 'Standings', code: 'Code',
         state: { open: 'Open now', soon: 'Soon', closed: 'Closed', played: 'Filed' },
         leagueK: 'The weekly league', leagueSub: 'Top {u} go up, bottom {d} go down on Sunday night.', leagueUp: 'Top {u} go up on Sunday night.', leagueDown: 'Bottom {d} go down on Sunday night.', week: 'Week {w}', how: 'How points work',
@@ -64,7 +64,7 @@ export default {
       },
       rooms: {
         tabs: { rooms: 'الأوض', league: 'الدوري' }, k: 'العب مع صحابك', hed: 'نفس اللوحة. ترتيب واحد. وحق التريقة.', sub: 'نفس قواعد اليومي بالظبط. لوحة واحدة لكل جولة، مفتوحة ٤٨ ساعة.',
-        byline: 'اسمك الصحفي', joinT: 'معاك كود؟', joinSub: 'واحد صاحبك بعتهولك', createT: 'افتح أوضة', createSub: 'سمّيها، اختار الجولات، وابعت الكود',
+        byline: 'اسمك', joinT: 'معاك كود؟', joinSub: 'واحد صاحبك بعتهولك', createT: 'افتح أوضة', createSub: 'سمّيها، اختار الجولات، وابعت الكود',
         reporters: '{n} صحفيين', copy: 'انسخ الدعوة', copied: 'الدعوة اتنسخت', roundsT: 'الجولات', table: 'الترتيب', code: 'الكود',
         state: { open: 'مفتوحة دلوقتي', soon: 'قريب', closed: 'اتقفلت', played: 'اتسجلت' },
         leagueK: 'الدوري الأسبوعي', leagueSub: 'أول {u} بيطلعوا وآخر {d} بينزلوا ليلة الحد.', leagueUp: 'أول {u} بيطلعوا ليلة الحد.', leagueDown: 'آخر {d} بينزلوا ليلة الحد.', week: 'أسبوع {w}', how: 'النقط بتتحسب إزاي',
@@ -112,7 +112,7 @@ export default {
       },
       rooms: {
         tabs: { rooms: 'Salas', league: 'Liga' }, k: 'Juega con amigos', hed: 'El mismo tablero. Una tabla. A presumir.', sub: 'Las reglas del Diario, tal cual. Un tablero compartido por ronda, abierto 48 horas.',
-        byline: 'Tu firma', joinT: '¿Tienes un código?', joinSub: 'Te lo ha pasado un colega', createT: 'Crea una sala', createSub: 'Ponle nombre, elige rondas y pasa el código',
+        byline: 'Tu nombre', joinT: '¿Tienes un código?', joinSub: 'Te lo ha pasado un colega', createT: 'Crea una sala', createSub: 'Ponle nombre, elige rondas y pasa el código',
         reporters: '{n} periodistas', copy: 'Copiar invitación', copied: 'Invitación copiada', roundsT: 'Rondas', table: 'Clasificación', code: 'Código',
         state: { open: 'Abierta', soon: 'Pronto', closed: 'Cerrada', played: 'Enviada' },
         leagueK: 'La liga semanal', leagueSub: 'Los {u} primeros suben y los {d} últimos bajan el domingo por la noche.', leagueUp: 'Los {u} primeros suben el domingo por la noche.', leagueDown: 'Los {d} últimos bajan el domingo por la noche.', week: 'Semana {w}', how: 'Cómo se puntúa',

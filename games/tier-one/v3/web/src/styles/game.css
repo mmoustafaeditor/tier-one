@@ -27,10 +27,12 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-i
 #root { position: relative; z-index: 1; }
 
 /* Every legacy page is a sheet of paper on the desk. New screens use .g-screen instead. */
-.page { background: var(--paper); color: var(--ink); border-radius: var(--r-card); margin: 10px auto calc(var(--tabs-h) + 28px); box-shadow: var(--shadow-card); max-width: min(var(--page-max), calc(100% - 16px)); padding-bottom: 24px; }
+.page { background: var(--paper); color: var(--ink); border-radius: var(--r-card); margin: 10px auto calc(var(--tabs-h) + 14px + env(safe-area-inset-bottom, 0)); box-shadow: var(--shadow-card); max-width: min(var(--page-max), calc(100% - 16px)); padding-bottom: 24px; }
 
 /* ---------- screen + motion */
-.g-screen { max-width: 720px; margin: 0 auto; padding: 0 16px calc(var(--tabs-h) + 30px + env(safe-area-inset-bottom, 0)); min-height: 100vh; }
+/* The page ends at the content: only the fixed tab bar's height (+ a small gap) is reserved below. No 100vh floors (they add a phantom scroll on mobile). */
+body, #root { min-height: 0; }
+.g-screen { max-width: 720px; margin: 0 auto; padding: 0 16px calc(var(--tabs-h) + 14px + env(safe-area-inset-bottom, 0)); }
 .g-screen--wide { max-width: 1120px; }
 .stagger > * { animation: g-rise .5s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
 @keyframes g-rise { from { opacity: 0; transform: translateY(16px) scale(.98); } }

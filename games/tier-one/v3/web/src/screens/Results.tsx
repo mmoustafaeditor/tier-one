@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { OUTS, type ResultSaga, type Result, type CastSaga } from '../lib/engine';
 import type { View } from '../lib/driver';
-import { useT, num, fmtDate } from '../lib/i18n';
+import { useT, num, fmtDate, resetAt } from '../lib/i18n';
 import { useSave } from '../lib/save';
 import { outWord, strWord, saysWord } from '../lib/story';
 import { onShared } from '../lib/meta';
@@ -105,7 +105,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
           <GBtn size="lg" shine onClick={view.mode === 'daily' ? () => chrome.go({ n: 'practice' }) : again}><Icon n={view.mode === 'daily' ? 'target' : 'phone'} />{view.mode === 'daily' ? t('g.res.practice') : view.mode === 'career' ? t('g.res.nextWindow') : t('results.again')}</GBtn>
           <GBtn kind="dark" onClick={home}><Icon n="home" />{t('g.res.home')}</GBtn>
         </div>
-        {view.mode === 'daily' && <p className="g-mono prog__tomorrow">{t('results.tomorrow')}</p>}
+        {view.mode === 'daily' && <p className="g-mono prog__tomorrow">{t('results.tomorrow', { t: resetAt() })}</p>}
       </section>}
     </>}
     {stage < PROG && stage > 0 && <p className="g-mono results2__skip">{t('g.call.tapSkip')}</p>}

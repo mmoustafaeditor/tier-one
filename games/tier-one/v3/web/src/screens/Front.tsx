@@ -1,5 +1,5 @@
 // The front page (look/mockups/home.html): the Daily, the lead story off the real wire, your calls, the league.
-import { useT, fmtDate, num } from '../lib/i18n';
+import { useT, fmtDate, num, resetAt } from '../lib/i18n';
 import { useSave } from '../lib/save';
 import { useWire, stageOf, gradeOf, bestTier, type Rumour } from '../lib/wireData';
 import { useLeague, myRow } from '../lib/leagueData';
@@ -32,7 +32,7 @@ export function Front(chrome: Chrome) {
   const playerOf = (id: string) => WORLD.players.find((p) => p.id === id);
 
   const dailyCard = <section className="daily invert">
-    <div className="daily__row"><span className="kicker" style={{ color: 'var(--accent)' }}>{t('front.dailyNo', { n: no })}</span><span className="meta">{t('daily.closes')}</span></div>
+    <div className="daily__row"><span className="kicker" style={{ color: 'var(--accent)' }}>{t('front.dailyNo', { n: no })}</span><span className="meta">{t('daily.closes', { t: resetAt() })}</span></div>
     <h2 className="hed">{t('daily.tagline')}</h2>
     <div className="days" aria-label={t('common.dayOf', { n: live ? live.day : played ? 7 : 0, m: 7 })}>{Array.from({ length: 7 }, (_, k) => <i key={k} className={played || (live && k + 1 < live.day) ? 'on' : live && k + 1 === live.day ? 'now' : ''} />)}</div>
     {played ? <div className="daily__played">
@@ -41,7 +41,7 @@ export function Front(chrome: Chrome) {
       <span className="meta">{played.rank ? t('daily.rank', { r: played.rank, n: played.players || 1 }) : ''}{played.par != null ? ' · ' + t('daily.par', { n: played.par }) : ''}</span>
     </div> : <div className="daily__row" style={{ marginTop: 8 }}><span className="meta">{live ? t('common.dayOf', { n: live.day, m: 7 }) : t('daily.startNote')}</span>{live && <span className="meta">{t('daily.contactsLeft', { n: live.left })}</span>}</div>}
     <Btn kind="accent" style={{ marginTop: 16 }} onClick={() => chrome.go({ n: 'daily' })}>{played ? t('daily.read') : live ? t('daily.resume') : t('daily.play')} <Arr /></Btn>
-    <p className="note" style={{ marginTop: 10 }}>{played ? t('daily.played') : t('daily.fair')}</p>
+    <p className="note" style={{ marginTop: 10 }}>{played ? t('daily.played', { t: resetAt() }) : t('daily.fair')}</p>
   </section>;
 
   return <div className="page front">

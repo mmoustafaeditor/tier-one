@@ -2,39 +2,26 @@
 import { useT, num } from '../lib/i18n';
 import { useSave } from '../lib/save';
 import { ACH, ACH_IDS } from '../lib/meta';
-import { levelOf } from '../lib/progress';
-import { chapterOf } from '../lib/storyMode';
 import { Icon, TopBar, GBtn } from '../ui/game';
 import type { Chrome } from '../App';
 import { startTutorial } from './Onboarding';
+import { PressPass } from './Home';
+import { useLeague } from '../lib/leagueData';
 
 const TROPHY_IC: Record<string, string> = { first: 'news', t1: 'crown', t1x3: 'crown', excl: 'bolt', excl3: 'bolt', clean: 'check', uturn: 'uturn', twist: 'uturn', dd: 'clock', silent: 'eye', fake: 'eye', hijack: 'arrow', agent: 'briefcase', echo: 'friends', physio: 'pulse', streak7: 'flame', streak30: 'flame', practice5: 'target', coach: 'target', career1: 'story', rank2: 'story', rank3: 'story', rank5: 'crown', trust5: 'phone', leak: 'fax', wire1: 'wire', wireRight: 'wire', room: 'friends', share: 'share', rich: 'gift' };
 
 export function MeScreen(chrome: Chrome) {
   const t = useT();
   const s = useSave();
-  const lv = levelOf(s.pp);
-  const ch = chapterOf(s);
+  const lg = useLeague();
   const got = ACH_IDS.filter((id) => s.ach[id]);
   const dailies = Object.values(s.daily);
   const best = dailies.reduce((m, d) => Math.max(m, d.total), 0);
   const t1s = dailies.filter((d) => d.tier === 'T1').length;
-  const initials = (s.nick || 'You').split(/\s+/).map((x) => x[0]).join('').slice(0, 2).toUpperCase();
   return <div className="g-screen me">
     <TopBar title={t('g.tabs.me')} onMenu={chrome.openSettings} />
     <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <section className="g-card me__card" style={{ ['--i' as string]: 0 }}>
-        <div className="me__press g-mono">{t('g.me.pressCard')}</div>
-        <div className="me__row">
-          <span className="pass__badge me__badge"><span className="pass__init">{initials}</span><span className="pass__lv">{lv.n}</span></span>
-          <div style={{ minWidth: 0 }}>
-            <div className="g-h2">{s.nick || t('g.home.noName')}</div>
-            <div className="g-mono" style={{ color: 'var(--red-deep)', marginTop: 4 }}>{ch ? t('g.story.ch.' + ch.id + '.name') : t('g.home.freelance')}</div>
-          </div>
-        </div>
-        <div className="g-bar" style={{ marginTop: 14, ['--bar' as string]: 'linear-gradient(90deg,#FFD35C,#F7B928)' }}><i style={{ width: lv.into + '%' }} /></div>
-        <div className="me__lvl g-mono"><span>{t('g.lv', { n: lv.n })}</span><span>{lv.max ? t('g.me.maxed') : t('g.home.xp', { a: lv.into, b: lv.need })}</span><span>{t('g.lv', { n: Math.min(40, lv.n + 1) })}</span></div>
-      </section>
+      <PressPass chrome={chrome} s={s} lg={lg} onTop={() => chrome.go({ n: 'pass' })} />
 
       <section className="me__stats" style={{ ['--i' as string]: 1 }}>
         {[

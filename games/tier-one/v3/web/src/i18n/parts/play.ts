@@ -26,7 +26,7 @@ export default {
       onb: {
         tag: 'The transfer journalist game', k: 'Welcome to the desk', h: 'Break the transfer first. Or get ratio’d trying.',
         s1: 'Ring sources: the kit man, the barber, the agent… some of them lie.', s2: 'Call it: will he sign, go elsewhere, or was it never real?', s3: 'Publish before the rivals. Survive a 60-second Deadline Day.',
-        next: 'Let’s go', pressCard: 'Your press card', nickH: 'What’s your byline?', nickPh: 'e.g. Mo Moustafa', first: 'Play my first story', skip: 'I’ve played before. Skip the training',
+        next: 'Let’s go', pressCard: 'Your press card', nickH: 'What’s your name?', nickPh: 'e.g. Mo Moustafa', first: 'Play my first story', skip: 'I’ve played before. Skip the training',
       },
       tut: {
         open: 'Tap a player to open his file.', openP: 'Five transfer stories this week. Start with the glowing one.',
@@ -76,7 +76,7 @@ export default {
       onb: {
         tag: 'لعبة صحفي الانتقالات', k: 'أهلاً بيك في الديسك', h: 'اكشف الصفقة الأول. ولا هتبقى تريند بالغلط.',
         s1: 'كلم مصادرك: مسؤول المهمات، الحلاق، الوكيل… وفيهم اللي بيكدب.', s2: 'قرر: هيمضي، هيروح حتة تانية، ولا الموضوع كله فشنك؟', s3: 'انشر قبل المنافسين. واستحمل يوم ديدلاين ٦٠ ثانية.',
-        next: 'يلا بينا', pressCard: 'كارنيه الصحافة بتاعك', nickH: 'اسمك إيه على الخبر؟', nickPh: 'مثلاً: مو مصطفى', first: 'العب أول قصة ليا', skip: 'لعبت قبل كده. عدي التدريب',
+        next: 'يلا بينا', pressCard: 'كارنيه الصحافة بتاعك', nickH: 'اسمك إيه؟', nickPh: 'مثلاً: مو مصطفى', first: 'العب أول قصة ليا', skip: 'لعبت قبل كده. عدي التدريب',
       },
       tut: {
         open: 'دوس على لاعب عشان تفتح ملفه.', openP: 'خمس قصص انتقالات الأسبوع ده. ابدأ باللي منور.',
@@ -126,7 +126,7 @@ export default {
       onb: {
         tag: 'El juego del periodista de fichajes', k: 'Bienvenido a la redacción', h: 'Da el fichaje antes que nadie. O hazte viral por errar.',
         s1: 'Llama a tus fuentes: el utillero, el barbero, el agente… alguno miente.', s2: 'Decide: ¿firma, se va a otro club o nunca fue real?', s3: 'Publica antes que los rivales. Sobrevive a un cierre de 60 segundos.',
-        next: 'Vamos', pressCard: 'Tu carné de prensa', nickH: '¿Cómo firmas tus noticias?', nickPh: 'p. ej. Mo Moustafa', first: 'Jugar mi primera historia', skip: 'Ya he jugado. Saltar el tutorial',
+        next: 'Vamos', pressCard: 'Tu carné de prensa', nickH: '¿Cómo te llamas?', nickPh: 'p. ej. Mo Moustafa', first: 'Jugar mi primera historia', skip: 'Ya he jugado. Saltar el tutorial',
       },
       tut: {
         open: 'Toca un jugador para abrir su carpeta.', openP: 'Cinco culebrones esta semana. Empieza por el que brilla.',

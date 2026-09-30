@@ -2,9 +2,9 @@
 .home .stagger { display: flex; flex-direction: column; gap: 14px; }
 .home .g-sec { margin: 8px 2px -2px; }
 
-/* press pass */
-.pass { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px; overflow: hidden; }
-.pass::after { content: ""; position: absolute; inset-block: 0; inset-inline-end: 0; width: 5px; background: repeating-linear-gradient(0deg, var(--red) 0 7px, transparent 7px 12px); }
+/* press pass: identity row + the three modes strip */
+.pass { padding: 12px; overflow: hidden; }
+.pass__id { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; width: 100%; text-align: start; color: inherit; }
 .pass__badge { position: relative; width: 60px; height: 60px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(145deg, #FF7A52, var(--red-deep)); box-shadow: inset 0 -4px 0 rgba(0,0,0,.2), 0 6px 14px -6px rgba(255, 90, 54, .6); }
 .pass__init { font-family: var(--f-display); font-weight: 800; font-size: 26px; color: #fff; letter-spacing: -.02em; }
 .pass__lv { position: absolute; inset-inline-end: -8px; bottom: -8px; min-width: 28px; height: 28px; padding: 0 6px; border-radius: 14px; display: grid; place-items: center; background: linear-gradient(180deg, #FFD35C, var(--gold)); color: #3A2600; font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 16px; box-shadow: 0 0 0 3px var(--desk-2); }
@@ -12,6 +12,15 @@
 .pass__name { font-family: var(--f-display); font-weight: 800; font-size: 21px; line-height: 1.05; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pass__rank { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--red); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pass__meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 5px; font-family: var(--f-mono); font-size: 10px; letter-spacing: .05em; color: var(--on-desk-3); }
+.pass__coins { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border-radius: 999px; background: var(--desk-3); align-self: start; }
+.pass__coins b { font-size: 17px; }
+.mbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 12px; }
+.mbar__i { --mc: var(--red); display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 7px 9px; border-radius: 10px; text-align: start; color: var(--on-desk); background: color-mix(in srgb, var(--mc) 16%, var(--desk-3)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mc) 45%, transparent); }
+.mbar__i.mode--daily { --mc: var(--red); }
+.mbar__k { display: flex; align-items: center; gap: 4px; color: var(--mc); font-size: 9px; font-weight: 700; }
+.mbar__k svg { width: 12px; height: 12px; flex: none; }
+.mbar__x { margin-inline-start: auto; color: #FF7A1F; font-family: var(--f-cond); font-size: 12px; }
+.mbar__v { font-weight: 800; font-size: 12.5px; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pass__streak { display: flex; flex-direction: column; align-items: center; min-width: 52px; padding-inline-end: 6px; }
 .pass__streak .flame { width: 34px; height: 34px; color: var(--on-desk-3); }
 .pass__streak .flame svg { width: 100%; height: 100%; }
@@ -32,6 +41,9 @@
 .five__kits { display: flex; justify-content: space-between; gap: 6px; margin: 16px 2px 6px; }
 .five__kit { position: relative; flex: 1; display: grid; place-items: center; aspect-ratio: 1 / 1.05; border-radius: 12px; background: var(--card-2); box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); transform: rotate(var(--r)); animation: g-deal .55s var(--ease-slam) both; }
 .five__kit .g-kit { --kit: 84% !important; }
+.five__kit:has(.five__name) { aspect-ratio: auto; padding: 6px 2px 5px; gap: 3px; }
+.five__kit:has(.five__name) .g-kit { --kit: 70% !important; }
+.five__name { max-width: 100%; font-size: 10px; font-weight: 800; line-height: 1.1; text-align: center; color: var(--card-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transform: rotate(calc(-1 * var(--r))); }
 .five__kit.is-win { background: color-mix(in srgb, var(--c-done) 22%, var(--card-2)); }
 .five__kit.is-lose { background: color-mix(in srgb, var(--red) 16%, var(--card-2)); }
 .five__res { position: absolute; top: -7px; inset-inline-end: -7px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--card-ink); color: #fff; font-style: normal; font-weight: 900; }
@@ -57,7 +69,9 @@
 .mission__t { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .mission__t b { font-size: 14px; font-weight: 700; line-height: 1.25; }
 .mission.is-claimed { opacity: .55; }
-.mission__r { color: var(--on-desk-3); }
+.mission__r { color: var(--on-desk-3); display: inline-flex; align-items: center; gap: 8px; }
+.mission__c { display: inline-flex; align-items: center; gap: 4px; color: var(--gold); font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 15px; }
+.mission__c .g-coin { width: 13px; height: 13px; }
 .claim { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 10px; background: linear-gradient(180deg, #FFD35C, var(--gold)); color: #3A2600; font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 17px; box-shadow: 0 3px 0 var(--gold-deep); animation: g-pulse 1.6s infinite; --pulse: rgba(247, 185, 40, .6); }
 .claim:active { transform: translateY(3px); box-shadow: none; }
 

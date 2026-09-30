@@ -1,7 +1,11 @@
 // Home: the game hub (HYBRID.md §4). Press pass, Today's five, missions, the modes, the wire ticker.
-import { useEffect } from 'react';
-import { useT, num } from '../lib/i18n';
-import { update, useSave } from '../lib/save';
+import { useEffect, useState } from 'react';
+import { useT, num, resetAt } from '../lib/i18n';
+import { update, useSave, getSave } from '../lib/save';
+import type { Save } from '../lib/save';
+import { v3 } from '../lib/api';
+import type { CastSaga } from '../lib/engine';
+import type { League } from '../lib/leagueData';
 import { useWire, stageOf } from '../lib/wireData';
 import { useLeague, myRow } from '../lib/leagueData';
 import { ymdUTC } from '../lib/meta';
@@ -30,7 +34,7 @@ export function Home(chrome: Chrome) {
   const lv = levelOf(s.pp);
   const ch = chapterOf(s);
   const me = myRow(lg);
-  const initials = (s.nick || 'You').split(/\s+/).map((x) => x[0]).join('').slice(0, 2).toUpperCase();
+  const cast = useTodayCast(today);
   // The week strip: Monday-first, UTC.
   const d0 = new Date(today + 'T00:00:00Z'); const dow = (d0.getUTCDay() + 6) % 7;
   const week = Array.from({ length: 7 }, (_, k) => { const d = new Date(d0.getTime() + (k - dow) * 864e5).toISOString().slice(0, 10); return { d, on: !!s.daily[d], now: d === today }; });
@@ -42,20 +46,8 @@ export function Home(chrome: Chrome) {
     <TopBar onHelp={() => chrome.go({ n: 'howto' })} onMenu={chrome.openSettings} />
     <div className="stagger">
 
-      {/* ---------- press pass */}
-      <button className="pass g-card g-card--desk g-card--tap" style={{ ['--i' as string]: 0 }} onClick={() => chrome.go({ n: 'me' })}>
-        <span className="pass__badge"><span className="pass__init">{initials}</span><span className="pass__lv">{lv.n}</span></span>
-        <span className="pass__main">
-          <span className="pass__name">{s.nick || t('g.home.noName')}</span>
-          <span className="pass__rank">{ch ? t('g.story.ch.' + ch.id + '.name') : t('g.home.freelance')}</span>
-          <span className="g-bar g-bar--sm" style={{ marginTop: 8, ['--bar' as string]: 'linear-gradient(90deg,#FFD35C,#F7B928)' }}><i style={{ width: lv.into + '%' }} /></span>
-          <span className="pass__meta"><span>{t('g.home.xp', { a: lv.into, b: lv.need })}</span>{s.career && <span>{t('g.home.followers', { n: fmtK(s.career.followers) })}</span>}</span>
-        </span>
-        <span className="pass__streak" aria-label={t('front.tallyAria', { n: s.streak.n })}>
-          <span className={'flame' + (s.streak.n ? ' is-lit' : '')}><Icon n="flame" /></span>
-          <b className="g-num">{s.streak.n}</b><span className="g-mono">{t('g.home.streak')}</span>
-        </span>
-      </button>
+      {/* ---------- press pass + the three modes at a glance */}
+      <PressPass chrome={chrome} s={s} lg={lg} onTop={() => chrome.go({ n: 'me' })} />
 
       {/* ---------- today's five */}
       <section className="five g-card" style={{ ['--i' as string]: 1 }}>
@@ -70,7 +62,8 @@ export function Home(chrome: Chrome) {
             {Array.from({ length: 5 }, (_, k) => {
               const res = played?.row ? played.row[k] : '';
               return <span key={k} className={'five__kit' + (res ? ' is-' + (res === '■' || res === '★' ? 'win' : res === '□' ? 'lose' : 'none') : '')} style={{ ['--r' as string]: [-6, 3, -2, 5, -4][k] + 'deg', ['--dx' as string]: (k - 2) * 30 + 'px', animationDelay: 120 + k * 70 + 'ms' }}>
-                <Kit mystery size={58} />
+                {cast?.[k] ? <Kit club={cast[k].from} player={cast[k].player} size={58} /> : <Kit mystery size={58} />}
+                {cast?.[k] && <span className="five__name">{cast[k].player.s || cast[k].player.n}</span>}
                 {res && <i className="five__res">{res === '★' ? <Icon n="bolt" /> : res === '■' ? <Icon n="check" /> : res === '□' ? <Icon n="x" /> : '–'}</i>}
               </span>;
             })}
@@ -81,19 +74,19 @@ export function Home(chrome: Chrome) {
           <GBtn size="lg" pulse={!played && !live} shine={!played} sound="open" onClick={() => chrome.go({ n: 'daily' })} style={{ marginTop: 14 }}>
             <Icon n={played ? 'news' : 'phone'} size={24} />{played ? t('g.home.seePage') : live ? t('g.home.resume', { d: live.day }) : t('g.home.play')}
           </GBtn>
-          <p className="five__fair g-mono">{played ? t('g.home.tomorrow') : t('g.home.fair')}</p>
+          <p className="five__fair g-mono">{played ? t('g.home.tomorrow', { t: resetAt() }) : t('g.home.fair')}</p>
         </div>
       </section>
 
       {/* ---------- missions */}
       {ms.length > 0 && <section className="missions g-card g-card--desk" style={{ ['--i' as string]: 2 }}>
-        <div className="g-sec" style={{ margin: '0 0 8px' }}><h2>{t('g.home.missions')}</h2><span className="g-mono">{t('g.home.missionsReset')}</span></div>
+        <div className="g-sec" style={{ margin: '0 0 8px' }}><h2>{t('g.home.missions')}</h2><span className="g-mono">{t('g.home.missionsReset', { t: resetAt() })}</span></div>
         {ms.map((m) => <div key={m.id} className={'mission' + (m.done ? ' is-done' : '') + (m.claimed ? ' is-claimed' : '')}>
           <span className="mission__ic"><Icon n={m.claimed ? 'check' : MI[m.id] || 'target'} /></span>
           <span className="mission__t"><b>{t('g.missions.' + m.id, { n: m.n })}</b>
             <span className="g-bar g-bar--sm" style={{ ['--bar' as string]: m.done ? 'var(--c-done)' : 'var(--gold)' }}><i style={{ width: (100 * m.have) / m.n + '%' }} /></span></span>
           {m.done && !m.claimed ? <button className="claim" onClick={() => { const c = claimMission(m.id); if (c) { sfx('coin'); confetti(['#F7B928', '#FFD35C', '#fff'], 60); } }}><span className="g-coin" />+{m.coins}</button>
-            : <span className="mission__r g-mono">{m.claimed ? t('g.home.claimed') : m.have + '/' + m.n}</span>}
+            : <span className="mission__r g-mono">{m.claimed ? t('g.home.claimed') : <>{m.have + '/' + m.n}<span className="mission__c"><span className="g-coin" />+{m.coins}</span></>}</span>}
         </div>)}
       </section>}
 
@@ -129,3 +122,55 @@ function ModeTile({ c, icon, k, title, sub, onClick, wide, badge, progress }: { 
   </button>;
 }
 
+
+// Today's five players (names and clubs; outcomes stay secret). Same call the Daily makes on open, cached per day.
+let castCache: { day: string; cast: CastSaga[] } | null = null;
+function useTodayCast(day: string) {
+  const [c, setC] = useState(castCache?.day === day ? castCache.cast : null);
+  useEffect(() => {
+    if (castCache?.day === day) return;
+    const x = getSave();
+    v3<{ cast: CastSaga[] }>('daily.start', { dev: x.dev, nick: x.nick }).then((r) => { if (r.ok && r.cast) { castCache = { day, cast: r.cast }; setC(r.cast); } }).catch(() => {});
+  }, [day]);
+  return c;
+}
+
+// The three modes in one strip: Daily (tier/streak), Career (chapter/level), Room (league rank). Home's pass and Me's card.
+export function ModeBar({ chrome, s, lg }: { chrome: Chrome; s: Save; lg: League | null }) {
+  const t = useT();
+  const played = s.daily[ymdUTC()];
+  const ch = chapterOf(s);
+  const me = myRow(lg);
+  const room = lg && me >= 0 && lg.rows[me].pts > 0 ? t('g.bar.rank', { r: me + 1 }) : t('g.bar.noRank');
+  const daily = played ? t('tier.' + played.tier) + (played.rank ? ' · #' + played.rank : '') : t('g.bar.toPlay');
+  const items = [
+    { c: 'daily', ic: 'flame', k: t('g.bar.daily'), v: daily, x: s.streak.n ? String(s.streak.n) : '', go: () => chrome.go({ n: 'daily' }) },
+    { c: 'story', ic: 'story', k: t('g.bar.career'), v: ch ? t('g.bar.ch', { c: ch.n, n: levelOf(s.pp).n }) : t('g.bar.start'), x: '', go: () => chrome.go({ n: 'story' }) },
+    { c: 'rooms', ic: 'friends', k: t('g.bar.room'), v: room, x: '', go: () => chrome.go({ n: 'rooms' }) },
+  ];
+  return <div className="mbar">{items.map((m) => <button key={m.c} className={'mbar__i mode--' + m.c} onClick={() => { sfx('ui.tap'); m.go(); }}>
+    <span className="mbar__k g-mono"><Icon n={m.ic} />{m.k}{m.x && <b className="mbar__x">{m.x}</b>}</span>
+    <span className="mbar__v">{m.v}</span>
+  </button>)}</div>;
+}
+
+// The press pass: who you are, level, coins, and the three modes. Home's top bar; Me's press card.
+export function PressPass({ chrome, s, lg, onTop }: { chrome: Chrome; s: Save; lg: League | null; onTop: () => void }) {
+  const t = useT();
+  const lv = levelOf(s.pp);
+  const ch = chapterOf(s);
+  const initials = (s.nick || 'You').split(/\s+/).map((x) => x[0]).join('').slice(0, 2).toUpperCase();
+  return <div className="pass g-card g-card--desk">
+        <button className="pass__id" onClick={onTop}>
+          <span className="pass__badge"><span className="pass__init">{initials}</span><span className="pass__lv">{lv.n}</span></span>
+          <span className="pass__main">
+            <span className="pass__name">{s.nick || t('g.home.noName')}</span>
+            <span className="pass__rank">{ch ? t('g.story.ch.' + ch.id + '.name') : t('g.home.freelance')}</span>
+            <span className="g-bar g-bar--sm" style={{ marginTop: 8, ['--bar' as string]: 'linear-gradient(90deg,#FFD35C,#F7B928)' }}><i style={{ width: lv.into + '%' }} /></span>
+            <span className="pass__meta"><span>{t('g.home.xp', { a: lv.into, b: lv.need })}</span>{s.career && <span>{t('g.home.followers', { n: fmtK(s.career.followers) })}</span>}</span>
+          </span>
+          <span className="pass__coins" aria-label={t('g.coins', { n: s.credits })}><span className="g-coin" /><b className="g-num">{num(s.credits)}</b></span>
+        </button>
+        <ModeBar chrome={chrome} s={s} lg={lg} />
+      </div>;
+}
