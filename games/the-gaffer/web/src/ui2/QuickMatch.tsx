@@ -1,6 +1,7 @@
 // Quick match: any two clubs from the 2026/27 world, one game under the lights, nothing counts. It runs on a
 // throwaway career that is never saved, so it can't touch a real one. The match screen is the real one: it reads
 // that throwaway career through the same Game context.
+import { loadPrefs } from '../sim/prefs';
 import { useMemo, useState } from 'react';
 import type { Strings, UiLang } from '../i18n';
 import { dataLang } from '../i18n';
@@ -43,7 +44,7 @@ export function QuickMatch({ t, x, ui, onExit }: { t: Strings; x: XStrings; ui: 
     return (
       <GameCtx.Provider value={g}>
         <div className="shell solo"><main className="main"><div className="page">
-          <LiveScreen m={game.m} locked={false} speed0={1} onUpdate={(m) => setGame({ ...game, m })} onSave={() => undefined}
+          <LiveScreen m={game.m} locked={false} speed0={loadPrefs().pace ?? 1} onUpdate={(m) => setGame({ ...game, m })} onSave={() => undefined}
             onFinish={() => setGame(null)} />
         </div></main></div>
       </GameCtx.Provider>

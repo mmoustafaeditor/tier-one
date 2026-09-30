@@ -1,5 +1,8 @@
 // The tunnel: the one moment before kick-off where the screen breathes. Team sheets, the last word in the dressing
 // room, the odds, and three ways in: walk out, just the result, or sim on to the next decision.
+import { RefLine } from './Officials';
+import { RF } from '../lang-ref-all';
+import { squadOf } from '../sim/world';
 import { useMemo, useState } from 'react';
 import { nextUserMatch, table, leagueOf } from '../sim/season';
 import { predict, expected, type Talk } from '../sim/match';
@@ -42,6 +45,8 @@ export function PreMatch() {
     return sd.onPitch.map((id, i) => ({ id, p: get(id), pos: slots[i]?.pos ?? get(id).position }));
   };
   const bars = [3, 2, 1];
+  // gf-ref: our players suspended for this competition.
+  const banned = squadOf(w, c.clubId).filter((p) => (m.cup ? (p.sus?.[m.cup] ?? 0) > 0 : p.banned > 0));
   return (
     <div className="sc-pre">
       <header className="topbar on-ground">
@@ -70,6 +75,8 @@ export function PreMatch() {
             <span className="crowd">{me === 0 ? x.pre.crowd(crowd.toLocaleString(g.ui === 'ar' ? 'ar-EG' : g.ui), cn(home, lang)) : x.pre.crowdAway(crowd.toLocaleString(g.ui === 'ar' ? 'ar-EG' : g.ui))}</span>
             <h1 className="h-hero">{home.shortName && lang === 'en' ? home.shortName : cn(home, lang)} v {away.shortName && lang === 'en' ? away.shortName : cn(away, lang)}.</h1>
             <p className="stakes">{stakes}</p>
+            <p className="refpre"><RefLine m={m} /></p>
+            {banned.length > 0 && <p className="refpre"><span className="tag tag--bad"><I n="x" size="sm" />{RF[g.ui].outSuspended(banned.map((p) => sn(p, lang)).join(', '))}</span></p>}
           </div>
         </section>
 

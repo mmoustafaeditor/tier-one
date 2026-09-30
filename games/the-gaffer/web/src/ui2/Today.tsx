@@ -152,7 +152,8 @@ function FitPanel() {
   const g = useGame();
   const { w, c, x } = g;
   const squad = squadOf(w, c.clubId);
-  const out = squad.filter((p) => !available(p) || p.fitness < 78 || (c.rested ?? []).includes(p.id))
+  const cupBan = (p: (typeof squad)[number]) => Object.values(p.sus ?? {}).some((n) => n > 0); // gf-ref
+  const out = squad.filter((p) => !available(p) || cupBan(p) || p.fitness < 78 || (c.rested ?? []).includes(p.id))
     .sort((a, b) => (b.injured + b.banned) - (a.injured + a.banned) || a.fitness - b.fitness).slice(0, 3);
   const u = upcoming(w, c, 1)[0];
   const day = u ? dayName(u.date, g.ui) : '';
@@ -168,7 +169,7 @@ function FitPanel() {
               <div>
                 <b>{sn(p, g.lang)}</b>
                 {p.injured ? <span className="tag tag--bad"><I n="medic" size="sm" />{x.today.injured(p.injured)}</span>
-                  : p.banned ? <span className="tag tag--bad"><I n="x" size="sm" />{x.today.banned}</span>
+                  : p.banned || cupBan(p) ? <span className="tag tag--bad"><I n="x" size="sm" />{x.today.banned}</span>
                   : <span className="tag tag--warn"><I n="bolt" size="sm" />{x.today.tired(p.fitness)}</span>}
               </div>
             </button>

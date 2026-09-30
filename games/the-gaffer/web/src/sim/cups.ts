@@ -188,7 +188,8 @@ export function userTie(c: Career): { cupId: string; k: number; i: number; tie: 
 export function userCupMatch(w: World, c: Career): LiveMatch | null {
   const u = userTie(c);
   if (!u) return null;
-  const m = startMatch(w, c, u.tie[0], u.tie[1], cupKey(c, u.cupId, u.k, u.i), c.round);
+  const cup = c.cups[u.cupId];
+  const m = startMatch(w, c, u.tie[0], u.tie[1], cupKey(c, u.cupId, u.k, u.i), c.round, undefined, { id: u.cupId, stage: u.k < 0 ? 'group' : (cup.ties[u.k]?.length ?? 1) * 2 });
   m.cup = u.cupId;
   if (u.k < 0) m.group = true;
   return m;
@@ -207,7 +208,7 @@ export function playCupDay(w: World, c: Career, played?: LiveMatch): CupDayResul
   const play = (cup: Cup, t: Tie, k: number, i: number): LiveMatch | null => {
     const mine = t[0] === c.clubId || t[1] === c.clubId;
     if (mine && played && played.key === cupKey(c, cup.id, k, i)) return played;
-    const m = startMatch(w, mine ? c : null, t[0], t[1], cupKey(c, cup.id, k, i), c.round);
+    const m = startMatch(w, mine ? c : null, t[0], t[1], cupKey(c, cup.id, k, i), c.round, undefined, { id: cup.id, stage: k < 0 ? 'group' : (cup.ties[k]?.length ?? 1) * 2 });
     m.cup = cup.id;
     if (k < 0) m.group = true;
     if (mine) m.sides.forEach((s) => (s.autoSubs = true));

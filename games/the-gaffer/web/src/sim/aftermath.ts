@@ -6,8 +6,13 @@ import type { LiveMatch } from './match';
 import { table } from './season';
 import { playerOf, squadOf, type World } from './world';
 import type { Why } from './engine/story';
-import { toRecord, type KeyMoment } from './record';
+import { toRecord, type KeyMoment, type MatchRecord } from './record';
 import { cohesionOfClub } from './cohesion';
+import { banOf } from './discipline';
+import type { Player } from '../model/types';
+
+// gf-ref: the ban from this match's competition (a cup red keeps him out of that cup, not the league).
+const banLeft = (p: Player | undefined, comp: string | undefined) => (p ? Math.max(1, comp ? banOf(p, comp) : p.banned) : 1);
 
 export interface Aftermath {
   res: 'W' | 'D' | 'L'; mine: number; theirs: number; pens?: [number, number]; opp: string; home: boolean; me: 0 | 1;
@@ -23,6 +28,11 @@ export interface Aftermath {
   why?: Why;                                  // engine v2: why it happened (the user's recorded match)
   key: string; cup?: string; round: number;
   coh?: [number, number];                     // v2.4: team cohesion before and after (the engine played it at [0])
+  ref?: MatchRecord['ref'];                   // gf-ref: the referee and his numbers
+  cards: { side: 0 | 1; pn: LocalizedName; min: number; plus?: number; k: 'Y' | 'YR' | 'R' }[]; // gf-ref
+  vars: { side: 0 | 1; min: number; plus?: number; note: string; pn: LocalizedName }[];          // gf-ref
+  pensGiven: number;                          // gf-ref: penalties given (both sides)
+  added?: number[];                           // gf-ref: added time shown
 }
 
 const moraleOf = (w: World, clubId: string) => { const s = squadOf(w, clubId); return Math.round(s.reduce((a, p) => a + p.morale, 0) / Math.max(1, s.length)); };
@@ -43,7 +53,7 @@ export function aftermath(w0: World, c0: Career, w1: World, c1: Career, m: LiveM
   const pos: [number, number] | null = rec.cup ? null : [played(c0) ? place(w0, c0) : 0, place(w1, c1)];
   const out = rec.events
     .filter((e) => (e.kind === 'injury' || e.kind === 'red') && e.side === k)
-    .map((e) => ({ pn: get(e.playerId).name, n: e.kind === 'injury' ? playerOf(w1, e.playerId)?.injured ?? e.out ?? 1 : playerOf(w1, e.playerId)?.banned ?? 1, ban: e.kind === 'red' }));
+    .map((e) => ({ pn: get(e.playerId).name, n: e.kind === 'injury' ? playerOf(w1, e.playerId)?.injured ?? e.out ?? 1 : banLeft(playerOf(w1, e.playerId), rec.comp ?? rec.cup), ban: e.kind === 'red' }));
   const mp = rec.motm ? get(rec.motm) : null;
   const records = (Object.keys(c1.records ?? {}) as (keyof Records)[]).filter((key) => JSON.stringify(c1.records?.[key]) !== JSON.stringify(c0.records?.[key]));
   const milestones = (c1.coach?.milestones ?? []).filter((id) => !(c0.coach?.milestones ?? []).includes(id));
@@ -51,10 +61,11 @@ export function aftermath(w0: World, c0: Career, w1: World, c1: Career, m: LiveM
     .map(([id, v]) => { const p = get(id); return { id, pn: p.name, short: p.short, num: p.shirtNumber, rating: v, mins: rec.minutes[id] ?? 0 }; })
     .sort((a, b) => b.rating - a.rating);
   const line = (side: 0 | 1) => {
-    const pts = new Array(91).fill(0);
+    const end = Math.max(90, m.minute);
+    const pts = new Array(end + 1).fill(0);
     for (const e of rec.events) {
       const shooter = (e.kind === 'save' ? 1 - e.side : e.side) as 0 | 1;
-      if ((e.kind === 'goal' || e.kind === 'miss' || e.kind === 'save' || e.kind === 'block') && shooter === side && e.xg) pts[Math.min(90, e.min)] += e.xg;
+      if ((e.kind === 'goal' || e.kind === 'miss' || e.kind === 'save' || e.kind === 'block') && shooter === side && e.xg) pts[Math.min(end, e.min)] += e.xg;
     }
     for (let i = 1; i < pts.length; i++) pts[i] += pts[i - 1];
     return pts.map((v) => Math.round(v * 100) / 100);
@@ -67,5 +78,9 @@ export function aftermath(w0: World, c0: Career, w1: World, c1: Career, m: LiveM
     scorers: rec.events.filter((e) => e.kind === 'goal').map((e) => ({ side: e.side, pn: get(e.playerId).name, min: e.min })),
     moments: rec.moments, why: rec.why ?? undefined, key: rec.key, cup: rec.cup, round: rec.round,
     coh: [m.sides[k].coh ?? cohesionOfClub(w0.clubs, c0.clubId), cohesionOfClub(w1.clubs, c0.clubId)],
+    ref: rec.ref, added: m.added, pensGiven: rec.events.filter((e) => e.kind === 'pen').length,
+    cards: rec.events.filter((e) => e.kind === 'red' || (e.kind === 'yellow' && !rec.events.some((x) => x.kind === 'red' && x.how === '2y' && x.playerId === e.playerId && x.min === e.min && (x.plus ?? 0) === (e.plus ?? 0))))
+      .map((e) => ({ side: e.side, pn: get(e.playerId).name, min: e.min, ...(e.plus ? { plus: e.plus } : {}), k: e.kind === 'yellow' ? 'Y' as const : e.how === '2y' ? 'YR' as const : 'R' as const })),
+    vars: rec.events.filter((e) => e.kind === 'var').map((e) => ({ side: e.side, min: e.min, ...(e.plus ? { plus: e.plus } : {}), note: e.note ?? '', pn: get(e.playerId).name })),
   };
 }

@@ -3,7 +3,7 @@
 // FAST play (every other match) samples the contest's average odds and records only what the league tables and
 // player stats need. Both walk the same graph with the same odds, so they agree by construction.
 import type { Rng } from '../rng';
-import { END, EV, N, QUAL, QUAL_W, SHOTS, START, shotEdges, type Duel, type Edge, type Model } from './model';
+import { END, EV, N, QUAL, QUAL_W, SHOTS, START, TUNE, shotEdges, type Duel, type Edge, type Model } from './model';
 import type { LiveMatch, MatchEvent } from '../match';
 
 export interface Flow { s: 0 | 1; z: number; k: string; p?: string }
@@ -25,9 +25,15 @@ export const newTally = (): Tally => ({
 export interface Ball { s: 0 | 1; n: number; c: number; a?: string; d?: string; press?: boolean }
 
 // What the rules layer does with a foul, a goal or a shot (match.ts): cards, send-offs, the score.
+// gf-ref: the referee (engine/referee.ts) rules on every foul; `go` is where play goes from it:
+// fk the engine's free-kick route, pen a penalty, adv advantage (the attack carries on), on no foul given, turn the
+// defending side restarts. `turnover` counts throw-ins and goal kicks when the ball changes hands.
+export type FoulGo = 'fk' | 'pen' | 'adv' | 'on' | 'turn';
+export interface FoulAt { box: boolean; z: number; phase: 0 | 1 | 2 }
 export interface Rules {
-  foul(side: 0 | 1, id: string, victim: string | undefined, kind: 'foul' | 'tfoul' | 'pen', r: Rng): boolean; // true = a red card (model is stale)
+  foul(side: 0 | 1, id: string, victim: string | undefined, kind: 'foul' | 'tfoul' | 'pen', r: Rng, at?: FoulAt): { red: boolean; go: FoulGo }; // red = the model is stale
   event(e: MatchEvent): void;
+  turnover?(s: 0 | 1, node: number, start: number, ev: number | undefined): void;
 }
 
 const pickW = (r: Rng, w: number[]) => { let u = r(); for (let i = 0; i < w.length; i++) { u -= w[i]; if (u <= 0) return i; } return w.length - 1; };
@@ -43,11 +49,15 @@ const rowOf = (x: number) => Math.max(0, Math.min(4, Math.floor(x / 20)));
 const laneRow = (lane: number, x?: number) => (x === undefined ? [1, 2, 3][lane] : lane === 1 ? 2 : rowOf(x));
 export const absZone = (s: 0 | 1, col: number, row: number) => (s === 0 ? col * 5 + row : (5 - col) * 5 + (4 - row));
 
+// gf-ref: with added time played on top of the 90, each regulation minute carries 55 s of the engine's clock, so a
+// match (about 90 + 9 minutes) still plays the engine's calibrated 5,400 s.
+export const TICK_SECS = 55;
+
 // Plays one minute (60 s of the match clock, carrying over what the last action overran).
 export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rules, full: boolean) {
   const b = m.ball!;
   const tl = m.tl!;
-  let budget = 60 + b.c;
+  let budget = (m.ref ? TICK_SECS : 60) + b.c; // gf-ref: a little less per minute, the added time makes it up
   const threat = [0, 0];
   const flow: Flow[] = [];
   let guard = 0;
@@ -58,6 +68,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
     const node = at.nodes[b.n];
     const nodeIx = b.n;
     let edge: Edge | null = null;
+    let to = -1, dt = 0; // gf-ref: where play goes and the dead time, when the referee changes the engine's route
     let won: boolean | undefined;
     let aId: string | undefined, dId: string | undefined;
     let ax: number | undefined;
@@ -108,15 +119,29 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       } else if (!edge) edge = node.alt[node.alt.length - 1];
       // Fouls: the defender in the contest (or one of them) brings the attacker down.
       if (edge.ev === EV.FOUL || edge.ev === EV.TFOUL || edge.ev === EV.PENFOUL) {
+        // gf-ref: a foul that leads to the free-kick node is placed now: in the box (a penalty) or outside it.
+        let fk: Edge | null = null;
+        if (edge.to === N.FK) fk = pickEdge(r, at.nodes[N.FK].alt);
+        const box = edge.ev === EV.PENFOUL || fk?.ev === EV.PENFOUL;
         const d = node.duel ?? at.nodes[N.F1].duel!;
         const j = dId ? -1 : pickW(r, d.wd);
         const fouler = dId ?? d.d[j]?.id ?? '';
         const victim = aId ?? d.a[pickW(r, d.wa)]?.id;
+        const fz = absZone(s, box ? 5 : COL[nodeIx] ?? 3, 2);
+        let go: FoulGo = box ? 'pen' : 'fk';
         if (fouler) {
-          const red = rules.foul(o, fouler, victim, edge.ev === EV.TFOUL ? 'tfoul' : edge.ev === EV.PENFOUL ? 'pen' : 'foul', r);
-          if (red) m.dirty = true;
+          const phase = nodeIx === N.B ? 0 : nodeIx >= N.P0 && nodeIx <= N.P2 ? 1 : 2;
+          const call = rules.foul(o, fouler, victim, edge.ev === EV.TFOUL ? 'tfoul' : box ? 'pen' : 'foul', r, { box, z: fz, phase });
+          if (call.red) m.dirty = true;
+          go = call.go;
         }
-        if (full) flow.push({ s, z: absZone(s, COL[nodeIx] ?? 3, 2), k: 'f', p: victim });
+        // gf-ref: the route from the referee's ruling.
+        if (go === 'pen') { to = N.SHOT + 10; dt = TUNE.dead.PEN; }
+        else if (go === 'fk') { to = fk && fk.ev !== EV.PENFOUL ? fk.to : edge.to === N.FK ? (r() < 0.2 ? N.SHOT + 9 : N.SETH) : edge.to; dt = edge.dt ?? 0; }
+        else if (go === 'adv') { to = nodeIx; dt = 0; }
+        else if (go === 'on') { to = N.FCH; dt = 0; }
+        else { to = END; dt = TUNE.dead.FOUL; }
+        if (full) flow.push({ s, z: fz, k: 'f', p: victim });
       }
       if (edge.ev === EV.CORNER || (edge.to === N.CRN && edge.ev === undefined)) {
         const taker = m.sides[s].pieces.corners;
@@ -145,14 +170,16 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         tl.zone[s * 30 + absZone(s, col, 2)] += node.t;
       }
     }
-    budget -= node.t + (edge.dt ?? 0);
+    if (to < 0) { to = edge.to; dt = edge.dt ?? 0; }
+    budget -= node.t + dt;
     tl.poss[s] += node.t;
     // Hand-over: the other side starts a possession (settled, won in midfield, or won high up after a press).
-    if (edge.to >= END) {
-      const st = edge.to - END;
+    if (to >= END) {
+      const st = to - END;
+      rules.turnover?.(s, nodeIx, st, edge.ev); // gf-ref: throw-ins and goal kicks
       if (full && st === 2) { tl.hi[o]++; threat[o] += 0.05; }
       b.s = o; b.n = START[st]; b.a = undefined; b.d = undefined;
-    } else b.n = edge.to;
+    } else b.n = to;
   }
   b.c = Math.min(0, budget);
   if (full) {

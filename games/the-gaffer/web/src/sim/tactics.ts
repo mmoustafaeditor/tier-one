@@ -90,7 +90,9 @@ export const DEFAULT_TACTICS: UserTactics = {
 
 // ---------- players in slots ----------
 
+// gf-ref: suspensions are per competition: `banned` is the league's, `sus[cupId]` a cup's (sim/discipline.ts).
 export const available = (p: Player) => p.injured === 0 && p.banned === 0;
+export const availableIn = (p: Player, cup?: string) => p.injured === 0 && (cup ? !((p.sus?.[cup] ?? 0) > 0) : p.banned === 0);
 // Match-day level: a tired or unhappy player plays under his rating.
 export const formOf = (p: Player, fitness = p.fitness) => p.rating * (0.75 + 0.25 * (fitness / 100)) + (p.morale - 60) / 20;
 
@@ -110,8 +112,8 @@ export function fitPenalty(player: Position, slot: Position): number {
 export const slotValue = (p: Player, slot: Position, fitness = p.fitness) => formOf(p, fitness) - (p.alt === slot && p.position !== slot ? 1 : fitPenalty(p.position, slot));
 
 // Best XI for a formation: goalkeeper first, then each slot takes its best free player.
-export function autoXI(squad: Player[], formation: FormationId): Player[] {
-  const ok = squad.filter(available);
+export function autoXI(squad: Player[], formation: FormationId, cup?: string): Player[] {
+  const ok = squad.filter((p) => availableIn(p, cup));
   const pool = ok.length >= 11 ? ok : squad;
   const used = new Set<string>();
   const xi: Player[] = [];
@@ -128,14 +130,15 @@ export function autoXI(squad: Player[], formation: FormationId): Player[] {
 
 // The user's XI in slot order. Picks the user made are kept while they're still fit, available and at the club;
 // any hole is filled with the best available player for that slot. Returns the players and who was replaced.
-export function xiFor(w: World, c: Career): { xi: Player[]; replaced: Player[] } {
+export function xiFor(w: World, c: Career, cup?: string): { xi: Player[]; replaced: Player[] } {
+  const available = (p: Player) => availableIn(p, cup);
   const tac = c.tactics ?? DEFAULT_TACTICS;
   // v2.3: players the manager rested for this match stay out of the XI (when there are still eleven others).
   const all = squadOf(w, c.clubId);
   const rest = new Set(c.rested ?? []);
   const squad = rest.size && all.filter((p) => available(p) && !rest.has(p.id)).length >= 11 ? all.filter((p) => !rest.has(p.id)) : all;
   const byId = new Map(squad.map((p) => [p.id, p]));
-  if (!tac.xi) return { xi: autoXI(squad, tac.formation), replaced: [] };
+  if (!tac.xi) return { xi: autoXI(squad, tac.formation, cup), replaced: [] };
   const slots = FORMATIONS[tac.formation].slots;
   const used = new Set<string>();
   const out: (Player | undefined)[] = [];

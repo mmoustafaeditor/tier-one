@@ -1,5 +1,7 @@
 // Full-time: the score under the lights, the line of the match, how the chances piled up, what it changed (table,
 // board, fans, dressing room — all read from the same MatchRecord), and the ratings.
+import { OfficialsPanel } from './Officials';
+import { RF } from '../lang-ref-all';
 import { useState } from 'react';
 import type { Aftermath } from '../sim/aftermath';
 import { playerOf } from '../sim/world';
@@ -70,6 +72,13 @@ export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
             </div>
           )}
         </Panel>
+
+        {a.ref && (
+          <Panel i={4} label={RF[g.ui].report.title}>
+            <PanelHead title={RF[g.ui].report.title} />
+            <OfficialsPanel a={a} me={a.me} home={cn(home, lang)} away={cn(away, lang)} />
+          </Panel>
+        )}
 
         <Panel i={3} label={F.ratings}>
           <PanelHead title={F.ratings} right={a.ratings.length > 4 ? <button className="link" onClick={() => setAll(!all)}>{F.all(a.ratings.length)}</button> : undefined} />
