@@ -291,3 +291,38 @@ that new features drop into; credits that mean something; still a simple game to
 | **api** | `api/tier-one/v4/**`, `api/_lib/**`, `docs/api/**`, client `lib/api.ts` (additive `v4()`), new `lib/account.ts`, `lib/sync.ts`, `lib/flags.ts` |
 | **economy** | new `lib/wallet.ts`, `lib/catalog.ts`, `screens/Customize.tsx`, `ui/customize.tsx`, `i18n/parts/economy.ts`, `docs/BUSINESS.md`, App route (additive); not Pass.tsx / monet.ts / season.ts (onbpass lane) |
 | **perf** | `vite.config.ts`, `index.html`, new `src/sw.ts`, `lib/perf.ts`, `lib/push.ts`, `styles/motion.css`, package.json scripts, `tier-one/` deploy layout; main.tsx additive only |
+
+## 9. Film everywhere (3.4)
+Owner's brief: use a lot of 3D film where applicable, so the game stays interactive and cool. Film is not only for
+moments; the game's surfaces are filmed too.
+
+### 9.1 Three kinds of film
+- **Moment films** (§6–8): unskippable, 2–8 s, one per state change that matters to the player.
+- **Ambient loops:** 4–6 s seamless, muted, looping clips behind the live UI. Portrait and landscape.
+  `loop-home-desk` (your desk at the hour of day: morning light / lamp at night, papers stir), `loop-place-<src>`
+  (the barbershop, boot room, treatment room, arrivals window, the car, the dark office: idle, waiting for your call),
+  `loop-pressbox`, `loop-wire-room` (a newsroom wall of TVs with real tickers), `loop-deadline-city` (the city at
+  dusk, phones lighting up), `loop-season-<rumour|winter|spring|summer>`, `loop-results-pressroom` (presses idling),
+  `loop-newsroom-masthead` (the clan's masthead lit on a building).
+- **Interactive beats:** short clips the player triggers and can feel: tap a source card → the phone lifts off the
+  counter (`beat-pickup-<src>`, 0.6 s) then the call film; hold to publish → the press warms up under your thumb
+  (`beat-press-warm`, loops while held) and fires on release; the Deadline Day clock is a filmed clock
+  (`loop-dd-clock`), the U-turn is a filmed shred (`beat-shred`), a stamp slam is a filmed stamp (`beat-stamp-<outcome>`),
+  page turns between tabs are filmed paper (`beat-page-<fwd|back>`, 0.3 s, replaces the CSS slide on capable devices).
+
+### 9.2 Rules
+- Film never blocks play: loops and beats are decorative and the UI stays usable on top. Only moment films hold the
+  player, and they are short.
+- Performance first (§8.2): loops are ≤ 400 KB, play only when the screen is visible, pause in the background, and
+  drop to the poster on Save-Data / low battery / reduced motion / slow connections. One loop at a time per screen.
+  Beats are preloaded with the screen. The single-file APK build ships posters only until the clips are cached.
+- The look stays coherent: every loop uses the same set, lighting and grade as its moment films, so the call film
+  starts from the exact frame the loop was showing (match cuts).
+- Desktop gets more: a real-time 3D desk on Home (lazy three.js, high-end only, poster otherwise) where the lamp,
+  papers and phone react to the pointer; the same set is what the films are shot in.
+
+### 9.3 Lanes
+| Lane | Owns |
+|---|---|
+| **filmui** | `ui/film.tsx` (`<FilmLoop/>`, `<Beat/>`, `useFilmBudget()`), `lib/filmgate.ts` (device/network gating), film transitions in `styles/motion.css` hooks, the Home 3D desk (`ui/desk3d/**`, lazy), integration notes per screen; screens edits are additive wrappers only |
+| **film3d** | renders every `loop-*` and `beat-*` after the moment sets, with match-cut frames noted in `film/ASSETS.md` |
