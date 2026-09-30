@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '3.1.0',
-  versionCode: 17,
+  version: '3.4.0',
+  versionCode: 18,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'Tier One 3.1 comes to the app: the newsroom redesign with Story mode, Today\'s five, the Wire, Friends and full-screen source calls, plus a new app icon. Needs an internet connection.',
+  changelog: 'Tier One 3.4 "One Newsroom": the Career story The Comeback, one journalist across every mode, the editor\'s desk with assignments and Deadline Day Live, the press box with weekly leagues, newsrooms and friend rivals, the Contacts Book and seasons with the Pass, films on calls and moments, and a faster, smoother game. Needs an internet connection.',
 };
 
 export default function handler(req, res) {
