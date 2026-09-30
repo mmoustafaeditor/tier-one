@@ -75,6 +75,12 @@
 @keyframes vt-pull-up { from { opacity: 0; transform: translateY(12%) rotate(.8deg); } }
 @keyframes vt-drop { to { opacity: 0; transform: translateY(10%) rotate(-.8deg); } }
 
+/* Filmed page turns (GOTY.md §9, ui/film.tsx filmTurn): App sets html[data-vt-film] while beat-page-fwd/back sweeps
+   over the page and swaps the route under it; the sheet carries the motion, so the page itself doesn't move. The
+   View Transition and the CSS entrance below stay the fallback whenever the clip isn't there or the device is gated. */
+:root[data-vt-film] .g-screen { animation: none; }
+:root[data-vt-film]::view-transition-old(g-page), :root[data-vt-film]::view-transition-new(g-page) { animation: none; }
+
 /* Without the API the new sheet plays the same entrance by itself. `backwards` only: no transform is left behind to
    trap fixed overlays inside the screen. */
 :root:not(.has-vt)[data-vt] .g-screen { animation: var(--d-ui2) var(--ease-out) backwards vt-set-down; }

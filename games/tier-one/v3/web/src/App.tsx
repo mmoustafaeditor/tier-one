@@ -20,6 +20,9 @@ import { SettingsSheet } from './screens/Settings';
 import { Onboarding } from './screens/Onboarding';
 import { SceneHost } from './lib/scenes';
 import { FeedScreen, RivalsScreen, ContactsScreen, setNav } from './screens/Connect';
+// Surface films (GOTY.md §9, ui/film.tsx): filmed page turns and the ambient loop behind each screen. Additive: without
+// clips on the site every one of these renders nothing.
+import { filmTurn, HomeFilm, WireFilm, PressboxFilm, SeasonFilm } from './ui/film';
 // Shell layer (GOTY.md §4): motion tokens + view transitions, then the tablet/desktop layouts. Loaded after the screen styles.
 import './styles/motion.css';
 import './styles/desktop.css';
@@ -74,7 +77,11 @@ export function App() {
     const h = document.documentElement;
     sfx('page.turn');
     h.dataset.route = r.n;
-    h.dataset.vt = reduce ? 'none' : vtDir(routeRef.current, r);
+    const dir = reduce ? 'none' : vtDir(routeRef.current, r);
+    // Filmed page turn (GOTY.md §9): on capable devices the sheet sweeps over the page and the route swaps while it
+    // covers the frame; the View Transition / CSS slide below is the fallback whenever the clip isn't there.
+    if (!reduce && filmTurn(dir, swap, h.dir === 'rtl')) { h.dataset.vt = 'none'; return; }
+    h.dataset.vt = dir;
     if (!reduce && d.startViewTransition) {
       try { d.startViewTransition(() => flushSync(swap)).finished.finally(() => { if (h.dataset.vt !== 'none') delete h.dataset.vt; }); return; } catch { /* fall through */ }
     }
@@ -135,14 +142,14 @@ export function App() {
 
   let screen;
   switch (route.n) {
-    case 'front': screen = <Home {...chrome} />; break;
-    case 'daily': case 'room': case 'play': screen = driver ? <WindowScreen key={route.n === 'daily' ? 'daily' : route.key} driver={driver} {...chrome} /> : <Home {...chrome} />; break;
-    case 'wire': screen = <WireScreen {...chrome} rid={route.rid} />; break;
+    case 'front': screen = <><Home {...chrome} /><HomeFilm /></>; break;
+    case 'daily': case 'room': case 'play': screen = driver ? <WindowScreen key={route.n === 'daily' ? 'daily' : route.key} driver={driver} {...chrome} /> : <><Home {...chrome} /><HomeFilm /></>; break;
+    case 'wire': screen = <><WireScreen {...chrome} rid={route.rid} /><WireFilm /></>; break;
     case 'desk': case 'story': screen = <StoryScreen {...chrome} />; break;
     case 'me': screen = <MeScreen {...chrome} />; break;
-    case 'pass': screen = <PassScreen {...chrome} />; break;
+    case 'pass': screen = <><PassScreen {...chrome} /><SeasonFilm /></>; break;
     case 'practice': screen = <PracticeScreen {...chrome} />; break;
-    case 'rooms': screen = <RoomsScreen {...chrome} code={route.code} />; break;
+    case 'rooms': screen = <><RoomsScreen {...chrome} code={route.code} /><PressboxFilm /></>; break;
     case 'howto': screen = <HowTo {...chrome} />; break;
     case 'feed': screen = <FeedScreen {...chrome} />; break;
     case 'rivals': screen = <RivalsScreen {...chrome} />; break;

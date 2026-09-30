@@ -11,6 +11,10 @@ import { GRADE_BARS } from '../ui/CallScene';
 import { accentOf } from '../film/calls/CallFilm';
 import { sfx, buzz } from '../lib/sfx';
 import { hereWeGo } from '../lib/share';
+// Surface films (GOTY.md §9, ui/film.tsx): the press warming under the thumb while publishing is held, the stamp coming
+// down under a filed call's CSS slam. Additive: nothing renders without the clips.
+import { Beat } from '../ui/film';
+import { stampBeat } from '../film/surfaces/manifest';
 import type { View } from '../lib/driver';
 
 // Your head-to-head ledger against one rival (GOTY.md §1.3). Filled by the connect lane's rivalRecord(id).
@@ -73,6 +77,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
 
   return <div className="file2">
     <div className={'pcard g-card' + (justFiled ? ' is-filed' : '')}>
+      {call && <Beat stem={stampBeat(OUTS[call.o])} trigger={justFiled || null} className="fl-beat--stamp" />}
       <div className="pcard__kit"><Kit club={c.from} player={c.player} size={92} /></div>
       <div className="pcard__main">
         <div className="g-mono pcard__k">{t('common.saga', { n: i + 1, m: view.cast.length })}{c.player.star >= 3 ? <span className="g-chip g-chip--gold pcard__star"><Icon n="star" />{t('g.saga.star')}</span> : null}</div>
@@ -230,6 +235,7 @@ function HoldPublish({ disabled, onCommit, children, label, shine, gold }: { dis
     style={{ ['--hold' as string]: String(k) }} disabled={disabled} aria-label={t('calls.hold.aria', { l: label })} title={t('calls.hold.hint')}
     onPointerDown={down} onPointerUp={up} onPointerLeave={stop} onPointerCancel={stop} onContextMenu={(e) => e.preventDefault()}
     onClick={(e) => { if (e.detail === 0) commit(); }}>
+    <Beat stem="beat-press-warm" held={k > 0 && k < 1} className="fl-beat--press" />
     <span className="hold__fill" aria-hidden="true" />{shine && <span className="shine" />}{children}
   </button>;
 }
