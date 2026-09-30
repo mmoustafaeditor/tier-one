@@ -17,6 +17,7 @@ import { mintable, mintChallenge, challengeUrl, onSaveChange, friendTaunt, short
 import type { View } from '../lib/driver';
 import { Icon, CountUp } from './game';
 import { Avatar } from './screenbits';
+import { tn } from './connect';
 import '../styles/social.css';
 
 /** A byline or handle: always left-to-right, whatever the page direction. */
@@ -53,7 +54,7 @@ export function ChallengeButton({ view, size = 'sm', className = '', style }: { 
     if (st === 'busy') return;
     sfx('ui.tap'); setSt('busy'); setErr('');
     const r = await mintChallenge(m);
-    if (!r.ok) { setSt('err'); setErr(t('so.ch.errors.' + r.error) || t('err.generic')); return; }
+    if (!r.ok) { setSt('err'); setErr(t.or('so.ch.errors.' + r.error, 'err.generic')); return; }
     const url = challengeUrl(r.challenge.code), text = t('so.ch.share', { s: m.score, w: m.label, u: url });
     try { await navigator.clipboard?.writeText(url); } catch { /* clipboard blocked */ }
     setSt('done'); sfx('ui.pop'); buzz(15);
@@ -126,7 +127,7 @@ export function FriendRivalCard({ rec, i = 0, style }: { rec: RivalRec & { id: s
       <span className="cn-rec__side"><b className="g-num"><CountUp to={rec.l} ms={700} /></b><small>{t('cn.rivals.them')}</small></span>
       {rec.scalp && <span className="g-stamp cn-rival__stamp is-slam" style={{ animationDelay: 380 + i * 160 + 'ms' }}>{t('so.fr.scalp')}</span>}
     </div>
-    <p className="cn-rival__streak">{rec.streak > 0 ? t('cn.rivals.streakW', { n: rec.streak }) : rec.streak < 0 ? t('cn.rivals.streakL', { n: -rec.streak }) : t('cn.rivals.even')}{rec.d > 0 && <span className="cn-rec__d">{rec.d} {t('cn.rivals.drawn')}</span>}</p>
+    <p className="cn-rival__streak">{rec.streak > 0 ? tn(t, 'cn.rivals.runW', rec.streak) : rec.streak < 0 ? tn(t, 'cn.rivals.runL', -rec.streak) : t('cn.rivals.even')}{rec.d > 0 && <span className="cn-rec__d">{tn(t, 'cn.rivals.draws', rec.d)}</span>}</p>
     {rec.named && !rec.scalp && <div className="cn-rival__goal"><span className="g-bar g-bar--sm" style={{ ['--bar' as string]: 'var(--m-rooms)' }}><i style={{ width: pct + '%' }} /></span><small>{t('cn.rivals.toScalp', { n: Math.max(0, SCALP_NET - n) })}</small></div>}
     {taunt && <blockquote className="cn-rival__said"><small>{t('so.fr.said')}</small><p dir="auto">{taunt}</p></blockquote>}
     <span className="sr-only">{shortRecord(rec)}</span>

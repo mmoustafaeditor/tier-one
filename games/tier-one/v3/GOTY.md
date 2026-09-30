@@ -388,3 +388,47 @@ connected, intuitive and simple, with room to grow.
   returning player always finds something changed.
 - Customization is a long tail, not a checklist: item kinds are a registry; seasons drop new sets; collections show
   what's missing; nothing "maxes out". New feature kinds slot in without touching the store.
+
+## 11. The final build (3.4 "Final Cut")
+Owner's brief: this is the last version. Every pixel of every page on phone, desktop and the Android app. Simple to
+pick up. It must not feel AI-built, and it must earn a real business.
+
+### 11.1 Not AI-built: the craft tells
+- The identity is editorial, not "app": newsprint, ink, stamps, a serif masthead, condensed headlines, mono
+  captions. No gradient blobs, no glassmorphism, no emoji as icons, no purple-to-blue, no identical rounded cards
+  in a grid, no lorem-flavoured copy, no "Welcome back, user!".
+- Asymmetry and hierarchy on purpose: one hero, one loud thing per screen, quiet everything else; typographic scale
+  with intent; real margins; ragged, human copy with a point of view (the editor's voice).
+- Details that only a person would bother with: a masthead date that is right, a folio number, a coffee ring on a
+  desk edition, a stamp that never lands in the same place twice, the pull of paper when a sheet closes.
+- Motion says "printed and posted", never "loading spinner": stamps, presses, tickers, page turns.
+- Every screen passes this test at 390x664, 390x844, 768x1024, 1280x800, 1920x1080 and in the Android WebView:
+  no overlap, nothing cut off, nothing horizontally scrollable, every action reachable with one thumb.
+
+### 11.2 The Final Cut process
+- A pixel pass per screen (Home, Window/Saga, Results, Story, Wire, Press box, Newsroom, Me, Feed/Rivals/Contacts,
+  Pass/Store, Your desk, Editor's desk/DD Live, Practice, Settings/How to play, Onboarding) at every viewport, fixing
+  overlap, spacing, type, copy and dead ends; then an independent verifier per screen; then one cohesion pass.
+- The Android APK ships from the same build: `tier-one/apk/index.html`, versionCode/versionName bumped, the update
+  feed pointed at 3.4, CI green.
+- Ship only when: builds green, all server suites green, QA verdict "one career", every viewport clean.
+
+## 12. It's a game (owner's number-one rule)
+The 3.1 "newspaper" look was hard to look at and hard to play; it lost the spirit of a game. That never happens again.
+- **Game first, newsprint second.** The newspaper is flavour (results, mastheads, stamps). The interface is a game:
+  big, bright, readable, one thumb, instant feedback. If a screen looks like a document, it is wrong.
+- **Easy to look at:** high contrast, generous type, few things on screen, one clear next action, colour that means
+  something (mode colours, outcome colours), and space. No walls of small text, no dense columns, no hairline UI.
+- **Juice:** every tap answers (press-scale, sound, haptic), every result lands (stamps, counters rolling, confetti
+  when earned), every screen change moves (page turns, slides), and rewards pop. Motion is 90–260 ms and never in
+  the way.
+- **Ten-second rule:** a new player understands what to do on any screen within ten seconds without reading a
+  paragraph. Copy is one line. The How to play is the fallback, not the onboarding.
+- **The loop is the star:** pick a saga → ring a source → make the call → publish → see it land → your name moves →
+  next. Everything else (feed, rivals, contacts, desk, pass) is one tap away and one tap back.
+- **The catchphrase system replaces "HERE WE GO":** a Confirmed call that lands fires *your* catchphrase (stamp,
+  sound, share card, film title). You start with a house line, unlock more by playing (rank, streaks, chapters),
+  buy signature lines with credits (`catchphrase` item kind), and at Chief rank write your own (24 chars, moderated,
+  server-validated). Nothing in the game uses another person's catchphrase.
+- **The test:** the design panel and the Final Cut judge every screen on "is this a game I want to keep playing"
+  before craft. A beautiful screen that isn't fun to use fails.
