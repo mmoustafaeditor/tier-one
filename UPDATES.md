@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-30 · saifsaber · Tier One Android 2.4.1 (new app icon)
+- **What changed:** Tier One Android release 2.4.1 (versionCode 16), done from Saif's session at Mostafa's request. Only the launcher icon changed (the new newsroom icon); the app still bundles the classic game, unchanged from 2.4. `downloads/TierOne.apk` is the APK from build run 99 on branch `ccr-692b713a-3z28u5`, signed with the repo's debug keystore as before. The update feed now says 2.4.1 / 16, so installed apps are offered it once the site deploys.
+- **Files:** `games/tier-one/app/build.gradle`, `downloads/TierOne.apk`, `api/tier-one/latest.js`, `games/tier-one/README.md`, `README.md`, `CLAUDE.md` (current versions)
+- **Heads-up for the team:** The README download link (GitHub) serves the new APK as soon as this is on `main`; sembagames.app and the in-app update prompt follow when Vercel deploys. Moving the app to Tier One 3.1 is still a separate job.
+
 ## 2026-09-30 · saifsaber · New app icons for Tier One and The Gaffer (Android)
 - **What changed:** Both Android launcher icons and Play Store icons are redrawn in each game's new look. Tier One: a tilted newsprint card with a Newsreader "T1" and a vermilion rule on the dark newsroom desk, with a gold dot. The Gaffer: matches the v2.1 title-screen wordmark: "THE" in letterspaced mint over a wide Archivo 900 "G" with the white-to-mint gradient, on the dark teal ground (was a purple slanted panel). SVG sources in `store/icon.svg`; PNGs rendered with the site fonts. No game code changed.
 - **Files:** `games/tier-one/app/src/main/res/mipmap-*/ic_launcher.png`, `games/tier-one/store/{play-store-icon-512.png,icon.svg}`, `games/the-gaffer/android/app/src/main/res/mipmap-*/ic_launcher.png`, `games/the-gaffer/android/store/{play-store-icon-512.png,icon.svg}`, `.claude/requests.md`

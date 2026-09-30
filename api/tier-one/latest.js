@@ -2,10 +2,10 @@
 // Bump versionCode (and upload the new downloads/TierOne.apk) with each release;
 // installs with a lower versionCode are prompted to update.
 const LATEST = {
-  version: '2.4',
-  versionCode: 15,
+  version: '2.4.1',
+  versionCode: 16,
   downloadUrl: 'https://www.sembagames.app/downloads/TierOne.apk',
-  changelog: 'Plot twists now land one to three times a window, exclusives survive a rival who got it wrong, contested-exclusive and twist-count details at the results, daily and weekly leaderboards, share card with your rank, snap calls on Deadline Day and the Career journey.',
+  changelog: 'A new app icon in the Tier One newsroom look. The game itself is unchanged from 2.4.',
 };
 
 export default function handler(req, res) {
