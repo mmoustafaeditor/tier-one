@@ -5,6 +5,24 @@ the player, with a never-ending feel and room for future ideas. Better animation
 up-to-date football. It's a business, so there should be ways to make money, but it must never feel like a cash grab.
 Claude decides the game maths.
 
+## North star (the test every screen must pass)
+**You are making a name for yourself in football journalism.** Every mode is a beat on the same career.
+Every screen answers one question, "how is my name doing, and what should I break next?", and hands you the next story.
+
+That means:
+- **One journalist.** The byline, rep and followers are the same everywhere. Every result screen shows how your name
+  moved.
+- **One newsroom.** The same desk, the same five sources and the same three rivals appear in every mode. They remember
+  you, through contact levels, rival ledgers and the Feed.
+- **One loop:** get a tip → make a call → it lands or it doesn't → your name moves → the next story is already waiting
+  (Next up).
+- **One voice:** plain, active, in-world copy. The stamps and headlines are loud and everything else is quiet.
+- **One opening:** the first launch plays the cold open when you create your byline. It is the game's opening, not just
+  Career's.
+- **No dead ends:** every screen, empty state and result links to the next thing to do.
+
+Any feature that doesn't serve this is cut or folded in.
+
 ## 0. What doesn't change
 - The rules engine (`api/tier-one/v3/_lib/engine.mjs`) and its numbers. Daily scoring, stored scores and leaderboards stay
   comparable. Nothing bought, levelled or unlocked changes a Daily board, its sources or its score. This is the fairness
