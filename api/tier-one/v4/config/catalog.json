@@ -1,0 +1,31 @@
+{
+  "items": [
+    { "id": "credits.20", "kind": "credits", "name": "20 Credits", "price": { "eur": 199, "usd": 199 }, "grants": { "credits": 20 }, "stripePrice": "", "googleSku": "credits_20" },
+    { "id": "credits.60", "kind": "credits", "name": "60 Credits", "desc": "+10% on the 50 pack", "price": { "eur": 499, "usd": 499 }, "grants": { "credits": 60 }, "stripePrice": "", "googleSku": "credits_60", "featured": true },
+    { "id": "credits.140", "kind": "credits", "name": "140 Credits", "desc": "+20%", "price": { "eur": 999, "usd": 999 }, "grants": { "credits": 140 }, "stripePrice": "", "googleSku": "credits_140" },
+    { "id": "gold.2026-autumn", "kind": "gold", "name": "Gold lane · Autumn 2026", "desc": "The season's Gold rewards lane and +10% coins", "price": { "credits": 50, "eur": 499, "usd": 499 }, "grants": { "ent": "gold:2026-autumn" }, "season": "2026-autumn", "until": "2026-11-30", "stripePrice": "", "googleSku": "gold_2026_autumn", "featured": true },
+    { "id": "gold.2027-winter", "kind": "gold", "name": "Gold lane · Winter 2027", "price": { "credits": 50, "eur": 499, "usd": 499 }, "grants": { "ent": "gold:2027-winter" }, "season": "2027-winter", "from": "2026-12-01", "until": "2027-02-28", "stripePrice": "", "googleSku": "gold_2027_winter" },
+    { "id": "card.foil", "kind": "cosmetic", "name": "Foil byline card", "price": { "credits": 12 }, "grants": { "ent": "cos:card.foil" }, "giftable": true },
+    { "id": "card.redtop", "kind": "cosmetic", "name": "Red-top byline card", "price": { "credits": 8 }, "grants": { "ent": "cos:card.redtop" }, "giftable": true },
+    { "id": "masthead.classic", "kind": "cosmetic", "name": "Classic masthead", "desc": "For your newsroom", "price": { "credits": 20 }, "grants": { "ent": "cos:masthead.classic" }, "giftable": true },
+    { "id": "ink.gold", "kind": "cosmetic", "name": "Gold stamp ink", "price": { "credits": 6 }, "grants": { "ent": "cos:ink.gold" }, "giftable": true, "featured": true },
+    { "id": "frame.poster", "kind": "cosmetic", "name": "Film poster frame", "price": { "credits": 10 }, "grants": { "ent": "cos:frame.poster" }, "giftable": true },
+    { "id": "paper.name", "kind": "name", "name": "Name your paper", "price": { "credits": 15 }, "grants": { "ent": "name:paper" } },
+    { "id": "coins.500", "kind": "coins", "name": "500 Coins", "price": { "credits": 5 }, "grants": { "coins": 500 } }
+  ],
+  "earn": { "season_end": 10, "streak_30": 15, "first_t1": 10, "referral": 5 },
+  "gift": { "max": 50, "perDay": 100 },
+  "looks": [],
+  "drops": [
+    {"id": "cp.kettle", "at": "2026-11-30"},
+    {"id": "fp.gilt", "at": "2026-12-07"}
+  ],
+  "rails": {"newDays": 7, "lastDays": 7, "max": 8},
+  "vault": [
+    {"id": "summer-2026.mh", "from": "2026-09-28", "to": "2026-10-05"},
+    {"id": "spring-2026.by", "from": "2026-10-12", "to": "2026-10-19"},
+    {"id": "winter-2026.po", "from": "2026-11-16", "to": "2026-11-23"},
+    {"id": "summer-2026.by", "from": "2027-03-01", "to": "2027-03-08"}
+  ],
+  "earnedOnly": ["st.ch1", "st.ch2", "st.ch3", "st.ch4", "st.ch5", "rk.chief", "rk.tierone", "sk.30", "sk.100", "rv.tabloid", "rv.itk", "rv.insider", "rf.3", "cp.pen", "cp.dusted", "cp.announce", "cp.sealed", "cp.medical", "cp.bags", "cp.front", "cp.shirt", "cp.inkdry", "cp.wheels", "cp.custom"]
+}

@@ -8,9 +8,17 @@ import { leanOf, voiceLine, postLine, saysWord, addsText, outWord, strWord, stre
 import { Glyph, Lines, Crest } from '../ui/bits';
 import { Icon, Kit, SrcIcon, Rel, GBtn } from '../ui/game';
 import { GRADE_BARS } from '../ui/CallScene';
+import { accentOf } from '../film/calls/CallFilm';
 import { sfx, buzz } from '../lib/sfx';
 import { hereWeGo } from '../lib/share';
+// Surface films (GOTY.md §9, ui/film.tsx): the press warming under the thumb while publishing is held, the stamp coming
+// down under a filed call's CSS slam. Additive: nothing renders without the clips.
+import { Beat } from '../ui/film';
+import { stampBeat } from '../film/surfaces/manifest';
 import type { View } from '../lib/driver';
+import { vinceOf } from '../lib/career';
+import { srcNamed } from '../lib/storyMode';
+import { catchphraseOf } from '../lib/catchphrase';
 
 // Your head-to-head ledger against one rival (GOTY.md §1.3). Filled by the connect lane's rivalRecord(id).
 export interface RivalRecord { w: number; l: number; d: number }
@@ -22,7 +30,7 @@ export interface SagaProps {
 }
 export const RIVAL_IC: Record<string, string> = { tabloid: 'BB', itk: '?', insider: 'PP' };
 
-export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFiled, onLater, rivalRecord }: SagaProps) {
+export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, justFiled, onLater, rivalRecord }: SagaProps) {
   const t = useT();
   const c = view.cast[i];
   const ln = leanOf(g, i);
@@ -47,6 +55,15 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
   const srcs = E.sourcesFor(g.R, i);
   const post7 = g.day === g.R.DAYS ? g.R.DD_POSTS - g.posts7 : null;
   const maxT = Math.max(3, ...ln.tally);
+  // The quote that just came in (after the call film): the newest read matching the last answer, for this saga.
+  const newK = last && last.i === i ? curReads.map((r, k) => (r.src === last.c.src && r.day === last.c.day && r.r === last.c.r ? k : -1)).reduce((a, b) => Math.max(a, b), -1) : -1;
+  const newRef = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (newK < 0) return;
+    setClips(true);
+    const id = setTimeout(() => newRef.current?.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }), 80);
+    return () => clearTimeout(id);
+  }, [newK, last]);
 
   const backers = (k: number) => [
     ...curReads.filter((r) => { const w = E.weights(g.R, r.src, r.r); return w[k] > 0 && w[k] === Math.max(...w); }).map((r) => ({ k: r.src, rival: false })),
@@ -63,6 +80,7 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
 
   return <div className="file2">
     <div className={'pcard g-card' + (justFiled ? ' is-filed' : '')}>
+      {call && <Beat stem={stampBeat(OUTS[call.o])} trigger={justFiled || null} className="fl-beat--stamp" />}
       <div className="pcard__kit"><Kit club={c.from} player={c.player} size={92} /></div>
       <div className="pcard__main">
         <div className="g-mono pcard__k">{t('common.saga', { n: i + 1, m: view.cast.length })}{c.player.star >= 3 ? <span className="g-chip g-chip--gold pcard__star"><Icon n="star" />{t('g.saga.star')}</span> : null}</div>
@@ -70,10 +88,11 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
         <div className="pcard__m g-mono">{[t('pos.' + c.player.pos), c.player.age > 0 ? String(c.player.age) : '', c.player.nat].filter(Boolean).join(' · ')}</div>
         <div className="pcard__route"><Crest club={c.from} size={28} /><span className="pcard__arrow"><Icon n={t.rtl ? 'back' : 'arrow'} size={18} /></span><Crest club={c.to} size={28} /><span className="pcard__to"><bdi><b>{c.to.s}</b>?</bdi></span></div>
       </div>
-      {call && <span key={call.o + ':' + call.s + ':' + (justFiled || 0)} className={'pcard__stamp g-stamp g-stamp--' + (hereWeGo(call) ? 'gold' : OUTS[call.o]) + (justFiled ? ' is-slam' : '')}>{hereWeGo(call) ? t('calls.hwg.stamp') : strWord(t.lang, call.s) + ' · ' + outWord(t.lang, call.o)}</span>}
+      {call && <span key={call.o + ':' + call.s + ':' + (justFiled || 0)} className={'pcard__stamp g-stamp g-stamp--' + (hereWeGo(call) ? 'gold' : OUTS[call.o]) + (justFiled ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : strWord(t.lang, call.s) + ' · ' + outWord(t.lang, call.o)}</span>}
     </div>
 
     {tw && <div className="stoppress"><b>{t('g.saga.stopPress')}</b><span>{t('saga.twistBanner', { p: c.player.s })} {t('saga.twistNote')}</span></div>}
+    {view.mode === 'career' && vinceOf(g.R)?.i === i && <div className="vince-banner"><Icon n="eye" size={18} /><span><b>{t('g.story.vince.chip')}</b> {t('g.story.vince.banner')}</span></div>}
     {g.tips && i in g.tips && <div className="g-chip g-chip--gold tipchip">{t(g.tips[i] ? 'career.tipFake' : 'career.tipReal', { p: c.player.s })}</div>}
 
     <section className="know g-card">
@@ -117,7 +136,18 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
     {(curReads.length > 0 || livePosts.length > 0) && <section className="clips">
       <button className="clips__h" onClick={() => setClips(!clips)} aria-expanded={clips}><span>{t('g.saga.clippings', { n: curReads.length + livePosts.length })}</span><Icon n={clips ? 'x' : 'news'} size={18} /></button>
       {clips && <ol className="clips__l">
-        {[...curReads.map((r, k) => ({ d: r.day, el: <li key={'r' + k} className="clip"><SrcIcon k={r.src} size={30} /><div><div className="clip__h"><b>{t('src.' + r.src)}</b><span className="g-mono">{t('common.day', { n: r.day })}</span><span className="g-chip">{saysWord(t.lang, r.src, r.r, c)}</span></div><p>{voiceLine(t.lang, c, r)}</p><span className="clip__adds g-mono">{addsText(t.lang, E.weights(g.R, r.src, r.r))}</span></div></li> })),
+        {[...curReads.map((r, k) => {
+          // What the source said, word for word, with who said it, their read (stamp) and what it added to the tally.
+          const w = E.weights(g.R, r.src, r.r), isNew = k === newK;
+          return { d: r.day + k / 1000, el: <li key={'r' + k} ref={isNew ? newRef : undefined} className={'clip clip--q' + (isNew ? ' is-new' : '')} style={{ ['--acc' as string]: accentOf(r.src) }}>
+            <SrcIcon k={r.src} size={34} />
+            <div className="clip__b">
+              <div className="clip__h"><b>{view.mode === 'career' ? srcNamed(t, r.src) : t('src.' + r.src)}</b><span className="g-mono">{t('common.day', { n: r.day })}</span>{isNew && <span className="clip__new">{t('cf.new')}</span>}</div>
+              <blockquote className="clip__q" cite={t('src.' + r.src)}>{voiceLine(t.lang, c, r)}</blockquote>
+              <div className="clip__f"><span className={'g-stamp clip__says g-stamp--' + OUTS[w.indexOf(Math.max(...w))]}>{saysWord(t.lang, r.src, r.r, c)}</span><span className="clip__adds g-mono">{addsText(t.lang, w) || t('g.call.nothingNew')}</span></div>
+            </div>
+          </li> };
+        }),
           ...livePosts.map((p, k) => ({ d: p.day + .5, el: <li key={'p' + k} className="clip clip--rival"><span className={'rv-av rv-av--' + p.id}>{RIVAL_IC[p.id]}</span><div><div className="clip__h"><b>{t('rival.' + p.id)}</b><span className="g-mono">{t('common.day', { n: p.day })}</span><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div><p>{postLine(t.lang, c, p)}</p></div></li> }))].sort((a, b) => b.d - a.d).map((x) => x.el)}
       </ol>}
     </section>}
@@ -151,7 +181,7 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
         {pv && <p className="stake" aria-live="polite"><span className="stake__w">{t('calls.stake.right', { n: pv.win })}</span><span className="stake__l">{t('calls.stake.wrong', { n: num(pv.lose) })}</span>{exTail}</p>}
         <HoldPublish disabled={selO == null || busy || (!!call && call.o === selO)} shine={selO != null} gold={selO === 0 && s === 2 && !call} onCommit={post}
           label={selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}>
-          <Icon n={call ? 'uturn' : 'news'} size={24} /><span className="publish__t">{selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : selO === 0 && s === 2 ? <><b>{t('calls.hwg.word')}</b><em>{t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}</em></> : (() => { const [h, ...rest] = t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) }).split(' · '); return rest.length ? <><b>{h}</b><em>{rest.join(' · ')}</em></> : h; })()}</span>
+          <Icon n={call ? 'uturn' : 'news'} size={24} /><span className="publish__t">{selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : selO === 0 && s === 2 ? <><b>{catchphraseOf().text.toUpperCase()}</b><em>{t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}</em></> : (() => { const [h, ...rest] = t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) }).split(' · '); return rest.length ? <><b>{h}</b><em>{rest.join(' · ')}</em></> : h; })()}</span>
         </HoldPublish>
       </div>}
       {cs === 'nosource' && !call && <p className="callbox__none"><Icon n="phone" size={16} /> {t('g.saga.noStory')}</p>}
@@ -209,6 +239,7 @@ function HoldPublish({ disabled, onCommit, children, label, shine, gold }: { dis
     style={{ ['--hold' as string]: String(k) }} disabled={disabled} aria-label={t('calls.hold.aria', { l: label })} title={t('calls.hold.hint')}
     onPointerDown={down} onPointerUp={up} onPointerLeave={stop} onPointerCancel={stop} onContextMenu={(e) => e.preventDefault()}
     onClick={(e) => { if (e.detail === 0) commit(); }}>
+    <Beat stem="beat-press-warm" held={k > 0 && k < 1} className="fl-beat--press" />
     <span className="hold__fill" aria-hidden="true" />{shine && <span className="shine" />}{children}
   </button>;
 }

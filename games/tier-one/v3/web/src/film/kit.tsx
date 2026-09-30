@@ -117,8 +117,9 @@ export function Typeset({ text, at, cpf = 0.6, style }: { text: string; at: numb
     return <span style={{ display: 'inline-block', clipPath: `inset(-20% 0 -20% ${100 - p * 100}%)`, ...style }}>{text}</span>;
   }
   // Words stay whole (no line break inside a word); each letter is its own sort.
+  // Letter sorts are inline-blocks, which bidi treats as neutral: isolate the Latin line LTR so an RTL page can't reverse it.
   let i = 0;
-  return <span style={style}>{text.split(/(\s+)/).map((w, wi) => {
+  return <span style={{ ...style, direction: 'ltr', unicodeBidi: 'isolate' }}>{text.split(/(\s+)/).map((w, wi) => {
     if (/^\s+$/.test(w)) { i += Array.from(w).length; return w; }
     return <span key={wi} style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>{Array.from(w).map((ch) => {
       const t = interpolate(n - i++, [0, 1.6], [0, 1], clamp);
@@ -156,4 +157,42 @@ export function Motes({ n = 18, w = 1600, h = 1400, seed = 1, color = 'rgba(255,
     const r = 3 + (i % 5) * 2;
     return <i key={i} style={{ position: 'absolute', left: bx + noise(f / 50 + i, seed) * 60, top: by + noise(f / 60 + i * 3, seed + 1) * 50 - f * 0.4, width: r, height: r, borderRadius: '50%', background: color, filter: `blur(${1 + (i % 3)}px)`, opacity: 0.35 + 0.35 * noise(f / 20 + i, 9) }} />;
   })}</>;
+}
+
+// ---------- 3.4 motion pieces (GOTY.md §10): a shot and a title plate, shared by story/, moments/, live/, social/
+/** One camera on one world: eased push from `from` to `to` over the scene (`to` may be keyed by P), with shake hits
+ *  and a slow handheld drift. The world is centred on 0,0; keep the hero inside a 1000-unit square so portrait and
+ *  landscape both frame it. `over` draws in screen space above the world, under the film look. */
+export function Shot({ from = { x: 0, y: 0, z: 1 }, to = { x: 0, y: 0, z: 1.08 }, hits = [], amp = 14, bg = C.night, rtl, children, over, vignette = 0.76, span }: {
+  from?: { x: number; y: number; z: number }; to?: { x: number; y: number; z: number }; hits?: number[]; amp?: number; bg?: string; rtl?: boolean;
+  children?: ReactNode; over?: ReactNode; vignette?: number; span?: [number, number];
+}) {
+  const { f, dur } = useStage();
+  const [a, b] = span || [0, dur];
+  const t = interpolate(f, [a, Math.max(a + 1, b)], [0, 1], { ...clamp, easing: EASE.inOut });
+  const sh = shake(f, hits, amp);
+  const cam: Key = { f, x: from.x + (to.x - from.x) * t + sh.x + noise(f / 40, 3) * 4, y: from.y + (to.y - from.y) * t + sh.y + noise(f / 50, 5) * 4, z: from.z + (to.z - from.z) * t };
+  return <AbsoluteFill style={{ background: bg, overflow: 'hidden', direction: rtl ? 'rtl' : 'ltr' }}>
+    <Layer cam={cam}>{children}</Layer>
+    {over}
+    <FilmLook vignette={vignette} />
+  </AbsoluteFill>;
+}
+/** The big words of a piece, in screen space: kicker, title (typeset), and an optional stamp. Big and readable (§12). */
+export function Plate({ at, kicker, title, sub, stamp, stampAt, accent = C.red, rtl, top }: { at: number; kicker?: string; title: string; sub?: string; stamp?: string; stampAt?: number; accent?: string; rtl?: boolean; top?: boolean }) {
+  const { f, fps, P } = useStage();
+  if (f < at) return null;
+  const s = spring({ frame: f - at, fps, config: { damping: 14, stiffness: 170 } });
+  const w = P ? 940 : 1100;
+  return <AbsoluteFill style={{ justifyContent: top ? 'flex-start' : 'flex-end', alignItems: 'center', padding: top ? (P ? '150px 0 0' : '70px 0 0') : (P ? '0 0 190px' : '0 0 70px'), direction: rtl ? 'rtl' : 'ltr', pointerEvents: 'none', zIndex: 45 }}>
+    <div style={{ position: 'relative', width: w, transform: `translateY(${(1 - s) * (top ? -300 : 300)}px) rotate(${(1 - s) * 3 - 0.8}deg)` }}>
+      <div style={{ position: 'absolute', inset: 0 }}><Paper lift={0.5}><i style={{ position: 'absolute', insetInlineStart: 0, top: 0, bottom: 0, width: 22, background: accent }} /></Paper></div>
+      <div style={{ position: 'relative', padding: '26px 44px 30px', paddingInlineStart: 62, color: C.ink, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {kicker && <span style={{ fontFamily: F.mono, fontSize: P ? 32 : 30, letterSpacing: '.08em', color: C.ink2, textTransform: 'uppercase', opacity: k01(f, at + 3, at + 9) }}>{kicker}</span>}
+        <span style={{ fontFamily: F.display, fontWeight: 800, fontSize: P ? 96 : 88, lineHeight: 1.02, letterSpacing: '-.015em', overflowWrap: 'anywhere' }}><Typeset text={title} at={at + 4} cpf={1.6} /></span>
+        {sub && <span style={{ fontFamily: F.text, fontWeight: 700, fontSize: P ? 40 : 36, color: C.ink2, opacity: k01(f, at + 12, at + 20) }}>{sub}</span>}
+      </div>
+      {stamp && <div style={{ position: 'absolute', insetInlineEnd: -6, top: -72 }}><Stamp text={stamp} color={accent === C.gold ? C.goldDeep : C.redDeep} at={stampAt ?? at + 16} size={80} rot={-10} style={{ background: 'rgba(244,239,228,.94)' }} /></div>}
+    </div>
+  </AbsoluteFill>;
 }

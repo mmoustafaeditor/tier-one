@@ -1,9 +1,9 @@
-// 3.3 "One Byline" calls lane (GOTY.md §2): HERE WE GO, hold to publish, Delete & repost, the stake line, the rival
+// 3.3 "One Byline" calls lane (GOTY.md §2): DONE DEAL, hold to publish, Delete & repost, the stake line, the rival
 // race and the overnight breaking cards. {p} player, {to} buying club, {o} outcome, {r} rival handle.
 export default {
   en: {
     calls: {
-      hwg: { word: 'HERE WE GO!', stamp: 'Here we go!', card: 'HERE WE GO! · {p}', burst: 'HERE WE GO!' },
+      hwg: { word: 'DONE DEAL!', stamp: 'Done deal!', card: 'DONE DEAL! · {p}', burst: 'DONE DEAL!' },
       hold: { hint: 'Hold to publish', aria: '{l}. Hold, tap or press Enter to publish.' },
       stake: { right: 'Right +{n}', wrong: 'Wrong {n}', open: 'Exclusive open: +{n}', beaten: 'Beaten by {r}', repost: 'No exclusive on a repost', loud: 'Only Confirmed can be exclusive', two: 'Two circles needed for an exclusive' },
       repost: {
@@ -31,7 +31,7 @@ export default {
   },
   ar: {
     calls: {
-      hwg: { word: 'HERE WE GO!', stamp: 'هير وي جو!', card: 'HERE WE GO! · {p}', burst: 'HERE WE GO!' },
+      hwg: { word: 'DONE DEAL!', stamp: 'خلصت!', card: 'DONE DEAL! · {p}', burst: 'DONE DEAL!' },
       hold: { hint: 'دوس كتير عشان تنشر', aria: '{l}. دوس كتير أو دوسة أو Enter عشان تنشر.' },
       stake: { right: 'صح +{n}', wrong: 'غلط {n}', open: 'الانفراد لسه متاح: +{n}', beaten: 'سبقك {r}', repost: 'مفيش انفراد في إعادة النشر', loud: '«مؤكد» بس اللي ينفع يبقى انفراد', two: 'محتاج دايرتين مختلفتين عشان الانفراد' },
       repost: {
@@ -59,7 +59,7 @@ export default {
   },
   es: {
     calls: {
-      hwg: { word: '¡HERE WE GO!', stamp: '¡Here we go!', card: '¡HERE WE GO! · {p}', burst: '¡HERE WE GO!' },
+      hwg: { word: '¡CERRADO!', stamp: '¡Cerrado!', card: '¡CERRADO! · {p}', burst: '¡CERRADO!' },
       hold: { hint: 'Mantén para publicar', aria: '{l}. Mantén, toca o pulsa Enter para publicar.' },
       stake: { right: 'Acierto +{n}', wrong: 'Fallo {n}', open: 'Exclusiva abierta: +{n}', beaten: 'Se adelantó {r}', repost: 'Sin exclusiva al republicar', loud: 'Solo Confirmado puede ser exclusiva', two: 'Hacen falta dos círculos para la exclusiva' },
       repost: {

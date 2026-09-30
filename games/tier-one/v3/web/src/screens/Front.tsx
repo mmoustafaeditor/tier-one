@@ -107,7 +107,7 @@ export function Front(chrome: Chrome) {
         <div className="only-mobile"><LeagueMini chrome={chrome} /></div>
         <Flag title={t('front.alsoFlag')} />
         <button className="item item--link" onClick={() => chrome.go({ n: 'practice' })}><span className="item__n">P</span><div><h3 className="item__hed">{t('nav.practice')}</h3><p className="note">{t('front.practiceD')}</p></div><Arr /></button>
-        <button className="item item--link" onClick={() => chrome.go({ n: 'desk' })}><span className="item__n">C</span><div><h3 className="item__hed">{t('nav.desk')}</h3><p className="note">{s.career ? t('career.ranks.' + s.career.rank) + ' · Rep ' + Math.round(s.career.rep) : t('front.careerD')}</p></div><Arr /></button>
+        <button className="item item--link" onClick={() => chrome.go({ n: 'desk' })}><span className="item__n">C</span><div><h3 className="item__hed">{t('nav.desk')}</h3><p className="note">{s.career ? t('career.ranks.' + s.career.rank) + ' · ' + t('career.windows') + ' ' + s.career.windows : t('front.careerD')}</p></div><Arr /></button>
         <button className="item item--link" onClick={() => chrome.go({ n: 'rooms' })}><span className="item__n">R</span><div><h3 className="item__hed">{t('nav.rooms')}</h3><p className="note">{t('front.roomsD')}</p></div><Arr /></button>
         <button className="item item--link" onClick={() => chrome.go({ n: 'howto' })}><span className="item__n">?</span><div><h3 className="item__hed">{t('nav.howto')}</h3><p className="note">{t('howto.dek')}</p></div><Arr /></button>
       </aside>

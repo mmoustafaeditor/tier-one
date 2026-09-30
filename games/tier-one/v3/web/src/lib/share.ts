@@ -2,11 +2,19 @@
 // physical object), whatever edition the app is in. No network.
 import { portraitSVG } from './kit';
 import type { WClub, Result } from './engine';
-import type { T } from './i18n';
+import { t as tr, type T } from './i18n';
+import { getSave } from './save';
+import { bylineOf, repTier } from './byline';
 
 // hwg (3.3): when set, the card leads with a gold "HERE WE GO!" band (e.g. t('calls.hwg.card', { p })) above the kicker.
-export interface Card { hed: string; sub: string; kick: string; no: string; date: string; by: string; url: string; stats: [string, string][]; stamp: string; stampKind: string; club: WClub; no2: number; who: string; rtl: boolean; hwg?: string }
-const PAPER = '#F2EEE5', INK = '#15130F', INK2 = '#47423A', ACC = '#D2381B', ACC_T = '#B42E14', GO = '#17613F', FAKE = '#5B3E96', DEAD = '#8B857A', GOLD = '#F7B928', GOLD_D = '#7A5200';
+// style (3.4, lib/wallet.ts shareStyle(save)): the equipped share-card style (paper/ink/accent), the post frame and the
+// player's paper name as the masthead. Absent = the classic card, exactly as before.
+export interface CardStyle { paper?: string; ink?: string; accent?: string; frame?: { c: string; c2: string; pat: string } | null; masthead?: string }
+export interface Card { hed: string; sub: string; kick: string; no: string; date: string; by: string; url: string; stats: [string, string][]; stamp: string; stampKind: string; club: WClub; no2: number; who: string; rtl: boolean; hwg?: string; style?: CardStyle; flair?: string }
+const GO = '#17613F', FAKE = '#5B3E96', DEAD = '#8B857A', GOLD = '#F7B928', GOLD_D = '#7A5200';
+const mix = (hex: string, to: string, k: number) => { const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16); const ch = (s: number) => Math.round(((a >> s) & 255) * (1 - k) + ((b >> s) & 255) * k); return '#' + [16, 8, 0].map((s) => ch(s).toString(16).padStart(2, '0')).join(''); };
+// flair (3.4, one career): the byline's rep tier ("Stringer") printed after the byline; defaults to bylineFlair().
+export const bylineFlair = (s = getSave(), t: (k: string) => string = tr) => t('cn.tier.' + repTier(bylineOf(s).rep));
 
 // HERE WE GO (GOTY.md §2): a Done call at Confirmed. Feel only; the engine scores it like any other Confirmed Done.
 export const hereWeGo = (c?: { o: number; s: number } | null) => !!c && c.o === 0 && c.s === 2;
@@ -49,13 +57,18 @@ export async function renderCard(c: Card): Promise<Blob | null> {
   ctx.direction = ar ? 'rtl' : 'ltr';
   const S = ar ? W - P : P, E = ar ? P : W - P; // start / end x
   const alignS: CanvasTextAlign = ar ? 'right' : 'left', alignE: CanvasTextAlign = ar ? 'left' : 'right';
+  const st = c.style || {};
+  const PAPER = st.paper || '#F2EEE5', INK = st.ink || '#15130F', ACC = st.accent || '#D2381B';
+  const INK2 = mix(INK, PAPER, 0.25), ACC_T = mix(ACC, INK, 0.15);
   ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
   // grain
   for (let k = 0; k < 9000; k++) { ctx.fillStyle = `rgba(80,70,55,${Math.random() * 0.05})`; ctx.fillRect(Math.random() * W, Math.random() * H, 1.5, 1.5); }
+  // the post frame, if one is equipped (drawn inside the edge so nothing is clipped)
+  if (st.frame) { const f = st.frame, m = 22; ctx.lineWidth = f.pat === 'double' ? 6 : 8; ctx.strokeStyle = f.c; ctx.setLineDash(f.pat === 'dash' ? [26, 16] : []); ctx.strokeRect(m, m, W - 2 * m, H - 2 * m); ctx.setLineDash([]); ctx.lineWidth = 3; ctx.strokeStyle = f.c2; ctx.strokeRect(m + 10, m + 10, W - 2 * m - 20, H - 2 * m - 20); }
   ctx.fillStyle = INK; ctx.textBaseline = 'alphabetic';
   // masthead
   ctx.font = `700 104px "Newsreader", Georgia, serif`; ctx.textAlign = alignS; ctx.direction = 'ltr';
-  ctx.textAlign = ar ? 'right' : 'left'; ctx.fillText('Tier One', S, P + 84);
+  ctx.textAlign = ar ? 'right' : 'left'; ctx.fillText(st.masthead || 'Tier One', S, P + 84, W * 0.6);
   ctx.direction = ar ? 'rtl' : 'ltr';
   ctx.font = `500 26px ${mono}`; ctx.fillStyle = INK2; ctx.textAlign = alignE;
   ctx.fillText(c.no.toUpperCase(), E, P + 44); ctx.fillText(c.date.toUpperCase(), E, P + 80);
@@ -93,9 +106,15 @@ export async function renderCard(c: Card): Promise<Blob | null> {
     ctx.fillStyle = INK2; ctx.font = `500 25px ${mono}`; ctx.fillText(l.toUpperCase(), sx, ry + rowH * 0.62 + 40);
     if (k < c.stats.length - 1) { ctx.fillStyle = 'rgba(21,19,15,.18)'; ctx.fillRect(sx0, ry + rowH - 1, colW, 2); }
   });
-  // foot
+  // foot: the byline and its flair (the rep tier), then the URL
   ctx.fillStyle = INK; ctx.fillRect(P, H - P - 64, W - 2 * P, 3);
   ctx.font = `italic 400 40px ${disp}`; ctx.textAlign = alignS; ctx.fillText(c.by, S, H - P - 14);
+  const flair = c.flair ?? bylineFlair();
+  if (flair) {
+    const byW = ctx.measureText(c.by).width + 22;
+    ctx.font = `700 24px ${cond}`; ctx.fillStyle = ACC_T;
+    ctx.fillText(flair.toUpperCase(), ar ? S - byW : S + byW, H - P - 18, Math.max(60, W - 2 * P - byW - 300));
+  }
   ctx.font = `500 26px ${mono}`; ctx.textAlign = alignE; ctx.direction = 'ltr'; ctx.fillText(c.url.toUpperCase(), E, H - P - 16);
   // stamp
   ctx.save(); ctx.direction = ar ? 'rtl' : 'ltr';

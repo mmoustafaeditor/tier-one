@@ -1,12 +1,14 @@
-// Results (HYBRID.md §6, TIERONE-SAIF-01/02): the verdict lands first (tier stamp, score, rank, one line from the pub),
-// then your calls as tweets, each with its best two or three replies from fans, rival journalists and your own sources.
-// Everything else sits one tap away in a closable sheet: the whole thread, the full points breakdown, the table, sharing.
-// Every game mode that plays a window (Daily, Friends rooms, Practice, Career) lands here.
-import { useEffect, useMemo, useRef, useState } from 'react';
+// Results (GOTY pass; HYBRID.md §6): the front page, on one screen. "The paper's out" plays first (lib/moments.ts), then
+// the verdict card lands with share beside it, ONE strip says how your name moved (followers, reputation, contacts and
+// rivals that moved, level), and the five calls sit as one compact list: the replies thread and every point are a tap
+// away in sheets. Every window mode (Daily, rooms, Practice, Career) lands here.
+//
+// INTEGRATION SLOT (social lane, ui/social.tsx): ChallengeButton, see below.
+import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { OUTS, type ResultSaga, type Result, type CastSaga } from '../lib/engine';
 import type { View } from '../lib/driver';
 import { useT, num, fmtDate, resetAt } from '../lib/i18n';
-import { useSave } from '../lib/save';
+import { useSave, getSave } from '../lib/save';
 import { outWord, strWord, saysWord } from '../lib/story';
 import { onShared } from '../lib/meta';
 import { RANKS } from '../lib/career';
@@ -18,18 +20,25 @@ import { v3 } from '../lib/api';
 import { Banter, compact, type Thread, type Reply } from '../lib/banter';
 import { Icon, Kit, GBtn, TopBar, CountUp, confetti, shake, SrcIcon, useCountUp } from '../ui/game';
 import { Avatar } from '../ui/screenbits';
-import { BylineLine, useRecordWindow } from '../ui/connect';
+import { useRecordWindow } from '../ui/connect';
 import { Sheet } from '../ui/bits';
 import { renderCard, shareText, hereWeGoOf } from '../lib/share';
 import type { Chrome } from '../App';
 import '../styles/results.css';
-import { flushDeferredScenes } from '../lib/scenes';
+import { flushDeferredScenes, playScene, afterScenes, firstToday } from '../lib/scenes';
+import { windowKey, bylineOf, repTier, REP_TIERS, type WindowSummary } from '../lib/byline';
+import { ChallengeButton as SocialChallengeButton } from '../ui/social';
+import { catchphraseOf } from '../lib/catchphrase';
+
+/** SLOT (social lane, ui/social.tsx): `<ChallengeButton/>`. Assign the real component here; it renders beside Share.
+ *  Props: { view, result }. */
+const ChallengeButton: ComponentType<{ view: View; result: Result }> | null = ({ view }) => <SocialChallengeButton view={view} />;
 
 const TIER_C: Record<string, string> = { T1: 'gold', T2: 'done', T3: 'done', T4: 'off', SPIKED: '' };
 const LEAGUE_PTS: Record<string, number> = { T1: 30, T2: 20, T3: 12, T4: 6, SPIKED: 2 };
 export interface Start { pp: number; credits: number; streak: number }
-type Modal = null | { k: 'thread'; i: number } | { k: 'quiet' } | { k: 'breakdown' } | { k: 'board' } | { k: 'share' };
-const ORDER: Record<string, number> = { excl: 0, right: 1, wrong: 2, none: 3 };
+type Modal = null | { k: 'thread'; i: number } | { k: 'replies' } | { k: 'breakdown' } | { k: 'board' };
+const verdictOf = (p: ResultSaga) => (!p.call ? 'none' : p.excl ? 'excl' : p.right ? 'right' : 'wrong');
 
 export function Results({ view, chrome, report, start, beat }: { view: View; chrome: Chrome; report: CareerReport | null; start?: Start; beat?: Beat | null }) {
   const t = useT();
@@ -37,6 +46,9 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   const r = view.result!;
   const cast = (r.cast && r.cast.length ? r.cast : view.cast) as CastSaga[];
   const [stage, setStage] = useState(s.reduced ? 99 : 0);
+  // "The paper's out" film replaces the press stage the first time a Daily/Career/Practice window lands (full cut once
+  // a day, the short cut after). Read before useRecordWindow records the window, so revisits skip it.
+  const [film, setFilm] = useState(() => stage === 0 && view.mode !== 'room' && !matchMedia('(prefers-reduced-motion: reduce)').matches && !(getSave().byline?.keys || []).includes(windowKey(view)));
   const [modal, setModal] = useState<Modal>(null);
   const root = useRef<HTMLDivElement>(null);
   const byline = useRecordWindow(view, beat, start?.pp); // One Byline (lib/byline.ts)
@@ -51,22 +63,27 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
     const th = r.per.map((p) => b.thread(p, cast[p.i], view.R));
     return { threads: th, verdict: b.verdict(r.tier) };
   }, [t.lang, seed, r]);
-  const called = threads.filter((x) => x.verdict !== 'none').sort((a, b) => ORDER[a.verdict] - ORDER[b.verdict] || r.per[b.i].pts - r.per[a.i].pts);
-  const quiet = threads.filter((x) => x.verdict === 'none');
 
-  // stage: 0 press · 1 verdict · 2..1+n tweets · 2+n tier stamp · 3+n the rest
-  const n = called.length;
+  // stage: 0 press · 1 verdict · 2..1+n rows (board order) · 2+n tier stamp · 3+n the rest
+  const n = r.per.length;
   const TIER = 2 + n, PROG = 3 + n;
   useEffect(() => { if (stage >= PROG) flushDeferredScenes(); }, [stage >= PROG]);
+  const filmOn = useRef(false);
   useEffect(() => {
-    if (stage >= PROG) return;
-    const ms = stage === 0 ? 900 : stage === 1 ? 600 : stage < TIER ? 520 : 800;
+    if (!film || filmOn.current) return;
+    filmOn.current = true; // once, even under StrictMode's double effects
+    playScene(firstToday('paper') ? 'paper' : 'paper-short', { hed, what, paper: view.mode === 'career' ? s.career?.paper || undefined : undefined });
+    afterScenes(() => { setFilm(false); setStage((x) => Math.max(x, 1)); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (stage >= PROG || film) return;
+    const ms = stage === 0 ? 900 : stage === 1 ? 650 : stage < TIER ? 380 : 800;
     const id = setTimeout(() => setStage(stage + 1), ms);
     if (stage === 0) sfx('typewriter');
     if (stage === 1) sfx('reveal');
-    if (stage >= 2 && stage < TIER) { const th = called[stage - 2]; sfx(th.verdict === 'excl' ? 'star' : th.verdict === 'right' ? 'good' : 'bad', stage - 2); }
+    if (stage >= 2 && stage < TIER) { const v = verdictOf(r.per[stage - 2]); if (v !== 'none') sfx(v === 'excl' ? 'star' : v === 'right' ? 'good' : 'bad', stage - 2); }
     return () => clearTimeout(id);
-  }, [stage]);
+  }, [stage, film]);
   useEffect(() => {
     if (stage !== TIER) return;
     if (r.tier === 'T1') { sfx('fanfare'); confetti(); buzz([30, 60, 30, 60, 80]); }
@@ -79,8 +96,6 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   const bc = best ? cast[best.i] : cast[0];
   const bestDest = best && best.truth === 1 && bc.alt ? bc.alt : bc.to;
   const hed = best && best.right && best.call ? (best.truth <= 1 ? t('g.res.hedMove', { p: bc.player.s, c: bestDest.s }) : t('g.res.hedOut', { p: bc.player.s, o: outWord(t.lang, best.truth) })) : t('g.res.hedNone');
-  const lv0 = levelOf(start ? start.pp : s.pp), lv1 = levelOf(s.pp);
-  const coins = start ? Math.max(0, s.credits - start.credits) : 0;
   const me = { name: s.nick || t('g.home.noName'), handle: '@' + ((s.nick || 'reporter').toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '') || 'reporter') };
   const open = (m: Modal) => (e?: React.MouseEvent) => { e?.stopPropagation(); sfx('ui.tap'); setModal(m); };
   const close = () => setModal(null);
@@ -92,94 +107,100 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
     else open({ k: 'board' })();
   };
   const cur = modal && modal.k === 'thread' ? threads.find((x) => x.i === modal.i) : null;
+  const replies = threads.reduce((a, th) => a + th.replies.length, 0);
+  const share = useShare(view, r, what, hed, bestDest, bc);
 
-  return <div className="g-screen results2 res3" ref={root} onClick={skip}>
-    <TopBar back={{ label: t('g.tabs.home'), onClick: home }} title={what} />
+  return <div className="g-screen results2 res4" ref={root} onClick={skip}>
+    <TopBar back={{ label: t('g.tabs.home'), onClick: home }} />
 
-    {stage === 0 && <div className="press" aria-hidden="true"><div className="press__roll" /><div className="press__sheet" /><p className="g-mono">{t('g.res.rolling')}</p></div>}
+    {stage === 0 && !film && <div className="press" aria-hidden="true"><div className="press__roll" /><div className="press__sheet" /><p className="g-mono">{t('g.res.rolling')}</p></div>}
 
     {stage >= 1 && <>
-      {/* ---- the verdict ---- */}
-      <article className={'vcard g-card tier--' + r.tier}>
-        <div className="vcard__mast"><span className="vcard__name">Tier One</span><span className="g-mono">{what} · {fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short' })}</span></div>
-        <div className="vcard__row">
-          <div className="vcard__main">
-            <div className="g-mono vcard__k">{t('g.res.byline', { n: me.name })}</div>
-            <h1 className="vcard__hed">{hed}</h1>
+      <div className="res4__lead">
+        {/* ---- the verdict: your front page ---- */}
+        <article className={'vcard g-card tier--' + r.tier}>
+          <div className="vcard__mast"><span className="vcard__name">Tier One</span><span className="g-mono">{what} · {fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short' })}</span></div>
+          <div className="vcard__row">
+            <div className="vcard__main">
+              <div className="g-mono vcard__k" dir="auto">{r.ex > 0 ? t('g.res.byline', { n: me.name }) : t('hr.res.by', { n: me.name })}</div>
+              <h1 className="vcard__hed">{hed}</h1>
+            </div>
+            <div className="vcard__stampwrap">
+              {stage >= TIER ? <span className={'vcard__stamp g-stamp is-slam g-stamp--' + (TIER_C[r.tier] || '')}>{t('tier.' + r.tier)}</span> : <Kit club={bestDest} player={bc.player} size={72} />}
+            </div>
           </div>
-          <div className="vcard__stampwrap">
-            {stage >= TIER ? <span className={'vcard__stamp g-stamp is-slam g-stamp--' + (TIER_C[r.tier] || '')}>{t('tier.' + r.tier)}</span> : <Kit club={bestDest} player={bc.player} size={72} />}
+          <div className="vcard__score">
+            <div className="vcard__pts"><b className={'g-num' + (r.total < 0 ? ' neg' : '')}><CountUp to={r.total} ms={900 + n * 380} tick /></b><span className="g-mono">{t('results.total')}</span></div>
+            <div><b className="g-num">{r.right}/{r.called}</b><span className="g-mono">{t('career.right')}</span></div>
+            {r.ex > 0 && <div><b className="g-num">{r.ex}</b><span className="g-mono">{t('results.exclusives')}</span></div>}
+            {r.rank ? <div><b className="g-num">#{r.rank}</b><span className="g-mono">{r.players ? t('hr.res.ofN', { n: r.players }) : t('hr.res.rank')}</span></div> : null}
           </div>
-        </div>
-        <div className="vcard__score">
-          <div className="vcard__pts"><b className={'g-num' + (r.total < 0 ? ' neg' : '')}><CountUp to={r.total} ms={900 + n * 520} tick /></b><span className="g-mono">{t('results.total')}</span></div>
-          <div><b className="g-num">{r.right}/{r.called}</b><span className="g-mono">{t('career.right')}</span></div>
-          <div><b className="g-num">{r.ex}</b><span className="g-mono">{t('results.exclusives')}</span></div>
-          {r.rank ? <div><b className="g-num">#{r.rank}</b><span className="g-mono">{r.players ? t('bn.ui.boardYou', { r: r.rank, n: r.players }) : t('g.res.rank')}</span></div> : null}
-        </div>
-        {stage >= TIER && <div className="vcard__pub">
-          <p className="vcard__quip">{verdict.quip}</p>
-          {verdict.idiom && <p className="vcard__idiom"><span className="g-mono">{t('bn.ui.pub')}</span> {verdict.idiom}</p>}
+          {stage >= TIER && <div className="vcard__pub">
+            <p className="vcard__quip">{verdict.quip}</p>
+            {verdict.idiom && <p className="vcard__idiom"><span className="g-mono">{t('bn.ui.pub')}</span> {verdict.idiom}</p>}
+          </div>}
+        </article>
+
+        {stage >= PROG && <div className="res4__share stagger">
+          <GBtn size="sm" sound="open" onClick={share.send}><Icon n="share" />{t('bn.ui.share')}</GBtn>
+          {ChallengeButton ? <ChallengeButton view={view} result={r} /> : null}
+          <button className="res4__save" onClick={share.save}>{share.msg || t('results.saveImg')}</button>
         </div>}
-      </article>
 
-      {/* ---- your calls, as tweets ---- */}
-      <div className="res3__sec"><h2>{t('bn.ui.calls')}</h2><span className="g-mono">{t('bn.ui.callsAside', { a: r.right, b: r.called })}</span></div>
-      <section className="tweets">
-        {called.map((th, k) => stage >= 2 + k
-          ? <Tweet key={th.i} th={th} p={r.per[th.i]} c={cast[th.i]} me={me} k={k} top={th.verdict === 'excl' ? 3 : 2} onOpen={open({ k: 'thread', i: th.i })} />
-          : <div key={th.i} className="tweet tweet--ghost" />)}
-        {quiet.length > 0 && stage >= TIER && <button className="quiet g-card g-card--desk" onClick={open({ k: 'quiet' })}>
-          <span className="quiet__kits">{quiet.map((q) => <Kit key={q.i} club={cast[q.i].from} player={cast[q.i].player} size={30} />)}</span>
-          <span className="quiet__txt"><b>{t('bn.ui.quiet')}</b><span className="g-mono">{t('bn.ui.quietN', { n: quiet.map((q) => cast[q.i].player.s).join(', ') })}</span>
-            {quiet[0].replies[0] && <span className="quiet__line">“{quiet[0].replies[0].text}”</span>}</span>
-          <Icon n={t.rtl ? 'back' : 'arrow'} size={18} />
-        </button>}
-        {n === 0 && stage >= TIER && <p className="tweets__none">{t('results.nothing')}</p>}
-      </section>
+        {/* ---- how your name moved: ONE strip ---- */}
+        {stage >= PROG && <NameStrip sum={byline} s={s} start={start} mode={view.mode} tier={r.tier} report={report} beat={beat || null} />}
+      </div>
 
-      {stage >= PROG && <section className="res3__tail stagger">
-        {/* ---- the doors: everything else is one tap away ---- */}
-        <nav className="doors" style={{ ['--i' as string]: 0 }}>
-          <button className="door" onClick={open({ k: 'breakdown' })}><Icon n="news" /><span>{t('bn.ui.breakdown')}</span></button>
-          {view.mode !== 'practice' && <button className="door" onClick={onBoard}><Icon n={view.mode === 'career' ? 'story' : 'trophy'} /><span>{boardLabel}</span></button>}
-          <button className="door door--hot" onClick={open({ k: 'share' })}><Icon n="share" /><span>{t('bn.ui.share')}</span></button>
-        </nav>
+      <div className="res4__desk">
+        {/* ---- the five calls: one line each; the thread and every point one tap away ---- */}
+        <div className="res4__sec"><h2>{t('bn.ui.calls')}</h2><span className="g-mono">{t('bn.ui.callsAside', { a: r.right, b: r.called })}</span></div>
+        <section className="calls">
+          {r.per.map((p, k) => stage >= 2 + k
+            ? <CallRow key={p.i} p={p} c={cast[p.i]} th={threads[p.i]} k={k} onOpen={open({ k: 'thread', i: p.i })} />
+            : <div key={p.i} className="call4 call4--ghost" />)}
+        </section>
 
-        <div className="prog__row g-card g-card--desk" style={{ ['--i' as string]: 1 }}>
-          <span className="prog__lv"><b>{lv1.n}</b><span className="g-mono">{t('g.me.level')}</span></span>
-          <span className="prog__bar"><span className="g-mono">{lv1.n > lv0.n ? t('g.res.levelUp', { n: lv1.n }) : t('g.home.xp', { a: lv1.into, b: lv1.need })}</span>
-            <span className="g-bar" style={{ ['--bar' as string]: 'linear-gradient(90deg,#FFD35C,#F7B928)' }}><i style={{ width: lv1.into + '%' }} /></span>
-            {view.mode === 'daily' && <span className="g-mono res3__streak"><Icon n="flame" size={14} /> {t('g.res.streak', { n: s.streak.n })} · {t('results.league', { n: LEAGUE_PTS[r.tier] })}</span>}</span>
-          {coins > 0 && <span className="prog__coins"><span className="g-coin" />+{coins}</span>}
-        </div>
-        <BylineLine sum={byline} style={{ ['--i' as string]: 1 }} />
-        {report && s.career && <StoryBlock report={report} beat={beat || null} style={{ ['--i' as string]: 2 }} />}
-        <div className="prog__acts" style={{ ['--i' as string]: 3 }}>
-          <GBtn size="lg" shine onClick={view.mode === 'daily' ? () => chrome.go({ n: 'practice' }) : again}><Icon n={view.mode === 'daily' ? 'target' : 'phone'} />{view.mode === 'daily' ? t('g.res.practice') : view.mode === 'career' ? t('g.res.nextWindow') : view.mode === 'room' ? t('bn.ui.openRoom') : t('results.again')}</GBtn>
-          <GBtn kind="dark" onClick={home}><Icon n="home" />{t('g.res.home')}</GBtn>
-        </div>
-        {view.mode === 'daily' && <p className="g-mono prog__tomorrow">{t('results.tomorrow', { t: resetAt() })}</p>}
-      </section>}
+        {stage >= PROG && <section className="res4__tail stagger">
+          <nav className="doors" style={{ ['--i' as string]: 0 }}>
+            <button className="door" onClick={open({ k: 'replies' })}><Icon n="reply" /><span>{t('hr.res.repliesN', { n: replies })}</span></button>
+            <button className="door" onClick={open({ k: 'breakdown' })}><Icon n="news" /><span>{t('bn.ui.breakdown')}</span></button>
+            {view.mode !== 'practice' && <button className="door" onClick={onBoard}><Icon n={view.mode === 'career' ? 'story' : 'trophy'} /><span>{boardLabel}</span></button>}
+            {/* no dead ends: the rivals' reply and the feed are one tap from every result */}
+            <button className="door" onClick={() => chrome.go({ n: 'rivals' })}><Icon n="friends" /><span>{t('cn.rivals.title')}</span></button>
+            <button className="door" onClick={() => chrome.go({ n: 'feed' })}><Icon n="news" /><span>{t('cn.feed.title')}</span></button>
+          </nav>
+          <div className="prog__acts" style={{ ['--i' as string]: 1 }}>
+            <GBtn size="lg" shine primary onClick={view.mode === 'daily' ? () => chrome.go({ n: 'practice' }) : again}><Icon n={view.mode === 'daily' ? 'target' : 'phone'} />{view.mode === 'daily' ? t('g.res.practice') : view.mode === 'career' ? t('g.res.nextWindow') : view.mode === 'room' ? t('bn.ui.openRoom') : t('results.again')}</GBtn>
+            <GBtn kind="dark" onClick={home}><Icon n="home" />{t('g.res.home')}</GBtn>
+          </div>
+          {view.mode === 'daily' && <p className="g-mono prog__tomorrow">{t('results.tomorrow', { t: resetAt() })}</p>}
+        </section>}
+      </div>
     </>}
     {stage < PROG && stage > 0 && <p className="g-mono results2__skip">{t('g.call.tapSkip')}</p>}
 
     {/* ---- the sheets ---- */}
     <Sheet open={!!cur} onClose={close} label={t('bn.ui.allReplies')}>
       {cur && <div className="sheet__body res3sheet">
-        <SheetHead title={t('bn.ui.allReplies')} onClose={close} />
-        <Tweet th={cur} p={r.per[cur.i]} c={cast[cur.i]} me={me} k={0} top={99} still />
+        <SheetHead title={cast[cur.i].player.n} aside={t('bn.ui.allReplies')} onClose={close} />
+        {cur.verdict === 'none' ? <div className="quietsaga">
+          <div className="quietsaga__h"><Kit club={cast[cur.i].from} player={cast[cur.i].player} size={36} /><b>{t('bn.ui.quietN', { n: cast[cur.i].player.s })}</b><span className={'g-stamp g-stamp--' + OUTS[r.per[cur.i].truth]}>{outWord(t.lang, r.per[cur.i].truth)}</span></div>
+          <Replies list={cur.replies} replyTo={me.handle} />
+        </div> : <Tweet th={cur} p={r.per[cur.i]} c={cast[cur.i]} me={me} k={0} top={99} still />}
         <div className="res3sheet__sub g-mono">{t('bn.ui.breakdown')}</div>
         <SagaRow p={r.per[cur.i]} c={cast[cur.i]} R={view.R} k={0} startOpen />
       </div>}
     </Sheet>
-    <Sheet open={modal?.k === 'quiet'} onClose={close} label={t('bn.ui.quiet')}>
+    <Sheet open={modal?.k === 'replies'} onClose={close} label={t('bn.ui.allReplies')} wide>
       <div className="sheet__body res3sheet">
-        <SheetHead title={t('bn.ui.quiet')} onClose={close} />
-        {quiet.map((q) => <div key={q.i} className="quietsaga">
-          <div className="quietsaga__h"><Kit club={cast[q.i].from} player={cast[q.i].player} size={36} /><b>{cast[q.i].player.n}</b><span className={'g-stamp g-stamp--' + OUTS[r.per[q.i].truth]}>{outWord(t.lang, r.per[q.i].truth)}</span></div>
-          <Replies list={q.replies} replyTo={me.handle} />
-        </div>)}
+        <SheetHead title={t('bn.ui.allReplies')} aside={t('hr.res.repliesN', { n: replies })} onClose={close} />
+        <div className="tweets">
+          {threads.filter((th) => th.verdict !== 'none').map((th) => <Tweet key={th.i} th={th} p={r.per[th.i]} c={cast[th.i]} me={me} k={0} top={99} still />)}
+          {threads.filter((th) => th.verdict === 'none').map((q) => <div key={q.i} className="quietsaga">
+            <div className="quietsaga__h"><Kit club={cast[q.i].from} player={cast[q.i].player} size={36} /><b>{t('bn.ui.quietN', { n: cast[q.i].player.s })}</b><span className={'g-stamp g-stamp--' + OUTS[r.per[q.i].truth]}>{outWord(t.lang, r.per[q.i].truth)}</span></div>
+            <Replies list={q.replies} replyTo={me.handle} />
+          </div>)}
+        </div>
       </div>
     </Sheet>
     <Sheet open={modal?.k === 'breakdown'} onClose={close} label={t('bn.ui.breakdown')} wide>
@@ -196,22 +217,79 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
         {modal?.k === 'board' && <Board total={r.total} />}
       </div>
     </Sheet>
-    <Sheet open={modal?.k === 'share'} onClose={close} label={t('bn.ui.share')}>
-      <div className="sheet__body res3sheet">
-        <SheetHead title={t('g.res.share')} onClose={close} />
-        <ShareBlock view={view} r={r} what={what} hed={hed} bestDest={bestDest} bc={bc} />
-      </div>
-    </Sheet>
   </div>;
+}
+
+// ---------- one call, one line: kit, what happened, the verdict stamp, the points
+function CallRow({ p, c, th, k, onOpen }: { p: ResultSaga; c: CastSaga; th: Thread; k: number; onOpen: (e: React.MouseEvent) => void }) {
+  const t = useT();
+  const v = verdictOf(p);
+  const dest = p.truth === 1 && c.alt ? c.alt : p.truth === 0 ? c.to : c.from;
+  return <button className={'call4 is-' + v} style={{ ['--k' as string]: k }} onClick={onOpen} aria-label={t('hr.res.openRow', { p: c.player.n })}>
+    <Kit club={dest} player={c.player} size={40} />
+    <span className="call4__who">
+      <b dir="auto">{c.player.n}</b>
+      <span className="call4__what" dir="auto">{t('out.' + OUTS[p.truth] + 'D', { to: c.to.s })}{p.truth === 1 && c.alt ? ' · ' + c.alt.s : ''}{p.call ? ' · ' + t('hr.res.filedDay', { d: p.call.day }) : ''}</span>
+    </span>
+    <span className={'call4__stamp g-stamp is-slam g-stamp--' + (v === 'excl' ? 'gold' : v === 'right' ? 'done' : v === 'none' ? 'off' : '')}>{v === 'excl' ? t('bn.ui.excl') : v === 'right' ? t('bn.ui.right') : v === 'wrong' ? t('bn.ui.wrong') : t('hr.res.noCall')}</span>
+    <span className="call4__end"><b className={'call4__pts g-num' + (p.pts < 0 ? ' neg' : '')}>{num(p.pts, true)}</b>{th.replies.length > 0 && <small>{compact(th.replies.length, t.lang)} <Icon n="reply" size={11} /></small>}</span>
+  </button>;
+}
+
+// ---------- how your name moved (GOTY §1): followers, reputation, contacts and rivals that moved, level; Career's report folds in
+function NameStrip({ sum, s, start, mode, tier, report, beat }: { sum: WindowSummary | null; s: ReturnType<typeof useSave>; start?: Start; mode: View['mode']; tier: Result['tier']; report: CareerReport | null; beat: Beat | null }) {
+  const t = useT();
+  const b = bylineOf(s);
+  const rt = repTier(b.rep);
+  const next = REP_TIERS.find(([, m]) => m > b.rep);
+  const lv0 = levelOf(start ? start.pp : s.pp), lv1 = levelOf(s.pp);
+  const coins = start ? Math.max(0, s.credits - start.credits) : 0;
+  const rivals = new Map<string, { w: number; l: number }>();
+  for (const x of sum?.rivals || []) { const e = rivals.get(x.id) || { w: 0, l: 0 }; if (x.r === 'w') e.w++; else if (x.r === 'l') e.l++; rivals.set(x.id, e); }
+  const chips: { k: string; cls: string; txt: React.ReactNode }[] = [];
+  if (sum && sum.hot > 0) chips.push({ k: 'hot', cls: 'is-hot', txt: <><Icon n="flame" size={13} />{t('cn.res.hot', { n: sum.hot })}</> });
+  for (const l of sum?.levels || []) chips.push({ k: 'lv' + l.src, cls: 'is-gold', txt: t('hr.res.lvChip', { s: t('src.' + l.src), n: l.lv }) });
+  for (const [id, e] of rivals) chips.push({ k: 'r' + id, cls: e.w > e.l ? 'is-up' : e.l > e.w ? 'is-down' : '', txt: t(e.w > e.l ? 'hr.res.beat' : e.l > e.w ? 'hr.res.lostTo' : 'hr.res.drew', { r: t('rival.' + id) }) });
+  if (mode === 'daily') chips.push({ k: 'streak', cls: 'is-hot', txt: <><Icon n="flame" size={13} />{t('g.res.streak', { n: s.streak.n })} · {t('results.league', { n: LEAGUE_PTS[tier] })}</> });
+  if (report) {
+    chips.push({ k: 'cred', cls: report.repAfter >= report.repBefore ? 'is-up' : 'is-down', txt: t('hr.res.cred', { a: Math.round(report.repBefore), b: Math.round(report.repAfter) }) });
+    if (report.favours > 0) chips.push({ k: 'fav', cls: 'is-gold', txt: t('career.favours') + ' +' + report.favours });
+  }
+  const nx = s.career && report && report.promoted == null ? RANKS[s.career.rank + 1] : null;
+  return <section className="name4 g-card g-card--desk" aria-label={t('hr.res.yourName')}>
+    <div className="name4__h"><span className="g-mono">{t('hr.res.yourName')}</span><span className={'name4__tier cn-tier--' + rt}>{t('cn.tier.' + rt)}</span></div>
+    <div className="name4__cells">
+      {sum && <div className="name4__cell">
+        <b className={'g-num' + (sum.followers < 0 ? ' neg' : sum.followers > 0 ? ' pos' : '')}><CountUp to={sum.followers} sign ms={1000} /></b>
+        <span>{t('cn.res.followers')}</span>
+      </div>}
+      <div className="name4__cell">
+        <b className="g-num">{b.rep}{sum && sum.rep !== 0 && <em className={sum.rep > 0 ? 'pos' : 'neg'}>{num(sum.rep, true)}</em>}</b>
+        <span>{t('hr.res.rep')}</span>
+        <span className="g-bar g-bar--sm" style={{ ['--bar' as string]: 'var(--m-wire)' }}><i style={{ width: Math.round(next ? (100 * (b.rep - (REP_TIERS.find(([k]) => k === rt)?.[1] || 0))) / (next[1] - (REP_TIERS.find(([k]) => k === rt)?.[1] || 0)) : 100) + '%' }} /></span>
+        <small>{next ? t('hr.res.toNext', { n: next[1] - b.rep, tier: t('cn.tier.' + next[0]) }) : t('hr.res.top')}</small>
+      </div>
+      <div className="name4__cell">
+        <b className="g-num">{lv1.n}{coins > 0 && <em className="pos name4__coins"><span className="g-coin" />+{coins}</em>}</b>
+        <span>{t('g.me.level')}</span>
+        <span className="g-bar g-bar--sm" style={{ ['--bar' as string]: 'linear-gradient(90deg,#FFD35C,#F7B928)' }}><i style={{ width: lv1.into + '%' }} /></span>
+        <small>{lv1.n > lv0.n ? t('g.res.levelUp', { n: lv1.n }) : t('g.home.xp', { a: lv1.into, b: lv1.need })}</small>
+      </div>
+    </div>
+    {chips.length > 0 && <div className="name4__chips">{chips.map((c) => <span key={c.k} className={'name4__chip ' + c.cls}>{c.txt}</span>)}</div>}
+    {report && report.promoted != null && <div className="name4__promo"><span className="g-stamp g-stamp--gold is-slam">{t('g.res.promoted')}</span><b>{t('career.ranks.' + report.promoted)}</b><p>{t('career.unl.' + report.promoted)}</p></div>}
+    {nx && s.career && <p className="name4__next">{t('career.toNext', { w: Math.max(0, nx.gate[0] - s.career.windows), r: nx.gate[1], rank: t('career.ranks.' + (s.career.rank + 1)) })}</p>}
+    {beat && <div className={'name4__beat from--' + beat.from}><b>{t('g.story.from.' + beat.from)}</b><p dir="auto">{t(beatKey(beat), beat.v)}</p></div>}
+  </section>;
 }
 
 function SheetHead({ title, aside, onClose }: { title: string; aside?: string; onClose: () => void }) {
   const t = useT();
-  return <div className="res3sheet__h"><div><b>{title}</b>{aside && <span className="g-mono">{aside}</span>}</div>
+  return <div className="res3sheet__h"><div><b dir="auto">{title}</b>{aside && <span className="g-mono">{aside}</span>}</div>
     <button className="g-icbtn res3sheet__x" onClick={onClose} aria-label={t('bn.ui.close')}><Icon n="x" /></button></div>;
 }
 
-// ---------- a call as a tweet, with its best replies
+// ---------- a call as a tweet, with its replies (in the sheets)
 function Tweet({ th, p, c, me, k, top, onOpen, still }: { th: Thread; p: ResultSaga; c: CastSaga; me: { name: string; handle: string }; k: number; top: number; onOpen?: (e: React.MouseEvent) => void; still?: boolean }) {
   const t = useT();
   const shown = th.replies.slice(0, top);
@@ -221,7 +299,7 @@ function Tweet({ th, p, c, me, k, top, onOpen, still }: { th: Thread; p: ResultS
     <div className="tweet__main">
       <Avatar name={me.name} size={40} me />
       <div className="tweet__col">
-        <div className="tweet__who"><b>{me.name}</b><span className="g-mono">{me.handle} · {t('bn.ui.dayN', { n: th.day })}</span></div>
+        <div className="tweet__who"><b dir="auto">{me.name}</b><span className="g-mono">{me.handle} · {t('bn.ui.dayN', { n: th.day })}</span></div>
         {th.was && <p className="tweet__was"><span className="g-mono">{t('bn.ui.deleted')}</span> <s>{th.was}</s></p>}
         <p className="tweet__text" dir="auto">{th.text}</p>
         <div className="tweet__truth">
@@ -289,13 +367,13 @@ function Board({ total }: { total: number }) {
   </div>;
 }
 
-// ---------- one saga's truth and every point (the old ledger row, now inside the sheets)
+// ---------- one saga's truth and every point (inside the sheets)
 function SagaRow({ p, c, R, k, startOpen }: { p: ResultSaga; c: CastSaga; R: View['R']; k: number; startOpen?: boolean }) {
   const t = useT();
   const [open, setOpen] = useState(!!startOpen);
   const hj = p.truth === 1 && c.alt ? ' · ' + t('results.hijackTo', { c: c.alt.s }) : '';
   const why = p.right && !p.excl && p.call ? (p.why === 'twosource' ? t('results.whyTwo', { o: outWord(t.lang, p.truth) }) : p.why === 'beaten' && p.firstRight ? t('results.whyBeaten', { r: t('rival.' + p.firstRight.id), d: p.firstRight.day }) : p.why === 'uturn' ? t('results.whyUturn') : p.why === 'strength' ? t('results.whyStrength') : '') : '';
-  const verdict = !p.call ? 'none' : p.excl ? 'excl' : p.right ? 'right' : 'wrong';
+  const verdict = verdictOf(p);
   return <div className={'rrow is-' + verdict} style={{ ['--k' as string]: k }}>
     <button className="rrow__head" onClick={(e) => { e.stopPropagation(); setOpen(!open); }} aria-expanded={open}>
       <Kit club={p.truth === 1 && c.alt ? c.alt : p.truth === 0 ? c.to : c.from} player={c.player} size={44} />
@@ -323,25 +401,8 @@ function SagaRow({ p, c, R, k, startOpen }: { p: ResultSaga; c: CastSaga; R: Vie
 }
 const Line = ({ l, v, hot }: { l: string; v: number; hot?: boolean }) => <div className="rrow__line"><span>{l}</span><b className={v < 0 ? 'neg' : hot ? 'hot' : ''}>{num(v, true)}</b></div>;
 
-function StoryBlock({ report, beat, style }: { report: CareerReport; beat: Beat | null; style?: React.CSSProperties }) {
-  const t = useT();
-  const s = useSave();
-  const c = s.career!;
-  const nx = RANKS[c.rank + 1];
-  return <div className="g-card storyres" style={style}>
-    <div className="storyres__h"><Icon n="story" /><b>{t('g.story.ch.' + ['blog', 'comeback', 'stringer', 'rival', 'chronicle'][Math.min(4, c.rank)] + '.name')}</b></div>
-    <div className="storyres__stats">
-      <div><span className="g-mono">{t('g.res.cred')}</span><b className="g-num">{Math.round(report.repBefore)} → {Math.round(report.repAfter)}</b></div>
-      <div><span className="g-mono">{t('g.me.followers')}</span><b className={'g-num' + (report.followers < 0 ? ' neg' : '')}>{num(report.followers, true)}</b></div>
-      {report.favours > 0 && <div><span className="g-mono">{t('career.favours')}</span><b className="g-num">+{report.favours}</b></div>}
-    </div>
-    {report.promoted != null && <div className="storyres__promo"><span className="g-stamp g-stamp--gold is-slam">{t('g.res.promoted')}</span><b>{t('career.ranks.' + report.promoted)}</b><p>{t('career.unl.' + report.promoted)}</p></div>}
-    {nx && report.promoted == null && <p className="storyres__next">{t('career.toNext', { w: Math.max(0, nx.gate[0] - c.windows), r: nx.gate[1], rank: t('career.ranks.' + (c.rank + 1)) })}</p>}
-    {beat && <div className={'g-coach g-coach--editor storyres__beat from--' + beat.from}><b>{t('g.story.from.' + beat.from)}</b><p>{t(beatKey(beat), beat.v)}</p></div>}
-  </div>;
-}
-
-function ShareBlock({ view, r, what, hed, bestDest, bc }: { view: View; r: Result; what: string; hed: string; bestDest: CastSaga['to']; bc: CastSaga }) {
+// ---------- share: the scoop card as an image where the device can share files, the text otherwise
+function useShare(view: View, r: Result, what: string, hed: string, bestDest: CastSaga['to'], bc: CastSaga) {
   const t = useT();
   const s = useSave();
   const [msg, setMsg] = useState('');
@@ -350,30 +411,23 @@ function ShareBlock({ view, r, what, hed, bestDest, bc }: { view: View; r: Resul
   const url = 'sembagames.app/tier-one';
   const text = shareText(t, { what, tier: t('tier.' + r.tier), pts: num(r.total), row: r.row || '', url: 'https://' + url });
   const hwgIdx = hereWeGoOf(r);
-  const card = { hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl, hwg: hwgIdx >= 0 ? t('calls.hwg.card', { p: bc.player.s }) : undefined };
-  const send = async (e: React.MouseEvent) => {
-    e.stopPropagation(); onShared();
+  const card = () => ({ hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl, hwg: hwgIdx >= 0 ? catchphraseOf().text.toUpperCase() + ' · ' + bc.player.s : undefined });
+  const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 2400); };
+  const send = async () => {
+    onShared();
     try {
-      const blob = await renderCard(card);
+      const blob = await renderCard(card());
       const file = blob ? new File([blob], 'tier-one-scoop.png', { type: 'image/png' }) : null;
       const nav = navigator as Navigator & { canShare?: (d: unknown) => boolean };
       if (file && nav.canShare && nav.canShare({ files: [file] })) { await nav.share({ files: [file], text }); return; }
       if (nav.share) { await nav.share({ text }); return; }
-      await navigator.clipboard.writeText(text); setMsg(t('common.copied'));
+      await navigator.clipboard.writeText(text); flash(t('common.copied'));
     } catch { /* cancelled */ }
   };
   const save = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const blob = await renderCard(card); if (!blob) return;
+    const blob = await renderCard(card()); if (!blob) return;
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tier-one-scoop.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); onShared();
   };
-  return <div className="sharebox g-card">
-    <p className="g-sub">{t('g.res.shareSub')}</p>
-    <div className="sharebox__row">{(r.row || '').split('').map((ch, k) => <i key={k} className={ch === '★' ? 'x' : ch === '■' ? 'r' : ch === '□' ? 'w' : 'n'}>{ch === '★' ? <Icon n="bolt" /> : ch === '■' ? <Icon n="check" /> : ch === '□' ? <Icon n="x" /> : '·'}</i>)}</div>
-    <div className="sharebox__acts">
-      <button className="g-btn g-btn--sm" onClick={send}><Icon n="share" />{t('common.share')}</button>
-      <button className="g-btn g-btn--sm g-btn--paper" onClick={save}>{t('results.saveImg')}</button>
-    </div>
-    {msg && <p className="g-mono" style={{ marginTop: 8 }}>{msg}</p>}
-  </div>;
+  return { send, save, msg };
 }

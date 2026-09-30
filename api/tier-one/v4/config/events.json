@@ -1,0 +1,11 @@
+{
+  "weekly": [
+    { "id": "week-2026-w41-rival", "week": "2026-W41", "title": "Rival Week", "rules": { "rivalGoal": "itk", "n": 3 }, "reward": "ev.rival" },
+    { "id": "week-2026-w42-frenzy", "week": "2026-W42", "title": "Deadline Frenzy", "rules": { "ddSeconds": 90 }, "reward": "ev.frenzy" },
+    { "id": "week-2026-w43-medical", "week": "2026-W43", "title": "Medical Week", "rules": { "physioFrom": 3 }, "reward": "ev.medical" }
+  ],
+  "ddlive": [
+    { "id": "ddlive-2027-winter", "day": "2027-02-02", "title": "Deadline Day Live · Winter 2027", "closesLocal": "23:00", "window": "2027-winter" },
+    { "id": "ddlive-2027-summer", "day": "2027-09-01", "title": "Deadline Day Live · Summer 2027", "closesLocal": "23:00", "window": "2027-summer" }
+  ]
+}

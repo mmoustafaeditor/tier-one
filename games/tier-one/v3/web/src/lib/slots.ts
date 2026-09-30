@@ -1,6 +1,8 @@
-// Career save slots (Save v2): three independent careers. The active one lives in save.career/save.story as before;
+// Career save slots (Save v2): three independent stories. The active one lives in save.career/save.story as before;
 // the others wait in save.slots. A slot travels between devices as a transfer code (api/online.js save.put/save.get).
-import { getSave, update, type Save, type CareerSlot } from './save';
+// One career (3.4): your name is yours; each slot is a different story. Followers, reputation, contacts and rivals stay
+// on the byline whichever slot plays; a slot carries only its rank, windows, favours, relations and inbox.
+import { getSave, update, absorbLegacyCareer, type Save, type CareerSlot } from './save';
 import { online } from './api';
 import { newCareer } from './career';
 import { playCareerOpen } from './scenes';
@@ -47,7 +49,7 @@ export async function restoreCode(k: number, code: string): Promise<{ ok?: boole
     if (sum(body) !== h) return { error: 'bad' };
     const v = JSON.parse(unb64(body));
     if (!v || v.t1v3slot !== 1 || !v.career || typeof v.career.rank !== 'number') return { error: 'bad' };
-    update((x) => { load(x, k, { career: v.career, story: v.story }); });
+    update((x) => { absorbLegacyCareer(x, v.career); load(x, k, { career: v.career, story: v.story }); });
     return { ok: true };
   } catch { return { error: 'bad' }; }
 }

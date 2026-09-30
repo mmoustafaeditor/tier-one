@@ -9,13 +9,31 @@ import { seasonOf } from './season';
 import { ColdOpen, COLD_OPEN, COLD_OPEN_CAREER } from './scenes/ColdOpen';
 import { SourceIntro, sourceIntroMeta } from './scenes/SourceIntro';
 import { SeasonOpener, SEASON_OPENER } from './scenes/SeasonOpener';
+import { buildStory } from './story/build';
+import { buildMoment, MOMENT_IDS } from './moments/build';
+import { buildLive, LIVE_IDS } from './live/build';
+import { buildSocial, SOCIAL_IDS } from './social/build';
 
-export type SceneSpec = { id: string; title: string; Comp: ComponentType<any>; props: Record<string, unknown>; meta: SceneMeta; rtl: boolean };
+/** A clip to play instead of the drawn scene: `stem` resolves to films/<stem>-p|l.mp4 (film/clips.ts), `dur` is its
+ *  expected length in frames (drives the overlay clock and the stall safety net), and `Overlay` draws the game's own
+ *  words on top with `overlayProps`. */
+export type SceneVideo = { stem: string; dur: number; Overlay?: ComponentType<any>; overlayProps?: Record<string, unknown> };
+/** Films play straight through (no Skip, tap-to-jump or Esc) unless `skippable: true`. */
+export type SceneSpec = { id: string; title: string; Comp: ComponentType<any>; props: Record<string, unknown>; meta: SceneMeta; rtl: boolean; skippable?: boolean; video?: SceneVideo };
 /** Every scene the replay list knows about, in story order. */
-export const SCENE_IDS = ['coldopen', ...SOURCES.map((s) => 'source:' + s), 'season'];
+export const SCENE_IDS = ['coldopen', ...SOURCES.map((s) => 'source:' + s), 'season', ...MOMENT_IDS, ...LIVE_IDS, ...SOCIAL_IDS];
 
-export function buildScene(id: string, s: Save): SceneSpec | null {
+export function buildScene(id: string, s: Save, extra?: Record<string, unknown>): SceneSpec | null {
   const L = s.lang, rtl = L === 'ar', t = (k: string, v?: Record<string, string | number>) => tr(L, k, v);
+  const m = buildMoment(id, s, extra);
+  if (m !== undefined) return m;
+  // Story mode (story-prologue, story-ch1-open, …): its clip, or a drawn title card.
+  const st = buildStory(id, s);
+  if (st !== undefined) return st;
+  const lv = buildLive(id, s, extra);
+  if (lv !== undefined) return lv;
+  const so = buildSocial(id, s, extra); // the press box films (§7.3)
+  if (so !== undefined) return so;
   if (id === 'career') id = 'coldopen';
   if (id === 'coldopen' || id === 'coldopen-career') {
     const career = id === 'coldopen-career';
@@ -35,7 +53,8 @@ export function buildScene(id: string, s: Save): SceneSpec | null {
   if (id.startsWith('source:')) {
     const src = id.slice(7);
     if (!(SOURCES as readonly string[]).includes(src)) return null;
-    const name = t('src.' + src);
+    // The sources have names now (Story mode's cast): "Meet Sal".
+    const name = t('g.story.who.' + src);
     return {
       id, rtl, title: t('film.name.source', { n: name }), Comp: SourceIntro, meta: sourceIntroMeta(src),
       props: { src, name, trait: t(`film.source.${src}.trait`), line: t(`film.source.${src}.line`), calling: t('film.source.calling'), unknown: t('film.source.unknown'), rtl },

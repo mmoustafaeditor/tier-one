@@ -1,10 +1,11 @@
-// The post goes out (the classic composer, rebuilt for 3.2; 3.3 adds HERE WE GO and Delete & repost): after Publish the
-// press rolls, your post types itself, the loudness stamp slams, it fires, and replies / reposts / likes tick up with a
-// couple of instant reactions. A Done call at Confirmed goes out as "HERE WE GO!" (gold frame, its own stamp, sound and
-// confetti). A U-turn plays first as a Delete & repost: the old post is struck through, "ratio" replies pile in, then the
-// new post flies in. ~2.5 s (≈3.5 s for a repost), tap to skip, static under reduced motion. Everything is derived from
-// one elapsed-time clock so a skip lands on the same frame. Feel only: the engine call was already made.
-import { useEffect, useMemo, useRef, useState } from 'react';
+// The post goes out (GOTY.md §10, §12): the desk at night, your post types itself (the real card), the little press
+// warms and fires as it sends, and the film cuts to the city: windows and the phones in them light up while replies /
+// reposts / likes tick up and a couple of reactions pop in. A Done call at Confirmed slams the player's catchphrase
+// (gold frame, stadium light towers, a gold ticker, confetti). A U-turn plays first as a Delete & repost: the old post
+// is struck through, reply bubbles rain on it, then the new post flies in. ≤ 2.6 s (≤ 3.1 s for a repost), unskippable;
+// static under reduced motion. One elapsed-time clock drives everything; the backdrop is the drawn PostFilm (no video).
+// Feel only: the engine call was already made.
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { OUTS, type CastSaga } from '../lib/engine';
 import { useT } from '../lib/i18n';
 import { getSave } from '../lib/save';
@@ -13,14 +14,22 @@ import { hash } from '../lib/kit';
 import { hereWeGo } from '../lib/share';
 import { outWord, strWord, vars } from '../lib/story';
 import { Icon, Kit, confetti } from './game';
+import { PostFilm, type PostFilmKind } from '../film/calls/PostFilm';
+import '../film/calls/callfilms.css';
 
-const T0 = 120, PER = 20, TYPE_MAX = 720, PRESS = 120, SENT_GAP = 100, HOLD = 1150, HOLD_UT = 900, OUT = 300;
+const T0 = 120, PER = 20, TYPE_MAX = 720, PRESS = 120, SENT_GAP = 100, HOLD = 1200, HOLD_UT = 900, OUT = 300, CUT = 260;
 // Delete & repost prelude: strike, "Deleted", the ratio pile-on, then the old post drops away.
-const UT_STRIKE = 160, UT_DEL = 320, UT_R0 = 460, UT_RSTEP = 190, UT_AWAY = 1150, UT_PRE = 1380;
+const UT_STRIKE = 100, UT_DEL = 200, UT_R0 = 280, UT_RSTEP = 110, UT_AWAY = 660, UT_PRE = 800;
 const fill = (s: string, v: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (m, k) => (v[k] != null ? String(v[k]) : m));
 const slug = (s: string) => s.toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '').slice(0, 12) || 'fan';
 const kfmt = (n: number) => (n >= 10000 ? Math.round(n / 1000) + 'K' : n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K' : String(n));
 const ease = (k: number) => 1 - Math.pow(1 - Math.max(0, Math.min(1, k)), 3);
+
+/** The player's catchphrase (it replaces the old stock line on screen), else the house line. */
+export function catchphraseText(t: (k: string) => string): string {
+  const cp = (getSave() as unknown as { catchphrase?: { text?: string } }).catchphrase;
+  return (cp && typeof cp.text === 'string' && cp.text.trim()) || t('cp.house.default');
+}
 
 export interface PostSceneProps { c: CastSaga; o: number; s: number; ut: boolean; prev?: { o: number; s: number } | null; onDone: () => void }
 
@@ -55,6 +64,9 @@ export function PostScene({ c, o, s, ut, prev, onDone }: PostSceneProps) {
 
   const [el, setEl] = useState(reduced ? tSent + 1000 : 0);
   const fired = useRef({ typed: 0, sent: false, r1: false, r2: false, done: false, strike: false, ratio: 0 });
+  const root = useRef<HTMLDivElement>(null);
+  const cp = useMemo(() => catchphraseText(t), [t]);
+  const kind: PostFilmKind = hwg ? 'catch' : pre ? 'repost' : (['talks', 'advanced', 'confirmed'] as const)[s] || 'talks';
   const done = () => { if (fired.current.done) return; fired.current.done = true; if (!fired.current.sent) send(); onDone(); };
   const send = () => {
     fired.current.sent = true;
@@ -72,8 +84,8 @@ export function PostScene({ c, o, s, ut, prev, onDone }: PostSceneProps) {
     if (reduced) { if (!fired.current.sent) send(); const id = setTimeout(done, 1500); return () => clearTimeout(id); }
     let raf = 0; const start = performance.now();
     const step = (now: number) => {
-      const e = now - start; setEl(e);
       const f = fired.current;
+      const e = now - start; setEl(e);
       if (pre) {
         if (!f.strike && e >= UT_STRIKE) { f.strike = true; sfx('shred'); buzz(14); }
         const rn = ratio.filter((_, k) => e >= UT_R0 + k * UT_RSTEP).length;
@@ -90,45 +102,58 @@ export function PostScene({ c, o, s, ut, prev, onDone }: PostSceneProps) {
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, []);
+  useLayoutEffect(() => {
+    const was = document.activeElement as HTMLElement | null, ov = document.body.style.overflow, hov = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden'; root.current?.focus({ preventScroll: true });
+    return () => { document.body.style.overflow = ov; document.documentElement.style.overflow = hov; was?.focus?.({ preventScroll: true }); };
+  }, []);
 
   const inPre = pre > 0 && el < pre;
   const typed = el >= pre + T0 + typeMs ? chars.length : Math.floor(Math.max(0, el - pre - T0) / Math.max(1, typeMs) * chars.length);
   const phase = inPre ? 'repost' : el >= tOut ? 'out' : el >= tSent ? 'sent' : el >= tSend - PRESS ? (el >= tSend ? 'press' : 'ready') : 'typing';
+  const cut = !inPre && el >= tSent + CUT;
   const k = ease((el - tSent) / 1000);
   const who = nick || t('d2.post.you');
   const handle = <bdi dir="ltr">@{nick ? slug(nick) : 'tierone_desk'}</bdi>;
   const av = <span className="ps__av" aria-hidden="true">{nick ? Array.from(nick)[0].toUpperCase() : <Icon n="pen" size={20} />}</span>;
-  const label = hwg ? t('calls.hwg.word') : t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, o) });
+  const label = hwg ? cp : t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, o) });
+  const fr = (el * 30) / 1000, fCut = ((tSent + CUT) * 30) / 1000;
+  const backdrop = <PostFilm f={fr} fSend={(tSent * 30) / 1000} fCut={fCut} kind={kind} cA={c.to.c1 || '#FF5A36'} cB={c.to.c2 || '#F4EFE4'} cp={cp} rtl={t.rtl} still={!!reduced} />;
 
-  return <div className={'post-scene is-' + phase + (reduced ? ' is-rm' : '') + (hwg ? ' is-hwg' : '')} role="dialog" aria-modal="true" aria-label={label} onClick={done}>
-    {inPre && prev && <div className={'ps ps--old oc--' + OUTS[prev.o] + (el >= UT_STRIKE ? ' is-struck' : '') + (el >= UT_AWAY ? ' is-away' : '')}>
-      <div className="ps__h">{av}<span className="ps__who"><b>{who}</b><span className="g-mono">{handle} · {strWord(t.lang, prev.s)} · {outWord(t.lang, prev.o)}</span></span></div>
-      <p className="ps__txt ps__txt--old"><span>{oldText}</span></p>
-      {el >= UT_DEL && <span className="g-stamp is-slam ps__stamp ps__del" style={{ ['--rot' as string]: '-7deg' }}><Icon n="x" size={15} />{t('calls.repost.deleted')}</span>}
-      <ul className="ps__re ps__ratio">
-        {ratio.map((r, n) => el >= UT_R0 + n * UT_RSTEP ? <li key={n}><Kit club={r.club} size={26} /><div><b className="g-mono" dir="ltr">{r.h}</b><p>{r.line}</p></div></li> : null)}
-      </ul>
-    </div>}
-    {!inPre && <div className={'ps oc--' + OUTS[o] + ' ps--s' + s + (hwg ? ' ps--hwg' : '') + (pre ? ' ps--repost' : '')}>
-      <span className="ps__roll" aria-hidden="true" />
-      <div className="ps__h">
-        {av}
-        <span className="ps__who"><b>{who}</b><span className="g-mono">{handle} · {phase === 'typing' || phase === 'ready' ? t('d2.post.typing') : t('d2.post.now')}</span></span>
-        <span className="ps__send" aria-hidden="true">{phase === 'sent' || phase === 'out' ? <Icon n="check" size={16} /> : t('d2.post.send')}</span>
+  return <div className={'post-scene pf is-' + phase + (cut ? ' is-cut' : '') + (reduced ? ' is-rm' : '') + (hwg ? ' is-hwg' : '')} role="dialog" aria-modal="true" aria-label={label} ref={root} tabIndex={-1}>
+    <div className="pf__frame">
+      <div className="pf__shot">
+        {backdrop}
       </div>
-      <p className="ps__txt">{chars.slice(0, typed).join('')}{typed < chars.length && <span className="ps__caret" />}</p>
-      {el >= tSent && (hwg
-        ? <span className="g-stamp is-slam ps__stamp ps__stamp--hwg" style={{ ['--rot' as string]: '-6deg' }}><Icon n="star" size={18} />{t('calls.hwg.stamp')}</span>
-        : <span className={'g-stamp is-slam ps__stamp g-stamp--' + OUTS[o]} style={{ ['--rot' as string]: '-7deg' }}>{ut && <Icon n="uturn" size={16} />}{strWord(t.lang, s)} · {outWord(t.lang, o)}</span>)}
-      <div className="ps__foot" aria-hidden={el < tSent}>
-        <span><Icon n="reply" size={16} />{kfmt(Math.round(goal.r * k))}</span>
-        <span className="rp"><Icon n="repost" size={16} />{kfmt(Math.round(goal.p * k))}</span>
-        <span className="lk"><Icon n="heart" size={16} />{kfmt(Math.round(goal.l * k))}</span>
+      <div className="pf__screen">
+        {inPre && prev && <div className={'ps ps--old oc--' + OUTS[prev.o] + (el >= UT_STRIKE ? ' is-struck' : '') + (el >= UT_AWAY ? ' is-away' : '')}>
+          <div className="ps__h">{av}<span className="ps__who"><b>{who}</b><span className="g-mono">{handle} · {strWord(t.lang, prev.s)} · {outWord(t.lang, prev.o)}</span></span></div>
+          <p className="ps__txt ps__txt--old"><span>{oldText}</span></p>
+          {el >= UT_DEL && <span className="g-stamp is-slam ps__stamp ps__del" style={{ ['--rot' as string]: '-7deg' }}><Icon n="x" size={15} />{t('calls.repost.deleted')}</span>}
+          <ul className="ps__re ps__ratio">
+            {ratio.map((r, n) => el >= UT_R0 + n * UT_RSTEP ? <li key={n}><Kit club={r.club} size={26} /><div><b className="g-mono" dir="ltr">{r.h}</b><p>{r.line}</p></div></li> : null)}
+          </ul>
+        </div>}
+        {!inPre && <div className={'ps oc--' + OUTS[o] + ' ps--s' + s + (hwg ? ' ps--hwg' : '') + (pre ? ' ps--repost' : '')}>
+          <span className="ps__roll" aria-hidden="true" />
+          <div className="ps__h">
+            {av}
+            <span className="ps__who"><b>{who}</b><span className="g-mono">{handle} · {phase === 'typing' || phase === 'ready' ? t('d2.post.typing') : t('d2.post.now')}</span></span>
+            <span className="ps__send" aria-hidden="true">{phase === 'sent' || phase === 'out' ? <Icon n="check" size={16} /> : t('d2.post.send')}</span>
+          </div>
+          <p className="ps__txt">{chars.slice(0, typed).join('')}{typed < chars.length && <span className="ps__caret" />}</p>
+          {el >= tSent && (<span className={'g-stamp is-slam ps__stamp g-stamp--' + OUTS[o]} style={{ ['--rot' as string]: '-7deg' }}>{ut && <Icon n="uturn" size={16} />}{strWord(t.lang, s)} · {outWord(t.lang, o)}</span>)}
+          <div className="ps__foot" aria-hidden={el < tSent}>
+            <span><Icon n="reply" size={16} />{kfmt(Math.round(goal.r * k))}</span>
+            <span className="rp"><Icon n="repost" size={16} />{kfmt(Math.round(goal.p * k))}</span>
+            <span className="lk"><Icon n="heart" size={16} />{kfmt(Math.round(goal.l * k))}</span>
+          </div>
+        </div>}
       </div>
-      <ul className="ps__re">
+      {hwg && el >= tSent + 160 && <div className="pf__cp" aria-hidden="true"><bdi>{cp}</bdi></div>}
+      {cut && <ul className="pf__re">
         {reacts.map((r, n) => el >= tSent + 380 + n * 340 && r.line ? <li key={n}><Kit club={r.club} size={28} /><div><b className="g-mono" dir="ltr">{r.h}</b><p>{r.line}</p></div></li> : null)}
-      </ul>
-    </div>}
-    <p className="post-scene__skip g-mono">{t('d2.post.skip')}</p>
+      </ul>}
+    </div>
   </div>;
 }

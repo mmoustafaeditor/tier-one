@@ -1,13 +1,22 @@
-// Progress you can feel (HYBRID.md §8): level from Press Points and three daily missions. Local and cosmetic only:
-// nothing here reaches a ranked score.
+// Progress you can feel (HYBRID.md §8): the season level from Press Points and three daily missions. Local and
+// cosmetic only: nothing here reaches a ranked score.
 import type { Result } from './engine';
 import { update, getSave, type Save } from './save';
-import { addSeasonPP, goldBonus, seasonWindow } from './season';
+import { addSeasonPP, goldBonus, seasonWindow, seasonAt, seasonLevel, MAX_SLV } from './season';
 
-export const MAX_LV = 40;
-export function levelOf(pp: number) {
-  const n = Math.min(MAX_LV, Math.floor(pp / 100) + 1);
-  return { n, into: n >= MAX_LV ? 100 : pp % 100, need: 100, max: n >= MAX_LV };
+// One visible level (3.4, GOTY.md §7.2): the season Pass level. The old account level (floor(pp / 100) + 1) is gone
+// from every screen; `save.pp` stays as lifetime Press Points and keeps feeding the season track (lib/season.ts
+// addSeasonPP), so nothing a player earned is lost. levelOf(pp) answers "what was the Pass level when the account
+// stood at `pp` Press Points": both counters grow by the same amounts, so the season's points at that moment were
+// season.pp − (save.pp − pp). Results compares levelOf(start.pp) with levelOf(save.pp) for its level-up line.
+// `into`/`need` are a percentage (0–100) so bars drawn as `into%` fill correctly whatever the season's points per level.
+export const MAX_LV = MAX_SLV;
+export function levelOf(pp: number, s: Save = getSave()) {
+  const def = seasonAt();
+  const cur = s.season && s.season.id === def.id ? s.season.pp : 0;
+  const spp = Math.max(0, cur - Math.max(0, s.pp - pp));
+  const lv = seasonLevel(spp, def.ppPerLv);
+  return { n: lv.n, into: lv.max ? 100 : lv.pct, need: 100, max: lv.max, pct: lv.pct, pp: spp, per: def.ppPerLv };
 }
 
 // Every counter a mission can read. Bumped by trackWindow() and a few direct hooks.

@@ -13,8 +13,25 @@ import './styles/screens.css';
 import '../../../../the-gaffer/web/src/boot/boot.css';
 import { BOOT_MARKUP, playIntro } from '../../../../the-gaffer/web/src/boot/intro';
 import { App } from './App';
+// Smoothness (GOTY.md §8.2): service worker + update/install chips, film prefetch, boot marks. Nothing here blocks the render.
+import { initPerf, mark } from './lib/perf';
 
+// The sting plays once per browser session, and never on an invite or deep link (?room=, ?tab=, ?challenge=) once this
+// browser has seen it: a friend's link opens the room, not an 8-second logo. Gated here, so The Gaffer's intro is unchanged.
 const boot = document.getElementById('boot');
-if (boot) { boot.innerHTML = BOOT_MARKUP; playIntro(); }
+if (boot) {
+  const has = (st: () => Storage, k: string) => { try { return st().getItem(k) === '1'; } catch { return false; } };
+  const set = (st: () => Storage, k: string) => { try { st().setItem(k, '1'); } catch { /* private mode: plays as before */ } };
+  const q = new URLSearchParams(location.search);
+  const deep = q.has('room') || q.has('tab') || q.has('challenge');
+  if (has(() => sessionStorage, 't1.boot') || (deep && has(() => localStorage, 't1.boot.ever'))) {
+    boot.remove(); (window as unknown as { __bootDone?: boolean }).__bootDone = true;
+  } else {
+    set(() => sessionStorage, 't1.boot'); set(() => localStorage, 't1.boot.ever');
+    boot.innerHTML = BOOT_MARKUP; playIntro();
+  }
+}
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
+mark('render');
+initPerf();

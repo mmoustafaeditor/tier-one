@@ -6,6 +6,7 @@ import { sfx } from '../lib/sfx';
 import { Icon, GBtn } from '../ui/game';
 import type { Go } from '../App';
 import { playColdOpen } from '../lib/scenes';
+import { newCareer } from '../lib/career';
 
 export const TUT_SEED = 'TRAIN1';
 export function startTutorial(go: Go) {
@@ -19,9 +20,14 @@ export function Onboarding({ go }: { go: Go }) {
   const [step, setStep] = useState(0);
   const [nick, setNick] = useState(s.nick);
   const finish = (tut: boolean) => {
-    update((x) => { x.onboarded = true; x.nick = nick.trim().slice(0, 16); if (!tut) x.tut = { ...(x.tut || {}), done: true }; });
-    if (tut) startTutorial(go); else go({ n: 'front' });
-    playColdOpen(); // 3.3: "First Day at the Paper" opens the game once the byline is set
+    // 3.4 one opening: the story is the game's opening. The career starts at chapter 1 (The Blog) and the prologue film
+    // ("The fall") plays; the Story tab then shows the prologue's title card once (save.story.prologue is still unset).
+    update((x) => {
+      x.onboarded = true; x.nick = nick.trim().slice(0, 16); if (!tut) x.tut = { ...(x.tut || {}), done: true };
+      if (!x.career) { x.career = newCareer(); x.story = { ...(x.story || {}), chapterSeen: 0 }; }
+    });
+    if (tut) startTutorial(go); else go({ n: 'story' });
+    playColdOpen();
   };
   return <div className="onb2" role="dialog" aria-modal="true" aria-label={t('g.onb.k')}>
     <div className="onb2__glow" aria-hidden="true" />

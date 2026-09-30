@@ -1,6 +1,6 @@
 // A transfer window: the board, the file, the overnight sheet, Deadline Day and the results. The same screen runs the
 // Daily and rooms (server-held) and Practice/Career (local). Layout: look/mockups/challenge.html + deadline.html.
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { E, OUTS, shadow, type Act, type Call, type Clue, type Post, type Game } from '../lib/engine';
 import type { Driver, View } from '../lib/driver';
@@ -12,13 +12,23 @@ import { Icon, Kit, GBtn, TopBar, shake } from '../ui/game';
 import { CallScene } from '../ui/CallScene';
 import { PostScene } from '../ui/PostScene';
 import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } from '../lib/meta';
-import { applyWindow, totalFavours, type CareerReport } from '../lib/career';
-import { storyBeats, pushBeats, type Beat } from '../lib/storyMode';
+import { applyWindow, totalFavours, vinceOf, type CareerReport } from '../lib/career';
+import { storyBeats, pushBeats, beatScene, type Beat } from '../lib/storyMode';
 import { Sheet, useNow, Crest } from '../ui/bits';
 import { SagaFile, RIVAL_IC, type RivalRecord } from './Saga';
 import { hereWeGo } from '../lib/share';
 import { Results } from './Results';
+import { playScene, afterScenes, firstToday } from '../lib/scenes';
+// Surface films (GOTY.md §9, ui/film.tsx): the source's place behind the file, the city on Deadline Day, the clock
+// behind the countdown, the phone pick-up before a call, the stamp under a filed call. All additive: nothing without clips.
+import { WindowFilm, ResultsFilm, DDClockFilm, Beat as FilmBeat, playBeat, warmBeat } from '../ui/film';
+import { pickupBeat, stampBeat, SRCS as FILM_SRCS } from '../film/surfaces/manifest';
 import type { Chrome } from '../App';
+import { DayEnd } from '../film/calls/DayEnd'; // GOTY.md §10: the 1.5 s day end between window days (additive)
+// The editor's desk (GOTY.md §7.1): the Daily brief before day 1 and the Deadline Day Live ticker (ui/live.tsx).
+import { DailyBriefSheet, DDLiveTicker } from '../ui/live';
+import { LivePresence } from '../ui/social';
+import { catchphraseOf } from '../lib/catchphrase';
 
 // The rival ledger (GOTY.md §1.3) lives in the connect lane's lib/byline.ts. Picked up here if that module exists and
 // exports rivalRecord(id); otherwise the race strip and overnight taunts simply run without it.
@@ -39,6 +49,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const [sel, setSel] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [last, setLast] = useState<{ i: number; c: Clue } | null>(null);
+  const [dayEnd, setDayEnd] = useState<{ k: number; day: number } | null>(null);
   const [night, setNight] = useState<Night | null>(null);
   const [report, setReport] = useState<CareerReport | null>(null);
   const [beat, setBeat] = useState<Beat | null>(null);
@@ -52,6 +63,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const recorded = useRef(false);
   const ddLate = useRef(false);
   const deskSel = sel ?? 0;
+  const sceneUp = useSceneUp();
 
   const settle = useCallback((v: View) => {
     if (!v.done || !v.result || recorded.current) return;
@@ -65,8 +77,13 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       const g = d.game ? d.game() : null;
       let rep: CareerReport | null = null;
       let added: Beat[] = [];
-      update((s) => { if (s.career && g) { rep = applyWindow(s.career, g, r, v.cast, s.milestones); added = pushBeats(s, storyBeats(s.career, { ...r, cast: r.cast && r.cast.length ? r.cast : v.cast }, rep)); } });
+      // Vince's play (Story, chapter 4 on): who lied is revealed with the results, by name.
+      const vp = vinceOf(v.R);
+      const vince = vp ? { ...vp, who: t('g.story.who.' + vp.src) } : null;
+      update((s) => { if (s.career && g) { rep = applyWindow(s.career, g, r, v.cast, s.milestones); added = pushBeats(s, storyBeats(s.career, { ...r, cast: r.cast && r.cast.length ? r.cast : v.cast }, rep, { seen: { ...(s.story?.beats || {}) }, vince })); } });
       if (added[0]) setBeat(added[0]);
+      // The story's films: a mid-chapter reveal or the finale plays over the results.
+      added.map(beatScene).forEach((id) => { if (id) playScene(id); });
       if (rep) {
         setReport(rep); onCareerDone(r, (rep as CareerReport).milestoneCredits);
         const cr = (rep as CareerReport);
@@ -98,9 +115,15 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   };
   const ask = async (i: number, src: string) => {
     buzz(12);
+    // The phone lifts off the counter (beat-pickup-<src>, 0.6 s) while the ask goes to the engine; the call film follows
+    // once both are done. Without the clip the beat resolves at once and the flow is exactly as before.
+    const beat = playBeat(pickupBeat(src));
     const out = await act(['a', i, src]);
+    await beat.done;
     if (out && out.answer) { setLast({ i, c: out.answer }); setCalling({ i, c: out.answer }); }
   };
+  // Beats are preloaded with the screen: the six pick-ups, once the board is up (a no-op when film is gated).
+  useEffect(() => { if (view && !view.done) FILM_SRCS.forEach((s) => warmBeat(pickupBeat(s))); }, [!!view && !view.done]);
   const postCall = async (i: number, o: number, s: number, ut: boolean) => {
     const prev = g && g.calls[i] ? { ...g.calls[i]! } : null;
     const out = await act(ut ? ['u', i, o, s] : ['c', i, o, s]);
@@ -127,8 +150,10 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     const posts = st.feed.filter((f) => f.day === before.day);
     const twist = st.twist && !before.twist ? st.twist : null;
     setNight({ day: st.day, posts, twist, noTwist: st.noTwist && !before.noTwist, dd: st.day === view.R.DAYS });
+    setDayEnd({ k: Date.now(), day: st.day });
   };
-  const startDD = async () => { setNight(null); const v = await driver.dd(); setView(v); };
+  // Deadline Day opens with its film (full once a day, the short cut after); the clock only starts once it ends.
+  const startDD = () => { setNight(null); playScene(firstToday('deadline') ? 'deadline' : 'deadline-short'); afterScenes(async () => { const v = await driver.dd(); setView(v); }); };
   const finish = useCallback(async () => { const v = await driver.finish(); setView(v); settle(v); sfx('dd.whistle'); }, [driver, settle]);
 
   // ---------- states
@@ -140,19 +165,24 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <GBtn style={{ marginTop: 18 }} onClick={load}><Icon n="phone" />{t('common.retry')}</GBtn>
       <GBtn kind="paper" style={{ marginTop: 12 }} onClick={() => chrome.go({ n: 'practice' })}>{t('daily.practiceInstead')}</GBtn></div></div>;
   if (!view || !g) return <div className="g-screen play"><TopBar back={{ label: t('g.tabs.home'), onClick: home }} /><div className="loading-press"><span /><p className="g-mono">{t('common.loading')}</p></div></div>;
-  if (view.done && view.result) return <Results view={view} chrome={chrome} report={report} start={startRef.current} beat={beat} />;
+  if (view.done && view.result) return <><Results view={view} chrome={chrome} report={report} start={startRef.current} beat={beat} /><ResultsFilm /></>;
 
   const dd = view.state.day === view.R.DAYS;
   const mob = sel != null;
   const tutor = view.mode === 'practice' && view.label === 'tutorial' && !(sv.tut && sv.tut.done);
+  // The tutorial ends here either way; the hand-off to the Story also drops the training board, so nothing nags to resume it.
+  const endTut = (handoff: boolean) => update((x) => { x.tut = { ...(x.tut || {}), done: true }; if (handoff) x.practice.live = null; });
   const favours = view.mode === 'career' ? <FavourTray g={g} i={deskSel} onUse={(k) => act(['f', k, deskSel])} /> : null;
-  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
+  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={calling ? null : last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
 
   return <div className={'g-screen g-screen--wide play' + (dd ? ' is-dd' : '')} ref={rootRef}>
+    <WindowFilm src={calling ? calling.c.src : last ? last.c.src : null} dd={dd} />
     <TopBar back={mob ? { label: t('g.win.board'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : title} />
     {dd && <DDHead view={view} onZero={finish} />}
     <div className="play__cols">
       <main className={mob ? 'only-desk' : ''}>
+        {view.mode === 'daily' && !dd && <DDLiveTicker go={chrome.go} />}
+        {view.mode === 'daily' && !dd && <LivePresence board="daily" />}
         {!dd && <section className="dayhead">
           <DayStrip day={view.state.day} days={view.R.DAYS} />
           <div className="dayhead__row">
@@ -173,7 +203,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <aside className={'play__file' + (mob ? '' : ' only-desk')}>{file}</aside>
     </div>
 
-    {tutor && !calling && !night && <TutorCoach g={g} sel={sel} onDone={() => update((x) => { x.tut = { ...(x.tut || {}), done: true }; })} />}
+    {tutor && !sceneUp && !calling && !night && !posting && !burst && <TutorCoach g={g} sel={sel} onDone={() => endTut(false)} onStory={() => { endTut(true); chrome.go({ n: 'story' }); }} />}
     {calling && view.cast[calling.i] && createPortal(<CallScene src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} mode={view.mode} onDone={() => setCalling(null)} />, document.body)}
     {burst && createPortal(<Burst key={burst.k} kind={burst.kind} hwg={burst.hwg} />, document.body)}
     {posting && view.cast[posting.i] && createPortal(<PostScene key={posting.k} c={view.cast[posting.i]} o={posting.o} s={posting.s} ut={posting.ut} prev={posting.prev} onDone={() => { const p = posting; setPosting(null); setFiledAt((f) => ({ ...f, [p.i]: Date.now() })); shake(rootRef.current); }} />, document.body)}
@@ -182,7 +212,9 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <div className="sheet__body"><h2 className="g-h2">{t('daily.endConfirm', { n: view.state.day, c: view.state.left })}</h2><p className="g-sub" style={{ marginTop: 8 }}>{t('daily.contactsNote')}</p>
         <GBtn kind="dark" style={{ marginTop: 16 }} onClick={endDay}><Icon n="moon" />{t('daily.endConfirmOk')}</GBtn><GBtn kind="paper" style={{ marginTop: 12 }} onClick={() => setConfirmEnd(false)}>{t('common.cancel')}</GBtn></div>
     </Sheet>
+    {dayEnd && createPortal(<DayEnd key={dayEnd.k} day={dayEnd.day} lang={t.lang} rtl={t.rtl} label={t('g.win.dayH', { n: dayEnd.day })} kicker={t('mo.dawn')} onDone={() => setDayEnd(null)} />, document.body)}
     {night && createPortal(<NightScene night={night} view={view} onGo={() => (night.dd ? startDD() : setNight(null))} />, document.body)}
+    {view.mode === 'daily' && !night && !calling && <DailyBriefSheet view={view} go={chrome.go} />}
   </div>;
 }
 
@@ -206,34 +238,164 @@ function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Ga
   const circ = ln.none ? 0 : E.circlesFor(g, i, ln.o).size;
   const tw = g.twist && g.twist.i === i;
   const posted = E.livePosts(g, i).length;
+  const vince = view.mode === 'career' && vinceOf(view.R)?.i === i;
   return <button className={'scard' + (open ? ' is-open' : '') + (call ? ' is-called' : '') + (hint ? ' is-hint' : '')} style={{ ['--i' as string]: i }} onClick={onOpen} aria-label={c.player.n}>
+    {call && <FilmBeat stem={stampBeat(OUTS[call.o])} trigger={filed || null} className="fl-beat--stamp" />}
     <Kit club={c.from} player={c.player} size={58} />
     <span className="scard__b">
       <span className="scard__n">{c.player.n}</span>
       <span className="scard__r"><Crest club={c.from} size={18} /><Icon n={t.rtl ? 'back' : 'arrow'} size={14} /><Crest club={c.to} size={18} /><span>{c.to.s}</span></span>
       <span className="scard__st">
         {tw && <span key="tw" className="g-chip g-chip--red chip-in">{t('stamp.twist')}</span>}
+        {vince && <span key="vp" className="g-chip vince-chip" title={t('g.story.vince.banner')}><Icon n="eye" />{t('g.story.vince.chip')}</span>}
         {!call && (ln.none ? <span className="g-chip">{t('g.win.notRung')}</span> : <span key={'ln' + ln.o + (ln.split ? 's' : '') + circ} className={'g-chip chip-in g-chip--' + OUTS[ln.o]}>{ln.split ? t('daily.split') : t('daily.lean', { o: outWord(t.lang, ln.o) })}{circ >= 2 ? ' ✓✓' : ''}</span>)}
         {posted > 0 && !call && <span key={'rv' + posted} className="g-chip scard__riv chip-in"><Icon n="bolt" />{t('g.win.rivalPosted', { n: posted })}</span>}
       </span>
     </span>
-    <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + (hereWeGo(call) ? 'gold scard__hwg' : OUTS[call.o]) + (filed ? ' is-slam' : '')}>{hereWeGo(call) ? t('calls.hwg.stamp') : outWord(t.lang, call.o)}</span> : <Icon n={t.rtl ? 'back' : 'arrow'} size={22} />}</span>
+    <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + (hereWeGo(call) ? 'gold scard__hwg' : OUTS[call.o]) + (filed ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : outWord(t.lang, call.o)}</span> : <Icon n={t.rtl ? 'back' : 'arrow'} size={22} />}</span>
   </button>;
 }
 
-// The guided first saga (HYBRID.md §9): one step at a time, read from the live state.
-function TutorCoach({ g, sel, onDone }: { g: Game; sel: number | null; onDone: () => void }) {
+// ---------- The guided first day (HYBRID.md §9; GOTY.md "one opening"). Each step is read from the live game and from
+// the DOM (is the call panel open, what's pressed), so the tip always matches what's on screen. A coach mark sits above
+// or below its target with a spotlight around it and never over it; the page scrolls so both fit. Day one ends with the
+// hand-off to the Story: the story lane decides what plays next (its prologue), nothing here knows its internals.
+const TUT_STEPS = ['open', 'ring', 'second', 'go', 'what', 'loud', 'back', 'sleep'] as const;
+type TutStep = (typeof TUT_STEPS)[number];
+// What each step points at (a union of several boxes when the step is about more than one control).
+const TUT_TARGET: Record<TutStep, string[]> = {
+  open: ['.sagas .scard.is-hint'], ring: ['.file2 .srcs'], second: ['.file2 .srcs'], go: ['.callgate__b'],
+  what: ['.callform .outs'], loud: ['.callform .vols', '.callbox .publish'], back: ['.play .g-top__back'], sleep: ['.play__cols > main > .g-btn'],
+};
+const TUT_TOP = 64, TUT_GAP = 12, TUT_PAD = 6, TUT_HEAD = 52; // sticky bar, tip gap, ring padding, headroom for a section heading
+const isDesk = () => window.matchMedia('(min-width: 960px)').matches;
+const q = (sel: string) => document.querySelector<HTMLElement>(sel);
+// True while a film (the cold open, a source intro, a moment) is on screen: the tutor waits for it to end.
+function useSceneUp() {
+  const [up, setUp] = useState(() => !!q('.film'));
+  useEffect(() => {
+    const mo = new MutationObserver(() => setUp(!!q('.film')));
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => mo.disconnect();
+  }, []);
+  return up;
+}
+function tutStep(g: Game, sel: number | null): TutStep {
+  const desk = isDesk(), i = sel ?? 0;
+  if (g.calls.some(Boolean)) return !desk && sel != null ? 'back' : 'sleep';
+  if (sel == null && !desk) return 'open';
+  if (q('.callform')) return q('.callform .out[aria-pressed="true"]') ? 'loud' : 'what';
+  const reads = E.curReads(g, i).length, ln = leanOf(g, i);
+  if (!reads) return 'ring';
+  const more = g.left > 0 && !!q('.file2 .src:not(:disabled)');
+  if (more && (ln.none || (E.circlesFor(g, i, ln.o).size < 2 && reads < 2))) return 'second';
+  return 'go';
+}
+type Box = { top: number; left: number; bottom: number; right: number };
+const boxOf = (step: TutStep): Box | null => {
+  const rs = TUT_TARGET[step].map(q).filter((e): e is HTMLElement => !!e).map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0);
+  if (!rs.length) return null;
+  return { top: Math.min(...rs.map((r) => r.top)), left: Math.min(...rs.map((r) => r.left)), bottom: Math.max(...rs.map((r) => r.bottom)), right: Math.max(...rs.map((r) => r.right)) };
+};
+// The element that scrolls the target: the desktop file is its own scroll box (.play__file); otherwise the window.
+const scrollerOf = (step: TutStep): HTMLElement | null => {
+  for (let el = q(TUT_TARGET[step][0])?.parentElement; el && el !== document.body; el = el.parentElement) {
+    const o = getComputedStyle(el).overflowY;
+    if ((o === 'auto' || o === 'scroll') && el.scrollHeight > el.clientHeight + 1) return el;
+  }
+  return null;
+};
+// The band of the viewport the target can be seen in: under the sticky bar, or the scroll box's own visible area.
+const viewBand = (sc: HTMLElement | null) => (sc ? { top: sc.getBoundingClientRect().top, bottom: sc.getBoundingClientRect().bottom } : { top: TUT_TOP, bottom: innerHeight - 8 });
+
+function TutorCoach({ g, sel, onDone, onStory }: { g: Game; sel: number | null; onDone: () => void; onStory: () => void }) {
   const t = useT();
-  const i = sel ?? 0;
-  const reads = E.curReads(g, i).length, call = g.calls[i], ln = leanOf(g, i);
-  const step = call || g.calls.some(Boolean) ? 'sleep' : sel == null ? 'open' : !reads ? 'ring' : ln.none || (E.circlesFor(g, i, ln.o).size < 2 && g.left > 0 && reads < 2) ? 'second' : 'call';
-  const n = ['open', 'ring', 'second', 'call', 'sleep'].indexOf(step) + 1;
-  useEffect(() => { sfx('ui.pop'); const id = setTimeout(() => document.querySelector(step === 'call' ? '.callbox' : '.is-hint')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350); return () => clearTimeout(id); }, [step]);
-  return <div className="tutor" role="status" key={step}>
-    <span className="tutor__n">{n}/5</span>
-    <div className="tutor__b"><b>{t('g.tut.' + step)}</b><p>{t('g.tut.' + step + 'P')}</p></div>
-    {step === 'sleep' ? <button className="tutor__ok" onClick={onDone}>{t('g.tut.gotIt')}</button> : <button className="tutor__skip" onClick={onDone}>{t('g.tut.skip')}</button>}
-  </div>;
+  const [, bump] = useState(0);
+  const tip = useRef<HTMLDivElement>(null), ring = useRef<HTMLDivElement>(null);
+  const side = useRef<'below' | 'above'>('below');
+  // The play surface is part of the state: re-read it when it changes (one render per frame at most). The coach mark
+  // itself lives on document.body, outside the watched tree.
+  useEffect(() => {
+    const root = document.querySelector('.play'); if (!root) return;
+    let raf = 0;
+    const mo = new MutationObserver(() => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; bump((n) => n + 1); }); });
+    mo.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ['aria-pressed', 'class', 'disabled'] });
+    return () => { mo.disconnect(); cancelAnimationFrame(raf); };
+  }, []);
+  const step = tutStep(g, sel);
+  const list = TUT_STEPS.filter((s) => !isDesk() || (s !== 'open' && s !== 'back'));
+  const n = list.indexOf(step) + 1;
+
+  // Places the spotlight on the target and the tip above or below it (in page coordinates, so they scroll with the
+  // page). `pick` decides the side afresh, allowing for the scroll that a new step is about to make.
+  const place = useCallback((pick: boolean, delta = 0) => {
+    const el = tip.current, rg = ring.current; if (!el || !rg) return;
+    const b = boxOf(step), vw = innerWidth, vh = innerHeight, sx = scrollX, sy = scrollY;
+    if (!b) { // nothing to point at (a panel mid-change): park the tip at the bottom for a frame
+      rg.style.display = 'none'; el.style.position = 'fixed'; el.style.top = 'auto'; el.style.bottom = 'calc(14px + env(safe-area-inset-bottom, 0px))';
+      el.style.left = '12px'; el.style.width = Math.min(vw - 24, 440) + 'px'; delete el.dataset.side; return;
+    }
+    rg.style.display = ''; rg.style.top = sy + b.top - TUT_PAD + 'px'; rg.style.left = sx + b.left - TUT_PAD + 'px';
+    rg.style.width = b.right - b.left + 2 * TUT_PAD + 'px'; rg.style.height = b.bottom - b.top + 2 * TUT_PAD + 'px';
+    const tw = Math.min(vw - 24, 440);
+    el.style.position = 'absolute'; el.style.bottom = 'auto'; el.style.width = tw + 'px';
+    const th = el.offsetHeight;
+    if (pick) {
+      const band = viewBand(scrollerOf(step)), top = b.top - delta, bottom = b.bottom - delta;
+      const belowFits = bottom + TUT_GAP + th <= Math.min(band.bottom, vh - 8), aboveFits = top - TUT_GAP - th >= Math.max(band.top, TUT_TOP);
+      side.current = belowFits || !aboveFits ? 'below' : 'above';
+    }
+    const y = side.current === 'below' ? b.bottom + TUT_GAP : b.top - TUT_GAP - th;
+    const cx = (b.left + b.right) / 2, left = Math.round(Math.min(Math.max(12, cx - tw / 2), vw - tw - 12));
+    el.style.top = sy + y + 'px'; el.style.left = sx + left + 'px';
+    el.style.setProperty('--cx', Math.round(Math.min(Math.max(22, cx - left), tw - 22)) + 'px');
+    el.dataset.side = side.current;
+  }, [step]);
+
+  // Brings the target into the top of the view (unless it's already comfortably in view) and places the mark for that
+  // position. Idempotent, so it also runs again after the panel's entrance animation and the smooth scroll settle.
+  const focus = useCallback(() => {
+    const b = boxOf(step), sc = scrollerOf(step), band = viewBand(sc);
+    const reduce = getSave().reduced || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const want = Math.max(band.top, TUT_TOP) + TUT_HEAD;
+    let delta = 0;
+    if (b && step !== 'back' && (b.top < want || b.bottom > band.bottom - 150)) delta = b.top - want;
+    place(true, delta);
+    if (Math.abs(delta) > 2) (sc || window).scrollBy({ top: delta, behavior: reduce ? 'auto' : 'smooth' });
+  }, [step, place]);
+  useLayoutEffect(() => {
+    sfx('ui.pop'); focus();
+    const ids = [450, 1000].map((ms) => setTimeout(focus, ms));
+    return () => ids.forEach(clearTimeout);
+  }, [step, focus]);
+  // Every render (the play surface changed), and on scroll/resize/animation end: keep the mark on its target.
+  useLayoutEffect(() => { place(false); });
+  useEffect(() => {
+    let raf = 0;
+    const on = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; place(false); }); };
+    const re = () => place(true);
+    const anim = (e: Event) => { if ((e.target as Element | null)?.closest?.('.play')) focus(); };
+    // Scroll is caught in the capture phase so the desktop file's own scroll box counts too.
+    document.addEventListener('scroll', on, { passive: true, capture: true }); addEventListener('resize', re);
+    document.addEventListener('animationend', anim, true); document.addEventListener('transitionend', anim, true);
+    return () => { document.removeEventListener('scroll', on, { capture: true }); removeEventListener('resize', re); document.removeEventListener('animationend', anim, true); document.removeEventListener('transitionend', anim, true); cancelAnimationFrame(raf); };
+  }, [place, focus]);
+
+  const last = step === 'sleep';
+  return createPortal(<>
+    <div ref={ring} className="tutor-ring" aria-hidden="true" />
+    <div ref={tip} className={'tutor' + (last ? ' tutor--last' : '')} role="status" data-step={step} key={step}>
+      <span className="tutor__n" aria-label={t('g.tut.step', { n, m: list.length })}>{n}/{list.length}</span>
+      <div className="tutor__b">
+        <b>{t('g.tut.' + step)}</b><p>{t('g.tut.' + step + 'P')}</p>
+        {last && <div className="tutor__acts">
+          <button type="button" className="tutor__go" onClick={() => { sfx('open'); onStory(); }}><Icon n="story" size={18} />{t('g.tut.story')}</button>
+          <button type="button" className="tutor__ok" onClick={() => { sfx('ui.tap'); onDone(); }}>{t('g.tut.keep')}</button>
+        </div>}
+      </div>
+      {!last && <button type="button" className="tutor__skip" onClick={() => { sfx('ui.tap'); onDone(); }}>{t('g.tut.skip')}</button>}
+    </div>
+  </>, document.body);
 }
 
 // A publish goes out: reactions float up off the page.
@@ -241,7 +403,7 @@ function Burst({ kind, hwg }: { kind: number; hwg?: boolean }) {
   const t = useT();
   const bits = ['share', 'flame', 'eye', 'share', 'star', 'flame', 'eye', 'bolt', 'share', 'flame'];
   return <div className={'burst' + (hwg ? ' is-hwg' : '')} aria-hidden="true">
-    <span className="burst__word">{hwg ? t('calls.hwg.burst') : t('g.win.published.' + kind)}</span>
+    <span className="burst__word">{hwg ? catchphraseOf().text.toUpperCase() : t('g.win.published.' + kind)}</span>
     {bits.map((b, k) => <i key={k} style={{ left: 10 + (k * 83) % 80 + '%', animationDelay: k * 70 + 'ms' }}><Icon n={b} /></i>)}
   </div>;
 }
@@ -283,7 +445,7 @@ function NightScene({ night, view, onGo }: { night: Night; view: View; onGo: () 
     <div className="night2__sky" aria-hidden="true"><span className="night2__moon" /><span className="night2__sun" />{Array.from({ length: 24 }, (_, k) => <i key={k} className="night2__star" style={{ left: (k * 41) % 100 + '%', top: (k * 23) % 60 + '%', animationDelay: k * 90 + 'ms' }} />)}<span className="night2__city" /></div>
     <div className="night2__body">
       <div className="g-mono night2__k">{t('night.kicker', { n: night.day })}</div>
-      <h2 className="night2__h">{night.dd ? t('g.win.ddIncoming') : night.posts.length ? t('g.win.overnight', { n: night.posts.length }) : t('night.none')}</h2>
+      <h2 className="night2__h">{night.dd ? t('g.win.ddIncoming') : night.posts.length ? t('g.win.overnight', { n: night.posts.length }) : t('night.none', { n: view.cast.length })}</h2>
       {stage >= 1 && night.twist && <div className="twistcard"><span className={'g-stamp g-stamp--xl' + (skip ? '' : ' is-slam')} style={{ ['--sc' as string]: '#fff' }}>{t('g.saga.stopPress')}</span><b>{t('night.twist', { p: view.cast[night.twist.i].player.s })}</b><p>{t('night.twistBody')}</p></div>}
       {stage >= 1 && night.dd && <p className="night2__dd">{t('night.ddBody')}</p>}
       {stage >= 1 && night.posts.length > 0 && <div className="breaks">{night.posts.map((p, k) => { const c = view.cast[p.i]; const tn = tauntFor(t, g, p); return <div key={k} className="brk" style={{ animationDelay: skip ? '0ms' : lead + Math.min(k, 5) * NIGHT_STEP + 'ms' }}>
@@ -317,6 +479,7 @@ function DDHead({ view, onZero }: { view: View; onZero: () => void }) {
   }, [sec, ms, onZero]);
   const total = view.R.DD_SECONDS;
   return <div className={'ddh' + (sec <= 10 ? ' is-last' : sec <= 30 ? ' is-hot' : '')} style={{ ['--ddp' as string]: String(1 - ms / (total * 1000)) }}>
+    <DDClockFilm />
     <div className="ddh__band"><b>{t('dd.band')}</b><span>{t('dd.posts', { n: view.R.DD_POSTS - view.state.posts7 })}</span></div>
     <div className="ddh__clock" role="timer" aria-live="off" aria-label={sec + 's'}><span className="ddh__s">{String(sec).padStart(2, '0')}</span><span className="ddh__cs">.{cs}</span></div>
     <div className="ddh__bar"><i style={{ width: (100 * ms) / (total * 1000) + '%' }} /></div>

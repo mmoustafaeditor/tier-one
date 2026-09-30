@@ -348,3 +348,28 @@ export function seasonWindow(s: Save, r: Result, mode: string) {
 export const pendingRecap = (s: Save = getSave()) => (s.seasonLog && s.seasonLog[0] && !s.seasonLog[0].seen ? s.seasonLog[0] : null);
 export const dismissRecap = () => update((s) => { if (s.seasonLog && s.seasonLog[0]) s.seasonLog[0].seen = true; });
 export const ensureSeason = () => { const s = getSave(); if (!s.season || s.season.id !== seasonAt().id) update((x) => { syncSeason(x); }); };
+
+// ---------- Deadline days (GOTY §7.1): the real transfer deadlines, one source of truth for the client.
+// The Wire's windows and their deadline days. `deadline` is the UTC date the 24 h Deadline Day Live board runs on;
+// `closes` is when the real window shuts (UK 23:00 in winter, 18:00 in summer, in UTC). The server's copy is
+// api/tier-one/v3/index.js › DD_DAYS (and wire.mjs › WIRE.CURRENT for the live window); keep them in step.
+export interface WireWindowDef { id: string; opens: string; closes: string; deadline: string; key: 'winter' | 'summer' }
+export const WIRE_WINDOWS: WireWindowDef[] = [
+  { id: '2027-01', key: 'winter', opens: '2027-01-01T00:00:00Z', closes: '2027-02-02T23:00:00Z', deadline: '2027-02-02' },
+  { id: '2027-summer', key: 'summer', opens: '2027-06-15T23:00:00Z', closes: '2027-09-01T18:00:00Z', deadline: '2027-09-01' },
+];
+export interface DeadlineDay { id: string; day: string; window: string; key: 'winter' | 'summer'; opensAt: number; closesAt: number; windowClosesAt: number }
+export const DEADLINE_DAYS: DeadlineDay[] = WIRE_WINDOWS.map((w) => ({
+  id: 'dd-' + w.deadline, day: w.deadline, window: w.id, key: w.key,
+  opensAt: Date.parse(w.deadline + 'T00:00:00Z'), closesAt: Date.parse(w.deadline + 'T00:00:00Z') + DAY, windowClosesAt: Date.parse(w.closes),
+}));
+/** The deadline day running right now (UTC date), or null. */
+export const deadlineDayAt = (ms = Date.now()): DeadlineDay | null => DEADLINE_DAYS.find((d) => ms >= d.opensAt && ms < d.closesAt) || null;
+/** The next deadline day after `ms`, or null once the table runs out. */
+export const nextDeadlineDay = (ms = Date.now()): DeadlineDay | null => DEADLINE_DAYS.find((d) => d.opensAt > ms) || null;
+/** The most recent deadline day that has already closed, or null. */
+export const lastDeadlineDay = (ms = Date.now()): DeadlineDay | null => [...DEADLINE_DAYS].reverse().find((d) => d.closesAt <= ms) || null;
+/** The Wire window the game is framed for now: the one that is open, else the next to open, else the last. */
+export function currentWireWindow(ms = Date.now()): WireWindowDef {
+  return WIRE_WINDOWS.find((w) => ms < Date.parse(w.closes)) || WIRE_WINDOWS[WIRE_WINDOWS.length - 1];
+}

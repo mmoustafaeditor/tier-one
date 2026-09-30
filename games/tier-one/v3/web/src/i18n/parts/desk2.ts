@@ -9,7 +9,7 @@ export default {
         you: 'You', typing: 'typing…', now: 'just now', send: 'Post', skip: 'Tap to skip',
         replies: 'Replies', reposts: 'Reposts', likes: 'Likes',
         line: {
-          done: ['Hearing talks between {to} and {p}’s camp. One to watch.', '{p} to {to} is advancing. Terms being discussed as we speak.', 'HERE WE GO. {p} to {to}, done deal. Medical booked.'],
+          done: ['Hearing talks between {to} and {p}’s camp. One to watch.', '{p} to {to} is advancing. Terms being discussed as we speak.', 'DONE DEAL. {p} to {to}, done deal. Medical booked.'],
           hijack: ['Told {p} has other options beyond {to}. Keep an eye out.', 'A third club is moving for {p}. {to} could miss out.', 'CONFIRMED: {p} is off, but NOT to {to}. Hijack.'],
           off: ['Talks between {to} and {p} have cooled.', '{to} are stepping back from {p}. Gap too big.', 'CONFIRMED: {p} to {to} is OFF. Talks collapsed.'],
           fake: ['Not convinced the {p} to {to} story is real.', 'Checked with people close to {p}: no contact with {to}.', 'FAKE. There were never talks between {to} and {p}.'],
@@ -53,7 +53,7 @@ export default {
         you: 'Tú', typing: 'escribiendo…', now: 'ahora', send: 'Publicar', skip: 'Toca para saltar',
         replies: 'Respuestas', reposts: 'Reposts', likes: 'Me gusta',
         line: {
-          done: ['Me llegan contactos entre el {to} y el entorno de {p}. Atentos.', 'Lo de {p} al {to} avanza. Se negocian los términos ahora mismo.', 'HERE WE GO. {p} al {to}, cerrado. Revisión médica fijada.'],
+          done: ['Me llegan contactos entre el {to} y el entorno de {p}. Atentos.', 'Lo de {p} al {to} avanza. Se negocian los términos ahora mismo.', 'DONE DEAL. {p} al {to}, cerrado. Revisión médica fijada.'],
           hijack: ['Me dicen que {p} tiene más opciones aparte del {to}. Ojo.', 'Un tercer club va a por {p}. El {to} puede quedarse sin él.', 'CONFIRMADO: {p} se va, pero NO al {to}. Robo.'],
           off: ['Las conversaciones entre el {to} y {p} se han enfriado.', 'El {to} se echa atrás con {p}. Demasiada distancia.', 'CONFIRMADO: lo de {p} al {to} se CAE. Negociación rota.'],
           fake: ['No me creo la historia de {p} al {to}.', 'He hablado con gente cercana a {p}: ningún contacto con el {to}.', 'FALSO. Nunca hubo conversaciones entre el {to} y {p}.'],

@@ -49,9 +49,11 @@ Every mode feeds the same journalist. Four shared systems (`lib/byline.ts`) hold
     - Wire ×1.5 (real football)
     - Practice ×0.25
 - Rep moves +1 per right call and −2 per wrong Confirmed call, clamped to 0–100.
-- Rep tiers set the flair shown on the byline and on share cards: Blogger < 20, Stringer 20–39, Correspondent 40–59,
-  Chief 60–79, Tier One 80+.
-- Career keeps its own story rank and rep (its own save slot). Its calls still feed the global byline.
+- Rep tiers set the flair shown on the byline and on share cards. Since 3.4 they are the Career rank gates, so the
+  byline's word and the story's word are one ladder: Blogger < 55, Stringer 55–64, Correspondent 65–74, Chief 75–84,
+  Tier One 85+. A new name (rep 50) is a Blogger.
+- Career keeps its own story rank (its save slot). Its calls feed the global byline like any other mode (×1), and
+  "credibility" in Story is this same rep.
 
 ### 1.2 The Contacts Book
 - The five sources (kit man, barber, agent, airport spotter, physio) each have a relationship with you:
@@ -188,3 +190,245 @@ The Daily keeps its own card below when it isn't the hero.
 | **season** | `lib/season.ts`, `lib/monet.ts`, the Pass (free and Gold tracks), the store, weekly events |
 | **shell** | desktop layouts, the left rail, motion tokens, view transitions, tilt, haptics, keyboard |
 | **football** | the world data refresh, Wire freshness, ON THE WIRE chips |
+
+## 7. The connected game (3.4 "One Newsroom")
+Owner's brief (30 Sept, evening): every feature connects game-to-game (mode to mode), game-to-player and
+game-to-multiplayer. The test is still §"North star": one journalist, one newsroom, one loop. Films everywhere the
+game changes state for you, and nothing is a dead end.
+
+### 7.1 Game to game: every mode is an assignment from the same desk
+- **The editor's desk** (`lib/desk.ts`) hands out assignments. The Daily is "today's brief", Career windows are
+  "the story", the Wire is "the live desk", rooms are "the press box", Practice is "off the record". One queue,
+  one voice (Mags Doyle after the story lane lands; the current editor before).
+- **Cross-mode consequences:** a Wire call that lands moves your Career editor's opinion (an inbox line) and
+  unlocks a Career favour; a Career promotion changes your Daily share card flair; a room win puts that friend in
+  your rivals ledger; a Daily Tier 1 earns a Wire credit. Everything routes through `lib/byline.ts` events.
+- **The morning papers:** one daily recap (first open of the day) across all modes: what settled overnight
+  (Wire, rooms, Daily rank, streak), who taunted, what's due today. Film: `moment-paper`.
+- **Deadline Day is a calendar event, not just a window day.** On the real deadline days (winter: 2 Feb 2027,
+  summer: 1 Sep 2027, `lib/season.ts` dates) the game runs **Deadline Day Live**: a 24-hour shared board where
+  every player calls the same real sagas, a live ticker of what the room is calling (counts, not names), a
+  countdown to 23:00 local, and results at midnight with a global table. Rooms can pin a DD Live round.
+  Between deadline days, the Daily still has its in-window Deadline Day (day 7) as now.
+
+### 7.2 Game to player: the game knows you
+- **One profile, one number set:** followers, rep tier, hot hand, contacts, rivals, coins, Pass, streak, trophies.
+  Career keeps its story rank but reads the same followers/contacts (the onecareer lane unifies the data).
+  - **Done (save v3, `lib/save.ts` MIG[2]):** a Career slot stores only its story (rank, windows, favours, club
+    relations, counters, history, inbox). `applyWindow` moves the byline, the book and the ledgers through
+    `byline.recordInto` (mode ×1) inside the same update, and gates promotion on the global rep; the rep gates are
+    `REP_TIERS`. Follower milestones pay in any mode. Contact trust in Career is the book level (accuracy steps from
+    Lv2, early access at Lv3, a second opinion at Lv5, Career and Practice only).
+  - **Migration:** on load, `byline.followers = max(byline, every slot)`, `byline.rep = max(byline, every slot)`,
+    once; each slot's trust points become book XP where higher (`trustToXp`: trust level L → book level L+1, progress
+    kept inside the band). A slot code restored from a 3.3 device folds in the same way. Nothing else in a slot moves.
+  - **One visible level:** the byline tier is the identity (a word), the season Pass level is "this season's
+    progress" (the one level number, top bar and Home badge). The old account level is hidden everywhere;
+    `save.pp` stays as lifetime Press Points and keeps feeding the Pass (`progress.levelOf(pp)` now answers the Pass
+    level at that point). Story shows a chapter number, never a level.
+  - **Slots:** your name is yours; each Career is a different story (How to play, "One name").
+  - **For Results:** `byline.careerSnapshot(save)`, `careerDelta(before, after)` and `lastDelta()` (the last
+    recorded window's before-snapshot against the save) give the whole strip: followers, rep and tier, hot hand,
+    contact level-ups, duels, rank/promotion, favours, coins, Pass level.
+- **Playstyle profile** (`save.style`): tracked from calls (early vs late, loud vs quiet, source trust, U-turns).
+  Shown on Me as a card ("The Sniper: files early, rarely wrong"), used by rivals' banter, by the editor's notes and by
+  the Daily brief ("you've been quiet on day 1; the Market is wrong early this week").
+- **Rivals remember:** ledgers already exist; add "grudge" beats (a rival who beat you twice targets your next call),
+  and friend rivals (7.3).
+- **Streaks and returns:** a Daily streak with a real cost of missing (the rival takes your slot on the table) and a
+  "welcome back" desk note after 3+ days away, never punitive, always a next step.
+- **Films for the player:** the `moment-*` set plus `moment-style-<id>` when a playstyle title is earned and
+  `moment-streak-<7|30|100>`.
+
+### 7.3 Game to multiplayer: the press box
+- **Rooms → Press box** (`screens/Rooms.tsx` becomes the press box): a room is a newsroom of friends with a
+  league table over a season, weekly rounds on the real calendar, a room feed (calls, taunts, HERE WE GO cards).
+- **Beat my board:** any finished window (Daily, Practice, Career) makes a challenge link: same seed, your score
+  to beat, 24 h; the result posts to both feeds and the rivals ledger.
+- **Friend rivals:** a friend you've played 3+ rooms with becomes a named rival on your Rivals screen with the same
+  ledger, taunt lines from a friend pool, and a "scalp" film with their byline on the TV.
+- **Newsroom (clan):** up to 20 players under one masthead; a weekly combined table across the whole game;
+  masthead cosmetics from the Pass. Server: `newsroom.*` actions beside `room.*`.
+- **Spectate:** a finished room round can be replayed as a film strip of everyone's calls per day.
+- **Live presence:** the Daily board shows "N reporters on this board now" and "first to break it" (first correct
+  Confirmed call, by byline) once results are out; DD Live adds the live ticker (7.1).
+- **Films:** `moment-room-win`, `moment-friend-scalp`, `moment-newsroom-week`, `moment-ddlive-open`, `moment-ddlive-close`.
+
+### 7.4 Lanes for 3.4 (own disjoint files)
+| Lane | Owns |
+|---|---|
+| **pressbox** | `screens/Rooms.tsx`, new `screens/Newsroom.tsx`, `lib/social.ts`, server `room.*`/`newsroom.*`/`challenge.*` actions in `api/tier-one/v3/index.js`, App routes (additive), `i18n/parts/social.ts`; byline.ts additive only (friend rivals) |
+| **live** | `lib/desk.ts` (assignments, morning papers), `lib/live.ts` + server `live.*` (presence, first-to-break, DD Live board), `ui/live.tsx`, `lib/style.ts` (playstyle), Window.tsx additive (Daily brief sheet, DD Live ticker), `i18n/parts/live.ts`; season.ts additive (DD dates) |
+| **onecareer** (after story merges) | `lib/byline.ts` + `lib/career.ts` data unification, save migration, Me/Story readouts |
+| **film3d** | all clips, including the new `moment-*` ids above (queued after the calls/moments/story sets) |
+
+## 8. Platform, business and smoothness (3.4)
+Owner's brief: super smooth on mobile and desktop; an updated API; think business without a cash grab; a platform
+that new features drop into; credits that mean something; still a simple game to understand.
+
+### 8.1 Simple to understand (a rule for every lane)
+- One screen, one job, one primary action. If a screen needs a paragraph to explain itself, cut the screen.
+- Plain words: "call", "publish", "right", "wrong", "followers". No jargon in the UI; a glossary lives in How to play.
+- Every number on screen answers "how is my name doing?"; anything that doesn't is hidden behind a tap.
+
+### 8.2 Smoothness (`perf` lane)
+- Targets on a mid-range Android phone over slow 4G: first interaction under 3 s, 60 fps on every screen and film,
+  input-to-feedback under 100 ms, no layout jank on route changes. Lighthouse mobile Performance ≥ 90.
+- The web build is code-split (routes, films, world data lazy); the single-file build stays for the Android APK.
+  A service worker caches the shell and today's Daily, so the game opens offline and installs as a PWA.
+- Animations use transform/opacity only; long lists use content-visibility; the 1,026-player world data parses off
+  the boot path; fonts don't block first paint; films are preloaded one step ahead (poster first).
+- Push: web push and the Android bridge for "your Daily is ready", "results are in", "Deadline Day Live opens".
+
+### 8.3 The platform API (`api` lane): `api/tier-one/v4`
+- Identity: a device token becomes a Semba account (optional email magic link; no passwords). Cloud save sync with
+  versioned blobs and additive-counter merging, so a name, credits and cosmetics follow the player across phone,
+  desktop and the app.
+- Wallet: a server-authoritative credits ledger (earn, buy, spend, refund, gift) with purchase verification adapters
+  (Google Play Billing, Stripe Checkout on the web, a sandbox mode) and entitlements for Gold and cosmetics.
+- Catalog and remote config: items, prices, featured rotations, weekly events, Deadline Day Live dates, feature flags
+  and A/B buckets come from the server, so new features and events ship without a client release.
+- Telemetry: batched, privacy-minded events (no PII) for retention funnels, mode mix, conversion points.
+- Rate limits, idempotency keys on writes, versioned OpenAPI at `docs/api/v4.yaml`; v3 actions stay mounted
+  unchanged so the live game never breaks. The Daily stays server-scored and fair.
+
+### 8.4 Credits and customization (`economy` lane)
+- Two currencies, plainly named: **Coins** (earned by playing, spent on small things) and **Credits** (bought, rarely
+  earned: season end, a 30-day streak, a first Tier 1). Credits buy things that are seen: Gold, byline card designs,
+  mastheads for newsrooms, stamp inks, ringtones, press-pass skins, desk editions, film poster frames, share-card
+  styles, and naming your paper. Never a Daily advantage; Career conveniences only as §1.2 allows.
+- "Your desk" (`screens/Customize.tsx`): one place to dress the byline, the desk and the newsroom, with a live
+  preview. Everything bought appears everywhere: share cards, room tables, films' overlays.
+- Value and fairness: a featured rotation, season-limited sets, gifting inside a newsroom, referral codes (both
+  players get credits when the friend finishes their first window), and credit packs at honest tiers (`docs/BUSINESS.md`).
+- Entitlements live on the server (8.3) so purchases survive reinstalls and devices.
+
+### 8.5 Lanes (own disjoint files)
+| Lane | Owns |
+|---|---|
+| **api** | `api/tier-one/v4/**`, `api/_lib/**`, `docs/api/**`, client `lib/api.ts` (additive `v4()`), new `lib/account.ts`, `lib/sync.ts`, `lib/flags.ts` |
+| **economy** | new `lib/wallet.ts`, `lib/catalog.ts`, `screens/Customize.tsx`, `ui/customize.tsx`, `i18n/parts/economy.ts`, `docs/BUSINESS.md`, App route (additive); not Pass.tsx / monet.ts / season.ts (onbpass lane) |
+| **perf** | `vite.config.ts`, `index.html`, new `src/sw.ts`, `lib/perf.ts`, `lib/push.ts`, `styles/motion.css`, package.json scripts, `tier-one/` deploy layout; main.tsx additive only |
+
+## 9. Film everywhere (3.4)
+Owner's brief: use a lot of 3D film where applicable, so the game stays interactive and cool. Film is not only for
+moments; the game's surfaces are filmed too.
+
+### 9.1 Three kinds of film
+- **Moment films** (§6–8): unskippable, 2–8 s, one per state change that matters to the player.
+- **Ambient loops:** 4–6 s seamless, muted, looping clips behind the live UI. Portrait and landscape.
+  `loop-home-desk` (your desk at the hour of day: morning light / lamp at night, papers stir), `loop-place-<src>`
+  (the barbershop, boot room, treatment room, arrivals window, the car, the dark office: idle, waiting for your call),
+  `loop-pressbox`, `loop-wire-room` (a newsroom wall of TVs with real tickers), `loop-deadline-city` (the city at
+  dusk, phones lighting up), `loop-season-<rumour|winter|spring|summer>`, `loop-results-pressroom` (presses idling),
+  `loop-newsroom-masthead` (the clan's masthead lit on a building).
+- **Interactive beats:** short clips the player triggers and can feel: tap a source card → the phone lifts off the
+  counter (`beat-pickup-<src>`, 0.6 s) then the call film; hold to publish → the press warms up under your thumb
+  (`beat-press-warm`, loops while held) and fires on release; the Deadline Day clock is a filmed clock
+  (`loop-dd-clock`), the U-turn is a filmed shred (`beat-shred`), a stamp slam is a filmed stamp (`beat-stamp-<outcome>`),
+  page turns between tabs are filmed paper (`beat-page-<fwd|back>`, 0.3 s, replaces the CSS slide on capable devices).
+
+### 9.2 Rules
+- Film never blocks play: loops and beats are decorative and the UI stays usable on top. Only moment films hold the
+  player, and they are short.
+- Performance first (§8.2): loops are ≤ 400 KB, play only when the screen is visible, pause in the background, and
+  drop to the poster on Save-Data / low battery / reduced motion / slow connections. One loop at a time per screen.
+  Beats are preloaded with the screen. The single-file APK build ships posters only until the clips are cached.
+- The look stays coherent: every loop uses the same set, lighting and grade as its moment films, so the call film
+  starts from the exact frame the loop was showing (match cuts).
+- Desktop gets more: a real-time 3D desk on Home (lazy three.js, high-end only, poster otherwise) where the lamp,
+  papers and phone react to the pointer; the same set is what the films are shot in.
+
+### 9.3 Lanes
+| Lane | Owns |
+|---|---|
+| **filmui** | `ui/film.tsx` (`<FilmLoop/>`, `<Beat/>`, `useFilmBudget()`), `lib/filmgate.ts` (device/network gating), film transitions in `styles/motion.css` hooks, the Home 3D desk (`ui/desk3d/**`, lazy), integration notes per screen; screens edits are additive wrappers only |
+| **film3d** | renders every `loop-*` and `beat-*` after the moment sets, with match-cut frames noted in `film/ASSETS.md` |
+
+## 10. Motion, not characters (3.4, supersedes the 3D parts of §6–§9)
+Owner's brief: the 3D character films are cut. The animations must be world class without characters: between
+screens, when Career starts (you were terminated, you start over), when a day ends, when you ring a source in any
+mode, when you publish, at results, on Deadline Day. The game must feel captivating, mysterious, beautiful,
+connected, intuitive and simple, with room to grow.
+
+### 10.1 Art direction: "the newsroom after dark"
+- The world is objects, places, paper, ink, light and type. Never a person or a face. Hands, silhouettes and
+  shadows are out too.
+- Every piece is built from the same materials: newsprint and card (grain, fold, tear, curl), ink (bleed, stamp,
+  strike-through, handwriting appearing), light (a desk lamp's pool, a phone screen, neon, headlights sweeping a
+  ceiling, dawn through blinds), type (kinetic headlines, tickers, mastheads, numbers rolling), and weather (rain on
+  glass, dust in a beam, steam off coffee).
+- Places carry the story: the barber's is a chair, a pole, a mirror of bulbs and a calendar; the boot room is
+  lockers, a rail of shirts, a bag on a bench; the treatment room is a table, a clipboard, a heart-rate trace; the
+  airport is a departures board, a window, landing lights; the agent is a car interior at night, a contract on the
+  seat, city lights; the leak is a photocopier's sweep and an envelope. A phone on each set rings and lights up.
+- Every film has one hero beat, one loud colour, a match cut in and out of the screen it belongs to, and a sound
+  designed with it (lib/sfx). Nothing is static: light drifts, paper breathes, the camera pushes or pans.
+- Rendering: frame-driven components in the existing kit (src/film, Remotion-compatible), drawn with SVG/CSS/canvas.
+  No video files, no three.js. 60 fps on a mid-range phone; reduced motion shows a composed still.
+
+### 10.2 The pieces
+- Story: `story-prologue` (the fall: Deadline Day clock, the headline goes out, the replies pile in, the box on the
+  desk, the unknown number), chapter openers and reveals, promotions, finale, epilogue. Career start is the
+  prologue: you were terminated; you start over.
+- Calls: for each source and outcome, the place tells the tip (calendar page flips = staying; a bag tagged in another
+  club's colours = leaving; two phones = hijack; a screwed-up paper = fake). The phone lifts as the pickup beat.
+- Post: the desk at night, the post types itself on the laptop, the press warms, it fires, the city's phones light up.
+- Day end: the lamp goes off, the city rolls by, the morning papers land.
+- Results: the presses roll your front page. Deadline Day: the clock tower, blacked-out car lights, the shutter.
+- Moments: tier-up (a new press pass), contact level (a source's place lit up), rival scalp (a laptop slammed shut,
+  your post on the TV), streaks, style titles, DD Live open/close, room win, newsroom week.
+- Ambient loops and beats (§9.1) are drawn the same way, live in the page, and cost nothing when off.
+
+### 10.3 The ecosystem rules (the feel of one game)
+- One design system for every modal, sheet, button, menu, tab and toast: the same paper, ink and motion tokens,
+  the same enter/exit choreography, the same haptics and sounds. No screen is allowed its own look.
+- Every result opens a door (the next assignment, a rival's reply, a contact's thanks); nothing ends on a dead card.
+- Mystery: the case file, the editor's notes, the rivals' tells and the Feed drip information over days, so a
+  returning player always finds something changed.
+- Customization is a long tail, not a checklist: item kinds are a registry; seasons drop new sets; collections show
+  what's missing; nothing "maxes out". New feature kinds slot in without touching the store.
+
+## 11. The final build (3.4 "Final Cut")
+Owner's brief: this is the last version. Every pixel of every page on phone, desktop and the Android app. Simple to
+pick up. It must not feel AI-built, and it must earn a real business.
+
+### 11.1 Not AI-built: the craft tells
+- The identity is editorial, not "app": newsprint, ink, stamps, a serif masthead, condensed headlines, mono
+  captions. No gradient blobs, no glassmorphism, no emoji as icons, no purple-to-blue, no identical rounded cards
+  in a grid, no lorem-flavoured copy, no "Welcome back, user!".
+- Asymmetry and hierarchy on purpose: one hero, one loud thing per screen, quiet everything else; typographic scale
+  with intent; real margins; ragged, human copy with a point of view (the editor's voice).
+- Details that only a person would bother with: a masthead date that is right, a folio number, a coffee ring on a
+  desk edition, a stamp that never lands in the same place twice, the pull of paper when a sheet closes.
+- Motion says "printed and posted", never "loading spinner": stamps, presses, tickers, page turns.
+- Every screen passes this test at 390x664, 390x844, 768x1024, 1280x800, 1920x1080 and in the Android WebView:
+  no overlap, nothing cut off, nothing horizontally scrollable, every action reachable with one thumb.
+
+### 11.2 The Final Cut process
+- A pixel pass per screen (Home, Window/Saga, Results, Story, Wire, Press box, Newsroom, Me, Feed/Rivals/Contacts,
+  Pass/Store, Your desk, Editor's desk/DD Live, Practice, Settings/How to play, Onboarding) at every viewport, fixing
+  overlap, spacing, type, copy and dead ends; then an independent verifier per screen; then one cohesion pass.
+- The Android APK ships from the same build: `tier-one/apk/index.html`, versionCode/versionName bumped, the update
+  feed pointed at 3.4, CI green.
+- Ship only when: builds green, all server suites green, QA verdict "one career", every viewport clean.
+
+## 12. It's a game (owner's number-one rule)
+The 3.1 "newspaper" look was hard to look at and hard to play; it lost the spirit of a game. That never happens again.
+- **Game first, newsprint second.** The newspaper is flavour (results, mastheads, stamps). The interface is a game:
+  big, bright, readable, one thumb, instant feedback. If a screen looks like a document, it is wrong.
+- **Easy to look at:** high contrast, generous type, few things on screen, one clear next action, colour that means
+  something (mode colours, outcome colours), and space. No walls of small text, no dense columns, no hairline UI.
+- **Juice:** every tap answers (press-scale, sound, haptic), every result lands (stamps, counters rolling, confetti
+  when earned), every screen change moves (page turns, slides), and rewards pop. Motion is 90–260 ms and never in
+  the way.
+- **Ten-second rule:** a new player understands what to do on any screen within ten seconds without reading a
+  paragraph. Copy is one line. The How to play is the fallback, not the onboarding.
+- **The loop is the star:** pick a saga → ring a source → make the call → publish → see it land → your name moves →
+  next. Everything else (feed, rivals, contacts, desk, pass) is one tap away and one tap back.
+- **The catchphrase system replaces "HERE WE GO":** a Confirmed call that lands fires *your* catchphrase (stamp,
+  sound, share card, film title). You start with a house line, unlock more by playing (rank, streaks, chapters),
+  buy signature lines with credits (`catchphrase` item kind), and at Chief rank write your own (24 chars, moderated,
+  server-validated). Nothing in the game uses another person's catchphrase.
+- **The test:** the design panel and the Final Cut judge every screen on "is this a game I want to keep playing"
+  before craft. A beautiful screen that isn't fun to use fails.

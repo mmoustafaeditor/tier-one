@@ -41,8 +41,10 @@ rebuilt.
   - Rooms: violet
   - Practice: green
 - **Morning edition** (light) stays as an option. The desk becomes pale wood, and the paper is the same.
-- **People:** no hand-drawn people anywhere. Characters appear only as painted art (the art pack, when it arrives) or as
-  icon-based caller cards until then. Real footballers never appear as faces: kits, numbers and crests only.
+- **People:** the films (cutscenes and moment clips) may show stylised characters: flat paper-cut or ink figures, or
+  stylised 3D, with simple or no faces. Nobody speaks in them: no dialogue or subtitles. Real footballers never appear:
+  a player is a generic figure in club colours and a number. Outside films, characters are icon-based caller cards. Every film is unskippable and
+  short (owner's call); reduced motion shows the last frame.
 
 ## 3. Shell and navigation
 - **Tabs:**
@@ -79,15 +81,16 @@ From top to bottom:
   - *Make the call*: 4 outcome buttons, then 3 loudness buttons with +win/−lose, then Publish.
   - Rivals: a strip of three avatars that light up when they've posted.
   - Details (tally, weights, rules): behind "How's this scored?".
-- **Source call:** a full-screen scene per source.
-  1. Environment animation for that source (barbershop pole and clippings, airport runway lights and a jet, a monitor
-     line, city rain for the agent, the boot room, the press-room flash).
-  2. A caller card: portrait slot, with an icon until the art arrives.
-  3. Ring, then click, then a mumbled voice (babble, pitch per character) with the subtitle typing out.
-  4. The *says* stamp.
-  5. The clue flies to the file.
-
-  The first call to each source per window plays the full 2.5–4 s. Repeats play ~1 s. Tap to skip.
+- **Source call (3.3):** one screen, a short wordless film per source (the barber finishing a cut, the kit man at the
+  player's locker, the physio's treatment table, the airport spotter's long lens, the agent's back seat, the press
+  office after hours). Nobody speaks: what the source does shows the clue's read, in one language across sources
+  (Done: the buying club's colours are taken on; Hijack: another club's replace them; Off: the buying club's thing is
+  torn up, the player's own club stays; Fake: the rumour is binned with a shrug). Rendered clips play when present
+  (`web/src/film/calls/manifest.ts` lists them); the SVG film is the fallback.
+  - The first call to each source per 6 h plays the full cut (~3.5 s), repeats the short one (~2 s). Unskippable; it
+    returns to the call page by itself. Reduced motion shows the last frame for ~1.2 s.
+  - Back on the call page, exactly what they said appears as a quote card in the saga's clippings (source colour, the
+    *says* stamp, what it added), newest first, the new one sliding in with a "New" tag.
 - **Publish:** the loudness button fills as you hold (tap works too), then the press rolls, the stamp slams with a
   shake and a buzz, and a reaction burst follows (followers +, shares, "@fans" replies).
 - **Overnight:** a time-lapse (city dawn → night), then rival posts as breaking-news cards with the rival's avatar and a
@@ -102,30 +105,46 @@ From top to bottom:
 4. XP, credibility and follower bars fill, level-up and unlock cards pop, the streak flame grows.
 5. Share card, "Play Practice", "Back home".
 
-## 7. Story mode (Career)
-- **Prologue** (once, skippable): last Deadline Day at *The Chronicle*. Your "HERE WE GO" is wrong (6 of 7 calls wrong),
-  38k followers are gone, and the editor's note says "Clear your desk". Told in animated panels: paper, phone
-  notifications, stamps and the editor's note, no drawn people.
-- **Chapters** (these are the existing ranks, so saves map directly):
-  1. The Blog
-  2. The Comeback (Regional Reporter)
-  3. Stringer (National Correspondent)
-  4. The Rival (Chief Correspondent; @BackPageBants is your nemesis)
-  5. Back at The Chronicle (Tier One)
-  6. The Front Page (finale: 3 Tier 1 windows at Tier One rank)
-- **Each chapter:** a cover card, one goal (the promotion gate, shown plainly), an editor message before and after each
-  window, and an unlock.
-- **Story beats:** first right call, first exclusive, a big miss, a promotion, the rival beating you. Each gets a short
-  inbox line from the editor or the rival.
+## 7. Story mode (Career): "The Comeback" (3.4)
+The bible is `STORY.html`; the code is `web/src/lib/storyMode.ts` and `web/src/screens/Story.tsx`. The Career told as a
+comeback and a mystery: someone fed you the fake that ended you at *The Chronicle*.
+- **The prologue is the game's opening.** After onboarding the `story-prologue` film ("The fall") plays instead of the
+  old cold open, then its title card (the four lines and the text from the unknown number) with the Chapter 1 card;
+  replayable from the cover and the desk drawer. `film/scenes/ColdOpen.tsx` stays in the registry and the gallery.
+- **Chapters are the ranks** (Blogger → Tier One), so every save maps straight in; `save.story.chapterSeen` is the
+  chapter index and the 3.3 ids (comeback/stringer/rival) are aliased to post/nationals/war:
+  1. The Blog (Blogger) · 2. The Evening Post (Stringer) · 3. The Nationals (Correspondent) · 4. The War (Chief) ·
+  5. The Chronicle (Tier One: three Tier 1 windows) · Epilogue: The Front Page.
+- **Films:** `story-<id>` scene ids (`film/story/build.tsx`): the prologue, an opener per chapter, one mid-chapter reveal
+  for chapters 1–4, the finale and the epilogue. Each plays its clip when rendered (`film/story/manifest.ts`, the
+  video-slot pattern with the chapter plate on top) and a ~2.5 s drawn title card (`film/scenes/StoryCard.tsx`) until
+  then. Unskippable, like every film.
+- **The hub** fits one phone screen: chapter, goal (the promotion gate, shown plainly), the latest word from the inbox
+  (or the chapter's brief) and Play. Below, in drawers: the case file (evidence pinned by each reveal), the inbox, the
+  way back, the record, the sources by name, the desk (prologue replay, save slots, restart).
+- **Reveals** land once (`save.story.beats.reveal<n>`) halfway to the chapter's window goal and at least two windows
+  after arriving in the chapter: Rosa's warning · Kev's timing · Tony's photo · Priya's call log. The reveal plays its
+  film over the results and pins its card in the case file.
+- **The cast is one cast everywhere:** rivals are @BackPageBants, @ITK_Kev, @PressBoxPete in every mode (ids
+  tabloid/itk/insider unchanged); sources show their names where named (Dougie, Sal, Rosa Lindqvist, Terminal Tony,
+  Dr Inès; ids unchanged). Inbox senders: Mags Doyle, Hana Okafor, the rivals, the sources.
+- **Vince's play** (rank index 3 on, Career only): one saga per window (fixed by the cast) is Vince's play, and one of
+  its sources (agent, barber or spotter) is fed the line through the per-saga override Career already uses
+  (`Rules.PER`): a street voice with zero reliability, so every read it gives is the saga's spin. The engine and its
+  scoring are untouched (Daily, rooms and Practice never see it). The board marks the saga, its file carries a
+  banner, and after the window Mags's note names who lied.
 
 ## 8. Progress (cosmetic; never touches Daily scoring)
-- **Level:** Pass tier = `floor(pp / 100) + 1`, capped at 40. XP is the existing Press Points.
+- **Level:** the season Pass level (`lib/season.ts` seasonLevel, 40 levels, reset each real-calendar season) is the
+  one level number on screen. Press Points are lifetime (`save.pp`) and feed the season; the old
+  `floor(pp / 100) + 1` account level is hidden since 3.4 (`lib/progress.ts` levelOf returns the Pass level).
+- **Identity:** the byline's rep tier (Blogger → Tier One, GOTY.md §1.1), the same word in Story, on Me and on cards.
 - **Missions:** 3 per UTC day from a pool, rewarding 5–15 coins.
 - **Trophies:** the existing 30 achievements, shown as a shelf.
 
 ## 9. Onboarding
-Language, then byline, then the guided first saga (Practice seed `TRAIN1`, coach on, scripted pointer), then home.
-Existing players skip it; it can be replayed from `?`.
+Language, then byline, then the story's prologue film (§7) and Chapter 1, or the guided first saga (Practice seed `TRAIN1`,
+coach on, scripted pointer) with the prologue over it. Existing players skip it; it can be replayed from `?`.
 
 ## 10. Motion and sound rules
 - **Durations:** tap 90 ms; UI 160–260 ms; reveals 400–700 ms; scenes up to 4 s, always skippable.

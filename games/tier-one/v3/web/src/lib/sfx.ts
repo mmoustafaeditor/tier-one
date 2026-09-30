@@ -16,7 +16,18 @@ const MAP = {
   'scene.agent': 'agentcall', 'scene.barber': 'salon', 'scene.spotter': 'airport', 'scene.physio': 'monitor',
   'scene.kitman': 'kitman', 'scene.leak': 'fax', 'voice': 'voice',
   'publish.hwg': 'herewego', 'stop.press': 'glitch',
+  // 3.4 motion pieces (src/film, GOTY §10): objects and places, no voices.
+  'press.roll': 'presses', 'shutter': 'shutter', 'lamp.off': 'lampoff', 'lamp.on': 'lampon', 'lift': 'lift', 'flap': 'flap', 'notify': 'notify', 'pen': 'pen', 'flash': 'flash', 'car.pass': 'carpass',
+  // GOTY.md §10: foley for the drawn call films, the post film and the day end (frame cues; all synth, nothing fetched)
+  'film.phone': 'ringonce', 'film.phone2': 'buzz', 'film.bad': 'bad', 'film.beat': 'heartbeat', 'film.bin': 'stamp',
+  'film.board': 'flip', 'film.chime': 'ding', 'film.clippers': 'tick', 'film.copier': 'whoosh', 'film.crumple': 'shred',
+  'film.drape': 'whoosh', 'film.flip': 'flip', 'film.ink': 'stamp', 'film.monitor': 'tick', 'film.rain': 'whoosh',
+  'film.stamp': 'stamp', 'film.strip': 'tick', 'film.tag': 'pop', 'film.tear': 'shred', 'film.tick': 'tick', 'film.whoosh': 'whoosh',
+  'film.press': 'reveal', 'film.city': 'sparkle', 'film.catch': 'fanfare',
+  'day.lamp': 'select', 'day.roll': 'whoosh', 'day.stamp': 'stamp',
 } as const;
+/** A film's frame cue by name (unknown names are ignored). */
+export const filmCue = (k: string) => { if (k in MAP) sfx(k as Sfx); };
 export type Sfx = keyof typeof MAP;
 
 export function sfx(name: Sfx, arg?: unknown) {
