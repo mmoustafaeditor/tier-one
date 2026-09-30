@@ -314,6 +314,36 @@ function seasonCosmeticsAll(): Item[] {
 /** Items that are part of a named set (evergreen families, seasons, earned families). */
 export const setOf = (set: string, ms = Date.now()): Item[] => KINDS.flatMap((k) => itemsOf(k, ms)).filter((x) => x.set === set);
 
+// ---------------------------------------------------------------- rails: "new this week", "last chance", the vault
+// Drops are data: an item's `drop` date (remote config `drops` can move it) puts it on "new this week" for RAILS.newDays;
+// "last chance" lists what is on sale inside a window that closes within RAILS.lastDays. Nothing is invented: every
+// date shown is the item's real window, and an evergreen item never appears on "last chance".
+export const RAILS = { newDays: 7, lastDays: 7, max: 8 };
+export function newThisWeek(ms = Date.now()): Item[] {
+  return storeCatalog(ms).filter((x) => (x.drop != null && x.drop <= ms && ms - x.drop < RAILS.newDays * DAY && !inVault(x, ms))).sort((a, b) => (b.drop || 0) - (a.drop || 0)).slice(0, RAILS.max);
+}
+export function lastChance(ms = Date.now()): { item: Item; ends: number; vault: boolean }[] {
+  return storeCatalog(ms).map((x) => ({ item: x, w: activeWindow(x, ms) })).filter((x): x is { item: Item; w: SaleWindow } => !!x.w && x.w.to - ms <= RAILS.lastDays * DAY)
+    .map(({ item: it, w }) => ({ item: it, ends: w.to, vault: inVault(it, ms) })).sort((a, b) => a.ends - b.ends).slice(0, RAILS.max);
+}
+export const vaultNow = (ms = Date.now()): Item[] => VAULT.filter((v) => ms >= v.from && ms < v.to).map((v) => item(v.id)).filter((x): x is Item => !!x && inVault(x, ms));
+
+// ---------------------------------------------------------------- the collection book (sets)
+// Every set with every item in it: evergreen families, the lines, earned families, and each season (past seasons
+// stay in the book: gone items show "may return from the vault"). Ownership is decided by the caller (wallet.owns).
+export const BOOK_ORDER = ['lines', 'story', 'rank', 'streak', 'rivalry', 'referral', 'ddlive', 'redtop', 'broadsheet', 'wire', 'night', 'gilt', 'event'];
+export function bookSets(ms = Date.now()): { set: string; season: boolean; items: Item[] }[] {
+  const all = [...NEW.filter((x) => x.source !== 'standard'), ...EARNED, ...seasonCosmeticsAll(), ...seasonStore().map(fromLegacy)];
+  const map = new Map<string, Item[]>();
+  const add = (it: Item) => { const k = it.set || 'other'; const l = map.get(k) || []; if (!l.some((x) => x.id === it.id)) l.push(it); map.set(k, l); };
+  all.forEach(add);
+  // this season and the last three: the six-slot set plus Gold
+  let cur = seasonAt(ms);
+  for (let i = 0; i < 4 && cur; i++) { seasonSet(cur.id).forEach((it) => { if (it.kind !== 'gold') add({ ...it, set: cur!.id }); }); const prev = seasonAt(cur.start - DAY); if (prev.id === cur.id) break; cur = prev; }
+  const rank = (k: string) => { const i = BOOK_ORDER.indexOf(k); return i >= 0 ? i : /^\w+-\d{4}$/.test(k) ? -1 : 99; };
+  return [...map.entries()].map(([set, items]) => ({ set, season: /^\w+-\d{4}$/.test(set), items })).sort((a, b) => rank(a.set) - rank(b.set) || (a.season && b.season ? (b.items[0].window?.from || 0) - (a.items[0].window?.from || 0) : 0));
+}
+
 // ---------------------------------------------------------------- the featured rotation
 // Three items a week, deterministic by ISO week, one per kind, never the same item two weeks running, at an honest
 // 15% off. Same item, same price the week after; nothing "leaves" unless it has a season window. Remote config
@@ -349,16 +379,27 @@ export function priceNow(it: Item, ms = Date.now()): Price {
 // looks go to the earned list; `featured` pins ids; `vault` replaces the return calendar. Additive only: it can never
 // remove an owned id, and every look is validated first, so an effect can't arrive from the server either.
 let remote: { items: Item[]; featured: string[] } = { items: [], featured: [] };
-export function applyRemoteCatalog(cfg: { items?: Item[]; looks?: Item[]; featured?: string[]; vault?: { id: string; from: number | string; to: number | string }[] }) {
-  const looks = (cfg.looks || cfg.items || []).filter((x) => validateItem(x).length === 0);
+export interface RemoteCatalog {
+  items?: Item[]; looks?: Item[]; featured?: string[];
+  vault?: { id: string; from: number | string; to: number | string }[];
+  drops?: { id: string; at: number | string }[];                 // move an item's arrival (the "new this week" rail)
+  rails?: { newDays?: number; lastDays?: number; max?: number };  // rail lengths
+  earnedOnly?: string[];                                         // ids that may never carry a price (belt and braces)
+}
+const toMs = (x: number | string) => (typeof x === 'number' ? x : Date.parse(String(x).length === 10 ? x + 'T00:00:00Z' : x));
+export function applyRemoteCatalog(cfg: RemoteCatalog) {
+  const never = new Set([...(cfg.earnedOnly || []), ...EARNED.map((x) => x.id)]);
+  const looks = (cfg.looks || cfg.items || []).filter((x) => validateItem(x).length === 0 && !(never.has(x.id) && x.source !== 'earned'));
   remote = { items: looks, featured: cfg.featured || [] };
   for (const it of looks) {
     const list = it.source === 'earned' ? EARNED : NEW;
     const k = list.findIndex((x) => x.id === it.id); if (k >= 0) list[k] = it; else list.push(it);
   }
   for (const it of NEW) it.featured = remote.featured.includes(it.id) || undefined;
+  for (const d of cfg.drops || []) { const it = NEW.find((x) => x.id === d.id); const at = toMs(d.at); if (it && Number.isFinite(at)) it.drop = at; }
+  if (cfg.rails) for (const k of ['newDays', 'lastDays', 'max'] as const) { const v = cfg.rails[k]; if (Number.isInteger(v) && v! > 0 && v! <= 30) RAILS[k] = v!; }
   if (cfg.vault) {
-    const ms = (x: number | string) => (typeof x === 'number' ? x : Date.parse(String(x).length === 10 ? x + 'T00:00:00Z' : x));
+    const ms = toMs;
     const v = cfg.vault.map((x) => ({ id: x.id, from: ms(x.from), to: ms(x.to) })).filter((x) => Number.isFinite(x.from) && Number.isFinite(x.to) && x.from < x.to && x.to - x.from <= VAULT_MAX_DAYS * DAY + 1 && !!item(x.id));
     VAULT = v;
   }

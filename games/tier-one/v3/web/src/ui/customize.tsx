@@ -8,12 +8,14 @@ import { sfx } from '../lib/sfx';
 import { bylineOf, repTier } from '../lib/byline';
 import { levelOf } from '../lib/progress';
 import { frameCSS } from '../lib/season';
-import { item, legacy, isStandard, type Item, type Kind, type Price } from '../lib/catalog';
+import { item, legacy, isStandard, kindDef, type Item, type Kind, type Price } from '../lib/catalog';
 import {
   equipped, balances, priceText, giftTargets, gift, giftable, referralCode, creditPacksOnSale, buyCreditPack, CREDIT_PACKS, packBonus, paperName,
-  type Currency,
+  showcaseOf, type Currency,
 } from '../lib/wallet';
-import { Icon, GBtn } from './game';
+import { catchDef, TONE_SFX, CUSTOM_ID, HOUSE_KEY } from '../lib/catchphrase';
+import type { HeadlineFace } from '../lib/kinds';
+import { Icon, GBtn, SRC_ICON } from './game';
 import { CosSwatch } from './season';
 import { navTo } from './connect';
 import '../styles/customize.css';
@@ -76,19 +78,37 @@ export function BylinePreview({ s, tryOn, style }: { s: Save; tryOn?: Try; style
       <div><dt>{t('eco.preview.rep')}</dt><dd className="g-num">{b.rep}</dd></div>
       <div><dt>{t('eco.preview.hot')}</dt><dd className="g-num"><Icon n="flame" size={18} />{b.hot}</dd></div>
     </dl>
+    <CatchLine s={s} tryOn={tryOn} className="cz-by__cp" />
+    <Showcase s={s} />
     <p className="cz-by__paper">{paperName(s)}</p>
   </div>;
+}
+/** The catchphrase as a slammed stamp in the line's colour (byline card, share card, the catchphrase stage). */
+export function lineText(t: T, s: Save, it: Item): string {
+  const d = catchDef(it);
+  if (d.id === CUSTOM_ID) return s.desk?.cp?.text && s.desk.cp.ok !== false ? s.desk.cp.text : t(HOUSE_KEY);
+  return t(d.key);
+}
+export function CatchLine({ s, tryOn, className = '', big }: { s: Save; tryOn?: Try; className?: string; big?: boolean }) {
+  const t = useT(); const it = look('catchphrase', s, tryOn); const d = catchDef(it);
+  return <span className={'cz-cp cz-cp--' + d.tone + (big ? ' cz-cp--big' : '') + ' ' + className} style={{ ['--cp' as string]: d.c }} dir="auto">{lineText(t, s, it)}</span>;
+}
+/** Up to three pinned looks on the byline card. */
+export function Showcase({ s }: { s: Save }) {
+  const show = showcaseOf(s);
+  if (!show.length) return null;
+  return <span className="cz-show" aria-hidden="true">{show.map((it) => <span key={it.id} className="cz-show__i"><Thumb it={it} s={s} /></span>)}</span>;
 }
 /** The scoop card (lib/share.ts) drawn small: the style, the post frame and the paper's name. */
 export function ShareCardPreview({ s, tryOn, style }: { s: Save; tryOn?: Try; style?: CSSProperties }) {
   const t = useT();
   const c = pv('sharecard', s, tryOn), ink = pv('ink', s, tryOn);
-  const fr = look('frame', s, tryOn);
+  const fr = look('frame', s, tryOn); const hd = pv('headline', s, tryOn);
   const frame = fr.source === 'standard' ? {} : frameCSS(legacy(fr));
   return <div className={'cz-sc cz-sc--' + c.style} style={{ ['--sc-paper' as string]: c.paper, ['--sc-ink' as string]: c.ink, ['--sc-acc' as string]: c.accent, ...(frame as CSSProperties), ...style }}>
     <div className="cz-sc__mast"><b dir="auto">{paperName(s)}</b><span>No. 214</span></div>
-    <p className="cz-sc__kick">{t('eco.preview.stamp')}</p>
-    <h3 className="cz-sc__hed">{t('eco.preview.hed')}</h3>
+    <CatchLine s={s} tryOn={tryOn} className="cz-sc__cp" />
+    <h3 className="cz-sc__hed" style={hedStyle(hd.face, hd.upper, hd.ink)}>{t('eco.preview.hedline')}</h3>
     <p className="cz-sc__sub" dir="auto">{t('eco.preview.sub')}</p>
     <div className="cz-sc__body"><span className="cz-sc__fig" aria-hidden="true"><i /><i /></span><span className="cz-sc__num g-num">+81<small>pts</small></span></div>
     <span className="g-stamp cz-sc__stamp" style={{ ['--sc' as string]: ink.c }}>{t('eco.preview.stamp')}</span>
@@ -138,6 +158,58 @@ export function PostPreview({ s, tryOn }: { s: Save; tryOn?: Try }) {
     <span className="g-stamp cz-post__stamp" style={{ ['--sc' as string]: ink.c }}>{t('eco.preview.filed')}</span>
   </div>;
 }
+const FACE: Record<HeadlineFace, string> = { wood: 'var(--f-display)', serif: 'Georgia, "Times New Roman", serif', slab: 'var(--f-cond)', stencil: 'var(--f-cond)', mono: 'var(--f-mono)' };
+const hedStyle = (face: HeadlineFace, upper?: boolean, ink?: string): CSSProperties => ({ fontFamily: FACE[face], textTransform: upper ? 'uppercase' : 'none', letterSpacing: face === 'stencil' ? '.08em' : face === 'mono' ? '-.02em' : undefined, fontWeight: face === 'serif' ? 700 : 900, ...(ink ? { color: ink } : {}) });
+/** The results front page headline in the chosen font. */
+export function HeadlinePreview({ s, tryOn }: { s: Save; tryOn?: Try }) {
+  const t = useT(); const h = pv('headline', s, tryOn);
+  return <div className="cz-hd"><span className="cz-hd__k">{paperName(s)} · {t('eco.preview.stamp')}</span><h3 className="cz-hd__h" style={hedStyle(h.face, h.upper, h.ink)} data-face={h.face}>{t('eco.preview.hedline')}</h3><p className="cz-hd__s">{t('eco.preview.sub')}</p></div>;
+}
+/** Home's film stage at night under the chosen lamp. */
+export function LampPreview({ s, tryOn }: { s: Save; tryOn?: Try }) {
+  const t = useT(); const l = pv('lamp', s, tryOn);
+  return <div className={'cz-lamp cz-lamp--' + l.warmth} style={{ ['--lamp-glow' as string]: l.glow, ['--lamp-pool' as string]: l.pool }}>
+    <span className="cz-lamp__shade" aria-hidden="true" /><span className="cz-lamp__pool" aria-hidden="true" /><span className="cz-lamp__desk" aria-hidden="true"><i /><i /><i /></span>
+    <b className="cz-lamp__t">{t('eco.preview.lamp')}</b>
+  </div>;
+}
+/** One ring per source: tap a source to hear who's calling. */
+export function RingPackPreview({ s, tryOn }: { s: Save; tryOn?: Try }) {
+  const t = useT(); const r = pv('ringpack', s, tryOn); const single = pv('ringtone', s, tryOn);
+  const std = look('ringpack', s, tryOn).source === 'standard';
+  return <div className="cz-rp">{(['kitman', 'barber', 'agent', 'spotter', 'physio', 'leak'] as const).map((src) => {
+    const cue = std ? single.sfx : r.rings[src] || r.fallback;
+    return <button key={src} type="button" className={'cz-rp__b g-src g-src--' + src} onClick={() => sfx(cue as 'phone.ring')} aria-label={t('src.' + src) + ' · ' + t('eco.act.hear')}><Icon n={SRC_ICON[src]} size={18} /><small>{t('src.' + src)}</small></button>;
+  })}</div>;
+}
+/** Three feed rows in the chosen skin. */
+export function FeedPreview({ s, tryOn }: { s: Save; tryOn?: Try }) {
+  const t = useT(); const f = pv('feedskin', s, tryOn);
+  return <div className={'cz-feed cz-feed--' + f.style} style={{ ['--fs-rule' as string]: f.rule, ['--fs-bg' as string]: f.bg, ['--fs-ink' as string]: f.ink }}>
+    <b className="cz-feed__h">{t('eco.preview.feed')}</b>
+    {[t('eco.preview.hed'), t('eco.preview.sub'), t('eco.preview.post')].map((x, k) => <p key={k} className="cz-feed__row" dir="auto"><i />{x}</p>)}
+  </div>;
+}
+/** The newsroom's shared front page. */
+export function FrontPagePreview({ s, tryOn }: { s: Save; tryOn?: Try }) {
+  const t = useT(); const f = pv('frontpage', s, tryOn);
+  return <div className={'cz-fp cz-fp--' + f.rule} style={{ ['--fp-paper' as string]: f.paper, ['--fp-ink' as string]: f.ink, ['--fp-kick' as string]: f.kicker, ['--fp-cols' as string]: String(f.cols) }}>
+    <p className="cz-fp__mast" dir="auto">{paperName(s)}</p>
+    <h3 className="cz-fp__h" style={hedStyle(f.hed, true)}>{t('eco.preview.hedline')}</h3>
+    <div className="cz-fp__cols" aria-hidden="true">{Array.from({ length: f.cols }, (_, k) => <span key={k}><i /><i /><i /></span>)}</div>
+    <small className="cz-fp__k">{t('eco.preview.front')}</small>
+  </div>;
+}
+/** The catchphrase stamp slammed on a published call; tap to hear it land. */
+export function CatchPreview({ s, tryOn }: { s: Save; tryOn?: Try }) {
+  const t = useT(); const it = look('catchphrase', s, tryOn); const d = catchDef(it);
+  const [k, setK] = useState(0);
+  return <button type="button" className="cz-cpstage" onClick={() => { setK((x) => x + 1); sfx(TONE_SFX[d.tone]); }} aria-label={t('cp.ui.hear')}>
+    <span className="cz-cpstage__post" aria-hidden="true"><b>{s.nick || t('g.home.noName')}</b><i /><i /></span>
+    <span key={k} className="cz-cpstage__slam"><CatchLine s={s} tryOn={tryOn} big /></span>
+    <small className="cz-cpstage__hint"><Icon n="sound" size={13} />{t('cp.ui.hear')} · {t('cp.ui.tone.' + d.tone)}</small>
+  </button>;
+}
 /** Which preview a tab shows. The stage's desk colours follow the desk theme being tried. */
 export function Stage({ tab, s, tryOn }: { tab: Kind; s: Save; tryOn?: Try }) {
   const t = useT();
@@ -145,13 +217,20 @@ export function Stage({ tab, s, tryOn }: { tab: Kind; s: Save; tryOn?: Try }) {
   const deskVars = d?.desk ? { ['--desk' as string]: d.desk[0], ['--desk-2' as string]: d.desk[1], ['--desk-3' as string]: d.desk[2] } : {};
   const paperCls = d?.paper ? ' cz-stage--paper-' + th.id : '';
   let body: ReactNode;
-  switch (tab) {
-    case 'sharecard': case 'frame': body = tab === 'frame' ? <PostPreview s={s} tryOn={tryOn} /> : <ShareCardPreview s={s} tryOn={tryOn} />; break;
+  // The kind registry says which preview draws a kind (lib/kinds.ts `preview`); a new kind needs one entry here.
+  switch (kindDef(tab).preview) {
+    case 'post': body = <PostPreview s={s} tryOn={tryOn} />; break;
+    case 'sharecard': body = <ShareCardPreview s={s} tryOn={tryOn} />; break;
     case 'presspass': body = <PressPassPreview s={s} tryOn={tryOn} />; break;
-    case 'masthead': case 'paper': body = <MastheadPreview s={s} tryOn={tryOn} />; break;
+    case 'masthead': body = <MastheadPreview s={s} tryOn={tryOn} />; break;
     case 'poster': body = <PosterPreview s={s} tryOn={tryOn} />; break;
-    case 'ringtone': body = <RingPreview s={s} tryOn={tryOn} />; break;
-    case 'gold': body = <ShareCardPreview s={s} tryOn={tryOn} />; break;
+    case 'ring': body = <RingPreview s={s} tryOn={tryOn} />; break;
+    case 'headline': body = <HeadlinePreview s={s} tryOn={tryOn} />; break;
+    case 'lamp': body = <LampPreview s={s} tryOn={tryOn} />; break;
+    case 'ringpack': body = <RingPackPreview s={s} tryOn={tryOn} />; break;
+    case 'feed': body = <FeedPreview s={s} tryOn={tryOn} />; break;
+    case 'frontpage': body = <FrontPagePreview s={s} tryOn={tryOn} />; break;
+    case 'catch': body = <CatchPreview s={s} tryOn={tryOn} />; break;
     default: body = <BylinePreview s={s} tryOn={tryOn} />;
   }
   return <div className={'cz-stage' + paperCls} style={deskVars} aria-label={t('eco.preview.desk')}>
@@ -178,6 +257,12 @@ export function Thumb({ it, s }: { it: Item; s: Save }) {
     case 'theme': return <span className="cz-th" style={{ background: p.desk ? `linear-gradient(135deg, ${p.desk[0]}, ${p.desk[2]})` : undefined }} aria-hidden="true"><i className="cz-th__sheet" /></span>;
     case 'ringtone': return <span className="cz-th cz-th--std" aria-hidden="true"><Icon n="phone" size={18} /></span>;
     case 'flair': return <span className="cz-th cz-th--std" aria-hidden="true"><Icon n="me" size={18} /></span>;
+    case 'headline': return <span className="cz-th cz-th--hd" style={{ ...hedStyle(p.face, p.upper, p.ink) }} aria-hidden="true">Aa</span>;
+    case 'lamp': return <span className="cz-th cz-th--lamp" style={{ ['--lamp-glow' as string]: p.glow, ['--lamp-pool' as string]: p.pool }} aria-hidden="true"><i /></span>;
+    case 'ringpack': return <span className="cz-th cz-th--std" aria-hidden="true"><Icon n="phone" size={16} /><b className="cz-th__n">{Object.keys(p.rings).length || 1}</b></span>;
+    case 'feedskin': return <span className="cz-th cz-th--fs" style={{ background: p.bg, color: p.ink, ['--rule' as string]: p.rule }} aria-hidden="true"><i /><i /><i /></span>;
+    case 'frontpage': return <span className="cz-th cz-th--fp" style={{ background: p.paper, color: p.ink, ['--kick' as string]: p.kicker, ['--cols' as string]: String(p.cols) }} aria-hidden="true"><b />{Array.from({ length: p.cols }, (_, k) => <i key={k} />)}</span>;
+    case 'catchphrase': return <span className={'cz-th cz-th--cp cz-cp--' + p.tone} style={{ ['--cp' as string]: p.c }} aria-hidden="true"><b dir="auto">{it.id === CUSTOM_ID && s.desk?.cp?.text ? s.desk.cp.text : t(p.key)}</b></span>;
   }
 }
 export interface TileProps { it: Item; s: Save; on: boolean; owned: boolean; selected: boolean; price: Price | null; was?: Price; onPick: () => void; tabIndex: number }
@@ -194,6 +279,7 @@ export function Tile({ it, s, on, owned, selected, price, was, onPick, tabIndex 
           : price ? <PriceTag price={price} was={was} /> : <span className="cz-tile__earn">{t('eco.source.' + it.source)}</span>}
     </span>
     {it.rarity !== 'common' && <i className="cz-tile__rar" title={t('eco.rarity.' + it.rarity)} />}
+    {it.source === 'earned' && !owned && <i className="cz-tile__lock" aria-hidden="true"><Icon n="lock" size={11} /></i>}
   </button>;
 }
 
