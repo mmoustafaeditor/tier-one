@@ -67,7 +67,7 @@ export default {
         chip: 'Vince’s play', banner: 'One source on this saga has been fed Vince’s line and will repeat it, whatever the truth. Watch what they do, not what they say.',
         introD: 'One saga a window. One source fed a fake.',
         who: { agent: 'the agent', barber: 'the barber', spotter: 'the airport spotter', kitman: 'the kit man', physio: 'the physio' },
-        howto: ['Vince’s play (Story, chapter 4 on)', 'In Story mode, from chapter 4, one saga per window is marked Vince’s play. One of its sources (the agent, the barber or the airport spotter) has been fed a planted story and repeats the rumour mill’s wrong version, whatever the truth. Scoring doesn’t change. After the window, the card shows who lied. Never in the Daily, rooms or Practice.'],
+        howto: ['Vince’s play (Story, chapter 4 on)', 'In Story mode, from chapter 4, one saga per window is marked Vince’s play. One of its sources (the agent, the barber or the airport spotter) has been fed a planted story and repeats the rumour mill’s wrong version, whatever the truth. Scoring doesn’t change. After the window, Mags’s note names who lied. Never in the Daily, rooms or Practice.'],
       },
       film: {
         prologueT: 'The fall', finaleK: 'Finale', finaleT: 'Deadline Day, again',
@@ -178,7 +178,7 @@ export default {
         chip: 'لعبة فينس', banner: 'مصدر في القصة دي اتلقّن كلام فينس وهيعيده مهما كانت الحقيقة. بص على اللي بيعملوه، مش اللي بيقولوه.',
         introD: 'قصة واحدة كل فترة. مصدر واحد متلقّن.',
         who: { agent: 'الوكيلة', barber: 'الحلّاق', spotter: 'راصد المطار', kitman: 'مسؤول المهمات', physio: 'أخصائية العلاج' },
-        howto: ['لعبة فينس (القصة، من الفصل ٤)', 'في وضع القصة، من الفصل ٤، كل فترة فيها قصة واحدة متعلّمة «لعبة فينس». مصدر من مصادرها (الوكيلة أو الحلّاق أو راصد المطار) اتلقّن خبر مزروع وبيعيد النسخة الغلط اللي في الشارع مهما كانت الحقيقة. الحساب مبيتغيرش. بعد الفترة، الكارت بيقولك مين اللي كدب. عمرها ما بتظهر في اليومي ولا الأوض ولا التدريب.'],
+        howto: ['لعبة فينس (القصة، من الفصل ٤)', 'في وضع القصة، من الفصل ٤، كل فترة فيها قصة واحدة متعلّمة «لعبة فينس». مصدر من مصادرها (الوكيلة أو الحلّاق أو راصد المطار) اتلقّن خبر مزروع وبيعيد النسخة الغلط اللي في الشارع مهما كانت الحقيقة. الحساب مبيتغيرش. بعد الفترة، رسالة ماجز بتقولك مين اللي كدب. عمرها ما بتظهر في اليومي ولا الأوض ولا التدريب.'],
       },
       film: {
         prologueT: 'الوقعة', finaleK: 'الختام', finaleT: 'آخر يوم، تاني',
@@ -289,7 +289,7 @@ export default {
         chip: 'La jugada de Vince', banner: 'A una fuente de este culebrón le han soplado la versión de Vince y la repetirá, sea cual sea la verdad. Fíjate en lo que hacen, no en lo que dicen.',
         introD: 'Un culebrón por ventana. Una fuente con un bulo.',
         who: { agent: 'la agente', barber: 'el barbero', spotter: 'el vigía del aeropuerto', kitman: 'el utillero', physio: 'la fisio' },
-        howto: ['La jugada de Vince (Historia, desde el capítulo 4)', 'En el modo historia, desde el capítulo 4, un culebrón por ventana lleva la marca «La jugada de Vince». A una de sus fuentes (la agente, el barbero o el vigía del aeropuerto) le han colado un bulo y repite la versión falsa de la calle, sea cual sea la verdad. La puntuación no cambia. Después de la ventana, la ficha dice quién mintió. Nunca en el Diario, las salas ni la práctica.'],
+        howto: ['La jugada de Vince (Historia, desde el capítulo 4)', 'En el modo historia, desde el capítulo 4, un culebrón por ventana lleva la marca «La jugada de Vince». A una de sus fuentes (la agente, el barbero o el vigía del aeropuerto) le han colado un bulo y repite la versión falsa de la calle, sea cual sea la verdad. La puntuación no cambia. Después de la ventana, la nota de Mags dice quién mintió. Nunca en el Diario, las salas ni la práctica.'],
       },
       film: {
         prologueT: 'La caída', finaleK: 'Final', finaleT: 'El último día, otra vez',

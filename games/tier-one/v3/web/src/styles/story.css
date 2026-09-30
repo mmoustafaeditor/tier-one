@@ -51,7 +51,8 @@
 /* ---------- chapter header */
 .sm-head { padding: 0; overflow: hidden; }
 .sm-head__band { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 16px; background: linear-gradient(180deg, #FFD35C, var(--gold)); color: #3A2600; }
-.sm-head__band .g-mono { font-weight: 700; white-space: nowrap; }
+.sm-head__band .g-mono { font-weight: 700; }
+.sm-head__band .sm-head__paper { flex: none; max-width: 48%; }
 .sm-head__paper { font-family: var(--f-display); font-style: italic; font-weight: 700; font-size: 15px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sm-head__body { padding: 16px; }
 .sm-head__row { display: flex; gap: 14px; align-items: flex-start; }
