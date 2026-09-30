@@ -23,6 +23,7 @@ import { Sheet } from '../ui/bits';
 import { renderCard, shareText, hereWeGoOf } from '../lib/share';
 import type { Chrome } from '../App';
 import '../styles/results.css';
+import { flushDeferredScenes } from '../lib/scenes';
 
 const TIER_C: Record<string, string> = { T1: 'gold', T2: 'done', T3: 'done', T4: 'off', SPIKED: '' };
 const LEAGUE_PTS: Record<string, number> = { T1: 30, T2: 20, T3: 12, T4: 6, SPIKED: 2 };
@@ -56,6 +57,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   // stage: 0 press · 1 verdict · 2..1+n tweets · 2+n tier stamp · 3+n the rest
   const n = called.length;
   const TIER = 2 + n, PROG = 3 + n;
+  useEffect(() => { if (stage >= PROG) flushDeferredScenes(); }, [stage >= PROG]);
   useEffect(() => {
     if (stage >= PROG) return;
     const ms = stage === 0 ? 900 : stage === 1 ? 600 : stage < TIER ? 520 : 800;

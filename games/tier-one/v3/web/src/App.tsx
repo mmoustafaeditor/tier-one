@@ -18,6 +18,7 @@ import { RoomsScreen } from './screens/Rooms';
 import { HowTo } from './screens/HowTo';
 import { SettingsSheet } from './screens/Settings';
 import { Onboarding } from './screens/Onboarding';
+import { SceneHost } from './lib/scenes';
 import { FeedScreen, RivalsScreen, ContactsScreen, setNav } from './screens/Connect';
 // Shell layer (GOTY.md §4): motion tokens + view transitions, then the tablet/desktop layouts. Loaded after the screen styles.
 import './styles/motion.css';
@@ -156,6 +157,7 @@ export function App() {
     <div className="toasts" aria-live="polite">{toasts.map((x) => <div key={x.id} className={'toast toast--' + x.kind}><b>{x.title}</b>{x.body && <span className="meta">{x.body}</span>}</div>)}</div>
     <SettingsSheet open={settings} onClose={() => setSettings(false)} go={go} />
     {!s.onboarded && <Onboarding go={go} />}
+    <SceneHost />
   </>;
 }
 const TAB_ORDER = TABS.map((x) => x.n);

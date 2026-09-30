@@ -8,6 +8,7 @@ import { startTutorial } from './Onboarding';
 import { PressPass } from './Home';
 import { useLeague } from '../lib/leagueData';
 import { BylineCard } from '../ui/connect';
+import { ScenesGallery } from '../film/ScenesGallery';
 
 const TROPHY_IC: Record<string, string> = { first: 'news', t1: 'crown', t1x3: 'crown', excl: 'bolt', excl3: 'bolt', clean: 'check', uturn: 'uturn', twist: 'uturn', dd: 'clock', silent: 'eye', fake: 'eye', hijack: 'arrow', agent: 'briefcase', echo: 'friends', physio: 'pulse', streak7: 'flame', streak30: 'flame', practice5: 'target', coach: 'target', career1: 'story', rank2: 'story', rank3: 'story', rank5: 'crown', trust5: 'phone', leak: 'fax', wire1: 'wire', wireRight: 'wire', room: 'friends', share: 'share', rich: 'gift' };
 
@@ -42,6 +43,8 @@ export function MeScreen(chrome: Chrome) {
           <span className="trophy__r"><span className="g-coin" />{ACH[id]}</span>
         </div>; })}
       </section>
+
+      <ScenesGallery />
 
       <div className="me__links" style={{ ['--i' as string]: 3 }}>
         <GBtn kind="gold" onClick={() => chrome.go({ n: 'pass' })}><Icon n="crown" size={22} />{t('g.me.pass')}</GBtn>
