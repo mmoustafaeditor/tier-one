@@ -382,7 +382,7 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
     const delta = tableMood(world, career, club);
     career = { ...career, board: { ...career.board, confidence: clamp(Math.round((career.board.confidence + delta) * 10) / 10, 0, 100) } };
   }
-  career = sackCheck(world, career);
+  career = sackCheck(world, career, onCourse(world, career, club));
   return { world, career, mine: res.mine };
 }
 
@@ -403,7 +403,20 @@ export function tableMood(w: World, c: Career, club: Club): number {
   let target = pos;
   while (target > 1 && !objectiveMet(obj, target, rows.length)) target--;
   const short = rows[target - 1].pts - mine;
-  return short <= 3 ? 0 : clamp(-MOOD_PER_POINT * (short - 3), -1, 0);
+  // A title race is close for longer: 2nd a few points off the top is not failing the objective yet (GF-004).
+  const grace = obj === 'title' ? 6 : 3;
+  return short <= grace ? 0 : clamp(-MOOD_PER_POINT * (short - grace), -1, 0);
+}
+
+// On course for the objective: meeting it now, or within 3 points of the place that would (6 in a title race).
+export function onCourse(w: World, c: Career, club: Club): boolean {
+  const rows = table(w, c, club.leagueId);
+  const pos = rows.findIndex((x) => x.clubId === c.clubId) + 1;
+  const obj = objectiveOf(w, club);
+  if (objectiveMet(obj, pos, rows.length)) return true;
+  let target = pos;
+  while (target > 1 && !objectiveMet(obj, target, rows.length)) target--;
+  return rows[target - 1].pts - rows[pos - 1].pts <= (obj === 'title' ? 6 : 3);
 }
 
 // Offers for the user's players: often for listed ones, now and then for a star. Offers last 3 matchdays.
