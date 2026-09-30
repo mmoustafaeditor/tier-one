@@ -2,6 +2,7 @@
 // nothing here reaches a ranked score.
 import type { Result } from './engine';
 import { update, getSave, type Save } from './save';
+import { addSeasonPP, goldBonus, seasonWindow } from './season';
 
 export const MAX_LV = 40;
 export function levelOf(pp: number) {
@@ -62,8 +63,10 @@ export function claimMission(id: string) {
     const v = missionsView(s)?.find((m) => m.id === id);
     if (!v || !v.done || v.claimed || !s.missions) return;
     s.missions.claimed.push(id);
-    s.credits += v.coins; s.ledger = [{ at: Date.now(), d: v.coins, why: 'mission:' + id }, ...s.ledger].slice(0, 30);
-    s.pp += 20; paid = v.coins;
+    const coins = goldBonus(s, v.coins); // Gold lane: +10%, rounded up
+    s.credits += coins; s.ledger = [{ at: Date.now(), d: coins, why: 'mission:' + id }, ...s.ledger].slice(0, 30);
+    s.stats.earned = (s.stats.earned || 0) + coins;
+    s.pp += 20; addSeasonPP(s, 20); paid = coins;
   });
   return paid;
 }
@@ -80,5 +83,6 @@ export function trackWindow(s: Save, r: Result, mode: 'daily' | 'practice' | 'st
     if (p.right && p.tw) bump(s, 'twistRight');
     for (const c of p.reads) if (['physio', 'spotter', 'barber', 'agent', 'kitman'].includes(c.src)) bump(s, ('src_' + c.src) as Counter);
   }
+  seasonWindow(s, r, mode); // season recap (best tier, top call) and the weekly event
 }
 export const missionsReady = () => (missionsView(getSave()) || []).filter((m) => m.done && !m.claimed).length;

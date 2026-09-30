@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from 'react';
 import type { Pub, Tier, Act } from './engine';
 import type { MissionState } from './progress';
+import type { SeasonSave, SeasonRecap, WeekEvState, CosKind } from './season';
 
 export const SAVE_KEY = 'tierone_v3';
 export const SAVE_V = 2;
@@ -38,6 +39,8 @@ export interface Save {
   // v2: career save slots. `career`/`story` are the live copy of slots[slot]; the others sit here.
   slots?: (CareerSlot | null)[];
   slot?: number;
+  // 3.3 seasons and the store (lib/season.ts, lib/monet.ts); all optional. Cosmetics live in `owned`, desk themes in `theme`.
+  season?: SeasonSave; seasonLog?: SeasonRecap[]; equip?: Partial<Record<Exclude<CosKind, 'theme'>, string>>; weekEv?: WeekEvState; adDay?: string;
 }
 
 const rid = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; let s = ''; const b = new Uint8Array(16); crypto.getRandomValues(b); for (const x of b) s += a[x % a.length]; return s; };
