@@ -334,7 +334,7 @@ function WireReply({ c }: { c: WireCall }) {
   const t = useT();
   const x = wireReply(t.lang, c.rid, !!c.right, c.s >= 3, c.player || '');
   if (!x.text) return null;
-  return <div className="wreply"><Avatar name={x.handle} size={28} /><div><b>{x.name}</b> <span className="g-mono">{x.handle}</span><p dir="auto">{x.text}</p></div></div>;
+  return <div className="wreply"><Avatar name={x.handle} size={28} /><div><b>{x.name}</b> <bdi dir="ltr" className="g-mono">{x.handle}</bdi><p dir="auto">{x.text}</p></div></div>;
 }
 
 // A settled number rolls up to its value (one decimal, like the scores).
