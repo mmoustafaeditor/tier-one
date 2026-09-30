@@ -372,7 +372,163 @@ const actions = {
     return { room: await readRoom(c), pid, sec };
   },
   async 'room.get'(b) { const room = await readRoom(roomCode(b.code)); return room ? { room } : { error: 'not found' }; },
+
+  // ---- Deadline Day Live (GOTY §7.1): one shared 24 h board on the real deadline days, the same five real sagas for
+  // everyone, a live tally of what the room is calling (counts, never names) and a global table after midnight UTC ----
+  // Board: today's five, my calls, the tally. `day` is only honoured off the calendar with T1_DD_PREVIEW (dev/tests).
+  async 'live.dd.board'(b) {
+    const dev = devId(b.dev);
+    const day = ddDay(b); if (!day) return { error: 'not live', next: nextDD() };
+    const board = await ddBoard(day);
+    const mine = dev ? (await getJ(ddCallKey(day, dev))) : null;
+    const tally = await ddTally(day);
+    return { ...board, live: day === today() || ddPreview(), mine: mine ? mine.calls : {}, ...tally };
+  },
+  // One call per saga; one U-turn per saga after that. Loudness 1–3 sets the stake (DD_RIGHT / DD_WRONG).
+  async 'live.dd.call'(b) {
+    const dev = devId(b.dev); if (!dev) return { error: 'dev' };
+    const day = ddDay(b); if (!day) return { error: 'not live', next: nextDD() };
+    if (day !== today() && !ddPreview()) return { error: 'closed' };
+    const board = await ddBoard(day);
+    const rid = clean(b.rid, 120), saga = board.sagas.find((s) => s.rid === rid); if (!saga) return { error: 'saga' };
+    const o = int(b.o, 0, DD_OUT.length - 1), s = int(b.s, 1, 3);
+    const key = ddCallKey(day, dev), doc = (await getJ(key)) || { calls: {} };
+    doc.nick = nickOf(b.nick, dev);
+    const old = doc.calls[rid];
+    if (old && old.ut) return { error: 'locked' };
+    if (old && old.o === o && old.s === s) return { day, call: old, ...(await ddTally(day)) };
+    const call = old ? { rid, o, s, at: old.at, ut: true, utAt: Date.now(), from: { o: old.o, s: old.s } } : { rid, o, s, at: Date.now() };
+    doc.calls[rid] = call;
+    const tk = 't1v3:dd:tally:' + day, pk = 't1v3:dd:players:' + day;
+    const cmds = [['SET', key, JSON.stringify(doc), 'EX', DD_TTL], ['SADD', pk, dev], ['EXPIRE', pk, DD_TTL], ['HINCRBY', tk, rid + ':' + o, 1], ['EXPIRE', tk, DD_TTL]];
+    if (old && old.o !== o) cmds.push(['HINCRBY', tk, rid + ':' + old.o, -1]);
+    await redis(cmds);
+    return { day, call, ...(await ddTally(day)) };
+  },
+  // What the room is calling: counts per outcome per saga, and how many reporters are on the board. No names.
+  async 'live.dd.tally'(b) {
+    const day = ddDay(b) || lastDD(); if (!day) return { error: 'none' };
+    const board = await ddBoard(day);
+    return { day, closesAt: board.closesAt, ...(await ddTally(day)) };
+  },
+  // After midnight UTC: each saga's real outcome (from the data snapshot, pending until it settles) and the global table.
+  async 'live.dd.results'(b) {
+    const dev = devId(b.dev), d = clean(b.day, 10);
+    const day = DD_DAYS[d] ? d : lastDD(); if (!day) return { error: 'none' };
+    const board = await ddBoard(day), now = Date.now();
+    if (now < board.closesAt && !ddPreview()) return { error: 'early', day, closesAt: board.closesAt };
+    const snap = loadSnapshot();
+    const outs = board.sagas.map((sg) => ddOutcome(sg, snap, now));
+    const settled = outs.filter((o) => o.o != null).length;
+    const mk = 't1v3:dd:res:' + day, meta = await getJ(mk + ':meta');
+    // The table is rebuilt only when another saga has settled (a handful of times at most), then read from the store.
+    if (!meta || meta.settled !== settled) {
+      const ids = (await one('SMEMBERS', 't1v3:dd:players:' + day)) || [];
+      const docs = ids.length ? await one('MGET', ...ids.map((id) => ddCallKey(day, id))) : [];
+      const cmds = [];
+      ids.forEach((id, k) => {
+        let doc = null; try { doc = JSON.parse(docs[k]); } catch { doc = null; }
+        if (!doc) return;
+        let pts = 0, right = 0, n = 0;
+        for (const c of Object.values(doc.calls || {})) { const p = ddPoints(c, outs[board.sagas.findIndex((sg) => sg.rid === c.rid)], board.opensAt); if (!p) continue; pts += p.pts; n++; if (p.right) right++; }
+        cmds.push(['ZADD', mk, pts, id], ['SET', mk + ':e:' + id, JSON.stringify({ nick: doc.nick, right, n, called: Object.keys(doc.calls || {}).length }), 'EX', DD_TTL]);
+      });
+      cmds.push(['EXPIRE', mk, DD_TTL], ['SET', mk + ':meta', JSON.stringify({ settled, at: now }), 'EX', DD_TTL]);
+      await redis(cmds);
+    }
+    const [z, total] = await redis([['ZREVRANGE', mk, 0, LB_TOP - 1, 'WITHSCORES'], ['ZCARD', mk]]);
+    const ids = []; for (let i = 0; i < (z || []).length; i += 2) ids.push(z[i]);
+    const docs = ids.length ? await one('MGET', ...ids.map((id) => mk + ':e:' + id)) : [];
+    const rows = ids.map((id, i) => { let e = null; try { e = JSON.parse(docs[i]); } catch { e = null; } return { nick: (e && e.nick) || 'Journo-' + id.slice(0, 4).toUpperCase(), pts: Number(z[2 * i + 1]) || 0, right: (e && e.right) || 0, n: (e && e.n) || 0, me: !!(dev && id === dev) }; });
+    let me = null;
+    if (dev) {
+      const sc = await one('ZSCORE', mk, dev);
+      if (sc != null) { const mine = await getJ(ddCallKey(day, dev)); me = { rank: 1 + Number(await one('ZCOUNT', mk, '(' + Number(sc), '+inf')), pts: Number(sc), calls: mine ? mine.calls : {} }; }
+    }
+    return {
+      day, window: board.window, opensAt: board.opensAt, closesAt: board.closesAt, final: settled === board.sagas.length, settled,
+      sagas: board.sagas.map((sg, i) => ({ ...sg, out: outs[i].o, outClub: outs[i].club || null, pending: outs[i].o == null })),
+      rows, players: Number(total) || 0, me,
+    };
+  },
+  // Live presence (GOTY §7.3): how many reporters are on today's board right now (a 10-minute bucket, no names).
+  async 'live.presence'(b) {
+    const dev = devId(b.dev);
+    const key = 't1v3:presence:' + today() + ':' + Math.floor(Date.now() / 600e3);
+    const cmds = dev ? [['SADD', key, dev], ['EXPIRE', key, 1500], ['SCARD', key]] : [['SCARD', key]];
+    const out = await redis(cmds);
+    return { day: today(), now: Number(out[out.length - 1]) || 0 };
+  },
 };
+
+// ---------------------------------------------------------------- Deadline Day Live helpers
+// The real deadline days (UTC dates) and the Wire window each belongs to. The client's copy is the source of truth for
+// the calendar: games/tier-one/v3/web/src/lib/season.ts › DEADLINE_DAYS. Keep the two lists identical.
+const DD_DAYS = { '2027-02-02': '2027-01', '2027-09-01': '2027-summer' };
+const DD_TTL = 40 * DAY, DD_SAGAS = 5, DD_POOL = 12, DD_EARLY_H = 12;
+// Points: right +10 / +22 / +40 by loudness (Talks / Advanced / Confirmed), ×1.25 when filed before 12:00 UTC (the early
+// bird); wrong −4 / −12 / −30. Uncalled sagas score 0. A void saga (gone from the data) scores nobody.
+const DD_RIGHT = [10, 22, 40], DD_WRONG = [4, 12, 30], DD_EARLY_X = 1.25;
+const DD_OUT = ['done', 'hijack', 'stays'];
+const ddPreview = () => !!process.env.T1_DD_PREVIEW && process.env.VERCEL_ENV !== 'production';
+const ddCallKey = (day, dev) => 't1v3:dd:calls:' + day + ':' + dev;
+const nextDD = (day = today()) => Object.keys(DD_DAYS).filter((d) => d > day).sort()[0] || null;
+const lastDD = (day = today()) => Object.keys(DD_DAYS).filter((d) => d <= day).sort().pop() || null;
+function ddDay(b) {
+  const d = clean(b && b.day, 10);
+  if (DD_DAYS[d] && (d === today() || ddPreview())) return d;
+  return DD_DAYS[today()] ? today() : null;
+}
+// The five sagas of the day: the hottest open rumours of the window, then a seeded shuffle of that pool so the five aren't
+// just the Wire's top of the page. Built once and stored, so a snapshot refresh mid-day can't change the board.
+async function ddBoard(day) {
+  const key = 't1v3:dd:board:' + day;
+  const cached = await getJ(key); if (cached) return cached;
+  const snap = loadSnapshot(), win = DD_DAYS[day];
+  const usable = (r) => r.status === 'open' && r.linked && r.linked.length && r.linked[0].clubId;
+  let rs = snap.rumours.filter((r) => usable(r) && r.window === win);
+  if (rs.length < DD_SAGAS) rs = snap.rumours.filter(usable);
+  const seed = saltedSeed('ddlive-' + day);
+  const pool = [...rs].sort((a, b) => (b.heat || 0) - (a.heat || 0) || a.id.localeCompare(b.id)).slice(0, Math.max(DD_SAGAS, DD_POOL));
+  const five = pool.map((r) => ({ r, h: hashStr(seed + '|' + r.id) })).sort((a, b) => a.h - b.h).slice(0, DD_SAGAS).map((x) => x.r);
+  const sagas = five.map((r, i) => ({
+    i, rid: r.id, player: r.playerName, playerId: r.playerId, from: r.currentClubName, fromId: r.currentClubId,
+    to: { id: r.linked[0].clubId, name: r.linked[0].name, stage: r.linked[0].stage },
+    others: r.linked.slice(1, 3).map((l) => ({ id: l.clubId, name: l.name })), heat: r.heat || 0, market: marketOf(r), fact: r.fact || null,
+  }));
+  const opensAt = Date.parse(day + 'T00:00:00Z');
+  const board = { day, window: win, opensAt, closesAt: opensAt + DAY_MS, sagas, names: snap.mode };
+  await one('SET', key, JSON.stringify(board), 'EX', DD_TTL, 'NX');
+  return (await getJ(key)) || board;
+}
+async function ddTally(day) {
+  const [h, n] = await redis([['HGETALL', 't1v3:dd:tally:' + day], ['SCARD', 't1v3:dd:players:' + day]]);
+  const counts = {};
+  for (const [k, v] of Object.entries(hashObj(h))) {
+    const i = k.lastIndexOf(':'); if (i < 0) continue;
+    const rid = k.slice(0, i), oi = Number(k.slice(i + 1));
+    if (!(oi >= 0 && oi < DD_OUT.length)) continue;
+    (counts[rid] = counts[rid] || DD_OUT.map(() => 0))[oi] = Math.max(0, Number(v) || 0);
+  }
+  return { counts, players: Number(n) || 0 };
+}
+// A saga's real outcome: done (joined the linked club), hijack (joined someone else), stays (no move), or pending while the
+// snapshot hasn't caught up. The Wire's own resolution (wire.mjs rumourState) decides; nothing here is hand-typed.
+function ddOutcome(saga, snap, now) {
+  const r = snap.rumours.find((x) => x.id === saga.rid) || ghostRumour(saga.rid);
+  const st = rumourState(r, snap, OVERRIDES, now);
+  if (st.state === 'moved') return { o: saga.to && st.club === saga.to.id ? 0 : 1, club: st.club || null, at: st.at };
+  if (st.state === 'stayed') return { o: 2, club: null, at: st.at };
+  if (st.state === 'void') return { o: null, void: true };
+  return { o: null };
+}
+function ddPoints(call, out, opensAt) {
+  if (!call || !out || out.o == null) return null;
+  const s = int(call.s, 1, 3), right = call.o === out.o;
+  const early = (call.utAt || call.at) < opensAt + DD_EARLY_H * 3600e3;
+  return { pts: right ? Math.round(DD_RIGHT[s - 1] * (early ? DD_EARLY_X : 1)) : -DD_WRONG[s - 1], right, early };
+}
+export { DD_DAYS, DD_OUT, DD_RIGHT, DD_WRONG, DD_EARLY_X, ddPoints };
 
 const hashObj = (h) => { if (!h) return {}; if (!Array.isArray(h)) return h; const o = {}; for (let i = 0; i < h.length; i += 2) o[h[i]] = h[i + 1]; return o; };
 const stripView = ({ player, from, linked, mNow, paper, ...c }) => c;
