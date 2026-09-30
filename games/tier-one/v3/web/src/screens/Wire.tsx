@@ -18,6 +18,7 @@ import { wireReply } from '../lib/banter';
 import { rumourHed } from './Front';
 import type { Chrome } from '../App';
 import '../styles/football.css';
+import { WireFilm } from '../ui/film';
 
 const round1 = (x: number) => Math.round(x * 10) / 10;
 function odds(yes: boolean, s: number, m: number) { const c = yes ? m : 1 - m; return { win: round1(s * (10 * (1 - c) + 2)), lose: round1(s * 10 * c), c }; }
@@ -87,6 +88,7 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
     <TopBar onHelp={() => chrome.go({ n: 'howto' })} onMenu={chrome.openSettings} />
     <div className="stagger g-stack">
       <section className="g-hero g-hero--wire wire3__hero" style={{ ['--i' as string]: 0 }}>
+        <WireFilm layer="inline" />
         <span className="g-hero__art" aria-hidden="true"><Icon n="wire" /></span>
         <span className="g-mono g-hero__k"><i className="g-dot" />{t('g.wire.k')}</span>
         <h1 className="g-hero__t">{t('g.wire.hed')}</h1>

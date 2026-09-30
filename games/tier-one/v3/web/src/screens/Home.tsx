@@ -24,6 +24,7 @@ import { weekEventView } from '../lib/season';
 import { bylineOf, dailyFeed, nextUp, unreadOf, markRead, toRoute, repTier, BOOK_SRC, bookOf, type NextUp } from '../lib/byline';
 import { FeedRow, RivalStrip, feedText, kindIcon, kindColor, ago } from '../ui/connect';
 import { DDLiveBanner } from '../ui/live';
+import { HomeFilm } from '../ui/film';
 
 // ---------------------------------------------------------------- integration slots
 /** SLOT (live lane, ui/live.tsx): `<NextUp/>`. When it lands, import it and assign it here; Home renders it as the hero
@@ -88,6 +89,7 @@ export function Home(chrome: Chrome) {
     </button> : null;
 
   return <div className="g-screen home desk">
+    <HomeFilm />
     <TopBar onMenu={chrome.openSettings} />
     <div className="desk__grid">
       <DeskByline s={s} go={chrome.go} />

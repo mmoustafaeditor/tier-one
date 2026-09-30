@@ -19,6 +19,7 @@ import {
   type Room, type RoomRound, type Challenge, type Standing,
 } from '../lib/social';
 import type { Chrome } from '../App';
+import { PressboxFilm } from '../ui/film';
 
 type Tab = 'rooms' | 'league';
 const sx = (i: number): CSSProperties => ({ ['--i' as string]: i });
@@ -64,6 +65,7 @@ export function RoomsScreen({ code, challenge, ...chrome }: Chrome & { code?: st
       </div>
       {tab === 'league' ? <LeagueCard /> : <>
         <section className="g-hero g-hero--rooms" style={sx(1)}>
+          <PressboxFilm layer="inline" />
           <span className="g-hero__art" aria-hidden="true"><Icon n="friends" /></span>
           <span className="g-mono g-hero__k">{t('so.box.k')}</span>
           <h1 className="g-hero__t">{t('so.box.hed')}</h1>

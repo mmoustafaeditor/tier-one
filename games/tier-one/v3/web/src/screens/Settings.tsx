@@ -7,6 +7,7 @@ import { Sheet } from '../ui/bits';
 import { Icon } from '../ui/game';
 import { Toggle, Avatar } from '../ui/screenbits';
 import type { Go } from '../App';
+import { FilmSetting } from '../ui/film';
 
 const LANG_TAG: Record<string, string> = { en: 'EN', ar: 'ع', es: 'ES' };
 
@@ -40,6 +41,7 @@ export function SettingsSheet({ open, onClose, go }: { open: boolean; onClose: (
       <div className="gset__rows">
         <div className="trow"><span className="trow__ic"><Icon n="sound" /></span><span className="trow__t"><b>{t('common.sound')}</b><small>{t('g.settings.soundD')}</small></span><Toggle on={s.sound} label={t('common.sound')} onChange={() => update((x) => { x.sound = !x.sound; })} /></div>
         <div className="trow"><span className="trow__ic"><Icon n="eye" /></span><span className="trow__t"><b>{t('common.motion')}</b><small>{t('g.settings.motionD')}</small></span><Toggle on={s.reduced} label={t('common.motion')} onChange={() => update((x) => { x.reduced = !x.reduced; })} /></div>
+        <FilmSetting />
       </div>
 
       <h3 className="gset__t">{t('common.nick')}</h3>
