@@ -36,3 +36,5 @@ export const num = (n: number, sign = false) => (n < 0 ? '−' + Math.abs(n) : (
 export function fmtDate(ms: number, lang: string, o: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' }) {
   try { return new Intl.DateTimeFormat(lang === 'ar' ? 'ar-EG-u-nu-latn' : lang === 'es' ? 'es-ES' : 'en-GB', o).format(ms); } catch { return new Date(ms).toDateString(); }
 }
+// The day still turns over at 00:00 UTC; show that moment in the player's own local clock (12/24h per locale).
+export const resetAt = () => new Date(Date.parse(new Date().toISOString().slice(0, 10) + 'T00:00:00Z') + 864e5).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });

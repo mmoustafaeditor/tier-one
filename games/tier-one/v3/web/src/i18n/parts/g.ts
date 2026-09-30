@@ -3,13 +3,14 @@ export default {
   en: {
     g: {
       coins: '{n} coins', level: 'Level {n}', lv: 'Lv {n}',
+      bar: { daily: 'Daily', career: 'Career', room: 'Room', toPlay: 'Play today', ch: 'Ch {c} · Lv {n}', noRank: 'Unranked', start: 'Start', rank: '#{r}' },
       tabs: { home: 'Home', story: 'Story', wire: 'Wire', friends: 'Friends', me: 'Me' },
       home: {
         noName: 'New reporter', freelance: 'Freelance · no paper yet', xp: 'XP {a}/{b}', followers: '{n} followers', streak: 'Streak',
         dailyNo: 'The Daily · No. {n}', todaysFive: 'Today’s five', filed: 'Filed.', tag: 'Five transfer sagas. Some are lying. Break them first or get ratio’d trying.',
         filedSub: '{p} points {r}', weekAria: 'This week', dow: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-        play: 'Open the phones', resume: 'Back to day {d}', seePage: 'See your front page', fair: 'Same five for everyone · about 6 min', tomorrow: 'New five at 00:00 UTC',
-        missions: 'Today’s missions', missionsReset: 'Reset at 00:00', claimed: 'Claimed', modes: 'Your desk',
+        play: 'Open the phones', resume: 'Back to day {d}', seePage: 'See your front page', fair: 'Same five for everyone · about 6 min', tomorrow: 'New five at {t}',
+        missions: 'Today’s missions', missionsReset: 'Reset at {t}', claimed: 'Claimed', modes: 'Your desk',
         storyK: 'Story mode', storyNew: 'You blew it last season. Win it all back.', storySub: 'Chapter {c} · {name}',
         wireK: 'Real rumours', wireSub: 'Call real transfers before they happen', wireLive: '{n} calls live',
         roomsK: 'Play friends', roomsSub: 'Same board, one table', leaguePos: '{r} in your league',
@@ -35,13 +36,14 @@ export default {
   ar: {
     g: {
       coins: '{n} عملة', level: 'المستوى {n}', lv: 'مستوى {n}',
+      bar: { daily: 'اليومي', career: 'المسيرة', room: 'الأوضة', toPlay: 'العب النهارده', ch: 'فصل {c} · مستوى {n}', noRank: 'من غير ترتيب', start: 'ابدأ', rank: '#{r}' },
       tabs: { home: 'الرئيسية', story: 'القصة', wire: 'الوكالة', friends: 'الصحاب', me: 'أنا' },
       home: {
         noName: 'صحفي جديد', freelance: 'فري لانس · من غير جرنال لسه', xp: 'خبرة {a}/{b}', followers: '{n} متابع', streak: 'السلسلة',
         dailyNo: 'التحدي اليومي · رقم {n}', todaysFive: 'خمسة النهارده', filed: 'اتقفل.', tag: 'خمس صفقات. فيهم كدب. اكشفهم الأول ولا هتبقى تريند بالغلط.',
         filedSub: '{p} نقطة {r}', weekAria: 'الأسبوع ده', dow: ['ن', 'ث', 'ر', 'خ', 'ج', 'س', 'ح'],
-        play: 'افتح التليفونات', resume: 'ارجع لليوم {d}', seePage: 'شوف صفحتك الأولى', fair: 'نفس الخمسة للكل · حوالي ٦ دقايق', tomorrow: 'خمسة جداد الساعة ٠٠:٠٠ UTC',
-        missions: 'مهام النهارده', missionsReset: 'بتتجدد ٠٠:٠٠', claimed: 'اتاخدت', modes: 'مكتبك',
+        play: 'افتح التليفونات', resume: 'ارجع لليوم {d}', seePage: 'شوف صفحتك الأولى', fair: 'نفس الخمسة للكل · حوالي ٦ دقايق', tomorrow: 'خمسة جداد الساعة {t}',
+        missions: 'مهام النهارده', missionsReset: 'بتتجدد {t}', claimed: 'اتاخدت', modes: 'مكتبك',
         storyK: 'وضع القصة', storyNew: 'بوظتها الموسم اللي فات. رجّع كل حاجة.', storySub: 'الفصل {c} · {name}',
         wireK: 'إشاعات حقيقية', wireSub: 'اتوقع صفقات حقيقية قبل ما تحصل', wireLive: '{n} توقع شغال',
         roomsK: 'العب مع صحابك', roomsSub: 'نفس اللوحة، ترابيزة واحدة', leaguePos: 'المركز {r} في دوريك',
@@ -67,13 +69,14 @@ export default {
   es: {
     g: {
       coins: '{n} monedas', level: 'Nivel {n}', lv: 'Nv {n}',
+      bar: { daily: 'Diario', career: 'Carrera', room: 'Sala', toPlay: 'Juega hoy', ch: 'Cap {c} · Nv {n}', noRank: 'Sin puesto', start: 'Empezar', rank: '#{r}' },
       tabs: { home: 'Inicio', story: 'Historia', wire: 'Teletipo', friends: 'Amigos', me: 'Yo' },
       home: {
         noName: 'Nuevo periodista', freelance: 'Freelance · aún sin periódico', xp: 'XP {a}/{b}', followers: '{n} seguidores', streak: 'Racha',
         dailyNo: 'El Diario · N.º {n}', todaysFive: 'Los cinco de hoy', filed: 'Enviado.', tag: 'Cinco culebrones de fichajes. Alguno miente. Dalo antes que nadie o hazte viral por errar.',
         filedSub: '{p} puntos {r}', weekAria: 'Esta semana', dow: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
-        play: 'Coge el teléfono', resume: 'Vuelve al día {d}', seePage: 'Ver tu portada', fair: 'Los mismos cinco para todos · unos 6 min', tomorrow: 'Nuevos cinco a las 00:00 UTC',
-        missions: 'Misiones de hoy', missionsReset: 'Se renuevan a las 00:00', claimed: 'Cobrada', modes: 'Tu mesa',
+        play: 'Coge el teléfono', resume: 'Vuelve al día {d}', seePage: 'Ver tu portada', fair: 'Los mismos cinco para todos · unos 6 min', tomorrow: 'Nuevos cinco a las {t}',
+        missions: 'Misiones de hoy', missionsReset: 'Se renuevan a las {t}', claimed: 'Cobrada', modes: 'Tu mesa',
         storyK: 'Modo historia', storyNew: 'La liaste la temporada pasada. Recupéralo todo.', storySub: 'Capítulo {c} · {name}',
         wireK: 'Rumores reales', wireSub: 'Adelanta fichajes reales', wireLive: '{n} apuestas vivas',
         roomsK: 'Con amigos', roomsSub: 'Mismo tablero, una mesa', leaguePos: '{r}.º en tu liga',

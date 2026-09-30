@@ -3,7 +3,6 @@
 
 /* ---------- shell */
 body { overflow-x: hidden; }
-#root { min-height: 100vh; }
 button:disabled { cursor: not-allowed; }
 .btn:disabled { opacity: .45; }
 .btn--quiet:disabled { opacity: .45; border-bottom-color: var(--rule-2); }
