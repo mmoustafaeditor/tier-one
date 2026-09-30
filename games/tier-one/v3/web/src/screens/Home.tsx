@@ -23,6 +23,7 @@ import type { Chrome, Go, Route } from '../App';
 import { weekEventView } from '../lib/season';
 import { bylineOf, dailyFeed, nextUp, unreadOf, markRead, toRoute, repTier, BOOK_SRC, bookOf, type NextUp } from '../lib/byline';
 import { FeedRow, RivalStrip, feedText, kindIcon, kindColor, ago } from '../ui/connect';
+import { DDLiveBanner } from '../ui/live';
 
 // ---------------------------------------------------------------- integration slots
 /** SLOT (live lane, ui/live.tsx): `<NextUp/>`. When it lands, import it and assign it here; Home renders it as the hero
@@ -30,7 +31,7 @@ import { FeedRow, RivalStrip, feedText, kindIcon, kindColor, ago } from '../ui/c
 const LiveNextUp: ComponentType<{ go: Go }> | null = null;
 /** SLOT (live lane, ui/live.tsx): `<DDLiveBanner/>`. When it lands, assign it here; it takes the desk's one strip
  *  whenever it renders something (For you / the wire ticker step aside). Props: { go }. */
-const LiveDDBanner: ComponentType<{ go: Go }> | null = null;
+const LiveDDBanner: ComponentType<{ go: Go }> | null = DDLiveBanner;
 
 const hms = (ms: number) => { const s = Math.max(0, Math.floor(ms / 1000)); return [s / 3600, (s % 3600) / 60, s % 60].map((x) => String(Math.floor(x)).padStart(2, '0')).join(':'); };
 const TIER_STAMP: Record<string, string> = { T1: 'gold', T2: 'done', T3: 'done', T4: 'off', SPIKED: '' };
@@ -110,6 +111,7 @@ export function Home(chrome: Chrome) {
         <button onClick={() => chrome.go({ n: 'pass' })}><Icon n="crown" size={16} />{t('g.home.passT')}</button>
         <button onClick={() => chrome.go({ n: 'rivals' })}><Icon n="reply" size={16} />{t('hr.home.rivals')}</button>
         <button onClick={() => chrome.go({ n: 'contacts' })}><Icon n="phone" size={16} />{t('hr.home.contacts')}</button>
+        <button onClick={() => chrome.go({ n: 'editor' })}><Icon n="pen" size={16} />{t('live.desk.title')}</button>
         <button onClick={() => chrome.go({ n: 'howto' })}><Icon n="help" size={16} />{t('nav.howto')}</button>
       </nav>
 

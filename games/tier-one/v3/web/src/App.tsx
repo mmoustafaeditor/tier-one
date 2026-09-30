@@ -5,6 +5,7 @@ import { useT } from './lib/i18n';
 import { sfx } from './lib/sfx';
 import { onToasts } from './lib/meta';
 import { checkPurchase } from './lib/monet';
+import { bootPlatform } from './lib/account';
 import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
 import { MeScreen } from './screens/Me';
@@ -58,7 +59,7 @@ export function App() {
   const [settings, setSettings] = useState(false);
   const [toasts, setToasts] = useState<{ id: number; kind: string; title: string; body?: string }[]>([]);
   useEffect(() => onToasts(setToasts), []);
-  useEffect(() => { checkPurchase(); }, []);
+  useEffect(() => { checkPurchase(); bootPlatform(__APP_VERSION__).catch(() => { /* offline: the game runs on the local save */ }); }, []);
   useEffect(() => { captureReferral(); }, []); // ?ref=CODE (lib/wallet.ts): both players earn credits after the friend's first window
 
   // Language, direction and edition live on <html> so tokens.css and :lang(ar) rules apply everywhere.
