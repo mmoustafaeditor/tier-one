@@ -3,7 +3,7 @@ export default {
   en: {
     season: {
       names: { rumour: 'The Rumour Mill', winter: 'Winter Window', spring: 'Spring Whispers', summer: 'Summer Window' },
-      k: 'Season', daysLeft: '{n} days left', lastDay: 'Last day', ends: 'Ends {d}', lv: 'Season level', acct: 'Account level {n}',
+      k: 'Season', daysLeft: '{n} days left', lastDay: 'Last day', ends: 'Ends {d}', lv: 'Season level', acct: 'Press Points from every mode feed this track',
       xpLv: '{n} XP a level this season. Every mode earns it.', toNext: '{n} XP to level {l}', maxed: 'Top of the track',
       track: 'Season track', free: 'Free', goldL: 'Gold', claim: 'Claim', claimAll: 'Claim all ({n})', here: 'You', exclusive: 'Season exclusive',
       trackNote: 'Free lane: coins every third level and the season’s own frame at 40. Unclaimed free rewards are banked for you when the season ends.',
@@ -49,7 +49,7 @@ export default {
   ar: {
     season: {
       names: { rumour: 'موسم الإشاعات', winter: 'ميركاتو الشتا', spring: 'همس الربيع', summer: 'ميركاتو الصيف' },
-      k: 'الموسم', daysLeft: 'فاضل {n} يوم', lastDay: 'آخر يوم', ends: 'بيخلص {d}', lv: 'ليفل الموسم', acct: 'ليفل الحساب {n}',
+      k: 'الموسم', daysLeft: 'فاضل {n} يوم', lastDay: 'آخر يوم', ends: 'بيخلص {d}', lv: 'ليفل الموسم', acct: 'نقاط الصحافة من كل الأوضاع بتغذّي المسار ده',
       xpLv: '{n} XP لكل ليفل الموسم ده. كل الأوضاع بتجيب XP.', toNext: 'فاضل {n} XP لليفل {l}', maxed: 'قفلت التراك',
       track: 'تراك الموسم', free: 'ببلاش', goldL: 'جولد', claim: 'استلم', claimAll: 'استلم الكل ({n})', here: 'إنت', exclusive: 'حصري للموسم',
       trackNote: 'الخط المجاني: عملات كل تالت ليفل وفريم الموسم الخاص عند 40. أي جوايز مجانية ما استلمتهاش بتتحفظلك لما الموسم يخلص.',
@@ -95,7 +95,7 @@ export default {
   es: {
     season: {
       names: { rumour: 'La Rumorología', winter: 'Mercado de invierno', spring: 'Susurros de primavera', summer: 'Mercado de verano' },
-      k: 'Temporada', daysLeft: 'Quedan {n} días', lastDay: 'Último día', ends: 'Termina el {d}', lv: 'Nivel de temporada', acct: 'Nivel de cuenta {n}',
+      k: 'Temporada', daysLeft: 'Quedan {n} días', lastDay: 'Último día', ends: 'Termina el {d}', lv: 'Nivel de temporada', acct: 'Los Press Points de todos los modos alimentan este carril',
       xpLv: '{n} XP por nivel esta temporada. Todos los modos dan XP.', toNext: '{n} XP para el nivel {l}', maxed: 'Cima del recorrido',
       track: 'Recorrido de temporada', free: 'Gratis', goldL: 'Oro', claim: 'Recoger', claimAll: 'Recoger todo ({n})', here: 'Tú', exclusive: 'Exclusivo de temporada',
       trackNote: 'Carril gratis: monedas cada tres niveles y el marco propio de la temporada en el 40. Lo que no recojas se te guarda al acabar la temporada.',

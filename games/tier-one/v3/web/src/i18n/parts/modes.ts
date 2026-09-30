@@ -5,7 +5,7 @@ export default {
       slots: {
         title: 'Career saves', aside: 'Solo · never ranked', n: 'Slot {n}', active: 'playing', empty: 'Empty', play: 'Play', new: 'New career',
         restore: 'Enter code', getCode: 'Get code', code: 'Code: {c} (30 days)', del: 'Delete', sure: 'Delete for good?', enter: 'Transfer code from your other device',
-        restored: 'Slot {n} restored.', bad: 'That code didn’t work.', note: 'Three independent careers. A code moves one slot to another device.',
+        restored: 'Slot {n} restored.', bad: 'That code didn’t work.', note: 'Three stories, one name. Followers, reputation, contacts and rivals are yours in every slot; a slot keeps its chapter, favours and inbox. A code moves one slot to another device.',
       },
       rename: { free: 'First rename is free. After that: {n} coins.', cost: 'Renaming costs {n} coins. You have {have}.', broke: 'Not enough coins ({n} needed).' },
       wire: {
@@ -25,7 +25,7 @@ export default {
       slots: {
         title: 'حفظات المشوار', aside: 'فردي · من غير ترتيب', n: 'خانة {n}', active: 'شغالة', empty: 'فاضية', play: 'العب', new: 'مشوار جديد',
         restore: 'دخّل كود', getCode: 'هات كود', code: 'الكود: {c} (٣٠ يوم)', del: 'امسح', sure: 'تمسحها نهائي؟', enter: 'كود النقل من جهازك التاني',
-        restored: 'رجعت خانة {n}.', bad: 'الكود ده مش شغال.', note: 'تلات مشاوير مستقلة. الكود بينقل خانة لجهاز تاني.',
+        restored: 'رجعت خانة {n}.', bad: 'الكود ده مش شغال.', note: 'تلات قصص، واسم واحد. المتابعين والسمعة والمصادر والمنافسين بتوعك في كل خانة؛ الخانة بتحتفظ بفصلها وخدماتها وصندوقها. الكود بينقل خانة لجهاز تاني.',
       },
       rename: { free: 'أول تغيير للاسم ببلاش. بعد كده: {n} عملة.', cost: 'تغيير الاسم بـ {n} عملة. معاك {have}.', broke: 'العملات مش كفاية (محتاج {n}).' },
       wire: {
@@ -45,7 +45,7 @@ export default {
       slots: {
         title: 'Partidas de carrera', aside: 'En solitario · sin ranking', n: 'Ranura {n}', active: 'en juego', empty: 'Vacía', play: 'Jugar', new: 'Nueva carrera',
         restore: 'Meter código', getCode: 'Sacar código', code: 'Código: {c} (30 días)', del: 'Borrar', sure: '¿Borrar para siempre?', enter: 'Código de traspaso de tu otro dispositivo',
-        restored: 'Ranura {n} restaurada.', bad: 'Ese código no funciona.', note: 'Tres carreras independientes. Un código lleva una ranura a otro dispositivo.',
+        restored: 'Ranura {n} restaurada.', bad: 'Ese código no funciona.', note: 'Tres historias, una firma. Seguidores, reputación, contactos y rivales son tuyos en todas las ranuras; cada ranura guarda su capítulo, sus favores y su bandeja. Un código lleva una ranura a otro dispositivo.',
       },
       rename: { free: 'El primer cambio de nombre es gratis. Después: {n} monedas.', cost: 'Cambiar el nombre cuesta {n} monedas. Tienes {have}.', broke: 'No te llegan las monedas (necesitas {n}).' },
       wire: {

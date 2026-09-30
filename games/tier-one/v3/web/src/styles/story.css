@@ -351,3 +351,13 @@
   .sm-book__in { padding: 28px 30px 26px; }
   .sm-pro__panel { max-width: 460px; }
 }
+
+/* ---- one career (3.4): the byline's numbers on the Story record, the same in every mode; a door to Me */
+.sm-byline { display: grid; grid-template-columns: auto auto auto minmax(0, 1fr) auto; gap: 10px 12px; align-items: center; width: 100%; margin: 0 0 10px; padding: 10px 12px; border-radius: var(--r-card); background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); color: var(--on-desk); text-align: start; }
+.sm-byline__stamp { font-size: 11px; padding: 3px 7px; }
+.sm-byline__n { display: flex; flex-direction: column; line-height: 1; }
+.sm-byline__n b { font-size: 22px; }
+.sm-byline__n small { font-size: 9px; color: var(--on-desk-2); margin-top: 3px; }
+.sm-byline__same { font-size: 9.5px; color: var(--on-desk-3); text-align: end; }
+.sm-byline > svg:last-child { fill: none; stroke-width: 2.5; color: var(--on-desk-3); }
+@media (max-width: 420px) { .sm-byline { grid-template-columns: auto auto auto auto; } .sm-byline__same { grid-column: 1 / -1; text-align: start; } }

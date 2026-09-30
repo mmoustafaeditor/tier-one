@@ -1,11 +1,13 @@
 // Me: the journalist's profile hub (GOTY.md §1). The byline and its ladder up top, then one door to each part of your
 // name (Feed, Rivals, Contacts, Pass, replays), your record, the trophy shelf and the films. The sub-screens each do
-// one job and don't repeat what's here.
+// one job and don't repeat what's here. One career (§7.2): the byline card is the only place followers and reputation
+// are stated; the record below is what you've played, and the Story tile is the chapter, never a second number set.
 import { useT, num } from '../lib/i18n';
 import { useSave, type Save } from '../lib/save';
 import { ACH, ACH_IDS } from '../lib/meta';
 import { levelOf } from '../lib/progress';
 import { unreadOf, rivalOf, RIVALS, BOOK_SRC, bookOf } from '../lib/byline';
+import { chapterOf } from '../lib/storyMode';
 import { sfx } from '../lib/sfx';
 import { Icon, TopBar, GBtn } from '../ui/game';
 import type { Chrome } from '../App';
@@ -29,7 +31,8 @@ export function MeScreen(chrome: Chrome) {
   const un = unreadOf(s).length;
   const rec = RIVALS.reduce((a, id) => { const r = rivalOf(s, id); return { w: a.w + r.w, l: a.l + r.l, d: a.d + r.d }; }, { w: 0, l: 0, d: 0 });
   const top = BOOK_SRC.map((src) => ({ src, e: bookOf(s, src) })).sort((a, b) => b.e.xp - a.e.xp)[0];
-  const lv = levelOf(s.pp);
+  const lv = levelOf(s.pp); // the season Pass level: the one level number (lib/progress.ts)
+  const ch = chapterOf(s);
   const toReels = () => document.getElementById('reels-h')?.scrollIntoView({ behavior: s.reduced ? 'auto' : 'smooth', block: 'start' });
   const tiles: { k: string; ic: string; t: string; sub: string; go: () => void; badge?: number; tone?: string }[] = [
     { k: 'feed', ic: 'news', t: t('cn.me.feed'), sub: tn(t, 'cn.me.feedSub', un), badge: un, go: () => chrome.go({ n: 'feed' }) },
@@ -58,7 +61,7 @@ export function MeScreen(chrome: Chrome) {
           { k: 'g.me.streak', v: s.streak.n, sub: t('g.me.best', { n: s.streak.best }), ic: 'flame' },
           { k: 'g.me.dailies', v: dailies.length, sub: t('g.me.t1s', { n: t1s }), ic: 'news' },
           { k: 'g.me.bestScore', v: best, sub: t('g.me.points'), ic: 'star' },
-          { k: 'cn.me.storyF', v: s.career ? s.career.followers : 0, sub: s.career ? t('g.me.rep', { n: Math.round(s.career.rep) }) : t('g.me.noStory'), ic: 'friends' },
+          { k: 'cn.me.storyW', v: s.career ? s.career.windows : 0, sub: ch ? t('g.story.ch.' + ch.id + '.name') : t('g.me.noStory'), ic: 'story' },
         ].map((x) => <div key={x.k} className="g-card g-card--desk me__stat"><Icon n={x.ic} /><b className="g-num">{num(x.v)}</b><span className="g-mono">{t(x.k)}</span><span className="me__sub">{x.sub}</span></div>)}
       </section>
 
