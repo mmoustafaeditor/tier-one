@@ -117,8 +117,9 @@ export function Typeset({ text, at, cpf = 0.6, style }: { text: string; at: numb
     return <span style={{ display: 'inline-block', clipPath: `inset(-20% 0 -20% ${100 - p * 100}%)`, ...style }}>{text}</span>;
   }
   // Words stay whole (no line break inside a word); each letter is its own sort.
+  // Letter sorts are inline-blocks, which bidi treats as neutral: isolate the Latin line LTR so an RTL page can't reverse it.
   let i = 0;
-  return <span style={style}>{text.split(/(\s+)/).map((w, wi) => {
+  return <span style={{ ...style, direction: 'ltr', unicodeBidi: 'isolate' }}>{text.split(/(\s+)/).map((w, wi) => {
     if (/^\s+$/.test(w)) { i += Array.from(w).length; return w; }
     return <span key={wi} style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>{Array.from(w).map((ch) => {
       const t = interpolate(n - i++, [0, 1.6], [0, 1], clamp);

@@ -18,6 +18,7 @@ import { Sheet, useNow, Crest } from '../ui/bits';
 import { SagaFile, RIVAL_IC, type RivalRecord } from './Saga';
 import { hereWeGo } from '../lib/share';
 import { Results } from './Results';
+import { playScene, afterScenes, firstToday } from '../lib/scenes';
 import type { Chrome } from '../App';
 
 // The rival ledger (GOTY.md §1.3) lives in the connect lane's lib/byline.ts. Picked up here if that module exists and
@@ -128,7 +129,8 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     const twist = st.twist && !before.twist ? st.twist : null;
     setNight({ day: st.day, posts, twist, noTwist: st.noTwist && !before.noTwist, dd: st.day === view.R.DAYS });
   };
-  const startDD = async () => { setNight(null); const v = await driver.dd(); setView(v); };
+  // Deadline Day opens with its film (full once a day, the short cut after); the clock only starts once it ends.
+  const startDD = () => { setNight(null); playScene(firstToday('deadline') ? 'deadline' : 'deadline-short'); afterScenes(async () => { const v = await driver.dd(); setView(v); }); };
   const finish = useCallback(async () => { const v = await driver.finish(); setView(v); settle(v); sfx('dd.whistle'); }, [driver, settle]);
 
   // ---------- states

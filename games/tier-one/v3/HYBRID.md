@@ -41,9 +41,10 @@ rebuilt.
   - Rooms: violet
   - Practice: green
 - **Morning edition** (light) stays as an option. The desk becomes pale wood, and the paper is the same.
-- **People:** stylised characters are allowed in scenes (3.3, the owner's call): flat, paper-cut / ink style, simple
-  faces or faceless. No real footballers' likenesses: a player is a generic figure in his club's kit colours and number,
-  and clubs appear as colours and crests only.
+- **People:** the films (cutscenes and moment clips) may show stylised characters: flat paper-cut or ink figures, or
+  stylised 3D, with simple or no faces. Nobody speaks in them: no dialogue or subtitles. Real footballers never appear:
+  a player is a generic figure in club colours and a number. Outside films, characters are icon-based caller cards. Every film is unskippable and
+  short (owner's call); reduced motion shows the last frame.
 
 ## 3. Shell and navigation
 - **Tabs:**
