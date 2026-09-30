@@ -48,7 +48,7 @@ const SKETCH: Record<string, string[]> = {
 function layout(P: boolean, rtl?: boolean) {
   const m = rtl ? -1 : 1;
   return P
-    ? { card: { x: 0, y: 120, w: 440, h: 600 }, sketch: { x: 0, y: -560, w: 860, h: 600 }, text: { x: 0, y: 470, w: 900, align: 'center' as const } }
+    ? { card: { x: 0, y: 0, w: 420, h: 560 }, sketch: { x: 0, y: -610, w: 860, h: 580 }, text: { x: 0, y: 330, w: 920, align: 'center' as const } }
     : { card: { x: m * -60, y: -10, w: 400, h: 560 }, sketch: { x: m * -600, y: -20, w: 700, h: 490 }, text: { x: m * 540, y: -230, w: 640, align: 'start' as const } };
 }
 
@@ -57,7 +57,7 @@ export function SourceIntro(p: SourceIntroProps) {
   const L = layout(P, p.rtl);
   const col = SRC_C[p.src] || C.red;
   const keys: Key[] = P
-    ? [{ f: 0, x: 0, y: 130, z: 1.75 }, { f: T.flip, x: 0, y: 120, z: 1.6 }, { f: 70, x: 0, y: -10, z: 1.0 }, { f: T.end, x: 0, y: 10, z: 1.06 }]
+    ? [{ f: 0, x: 0, y: 10, z: 1.75 }, { f: T.flip, x: 0, y: 0, z: 1.6 }, { f: 70, x: 0, y: -20, z: 0.98 }, { f: T.end, x: 0, y: 0, z: 1.02 }]
     : [{ f: 0, x: L.card.x, y: -10, z: 1.7 }, { f: T.flip, x: L.card.x, y: -10, z: 1.55 }, { f: 70, x: 0, y: 0, z: 1.0 }, { f: T.end, x: 0, y: 0, z: 1.05 }];
   const cam = camAt(f, keys);
   const buzzing = (f >= T.buzz1 && f < T.buzz1 + 12) || (f >= T.buzz2 && f < T.buzz2 + 12);
@@ -108,7 +108,7 @@ export function SourceIntro(p: SourceIntroProps) {
       <div style={{ position: 'absolute', left: L.text.x - L.text.w / 2, top: L.text.y, width: L.text.w, textAlign: L.text.align, color: C.paper, display: 'flex', flexDirection: 'column', gap: 18, alignItems: L.text.align === 'center' ? 'center' : 'flex-start' }}>
         <div style={{ fontFamily: F.display, fontWeight: 800, fontSize: 96, lineHeight: 1, letterSpacing: '-.02em' }}><Typeset text={p.name} at={T.name} cpf={0.7} rtl={p.rtl} /></div>
         <div style={{ fontFamily: F.text, fontSize: 38, lineHeight: 1.3, color: '#BDB5A5', opacity: k01(f, T.trait, T.trait + 10), transform: `translateY(${(1 - k01(f, T.trait, T.trait + 12)) * 24}px)` }}>{p.trait}</div>
-        {f >= T.line && <div style={{ position: 'relative', background: C.paper, color: C.ink, borderRadius: 22, padding: '22px 30px', fontFamily: F.display, fontStyle: 'italic', fontSize: 44, lineHeight: 1.25, boxShadow: `0 8px 0 ${col}`, transform: `scale(${spring({ frame: f - T.line, fps, config: { damping: 13, stiffness: 200 } })})`, transformOrigin: L.text.align === 'center' ? '50% 0' : p.rtl ? '100% 0' : '0 0', maxWidth: L.text.w }}>
+        {f >= T.line && <div style={{ position: 'relative', background: C.paper, color: C.ink, borderRadius: 22, padding: '22px 30px', fontFamily: F.display, fontStyle: p.rtl ? 'normal' : 'italic', fontSize: 44, lineHeight: 1.25, boxShadow: `0 8px 0 ${col}`, transform: `scale(${spring({ frame: f - T.line, fps, config: { damping: 13, stiffness: 200 } })})`, transformOrigin: L.text.align === 'center' ? '50% 0' : p.rtl ? '100% 0' : '0 0', maxWidth: L.text.w }}>
           <Typeset text={p.line} at={T.line + 4} cpf={1.3} rtl={p.rtl} />
         </div>}
       </div>

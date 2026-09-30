@@ -25,7 +25,7 @@ const SHIRT = 'M64 60L30 80l13 32 17-8v76h80v-76l17 8 13-32-34-20c-8 14-21 20-36
 
 export function HereWeGo(p: HereWeGoProps) {
   const { f, fps, W, P } = useStage();
-  const keys: Key[] = [{ f: 0, x: 0, y: P ? 60 : 0, z: P ? 1.05 : 0.95 }, { f: T.stamp, x: 0, y: P ? 20 : 0, z: P ? 1.12 : 1.0 }, { f: T.sign, x: 0, y: P ? 40 : 0, z: P ? 1.0 : 0.92 }, { f: T.end, x: 0, y: P ? 60 : 10, z: P ? 1.03 : 0.95 }];
+  const keys: Key[] = [{ f: 0, x: 0, y: P ? 0 : 0, z: P ? 1.05 : 0.95 }, { f: T.stamp, x: 0, y: P ? 20 : 0, z: P ? 1.12 : 1.0 }, { f: T.sign, x: 0, y: P ? 40 : 0, z: P ? 1.0 : 0.92 }, { f: T.end, x: 0, y: P ? 60 : 10, z: P ? 1.03 : 0.95 }];
   const cam0 = camAt(f, keys), sh = shake(f, [T.stamp], 22);
   const cam = { ...cam0, x: cam0.x + sh.x, y: cam0.y + sh.y };
   const rise = spring({ frame: f - T.post, fps, config: { damping: 15, stiffness: 120 } });
@@ -39,7 +39,7 @@ export function HereWeGo(p: HereWeGoProps) {
       <DeskSurface x={-3000} y={-3000} w={6000} h={6000} />
       <div style={{ position: 'absolute', left: -1400, top: -1400, width: 2800, height: 2800, borderRadius: '50%', background: `radial-gradient(circle, rgba(247,185,40,${0.1 + gold * 0.22}), transparent 60%)` }} />
       {/* The post. */}
-      <div style={{ position: 'absolute', left: -cw / 2, top: P ? -640 : -470, width: cw, transform: `translateY(${(1 - rise) * 900}px) rotate(${(1 - rise) * 6 - 1.5}deg)` }}>
+      <div style={{ position: 'absolute', left: -cw / 2, top: P ? -600 : -470, width: cw, transform: `translateY(${(1 - rise) * 900}px) rotate(${(1 - rise) * 6 - 1.5}deg)` }}>
         <div style={{ position: 'relative', padding: 12, borderRadius: 28, background: `linear-gradient(135deg, #FFE08A, ${C.gold} 40%, ${C.goldDeep})`, boxShadow: `0 40px 80px rgba(0,0,0,.6), 0 0 ${gold * 120}px rgba(247,185,40,${gold * 0.6})` }}>
           <div style={{ position: 'relative', background: C.paper, color: C.ink, borderRadius: 18, padding: '34px 40px 30px', overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -57,12 +57,12 @@ export function HereWeGo(p: HereWeGoProps) {
             <div style={{ display: 'flex', gap: 40, marginTop: 22, fontFamily: F.cond, fontStretch: '80%', fontWeight: 800, fontSize: 40, color: C.ink2 }}>
               <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}><Glyph n="reply" size={40} />{kfmt(n * 9100)}</span><span style={{ display: 'flex', gap: 10, alignItems: 'center', color: C.done }}><Glyph n="repost" size={40} />{kfmt(n * 48200)}</span><span style={{ display: 'flex', gap: 10, alignItems: 'center', color: C.redDeep }}><Glyph n="heart" size={40} />{kfmt(n * 213000)}</span>
             </div>
-            <div style={{ position: 'absolute', insetInlineEnd: 20, top: P ? 250 : 190 }}><Stamp text={p.hwg} color={C.goldDeep} at={T.stamp} size={P ? 118 : 104} rot={-9} /></div>
+            <div style={{ position: 'absolute', left: 0, right: 0, top: P ? 470 : 340, display: 'flex', justifyContent: 'center' }}><Stamp text={p.hwg} color={C.goldDeep} at={T.stamp} size={P ? 118 : 104} rot={-9} /></div>
           </div>
         </div>
       </div>
       {/* The byline plate. */}
-      {f >= T.sign && <div style={{ position: 'absolute', left: -cw / 2, top: P ? 560 : 420, width: cw, height: 150, transform: `translateX(${(1 - sign) * (p.rtl ? -1 : 1) * 1200}px) rotate(1deg)` }}>
+      {f >= T.sign && <div style={{ position: 'absolute', left: -cw / 2, top: P ? 440 : 420, width: cw, height: 150, transform: `translateX(${(1 - sign) * (p.rtl ? -1 : 1) * 1200}px) rotate(1deg)` }}>
         <Paper lift={0.3}>
           <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 40px', gap: 24 }}>
             <span style={{ width: 16, alignSelf: 'stretch', background: C.red, margin: '24px 0' }} />
