@@ -31,7 +31,9 @@ export function buildSocial(id: string, s: Save, extra: Record<string, unknown> 
   if (id === 'moment-room-win') {
     words = { kicker: t('so.film.roomWin.kicker'), title: t('so.film.roomWin.title', { n: v(extra.round, 1) }), sub: t('so.film.roomWin.sub', { room: v(extra.room, 'Tier One'), s: v(extra.score, 0) }) + (extra.who ? ' · ' + t('so.film.roomWin.by', { who: String(extra.who) }) : ''), stamp: t('so.film.roomWin.stamp'), accent: '#9E7BFF' };
   } else if (id === 'moment-friend-scalp') {
-    const name = String(v(extra.name, '?'));
+    // Replays (the Me gallery) name the latest friend whose scalp you took; a fresh save gets the byline placeholder.
+    const latest = Object.entries(s.rivals || {}).filter(([id, r]) => id.startsWith('friend:') && r.scalp).sort((a, b) => (b[1].scalp || 0) - (a[1].scalp || 0))[0];
+    const name = String(v(extra.name, (latest && latest[1].name) || t('film.cold.anon')));
     words = { kicker: t('so.film.friendScalp.kicker'), title: name, sub: t('so.film.friendScalp.sub', { w: v(extra.w, 5), l: v(extra.l, 0) }), stamp: t('so.film.friendScalp.stamp'), accent: C.red, ltrTitle: true };
   } else {
     words = { kicker: t('so.film.nrWeek.kicker'), title: String(v(extra.name, 'Tier One')), sub: t('so.film.nrWeek.sub', { r: v(extra.rank, 1), p: v(extra.pts, 0) }), stamp: t('so.film.nrWeek.stamp'), accent: C.gold, ltrTitle: true };

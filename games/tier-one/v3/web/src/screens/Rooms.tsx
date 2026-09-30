@@ -13,7 +13,7 @@ import { OUTS } from '../lib/engine';
 import { Icon, GBtn, TopBar } from '../ui/game';
 import { Avatar, Seg } from '../ui/screenbits';
 import { Glyph } from '../ui/bits';
-import { Byline, ChallengeButton, FriendRivalCard, Handle } from '../ui/social';
+import { Byline, ChallengeButton, FriendRivalCard, Handle, withHandle } from '../ui/social';
 import {
   identity, syncRoom, standings, roundState, roundOpens, roundCloses, currentRound, friendRivals, pending, dropPending, acceptChallenge, submitChallenge, refreshMine, settleChallenge, hoursLeft, roomUrl,
   type Room, type RoomRound, type Challenge, type Standing,
@@ -74,7 +74,7 @@ export function RoomsScreen({ code, challenge, ...chrome }: Chrome & { code?: st
         {challenge && <ChallengeCard code={challenge} chrome={chrome} style={sx(2)} />}
         {pend && pend.code !== challenge && <section className="so-pend g-card" style={sx(2)}>
           <span className="so-pend__ic" aria-hidden="true"><Icon n="target" /></span>
-          <div className="so-pend__t"><b>{t('so.ch.pending', { n: '⁠' }).replace('⁠', '')}<Handle>{pend.by.nick}</Handle></b><small>{t('so.ch.pendingSub')} · {t('so.ch.target', { s: num(pend.target.score) })} · {t('so.ch.expires', { h: hoursLeft(pend.exp) })}</small></div>
+          <div className="so-pend__t"><b>{withHandle(t('so.ch.pending', { n: '{n}' }), pend.by.nick)}</b><small>{t('so.ch.pendingSub')} · {t('so.ch.target', { s: num(pend.target.score) })} · {t('so.ch.expires', { h: hoursLeft(pend.exp) })}</small></div>
           <div className="so-pend__acts">
             <GBtn size="sm" kind="gold" sound="open" onClick={() => { if (!getSave().practice.live) acceptChallenge({ ...pend, res: [], open: true, mine: false, label: '', kind: pend.kind } as Challenge, pend.seed); chrome.go({ n: 'play', mode: 'practice', key: Date.now() }); }}><Icon n="uturn" size={18} />{t('so.ch.resume')}</GBtn>
             <button className="cn-link" onClick={() => { sfx('ui.tap'); dropPending(); }}>{t('so.ch.drop')}</button>
@@ -189,7 +189,7 @@ function ChallengeCard({ code, chrome, style }: { code: string; chrome: Chrome; 
       <div><small className="g-mono">{t('so.ch.by')}</small><Byline who={ch.by} size={32} /></div>
       <span className={'g-stamp is-slam' + (ch.open ? '' : ' g-stamp--off')} style={{ ['--rot' as string]: '6deg' }}>{ch.open ? t('so.ch.expires', { h: hoursLeft(ch.exp) }) : t('so.ch.closed')}</span>
     </div>
-    <h2 id="so-ch-h" className="so-ch__t">{t('so.ch.card', { n: '⁠' }).replace('⁠', '')}<Handle>{ch.by.nick}</Handle></h2>
+    <h2 id="so-ch-h" className="so-ch__t">{withHandle(t('so.ch.card', { n: '{n}' }), ch.by.nick)}</h2>
     <div className="so-ch__target">
       <b className="g-num">{num(ch.target.score)}</b>
       <span><small className="g-mono">{t('so.ch.target', { s: '' }).replace(/^\s*·?\s*/, '')}</small><small className="g-mono">{t('tier.' + ch.target.tier)} · {ch.kind === 'daily' ? t('front.dailyNo', { n: ch.no || '' }) : t('so.ch.mode.' + ch.kind)}</small></span>
@@ -319,11 +319,11 @@ function Feed({ room, myPid }: { room: Room; myPid: string }) {
   return <div className="so-feed cn-sheet">{room.feed.map((ev, k) => {
     const me = ev.pid === myPid;
     if (ev.t === 'filed') return <Fragment key={k}>
-      {(ev.hwg || []).map((p, j) => <div key={j} className="so-fev so-fev--hwg"><span className="so-fev__ic" aria-hidden="true"><Icon n="bolt" size={16} /></span><span className="so-fev__b"><b className="so-hwg">{t('so.room.ev.hwg', { n: '', p: '' }).split(':')[0]}</b><span dir="auto">{who(ev.nick)} · {p}</span></span><time className="cn-row__at">{fmtDate(ev.at, t.lang, { day: 'numeric', month: 'short' })}</time></div>)}
-      <div className={'so-fev so-fev--filed' + (me ? ' is-me' : '')}><Avatar name={ev.nick} size={30} me={me} /><span className="so-fev__b"><span dir="auto">{t('so.room.ev.filed', { n: '⁠', r: (ev.round || 0) + 1, p: num(ev.score || 0), tier: t('tier.' + ev.tier) }).split('⁠').map((part, i) => <Fragment key={i}>{i === 1 && who(ev.nick)}{part}</Fragment>)}</span><Row row={ev.row || ''} /></span><time className="cn-row__at">{fmtDate(ev.at, t.lang, { day: 'numeric', month: 'short' })}</time></div>
+      {(ev.hwg || []).map((p, j) => <div key={j} className="so-fev so-fev--hwg"><span className="so-fev__ic" aria-hidden="true"><Icon n="bolt" size={16} /></span><span className="so-fev__b"><b className="so-hwg">{t('so.room.ev.hwgT')}</b><span dir="auto">{withHandle(t('so.room.ev.hwg', { n: '{n}', p }), ev.nick)}</span></span><time className="cn-row__at">{fmtDate(ev.at, t.lang, { day: 'numeric', month: 'short' })}</time></div>)}
+      <div className={'so-fev so-fev--filed' + (me ? ' is-me' : '')}><Avatar name={ev.nick} size={30} me={me} /><span className="so-fev__b"><span dir="auto">{withHandle(t('so.room.ev.filed', { n: '{n}', r: (ev.round || 0) + 1, p: num(ev.score || 0), tier: t('tier.' + ev.tier) }), ev.nick)}</span><Row row={ev.row || ''} /></span><time className="cn-row__at">{fmtDate(ev.at, t.lang, { day: 'numeric', month: 'short' })}</time></div>
     </Fragment>;
     if (ev.t === 'taunt') return <div key={k} className={'so-fev so-fev--taunt' + (me ? ' is-me' : '')}><Avatar name={ev.nick} size={30} me={me} /><span className="so-fev__b"><b>{who(ev.nick)}{ev.toNick && <> → {who(ev.toNick)}</>}</b><q dir="auto">{lines[ev.k || 0] || ''}</q></span><time className="cn-row__at">{fmtDate(ev.at, t.lang, { day: 'numeric', month: 'short' })}</time></div>;
-    return <div key={k} className="so-fev so-fev--quiet"><span className="so-fev__ic" aria-hidden="true"><Icon n={ev.t === 'open' ? 'star' : 'friends'} size={14} /></span><span className="so-fev__b" dir="auto">{t('so.room.ev.' + ev.t, { n: '⁠', name: ev.name || '' }).split('⁠').map((part, i) => <Fragment key={i}>{i === 1 && who(ev.nick)}{part}</Fragment>)}</span><time className="cn-row__at">{fmtDate(ev.at, t.lang, { day: 'numeric', month: 'short' })}</time></div>;
+    return <div key={k} className="so-fev so-fev--quiet"><span className="so-fev__ic" aria-hidden="true"><Icon n={ev.t === 'open' ? 'star' : 'friends'} size={14} /></span><span className="so-fev__b" dir="auto">{withHandle(t('so.room.ev.' + ev.t, { n: '{n}', name: ev.name || '' }), ev.nick)}</span><time className="cn-row__at">{fmtDate(ev.at, t.lang, { day: 'numeric', month: 'short' })}</time></div>;
   })}</div>;
 }
 

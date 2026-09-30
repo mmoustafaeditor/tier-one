@@ -36,9 +36,9 @@ export function TitleCard(p: TitleCardProps) {
             {p.ltrTitle ? <bdi dir="ltr"><Typeset text={p.title} at={T.title} cpf={1.4} /></bdi> : <Typeset text={p.title} at={T.title} cpf={1.4} />}
           </div>
           <div style={{ fontFamily: F.text, fontSize: 40, lineHeight: 1.25, color: C.ink2, opacity: k01(f, T.sub, T.sub + 8), transform: `translateY(${(1 - k01(f, T.sub, T.sub + 8)) * 14}px)` }}>{p.sub}</div>
-          <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24 }}>
+          <div style={{ marginTop: 'auto', display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, maxWidth: '100%' }}>
             <span style={{ fontFamily: F.display, fontStyle: 'italic', fontSize: 34, color: C.ink3, opacity: k01(f, T.sub + 4, T.sub + 12) }}><bdi dir="ltr">{p.byline}</bdi></span>
-            <Stamp text={p.stamp} color={p.accent === C.gold ? C.goldDeep : p.accent} at={T.stamp} size={P ? 60 : 66} rot={-9} />
+            <Stamp text={p.stamp} color={p.accent === C.gold ? C.goldDeep : p.accent} at={T.stamp} size={Math.min(P ? 46 : 60, Math.floor((P ? 640 : 800) / Math.max(6, Array.from(p.stamp).length) * 1.55))} rot={-7} style={{ marginInlineStart: 'auto', maxWidth: '100%' }} />
           </div>
         </div>
       </div>

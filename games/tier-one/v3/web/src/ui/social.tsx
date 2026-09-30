@@ -5,7 +5,7 @@
 //   <FriendRivalCard rec={r} i={k} /> Rivals screen: a friend rival in the existing rival-card look (friendRivals(save)).
 //   <SocialWatch />                   App: watches the save for a local window ending; answers a pending challenge.
 //   <Handle>, <Flair>, <Byline>       handles inside <bdi dir="ltr">, the equipped flair glyph, a byline chip.
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useSave, getSave, type Save } from '../lib/save';
 import { useT } from '../lib/i18n';
 import { sfx, buzz } from '../lib/sfx';
@@ -21,6 +21,11 @@ import '../styles/social.css';
 
 /** A byline or handle: always left-to-right, whatever the page direction. */
 export const Handle = ({ children, className }: { children: string; className?: string }) => <bdi dir="ltr" className={className}>{children}</bdi>;
+/** A translated line with a byline in it: `withHandle(t('so.ch.card', { n: '{n}' }), name)` keeps the handle in a <bdi>. */
+export function withHandle(line: string, name: string, key = '{n}') {
+  const parts = line.split(key);
+  return parts.map((part, i) => <Fragment key={i}>{i > 0 && <Handle className="so-h">{name}</Handle>}{part}</Fragment>);
+}
 /** The flair glyph a reporter has equipped (a cosmetic id from the Pass), or nothing. */
 export function Flair({ id, size = 14 }: { id?: string; size?: number }) {
   const c = id ? cosmetic(id) : null;
@@ -99,7 +104,7 @@ export function LivePresence({ board = 'daily', done, style }: { board?: string;
   return <div className="so-live" style={style} aria-live="polite">
     <span className="so-live__dot" aria-hidden="true" />
     <span className="so-live__n">{n <= 1 ? t('so.live.one') : t('so.live.n', { n })}</span>
-    {over && <span className="so-live__first">{first === 'locked' ? t('so.live.locked') : !first ? t('so.live.none') : first.me ? t('so.live.firstMe', { p: first.p }) : <>{t('so.live.first', { n: '⁠', p: first.p }).replace('⁠', '')}<Handle className="so-live__who">{first.nick}</Handle></>}</span>}
+    {over && <span className="so-live__first">{first === 'locked' ? t('so.live.locked') : !first ? t('so.live.none') : first.me ? t('so.live.firstMe', { p: first.p }) : withHandle(t('so.live.first', { n: '{n}', p: first.p }), first.nick)}</span>}
   </div>;
 }
 
