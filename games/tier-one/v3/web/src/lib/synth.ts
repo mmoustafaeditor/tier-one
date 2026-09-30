@@ -93,6 +93,13 @@ const SYN=(()=>{
    [N.C5,N.E5,N.G5,N.C6,N.E5*2].slice(0,n).forEach((f,i)=>bell(f,t+.18+i*.05,.62,.07)); if(r==='legend'||r==='epic') noise(t+.2,r==='legend'?.66:.48,{type:'highpass',f:7500,g:.06,a:.01,r:.45}); },
   levelup:t=>{ [N.C5,N.E5,N.G5,N.C6].forEach((f,i)=>tone(f,t+i*.07,.26,{type:'triangle',g:.1,a:.004})); bell(N.G5*2,t+.3,.9,.08); noise(t+.28,.6,{type:'highpass',f:7000,g:.04,a:.005,r:.5}); }
  };
+ // 3.3 HERE WE GO: a kick drum, a rising brass stab, the crowd swelling and a bell on top. ~1.3 s.
+ P.herewego=t=>{ boom(t,.6); noise(t,1.3,{type:'bandpass',f:700,fto:1600,fslide:.9,q:.5,g:.16,a:.35,r:.6});
+  [[N.C4,0],[N.E4,.09],[N.G4,.18]].forEach(([f,d])=>stab(t+d,[f,f*2],'sawtooth',.075,.14));
+  stab(t+.3,[N.C4,N.G4,N.C5,N.E5],'sawtooth',.08,.95); boom(t+.3,.4); bell(N.C6,t+.34,1,.09); bell(N.G5*2,t+.46,.9,.06);
+  noise(t+.3,1,{type:'highpass',f:7000,g:.07,a:.005,r:.9}); };
+ // 3.3 STOP PRESS: a digital glitch stutter then the slam.
+ P.glitch=t=>{ for(let i=0;i<6;i++){ const st=t+i*.045; tone(rnd(300,2400),st,.035,{type:'square',g:.05,a:.001,lp:4000}); noise(st,.03,{type:'highpass',f:rnd(2000,6000),g:.12,a:.001,r:.025}); } boom(t+.3,.5); noise(t+.3,.08,{type:'bandpass',f:1600,q:.8,g:.25,a:.001}); };
  P.voice=(t,a)=>{ const o=a||{}; babble(t,o.dur||1.2,o.base||150); };
  P.ringonce=t=>ring(t);
  P.snip=t=>snip(t);

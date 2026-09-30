@@ -34,7 +34,7 @@
 /* ---------- saga cards */
 .sagas { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
 .scard { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: var(--r-card); background: var(--card); color: var(--card-ink); box-shadow: var(--shadow-card); text-align: start; transition: transform var(--d-quick) var(--ease-out); }
-.scard:hover { transform: translateY(-2px); }
+@media (hover: hover) { .scard:hover { transform: translateY(-2px); } }
 .scard:active { transform: scale(.985); }
 .scard.is-open { box-shadow: 0 0 0 3px var(--gold), var(--shadow-card); }
 .scard__b { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -158,7 +158,6 @@
 .publish__t { display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; text-wrap: balance; overflow-wrap: anywhere; }
 .publish__t b { font: inherit; }
 .publish__t em { font-style: normal; font-size: .72em; letter-spacing: .05em; opacity: .92; }
-.callbox__excl { margin-top: 10px; font-size: 13px; color: var(--card-ink-2); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .callbox .publish { margin-top: 14px; }
 .callbox__ut { margin-top: 12px; }
 .callbox__none { margin-top: 8px; font-size: 14px; color: var(--card-ink-2); display: flex; gap: 6px; align-items: center; }
@@ -486,3 +485,80 @@
 @keyframes ps-in { from { transform: translateY(8px) scale(.96); opacity: 0; } }
 @keyframes ps-blink { to { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .post-scene, .post-scene * { animation: none !important; transition: none !important; } }
+
+/* ---------- 3.3 calls lane (GOTY.md §2). One loud moment: HERE WE GO. Everything else on the saga stays quiet. */
+/* board: a status chip that changed pops once; the filed stamp already slams */
+.chip-in { animation: g-pop .32s var(--ease-slam) both; }
+.scard__hwg { font-size: 13px !important; }
+
+/* stake line: three facts in one row, colour carries the meaning (no separators) */
+.stake { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin-top: 14px; font-size: 13.5px; font-weight: 700; color: var(--card-ink-2); }
+.stake__w { color: var(--c-done-deep); font-variant-numeric: tabular-nums; }
+.stake__l { color: var(--red-deep); font-variant-numeric: tabular-nums; }
+.stake__ex { display: inline-flex; align-items: center; gap: 4px; color: var(--gold-deep); }
+.stake__no { font-weight: 600; color: var(--card-ink-3); }
+.stake__beat { display: inline-flex; align-items: center; gap: 6px; color: var(--card-ink-2); }
+
+/* hold to publish: ink rises through the button while it's held */
+.hold { overflow: hidden; isolation: isolate; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.hold > svg, .hold > .publish__t { position: relative; z-index: 1; }
+.hold__fill { position: absolute; inset: 0; z-index: 0; border-radius: inherit; background: rgba(0, 0, 0, .28); transform: scaleY(var(--hold, 0)); transform-origin: 50% 100%; pointer-events: none; }
+.hold.is-hwg .hold__fill { background: rgba(122, 82, 0, .32); }
+.hold.is-holding { transform: translateY(2px); box-shadow: 0 3px 0 var(--bd), 0 6px 14px -8px rgba(0,0,0,.6); }
+.hold.is-full { transform: translateY(4px); box-shadow: 0 1px 0 var(--bd); }
+.hold:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.hold.is-hwg .publish__t b { font-size: 1.15em; letter-spacing: .04em; }
+
+/* the race: a rival lights up (and their claim stamps in) only when they post */
+.race .rv { transition: box-shadow var(--d-quick) var(--ease-out); }
+.race .rv:not(.is-posted) .rv-av { filter: grayscale(1); opacity: .45; }
+.race .rv.is-posted .rv-av { animation: g-pop .4s var(--ease-slam) both; box-shadow: 0 0 0 3px var(--desk), 0 0 0 5px var(--oc, var(--red)); }
+.race .rv.is-posted .g-chip { animation: g-slam .38s var(--ease-slam) both; --rot: -3deg; }
+.rv--done { --oc: var(--c-done); } .rv--hijack { --oc: var(--c-hijack); } .rv--off { --oc: var(--c-off); } .rv--fake { --oc: var(--c-fake); }
+.race .rv.is-posted { box-shadow: inset 0 0 0 2px var(--oc, var(--red)); }
+.rv__rec { font-size: 11px; color: var(--on-desk-2); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+
+/* delete & repost: the old post is struck, the ratio piles on, it drops away, the new post flies in */
+.ps--old { animation: none; }
+.ps__txt--old span { background: linear-gradient(var(--red), var(--red)) 0 55% / 0 3px no-repeat; transition: background-size .35s var(--ease-out), color .35s; }
+.ps--old.is-struck .ps__txt--old span { background-size: 100% 3px; color: var(--card-ink-3); }
+.ps__del { --sc: var(--red); inset-inline-end: 14px; }
+.ps__txt--old { min-height: 0; font-size: 15px; }
+.ps__ratio li { margin-top: 6px; padding: 6px 9px; background: color-mix(in srgb, var(--red) 9%, var(--card-2)); }
+.ps__ratio p { font-size: 12.5px; }
+.ps--old.is-away { animation: ps-drop .23s ease-in both; }
+.ps--repost { animation: ps-fly .42s var(--ease-slam) both; }
+@keyframes ps-drop { to { transform: translateY(30vh) rotate(6deg); opacity: 0; } }
+@keyframes ps-fly { from { transform: translateY(-50vh) rotate(-4deg) scale(.9); opacity: 0; } }
+
+/* the press roll: an inked roller passes over the card as it prints */
+.ps__roll { position: absolute; inset-inline: -6px; top: 0; height: 18px; border-radius: 9px; background: repeating-linear-gradient(90deg, #2C271F 0 8px, #3A342A 8px 16px); box-shadow: 0 6px 12px -4px rgba(0,0,0,.6); pointer-events: none; z-index: 3; animation: ps-roll .34s ease-in both; }
+@keyframes ps-roll { from { transform: translateY(-10px); opacity: 1; } 85% { opacity: 1; } to { transform: translateY(calc(100% + 150px)); opacity: 0; } }
+
+/* HERE WE GO: the one loud moment. Gold plate, wood-type stamp across the card, the room lights up. */
+.post-scene.is-hwg.is-sent, .post-scene.is-hwg.is-out { background: radial-gradient(70% 55% at 50% 45%, rgba(247, 185, 40, .38), rgba(8, 7, 5, .86) 70%); transition: background .3s; }
+.ps--hwg { box-shadow: 0 0 0 4px var(--gold), 0 0 0 7px #7A5200, 0 24px 60px -16px rgba(0,0,0,.8); background: linear-gradient(180deg, #FFF6DC, var(--card) 40%); }
+.ps--hwg .ps__av { background: var(--gold); color: #3A2600; }
+.is-hwg.is-sent .ps--hwg { animation: ps-hwg .55s var(--ease-slam) both; }
+@keyframes ps-hwg { 0% { transform: none; } 30% { transform: scale(1.06) rotate(-1deg); } 60% { transform: scale(.98); } 100% { transform: none; } }
+.ps--hwg { margin-top: 30px; }
+.ps__stamp--hwg { --sc: #7A5200; top: -60px; inset-inline: 10px; margin-inline: auto; width: max-content; max-width: calc(100% - 20px); justify-content: center; font-size: clamp(30px, 10vw, 44px); border-width: 5px; padding: 4px 14px 2px; letter-spacing: .02em; background: var(--gold); color: #3A2600; box-shadow: 0 10px 24px -8px rgba(0,0,0,.6); }
+.ps__stamp--hwg svg { width: .7em; height: .7em; fill: currentColor; }
+.is-hwg .ps__txt { margin-top: 22px; }
+.burst.is-hwg .burst__word { color: var(--gold); -webkit-text-stroke: 2px #7A5200; font-size: 64px; }
+
+/* overnight: breaking cards dealt onto the desk; a twist glitches and STOP PRESS slams */
+.brk { animation: g-deal .42s var(--ease-slam) both; --dx: 0; }
+.brk .rv-av { width: 42px; height: 42px; font-size: 16px; }
+.brk__h { justify-content: flex-start; flex-wrap: wrap; }
+.brk__h .g-chip { margin-inline-start: auto; }
+.brk__tag { padding: 1px 6px; border-radius: 4px; background: var(--red); color: #fff; font-family: var(--f-cond); font-stretch: 78%; font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; }
+.brk__taunt { font-family: var(--f-display); font-style: italic; font-size: 15px !important; color: var(--card-ink-2); }
+.night2__skip { margin-top: 16px; text-align: center; color: rgba(255,255,255,.55); font-size: 10px; }
+.night2.is-glitch .night2__body { animation: night-glitch .45s steps(3) both; }
+@keyframes night-glitch { 0% { transform: translate(0); filter: none; } 33% { transform: translate(-6px, 2px) skewX(-4deg); filter: hue-rotate(80deg) saturate(2.5); } 66% { transform: translate(5px, -3px) skewX(3deg); filter: contrast(1.6); } 100% { transform: none; filter: none; } }
+.night2.is-skip .brk, .night2.is-skip .twistcard, .night2.is-skip .night2__sky, .night2.is-skip .night2__moon, .night2.is-skip .night2__sun { animation: none !important; transition: none !important; }
+
+:root.reduce .chip-in, :root.reduce .race .rv-av, :root.reduce .race .g-chip, :root.reduce .brk, :root.reduce .night2__body, :root.reduce .ps__roll, :root.reduce .ps--repost, :root.reduce .ps--hwg { animation: none !important; }
+:root.reduce .ps__roll { display: none; }
+@media (prefers-reduced-motion: reduce) { .chip-in, .race .rv-av, .race .g-chip, .brk, .night2__body, .ps__roll { animation: none !important; } .hold__fill { transition: none; } }

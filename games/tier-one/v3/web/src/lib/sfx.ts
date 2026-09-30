@@ -15,6 +15,7 @@ const MAP = {
   'sparkle': 'sparkle', 'thock': 'thock', 'type': 'key', 'typewriter': 'typewriter', 'whoosh': 'whoosh',
   'scene.agent': 'agentcall', 'scene.barber': 'salon', 'scene.spotter': 'airport', 'scene.physio': 'monitor',
   'scene.kitman': 'kitman', 'scene.leak': 'fax', 'voice': 'voice',
+  'publish.hwg': 'herewego', 'stop.press': 'glitch',
 } as const;
 export type Sfx = keyof typeof MAP;
 

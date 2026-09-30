@@ -12,10 +12,15 @@ import { Icon, SRC_ICON, Rel, kitSVG, useTyped } from './game';
 
 // Painted character art slots (the art pack). Keys: source id → image URL. Empty until the art lands.
 export const ART: Record<string, string> = {};
+// Source intros (scenes lane): lib/scenes.ts exports maybeSourceIntro(src, mode), a no-op when not applicable. Loaded
+// through an eager glob so this file still builds if that module hasn't merged yet. Integrator: once lib/scenes.ts is
+// on the branch this can become `import { maybeSourceIntro } from '../lib/scenes'`.
+const SCENES = Object.values(import.meta.glob('../lib/scenes.ts', { eager: true })) as { maybeSourceIntro?: (src: string, mode: string) => void }[];
+const maybeSourceIntro = (src: string, mode: string) => { try { SCENES[0]?.maybeSourceIntro?.(src, mode); } catch { /* optional */ } };
 const RING_MS: Record<string, number> = { agent: 2150, barber: 1250, spotter: 1500, physio: 1300, kitman: 1100, leak: 1450 };
 export const GRADE_BARS: Record<string, number> = { A: 3, B: 2, C: 1, D: 1 };
 
-export function CallScene({ src, clue, c, R, onDone }: { src: string; clue: Clue; c: CastSaga; R: Rules; onDone: () => void }) {
+export function CallScene({ src, clue, c, R, onDone, mode }: { src: string; clue: Clue; c: CastSaga; R: Rules; onDone: () => void; mode?: string }) {
   const t = useT();
   const reduced = getSave().reduced;
   // The first call to a source in a session plays the whole scene; repeats go straight to the line.
@@ -30,6 +35,7 @@ export function CallScene({ src, clue, c, R, onDone }: { src: string; clue: Clue
   const finish = () => { if (done.current) return; done.current = true; sfx('ui.pop'); onDone(); };
 
   useEffect(() => {
+    if (mode && mode !== 'daily') maybeSourceIntro(src, mode);
     update((s) => { s.scenes = { ...(s.scenes || {}), [src]: Date.now() }; });
     if (full) { sfx(('scene.' + src) as Sfx); buzz(src === 'agent' ? [60, 120, 60, 500, 60, 120, 60] : 30); const id = setTimeout(() => setPhase('talk'), RING_MS[src] || 1200); return () => clearTimeout(id); }
     sfx('phone.ring');
