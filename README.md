@@ -1,5 +1,11 @@
 <p align="center">
-  <img src=".github/assets/studio-banner.svg" alt="Semba Studios — an AI-native indie game studio" width="100%">
+  <a href="https://sembagames.app"><img src=".github/assets/readme-hero.png" alt="Semba Studios — Pick a game. Hit play. Football games you learn in a minute and play all season." width="100%"></a>
+</p>
+
+<p align="center">
+  <a href="https://sembagames.app"><img alt="Play at sembagames.app" src="https://img.shields.io/badge/play-sembagames.app-FF5A36?style=for-the-badge&labelColor=07090B"></a>
+  <a href="#-our-games"><img alt="Games" src="https://img.shields.io/badge/games-2-7DEBCB?style=for-the-badge&labelColor=07090B"></a>
+  <a href="#-our-games"><img alt="Platform" src="https://img.shields.io/badge/platform-Android%20%7C%20Web-F2EEE5?style=for-the-badge&labelColor=07090B"></a>
 </p>
 
 <p align="center">
@@ -7,27 +13,30 @@
   We design, write and ship games as a tiny human team working side by side with AI.
 </p>
 
-<p align="center">
-  <a href="https://sembagames.app"><b>🌐 sembagames.app</b></a>: play every game free in your browser
-</p>
-
-<p align="center">
-  <a href="https://sembagames.app"><img alt="Website" src="https://img.shields.io/badge/play-sembagames.app-FF5A36?style=for-the-badge&labelColor=07090B"></a>
-  <a href="#-our-games"><img alt="Games" src="https://img.shields.io/badge/games-2-B6FF3A?style=for-the-badge&labelColor=07090B"></a>
-  <a href="https://www.sembagames.app/downloads/TierOne.apk"><img alt="Platform" src="https://img.shields.io/badge/platform-Android%20%7C%20Web-3D8BFF?style=for-the-badge&labelColor=0B1224"></a>
-</p>
-
 ---
 
 ## 🎮 Our games
 
-Play them all at **[sembagames.app](https://sembagames.app)**. Tap a game below to open its page: the story, how to play and the download.
+Free in your browser at **[sembagames.app](https://sembagames.app)**, with an Android app for each. Tap a card to play.
 
-<p align="center">
-  <a href="games/tier-one">
-    <img src=".github/assets/tier-one-card.svg" alt="Tier One — the football transfer journalist game. Tap to open." width="100%">
-  </a>
-</p>
+<table>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="https://sembagames.app/tier-one/"><img src=".github/assets/readme-tier-one.png" alt="Tier One — transfer journalist game. Tap to play." width="100%"></a>
+      <br>
+      <a href="https://sembagames.app/tier-one/"><b>▶ Play Tier One</b></a> ·
+      <a href="https://www.sembagames.app/downloads/TierOne.apk">⬇ Android</a> ·
+      <a href="games/tier-one">Game page</a>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="https://sembagames.app/the-gaffer"><img src=".github/assets/readme-the-gaffer.png" alt="The Gaffer — football manager. Tap to play." width="100%"></a>
+      <br>
+      <a href="https://sembagames.app/the-gaffer"><b>▶ Play The Gaffer</b></a> ·
+      <a href="https://www.sembagames.app/downloads/TheGaffer.apk">⬇ Android</a> ·
+      <a href="games/the-gaffer">Game page</a>
+    </td>
+  </tr>
+</table>
 
 | Game | Genre | Status | Play |
 |---|---|---|---|
@@ -62,7 +71,7 @@ Play them all at **[sembagames.app](https://sembagames.app)**. Tap a game below 
 ├── api/verify-purchase.js ← Stripe purchase check (see games/tier-one/LAUNCH.md)
 ├── downloads/             ← published Android APKs (TierOne.apk, TheGaffer.apk)
 ├── design/                ← shared Semba design tokens used by The Gaffer
-├── .github/assets/        ← logos (Semba neon S, Tier One T1), banner and game card
+├── .github/assets/        ← logos (Semba neon S, Tier One T1) and the README images (hero + game cards from the home page)
 ├── .gitignore             ← keeps Android/Gradle build output out of git
 ├── .vercelignore          ← keeps games/, .github/, .claude/ and design/ off the public site
 └── games/

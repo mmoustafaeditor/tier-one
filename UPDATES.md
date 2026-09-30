@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-30 · saifsaber · README looks like the sembagames.app home page
+- **What changed:** The root README now opens with the home page hero ("Pick a game. Hit play.", with the Semba mark) and shows Tier One and The Gaffer side by side, as on the site. Their key-visual cards are rendered from `index.html` and link to each game. Under each card: Play, Android APK (from the site) and the game page. The old studio banner and Tier One card (old T1 art, "Open the game") are no longer used in the README. The images are 2× PNGs captured from the home page, with the countdown hidden so they don't go stale.
+- **Files:** `README.md`, `.github/assets/{readme-hero,readme-tier-one,readme-the-gaffer}.png` (new), `UPDATES.md`
+- **Heads-up for the team:** If the home page cards change, re-capture these three PNGs (Playwright screenshot of `.hero-top`, `.kv.t1` and `.kv.gfc`). `studio-banner.svg` and `tier-one-card.svg` are kept but unused.
+
 ## 2026-09-30 · saifsaber · README: APK links from the site, The Gaffer Android 2.1.0
 - **What changed:** The root README's APK links now point to `https://www.sembagames.app/downloads/*.apk`. The old GitHub `raw` links give a 404 to anyone who isn't signed in, because the repo is private. The Gaffer's row now shows Android `2.1.0`, which its workflow published after PR #5 (new icon). Checked that the site serves the new APKs: Tier One 3.1.0 and The Gaffer 2.1.0 match `downloads/` on `main`, and both update feeds are live.
 - **Files:** `README.md`, `UPDATES.md`
