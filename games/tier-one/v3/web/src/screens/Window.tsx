@@ -146,7 +146,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const mob = sel != null;
   const tutor = view.mode === 'practice' && view.label === 'tutorial' && !(sv.tut && sv.tut.done);
   const favours = view.mode === 'career' ? <FavourTray g={g} i={deskSel} onUse={(k) => act(['f', k, deskSel])} /> : null;
-  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
+  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={calling ? null : last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
 
   return <div className={'g-screen g-screen--wide play' + (dd ? ' is-dd' : '')} ref={rootRef}>
     <TopBar back={mob ? { label: t('g.win.board'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : title} />

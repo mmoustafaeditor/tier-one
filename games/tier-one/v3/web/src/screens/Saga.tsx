@@ -8,6 +8,7 @@ import { leanOf, voiceLine, postLine, saysWord, addsText, outWord, strWord, stre
 import { Glyph, Lines, Crest } from '../ui/bits';
 import { Icon, Kit, SrcIcon, Rel, GBtn } from '../ui/game';
 import { GRADE_BARS } from '../ui/CallScene';
+import { accentOf } from '../film/calls/CallFilm';
 import { sfx, buzz } from '../lib/sfx';
 import { hereWeGo } from '../lib/share';
 import type { View } from '../lib/driver';
@@ -22,7 +23,7 @@ export interface SagaProps {
 }
 export const RIVAL_IC: Record<string, string> = { tabloid: 'BB', itk: '?', insider: 'PP' };
 
-export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFiled, onLater, rivalRecord }: SagaProps) {
+export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, justFiled, onLater, rivalRecord }: SagaProps) {
   const t = useT();
   const c = view.cast[i];
   const ln = leanOf(g, i);
@@ -47,6 +48,15 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
   const srcs = E.sourcesFor(g.R, i);
   const post7 = g.day === g.R.DAYS ? g.R.DD_POSTS - g.posts7 : null;
   const maxT = Math.max(3, ...ln.tally);
+  // The quote that just came in (after the call film): the newest read matching the last answer, for this saga.
+  const newK = last && last.i === i ? curReads.map((r, k) => (r.src === last.c.src && r.day === last.c.day && r.r === last.c.r ? k : -1)).reduce((a, b) => Math.max(a, b), -1) : -1;
+  const newRef = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (newK < 0) return;
+    setClips(true);
+    const id = setTimeout(() => newRef.current?.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }), 80);
+    return () => clearTimeout(id);
+  }, [newK, last]);
 
   const backers = (k: number) => [
     ...curReads.filter((r) => { const w = E.weights(g.R, r.src, r.r); return w[k] > 0 && w[k] === Math.max(...w); }).map((r) => ({ k: r.src, rival: false })),
@@ -117,7 +127,18 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
     {(curReads.length > 0 || livePosts.length > 0) && <section className="clips">
       <button className="clips__h" onClick={() => setClips(!clips)} aria-expanded={clips}><span>{t('g.saga.clippings', { n: curReads.length + livePosts.length })}</span><Icon n={clips ? 'x' : 'news'} size={18} /></button>
       {clips && <ol className="clips__l">
-        {[...curReads.map((r, k) => ({ d: r.day, el: <li key={'r' + k} className="clip"><SrcIcon k={r.src} size={30} /><div><div className="clip__h"><b>{t('src.' + r.src)}</b><span className="g-mono">{t('common.day', { n: r.day })}</span><span className="g-chip">{saysWord(t.lang, r.src, r.r, c)}</span></div><p>{voiceLine(t.lang, c, r)}</p><span className="clip__adds g-mono">{addsText(t.lang, E.weights(g.R, r.src, r.r))}</span></div></li> })),
+        {[...curReads.map((r, k) => {
+          // What the source said, word for word, with who said it, their read (stamp) and what it added to the tally.
+          const w = E.weights(g.R, r.src, r.r), isNew = k === newK;
+          return { d: r.day + k / 1000, el: <li key={'r' + k} ref={isNew ? newRef : undefined} className={'clip clip--q' + (isNew ? ' is-new' : '')} style={{ ['--acc' as string]: accentOf(r.src) }}>
+            <SrcIcon k={r.src} size={34} />
+            <div className="clip__b">
+              <div className="clip__h"><b>{t('src.' + r.src)}</b><span className="g-mono">{t('common.day', { n: r.day })}</span>{isNew && <span className="clip__new">{t('cf.new')}</span>}</div>
+              <blockquote className="clip__q" cite={t('src.' + r.src)}>{voiceLine(t.lang, c, r)}</blockquote>
+              <div className="clip__f"><span className={'g-stamp clip__says g-stamp--' + OUTS[w.indexOf(Math.max(...w))]}>{saysWord(t.lang, r.src, r.r, c)}</span><span className="clip__adds g-mono">{addsText(t.lang, w) || t('g.call.nothingNew')}</span></div>
+            </div>
+          </li> };
+        }),
           ...livePosts.map((p, k) => ({ d: p.day + .5, el: <li key={'p' + k} className="clip clip--rival"><span className={'rv-av rv-av--' + p.id}>{RIVAL_IC[p.id]}</span><div><div className="clip__h"><b>{t('rival.' + p.id)}</b><span className="g-mono">{t('common.day', { n: p.day })}</span><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div><p>{postLine(t.lang, c, p)}</p></div></li> }))].sort((a, b) => b.d - a.d).map((x) => x.el)}
       </ol>}
     </section>}

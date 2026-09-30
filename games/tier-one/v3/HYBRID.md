@@ -41,8 +41,9 @@ rebuilt.
   - Rooms: violet
   - Practice: green
 - **Morning edition** (light) stays as an option. The desk becomes pale wood, and the paper is the same.
-- **People:** no hand-drawn people anywhere. Characters appear only as painted art (the art pack, when it arrives) or as
-  icon-based caller cards until then. Real footballers never appear as faces: kits, numbers and crests only.
+- **People:** stylised characters are allowed in scenes (3.3, the owner's call): flat, paper-cut / ink style, simple
+  faces or faceless. No real footballers' likenesses: a player is a generic figure in his club's kit colours and number,
+  and clubs appear as colours and crests only.
 
 ## 3. Shell and navigation
 - **Tabs:**
@@ -79,15 +80,16 @@ From top to bottom:
   - *Make the call*: 4 outcome buttons, then 3 loudness buttons with +win/−lose, then Publish.
   - Rivals: a strip of three avatars that light up when they've posted.
   - Details (tally, weights, rules): behind "How's this scored?".
-- **Source call:** a full-screen scene per source.
-  1. Environment animation for that source (barbershop pole and clippings, airport runway lights and a jet, a monitor
-     line, city rain for the agent, the boot room, the press-room flash).
-  2. A caller card: portrait slot, with an icon until the art arrives.
-  3. Ring, then click, then a mumbled voice (babble, pitch per character) with the subtitle typing out.
-  4. The *says* stamp.
-  5. The clue flies to the file.
-
-  The first call to each source per window plays the full 2.5–4 s. Repeats play ~1 s. Tap to skip.
+- **Source call (3.3):** one screen, a short wordless film per source (the barber finishing a cut, the kit man at the
+  player's locker, the physio's treatment table, the airport spotter's long lens, the agent's back seat, the press
+  office after hours). Nobody speaks: what the source does shows the clue's read, in one language across sources
+  (Done: the buying club's colours are taken on; Hijack: another club's replace them; Off: the buying club's thing is
+  torn up, the player's own club stays; Fake: the rumour is binned with a shrug). Rendered clips play when present
+  (`web/src/film/calls/manifest.ts` lists them); the SVG film is the fallback.
+  - The first call to each source per 6 h plays the full cut (~3.5 s), repeats the short one (~2 s). Unskippable; it
+    returns to the call page by itself. Reduced motion shows the last frame for ~1.2 s.
+  - Back on the call page, exactly what they said appears as a quote card in the saga's clippings (source colour, the
+    *says* stamp, what it added), newest first, the new one sliding in with a "New" tag.
 - **Publish:** the loudness button fills as you hold (tap works too), then the press rolls, the stamp slams with a
   shake and a buzz, and a reaction burst follows (followers +, shares, "@fans" replies).
 - **Overnight:** a time-lapse (city dawn → night), then rival posts as breaking-news cards with the rival's avatar and a
