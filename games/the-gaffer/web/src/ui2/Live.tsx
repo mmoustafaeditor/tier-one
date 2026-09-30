@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Player } from '../model/types';
 import { playerOf } from '../sim/world';
 import { FORMATIONS, FORMATION_IDS, fmt, fullTactics, type Tactics } from '../sim/tactics';
-import { expected, isUserSide, reshape, setTactics, setTalk, simulate, stepMinute, userSub, type LiveMatch, type Talk } from '../sim/match';
+import { expected, isUserSide, reshape, reshapeOop, setTactics, setTalk, simulate, stepMinute, userSub, type LiveMatch, type Talk } from '../sim/match';
 import { canSub, subsMax, windowsLeft } from '../sim/match';
 import { planOf, rolesArrays } from '../sim/engine/phases';
 import { ROLES, roleFit, rolesFor, POOR_FIT } from '../sim/engine/roles';

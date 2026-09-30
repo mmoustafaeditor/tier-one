@@ -378,7 +378,7 @@ export function applyDismissal(m: LiveMatch, i: 0 | 1, id: string): boolean {
 // gf-ref: a sending-off takes the player off for good; the side reorganises (a keeper from the bench if the keeper
 // went, otherwise the most advanced position is the one left empty) and plays on with ten.
 function sendOff(m: LiveMatch, i: 0 | 1, id: string, how = 'sfp', get?: Lookup) {
-  m.events.push({ min: m.minute, side: i, kind: 'red', playerId: id, how });
+  m.events.push({ ...stamp(m), side: i, kind: 'red', playerId: id, how });
   const s = m.sides[i];
   const k = s.onPitch.indexOf(id);
   if (k >= 0) s.onPitch[k] = '';

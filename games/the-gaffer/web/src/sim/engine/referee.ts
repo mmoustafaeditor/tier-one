@@ -150,10 +150,10 @@ export function tacticsFoulK(t: Tactics): number {
 // How many fouls a side commits, relative to the engine's base rate: its instructions, the tacklers it fields,
 // the referee (a strict one whistles more) and the score (a side chasing the game late tackles harder).
 export const TUNE_REF = {
-  foulK: 0.86,
+  foulK: 0.83,
   short: 2.2,                               // rating points off everyone for each player a side is down (match.ts inputsOf)
   hand: [0.08, 0.22] as [number, number],   // share of fouls that are handballs: outside / inside the box
-  reck: 0.114, sfp: 0.001, spa: 0.5, dogsoCtr: 0.025, dogsoBox: 0.2, genuine: 0.72, handSpa: 0.16, handDogso: 0.12,
+  reck: 0.114, sfp: 0.001, spa: 0.5, dogsoCtr: 0.017, dogsoBox: 0.2, genuine: 0.72, handSpa: 0.16, handDogso: 0.12,
   boxSoft: 0.1,                             // engine fouls in the box that were only contact
   booked: 0.07,                             // a booked player's reckless-tackle rate (× composure)
   miss: { pen: 0.13, yellow: 0.07, red: 0.22, violent: 0.45 },
