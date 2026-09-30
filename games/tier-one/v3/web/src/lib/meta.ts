@@ -4,6 +4,7 @@ import { update, getSave, type Save } from './save';
 import type { Result } from './engine';
 import { t } from './i18n';
 import { trackWindow } from './progress';
+import { addSeasonPP, goldBonus, seasonAt } from './season';
 
 type Toast = { id: number; kind: 'ach' | 'info' | 'warn'; title: string; body?: string };
 const listeners = new Set<(t: Toast[]) => void>();
@@ -27,19 +28,20 @@ function grant(s: Save, id: string) {
   if (s.ach[id] || !(id in ACH)) return;
   s.ach[id] = Date.now();
   credit(s, ACH[id], 'ach:' + id);
-  s.pp += 25;
+  addPP(s, 25);
   const name = t('ach.list.' + id + '.0') || id;
   setTimeout(() => toast('ach', t('ach.got', { n: name }), t('ach.reward', { n: ACH[id] })), 300);
 }
 export function credit(s: Save, d: number, why: string) {
   if (!d) return;
+  d = goldBonus(s, d); // Gold lane: +10% on coins earned (lib/season.ts)
   s.credits += d; s.ledger = [{ at: Date.now(), d, why }, ...s.ledger].slice(0, 30);
   s.stats.earned = (s.stats.earned || 0) + Math.max(0, d);
   if ((s.stats.earned || 0) >= 500) grant(s, 'rich');
 }
-function addPP(s: Save, n: number) {
+export function addPP(s: Save, n: number) {
   const before = Math.floor(s.pp / 100);
-  s.pp += n;
+  s.pp += n; addSeasonPP(s, n);
   const after = Math.min(40, Math.floor(s.pp / 100));
   for (let tier = before + 1; tier <= after; tier++) if (tier % 4 === 0) credit(s, 20, 'track:' + tier);
 }
@@ -124,4 +126,5 @@ export function spend(n: number, why: string): boolean {
   update((s) => { s.credits -= n; s.ledger = [{ at: Date.now(), d: -n, why }, ...s.ledger].slice(0, 30); });
   return true;
 }
-export function seasonName(ms = Date.now()) { const m = new Date(ms).getUTCMonth(); return t('pass.seasons.' + (m >= 5 && m <= 7 ? 0 : m >= 8 && m <= 10 ? 1 : m === 11 || m <= 1 ? 2 : 3)); }
+// The real-calendar season (lib/season.ts): Rumour Mill, Winter Window, Spring Whispers, Summer Window.
+export function seasonName(ms = Date.now()) { return t(seasonAt(ms).nameKey); }
