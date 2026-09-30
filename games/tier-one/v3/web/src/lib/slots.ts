@@ -3,6 +3,7 @@
 import { getSave, update, type Save, type CareerSlot } from './save';
 import { online } from './api';
 import { newCareer } from './career';
+import { playCareerOpen } from './scenes';
 
 export const SLOTS = 3;
 // The live copy of each slot (the active one read from career/story).
@@ -20,7 +21,7 @@ function load(x: Save, k: number, v: CareerSlot | null) {
   x.story = v ? v.story || { prologue: true } : { prologue: x.story?.prologue };
 }
 export const switchSlot = (k: number) => update((x) => { load(x, k, slotList(x)[k]); });
-export const newSlot = (k: number) => update((x) => { load(x, k, { career: newCareer(k + 1), story: { prologue: true, chapterSeen: 0 } }); });
+export const newSlot = (k: number) => { update((x) => { load(x, k, { career: newCareer(k + 1), story: { prologue: true, chapterSeen: 0 } }); }); playCareerOpen(); };
 export const deleteSlot = (k: number) => update((x) => {
   stash(x); x.slots![k] = null;
   if ((x.slot || 0) === k) { x.career = null; x.story = { prologue: x.story?.prologue }; }

@@ -10,6 +10,7 @@ import { clubById, RULES, type WClub } from '../lib/engine';
 import { randomSeed } from '../lib/driver';
 import { slotList, switchSlot, newSlot, deleteSlot, slotCode, restoreCode } from '../lib/slots';
 import { spend, toast } from '../lib/meta';
+import { playCareerOpen } from '../lib/scenes';
 import { sfx, voice } from '../lib/sfx';
 import { Icon, Kit, GBtn, TopBar, SrcIcon, Rel, confetti, shake, useTyped } from '../ui/game';
 import { Crest } from '../ui/bits';
@@ -27,10 +28,10 @@ export function StoryScreen(chrome: Chrome) {
   const s = useSave();
   const c = s.career;
   const [pro, setPro] = useState<null | 'start'>(null);
-  const create = () => update((x) => {
+  const create = () => { update((x) => {
     x.story = x.story || {}; x.story.prologue = true;
     if (!x.career) { x.career = newCareer(); x.story.chapterSeen = 0; }
-  });
+  }); if (!c) playCareerOpen(); };
   const start = () => { if (!s.story?.prologue) setPro('start'); else { sfx('open'); create(); } };
   const done = () => { create(); setPro(null); };
   const ch = c ? chapterFor(c) : null;
