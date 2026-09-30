@@ -27,3 +27,4 @@ data/tools/.cache/
 
 # Tier One v3 web: local build output (the release copy is /tier-one-v3/index.html)
 games/tier-one/v3/web/dist/
+games/tier-one/v3/web/dist-test/

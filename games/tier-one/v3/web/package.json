@@ -10,6 +10,7 @@
     "build:min": "node scripts/build-world.mjs && tsc --noEmit && vite build --mode min",
     "serve": "node scripts/dev-server.mjs",
     "smoke:api": "node scripts/api-smoke.mjs",
+    "test:onecareer": "node scripts/test-onecareer.mjs",
     "world": "node scripts/build-world.mjs"
   },
   "dependencies": {

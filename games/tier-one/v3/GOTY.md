@@ -49,9 +49,11 @@ Every mode feeds the same journalist. Four shared systems (`lib/byline.ts`) hold
     - Wire ×1.5 (real football)
     - Practice ×0.25
 - Rep moves +1 per right call and −2 per wrong Confirmed call, clamped to 0–100.
-- Rep tiers set the flair shown on the byline and on share cards: Blogger < 20, Stringer 20–39, Correspondent 40–59,
-  Chief 60–79, Tier One 80+.
-- Career keeps its own story rank and rep (its own save slot). Its calls still feed the global byline.
+- Rep tiers set the flair shown on the byline and on share cards. Since 3.4 they are the Career rank gates, so the
+  byline's word and the story's word are one ladder: Blogger < 55, Stringer 55–64, Correspondent 65–74, Chief 75–84,
+  Tier One 85+. A new name (rep 50) is a Blogger.
+- Career keeps its own story rank (its save slot). Its calls feed the global byline like any other mode (×1), and
+  "credibility" in Story is this same rep.
 
 ### 1.2 The Contacts Book
 - The five sources (kit man, barber, agent, airport spotter, physio) each have a relationship with you:
@@ -212,6 +214,22 @@ game changes state for you, and nothing is a dead end.
 ### 7.2 Game to player: the game knows you
 - **One profile, one number set:** followers, rep tier, hot hand, contacts, rivals, coins, Pass, streak, trophies.
   Career keeps its story rank but reads the same followers/contacts (the onecareer lane unifies the data).
+  - **Done (save v3, `lib/save.ts` MIG[2]):** a Career slot stores only its story (rank, windows, favours, club
+    relations, counters, history, inbox). `applyWindow` moves the byline, the book and the ledgers through
+    `byline.recordInto` (mode ×1) inside the same update, and gates promotion on the global rep; the rep gates are
+    `REP_TIERS`. Follower milestones pay in any mode. Contact trust in Career is the book level (accuracy steps from
+    Lv2, early access at Lv3, a second opinion at Lv5, Career and Practice only).
+  - **Migration:** on load, `byline.followers = max(byline, every slot)`, `byline.rep = max(byline, every slot)`,
+    once; each slot's trust points become book XP where higher (`trustToXp`: trust level L → book level L+1, progress
+    kept inside the band). A slot code restored from a 3.3 device folds in the same way. Nothing else in a slot moves.
+  - **One visible level:** the byline tier is the identity (a word), the season Pass level is "this season's
+    progress" (the one level number, top bar and Home badge). The old account level is hidden everywhere;
+    `save.pp` stays as lifetime Press Points and keeps feeding the Pass (`progress.levelOf(pp)` now answers the Pass
+    level at that point). Story shows a chapter number, never a level.
+  - **Slots:** your name is yours; each Career is a different story (How to play, "One name").
+  - **For Results:** `byline.careerSnapshot(save)`, `careerDelta(before, after)` and `lastDelta()` (the last
+    recorded window's before-snapshot against the save) give the whole strip: followers, rep and tier, hot hand,
+    contact level-ups, duels, rank/promotion, favours, coins, Pass level.
 - **Playstyle profile** (`save.style`): tracked from calls (early vs late, loud vs quiet, source trust, U-turns).
   Shown on Me as a card ("The Sniper: files early, rarely wrong"), used by rivals' banter, by the editor's notes and by
   the Daily brief ("you've been quiet on day 1; the Market is wrong early this week").
