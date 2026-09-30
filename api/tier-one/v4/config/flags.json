@@ -1,0 +1,24 @@
+{
+  "flags": {
+    "cloudSync": true,
+    "accountLink": true,
+    "wallet": false,
+    "storeCredits": false,
+    "pressbox": true,
+    "newsroom": false,
+    "challenges": true,
+    "ddlive": true,
+    "livePresence": true,
+    "morningPapers": true,
+    "telemetry": true,
+    "feedCap": 60
+  },
+  "ab": {
+    "experiments": [
+      { "id": "onboarding_brief", "buckets": ["control", "short"], "weights": [50, 50], "active": true },
+      { "id": "featured_slot", "buckets": ["gold_first", "cosmetic_first"], "active": false }
+    ]
+  },
+  "client": { "minClientVersion": "3.3.0", "latest": "3.4.0", "message": "" },
+  "telemetry": { "sample": 1, "maxBatch": 50 }
+}
