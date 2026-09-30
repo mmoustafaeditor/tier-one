@@ -12,6 +12,7 @@ captures/
 
 # Node (games/tier-one/intro-sound)
 node_modules/
+node_modules
 
 # Vercel CLI
 .vercel/

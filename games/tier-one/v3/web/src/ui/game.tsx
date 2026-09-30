@@ -92,9 +92,16 @@ export function Kit({ club, player, size = 56, mystery, style }: { club?: WClub;
   return <i className="g-kit" style={{ ['--kit' as string]: size + 'px', ...style }} aria-hidden="true" dangerouslySetInnerHTML={{ __html: kitSVG(club, player?.no ? String(player.no) : initials(player), mystery) }} />;
 }
 
-// ---------- chunky button
-export function GBtn({ kind = '', size = '', children, onClick, disabled, sound = 'ui.tap', style, className = '', label, pulse, shine }: { kind?: '' | 'gold' | 'dark' | 'paper' | 'green' | 'ghost'; size?: '' | 'lg' | 'sm'; children: ReactNode; onClick?: () => void; disabled?: boolean; sound?: Sfx | null; style?: CSSProperties; className?: string; label?: string; pulse?: boolean; shine?: boolean }) {
-  return <button type="button" aria-label={label} disabled={disabled} style={style} className={['g-btn', kind && 'g-btn--' + kind, size && 'g-btn--' + size, pulse && 'is-pulse', className].filter(Boolean).join(' ')} onClick={() => { if (sound) { sfx(sound); haptic('tap'); } onClick?.(); }}>{shine && <span className="shine" />}{children}</button>;
+// ---------- the one button family (docs/DESIGN_SYSTEM.md): primary (red ink) · gold · dark · paper · green · ghost;
+// sizes sm / md ('') / lg; loading (an ink sweep, never a spinner) and disabled; press-down + haptic on every tap.
+// `primary` marks the screen's one primary action (Enter on a desktop fires it); `pick` numbers a card 1–5 for the keys.
+export function GBtn({ kind = '', size = '', children, onClick, disabled, loading, sound = 'ui.tap', style, className = '', label, pulse, shine, type = 'button', primary, pick }: { kind?: '' | 'gold' | 'dark' | 'paper' | 'green' | 'ghost'; size?: '' | 'lg' | 'sm' | 'md'; children: ReactNode; onClick?: () => void; disabled?: boolean; loading?: boolean; sound?: Sfx | null; style?: CSSProperties; className?: string; label?: string; pulse?: boolean; shine?: boolean; type?: 'button' | 'submit'; primary?: boolean; pick?: number }) {
+  return <button type={type} aria-label={label} aria-busy={loading || undefined} disabled={disabled || loading} style={style} data-primary={primary ? '' : undefined} data-pick={pick} className={['g-btn', kind && 'g-btn--' + kind, size && size !== 'md' && 'g-btn--' + size, pulse && 'is-pulse', loading && 'is-loading', className].filter(Boolean).join(' ')} onClick={() => { if (sound) { sfx(sound); haptic('tap'); } onClick?.(); }}>{shine && <span className="shine" />}{children}</button>;
+}
+// ---------- a stamp never lands in the same place twice (GOTY.md §11.1): a deterministic angle per seed, −10°…+4°.
+export function stampRot(seed: string | number): string {
+  const h = hash(String(seed)); const a = (h % 15) - 10; // −10 … 4
+  return (a > -3 && a < 2 ? a - 4 : a) + 'deg';
 }
 
 // ---------- numbers that count up
@@ -218,7 +225,7 @@ export function TopBar({ back, title, onHelp, onMenu, children }: { back?: { lab
     <span className="g-top__end">
       {children}
       <Bell />
-      <span className="g-pill" aria-label={t('g.coins', { n: s.credits })}><span className="g-coin" />{s.credits}</span>
+      <span className="g-pill" aria-label={t('g.coins', { n: s.credits })}><span className="g-coin" /><Roll n={s.credits} from0={false} /></span>
       <span className="g-pill g-pill--lv" aria-label={t('g.level', { n: lv.n })}>{t('g.lv', { n: lv.n })}</span>
       {onHelp && <button className="g-icbtn" onClick={onHelp} aria-label={t('nav.howto')}><Icon n="help" /></button>}
       {onMenu && <button className="g-icbtn" onClick={onMenu} aria-label={t('common.settings')}><Icon n="menu" /></button>}

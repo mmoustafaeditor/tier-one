@@ -172,6 +172,9 @@ export function CustomizeScreen(chrome: Chrome) {
           <p className="g-fine">{t('eco.ledger.note')}</p>
         </section>
 
+        {/* no dead ends: the store always hands you back to the game */}
+        <GBtn kind="dark" size="lg" className="cz-desk" onClick={() => chrome.go({ n: 'front' })}><Icon n="home" />{t('g.res.home')}</GBtn>
+
         <section className="cz-promise"><h2>{t('eco.promise.hed')}</h2><ul>{(t.list('eco.promise.list') as string[]).map((x, k) => <li key={k}><Icon n="check" size={14} />{x}</li>)}</ul></section>
       </div>
     </div>

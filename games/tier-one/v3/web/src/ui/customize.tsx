@@ -1,7 +1,7 @@
 // "Your desk" pieces (GOTY.md §8.4): live previews of every cosmetic kind, the item tiles, the wallet strip, the
 // credits glyph, the gift and packs sheets, and <CustomizeLink/> for the Me lane. Logic lives in lib/wallet.ts and
 // lib/catalog.ts; the screen in screens/Customize.tsx.
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { useSave, type Save } from '../lib/save';
 import { useT, fmtDate, type T } from '../lib/i18n';
 import { sfx } from '../lib/sfx';
@@ -14,6 +14,7 @@ import {
   type Currency,
 } from '../lib/wallet';
 import { Icon, GBtn } from './game';
+import { Sheet as BaseSheet } from './bits';
 import { CosSwatch } from './season';
 import { navTo } from './connect';
 import '../styles/customize.css';
@@ -198,16 +199,9 @@ export function Tile({ it, s, on, owned, selected, price, was, onPick, tabIndex 
 }
 
 // ---------------------------------------------------------------- sheets
+// Every modal is the one system sheet (ui/bits.tsx); this keeps the store's call sites and its paper padding.
 export function Sheet({ label, onClose, children, wide }: { label: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current; el?.querySelector<HTMLElement>('input, button')?.focus();
-    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); onClose(); } };
-    addEventListener('keydown', k); return () => removeEventListener('keydown', k);
-  }, [onClose]);
-  return <div className="cz-scrim" onClick={onClose}>
-    <div ref={ref} className={'cz-sheet' + (wide ? ' cz-sheet--wide' : '')} role="dialog" aria-modal="true" aria-label={label} onClick={(e) => e.stopPropagation()}>{children}</div>
-  </div>;
+  return <BaseSheet open onClose={onClose} label={label} wide={wide} className="cz-sheet">{children}</BaseSheet>;
 }
 export function GiftSheet({ it, onClose, onSent }: { it: Item; onClose: () => void; onSent: (to: string, queued: boolean) => void }) {
   const t = useT(); const s = useSave();
