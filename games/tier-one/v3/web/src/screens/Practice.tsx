@@ -49,7 +49,7 @@ export function PracticeScreen(chrome: Chrome) {
         <span className={'g-toggle' + (s.practice.coach ? ' is-on' : '')} aria-hidden="true"><span /></span>
       </button>
 
-      <WeekEventBanner onPlay={(mode: string) => chrome.go({ n: mode })} />
+      <WeekEventBanner onPlay={() => chrome.go({ n: 'practice' })} />
 
       <form className="seedform g-card" style={{ ['--i' as string]: 2 }} onSubmit={(e) => { e.preventDefault(); if (clean.length >= 4) { sfx('open'); begin(clean); } }}>
         <span className="seedform__h"><span className="rcard__ic rcard__ic--green"><Icon n="ticket" /></span><span><b className="g-h2">{t('g.practice.codeT')}</b><small className="g-sub">{t('practice.codeD')}</small></span></span>

@@ -99,7 +99,7 @@ export function Home(chrome: Chrome) {
       </section>}
 
       {/* ---------- weekly event banner */}
-      <WeekEventBanner onPlay={(mode: string) => chrome.go({ n: mode })} />
+      <WeekEventBanner onPlay={() => chrome.go({ n: 'practice' })} />
 
       <RivalStrip go={chrome.go} style={{ ['--i' as string]: 3 }} />
 
