@@ -20,7 +20,7 @@ import { Icon, Kit, GBtn, TopBar, CountUp, confetti, shake, SrcIcon, useCountUp 
 import { Avatar } from '../ui/screenbits';
 import { BylineLine, useRecordWindow } from '../ui/connect';
 import { Sheet } from '../ui/bits';
-import { renderCard, shareText } from '../lib/share';
+import { renderCard, shareText, hereWeGoOf } from '../lib/share';
 import type { Chrome } from '../App';
 import '../styles/results.css';
 
@@ -347,7 +347,8 @@ function ShareBlock({ view, r, what, hed, bestDest, bc }: { view: View; r: Resul
   const sub = best && best.right && best.call ? (best.call.day >= view.R.DAYS ? t('results.calledItDD') : t('results.calledIt', { n: view.R.DAYS - best.call.day })) : r.called ? t('tierLine.' + r.tier) : t('results.nothing');
   const url = 'sembagames.app/tier-one';
   const text = shareText(t, { what, tier: t('tier.' + r.tier), pts: num(r.total), row: r.row || '', url: 'https://' + url });
-  const card = { hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl };
+  const hwgIdx = hereWeGoOf(r);
+  const card = { hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl, hwg: hwgIdx >= 0 ? t('calls.hwg.card', { p: bc.player.s }) : undefined };
   const send = async (e: React.MouseEvent) => {
     e.stopPropagation(); onShared();
     try {

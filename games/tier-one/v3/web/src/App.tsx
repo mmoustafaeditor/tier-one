@@ -4,6 +4,7 @@ import { useSave, update, getSave } from './lib/save';
 import { useT } from './lib/i18n';
 import { sfx } from './lib/sfx';
 import { onToasts } from './lib/meta';
+import { checkPurchase } from './lib/monet';
 import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
 import { MeScreen } from './screens/Me';
@@ -50,6 +51,7 @@ export function App() {
   const [settings, setSettings] = useState(false);
   const [toasts, setToasts] = useState<{ id: number; kind: string; title: string; body?: string }[]>([]);
   useEffect(() => onToasts(setToasts), []);
+  useEffect(() => { checkPurchase(); }, []);
 
   // Language, direction and edition live on <html> so tokens.css and :lang(ar) rules apply everywhere.
   useEffect(() => {
