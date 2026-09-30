@@ -227,7 +227,10 @@ function RoomPage({ room, chrome, onBack }: { room: { code: string; name: string
   const load = async () => {
     const x = await v3<{ room: Room }>('room.get', { code: room.code, pid: room.pid, sec: room.sec, ...identity() });
     if (!x.ok) { setErr(x.error === 'net' ? t('rooms.needNet') : t.or('rooms.errors.' + x.error, 'err.generic')); return; }
-    setR(x.room); syncRoom(x.room, room.pid);
+    // A room from a 3.3 server carries no cadence, feed or step: it ran a round a day, and its feed is simply empty.
+    const old = x.room as Partial<Room> & Pick<Room, 'code' | 'name' | 'rounds' | 'created' | 'host' | 'players' | 'roundHours'>;
+    const rm: Room = { ...old, cadence: old.cadence || 'daily', stepMs: old.stepMs || 864e5, feed: old.feed || [], now: old.now || Date.now() };
+    setR(rm); syncRoom(rm, room.pid);
   };
   useEffect(() => { load(); }, [room.code]); // eslint-disable-line react-hooks/exhaustive-deps
   const invite = roomUrl(room.code);
