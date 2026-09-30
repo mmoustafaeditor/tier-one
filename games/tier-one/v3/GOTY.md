@@ -344,3 +344,47 @@ moments; the game's surfaces are filmed too.
 |---|---|
 | **filmui** | `ui/film.tsx` (`<FilmLoop/>`, `<Beat/>`, `useFilmBudget()`), `lib/filmgate.ts` (device/network gating), film transitions in `styles/motion.css` hooks, the Home 3D desk (`ui/desk3d/**`, lazy), integration notes per screen; screens edits are additive wrappers only |
 | **film3d** | renders every `loop-*` and `beat-*` after the moment sets, with match-cut frames noted in `film/ASSETS.md` |
+
+## 10. Motion, not characters (3.4, supersedes the 3D parts of §6–§9)
+Owner's brief: the 3D character films are cut. The animations must be world class without characters: between
+screens, when Career starts (you were terminated, you start over), when a day ends, when you ring a source in any
+mode, when you publish, at results, on Deadline Day. The game must feel captivating, mysterious, beautiful,
+connected, intuitive and simple, with room to grow.
+
+### 10.1 Art direction: "the newsroom after dark"
+- The world is objects, places, paper, ink, light and type. Never a person or a face. Hands, silhouettes and
+  shadows are out too.
+- Every piece is built from the same materials: newsprint and card (grain, fold, tear, curl), ink (bleed, stamp,
+  strike-through, handwriting appearing), light (a desk lamp's pool, a phone screen, neon, headlights sweeping a
+  ceiling, dawn through blinds), type (kinetic headlines, tickers, mastheads, numbers rolling), and weather (rain on
+  glass, dust in a beam, steam off coffee).
+- Places carry the story: the barber's is a chair, a pole, a mirror of bulbs and a calendar; the boot room is
+  lockers, a rail of shirts, a bag on a bench; the treatment room is a table, a clipboard, a heart-rate trace; the
+  airport is a departures board, a window, landing lights; the agent is a car interior at night, a contract on the
+  seat, city lights; the leak is a photocopier's sweep and an envelope. A phone on each set rings and lights up.
+- Every film has one hero beat, one loud colour, a match cut in and out of the screen it belongs to, and a sound
+  designed with it (lib/sfx). Nothing is static: light drifts, paper breathes, the camera pushes or pans.
+- Rendering: frame-driven components in the existing kit (src/film, Remotion-compatible), drawn with SVG/CSS/canvas.
+  No video files, no three.js. 60 fps on a mid-range phone; reduced motion shows a composed still.
+
+### 10.2 The pieces
+- Story: `story-prologue` (the fall: Deadline Day clock, the headline goes out, the replies pile in, the box on the
+  desk, the unknown number), chapter openers and reveals, promotions, finale, epilogue. Career start is the
+  prologue: you were terminated; you start over.
+- Calls: for each source and outcome, the place tells the tip (calendar page flips = staying; a bag tagged in another
+  club's colours = leaving; two phones = hijack; a screwed-up paper = fake). The phone lifts as the pickup beat.
+- Post: the desk at night, the post types itself on the laptop, the press warms, it fires, the city's phones light up.
+- Day end: the lamp goes off, the city rolls by, the morning papers land.
+- Results: the presses roll your front page. Deadline Day: the clock tower, blacked-out car lights, the shutter.
+- Moments: tier-up (a new press pass), contact level (a source's place lit up), rival scalp (a laptop slammed shut,
+  your post on the TV), streaks, style titles, DD Live open/close, room win, newsroom week.
+- Ambient loops and beats (§9.1) are drawn the same way, live in the page, and cost nothing when off.
+
+### 10.3 The ecosystem rules (the feel of one game)
+- One design system for every modal, sheet, button, menu, tab and toast: the same paper, ink and motion tokens,
+  the same enter/exit choreography, the same haptics and sounds. No screen is allowed its own look.
+- Every result opens a door (the next assignment, a rival's reply, a contact's thanks); nothing ends on a dead card.
+- Mystery: the case file, the editor's notes, the rivals' tells and the Feed drip information over days, so a
+  returning player always finds something changed.
+- Customization is a long tail, not a checklist: item kinds are a registry; seasons drop new sets; collections show
+  what's missing; nothing "maxes out". New feature kinds slot in without touching the store.
