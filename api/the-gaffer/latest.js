@@ -2,10 +2,10 @@
 // Installed apps compare versionCode with their own and offer the download when this one is higher.
 const LATEST = {
   "version": "2.1.0",
-  "versionCode": 29845999,
+  "versionCode": 29846333,
   "downloadUrl": "https://www.sembagames.app/downloads/TheGaffer.apk",
   "webUrl": "https://www.sembagames.app/the-gaffer",
-  "changelog": "Merge pull request #5 from mmoustafaeditor/ccr-692b713a-3z28u5"
+  "changelog": "Merge remote-tracking branch 'origin/main' into lane8/t1-hybrid"
 };
 
 export default function handler(req, res) {
