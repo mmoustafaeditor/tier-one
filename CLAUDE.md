@@ -47,6 +47,39 @@ whoever it is working for:
   on `main` has "Require review from Code Owners" turned on (repo Settings → Branches); until then the rule is a team
   agreement enforced by the hook and this file.
 
+## 1c. Saif's improvement proposals (one file per game)
+
+This repo holds **two separate games**: **Tier One** (also written "TierOne"; same game) and **The Gaffer**. Saif's proposals
+are kept per game and never mixed:
+
+| Game | Proposal file | IDs |
+|---|---|---|
+| Tier One | [`games/tier-one/SAIF_IMPROVEMENTS.md`](games/tier-one/SAIF_IMPROVEMENTS.md) | `TIERONE-SAIF-nn` |
+| The Gaffer | [`games/the-gaffer/SAIF_IMPROVEMENTS.md`](games/the-gaffer/SAIF_IMPROVEMENTS.md) | `GAFFER-SAIF-nn` |
+
+- **First identify the target game** from the request and repo context (paths, screens, features). Don't ask about spelling
+  variants like "TierOne" vs "Tier One"; ask only if the actual game is unclear. Then read **that game's** file.
+- When working for **mmoustafaeditor**, **before implementing** a new request: acknowledge it in a line, briefly summarize
+  Saif's open proposals for that game (highlight any that relate to the task), and ask whether to include any or keep to
+  his request. E.g. "Got it, Mostafa. I'll work on X. Saif also has a few open proposals for Tier One: … TIERONE-SAIF-0n is
+  relevant here. Include any, or keep this focused on your request?" Skip this if the game's file has no open proposals.
+- Attribute them to Saif; they are proposals, not approved requirements. Once per new task, not repeatedly within it.
+- Don't implement a proposal or widen scope unless he picks it or already approved a scope that includes it; don't
+  re-ask for ones already approved in the current scope. If he says to proceed with only his request, do so.
+- "Open" = `Proposed`, `Approved`, `In Progress`. Never resurface `Completed` or `Rejected`; resurface `Deferred` only at
+  its agreed review point or when asked. Follow any preference he states about future reminders (record it in that file).
+- Update the proposal's status and Log in that game's file as decisions and work progress. New feedback from Saif goes
+  only in the file of the game it is about; don't assume one game has the other's issues.
+- **Keep games apart:** when working on one game, don't modify the other. If a change touches shared code (`design/`,
+  `api/data/`, `data/`, `vercel.json`, `index.html`, root docs), explain the impact on both games before proceeding.
+- **Before any deployment**, verify the target app, build, workflow and deploy target belong to the intended game
+  (Tier One: `tier-one/`, `api/tier-one/`, `build-tier-one.yml`, `com.tierone.game` in `games/tier-one/app`; The Gaffer:
+  `the-gaffer/`, `api/the-gaffer/`, `build-the-gaffer.yml`, `com.sembagames.thegaffer`). Both games share the single
+  Vercel project `semba-game-studios/tier-one`, so any push to `main` deploys the whole site.
+- Note: a push to `main` touching `games/the-gaffer/**` (even its proposal file) runs `build-the-gaffer.yml`, which
+  commits a build and calls the Vercel deploy hook; a push to any branch touching `games/tier-one/**` runs the Tier One
+  APK build.
+
 ## 2. At the end of every change: log it
 
 Every commit that changes something real (game, build, docs, config) must come with a new entry

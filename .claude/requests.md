@@ -13,6 +13,12 @@ Template:
 
 <!-- requests start -->
 
+## 2026-09-30 · from saifsaber → for mmoustafaeditor · OK to merge Saif's proposal files (docs only)
+Branch `ccr-692b713a-3z28u5` adds `games/tier-one/SAIF_IMPROVEMENTS.md` (4 Tier One proposals, all `Proposed`),
+`games/the-gaffer/SAIF_IMPROVEMENTS.md` (empty) and `CLAUDE.md` › 1c so your sessions show Saif's open proposals for the
+game you're working on and ask before including any. No game code changes. It touches `games/tier-one/`, so it needs your
+OK before `main`. Merging runs the Tier One APK build and The Gaffer build/deploy workflow. Then decide on each proposal.
+
 ## 2026-09-28 · from saifsaber → for mmoustafaeditor · Vercel deploy hook for The Gaffer's live updates
 The Gaffer's workflow publishes each build to `main` as github-actions[bot], and Vercel skips commits from outside your team.
 Please create a deploy hook (Vercel › tier-one › Settings › Git › Deploy Hooks, branch `main`) and save its URL as the GitHub

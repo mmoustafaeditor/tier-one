@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-30 · saifsaber · Saif's proposal files per game + CLAUDE.md hook-up (docs only)
+- **What changed:** Saif's improvement proposals are now recorded per game. `games/tier-one/SAIF_IMPROVEMENTS.md` holds four Tier One proposals (TIERONE-SAIF-01 deal comments/reactions, -02 humor/personality, -03 leaderboards/prizes/achievements/badges, -04 overlapping publish controls), all `Proposed`: unverified observations pending Mostafa's review. `games/the-gaffer/SAIF_IMPROVEMENTS.md` sets up the same workflow for The Gaffer with an empty list (`GAFFER-SAIF-nn` IDs). `CLAUDE.md` gains section 1c: identify the target game, read that game's file, and for mmoustafaeditor briefly list Saif's open proposals for it and ask whether to include any before starting; keep the two games apart; check the deploy target belongs to the right game. No game, UI or build change.
+- **Files:** `games/tier-one/SAIF_IMPROVEMENTS.md` (new), `games/the-gaffer/SAIF_IMPROVEMENTS.md` (new), `CLAUDE.md`, `.claude/requests.md`, `UPDATES.md`
+- **Heads-up for the team:** Mostafa: nothing is approved; say which proposals to take on, defer or reject. `games/tier-one/` is a game path, so this waits for your OK (see `.claude/requests.md`). Merging it to `main` runs the Tier One APK build and The Gaffer's build workflow (which calls the Vercel deploy hook), even though only docs changed.
+
 ## 2026-09-29 · mmoustafaeditor · Tier One 3.1: the newsroom game (classic spirit + v3 newspaper)
 - **What changed:** The v3 presentation layer is rebuilt as "paper on the newsroom desk" (spec: `games/tier-one/v3/HYBRID.md`). Dark desk with newsprint cards, chunky game buttons, colour per mode, motion everywhere, and the cheeky classic voice.
   - **Home:** a press pass (level, XP, streak flame), Today's five with a live countdown and week dots, 3 daily missions with coin rewards, mode tiles and a wire ticker.
