@@ -18,7 +18,7 @@
 //   • Any beat  → <Beat stem="beat-…" trigger={n} onEnd={…} /> inside a positioned box, or playBeat('beat-…') full screen.
 // Match cuts: lastFrameOf(stem) hands a film the loop's current frame (film/surfaces/manifest.ts says which frame each
 // loop rests on, so the studio can start the next film from it).
-import { createElement, lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
+import { createElement, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { filmUrl, type Aspect } from '../film/clips';
 import { surfaceOf, homeLoop, placeLoop, seasonLoop, toneNow, type Beat as BeatSpec } from '../film/surfaces/manifest';
@@ -143,7 +143,6 @@ function setDesk(d: typeof desk) { desk = d; deskSubs.forEach((f) => f()); }
 const subDesk = (f: () => void) => { deskSubs.add(f); return () => { deskSubs.delete(f); }; };
 const useDesk = () => useSyncExternalStore(subDesk, () => desk, () => null);
 const useDeskBroken = () => useSyncExternalStore(subDesk, () => deskBroken, () => false);
-const Desk3D = lazy(() => import('./desk3d'));
 
 function FilmStage() {
   const reg = useRegistry();
@@ -158,7 +157,6 @@ function FilmStage() {
   }, [cur]);
   const t = top(reg);
   return <>
-    {d && <Suspense fallback={null}><Desk3D poster={d.poster} tone={d.tone} onFail={() => { deskBroken = true; setDesk(null); }} /></Suspense>}
     {!d && layers.map((s) => <LoopLayer key={s} stem={s} playing={!!t && !t.inline && t.stem === s} {...(stageOpts.get(s) || {})} />)}
   </>;
 }
@@ -311,7 +309,8 @@ export function HomeFilm({ tone: toneProp }: { tone?: 'morning' | 'night' } = {}
   const broken = useDeskBroken();
   const tone = toneProp || toneNow();
   const stem = homeLoop(tone);
-  const three = mine && b.desk3d && !broken;
+  void b; void broken;
+  const three = false; // the 3D desk was cut (owner's call): loops and posters only
   useEffect(() => { if (!three) return; const poster = filmUrl(stem, aspectNow(), 'jpg'); setDesk({ poster, tone }); return () => setDesk(null); }, [three, stem, tone]);
   if (!mine || three) return null;
   return <FilmLoop stem={stem} />;
