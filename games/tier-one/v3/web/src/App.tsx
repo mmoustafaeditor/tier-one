@@ -20,13 +20,15 @@ import { SettingsSheet } from './screens/Settings';
 import { Onboarding } from './screens/Onboarding';
 import { SceneHost } from './lib/scenes';
 import { FeedScreen, RivalsScreen, ContactsScreen, setNav } from './screens/Connect';
+import { CustomizeScreen } from './screens/Customize';
+import { captureReferral } from './lib/wallet';
 // Shell layer (GOTY.md §4): motion tokens + view transitions, then the tablet/desktop layouts. Loaded after the screen styles.
 import './styles/motion.css';
 import './styles/desktop.css';
 
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
-  | { n: 'rooms'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' }
+  | { n: 'rooms'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize' }
   | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
 
@@ -34,14 +36,14 @@ const TABS: { n: Route['n']; k: string; icon: string; c: string }[] = [
   { n: 'front', k: 'g.tabs.home', icon: 'home', c: 'var(--red)' }, { n: 'story', k: 'g.tabs.story', icon: 'story', c: 'var(--m-story)' }, { n: 'wire', k: 'g.tabs.wire', icon: 'wire', c: 'var(--m-wire)' },
   { n: 'rooms', k: 'g.tabs.friends', icon: 'friends', c: 'var(--m-rooms)' }, { n: 'me', k: 'g.tabs.me', icon: 'me', c: 'var(--gold)' },
 ];
-const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' ? 'rooms' : r.n === 'pass' || r.n === 'rivals' || r.n === 'contacts' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' ? 'front' : r.n);
+const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' ? 'rooms' : r.n === 'pass' || r.n === 'rivals' || r.n === 'contacts' || r.n === 'customize' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' ? 'front' : r.n);
 
 function initialRoute(): Route {
   const q = new URLSearchParams(location.search);
   if (q.get('room')) return { n: 'rooms', code: q.get('room')!.toUpperCase().slice(0, 8) };
   const tab = q.get('tab');
   if (tab === 'desk') return { n: 'story' };
-  if (tab === 'daily' || tab === 'wire' || tab === 'story' || tab === 'me' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms' || tab === 'feed' || tab === 'rivals' || tab === 'contacts') return { n: tab } as Route;
+  if (tab === 'daily' || tab === 'wire' || tab === 'story' || tab === 'me' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms' || tab === 'feed' || tab === 'rivals' || tab === 'contacts' || tab === 'customize') return { n: tab } as Route;
   return { n: 'front' };
 }
 
@@ -53,6 +55,7 @@ export function App() {
   const [toasts, setToasts] = useState<{ id: number; kind: string; title: string; body?: string }[]>([]);
   useEffect(() => onToasts(setToasts), []);
   useEffect(() => { checkPurchase(); }, []);
+  useEffect(() => { captureReferral(); }, []); // ?ref=CODE (lib/wallet.ts): both players earn credits after the friend's first window
 
   // Language, direction and edition live on <html> so tokens.css and :lang(ar) rules apply everywhere.
   useEffect(() => {
@@ -147,6 +150,7 @@ export function App() {
     case 'feed': screen = <FeedScreen {...chrome} />; break;
     case 'rivals': screen = <RivalsScreen {...chrome} />; break;
     case 'contacts': screen = <ContactsScreen {...chrome} />; break;
+    case 'customize': screen = <CustomizeScreen {...chrome} />; break;
   }
   return <>
     {screen}
