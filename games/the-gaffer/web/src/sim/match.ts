@@ -17,11 +17,12 @@ import { riskMult } from './youth';
 import { playerOf, squadOf, squadStrength, type World } from './world';
 import { balanceOf, oppBoost } from './balance';
 import {
-  FORMATIONS, aiTactics, autoXI, available, formOf, setPieces, slotValue, xiFor, DEFAULT_TACTICS, type FormationId, type Tactics,
+  FORMATIONS, aiTactics, autoXI, available, formOf, fullTactics, setPieces, slotValue, xiFor, DEFAULT_TACTICS, type FormationId, type Tactics,
 } from './tactics';
 import { TUNE, buildModel, patchSub, rates as modelRates, type Model, type Rates, type SideInput } from './engine/model';
 import { newTally, playMinute, type Ball, type Flow, type Rules, type Tally } from './engine/play';
 import { aiRead, reslot } from './engine/story';
+import { autoRoles, carryRoles, planFor, planOf, slotLoad } from './engine/phases';
 import { AI_COH, cohLevel, cohesionOfClub } from './cohesion';
 
 export type EventKind = 'goal' | 'miss' | 'save' | 'block' | 'yellow' | 'red' | 'injury' | 'sub' | 'corner' | 'foul' | 'offside' | 'duel' | 'tactic';
@@ -102,6 +103,8 @@ function side(w: World, c: Career | null, clubId: string, oppLevel: number, form
   const mine = c?.clubId === clubId;
   const tactics: Tactics = mine ? (c!.tactics ?? DEFAULT_TACTICS) : aiTactics(squad, level(squad), oppLevel, opp, w.managers?.[clubId]?.style);
   const xi = mine ? xiFor(w, c!).xi : autoXI(squad, tactics.formation);
+  // Tactics v3: an AI manager gives each player the role that suits him (and the club's style) in each phase.
+  if (!mine && !tactics.roles) Object.assign(tactics, autoRoles(xi, fullTactics(tactics)));
   const inXI = new Set(xi.map((p) => p.id));
   const bench = squad.filter((p) => !inXI.has(p.id) && available(p)).sort((a, b) => formOf(b) - formOf(a)).slice(0, BENCH_MAX);
   const sp = setPieces(xi, mine ? c!.tactics ?? DEFAULT_TACTICS : tactics, c?.season ?? 2026);
@@ -184,7 +187,7 @@ export function inputsOf(m: LiveMatch, get: Lookup, over?: { side: 0 | 1; tactic
   return ([0, 1] as const).map((i): SideInput => {
     const s = m.sides[i];
     const tactics = over && over.side === i ? over.tactics : s.tactics;
-    const drain = ahead * 0.135 * [0.85, 1, 1.28][tactics.pressing] * [0.93, 1, 1.08][tactics.tempo ?? 1] * (s.mods?.fatigue ?? 1);
+    const drain = ahead * 0.135 * [0.85, 1, 1.28][tactics.pressing] * [0.93, 1, 1.08][tactics.tempo ?? 1] * [0.97, 1, 1.06][tactics.cpress ?? 1] * (s.mods?.fatigue ?? 1);
     return {
       xi: s.onPitch.map((id) => (id ? get(id) : null)),
       tactics,
@@ -274,8 +277,18 @@ export function setTactics(m: LiveMatch, i: 0 | 1, patch: Partial<Tactics>, why 
   const s = m.sides[i];
   const keys = (Object.keys(patch) as (keyof Tactics)[]).filter((k) => JSON.stringify(s.tactics[k]) !== JSON.stringify(patch[k]));
   if (!keys.length) return;
+  const was = s.tactics;
   s.tactics = { ...s.tactics, ...patch };
-  for (const k of keys) m.events.push({ min: m.minute, side: i, kind: 'tactic', playerId: '', note: `${k}:${String(patch[k])}${why ? `|${why}` : ''}` });
+  for (const k of keys) {
+    // Tactics v3: a role change is logged per player ("role:ip:<player>:<role>") so the story can say what it did.
+    if (k === 'roles' || k === 'oopRoles') {
+      const ph = k === 'roles' ? 'ip' : 'oop';
+      const a = planOf(fullTactics(was)), b = planOf(fullTactics(s.tactics));
+      b[ph].forEach((r, slot) => { if (r !== a[ph][slot] && s.onPitch[slot]) m.events.push({ min: m.minute, side: i, kind: 'tactic', playerId: s.onPitch[slot], note: `role:${ph}:${s.onPitch[slot]}:${r}${why ? `|${why}` : ''}` }); });
+      continue;
+    }
+    m.events.push({ min: m.minute, side: i, kind: 'tactic', playerId: '', note: `${k}:${String(patch[k])}${why ? `|${why}` : ''}` });
+  }
   changed(m);
 }
 
@@ -284,8 +297,18 @@ export function reshape(m: LiveMatch, i: 0 | 1, formation: FormationId, get: Loo
   ensureV2(m);
   const s = m.sides[i];
   if (s.tactics.formation === formation) return;
+  // Tactics v3: roles stay with their positions where the new shape still has them.
+  const roles = s.tactics.roles || s.tactics.oopRoles ? carryRoles(fullTactics(s.tactics), formation) : null;
   s.onPitch = reslot(s.onPitch, formation, get);
-  setTactics(m, i, { formation }, why);
+  setTactics(m, i, { formation, ...(roles ?? {}) }, why);
+}
+
+// Tactics v3: a new out-of-possession shape mid-match (the players keep their in-possession slots).
+export function reshapeOop(m: LiveMatch, i: 0 | 1, oop: FormationId, why = ''): void {
+  ensureV2(m);
+  const t = fullTactics(m.sides[i].tactics);
+  if (t.oop === oop) return;
+  setTactics(m, i, { oop, ...(m.sides[i].tactics.oopRoles ? { oopRoles: carryRoles(t, t.formation, oop).oopRoles } : {}) }, why);
 }
 
 export function setTalk(m: LiveMatch, i: 0 | 1, talk: Talk) {
@@ -296,11 +319,20 @@ export function setTalk(m: LiveMatch, i: 0 | 1, talk: Talk) {
   changed(m);
 }
 
+// RULES HOOK (tactics v3): a player leaves the pitch for good (a red card; the referee lane may call it directly).
+// His slot is emptied and the model rebuilt at once: every contest loses him, the side's block sits deeper and its
+// attack sends fewer runners (phases.ts spotOf `short`), and sideLevel() drops. Returns false if he wasn't on.
+export function applyDismissal(m: LiveMatch, i: 0 | 1, id: string): boolean {
+  const k = m.sides[i].onPitch.indexOf(id);
+  if (k < 0) return false;
+  m.sides[i].onPitch[k] = '';
+  changed(m);
+  return true;
+}
+
 function sendOff(m: LiveMatch, i: 0 | 1, id: string) {
   m.events.push({ min: m.minute, side: i, kind: 'red', playerId: id });
-  const k = m.sides[i].onPitch.indexOf(id);
-  if (k >= 0) m.sides[i].onPitch[k] = '';
-  changed(m);
+  applyDismissal(m, i, id);
   // The AI manager reacts at once: down to ten, tighten up unless chasing; against ten, go for it.
   const o = (1 - i) as 0 | 1;
   const d = m.goals[i] - m.goals[o];
@@ -349,23 +381,25 @@ function aiDecisions(m: LiveMatch, i: 0 | 1, get: Lookup) {
   // Fresh legs around the hour: swap the most tired outfield player when the bench has someone nearly as good.
   if (s.autoSubs && [58, 66, 72, 78, 84].includes(m.minute) && s.subs < SUBS_MAX) {
     const slots = FORMATIONS[s.tactics.formation].slots;
+    // The most tired outfielder with a bench player nearly as good for his slot (tactics v3: a tired wing-back with no
+    // full-back on the bench no longer blocks every other change).
     const tired = s.onPitch
       .map((id, k) => ({ id, k }))
       .filter(({ id, k }) => id && slots[k].pos !== 'GK')
-      .sort((a, b) => (m.fit[a.id] ?? 100) - (m.fit[b.id] ?? 100))[0];
-    const inId = tired && bestIn(m, i, slots[tired.k].pos, get);
-    if (tired && inId) {
-      const now = slotValue(get(tired.id), slots[tired.k].pos, m.fit[tired.id]);
-      const fresh = slotValue(get(inId), slots[tired.k].pos, m.fit[inId]);
-      if (fresh >= now - 7) sub(m, i, tired.id, inId, get);
+      .sort((a, b) => (m.fit[a.id] ?? 100) - (m.fit[b.id] ?? 100)).slice(0, 3);
+    for (const t of tired) {
+      const inId = bestIn(m, i, slots[t.k].pos, get);
+      if (!inId) continue;
+      const now = slotValue(get(t.id), slots[t.k].pos, m.fit[t.id]);
+      const fresh = slotValue(get(inId), slots[t.k].pos, m.fit[inId]);
+      if (fresh >= now - 7) { sub(m, i, t.id, inId, get); break; }
     }
   }
 }
 
 // ---------- one minute ----------
 
-// Overlapping full-backs and a pressing striker run more; a high press and a fast tempo tire everyone.
-const runExtra = (pos: Position, t: Tactics) => ((pos === 'LB' || pos === 'RB') && t.fullback === 1 ? 1.2 : pos === 'ST' && t.striker === 3 ? 1.25 : pos === 'LW' || pos === 'RW' ? 1.05 : 1);
+// Tactics v3: running load by role lives in phases.ts slotLoad (wing-backs, box-to-box, pressers run more; outlets less).
 
 // Player lookups for one match (the squads don't change while it's played).
 const PLAYERS = new WeakMap<LiveMatch, Map<string, Player>>();
@@ -399,6 +433,8 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
     const s = m.sides[i];
     const t = s.tactics;
     const slots = FORMATIONS[t.formation].slots;
+    const plan = planFor(t);
+    const cp = { cpress: t.cpress ?? 1 };
     // Fatigue: pressing, tempo, running roles, and chasing a side that keeps the ball.
     const chase = 1 + 0.35 * ((i === 0 ? share : 1 - share) - 0.5);
     const load = [0.85, 1, 1.28][t.pressing] * [0.93, 1, 1.08][t.tempo ?? 1] * (s.mods?.fatigue ?? 1) * chase;
@@ -408,7 +444,8 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
       if (!id) continue;
       const p = P(id), pos = slots[k]?.pos ?? p.position;
       const f0 = m.fit[id] ?? 100;
-      const f = Math.max(20, f0 - (pos === 'GK' ? 0.04 : 0.135 * load * runExtra(pos, t) * (1 - (p.attrs[5] - 70) / 300)));
+      const run = plan.ip[k] ? slotLoad(pos, plan.ip[k], plan.oop[k], cp) : 1; // tactics v3: roles decide who runs
+      const f = Math.max(20, f0 - (pos === 'GK' ? 0.04 : 0.135 * load * run * (1 - (p.attrs[5] - 70) / 300)));
       m.fit[id] = f;
       n++; sum += f;
       if (pos !== 'GK') { outN++; outSum += f; }

@@ -5,7 +5,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Player } from '../model/types';
 import { playerOf } from '../sim/world';
 import { FORMATIONS, FORMATION_IDS, fmt, fullTactics, type Tactics } from '../sim/tactics';
-import { SUBS_MAX, expected, isUserSide, reshape, setTactics, setTalk, simulate, stepMinute, userSub, type LiveMatch, type Talk } from '../sim/match';
+import { SUBS_MAX, expected, isUserSide, reshape, reshapeOop, setTactics, setTalk, simulate, stepMinute, userSub, type LiveMatch, type Talk } from '../sim/match';
+import { planOf, rolesArrays } from '../sim/engine/phases';
+import { ROLES, roleFit, rolesFor, POOR_FIT } from '../sim/engine/roles';
+import { TX } from '../lang-tac-all';
 import { applyTip, explain, suggest, winChance, type Point, type Tip } from '../sim/engine/story';
 import { momentsOf, type KeyMoment } from '../sim/record';
 import { Crest, I, LineChart, MiniPitch, Momentum, Portrait, Spark } from './kit';
@@ -173,7 +176,7 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish }: {
                   <div>
                     <div className="who">{x.live.assistant}</div>
                     <q>{tipWhy(tip, g.t, name)}</q>
-                    <button className="btn btn--accent btn--sm" onClick={() => { change((n) => applyTip(n, me, tip, get)); g.toast(x.ht.applied); }}>{tipWhat(tip.patch, g.t, name)}</button>
+                    <button className="btn btn--accent btn--sm" onClick={() => { change((n) => applyTip(n, me, tip, get)); g.toast(x.ht.applied); }}>{tipWhat(tip.patch, g.t, name, tip.note)}</button>
                   </div>
                 </div>
               )}
@@ -261,6 +264,8 @@ function Changes({ m, me, onChange, onClose }: { m: LiveMatch; me: 0 | 1; onChan
   const s = m.sides[me];
   const slots = FORMATIONS[s.tactics.formation].slots;
   const ft = fullTactics(s.tactics);
+  const plan = planOf(ft);
+  const X = TX[g.ui];
   const T = x.tac;
   const win = Math.round(winChance(m, me, expected(m, get)) * 100);
   const setT = (patch: Partial<Tactics>) => onChange((n) => setTactics(n, me, patch));
@@ -289,6 +294,36 @@ function Changes({ m, me, onChange, onClose }: { m: LiveMatch; me: 0 | 1; onChan
         const key = k === 'pressing' ? 'press' : k;
         return <div key={k} className="ins"><b>{T.ins[key][0]}</b><Steps label={T.ins[key][0]} value={ft[k]} options={T.ins[key][1]} onChange={(v) => setT({ [k]: v } as Partial<Tactics>)} /></div>;
       })}
+      {/* Tactics v3: the shape without the ball, build-up, both transitions, and each player's roles (from the next minute). */}
+      <div className="section-h"><span className="eyebrow">{X.shapeOop}</span></div>
+      <div className="chips wrap">
+        <button className="chip" aria-pressed={ft.oop === ft.formation} onClick={() => onChange((n) => reshapeOop(n, me, n.sides[me].tactics.formation))}>{X.same}</button>
+        {FORMATION_IDS.filter((f) => f !== ft.formation).map((f) => <button key={f} className="chip ltr" aria-pressed={ft.oop === f} onClick={() => onChange((n) => reshapeOop(n, me, f))}>{fmt(f)}</button>)}
+      </div>
+      <div className="ins"><b>{X.ins.build[0]}</b><Steps label={X.ins.build[0]} value={ft.build} options={X.ins.build[1]} onChange={(v) => setT({ build: v as 0 | 1 | 2 })} /></div>
+      <div className="ins"><b>{X.ins.counter[0]}</b><Steps label={X.ins.counter[0]} value={ft.counter ? 1 : 0} options={X.ins.counter[1]} onChange={(v) => setT({ counter: v === 1 })} /></div>
+      <div className="ins"><b>{X.ins.cpress[0]}</b><Steps label={X.ins.cpress[0]} value={ft.cpress} options={X.ins.cpress[1]} onChange={(v) => setT({ cpress: v as 0 | 1 | 2 })} /></div>
+      <div className="section-h"><span className="eyebrow">{X.live.roles}</span><small className="muted">{X.live.rolesSub}</small></div>
+      <div className="liveroles">
+        {s.onPitch.map((id, k) => {
+          if (!id) return null;
+          const p = get(id);
+          return (
+            <div key={id} className="lr">
+              <span className="tag">{x.common.pos[plan.slots[k]?.pos ?? 'CM']}</span><b className="grow">{sn(p, lang)}</b>
+              {(['ip', 'oop'] as const).map((ph) => {
+                const pos = (ph === 'ip' ? plan.slots : plan.oslots)[k]?.pos;
+                if (!pos) return null;
+                return (
+                  <select key={ph} className="sel" aria-label={`${sn(p, lang)} · ${X.phaseLong[ph]}`} value={plan[ph][k]} onChange={(e) => onChange((n) => { const arr = rolesArrays(fullTactics(n.sides[me].tactics)); (ph === 'ip' ? arr.roles : arr.oopRoles)[k] = e.target.value; setTactics(n, me, ph === 'ip' ? { roles: arr.roles } : { oopRoles: arr.oopRoles }); })}>
+                    {rolesFor(pos, ph).map((r) => <option key={r} value={r}>{X.roles[r][0]}{ROLES[r].fx.w && roleFit(p, r, pos) <= POOR_FIT ? ' ⚠' : ''}</option>)}
+                  </select>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
       <button className="btn btn--ghost btn--block" onClick={onClose}>{g.x.close}</button>
     </Sheet>
   );
@@ -333,7 +368,7 @@ function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHa
           {pts.map((p, i) => (
             <div key={i} className="cause">
               <span className="n">{i + 1}</span>
-              <div><h3>{(x.ht.cause[p.k] ?? ['', ''])[p.good ? 0 : 1] || pointText(p, g.t, name)}</h3><p>{pointText(p, g.t, name)}</p></div>
+              <div><h3>{p.k === 'role' ? TX[g.ui].why.head[p.good ? 0 : 1] : (x.ht.cause[p.k] ?? ['', ''])[p.good ? 0 : 1] || pointText(p, g.t, name)}</h3><p>{pointText(p, g.t, name)}</p></div>
               <div className="ev"><Evidence p={p} m={m} me={me} /></div>
             </div>
           ))}
@@ -346,7 +381,7 @@ function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHa
               <div className="fix">
                 {why.tips.map((tp, i) => (
                   <button key={i} aria-pressed={picked.includes(i)} onClick={() => setPicked(picked.includes(i) ? picked.filter((k) => k !== i) : [...picked, i])}>
-                    <b>{tipWhat(tp.patch, g.t, name)}</b><span className="d">{tipWhy(tp, g.t, name)}</span>
+                    <b>{tipWhat(tp.patch, g.t, name, tp.note)}</b><span className="d">{tipWhy(tp, g.t, name)}</span>
                     <span className="fx">+{Math.round((tp.win[1] - tp.win[0]) * 100)}%<small>{x.pre.winChance}</small></span>
                   </button>
                 ))}
@@ -399,6 +434,7 @@ function Evidence({ p, m, me }: { p: Point; m: LiveMatch; me: 0 | 1 }) {
     return <div className="evid"><MiniPitch zone={zoneOf[p.theme ?? 'centre'] ?? 22} them={!p.me} /><span><b>{(p.x ?? 0).toFixed(1)}</b> {E.xg} · {E.shots(p.n ?? 0)}</span></div>;
   }
   if (p.k === 'pressed' || p.k === 'pressing') return <div className="evid"><span><b>{p.n}</b> {E.won}</span></div>;
+  if (p.k === 'role') return <div className="evid"><span><b>{p.n}</b>{p.x ? <> · <b>{(p.x ?? 0).toFixed(1)}</b> {E.xg}</> : null}</span></div>;
   if (p.k === 'keeper') return <div className="evid"><span><b>{p.n}</b> {E.saves}</span></div>;
   if (p.k === 'finish') return <div className="evid"><span><b>{p.n}</b> / <b>{(p.x ?? 0).toFixed(1)}</b> {E.xg}</span></div>;
   if (p.min !== undefined) return <div className="evid"><span><b>{E.min(p.min)}</b></span></div>;

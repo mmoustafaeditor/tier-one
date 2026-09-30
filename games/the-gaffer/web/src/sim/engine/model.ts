@@ -11,7 +11,10 @@
 //   • FAST play (every other match) samples the contest's average odds,
 //   • solve() computes the exact long-run expectations (predict(), the board's expected points, suggestions).
 import type { Player, Position } from '../../model/types';
-import { FORMATIONS, fitPenalty, fullTactics, type FullTactics, type Tactics } from '../tactics';
+import { fitPenalty, fullTactics, type FullTactics, type Tactics } from '../tactics';
+// [tactics v3] phase shapes and roles live in phases.ts / roles.ts; this file reads their parameters (marked below).
+import { F_DEF, F_FB, F_GK, F_MID, F_ST, F_WING, planFor, restDefence, spotOf, teamHooks, type TeamHooks } from './phases';
+import { ROLES, teamFoulFactor, type Fx, type IpRole, type OopRole } from './roles';
 
 export type Get = (id: string) => Player;
 
@@ -46,13 +49,16 @@ export interface Actor {
   a: number[];           // attributes as they play right now: fitness, form, morale, position, home crowd
   x: number; y: number;  // in possession (own frame: y 0 = own goal, x 0 = left touchline)
   ox: number; oy: number; // out of possession
-  f: number;             // role flags (F_*)
+  f: number;             // role flags (F_*) of his in-possession slot
+  // [tactics v3] out of possession he may stand in another slot (another formation) and play another role.
+  of: number; opos: Position;
+  ip: IpRole; oop: OopRole;
+  ifx: Fx; ofx: Fx;      // the roles' engine parameters (after the player's fit for them)
 }
-export const F_GK = 1, F_DEF = 2, F_FB = 4, F_WING = 8, F_MID = 16, F_ST = 32;
-const flagsOf = (pos: Position) => (pos === 'GK' ? F_GK : pos === 'CB' ? F_DEF : pos === 'LB' || pos === 'RB' ? F_DEF | F_FB
-  : pos === 'LW' || pos === 'RW' ? F_WING : pos === 'ST' ? F_ST : F_MID);
+export { F_GK, F_DEF, F_FB, F_WING, F_MID, F_ST };
 export interface Duel {
   a: Actor[]; wa: number[]; d: Actor[]; wd: number[];
+  wf: number[];     // [tactics v3] who fouls if the contest ends in a foul: wd × each defender's role aggression
   p: number[];      // a × d: the attacker's chance in each pairing
   mean: number;     // the contest's odds (what FAST play and solve() use)
   na: number; nd: number; // numbers in the zone (weighted)
@@ -68,6 +74,10 @@ export interface Attack {
   creators: { ids: string[]; w: number[] }; // assist candidates when the story doesn't say
   exposure: number;        // how open this side leaves itself when it loses the ball (read by the other side's counters)
   foulCard: number;        // chance a foul by the OTHER side (defending this attack) is booked
+  // [tactics v3] REFEREE HOOK: how foul-prone the OTHER side (defending this attack) is, relative to a normal side (1):
+  // its pressing and counter-press instructions × its players' out-of-possession role aggression. Every foul chance in
+  // this attack is already multiplied by it (per contest, by who is in it); the rules layer may read it for cards.
+  foulProp: number;
 }
 export interface Model { att: [Attack, Attack]; actors: [Actor[], Actor[]] }
 
@@ -121,44 +131,23 @@ export interface SideInput {
   mark: string | null;   // the opponent this side man-marks
 }
 
-// Where a player stands in each phase, from his slot and the instructions.
-function shape(pos: Position, sx: number, sy: number, t: FullTactics): [number, number, number, number] {
-  let x = sx, y = sy;
-  const fl = flagsOf(pos);
-  const gk = !!(fl & F_GK), def = !!(fl & F_DEF), fb = !!(fl & F_FB), st = !!(fl & F_ST), wing = !!(fl & F_WING), mid = !!(fl & F_MID);
-  if (!gk) {
-    y += (fb ? 3 : def ? 2 : 4) * t.mentality;
-    if (fb && t.fullback === 1) { y += 24; x = x < 50 ? 7 : 93; }
-    if (fb && t.fullback === 2) { y += 12; x = x < 50 ? 36 : 64; }
-    if (st && t.striker === 2) y -= 17;
-    if (st && t.striker === 1) y += 3;
-    x = 50 + (x - 50) * [0.78, 1, 1.16][t.width];
-    if (wing) x = 50 + (x - 50) * [0.85, 1, 1.06][t.width];
-    if (def) y += [-4, 0, 6][t.line];
-    if (t.counter && mid) y -= 3;
-    if (t.passing === 2 && (st || wing)) y += 3;
-  }
-  let oy = gk ? 5 : 8 + sy * 0.78;
-  const ox = gk ? 50 : 50 + (sx - 50) * 0.82;
-  if (def) oy += [-6, 0, 9][t.line];
-  else if (!gk) oy += [-9, 0, 9][t.pressing] + 2 * t.mentality + (st && t.striker === 3 ? 7 : 0);
-  return [clamp(x, 2, 98), clamp(y, 2, 98), clamp(ox, 2, 98), clamp(oy, 2, 98)];
-}
-
+// [tactics v3] Where a player stands in each phase (his in- and out-of-possession slots, the instructions and his
+// roles) is phases.ts spotOf(); the role's fit adds to (or takes from) his attributes like playing out of position.
 export function actorsOf(inp: SideInput): Actor[] {
   const t = fullTactics(inp.tactics);
-  const slots = FORMATIONS[t.formation].slots;
+  const plan = planFor(inp.tactics);
+  const short = Math.max(0, 11 - inp.xi.filter(Boolean).length);
   const out: Actor[] = [];
   inp.xi.forEach((p, k) => {
-    if (!p || !slots[k]) return;
-    const sl = slots[k];
+    if (!p || !plan.slots[k]) return;
+    const sl = plan.slots[k];
     const fit = inp.fit(p.id) / 100;
     const phys = 0.72 + 0.28 * fit, tech = 0.9 + 0.1 * fit;
     const pen = fitPenalty(p.position, sl.pos) * 0.8;
-    const b = inp.bonus + (p.morale - 60) / 20 - pen;
+    const sp = spotOf(p, k, t, plan, short);
+    const b = inp.bonus + (p.morale - 60) / 20 - pen + sp.bonus;
     const a = p.attrs.map((v, i) => (i === 0 || i === 5 ? v * phys : v * tech) + b);
-    const [x, y, ox, oy] = shape(sl.pos, sl.x, sl.y, t);
-    out.push({ id: p.id, slot: k, pos: sl.pos, a, x, y, ox, oy, f: flagsOf(sl.pos) });
+    out.push({ id: p.id, slot: k, pos: sl.pos, a, x: sp.x, y: sp.y, ox: sp.ox, oy: sp.oy, f: sp.f, of: sp.of, opos: sp.opos, ip: sp.ip, oop: sp.oop, ifx: sp.ifx, ofx: sp.ofx });
   });
   return out;
 }
@@ -185,7 +174,7 @@ function pickTop(xs: Actor[], w: number[]): { list: Actor[]; ws: number[]; n: nu
   return { list, ws, n };
 }
 
-const GHOST: Actor = { id: '', slot: -1, pos: 'CB', a: [45, 45, 45, 45, 45, 45, 20], x: 50, y: 50, ox: 50, oy: 50, f: F_DEF };
+const GHOST: Actor = { id: '', slot: -1, pos: 'CB', a: [45, 45, 45, 45, 45, 45, 20], x: 50, y: 50, ox: 50, oy: 50, f: F_DEF, of: F_DEF, opos: 'CB', ip: 'defender', oop: 'hold_line', ifx: ROLES.defender.fx as Fx, ofx: { foul: 1 } as Fx };
 
 function duel(A: Actor[], wA: number[], sA: (a: number[]) => number, D: Actor[], wD: number[], sD: (a: number[]) => number,
   base: number, markId: string | null = null, supScale = 1): Duel {
@@ -205,7 +194,8 @@ function duel(A: Actor[], wA: number[], sA: (a: number[]) => number, D: Actor[],
       mean += at.ws[i] * df.ws[j] * v;
     }
   }
-  return { a: at.list, wa: at.ws, d: df.list, wd: df.ws, p, mean, na: at.n, nd: df.n };
+  const wf = df.list.map((d, j) => df.ws[j] * (d.ofx.foul ?? 1));
+  return { a: at.list, wa: at.ws, d: df.list, wd: df.ws, wf, p, mean, na: at.n, nd: df.n };
 }
 
 // Contest zones: how much each player is involved in each contest (rows), computed once per model.
@@ -216,43 +206,68 @@ function zonesA(A: Actor[], t: FullTactics, cornerTaker: string): number[][] {
   for (let k = 0; k < NZ; k++) rows.push(new Array(A.length).fill(0));
   A.forEach((x, i) => {
     const gk = x.f & F_GK;
-    rows[Z.B][i] = band(x.y, -10, 40) * (gk ? (t.passing === 0 ? 0.6 : 0.25) : 1);
+    rows[Z.B][i] = band(x.y, -10, 40) * (gk ? (t.build === 0 ? 0.6 : 0.25) : 1);
     if (gk) return;
     const st = x.f & F_ST, wing = x.f & F_WING, def = x.f & F_DEF;
     const bp = band(x.y, 30, 72);
     for (let l = 0; l < 3; l++) rows[Z.P0 + l][i] = bp * laneW(x.x, l);
-    rows[Z.LONG][i] = band(x.y, 60, 110) * (st ? (t.striker === 1 ? 2.2 : 1.4) : 1);
+    rows[Z.LONG][i] = band(x.y, 60, 110) * (st ? 1.4 : 1);
     const bf = band(x.y, 58, 104) * ((x.f & (F_WING | F_FB)) ? 1.2 : 0.7);
     rows[Z.FL][i] = bf * laneW(x.x, 0); rows[Z.FR][i] = bf * laneW(x.x, 2);
     rows[Z.COMBO][i] = band(x.y, 60, 104) * laneW(x.x, 1);
     rows[Z.THR][i] = band(x.y, 66, 110) * (st ? 1.5 : wing ? 1.1 : 0.5);
-    rows[Z.BOX][i] = def ? 0 : band(x.y, 74, 110) * (st ? (t.striker === 1 ? 1.6 : 1.2) : 0.8);
+    rows[Z.BOX][i] = def ? 0 : band(x.y, 74, 110) * (st ? 1.2 : 0.8);
     rows[Z.SET][i] = x.id === cornerTaker ? 0 : x.pos === 'CB' ? (t.routine === 1 ? 1.6 : 1) : st ? 1.2 : 0.5;
     rows[Z.CTR][i] = band(x.y, 45, 110) * (wing || st ? 1.3 : 0.7);
     rows[Z.HIGH][i] = band(x.y, 55, 110);
   });
+  return roleShare(rows, A);
+}
+// [tactics v3] In possession a role decides WHO takes part in a contest, not how many: each zone's involvement is
+// shifted towards (or away from) the role player and the zone's total is kept. More bodies in a zone only come from
+// where the roles put players (phases.ts: wing-backs up the line, a false 9 dropping in, box-to-box runs).
+// (Out of possession, zonesD, a role is effort: a presser adds to the press, a player told to stay up takes away.)
+function roleShare(rows: number[][], A: Actor[]): number[][] {
+  const key: (keyof Fx | null)[] = ['zb', 'zp', 'zp', 'zp', 'zl', 'zf', 'zf', 'zc', 'zt', 'zx', null, 'zk', null];
+  for (let z = 0; z < NZ; z++) {
+    const k = key[z];
+    if (!k) continue;
+    const row = rows[z];
+    let before = 0, after = 0;
+    for (let i = 0; i < row.length; i++) {
+      before += row[i];
+      row[i] *= (A[i].ifx[k] as number) * (z === Z.CTR ? A[i].ofx.zk : 1);
+      after += row[i];
+    }
+    if (after > 0 && before > 0) { const q = before / after; for (let i = 0; i < row.length; i++) row[i] *= q; }
+  }
   return rows;
 }
 // The defending side in the attacker's frame: its out-of-possession shape, or its in-possession shape for transitions.
 function zonesD(D: Actor[], t: FullTactics): number[][] {
   const rows: number[][] = [];
   for (let k = 0; k < NZ; k++) rows.push(new Array(D.length).fill(0));
-  const engage = [0.5, 0.85, 1.2][t.pressing] + (t.striker === 3 ? 0.1 : 0);
+  const engage = [0.5, 0.85, 1.2][t.pressing];
   D.forEach((d, i) => {
-    if (d.f & F_GK) return;
+    const r = d.ofx; // [tactics v3] the out-of-possession slot (of, opos) and role decide his part in each contest
+    if (d.of & F_GK) {
+      if (r.sweep) { rows[Z.THR][i] = r.sweep; rows[Z.LONG][i] = 0.7 * r.sweep; } // a sweeper keeper comes for it
+      return;
+    }
     const my = 100 - d.oy, mx = 100 - d.ox, iy = 100 - d.y, ix = 100 - d.x;
-    const def = d.f & F_DEF, fb = d.f & F_FB, wing = d.f & F_WING;
-    rows[Z.B][i] = band(my, -10, 40) * engage;
+    const def = d.of & F_DEF, fb = d.of & F_FB, wing = d.of & F_WING, idef = d.f & F_DEF;
+    rows[Z.B][i] = band(my, -10, 40) * engage * r.zb;
     const bp = band(my, 30, 72);
-    for (let l = 0; l < 3; l++) rows[Z.P0 + l][i] = bp * laneW(mx, l);
-    rows[Z.LONG][i] = band(my, 60, 110) * (def ? 1.3 : 1);
-    const bf = band(my, 58, 104) * (fb ? 1.3 : wing ? 0.8 : 0.6);
+    for (let l = 0; l < 3; l++) rows[Z.P0 + l][i] = bp * laneW(mx, l) * r.zp;
+    rows[Z.LONG][i] = band(my, 60, 110) * (def ? 1.3 : 1) * r.zl;
+    const bf = band(my, 58, 104) * (fb ? 1.3 : wing ? 0.8 : 0.6) * r.zf;
     rows[Z.FL][i] = bf * laneW(mx, 0); rows[Z.FR][i] = bf * laneW(mx, 2);
-    rows[Z.COMBO][i] = band(my, 60, 104) * laneW(mx, 1);
-    rows[Z.THR][i] = def ? band(my, 55, 105) : 0;
-    rows[Z.BOX][i] = band(my, 72, 110) * (def ? 1.2 : 0.6);
-    rows[Z.SET][i] = def ? 1.2 : d.pos === 'CDM' || d.pos === 'ST' ? 0.8 : 0.4;
-    rows[Z.CTR][i] = band(iy, 50, 110) * (def ? 1.2 : 0.7);
+    rows[Z.COMBO][i] = band(my, 60, 104) * laneW(mx, 1) * r.zc;
+    rows[Z.THR][i] = def ? band(my, 55, 105) * r.zt : 0;
+    rows[Z.BOX][i] = band(my, 72, 110) * (def ? 1.2 : 0.6) * r.zx;
+    rows[Z.SET][i] = def ? 1.2 : d.opos === 'CDM' || d.opos === 'ST' ? 0.8 : 0.4;
+    // Transitions: the moment the ball is lost he is where the in-possession shape left him.
+    rows[Z.CTR][i] = band(iy, 50, 110) * (idef ? 1.2 : 0.7);
     const bh = band(iy, 60, 110);
     rows[Z.HIGH][i] = bh * laneW(ix, 1) + 0.3 * bh;
   });
@@ -283,22 +298,33 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   const b = TUNE.base;
   const za = zonesA(A, ta, pieces.corners), zd = zonesD(D, td);
 
+  const outD = D.filter((x) => !(x.f & F_GK));
+  const foulProp = teamFoulFactor(td) * (outD.reduce((s, x) => s + x.ofx.foul, 0) / (outD.length || 1));
+  const holes = D.reduce((s, x) => s + x.ofx.hole, 0), lob = D.reduce((s, x) => s + x.ofx.lob, 0), outlets = A.reduce((s, x) => s + x.ofx.outlet, 0);
+  // Role edges in the contests (roles.ts: bld/prg/cmb for our roles, opb/opp/opc for theirs), capped per side.
+  const edgeA = (k: 'bld' | 'prg' | 'cmb' | 'lose') => clamp(A.reduce((s, x) => s + x.ifx[k], 0), -0.3, 0.3);
+  const edgeD = (k: 'opb' | 'opp' | 'opc') => clamp(D.reduce((s, x) => s + x.ofx[k], 0), -0.3, 0.3);
+  const eB = edgeA('bld') + edgeD('opb'), eP = edgeA('prg') + edgeD('opp'), eC = edgeA('cmb') + edgeD('opc'), eL = edgeA('lose');
   // Build-up: our back line and holders against their press.
   const bShort = duel(A, za[Z.B], S.comp, D, zd[Z.B], S.press,
-    b.B + bonusA + [0.55, 0, -0.4][td.pressing] + [0.2, 0, -0.2][ta.passing], mark);
-  const bLong = clamp([0.08, 0.2, 0.45][ta.passing] + 0.35 * (1 - bShort.mean), 0, 0.8);
+    b.B + bonusA + [0.55, 0, -0.4][td.pressing] + [0.2, 0, -0.2][ta.build] + eB, mark);
+  const bLong = clamp([0.08, 0.2, 0.45][ta.build] + 0.35 * (1 - bShort.mean), 0, 0.8);
   const bLoss = [0.2, 0.3, 0.42][td.pressing];
-  const fouls = (f: number) => f * [0.7, 1, 1.35][td.pressing] * (id.talk === 2 ? 0.7 : id.talk === 1 ? 1.25 : 1);
+  // [tactics v3] fouls: the defending side's instructions × the aggression of the roles in that contest.
+  const foulTeam = teamFoulFactor(td) * (id.talk === 2 ? 0.7 : id.talk === 1 ? 1.25 : 1);
+  const aggr = (d: Duel) => d.wf.reduce((s, v) => s + v, 0) / (d.wd.reduce((s, v) => s + v, 0) || 1);
+  const fouls = (f: number, d?: Duel) => f * foulTeam * (d ? aggr(d) : 1);
   // Long ball: our target against their centre-backs; a high line invites the ball in behind.
   const inBehind = td.line === 2 ? 0.3 : td.line === 0 ? -0.2 : 0;
-  const long = duel(A, za[Z.LONG], ta.striker === 1 ? S.airA : S.target, D, zd[Z.LONG], S.hold, b.LONG + bonusA + inBehind, mark, 0.5);
+  const aerial = A.some((x) => ROLES[x.ip].fx.air); // [tactics v3] a target man: long balls go to his head
+  const long = duel(A, za[Z.LONG], aerial ? S.airA : S.target, D, zd[Z.LONG], S.hold, b.LONG + bonusA + inBehind, mark, 0.5);
 
   // Progression lanes: midfield numbers and quality; a trap makes one lane a snare, the rest a little looser.
   const trapped = (l: number) => (td.pressing < 1 || !td.trap ? 0 : td.trap === 1 ? (l !== 1 ? 1 : -0.35) : td.trap === 2 ? (l === 1 ? 1 : -0.35) : 0.45);
   // Man-marking pulls the marker out of the defensive shape: a little more room in midfield and between the lines.
   const markHole = mark && A.some((x) => x.id === mark) ? 1 : 0;
   const P = [0, 1, 2].map((l) => duel(A, za[Z.P0 + l], S.prog, D, zd[Z.P0 + l], S.screen,
-    b.P + bonusA + 0.12 * markHole - 0.4 * trapped(l) + (td.line === 0 ? 0.3 : td.line === 2 ? -0.15 : 0) + (td.pressing === 2 ? 0.12 : 0), mark));
+    b.P + bonusA + eP + 0.12 * markHole + 0.5 * holes - 0.4 * trapped(l) + (td.line === 0 ? 0.3 : td.line === 2 ? -0.15 : 0) + (td.pressing === 2 ? 0.12 : 0), mark));
   const presP = P.map((d) => d.na);
   const widthPref = [[0.6, 1.7, 0.6], [0.85, 1.3, 0.85], [1.2, 0.9, 1.2]][ta.width];
   const lanePick = (pres: number[], ds: Duel[]) => {
@@ -307,13 +333,13 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
     return q.map((v) => v / tot);
   };
   const qP = lanePick(presP, P);
-  const pLoss = [0, 1, 2].map((l) => clamp(0.42 + 0.06 * (ta.tempo - 1) + 0.03 * ta.mentality + (ta.counter ? 0.04 : 0) + 0.08 * Math.max(0, trapped(l)), 0.2, 0.7));
+  const pLoss = [0, 1, 2].map((l) => clamp(0.42 + 0.06 * (ta.tempo - 1) + 0.03 * ta.mentality + (ta.counter ? 0.04 : 0) + 0.08 * Math.max(0, trapped(l)) + eL, 0.2, 0.7));
 
   // Final third: flanks are a one-on-one (plus overlaps), the middle is a crowd.
   const flank = [Z.FL, Z.FR].map((z) => duel(A, za[z], S.wingA, D, zd[z], S.wingD,
     b.FLANK + bonusA + (ta.mentality * 0.1) + [-0.1, 0, 0.12][ta.width], mark));
   const combo = duel(A, za[Z.COMBO], S.create, D, zd[Z.COMBO], S.block,
-    b.COMBO + bonusA + 0.08 * markHole + 0.1 * ta.mentality + (ta.tempo === 2 ? 0.08 : 0) + [-0.4, 0, 0.15][ta.width], mark);
+    b.COMBO + bonusA + eC + 0.08 * markHole + holes + 0.1 * ta.mentality + (ta.tempo === 2 ? 0.08 : 0) + [-0.4, 0, 0.15][ta.width], mark);
   const presF = [flank[0].na, combo.na, flank[1].na];
   const qF = lanePick(presF, [flank[0], combo, flank[1]]);
   // Through balls: runners against the back line, with space behind a high line (and the offside trap).
@@ -322,12 +348,14 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
     b.THR + bonusA + [-0.65, 0, 0.55][td.line], mark);
   const paceEdge = through.a.reduce((s, a, i) => s + through.wa[i] * S.run(a.a), 0) - through.d.reduce((s, d, j) => s + through.wd[j] * S.chase(d.a), 0);
   const oT = clamp((0.05 + 0.15 * sig(paceEdge / 6)) * lineK * (ta.passing === 2 ? 1.2 : ta.passing === 0 ? 0.85 : 1), 0.03, 0.4);
+  // [tactics v3] after winning a flank duel: the winners' roles decide cross or cut inside (an inside forward cuts in).
+  const crossRole = (d: Duel) => d.a.reduce((s, a, i) => s + d.wa[i] * a.ifx.cross, 0) / (d.wa.reduce((s, v) => s + v, 0) || 1);
   const midShoot = A.filter((x) => (x.f & F_MID)).reduce((s, x) => Math.max(s, x.a[1]), 50);
-  const oL = clamp(0.11 * (1 + 0.28 * ta.mentality) * (0.7 + 0.3 * midShoot / 70) + (td.line === 0 ? 0.04 : 0), 0.03, 0.3);
+  const oL = clamp(0.11 * (1 + 0.28 * ta.mentality) * (0.7 + 0.3 * midShoot / 70) + (td.line === 0 ? 0.04 : 0) + lob, 0.03, 0.3);
   const offside = [0.2, 0.35, 0.55][td.line];
   // Crosses: our box presence in the air against theirs.
   const header = duel(A, za[Z.BOX], S.airA, D, zd[Z.BOX], S.airD, b.HEAD + bonusA, mark);
-  const cross = clamp([0.84, 0.88, 0.9][ta.width] + (ta.striker === 1 ? 0.08 : 0) - (header.mean < 0.25 ? 0.08 : 0), 0.3, 0.85);
+  const cross = clamp([0.84, 0.88, 0.9][ta.width] + (aerial ? 0.08 : 0) - (header.mean < 0.25 ? 0.08 : 0), 0.3, 0.85);
   // Corners and free-kick deliveries: the big men.
   const corner = duel(A, za[Z.SET], S.airA, D, zd[Z.SET], S.airD,
     b.CRN + bonusA + [0, 0.22, -0.45][ta.routine], mark, 0.3);
@@ -335,14 +363,18 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   // Transitions: the other side's exposure when we win the ball, our runners against their rest defence.
   const restD = D.reduce((s, d) => s + (out(d) ? sig((42 - d.y) / 5) : 0), 0);
   const expD = (3.2 - restD) * 0.55 + [-0.25, 0, 0.35][td.line] + (td.routine === 1 ? 0.1 : 0);
-  const cOpp = sig(-2.6 + expD + (ta.counter ? 0.8 : 0) + 0.25 * (ta.tempo - 1));
+  // [tactics v3] our outlets (forwards told to stay up) make the break likelier; their counter-press or regroup
+  // decides what happens the moment they lose it: win it straight back, or drop and deny the break.
+  const cOpp = sig(-2.6 + expD + (ta.counter ? 0.8 : 0) + 0.25 * (ta.tempo - 1) + outlets) * [0.75, 1, 1.15][td.cpress];
+  const cpQ = outD.length ? outD.reduce((s, x) => s + S.press(x.a), 0) / outD.length - A.reduce((s, x) => s + S.comp(x.a), 0) / (A.length || 1) : 0;
+  const regain = td.cpress === 2 ? clamp(0.14 * 2 * sig(TUNE.K * cpQ / 10), 0.04, 0.25) : 0;
   const counter = duel(A, za[Z.CTR], S.brk, D, zd[Z.CTR], S.recover,
     b.CTR + bonusA + (td.line === 2 ? 0.3 : 0), mark, 1.3);
   const high = duel(A, za[Z.HIGH], S.create, D, zd[Z.HIGH], S.block, b.HIGH + bonusA, mark);
-  const restA = A.reduce((s, x) => s + (out(x) ? sig((42 - x.y) / 5) : 0), 0);
+  const restA = restDefence(A); // [tactics v3] shared with the preview
   const exposure = (3.2 - restA) * 0.55 + [-0.25, 0, 0.35][ta.line];
 
-  const fP = fouls(0.047), fF = fouls(0.05), fB = fouls(0.035);
+  const fP = P.map((d) => fouls(0.047, d)), fFl = flank.map((d) => fouls(0.05, d)), fF = fouls(0.05, combo), fB = fouls(0.035, bShort);
   const pen = 0.04;
   const T = TUNE.time, dd = TUNE.dead;
   const F = (l: number) => (l === 0 ? N.F0 : l === 1 ? N.F1 : N.F2);
@@ -352,14 +384,16 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   nodes[N.LONG] = { t: T.LONG, alt: [{ p: [0.02, 0.04, 0.08][td.line], to: END, ev: EV.OFFSIDE, dt: dd.OFF }], duel: long, win: [{ p: 0.55, to: N.FCH }, { p: 0.45, to: N.PCH }], lose: [{ p: 0.35, to: END + 1 }, { p: 0.65, to: END }] };
   nodes[N.PCH] = { t: 0, alt: [0, 1, 2].map((l) => ({ p: qP[l], to: N.P0 + l })) };
   for (const l of [0, 1, 2]) {
-    nodes[N.P0 + l] = { t: T.P * tm * pm, alt: [{ p: fP, to: N.FCH, ev: EV.FOUL, dt: dd.FOUL }], duel: P[l],
+    nodes[N.P0 + l] = { t: T.P * tm * pm, alt: [{ p: fP[l], to: N.FCH, ev: EV.FOUL, dt: dd.FOUL }], duel: P[l],
       win: [{ p: 0.7, to: F(l) }, { p: 0.3, to: N.FCH }],
       lose: [{ p: pLoss[l], to: END + 1 }, { p: (1 - pLoss[l]) * 0.45, to: N.B }, { p: (1 - pLoss[l]) * 0.55, to: N.PCH }] };
   }
   nodes[N.FCH] = { t: 0, alt: [0, 1, 2].map((l) => ({ p: qF[l], to: F(l) })) };
   for (const [k, l] of [[0, 0], [1, 2]] as const) {
-    nodes[F(l)] = { t: T.F * tm, alt: [{ p: fF, to: N.FK, ev: EV.FOUL, dt: dd.FOUL }], duel: flank[k],
-      win: [{ p: cross, to: N.CRS }, { p: 1 - cross, to: N.SHOT + 1 }],
+    // [tactics v3] a winner who cuts inside (inside forward) takes it into the central contest instead of crossing.
+    const cutIn = cross * (1 - clamp(crossRole(flank[k]), 0, 1));
+    nodes[F(l)] = { t: T.F * tm, alt: [{ p: fFl[k], to: N.FK, ev: EV.FOUL, dt: dd.FOUL }], duel: flank[k],
+      win: [{ p: cross - cutIn, to: N.CRS }, { p: 1 - cross, to: N.SHOT + 1 }, { p: cutIn, to: N.F1 }],
       lose: [{ p: 0.35, to: END }, { p: 0.26, to: END + 1 }, { p: 0.07, to: N.CRN, ev: EV.CORNER, dt: dd.CORNER }, { p: 0.32, to: N.PCH }] };
   }
   nodes[N.F1] = { t: T.F * tm, alt: [{ p: fF, to: N.FK, ev: EV.FOUL, dt: dd.FOUL }, { p: oT, to: N.THR }, { p: oL, to: N.SHOT + 6 }], duel: combo,
@@ -373,10 +407,12 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   const cExp = clamp(0.22 + (ta.routine === 1 ? 0.12 : ta.routine === 2 ? -0.1 : 0), 0.05, 0.5);
   nodes[N.CRN] = { t: T.CRN, alt: [{ p: cShort, to: N.F1 }], duel: corner, win: [{ p: 1, to: N.SHOT + 7 }],
     lose: [{ p: cExp, to: END + 1 }, { p: 0.85 - cExp, to: END }, { p: 0.15, to: N.FCH }] };
-  const fC = fouls(0.1);
+  const fC = fouls(0.1, counter);
   nodes[N.CTR] = { t: T.CTR * (ta.tempo === 2 ? 0.85 : 1), alt: [{ p: fC, to: N.FK, ev: EV.TFOUL, dt: dd.FOUL }], duel: counter,
     win: [{ p: 1, to: N.SHOT + 4 }], lose: [{ p: 0.55, to: END }, { p: 0.45, to: END + 1 }] };
-  nodes[N.RMID] = { t: T.RMID, alt: [{ p: cOpp, to: N.CTR }, { p: (1 - cOpp) * 0.5, to: N.PCH }, { p: (1 - cOpp) * 0.5, to: N.B }] };
+  const cpFoul = td.cpress === 2 ? fouls(0.03) : 0;
+  nodes[N.RMID] = { t: T.RMID, alt: [{ p: regain, to: END + 2 }, { p: cpFoul, to: N.FK, ev: EV.TFOUL, dt: dd.FOUL }, { p: (1 - regain - cpFoul) * cOpp, to: N.CTR },
+    { p: (1 - regain - cpFoul) * (1 - cOpp) * 0.5, to: N.PCH }, { p: (1 - regain - cpFoul) * (1 - cOpp) * 0.5, to: N.B }] };
   nodes[N.RHIGH] = { t: T.RHIGH, alt: [], duel: high, win: [{ p: 1, to: N.SHOT + 5 }], lose: [{ p: 0.5, to: N.FCH }, { p: 0.5, to: END }] };
 
   // Shots: who takes them, how good the chance is, and the keeper.
@@ -392,7 +428,7 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   const wOpen: number[] = [], wRun: number[] = [], wAir: number[] = [], wSet: number[] = [], wLong: number[] = [], finF: number[] = [], finH: number[] = [];
   for (let k = 0; k < outs.length; k++) {
     const x = outs[k], sh = pw15(x.a[1] / 70), air = (S.airA(x.a) / 70) ** 2;
-    const open = ROLE_SHOT[x.pos] * (0.4 + band(x.y, 58, 110)) * sh * (x.id === mark ? 0.7 : 1);
+    const open = ROLE_SHOT[x.pos] * x.ifx.shot * (0.4 + band(x.y, 58, 110)) * sh * (x.id === mark ? 0.7 : 1);
     wOpen.push(open); wRun.push(open * pw15(x.a[0] / 70));
     wAir.push(za[Z.BOX][ix[k]] * air); wSet.push(za[Z.SET][ix[k]] * air);
     wLong.push(ROLE_LONG[x.pos] * (x.a[1] / 70) ** 2);
@@ -416,8 +452,9 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   }
   return {
     side, nodes, xg, shooters, keeper: gk?.id ?? '', exposure,
-    creators: { ids: outs.map((x) => x.id), w: outs.map((x) => ROLE_ASSIST[x.pos] * (x.a[2] / 70)) },
+    creators: { ids: outs.map((x) => x.id), w: outs.map((x) => ROLE_ASSIST[x.pos] * x.ifx.create * (x.a[2] / 70)) },
     foulCard: 0.13 * (id.talk === 2 ? 0.7 : 1),
+    foulProp,
   };
 }
 
@@ -440,6 +477,15 @@ export function buildModel(inp: [SideInput, SideInput], pieces: [Pieces, Pieces]
     actors,
     att: [attack(0, actors[0], actors[1], t[0], t[1], inp[0], inp[1], pieces[0]), attack(1, actors[1], actors[0], t[1], t[0], inp[1], inp[0], pieces[1])],
   };
+}
+
+// [tactics v3] REFEREE / RULES HOOKS: a side's foul risk, press, line height and players' aggression, from the model
+// the engine is playing right now (see phases.ts TeamHooks). `side` is the team; its fouls are the ones it commits
+// defending the other side's attack.
+export function hooksOf(model: Model, side: 0 | 1, tactics: Tactics): TeamHooks {
+  const other = model.att[1 - side];
+  const pressN = other.nodes[N.B].duel?.nd ?? 0;
+  return teamHooks(model.actors[side], fullTactics(tactics), other.foulProp, pressN);
 }
 
 // ---------- closed form ----------

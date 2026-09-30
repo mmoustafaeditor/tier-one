@@ -6,7 +6,7 @@ import { makeRng } from './rng';
 import { playerOf, type World } from './world';
 import { roundFee } from './season';
 import { spend, staffQ } from './economy';
-import { FORMATIONS, FORMATION_IDS, PHILOSOPHIES, PRESETS, fitPenalty, xiFor, type FormationId, type Philosophy } from './tactics';
+import { FORMATIONS, FORMATION_IDS, PHILOSOPHIES, PRESETS, fitPenalty, oopFor, xiFor, type FormationId, type Philosophy } from './tactics';
 import { expected } from './match';
 import { pointsLeft, withTactics } from './engine/story';
 import type { LiveMatch } from './match';
@@ -52,7 +52,7 @@ export function makeReport(w: World, c: Career, m: LiveMatch, free = false): { w
   const k = m.sides[0].clubId === c.clubId ? 0 : 1;
   const gains: Partial<Record<Philosophy, number>> = {};
   for (const p of PHILOSOPHIES) {
-    const m2 = withTactics(m, k, { ...PRESETS[p], philosophy: p }, get);
+    const m2 = withTactics(m, k, { ...PRESETS[p], philosophy: p, roles: undefined, oopRoles: undefined, oop: oopFor(m.sides[k].tactics.formation, p) }, get);
     m2.sides = [...m2.sides] as typeof m2.sides;
     m2.sides[k] = { ...m2.sides[k], mastery: p === 'balanced' ? 100 : c.mastery?.[p] ?? 30 };
     gains[p] = Math.round(pointsLeft({ ...m2, minute: 0 }, k, expected(m2, get)) * 100) / 100;

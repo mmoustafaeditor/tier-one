@@ -2,6 +2,8 @@
 // (goal, save, miss, block); goals add the story of the score. Templates are drawn without repeats within a match
 // (a pool is only reused once it has run out), so the same match always reads the same, and two matches read differently.
 import type { Strings } from '../i18n';
+import { txOf } from '../lang-tac-all';
+import type { RoleId } from '../sim/engine/roles';
 import type { LiveMatch, MatchEvent } from '../sim/match';
 import { fmt, type FormationId } from '../sim/tactics';
 
@@ -18,7 +20,11 @@ export function describeChange(t: Strings, note: string | undefined, name: (id: 
   const [k, v] = kv.split(':');
   const ins = t.eng.ins as unknown as Record<string, { t: string; o?: string[] }>;
   let what = '';
-  if (k === 'formation') what = t.eng.ins.formation + ' ' + fmt(v as FormationId);
+  const X = txOf(t);
+  if (k === 'role') { const [, , id, role] = kv.split(':'); what = X.change(name(id), X.roles[role as RoleId]?.[0] ?? role); }
+  else if (k === 'oop') what = `${X.shapeOop}: ${fmt(v as FormationId)}`;
+  else if (k === 'build' || k === 'cpress') what = `${X.ins[k][0]}: ${X.ins[k][1][+v] ?? ''}`;
+  else if (k === 'formation') what = t.eng.ins.formation + ' ' + fmt(v as FormationId);
   else if (k === 'talk') what = t.talks[+v] ?? '';
   else if (k === 'mentality') what = `${ins.mentality.t}: ${ins.mentality.o![+v + 2]}`;
   else if (k === 'counter' || k === 'waste') what = `${ins[k].t}: ${v === 'true' ? t.eng.ins.on : t.eng.ins.off}`;
@@ -61,7 +67,7 @@ export function commentary(m: LiveMatch, t: Strings, name: (id: string) => strin
       const pool = (C[how] as string[] | undefined) ?? C.box;
       // The defender beaten in the build-up: the duel just before, same side, same minute.
       let d: string | undefined;
-      for (let j = k - 1; j >= 0 && ev[j].min >= e.min - 1; j--) if (ev[j].kind === 'duel' && ev[j].side === side && ev[j].ok) { d = ev[j].vs; break; }
+      for (let j = k - 1; j >= 0 && ev[j].min >= e.min - 1; j--) if (ev[j].kind === 'duel' && ev[j].side === side && ev[j].ok && ev[j].how !== 'build') { d = ev[j].vs; break; }
       const kp = e.kind === 'save' ? e.playerId : e.kind === 'goal' ? e.vs : undefined;
       const v = {
         s: name(shooter), a: e.assistId ? name(e.assistId) : undefined, d: d ? name(d) : undefined, k: kp ? name(kp) : undefined,

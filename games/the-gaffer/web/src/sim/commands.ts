@@ -6,7 +6,9 @@ import type { Balance, Career, Dept, DeptLevel, Facility, LocalizedName, NamesMo
 import { withNames } from './seed';
 import type { UserTactics, Tactics, Philosophy } from './tactics';
 import type { LiveMatch } from './match';
-import { applyPreset, DEFAULT_TACTICS, fullTactics } from './tactics';
+import { applyPreset, DEFAULT_TACTICS, FORMATIONS, fullTactics } from './tactics';
+import { planOf } from './engine/phases';
+import { validRole } from './engine/roles';
 import { emit, stamp } from './events';
 import { buy, acceptOffer, rejectOffer, counterOffer, dealRoll, tryRenew, setListed, type Bid } from './transfers';
 import { loanIn, loanOut } from './loans';
@@ -96,6 +98,15 @@ const sponsorById = (c: Career, id: string): SponsorDeal | undefined => c.ops.sp
 
 const youth = (r: { world: World; career: Career } | YouthNo, note?: Done['note']) => (typeof r === 'string' ? no(r) : { ...r, note });
 
+// Tactics v3: every role set is valid for its slot's position in its phase ('' = the default). The screens only offer
+// valid roles; this refuses anything else (a stale or hand-edited plan), and the engine would fall back to defaults.
+function rolesOk(t: Tactics): boolean {
+  if (t.oop && !(t.oop in FORMATIONS)) return false;
+  const f = fullTactics(t), p = planOf({ ...f, roles: null, oopRoles: null });
+  const ok = (rs: string[] | undefined, ph: 'ip' | 'oop') => !rs || (rs.length <= p.slots.length && rs.every((r, k) => !r || validRole(r, (ph === 'ip' ? p.slots : p.oslots)[k].pos, ph)));
+  return ok(t.roles, 'ip') && ok(t.oopRoles, 'oop');
+}
+
 // The rules for each command. Returns the next state (no events yet) or a refusal.
 function run(w: World, c: Career, cmd: Command): { world: World; career: Career; note?: Done['note'] } | Refusal {
   switch (cmd.type) {
@@ -104,6 +115,8 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
       const squad = new Set(w.players.filter((p) => p.clubId === c.clubId).map((p) => p.id));
       if (t.xi && t.xi.some((id) => id && !squad.has(id))) return no('xi');
       if (t.xi && new Set(t.xi.filter(Boolean)).size !== t.xi.filter(Boolean).length) return no('xi');
+      // Tactics v3: a role must exist, belong to its phase and suit the position of its slot in that phase.
+      if (!rolesOk(t)) return no('roles');
       return { world: w, career: { ...c, tactics: t } };
     }
     case 'tactics.preset': {
@@ -120,8 +133,9 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
     case 'planB.set': {
       if (!cmd.tactics) { const { planB: _b, ...rest } = c; void _b; return { world: w, career: rest }; }
       const f = fullTactics(cmd.tactics);
-      const { mark: _m, ...plan } = f; void _m;
-      return { world: w, career: { ...c, planB: plan } };
+      const { mark: _m, roles, oopRoles, ...plan } = f; void _m;
+      if (!rolesOk(cmd.tactics)) return no('roles');
+      return { world: w, career: { ...c, planB: { ...plan, ...(roles ? { roles } : {}), ...(oopRoles ? { oopRoles } : {}) } } };
     }
     case 'prep.set':
       if (!['recovery', 'tactical', 'opposition', 'development'].includes(cmd.focus)) return no('focus');

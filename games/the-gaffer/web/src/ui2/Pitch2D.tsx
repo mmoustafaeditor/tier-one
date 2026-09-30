@@ -5,7 +5,8 @@
 import { useEffect, useRef } from 'react';
 import type { LiveMatch } from '../sim/match';
 import { rngFor } from '../sim/match';
-import { FORMATIONS, type Tactics } from '../sim/tactics';
+import { FORMATIONS, fullTactics } from '../sim/tactics';
+import { planOf, spotOf, type Spot } from '../sim/engine/phases';
 import type { Position } from '../model/types';
 import type { World } from '../sim/world';
 
@@ -54,34 +55,43 @@ const toX = (side: 0 | 1, depth: number) => (side === 0 ? depth : L - depth);
 const depthOf = (side: 0 | 1, x: number) => (side === 0 ? x : L - x);
 const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
 
+// Tactics v3: every player's spot in each phase comes from the engine (phases.ts spotOf: both shapes, instructions and
+// roles), so the pitch shows what the model plays. Cached per side until the tactics or the line-up change.
+const SPOTS = new WeakMap<LiveMatch, Record<string, Spot[]>>();
+function spotsOf(m: LiveMatch, side: 0 | 1): Spot[] {
+  const s = m.sides[side];
+  const key = `${side}|${JSON.stringify(s.tactics)}|${s.onPitch.join()}`;
+  let c = SPOTS.get(m);
+  if (!c) { c = {}; SPOTS.set(m, c); }
+  if (!c[key]) {
+    const t = fullTactics(s.tactics), plan = planOf(t), short = s.onPitch.filter((id) => !id).length;
+    c[key] = plan.slots.map((_, k) => spotOf(null, k, t, plan, short));
+  }
+  return c[key];
+}
+
 // Where a player wants to be right now.
 function target(m: LiveMatch, a: Anim, side: 0 | 1, k: number): Pt {
-  const s = m.sides[side];
-  const slot = FORMATIONS[s.tactics.formation].slots[k];
-  const t: Tactics = s.tactics;
-  const pos = slot.pos, line = LINE[pos];
+  const slot = FORMATIONS[m.sides[side].tactics.formation].slots[k];
+  const sp = spotsOf(m, side)[k];
   const has = a.poss === side;
+  const pos = has ? slot.pos : sp.opos, line = LINE[pos];
   const ballDepth = depthOf(side, a.ball.x);          // how far up the pitch the ball is, from this side's goal
-  const sy = side === 0 ? slot.x : 100 - slot.x;      // this side's left is the top of the screen when attacking right
+  const bx = has ? sp.x : sp.ox, by = has ? sp.y : sp.oy;
+  const sy = side === 0 ? bx : 100 - bx;              // this side's left is the top of the screen when attacking right
   let y = 3 + sy * 0.62;
-  let d = 4 + slot.y * 0.5;
-  if (line === 'gk') d = has ? 7 : 4;
+  let d = 4 + by * 0.5;
+  if (line === 'gk') d = has ? 7 : 4 + (by - 5) * 0.5;
   else if (has) {
     // The whole team moves up with the ball; forwards lead, defenders hold a line behind.
     d += clamp((ballDepth - 35) * 0.6, 0, 30) + { def: 6, mid: 12, fwd: 18, gk: 0 }[line];
     y += (a.ball.y - y) * 0.12;
-    if ((pos === 'LB' || pos === 'RB') && t.fullback === 1) { d += 12; y = y < W / 2 ? 5 : W - 5; }
-    if ((pos === 'LB' || pos === 'RB') && t.fullback === 2) { d += 4; y += (W / 2 - y) * 0.45; }
-    if (pos === 'LW' || pos === 'RW') y += ((y < W / 2 ? 4 : W - 4) - y) * 0.7;
-    if (pos === 'ST' && t.striker === 2) d -= 14;
-    if (pos === 'ST' && t.striker === 1) d += 4;
   } else {
-    // Out of possession: a compact block that follows the ball, higher or deeper with the pressing.
-    const press = t.pressing === 2 ? 8 : t.pressing === 0 ? -8 : 0;
-    d += (ballDepth - 52) * 0.35 + press - (line === 'def' ? 2 : 6);
+    // Out of possession: the engine's block (its height already carries the press and the line) follows the ball.
+    d += 6 + (ballDepth - 52) * 0.35 - (line === 'def' ? 2 : 6);
     y += (a.ball.y - y) * 0.28;
     y += (W / 2 - y) * 0.2;
-    if (pos === 'ST' && t.striker === 3) { d += 10; y += (a.ball.y - y) * 0.5; }
+    if (sp.oop === 'press_forward') y += (a.ball.y - y) * 0.5;
   }
   // The player about to shoot makes his run into the box; the carrier heads for the engine's zone.
   if (a.shooter && a.shooter.side === side && a.shooter.slot === k) { d = 88; y = W / 2 + (sy - 50) * 0.12; }

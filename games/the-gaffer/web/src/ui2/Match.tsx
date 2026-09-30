@@ -6,8 +6,12 @@ import {
   DEFAULT_TACTICS, FORMATIONS, FORMATION_IDS, PHILOSOPHIES, PRESETS, applyPreset, available, fmt, fullTactics, slotValue, xiFor,
   type FormationId, type Philosophy, type Tactics, type UserTactics,
 } from '../sim/tactics';
-import { predict } from '../sim/match';
+import { modelOf, predict } from '../sim/match';
 import { reslot } from '../sim/engine/story';
+import { N, hooksOf, type Model, type Node } from '../sim/engine/model';
+import { autoRoles, carryRoles, phaseMap, planOf, restDefence, rolesArrays, warnings, type TeamHooks, type Warn } from '../sim/engine/phases';
+import { POOR_FIT, ROLES, roleFit, rolesFor } from '../sim/engine/roles';
+import { TX } from '../lang-tac-all';
 import { nextUserMatch, leaders, zones } from '../sim/season';
 import { groupTable } from '../sim/cups';
 import { dateOf, shortDate } from '../sim/calendar';
@@ -35,19 +39,26 @@ export function MatchScreen({ tab, onTab }: { tab: number; onTab: (n: number) =>
 // ---------- the board ----------
 type Ins = 'pressing' | 'line' | 'width' | 'tempo' | 'passing';
 const INS: [Ins, string][] = [['pressing', 'press'], ['line', 'line'], ['width', 'width'], ['tempo', 'tempo'], ['passing', 'passing']];
+// Tactics v3 instructions (copy in lang-tac*.ts): build-up, both transitions, the trap and corners.
+type Ins3 = 'build' | 'cpress' | 'trap' | 'routine';
+const CHANGE_KEYS = ['formation', 'oop', 'philosophy', 'mentality', 'pressing', 'line', 'width', 'tempo', 'passing', 'build', 'cpress', 'counter', 'trap', 'routine', 'mark', 'roles', 'oopRoles'] as const;
+type Phase = 'ip' | 'oop';
 
 function TacticsBoard() {
   const g = useGame();
   const { w, c, x, lang } = g;
+  const X = TX[g.ui];
   const saved = c.tactics ?? DEFAULT_TACTICS;
   const [draft, setDraft] = useState<UserTactics>(saved);
   const [sel, setSel] = useState<number | null>(null);
   const [benchSel, setBenchSel] = useState<string | null>(null);
   const [ghosts, setGhosts] = useState(true);
   const [focus, setFocus] = useState<string | null>(null);
+  const [ph, setPh] = useState<Phase>('ip');
   useEffect(() => { setDraft(c.tactics ?? DEFAULT_TACTICS); }, [c.tactics]);
   const get = (id: string) => playerOf(w, id)!;
   const f = fullTactics(draft);
+  const plan = planOf(f);
   const slots = FORMATIONS[draft.formation].slots;
   const base = useMemo(() => xiFor(w, { ...c, tactics: draft }).xi, [w, c, draft]);
   const xi = draft.xi && draft.xi.length === slots.length ? draft.xi.map((id, i) => (id && playerOf(w, id)?.clubId === c.clubId ? id : base[i]?.id ?? '')) : base.map((p) => p.id);
@@ -61,7 +72,12 @@ function TacticsBoard() {
   const opp = m ? m.sides[1 - me] : null;
   const oppClub = opp ? clubOf(w, opp.clubId) : undefined;
   const report = m ? c.scouted?.[m.key] : undefined;
-  const changes = (['formation', 'philosophy', 'mentality', ...INS.map((i) => i[0])] as const).filter((k) => (fullTactics(draft) as Record<string, unknown>)[k] !== (fullTactics(saved) as Record<string, unknown>)[k]).length
+  // The engine's own model of this plan against this opponent: positions, zone numbers, rest defence, hooks.
+  const model = useMemo(() => (m ? modelOf(m, get) : null), [m]);
+  const acts = model ? model.actors[me] : [];
+  const actAt = (k: number) => acts.find((a) => a.slot === k);
+  const fs = fullTactics(saved);
+  const changes = CHANGE_KEYS.filter((k) => JSON.stringify((f as Record<string, unknown>)[k] ?? null) !== JSON.stringify((fs as Record<string, unknown>)[k] ?? null)).length
     + (JSON.stringify(draft.xi) !== JSON.stringify(saved.xi) ? 1 : 0);
   const setXI = (ids: string[]) => setDraft({ ...draft, xi: ids });
   const tap = (i: number) => {
@@ -71,30 +87,59 @@ function TacticsBoard() {
     const ids = [...xi]; [ids[sel], ids[i]] = [ids[i], ids[sel]]; setXI(ids); setSel(null);
     g.toast(x.tac.swapped(sn(get(ids[i]), lang), sn(get(ids[sel]), lang)));
   };
-  const setShape = (fm: FormationId) => setDraft({ ...draft, formation: fm, xi: reslot(xi, fm, get) });
-  const setStyle = (ph: Philosophy) => setDraft(applyPreset(draft, ph));
+  const setShape = (fm: FormationId) => setDraft({ ...draft, formation: fm, xi: reslot(xi, fm, get), ...(draft.roles || draft.oopRoles ? carryRoles(f, fm) : {}) });
+  const setOop = (fm: FormationId | undefined) => setDraft({ ...draft, oop: fm, ...(draft.oopRoles ? { oopRoles: carryRoles(f, f.formation, fm ?? f.formation).oopRoles } : {}) });
+  const setStyle = (ph2: Philosophy) => setDraft(applyPreset(draft, ph2));
+  const setRole = (phase: Phase, k: number, r: string) => { const arr = rolesArrays(f); const next = phase === 'ip' ? arr.roles : arr.oopRoles; next[k] = r; setDraft({ ...draft, ...arr }); };
+  const xiPlayers = xi.map((id) => (id ? playerOf(w, id) ?? null : null));
+  const suggestRoles = () => { setDraft({ ...draft, ...autoRoles(xiPlayers, f) }); g.toast(X.suggested); };
   const lock = async () => { const r = await g.run({ type: 'tactics.set', tactics: { ...draft, xi } }, { toast: x.tac.locked }); if (r.ok) setSel(null); };
   const fam = Math.round(c.mastery?.[f.philosophy] ?? (f.philosophy === 'balanced' ? 100 : 30));
   const focusP = focus ? playerOf(w, focus) : xi[0] ? get(xi[0]) : null;
   const focusSlot = focusP ? xi.indexOf(focusP.id) : -1;
-  // The plan, in chalk: arrows and rings drawn from the instructions themselves.
-  const chalk = chalkFor(f);
-  const oppSlots = opp ? FORMATIONS[opp.tactics.formation].slots : [];
+  const oppSlots = opp ? FORMATIONS[fullTactics(opp.tactics).oop].slots : [];
   const u = upcoming(w, c, 1)[0];
   const T = x.tac;
-  const [press, line] = [f.pressing, f.line];
-  void press; void line;
+  // Rest defence and box presence as the engine counts them (warnings and the preview read the same numbers).
+  const rest = acts.length ? restDefence(acts) : undefined;
+  const boxN = model ? model.att[me].nodes[N.CRS].duel?.na : undefined;
+  const warns = warnings(f, xiPlayers, rest, boxN);
+  const hooks = model ? hooksOf(model, me as 0 | 1, draft) : null;
+  const trapOn = f.pressing >= 1;
+  const markList = opp ? opp.onPitch.filter(Boolean).map((id) => playerOf(w, id)!).filter((p) => p && p.position !== 'GK') : [];
+  const insRow = (k: Ins3 | 'counter', v: number, was: number, disabled = false) => {
+    const [gain, risk] = X.trade[k][v] ?? ['', ''];
+    return (
+      <div key={k} className={`ins${disabled ? ' off' : ''}`}>
+        <div className="between"><b>{X.ins[k][0]}</b>{v !== was && <span className="tag tag--club">{T.changed}</span>}</div>
+        <Steps label={X.ins[k][0]} value={v} options={X.ins[k][1]} was={was} onChange={(nv) => setDraft({ ...draft, [k]: k === 'counter' ? nv === 1 : nv } as UserTactics)} />
+        {disabled ? <p className="small muted">{X.trapOff}</p> : <div className="trade"><div className="gain"><b><I n="up" size="sm" />{T.gain}</b><span>{gain}</span></div><div className="risk"><b><I n="alert" size="sm" />{T.risk}</b><span>{risk}</span></div></div>}
+      </div>
+    );
+  };
+  const fitIx = (v: number) => (v >= 5 ? 0 : v >= 0 ? 1 : v > POOR_FIT ? 2 : 3);
+  const pname = (k: number) => (xi[k] ? sn(get(xi[k]), lang) : '—');
+  const warnText = (wn: Warn): string => {
+    const W = X.warn;
+    if (wn.k === 'fit') return W.fit(pname(wn.slot), X.roles[wn.role][0]);
+    if (wn.k === 'rest') return W.rest(wn.n.toFixed(1));
+    if (wn.k === 'pressAlone') return W.pressAlone(pname(wn.slot), X.roles[wn.role][0]);
+    if (wn.k === 'trapOff') return W.trapOff;
+    if (wn.k === 'slowLine') return W.slowLine(pname(wn.slot));
+    if (wn.k === 'noBox') return W.noBox;
+    return W.outlets(wn.n);
+  };
   return (
     <>
       <header className="topbar on-ground">
         <div className="club"><div className="grow"><b>{oppClub ? T.title(cn(oppClub, lang)) : T.titleFree}</b><small>{u ? `${matchLabel(g, { cup: u.cup, round: u.round, group: u.group })} · ${shortDate(u.date, g.ui)}` : ''}</small></div></div>
       </header>
       <div className="t-head on-ground">
-        <h1 className="h1"><span className="ltr">{draft.formation}</span> <span>· {T.styles[f.philosophy]}</span></h1>
+        <h1 className="h1"><span className="ltr">{draft.formation}{f.oop !== f.formation ? ` / ${f.oop}` : ''}</span> <span>· {T.styles[f.philosophy]}</span></h1>
         {m && (
           <div className="pred" aria-label={T.forecast}>
             <span className="l">{T.forecast}</span>
-            <div className="bar" aria-hidden="true" style={{ gridTemplateColumns: `${Math.max(1, win)}fr ${Math.max(1, 100 - win - Math.round(odds(m) * 0))}fr` }}><i /><i /></div>
+            <div className="bar" aria-hidden="true" style={{ gridTemplateColumns: `${Math.max(1, win)}fr ${Math.max(1, 100 - win)}fr` }}><i /><i /></div>
             <span className="v">{win}% {win !== win0 && <small className={win > win0 ? 'up' : 'down'}>{win > win0 ? '+' : ''}{win - win0}</small>}</span>
           </div>
         )}
@@ -102,7 +147,8 @@ function TacticsBoard() {
 
       <div className="grid">
         <section className="c-mid board-wrap on-ground">
-          <div className={`board${sel !== null ? ' dragging' : ''}`} aria-label={T.board} role="group">
+          <div className="phase-seg"><Seg label={X.phaseLong[ph]} value={ph} onChange={setPh} onGround options={(['ip', 'oop'] as const).map((p) => ({ v: p, label: X.phase[p] }))} /></div>
+          <div className={`board${sel !== null ? ' dragging' : ''} ph-${ph}`} aria-label={T.board} role="group">
             <svg className="chalk" viewBox="0 0 68 100" preserveAspectRatio="none" aria-hidden="true">
               <g fill="none" stroke="rgba(236,250,244,.55)" strokeWidth="1.4" filter="url(#chalk)">
                 <rect x="3" y="3" width="62" height="94" rx=".5" /><line x1="3" y1="50" x2="65" y2="50" /><circle cx="34" cy="50" r="9.15" />
@@ -110,24 +156,32 @@ function TacticsBoard() {
                 <rect x="13.85" y="80.5" width="40.3" height="16.5" /><rect x="24.85" y="91.5" width="18.3" height="5.5" />
                 <path d="M26.7 19.5a9.15 9.15 0 0 0 14.6 0M26.7 80.5a9.15 9.15 0 0 1 14.6 0" />
               </g>
-              <g fill="none" stroke="rgba(236,250,244,.85)" strokeWidth="1.8" strokeLinecap="round" filter="url(#chalk)">
-                {chalk.paths.map((d, i) => <path key={i} d={d.d} strokeDasharray={d.dash ? '3 3.4' : undefined} markerEnd={d.arrow ? 'url(#ah)' : undefined} opacity={d.o ?? 1} />)}
+              {/* The engine's lanes and thirds (x 33 / 67, y 30-72 midfield band), drawn faintly. */}
+              <g fill="none" stroke="rgba(236,250,244,.16)" strokeWidth=".6" strokeDasharray="1.5 2">
+                <line x1="22.4" y1="3" x2="22.4" y2="97" /><line x1="45.6" y1="3" x2="45.6" y2="97" />
+                <line x1="3" y1="33.8" x2="65" y2="33.8" /><line x1="3" y1="72.4" x2="65" y2="72.4" />
               </g>
             </svg>
-            {chalk.notes.map((n, i) => <span key={i} className="note" style={{ left: `${n.x}%`, top: `${n.y}%` }}>{T.ins[n.k][0]}<br />{T.ins[n.k][1][n.v]}</span>)}
-            {ghosts && opp && opp.onPitch.map((id, i) => { const sl = oppSlots[i]; if (!id || !sl) return null; const p = playerOf(w, id); return (
-              <div key={`o${id}`} className="tok opp" style={{ left: `${100 - sl.x}%`, top: `${Math.max(6, sl.y * 0.46 + 2)}%` }}><span className="disc">{p?.shirtNumber ?? ''}</span></div>
-            ); })}
+            {ghosts && opp && opp.onPitch.map((id, i) => { const sl = oppSlots[phaseMap(opp.tactics.formation, fullTactics(opp.tactics).oop)[i]] ?? oppSlots[i]; const oa = model?.actors[1 - me].find((a) => a.slot === i); if (!id || !sl) return null; const p = playerOf(w, id);
+              // Their players where the engine puts them: their shape without the ball when we have it, and with it when we don't.
+              const ox = oa ? (ph === 'ip' ? 100 - oa.ox : 100 - oa.x) : 100 - sl.x, oy = oa ? (ph === 'ip' ? 100 - oa.oy : 100 - oa.y) : 100 - sl.y * 0.46;
+              return (
+                <div key={`o${id}`} className="tok opp" style={{ left: `${ox}%`, top: `${Math.min(94, Math.max(6, 100 - oy * 0.92))}%` }}><span className="disc">{p?.shirtNumber ?? ''}</span></div>
+              ); })}
             {slots.map((sl, i) => {
               const id = xi[i];
               const p = id ? playerOf(w, id) : undefined;
               const fitV = p ? Math.round(slotValue(p, sl.pos)) : 0;
+              const a = actAt(i);
+              const px = a ? (ph === 'ip' ? a.x : a.ox) : sl.x, py = a ? (ph === 'ip' ? a.y : a.oy) : sl.y;
+              const role = plan[ph][i];
+              const bad = p && role && ROLES[role].fx.w && roleFit(p, role, (ph === 'ip' ? plan.slots : plan.oslots)[i].pos) <= POOR_FIT;
               return (
-                <button key={i} className={`tok${sel === i ? ' lift' : ''}${focus === id ? ' focus' : ''}`} style={{ left: `${sl.x}%`, top: `${Math.min(92, 100 - sl.y * 0.92)}%` }}
-                  onClick={() => tap(i)} aria-pressed={sel === i} aria-label={`${x.common.posLong[sl.pos]}: ${p ? p.name[lang] : '—'}`}>
+                <button key={i} className={`tok${sel === i ? ' lift' : ''}${focus === id ? ' focus' : ''}`} style={{ left: `${px}%`, top: `${Math.min(92, 100 - py * 0.92)}%` }}
+                  onClick={() => tap(i)} aria-pressed={sel === i} aria-label={`${x.common.posLong[sl.pos]}: ${p ? p.name[lang] : '—'} · ${role ? X.roles[role][0] : ''}`}>
                   <span className="disc">{p?.shirtNumber ?? '?'}{p && <span className={`fit${fitV < p.rating - 4 ? ' warn' : ''}`}>{fitV}</span>}</span>
                   <span className="nm">{p ? sn(p, lang) : '—'}</span>
-                  <span className="rl">{x.common.pos[sl.pos]}</span>
+                  <span className={`rl${bad ? ' bad' : ''}`}>{role ? X.roles[role][1] : x.common.pos[sl.pos]}</span>
                 </button>
               );
             })}
@@ -136,6 +190,7 @@ function TacticsBoard() {
             <label className="toggle"><input type="checkbox" checked={ghosts} onChange={(e) => setGhosts(e.target.checked)} /><span className="sw" aria-hidden="true" /><span>{oppClub ? T.theirPress(cn(oppClub, lang)) : ''}</span></label>
             <span className="hint"><I n="drag" size="sm" />{T.hint}</span>
           </div>
+          {model && <EnginePreview model={model} me={me as 0 | 1} ph={ph} rest={rest ?? 0} hooks={hooks} />}
           <div className="section-h"><span className="eyebrow">{T.bench}</span></div>
           <div className="bench">
             {bench.map((p) => (
@@ -156,20 +211,27 @@ function TacticsBoard() {
             <PanelHead title={T.how} right={<span className="eyebrow">{T.changes(changes)}</span>} />
             <div className="ins">
               <div className="between"><b>{T.style}</b>{f.philosophy !== (saved.philosophy ?? 'balanced') && <span className="tag tag--club">{T.changed}</span>}</div>
-              <div className="chips wrap">{PHILOSOPHIES.map((ph) => <button key={ph} className="chip" aria-pressed={f.philosophy === ph} onClick={() => setStyle(ph)}>{T.styles[ph]}</button>)}</div>
+              <div className="chips wrap">{PHILOSOPHIES.map((p) => <button key={p} className="chip" aria-pressed={f.philosophy === p} onClick={() => setStyle(p)}>{T.styles[p]}</button>)}</div>
               <div className="fam"><span className="small muted">{T.familiar} · {T.familiarSub(fam)}</span><Meter v={fam} tone={fam < 50 ? 'warn' : undefined} /></div>
             </div>
             <div className="ins">
-              <div className="between"><b>{T.shape}</b>{draft.formation !== saved.formation && <span className="tag tag--club">{T.changed}</span>}</div>
+              <div className="between"><b>{X.shapeIp}</b>{draft.formation !== saved.formation && <span className="tag tag--club">{T.changed}</span>}</div>
               <div className="chips wrap">{FORMATION_IDS.map((fm) => <button key={fm} className="chip ltr" aria-pressed={draft.formation === fm} onClick={() => setShape(fm)}>{fmt(fm)}</button>)}</div>
             </div>
             <div className="ins">
-              <div className="between"><b>{T.ins.mentality[0]}</b>{f.mentality !== fullTactics(saved).mentality && <span className="tag tag--club">{T.changed}</span>}</div>
-              <Steps label={T.ins.mentality[0]} value={f.mentality + 2} options={T.ins.mentality[1]} was={fullTactics(saved).mentality + 2} onChange={(v) => setDraft({ ...draft, mentality: v - 2 })} />
+              <div className="between"><b>{X.shapeOop}</b>{f.oop !== fs.oop && <span className="tag tag--club">{T.changed}</span>}</div>
+              <div className="chips wrap">
+                <button className="chip" aria-pressed={f.oop === f.formation} onClick={() => setOop(undefined)}>{X.same}</button>
+                {FORMATION_IDS.filter((fm) => fm !== f.formation).map((fm) => <button key={fm} className="chip ltr" aria-pressed={f.oop === fm} onClick={() => { setOop(fm); setPh('oop'); }}>{fmt(fm)}</button>)}
+              </div>
+            </div>
+            <div className="ins">
+              <div className="between"><b>{T.ins.mentality[0]}</b>{f.mentality !== fs.mentality && <span className="tag tag--club">{T.changed}</span>}</div>
+              <Steps label={T.ins.mentality[0]} value={f.mentality + 2} options={T.ins.mentality[1]} was={fs.mentality + 2} onChange={(v) => setDraft({ ...draft, mentality: v - 2 })} />
             </div>
             {INS.map(([k, key]) => {
               const v = f[k] as number;
-              const was = (fullTactics(saved) as unknown as Record<string, number>)[k];
+              const was = (fs as unknown as Record<string, number>)[k];
               const [gain, risk] = T.trade[key][v];
               return (
                 <div key={k} className="ins">
@@ -179,16 +241,54 @@ function TacticsBoard() {
                 </div>
               );
             })}
+            {insRow('build', f.build, fs.build)}
+            {insRow('counter', f.counter ? 1 : 0, fs.counter ? 1 : 0)}
+            {insRow('cpress', f.cpress, fs.cpress)}
+            {insRow('trap', trapOn ? f.trap : 0, fs.trap, !trapOn)}
+            {insRow('routine', f.routine, fs.routine)}
+            {markList.length > 0 && (
+              <div className="ins">
+                <div className="between"><b>{X.mark}</b>{(f.mark ?? null) !== (fs.mark ?? null) && <span className="tag tag--club">{T.changed}</span>}</div>
+                <select className="sel" value={f.mark ?? ''} aria-label={X.mark} onChange={(e) => setDraft({ ...draft, mark: e.target.value || null })}>
+                  <option value="">{X.markNone}</option>
+                  {markList.map((p) => <option key={p.id} value={p.id}>{sn(p, lang)} · {x.common.pos[p.position]} · {p.rating}</option>)}
+                </select>
+                <p className="small muted">{X.markHint}</p>
+              </div>
+            )}
           </Panel>
         </section>
 
         <section className="c-right stack">
+          <Panel i={2} label={X.warn.title} className="warns">
+            <PanelHead title={X.warn.title} right={<button className="btn btn--ghost btn--sm" onClick={suggestRoles}>{X.suggest}</button>} />
+            {warns.length ? warns.map((wn, i) => <p key={i} className="warn-row"><I n="alert" size="sm" /><span>{warnText(wn)}</span></p>) : <p className="small muted">{X.warn.none}</p>}
+          </Panel>
           {focusP && (
-            <Panel i={2} label={focusP.name[lang]}>
+            <Panel i={3} label={focusP.name[lang]}>
               <div className="role-h">
                 <Portrait p={focusP} club={g.club} size={52} />
-                <div className="grow"><span className="eyebrow">{T.role(focusSlot >= 0 ? x.common.posLong[slots[focusSlot].pos] : x.common.posLong[focusP.position])}</span><h2 className="h2">{focusP.name[lang]}</h2></div>
+                <div className="grow"><span className="eyebrow">{T.role(focusSlot >= 0 ? x.common.posLong[slots[focusSlot].pos] : x.common.posLong[focusP.position])}{focusSlot >= 0 && plan.oslots[focusSlot].pos !== slots[focusSlot].pos ? ` / ${x.common.posLong[plan.oslots[focusSlot].pos]}` : ''}</span><h2 className="h2">{focusP.name[lang]}</h2></div>
               </div>
+              {focusSlot >= 0 && (['ip', 'oop'] as const).map((phase) => {
+                const pos = (phase === 'ip' ? plan.slots : plan.oslots)[focusSlot].pos;
+                const cur = plan[phase][focusSlot];
+                return (
+                  <div key={phase} className="roles rolepick">
+                    <span className="eyebrow">{X.roleFor(X.phaseLong[phase])}</span>
+                    {rolesFor(pos, phase).map((r) => {
+                      const fitV = ROLES[r].fx.w ? roleFit(focusP, r, pos) : null;
+                      return (
+                        <button key={r} className={`role${cur === r ? ' on' : ''}`} aria-pressed={cur === r} onClick={() => { setRole(phase, focusSlot, r); setPh(phase); }}>
+                          <b>{X.roles[r][0]}</b>
+                          {fitV !== null ? <span className={`fitl f${fitIx(fitV)}`}>{X.fit[fitIx(fitV)]}</span> : <span />}
+                          <p>{X.roles[r][2]}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })}
               <div className="roles">
                 <span className="eyebrow">{T.fitFor}</span>
                 {topFits(focusP).map((r) => (
@@ -202,7 +302,7 @@ function TacticsBoard() {
             </Panel>
           )}
           {opp && oppClub && (
-            <Panel i={3} label={T.oppHow(cn(oppClub, lang))}>
+            <Panel i={4} label={T.oppHow(cn(oppClub, lang))}>
               <div className="opp-top">
                 <Crest club={oppClub} size={44} />
                 <div className="grow"><span className="eyebrow ltr-auto">{T.opp(opp.tactics.formation, T.styles[opp.tactics.philosophy ?? 'balanced'])}</span><h2 className="h2">{T.oppHow(cn(oppClub, lang))}</h2></div>
@@ -231,30 +331,48 @@ function TacticsBoard() {
       </div>
       <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
         <filter id="chalk" x="-5%" y="-5%" width="110%" height="110%" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse"><feTurbulence type="fractalNoise" baseFrequency="2.4" numOctaves="2" seed="3" result="n" /><feDisplacementMap in="SourceGraphic" in2="n" scale=".45" result="d" /><feTurbulence type="fractalNoise" baseFrequency="6" numOctaves="1" seed="9" result="g" /><feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.7" result="m" /><feComposite in="d" in2="m" operator="in" /></filter>
-        <marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M1 1 8 5 1 9" fill="none" stroke="rgba(236,250,244,.8)" strokeWidth="1.6" strokeLinecap="round" /></marker>
       </svg>
     </>
+  );
+}
+
+// The engine's own numbers for this plan: players in each zone (ours v theirs), the same weights its contests use
+// (numerical superiority), from model.ts. With the ball: our attack's zones. Without it: their attack's zones, seen
+// from our side (their left lane is our right).
+function EnginePreview({ model, me, ph, rest, hooks }: { model: Model; me: 0 | 1; ph: Phase; rest: number; hooks: TeamHooks | null }) {
+  const g = useGame();
+  const X = TX[g.ui];
+  const Z = X.preview.zones;
+  const ours = model.att[me].nodes, theirs = model.att[1 - me].nodes;
+  const cell = (n: Node | undefined, oop: boolean) => { const d = n?.duel; if (!d) return null; const a = oop ? d.nd : d.na, b = oop ? d.na : d.nd; return { a, b }; };
+  const rows: [string, ({ a: number; b: number } | null)[]][] = ph === 'ip'
+    ? [[Z.box, [null, cell(ours[N.CRS], false), null]], [Z.final, [cell(ours[N.F0], false), cell(ours[N.F1], false), cell(ours[N.F2], false)]], [Z.mid, [cell(ours[N.P0], false), cell(ours[N.P1], false), cell(ours[N.P2], false)]], [Z.build, [null, cell(ours[N.B], false), null]]]
+    : [[Z.press, [null, cell(theirs[N.B], true), null]], [Z.screen, [cell(theirs[N.P2], true), cell(theirs[N.P1], true), cell(theirs[N.P0], true)]], [Z.defend, [cell(theirs[N.F2], true), cell(theirs[N.F1], true), cell(theirs[N.F0], true)]], [Z.box, [null, cell(theirs[N.CRS], true), null]]];
+  const lanes = g.x.tac.lanes as unknown as string[];
+  return (
+    <div className="zprev" aria-label={X.preview.title}>
+      <div className="between"><span className="eyebrow">{X.preview.title} · {X.phaseLong[ph]}</span></div>
+      <p className="small dimg">{X.preview.sub}</p>
+      <div className="zgrid" role="table">
+        <div className="zr zh" role="row"><span role="columnheader" />{lanes.map((l) => <span key={l} role="columnheader">{l}</span>)}</div>
+        {rows.map(([label, cs]) => (
+          <div key={label} className="zr" role="row">
+            <b role="rowheader">{label}</b>
+            {cs.map((cc, i) => <span key={i} role="cell" className={cc ? (cc.a - cc.b > 0.4 ? 'up' : cc.b - cc.a > 0.4 ? 'down' : 'even') : 'na'}>{cc ? <><i className="num">{cc.a.toFixed(1)}</i><small> v {cc.b.toFixed(1)}</small></> : ''}</span>)}
+          </div>
+        ))}
+      </div>
+      <div className="zfacts small">
+        {ph === 'ip' ? <><span>{X.preview.rest(rest.toFixed(1))}</span><span>{X.preview.box((ours[N.CRS].duel?.na ?? 0).toFixed(1))}</span></>
+          : <><span>{X.preview.press((hooks?.pressIntensity.oop ?? 0).toFixed(1))}</span><span>{X.preview.line(hooks?.lineHeight.oop ?? 0)}</span></>}
+      </div>
+    </div>
   );
 }
 
 function topFits(p: Player) {
   const all = (['GK', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CAM', 'LW', 'RW', 'ST'] as const).map((pos) => ({ pos, v: Math.round(slotValue({ ...p, fitness: 100, morale: 60 }, pos)) }));
   return all.sort((a, b) => b.v - a.v).slice(0, 3);
-}
-
-// Chalk marks from the plan: where we press, where we attack, how high the line is.
-function chalkFor(f: ReturnType<typeof fullTactics>) {
-  const paths: { d: string; dash?: boolean; arrow?: boolean; o?: number }[] = [];
-  const notes: { x: number; y: number; k: string; v: number }[] = [];
-  if (f.pressing === 2) { paths.push({ d: 'M22 14 C 26 8, 42 8, 46 14 C 44 20, 24 20, 22 14', dash: true }); notes.push({ x: 60, y: 9, k: 'press', v: 2 }); }
-  if (f.pressing === 0) { paths.push({ d: 'M10 58 L58 58', dash: true, o: 0.7 }); notes.push({ x: 6, y: 60, k: 'press', v: 0 }); }
-  if (f.width === 2) { paths.push({ d: 'M8 62 C 6 48, 6 36, 9 22', dash: true, arrow: true }, { d: 'M60 62 C 62 48, 62 36, 59 22', dash: true, arrow: true }); notes.push({ x: 3, y: 30, k: 'width', v: 2 }); }
-  else if (f.width === 0) { paths.push({ d: 'M30 60 C 30 45, 33 34, 34 22', arrow: true }, { d: 'M38 60 C 38 45, 35 34, 34 22', arrow: true, o: 0.7 }); notes.push({ x: 40, y: 34, k: 'width', v: 0 }); }
-  if (f.line === 2) { paths.push({ d: 'M8 46 L60 46', dash: true, o: 0.75 }); notes.push({ x: 64, y: 43, k: 'line', v: 2 }); }
-  if (f.line === 0) { paths.push({ d: 'M8 76 L60 76', dash: true, o: 0.75 }); notes.push({ x: 64, y: 73, k: 'line', v: 0 }); }
-  if (f.counter) paths.push({ d: 'M22 58 C 28 44, 40 34, 48 20', arrow: true, o: 0.8 });
-  if (f.passing === 2 && f.width !== 0) paths.push({ d: 'M34 78 C 34 60, 36 40, 40 24', arrow: true, o: 0.6 });
-  return { paths, notes: notes.slice(0, 2) };
 }
 
 function PlanB({ draft }: { draft: Tactics }) {
