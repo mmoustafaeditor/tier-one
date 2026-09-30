@@ -15,7 +15,7 @@ import { buildMoment, MOMENT_IDS } from './moments/build';
  *  expected length in frames (drives the overlay clock and the stall safety net), and `Overlay` draws the game's own
  *  words on top with `overlayProps`. */
 export type SceneVideo = { stem: string; dur: number; Overlay?: ComponentType<any>; overlayProps?: Record<string, unknown> };
-/** `skippable: false` plays straight through (no Skip, no tap-to-jump, no Esc); the moment films use it. */
+/** Films play straight through (no Skip, tap-to-jump or Esc) unless `skippable: true`. */
 export type SceneSpec = { id: string; title: string; Comp: ComponentType<any>; props: Record<string, unknown>; meta: SceneMeta; rtl: boolean; skippable?: boolean; video?: SceneVideo };
 /** Every scene the replay list knows about, in story order. */
 export const SCENE_IDS = ['coldopen', ...SOURCES.map((s) => 'source:' + s), 'season', ...MOMENT_IDS];

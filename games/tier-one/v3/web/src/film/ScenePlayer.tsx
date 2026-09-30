@@ -2,7 +2,7 @@
 // context; the stage is designed at 1080×1920 (portrait) or 1920×1080 (landscape), picked by the viewport and scaled
 // to fit, with letterbox bars around it. Tap / Space / Enter jumps to the next beat, Esc or Skip ends it, sound cues
 // fire at their frames through the synth. Under reduced motion it shows the composed last frame and a Continue button.
-// A spec with `skippable: false` (the moment films) has no Skip, no tap-to-jump and no Esc: it plays through, and under
+// Films are unskippable unless a spec sets `skippable: true`: no Skip, no tap-to-jump and no Esc: it plays through, and under
 // reduced motion its last frame stays up for REDUCED_MS, then it continues on its own.
 // A spec with `video` plays a clip instead (muted, inline, covering the screen) with the game's own words drawn on top
 // by `video.Overlay` on the same frame clock. If the clip errors or hasn't started within VIDEO_WAIT_MS, the frame-drawn
@@ -47,7 +47,7 @@ export function ScenePlayer({ spec, onDone }: { spec: SceneSpec; onDone: () => v
   const W = land ? 1920 : 1080, H = land ? 1080 : 1920;
   const scale = Math.min(vp.w / W, vp.h / H);
   const L = getSave().lang;
-  const canSkip = spec.skippable !== false;
+  const canSkip = spec.skippable === true;
   const hold = meta.hold ?? HOLD_MS;
 
   const finish = () => { if (clock.current.done) return; clock.current.done = true; onDone(); };
