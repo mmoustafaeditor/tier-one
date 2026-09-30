@@ -55,7 +55,7 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
   const post = () => { if (selO == null) return; onPost(selO, s, !!call); };
   // The stake line's third beat: is the exclusive still there for this call, and if not, why (or who took it).
   const beatenBy = selO != null ? livePosts.find((p) => p.claim === selO) : undefined;
-  const exTail = !pv ? null : pv.exclPossible ? <span className="g-chip g-chip--gold stake__ex"><Icon n="bolt" />{t('calls.stake.open')} +{pv.excl}</span>
+  const exTail = !pv ? null : pv.exclPossible ? <span className="stake__ex"><Icon n="bolt" size={14} />{t('calls.stake.open', { n: pv.excl })}</span>
     : call ? <span className="stake__no">{t('calls.stake.repost')}</span>
     : !E.exclusiveOpen(g, i, selO!) ? <span className="stake__no stake__beat">{beatenBy && <span className={'rv-av rv-av--sm rv-av--' + beatenBy.id}>{RIVAL_IC[beatenBy.id]}</span>}{t('calls.stake.beaten', { r: beatenBy ? t('rival.' + beatenBy.id) : '' })}</span>
     : s !== 2 ? <span className="stake__no">{t('calls.stake.loud')}</span>
@@ -148,7 +148,7 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
             {p ? <span className="vol__odds"><span className="w">+{p.win}</span><span className="l">{num(p.lose)}</span></span> : <span className="vol__d">{t('str.' + ['talks', 'advanced', 'confirmed'][k] + 'D')}</span>}
           </button>; })}
         </div>
-        {pv && <p className="stake" aria-live="polite"><span className="stake__w">{t('calls.stake.right', { n: pv.win })}</span><i aria-hidden="true">·</i><span className="stake__l">{t('calls.stake.wrong', { n: num(pv.lose) })}</span><i aria-hidden="true">·</i>{exTail}</p>}
+        {pv && <p className="stake" aria-live="polite"><span className="stake__w">{t('calls.stake.right', { n: pv.win })}</span><span className="stake__l">{t('calls.stake.wrong', { n: num(pv.lose) })}</span>{exTail}</p>}
         <HoldPublish disabled={selO == null || busy || (!!call && call.o === selO)} shine={selO != null} gold={selO === 0 && s === 2 && !call} onCommit={post}
           label={selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}>
           <Icon n={call ? 'uturn' : 'news'} size={24} /><span className="publish__t">{selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : selO === 0 && s === 2 ? <><b>{t('calls.hwg.word')}</b><em>{t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}</em></> : (() => { const [h, ...rest] = t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) }).split(' · '); return rest.length ? <><b>{h}</b><em>{rest.join(' · ')}</em></> : h; })()}</span>
@@ -158,12 +158,12 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
     </section>
 
     <section className="rivals race">
-      <div className="g-sec"><h2>{t('calls.race.h')}</h2><span className="g-mono">{t('g.saga.rivals')}</span></div>
+      <div className="g-sec"><h2>{t('calls.race.h')}</h2></div>
       <div className="rivals__row">
         {g.R.RIVALS.map((r) => {
           const mine = livePosts.filter((p) => p.id === r.id), rec = rivalRecord?.(r.id), name = t('rival.' + r.id);
           return <div key={r.id + (mine.length ? ':' + mine[0].claim : '')} className={'rv' + (mine.length ? ' is-posted rv--' + OUTS[mine[0].claim] : '')}>
-            <span className="rv__av"><span className={'rv-av rv-av--' + r.id}>{RIVAL_IC[r.id]}</span>{mine.length > 0 && <i className="rv__flash" aria-hidden="true" />}</span>
+            <span className={'rv-av rv-av--' + r.id}>{RIVAL_IC[r.id]}</span>
             <span className="rv__n">{name}</span>
             {mine.length ? <span className={'g-chip g-chip--' + OUTS[mine[0].claim]}>{outWord(t.lang, mine[0].claim)} · {t('g.saga.dayShort', { n: mine[0].day })}</span> : <span className="rv__when g-mono">{t('g.saga.rivalWhen', { a: r.days[0], b: r.days[1] })}</span>}
             {rec && <span className="rv__rec g-mono" aria-label={t('calls.race.recAria', { w: rec.w, l: rec.l, d: rec.d, r: name })}>{t('calls.race.rec', { w: rec.w, l: rec.l, d: rec.d })}</span>}

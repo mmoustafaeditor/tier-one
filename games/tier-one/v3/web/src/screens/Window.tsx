@@ -1,6 +1,7 @@
 // A transfer window: the board, the file, the overnight sheet, Deadline Day and the results. The same screen runs the
 // Daily and rooms (server-held) and Practice/Career (local). Layout: look/mockups/challenge.html + deadline.html.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { E, OUTS, shadow, type Act, type Call, type Clue, type Post, type Game } from '../lib/engine';
 import type { Driver, View } from '../lib/driver';
 import { useT, fmtDate } from '../lib/i18n';
@@ -173,15 +174,15 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     </div>
 
     {tutor && !calling && !night && <TutorCoach g={g} sel={sel} onDone={() => update((x) => { x.tut = { ...(x.tut || {}), done: true }; })} />}
-    {calling && view.cast[calling.i] && <CallScene src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} onDone={() => setCalling(null)} />}
-    {burst && <Burst key={burst.k} kind={burst.kind} hwg={burst.hwg} />}
-    {posting && view.cast[posting.i] && <PostScene key={posting.k} c={view.cast[posting.i]} o={posting.o} s={posting.s} ut={posting.ut} prev={posting.prev} onDone={() => { const p = posting; setPosting(null); setFiledAt((f) => ({ ...f, [p.i]: Date.now() })); shake(rootRef.current); }} />}
+    {calling && view.cast[calling.i] && createPortal(<CallScene src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} mode={view.mode} onDone={() => setCalling(null)} />, document.body)}
+    {burst && createPortal(<Burst key={burst.k} kind={burst.kind} hwg={burst.hwg} />, document.body)}
+    {posting && view.cast[posting.i] && createPortal(<PostScene key={posting.k} c={view.cast[posting.i]} o={posting.o} s={posting.s} ut={posting.ut} prev={posting.prev} onDone={() => { const p = posting; setPosting(null); setFiledAt((f) => ({ ...f, [p.i]: Date.now() })); shake(rootRef.current); }} />, document.body)}
 
     <Sheet open={confirmEnd} onClose={() => setConfirmEnd(false)} label={t('daily.endConfirmOk')}>
       <div className="sheet__body"><h2 className="g-h2">{t('daily.endConfirm', { n: view.state.day, c: view.state.left })}</h2><p className="g-sub" style={{ marginTop: 8 }}>{t('daily.contactsNote')}</p>
         <GBtn kind="dark" style={{ marginTop: 16 }} onClick={endDay}><Icon n="moon" />{t('daily.endConfirmOk')}</GBtn><GBtn kind="paper" style={{ marginTop: 12 }} onClick={() => setConfirmEnd(false)}>{t('common.cancel')}</GBtn></div>
     </Sheet>
-    {night && <NightScene night={night} view={view} onGo={() => (night.dd ? startDD() : setNight(null))} />}
+    {night && createPortal(<NightScene night={night} view={view} onGo={() => (night.dd ? startDD() : setNight(null))} />, document.body)}
   </div>;
 }
 
