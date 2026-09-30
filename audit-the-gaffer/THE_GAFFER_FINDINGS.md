@@ -29,6 +29,27 @@ The scale and the evidence rules are in `THE_GAFFER_DESIGN_AUDIT.md` §2. Eviden
 | GF-015 | Season-end wage ratchet raises every player's wage, mid-contract included | design recommendation | Low | code-confirmed |
 | GF-016 | Contradictory staff advice on the same player (list him, then "he's part of this place, make them pay") | content issue | Low | reproduced once (UI) |
 
+## Fix status (2026-09-30, branch `claude/repo-coordination-lbro4r`, not merged to `main`)
+
+| ID | Status | Commit | Verified by |
+|---|---|---|---|
+| GF-001 | **Fixed** | `cc51df7` | Playwright at 320–1440 px, EN and AR: every bar control on screen; a tap on Changes opens the sheet |
+| GF-003 | **Fixed** | `12f643b` | Seeds 7–9, matchday 30: lowest club morale 7–8 → 41–44; bottom three 0.59–0.90 pts/game; new `sim-tests/morale.ts` |
+| GF-002 | **Partly fixed** | `e0e6889` | Seeded A/B: user edge +0.43 → +0.19 pts/game. The hidden staff bonuses and the user-only leaders' pull are gone; what's left comes from staff choices AI managers don't make (heavy training, counter plans, rest rotation), which belongs to the V2.8 AI-manager work. New `sim-tests/parity.ts` |
+| GF-004 | **Fixed** | `11a5a50`, `cb4c2b2` | Man City, Real Madrid and Al Ahly × 3 seeds × 2 seasons: nobody sacked while in the top two; champions' fans 93–100; fans settle instead of pinning at 0 or 100 |
+| GF-005 | **Fixed** | `516674c` | 5 seasons, Al Ahly on staff defaults: squad 23–25 every season (was 16); the director proposes wage-cap rises when only the cap blocks a renewal |
+| GF-007, 008, 009, 010, 014, 016 | **Fixed** | `1675000` | A fresh UI season: board line, unique depth covers, 12 distinct months, season-over header; CI changelog |
+| GF-011 | **Fixed** | `eb12ca0` | 0 of 288 generated players at Egyptian clubs with Gulf surnames; league label shows real vs generated |
+| GF-013 | **Fixed** | `a668dfe` | New `sim-tests/reserve.ts`; `recruit.ts` passes |
+| GF-006 | Open | — | Needs Arabic names for real players; the data snapshot is shared with Tier One (`data/seed/`), so it needs a decision on where they live |
+| GF-012 | Open | — | Needs a re-measurement on the real 2026/27 world with fatigue and injury before any engine change |
+| GF-015 | Open | — | Needs the owner's call (V2.7 "no wage ratchet"). Now more visible: Al Ahly's wage bill grows ×3.6 over 5 seasons |
+
+After all fixes, the 17 sim-tests (`sanity, morale, parity, reserve, room, roomsave, oldsave, v2core, why, youth,
+recruit, referee, roles, tactics, nodes, single, realworld`) pass, `npm run typecheck` and `npm run build` are clean,
+and a full UI season on the new build had 0 console errors. The published build (`/the-gaffer/`) is unchanged until
+this branch is merged, when CI rebuilds and deploys it.
+
 What was checked and found working is in `THE_GAFFER_DESIGN_AUDIT.md` §4. Examples: injuries, substitutions, the
 negotiation flow, mid-match resume, the season transition, quick-match isolation, RTL layout, and zero console errors.
 
