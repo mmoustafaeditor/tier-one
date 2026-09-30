@@ -59,19 +59,25 @@ export function ScenePlayer({ spec, onDone }: { spec: SceneSpec; onDone: () => v
     clock.current.jumpTo = nb;
   };
 
-  // The clock: accumulate real time (capped per tick so a background tab doesn't leap), fire the cues we pass.
+  // The clock: real time → a continuous frame (fractional, so a 60 Hz display draws 60 distinct frames of a 30 fps
+  // timeline: every scene is a pure function of `frame`), capped per tick so a background tab doesn't leap. Cues fire
+  // once per whole frame crossed. When the device can't keep the display rate (rAF gaps > 22 ms), frames snap to the
+  // 30 fps grid so React renders half as often.
   useEffect(() => {
     if (reduced) return;
     clock.current = { ...clock.current, f: 0, jumpTo: -1, doneAt: 0 };
     setFrame(0);
-    let raf = 0, prev = performance.now(), acc = 0;
+    let raf = 0, prev = performance.now(), gap = 16;
+    const fire = (from: number, to: number) => { for (let q = Math.floor(from) + 1; q <= Math.floor(to); q++) meta.cues.filter((c) => c.f === q).forEach((c) => cue(c.k, c.a)); };
     const tick = (now: number) => {
       const c = clock.current;
-      acc += Math.min(100, now - prev); prev = now;
+      const dt = Math.min(100, now - prev); prev = now;
+      gap = gap * 0.8 + dt * 0.2;
       let f = c.f;
-      if (c.jumpTo >= 0) { f = c.jumpTo; acc = 0; c.jumpTo = -1; meta.cues.filter((q) => q.f === f).forEach((q) => cue(q.k, q.a)); c.f = f; setFrame(f); }
-      while (acc >= 1000 / FPS && f < last) { acc -= 1000 / FPS; f++; meta.cues.filter((q) => q.f === f).forEach((q) => cue(q.k, q.a)); }
-      if (f !== c.f) { c.f = f; setFrame(f); }
+      if (c.jumpTo >= 0) { f = c.jumpTo; c.jumpTo = -1; meta.cues.filter((q) => q.f === f).forEach((q) => cue(q.k, q.a)); c.f = f; setFrame(f); }
+      else if (f < last) { const nf = Math.min(last, f + (dt * FPS) / 1000); fire(f, nf); f = nf; }
+      const shown = gap > 22 ? Math.floor(f) : Math.round(f * 2) / 2;
+      if (f !== c.f) { c.f = f; setFrame(shown); }
       // A clip ends the scene itself (onEnded); the drawn scene ends after its hold.
       if (f >= last && !v) { if (!c.doneAt) c.doneAt = now; else if (now - c.doneAt > hold) return finish(); }
       raf = requestAnimationFrame(tick);

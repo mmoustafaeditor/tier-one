@@ -1,25 +1,13 @@
-// The press box films (GOTY.md §7.3): moment-room-win, moment-friend-scalp, moment-newsroom-week. Same pattern as
-// film/moments/build.tsx: the rendered clip (when the film lane delivers it) with the game's words on top, and a
-// frame-drawn title card as the fallback. Nobody speaks; every string is printed on a card. Unskippable, short.
+// The press box films (GOTY.md §7.3): moment-room-win (a results board flips to your name), moment-friend-scalp (their
+// laptop slams shut under your post on the TV wall), moment-newsroom-week (the masthead lights, the table is circled).
+// Frame-drawn motion pieces (film/moments/Motion.tsx, §10): no people, every string printed on a thing. Unskippable.
 import { tr } from '../../lib/i18n';
 import type { Save } from '../../lib/save';
 import type { SceneSpec } from '../registry';
-import type { SceneMeta } from '../cues';
-import { FPS } from '../cues';
 import { C } from '../kit';
-import { MomentOverlay } from '../moments/Overlay';
-import { TitleCard, TITLE_CARD } from './TitleCard';
-import type { Clip } from '../moments/manifest';
+import { Board, BOARD, LaptopSlam, SLAM } from '../moments/Motion';
 
 export const SOCIAL_IDS = ['moment-room-win', 'moment-friend-scalp', 'moment-newsroom-week'] as const;
-/** For the film lane (see moments/manifest.ts for the stem/poster contract). */
-export const SOCIAL_CLIPS: Clip[] = [
-  { id: 'moment-room-win', seconds: 3.2, overlayAt: 1.8, shows: 'The press box at a stadium: a row of reporters on laptops; the one in the middle leans back and stretches while the others slump; the scoreboard behind them flips to show a single name at the top of a table (the game prints the room and the round).' },
-  { id: 'moment-friend-scalp', seconds: 3.2, overlayAt: 2, shows: 'Two reporters at neighbouring desks; the TV between them shows your post going viral; the friend slides a coffee across in surrender and turns their laptop away (the game prints their byline and the record).' },
-  { id: 'moment-newsroom-week', seconds: 3.4, overlayAt: 2.2, shows: 'A newsroom on Sunday night: the masthead on the wall lights up; a printed weekly table is pinned to the board and a hand circles the newsroom’s line (the game prints the name, the rank and the points).' },
-];
-const clipOf = (id: string) => SOCIAL_CLIPS.find((c) => c.id === id);
-const META: SceneMeta = TITLE_CARD;
 
 /** undefined: not a social film id. null: can't be built. */
 export function buildSocial(id: string, s: Save, extra: Record<string, unknown> = {}): SceneSpec | null | undefined {
@@ -38,10 +26,8 @@ export function buildSocial(id: string, s: Save, extra: Record<string, unknown> 
   } else {
     words = { kicker: t('so.film.nrWeek.kicker'), title: String(v(extra.name, 'Tier One')), sub: t('so.film.nrWeek.sub', { r: v(extra.rank, 1), p: v(extra.pts, 0) }), stamp: t('so.film.nrWeek.stamp'), accent: C.gold, ltrTitle: true };
   }
-  const c = clipOf(id)!;
-  return {
-    id, rtl, title: t('film.name.' + id), Comp: TitleCard, meta: META, skippable: false,
-    props: { ...words, byline, rtl },
-    video: { stem: c.id, dur: Math.round(c.seconds * FPS), Overlay: MomentOverlay, overlayProps: { kicker: words.kicker, title: words.title, sub: words.sub, stamp: words.stamp, accent: words.accent, at: Math.round(c.overlayAt * FPS), rtl } },
-  };
+  const title = t('film.name.' + id);
+  if (id === 'moment-friend-scalp')
+    return { id, rtl, title, Comp: LaptopSlam, meta: SLAM, skippable: false, props: { handle: words.title, byline, post: t('film.m.scalp.post'), theirs: t('film.m.scalp.theirs'), viral: t('film.m.scalp.viral'), record: words.sub, stamp: words.stamp, rtl } };
+  return { id, rtl, title, Comp: Board, meta: BOARD, skippable: false, props: { ...words, variant: id === 'moment-room-win' ? 'room' : 'week', byline, rtl } };
 }
