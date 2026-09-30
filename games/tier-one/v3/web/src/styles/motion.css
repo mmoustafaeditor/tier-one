@@ -127,3 +127,41 @@
 .mode:focus-visible, .mbar__i:focus-visible { outline: 3px solid var(--mc, var(--red)); outline-offset: 3px; }
 .g-card--tap:focus-visible, .scard:focus-visible, .rcard:focus-visible, .g-ticker:focus-visible, .pass__id:focus-visible, .claim:focus-visible, .door:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .g-icbtn:focus-visible, .g-top__back:focus-visible { outline: 2.5px solid var(--gold); outline-offset: 2px; }
+
+/* ---------- perf lane (lib/perf.ts): the update / install chip. Transform + opacity only; sits above the tab bar. */
+.t1-chip { position: fixed; z-index: 95; inset-inline: var(--gutter, 16px); bottom: calc(76px + env(safe-area-inset-bottom, 0)); margin-inline: auto; max-width: 440px; display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--invert, #15130F); color: var(--on-invert, #F2EEE5); border-inline-start: 4px solid var(--red, #D2381B); box-shadow: 0 10px 30px rgba(0, 0, 0, .28); animation: t1-chip-in var(--d-ui2) var(--ease-out) both; }
+.t1-chip.is-out { animation: t1-chip-out var(--d-ui) var(--ease-in-out) forwards; }
+.t1-chip__txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.3; }
+.t1-chip__txt b { font-family: var(--f-display, Georgia, serif); font-size: 16px; }
+.t1-chip__txt span { opacity: .75; }
+.t1-chip__row { display: flex; gap: 6px; flex-shrink: 0; }
+.t1-chip__row button { font: inherit; font-weight: 600; font-size: 13px; padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--on-invert, #fff) 35%, transparent); background: transparent; color: inherit; border-radius: 6px; cursor: pointer; transition: transform var(--tr-tap); }
+.t1-chip__row button.is-primary { background: var(--red, #D2381B); border-color: var(--red, #D2381B); color: #fff; }
+.t1-chip__row button:active { transform: scale(.96); }
+@keyframes t1-chip-in { from { opacity: 0; transform: translateY(12px); } }
+@keyframes t1-chip-out { to { opacity: 0; transform: translateY(8px); } }
+@media (min-width: 960px) { .t1-chip { bottom: 24px; inset-inline-start: calc(var(--rail-w, 0px) + 16px); } }
+
+/* ---------- perf lane: rendering isolation and long lists (GOTY.md §8.2). Measured with scripts/perf.mjs.
+   Full-screen overlays (films, call and post scenes, sheets) lay out and paint on their own: a frame drawn inside them
+   never re-lays-out the page underneath. (No will-change on the drawn film stages: a promoted SVG layer re-rasters
+   whole every frame, measured 3 fps against 26 with dirty-rect painting.) */
+.film, .call-scene, .post-scene, .scrim { contain: layout style paint; }
+/* The glitch beats animate filter and transform: promoted, they run on the compositor thread. */
+.night2.is-twist .night2__sky, .night2.is-glitch .night2__body { will-change: transform, filter; }
+/* Bars that animate width stay inside their own box. */
+.know__bar, .ddh__bar, .clock__bar { contain: layout paint; }
+/* Pointer tilt writes a transform every frame while hovering. */
+.is-tilt { will-change: transform; }
+/* Long lists: rows off screen skip layout and paint until they scroll near. */
+.wire3__grp, .cn-sheet .cn-row, .reels__row { content-visibility: auto; }
+.wire3__grp { contain-intrinsic-size: auto 64px; }
+.cn-sheet .cn-row { contain-intrinsic-size: auto 72px; }
+.reels__row { contain-intrinsic-size: auto 64px; }
+/* Pulse rings: a ring that scales and fades on the compositor instead of a box-shadow that repaints every frame. */
+.g-btn.is-pulse, .claim, .ddc.is-quick { animation: none; position: relative; }
+.g-btn.is-pulse::before, .claim::before, .ddc.is-quick::before { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 5px var(--pulse, rgba(255, 90, 54, .55)); pointer-events: none; animation: m-ring 1.6s ease-out infinite; will-change: transform, opacity; }
+.ddc.is-quick::before { animation-duration: 1s; }
+@keyframes m-ring { from { transform: scale(1); opacity: 1; } to { transform: scale(1.1); opacity: 0; } }
+:root.reduce .g-btn.is-pulse::before, :root.reduce .claim::before, :root.reduce .ddc.is-quick::before { animation: none; opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .g-btn.is-pulse::before, .claim::before, .ddc.is-quick::before { animation: none; opacity: 0; } }

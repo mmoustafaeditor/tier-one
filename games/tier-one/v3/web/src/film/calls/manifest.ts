@@ -47,4 +47,5 @@ export function filmsBase(): string {
 export const clipUrl = (stem: string) => filmsBase() + stem + '.mp4';
 export const posterUrl = (stem: string) => filmsBase() + stem + '.jpg';
 /** Portrait clips when the viewport is taller than wide. */
-export const aspectNow = (): Aspect => (typeof innerHeight !== 'undefined' && innerHeight > innerWidth ? 'p' : 'l');
+// matchMedia, not innerHeight/innerWidth: those force a synchronous layout of the whole page just as the scene mounts.
+export const aspectNow = (): Aspect => (typeof matchMedia === 'function' && matchMedia('(orientation: portrait)').matches ? 'p' : 'l');

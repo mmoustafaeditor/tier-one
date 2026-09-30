@@ -85,10 +85,11 @@ if (typeof document !== 'undefined') {
   new MutationObserver(check).observe(document.documentElement, { attributes: true, attributeFilter: ['data-route'] });
 }
 
-/** The whole game's opening, right after the byline is set. */
-export function playColdOpen() { playScene('coldopen'); }
-/** A new Career slot: the short cut, or the full opening if the player never saw it. */
-export function playCareerOpen() { playScene(seen('coldopen') ? 'coldopen-career' : 'coldopen'); }
+/** The whole game's opening, right after the byline is set: Story mode's prologue, "The fall" (3.4). The old cold open
+ *  (film/scenes/ColdOpen.tsx) no longer auto-plays; it stays in the registry and the Remotion project. */
+export function playColdOpen() { playScene('story-prologue'); }
+/** A new Career slot: chapter 1's opener. */
+export function playCareerOpen() { playScene('story-ch1-open'); }
 
 export const seasonSceneId = () => 'season:' + seasonOf().id;
 /** True until this season's opener has played (keyed by the season id, e.g. "season:rumour-2026"). */
@@ -131,7 +132,7 @@ export function SceneHost({ fallback = false }: { fallback?: boolean }) {
   const done = () => {
     markSeen(seenKey(id)); extras.delete(id);
     // A new player's opening doubles as this season's: no second film straight after it.
-    if (id === 'coldopen') { markSeen('coldopen-career'); markSeen(seasonSceneId()); }
+    if (id === 'coldopen' || id === 'story-prologue') { markSeen('coldopen-career'); markSeen(seasonSceneId()); }
     queue = queue.slice(1); emit();
     if (!queue.length) { const w = waiters; waiters = []; w.forEach((f) => f()); }
   };

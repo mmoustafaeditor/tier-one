@@ -5,7 +5,7 @@ import { useSave, getSave, type Save } from '../lib/save';
 import { useT, type T } from '../lib/i18n';
 import { sfx } from '../lib/sfx';
 import {
-  unreadOf, toRoute, nextUp, markRead, bylineOf, repTier, rivalOf, netOf, RIVALS, recordWindow, windowKey,
+  unreadOf, toRoute, nextUp, markRead, bylineOf, repTier, REP_TIERS, rivalOf, netOf, RIVALS, recordWindow, windowKey,
   type FeedItem, type WindowSummary,
 } from '../lib/byline';
 import type { View } from '../lib/driver';
@@ -19,12 +19,31 @@ let navGo: Go | null = null;
 export const setNav = (g: Go) => { navGo = g; };
 export const navTo = (r: Route) => navGo?.(r);
 
+// ---------- plurals: key.{zero|one|two|few|many|other} picked by the language's own rules (Arabic has six)
+export function tn(t: T, key: string, n: number, v?: Record<string, string | number>): string {
+  const o = t.list(key) as Record<string, string> | string | undefined;
+  if (!o || typeof o === 'string') return t(key, { n, ...v });
+  let cat = 'other';
+  try { cat = new Intl.PluralRules(t.lang).select(n); } catch { /* old engine: fall back to other */ }
+  const s = (n === 0 && o.zero) || o[cat] || o.other || '';
+  return s.replace(/\{(\w+)\}/g, (m, k) => (k === 'n' ? String(n) : v && v[k] != null ? String(v[k]) : m));
+}
+// A handle like @BackPageBants is Latin inside Arabic copy: isolate it so the @ stays on its left.
+export const LTR = (x: string) => '\u2066' + x + '\u2069';
+const FSI = (x: string) => '\u2068' + x + '\u2069';
+export function Handle({ id, className }: { id: string; className?: string }) {
+  const t = useT();
+  return <bdi dir="ltr" className={className}>{t('rival.' + id)}</bdi>;
+}
+
 // ---------- feed text: stored as key + raw vars, translated at read time so a language switch re-reads everything
 export function feedText(t: T, f: FeedItem): string {
   const v: Record<string, string | number> = { ...(f.v || {}) };
   if (v.mode) v.mode = t('cn.mode.' + v.mode);
   if (v.src) v.src = t('src.' + v.src);
-  if (v.rival) v.rival = t('rival.' + v.rival);
+  if (v.rival) v.rival = LTR(t('rival.' + v.rival));
+  if (v.rec) v.rec = LTR(String(v.rec));
+  if (v.p) v.p = FSI(String(v.p));
   if (v.rt) v.rt = t('cn.tier.' + v.rt);
   if ('tier' in v) v.tier = v.tier ? ', ' + t('tier.' + v.tier) : '';
   if (v.perk) v.perk = t(String(v.perk)).toLowerCase();
@@ -49,8 +68,8 @@ export function FeedRow({ f, onOpen, style }: { f: FeedItem; onOpen?: () => void
   return <button className={'cn-row' + (f.read ? '' : ' is-new') + (f.tone ? ' is-' + f.tone : '')} style={{ ['--kc' as string]: kindColor(f.kind), ...style }} onClick={open}>
     <span className="cn-row__ic" aria-hidden="true">{f.kind === 'rival' && f.from ? <RivalMark id={f.from} size={30} /> : <Icon n={kindIcon(f.kind)} size={18} />}</span>
     <span className="cn-row__body">
-      {f.kind === 'rival' && f.from && <b className="cn-row__who">{t('rival.' + f.from)}</b>}
-      {f.kind === 'editor' && f.from && <b className="cn-row__who">{t('g.story.from.' + f.from)}</b>}
+      {f.kind === 'rival' && f.from && <b className="cn-row__who"><Handle id={f.from} /></b>}
+      {f.kind === 'editor' && f.from && <b className="cn-row__who">{f.from === 'editor' ? t('g.story.from.' + f.from) : <bdi dir="ltr">{t('g.story.from.' + f.from)}</bdi>}</b>}
       <span className="cn-row__txt" dir="auto">{feedText(t, f)}</span>
     </span>
     <time className="cn-row__at" dateTime={new Date(f.at).toISOString()}>{ago(f.at, t.lang)}</time>
@@ -115,27 +134,36 @@ export function RivalStrip({ go, style }: { go: Go; style?: CSSProperties }) {
   </button>;
 }
 
-// ---------- Me: the byline itself
-export function BylineCard({ s, go, style }: { s: Save; go: Go; style?: CSSProperties }) {
+// ---------- Me: the byline itself. Who you are, what the trade calls you, and how far to the next rung.
+export function BylineCard({ s, style }: { s: Save; style?: CSSProperties }) {
   const t = useT();
   const b = bylineOf(s);
   const tier = repTier(b.rep);
-  const un = unreadOf(s).length;
-  return <section className="cn-byline" style={style}>
+  const ti = REP_TIERS.findIndex(([k]) => k === tier);
+  const nxt = REP_TIERS[ti + 1];
+  const floor = REP_TIERS[ti][1], ceil = nxt ? nxt[1] : 100;
+  const into = nxt ? Math.round((100 * (b.rep - floor)) / (ceil - floor)) : 100;
+  const name = s.nick || t('g.home.noName');
+  const initials = name.split(/\s+/).map((x) => x[0]).join('').slice(0, 2).toUpperCase();
+  return <section className={'cn-byline cn-tier--' + tier} style={style} aria-label={t('cn.me.byline')}>
     <div className="cn-byline__top">
-      <p className="cn-byline__by" dir="auto">{t('share.by', { n: s.nick || t('g.home.noName') })}</p>
-      <span className={'g-stamp cn-byline__stamp is-slam cn-tier--' + tier}>{t('cn.tier.' + tier)}</span>
+      <span className="cn-byline__av" aria-hidden="true">{initials}</span>
+      <div className="cn-byline__id">
+        <p className="cn-byline__by" dir="auto">{t('share.by', { n: name })}</p>
+        <span className={'g-stamp cn-byline__stamp is-slam'}>{t('cn.tier.' + tier)}</span>
+      </div>
+    </div>
+    <div className="cn-ladder" role="img" aria-label={t('cn.me.ladder') + ': ' + t('cn.tier.' + tier) + '. ' + (nxt ? t('cn.me.toTier', { n: ceil - b.rep, rt: t('cn.tier.' + nxt[0]) }) : t('cn.me.topTier'))}>
+      <ol className="cn-ladder__rungs" aria-hidden="true">{REP_TIERS.map(([k], i) => <li key={k} className={i < ti ? 'is-past' : i === ti ? 'is-now' : ''}>
+        <i style={i === ti ? { ['--into' as string]: into + '%' } : undefined} /><span>{t('cn.tier.' + k)}</span>
+      </li>)}</ol>
+      <p className="cn-ladder__next">{nxt ? t('cn.me.toTier', { n: ceil - b.rep, rt: t('cn.tier.' + nxt[0]) }) : t('cn.me.topTier')}</p>
     </div>
     <dl className="cn-byline__stats">
       <div><dt>{t('cn.me.followers')}</dt><dd className="g-num"><Rolling to={b.followers} /></dd></div>
-      <div><dt>{t('cn.me.rep')}</dt><dd className="g-num">{b.rep}<span className="g-bar g-bar--sm cn-byline__rep"><i style={{ width: b.rep + '%' }} /></span></dd></div>
+      <div><dt>{t('cn.me.rep')}</dt><dd className="g-num">{b.rep}<small>/100</small></dd></div>
       <div className={'cn-hot' + (b.hot ? ' is-lit' : '')}><dt>{t('cn.me.hot')}</dt><dd className="g-num"><Icon n="flame" size={22} />{b.hot}</dd><small>{b.hot ? t('cn.me.best', { n: b.best }) : t('cn.me.cold')}</small></div>
     </dl>
-    <nav className="cn-byline__links">
-      <button onClick={() => go({ n: 'rivals' })}><Icon n="reply" size={18} />{t('cn.me.rivals')}</button>
-      <button onClick={() => go({ n: 'contacts' })}><Icon n="phone" size={18} />{t('cn.me.contacts')}</button>
-      <button onClick={() => go({ n: 'feed' })}><Icon n="news" size={18} />{t('cn.me.feed')}{un > 0 && <span className="g-badge">{un}</span>}</button>
-    </nav>
   </section>;
 }
 

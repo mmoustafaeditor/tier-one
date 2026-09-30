@@ -1,6 +1,8 @@
 // The Wire (DESIGN §4, HYBRID.md): calls on real rumours, priced at the Market, settled by what actually happens.
 // 3.1: an evidence wall of rumour cards, a live-calls strip with paper P&L, and a bottom-sheet file with a clear
 // "file your call" flow. All the maths and data live in lib/wireData.ts and the server, untouched.
+// 3.3 (GOTY): the first view invites a call. A short hero, the how-to folded away after the first visit, and a
+// "Most wrong right now" strip of three rumours above the (closed) groups, so there is always a YES/NO within reach.
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useT, num } from '../lib/i18n';
 import { useSave, getSave, update } from '../lib/save';
@@ -41,6 +43,13 @@ function windowLine(now: number, cur?: WireWindow): { k: 'opens' | 'closes'; lef
   return null;
 }
 type Group = 'star' | 'window' | 'league' | 'team';
+// Where the evidence points, 0–1, from the stage the linked clubs have reached, the best outlet's grade and the heat.
+// Display only: it ranks the featured strip and never touches a price or a score.
+const STAGE_E: Record<string, number> = { interest: 0.25, talks: 0.45, bid: 0.65, agreed: 0.85 };
+function evidenceOf(r: Rumour) {
+  const e = (STAGE_E[stageOf(r)] ?? 0.25) * (1 - 0.08 * bestTier(r)) + 0.15 * Math.min(1, r.heat / 100);
+  return Math.max(0.05, Math.min(0.95, e));
+}
 
 export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
   const t = useT();
@@ -70,11 +79,14 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
   const m = w.mine;
   const openCalls = m ? m.calls.filter((c) => !c.done).length : 0;
   const left = Math.max(0, WR.WIRE.DAILY_CALLS - w.callsToday);
+  // The how-to is open on the first visit and folded after that (the summary stays, one tap away).
+  const [howOpen, setHowOpen] = useState(() => !getSave().stats['wire:how']);
+  useEffect(() => { if (!getSave().stats['wire:how']) update((x) => { x.stats['wire:how'] = 1; }); }, []);
 
   return <div className="g-screen g-screen--wide wire3">
     <TopBar onHelp={() => chrome.go({ n: 'howto' })} onMenu={chrome.openSettings} />
     <div className="stagger g-stack">
-      <section className="g-hero g-hero--wire" style={{ ['--i' as string]: 0 }}>
+      <section className="g-hero g-hero--wire wire3__hero" style={{ ['--i' as string]: 0 }}>
         <span className="g-hero__art" aria-hidden="true"><Icon n="wire" /></span>
         <span className="g-mono g-hero__k"><i className="g-dot" />{t('g.wire.k')}</span>
         <h1 className="g-hero__t">{t('g.wire.hed')}</h1>
@@ -83,11 +95,14 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
           <span className="wwin__now"><i className="g-dot" />{t('fb.now', { w: winLabel(t, w.window.id), d: t('fb.dates') })}</span>
           {win && <span className="g-chip g-chip--gold"><Icon n="clock" size={14} />{t('m.wire.' + win.k, { t: win.left })}</span>}
         </div>
-        <p className="wwin__note">{t('fb.closed')}</p>
-        <ol className="wire3__how">{(t.list('g.wire.how') as string[]).map((x, k) => <li key={k}><span className="g-num">{k + 1}</span>{x}</li>)}</ol>
+        <details className="wire3__how" open={howOpen} onToggle={(e) => setHowOpen(e.currentTarget.open)}>
+          <summary><Icon n="help" size={16} />{t('m.wire.how')}</summary>
+          <ol className="wire3__steps">{(t.list('g.wire.how') as string[]).map((x, k) => <li key={k}><span className="g-num">{k + 1}</span>{x}</li>)}</ol>
+          <p className="wwin__note">{t('fb.closed')}</p>
+        </details>
         <div className="kpis3">
           <span><b className="g-num">{m ? num(Math.round(m.cred)) : '–'}</b><small className="g-mono">{t('wire.cred')}</small></span>
-          <span><b className="g-num">{m ? pct(m.hitRate) + '%' : '–'}</b><small className="g-mono">{t('wire.hit')}</small></span>
+          <span><b className="g-num">{m && m.resolved > 0 ? pct(m.hitRate) + '%' : '–'}</b><small className="g-mono">{t('wire.hit')}</small></span>
           <span><b className="g-num">{openCalls}</b><small className="g-mono">{t('wire.open')}</small></span>
           <span><b className="g-num">{left}<em>/{WR.WIRE.DAILY_CALLS}</em></b><small className="g-mono">{t('common.today')}</small></span>
         </div>
@@ -96,6 +111,7 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
       <SettledReel style={{ ['--i' as string]: 1 }} />
       <LiveCalls onOpen={(id) => open(id)} style={{ ['--i' as string]: 1 }} />
 
+      {rs.length > 0 && <MostWrong rs={rs} onOpen={open} style={{ ['--i' as string]: 2 }} />}
       <div className="g-sec" style={{ ['--i' as string]: 2 }}><h2>{t('g.wire.wall')}</h2><span className="g-mono">{w.asOf ? t('wire.asOfD', { d: w.asOf }) : t('g.wire.wallAside')}</span></div>
       {!w.rumours && <p className="g-empty" style={{ ['--i' as string]: 2 }}>{w.loading ? t('common.loading') : t('wire.needNet')}</p>}
       {w.rumours && !w.online && <p className="g-empty">{t('wire.needNet')}</p>}
@@ -124,7 +140,7 @@ function WireBoard({ style }: { style?: CSSProperties }) {
   const [rows, setRows] = useState<{ nick: string; score: number; me: boolean }[] | null>(null);
   const [me, setMe] = useState<{ rank: number; score: number } | null>(null);
   useEffect(() => { v3<{ rows: { nick: string; score: number; me: boolean }[]; me?: { rank: number; score: number } }>('lb.top', { period: 'wire', dev: s.dev }).then((r) => { if (r.ok) { setRows(r.rows); setMe(r.me || null); } }); }, [s.dev]);
-  return <section style={style}>
+  return <section className="wboard" style={style}>
     <div className="g-sec"><h2>{t('m.wire.board')}</h2><span className="g-mono">{me ? t('m.wire.you', { r: me.rank }) : seasonLabel(t, w.mine?.season) || t('m.wire.boardAside')}</span></div>
     {rows && rows.length ? <div className="ltable g-card">
       <div className="ltable__h g-mono"><span>#</span><span>{t('league.reporter')}</span><span /><span>{t('wire.cred')}</span></div>
@@ -163,6 +179,45 @@ function CallChip({ c, onOpen }: { c: WireCall; onOpen: () => void }) {
 function HeatLine({ a, b, yes }: { a: number; b: number; yes: boolean }) {
   const good = yes ? b >= a : b <= a;
   return <svg className="heatline3" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><line x1="2" x2="118" y1={24 - a * 22} y2={24 - a * 22} stroke="currentColor" strokeOpacity=".35" strokeDasharray="3 3" /><path d={`M2 ${24 - a * 22} L116 ${24 - b * 22}`} stroke={good ? 'var(--c-done)' : 'var(--red)'} strokeWidth="2.5" fill="none" strokeLinecap="round" /><circle cx="116" cy={24 - b * 22} r="3.5" fill={good ? 'var(--c-done)' : 'var(--red)'} /></svg>;
+}
+
+// ---------- "Most wrong right now": the three open rumours where the Market and the evidence disagree most.
+// Ranked by |market − evidence| (display only), skipping anything you've already called. Each card is one tap from
+// the file sheet with YES or NO pre-picked, so the first view of the Wire always has a call within reach.
+function MostWrong({ rs, onOpen, style }: { rs: Rumour[]; onOpen: (id: string, yes?: boolean) => void; style?: CSSProperties }) {
+  const t = useT();
+  const w = useWire();
+  const called = new Set((w.mine?.calls || []).map((c) => c.rid));
+  const list = rs
+    .filter((r) => { const b = w.board[r.id]; return (!b || b.state === 'open') && !b?.mine && !called.has(r.id); })
+    .map((r) => { const b = w.board[r.id]; const m = b ? b.market : WR.marketOf(r); const e = evidenceOf(r); return { r, m, yes: e > m, edge: Math.abs(m - e) }; })
+    .sort((a, b) => b.edge - a.edge).slice(0, 3);
+  if (!list.length) return null;
+  return <div className="wfeat" style={style}>
+    <div className="g-sec"><h2>{t('m.wire.featured')}</h2></div>
+    <p className="wfeat__sub">{t('m.wire.featuredSub')}</p>
+    <div className="wfeat__row">
+      {list.map(({ r, m, yes }, k) => {
+        const from = clubById(r.currentClubId);
+        const p = WORLD.players.find((x) => x.id === r.playerId);
+        const st = stageOf(r);
+        return <article key={r.id} className="wfeat__c g-card" style={{ ['--k' as string]: k }} aria-label={r.playerName}>
+          <div className="wfeat__top">
+            <Kit club={from} player={p} size={48} />
+            <div className="wfeat__who"><span className={'stage stage--' + st}>{t('g.wire.stage.' + st)}</span><b className="wfeat__hed">{rumourHed(t, r)}</b></div>
+          </div>
+          <div className="wfeat__mkt">
+            <span><b className="g-num">{pct(m)}<small>%</small></b><small className="g-mono">{t('g.wire.market')}</small></span>
+            <span className={'wfeat__lean ' + (yes ? 'is-yes' : 'is-no')}><span><Icon n={yes ? 'check' : 'x'} size={14} />{t('m.wire.lean.' + (yes ? 'yes' : 'no'))}</span><em>{t('m.wire.pays', { n: odds(yes, 2, m).win })}</em></span>
+          </div>
+          <div className="rum__file">
+            <button className="yn yn--yes" onClick={() => onOpen(r.id, true)}><Icon n="check" /><span><b>{t('wire.yesS')}</b><small>{t('g.wire.yesSub')}</small></span></button>
+            <button className="yn yn--no" onClick={() => onOpen(r.id, false)}><Icon n="x" /><span><b>{t('wire.noS')}</b><small>{t('g.wire.noSub')}</small></span></button>
+          </div>
+        </article>;
+      })}
+    </div>
+  </div>;
 }
 
 // ---------- a rumour on the wall
@@ -334,7 +389,7 @@ function WireReply({ c }: { c: WireCall }) {
   const t = useT();
   const x = wireReply(t.lang, c.rid, !!c.right, c.s >= 3, c.player || '');
   if (!x.text) return null;
-  return <div className="wreply"><Avatar name={x.handle} size={28} /><div><b>{x.name}</b> <span className="g-mono">{x.handle}</span><p dir="auto">{x.text}</p></div></div>;
+  return <div className="wreply"><Avatar name={x.handle} size={28} /><div><b>{x.name}</b> <bdi dir="ltr" className="g-mono">{x.handle}</bdi><p dir="auto">{x.text}</p></div></div>;
 }
 
 // A settled number rolls up to its value (one decimal, like the scores).

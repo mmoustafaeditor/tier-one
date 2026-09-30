@@ -33,12 +33,12 @@ export default {
         wallet: 'Wallet', shop: 'The shop', passT: 'Semba Pass', packs: 'Credit packs', recent: 'Recent', buyNow: 'Buy',
       },
       howto: {
-        k: 'How to play', hed: 'How Tier One works in 60 seconds', swipe: 'Swipe', step: 'Step {n} of {m}', next: 'Next', prev: 'Back', go: 'Try it in Practice',
+        k: 'How to play', hed: 'How Tier One works in 60 seconds', swipe: 'Swipe', step: 'Step {n} of {m}', next: 'Next', prev: 'Back', go: 'Try it in Practice', early: 'Early bonus: a right call earns extra for every day left before Deadline Day, so the same call pays less as the week goes on.',
         steps: [
           ['Ring your sources', 'Spend contact points calling the kit man, the barber, the agent and friends.', 'The physio says: “Medical at Chelsea.”'],
           ['Read the evidence', 'Every answer adds a tally to one outcome. Street voices repeat each other, so count the street once.', 'Done ✓✓ · Hijack ✓ · Off · Fake'],
           ['Pick what happens', 'Exactly one is true: Done, Hijack, Off or Fake.', 'Done: he signs for the club in the story.'],
-          ['Pick how loud', 'Talks, Advanced or Confirmed. Louder pays more and hurts more.', 'Confirmed and right: +{b}, plus +{e} for each day left. Wrong: −{l}.'],
+          ['Pick how loud', 'Talks, Advanced or Confirmed. Louder pays more and hurts more.', 'Right on day 1: Talks +{b0}, Advanced +{b1}, Confirmed +{b2}. Wrong: −{l}.'],
           ['Beat the rivals', 'Post before the rivals for an exclusive, then survive a 60-second Deadline Day.', 'First right Confirmed call: +{x} exclusive.'],
         ],
         full: 'The full rules', fullSub: 'Every number, read from the rules the game runs on.',
@@ -81,12 +81,12 @@ export default {
         wallet: 'المحفظة', shop: 'المحل', passT: 'سيمبا باس', packs: 'باقات الكريدت', recent: 'آخر حاجات', buyNow: 'اشتري',
       },
       howto: {
-        k: 'إزاي تلعب', hed: 'تير وان في ٦٠ ثانية', swipe: 'اسحب', step: 'خطوة {n} من {m}', next: 'اللي بعده', prev: 'رجوع', go: 'جرّبها في التمرين',
+        k: 'إزاي تلعب', hed: 'تير وان في ٦٠ ثانية', swipe: 'اسحب', step: 'خطوة {n} من {m}', next: 'اللي بعده', prev: 'رجوع', go: 'جرّبها في التمرين', early: 'بونص البدري: التوقع الصح بياخد زيادة عن كل يوم فاضل قبل يوم الديدلاين، فنفس التوقع بيجيب أقل كل ما الأسبوع يعدي.',
         steps: [
           ['كلّم مصادرك', 'اصرف نقط الاتصال وكلّم مسؤول المهمات والحلاق والوكيل وغيرهم.', 'أخصائي العلاج بيقول: «كشف طبي في تشيلسي».'],
           ['اقرا الأدلة', 'كل إجابة بتزوّد علامة لنتيجة. كلام الشارع بيكرر بعضه، فاحسب الشارع مرة واحدة.', 'تمّت ✓✓ · اتخطف ✓ · باظت · فشنك'],
           ['اختار اللي هيحصل', 'حاجة واحدة بس صح: تمّت، اتخطف، باظت أو فشنك.', 'تمّت: هيمضي للنادي اللي في القصة.'],
-          ['اختار صوتك', 'مفاوضات، متقدمة أو مؤكدة. كل ما صوتك يعلى المكسب يزيد والخسارة كمان.', 'مؤكدة وصح: +{b}، و+{e} لكل يوم فاضل. غلط: −{l}.'],
+          ['اختار صوتك', 'مفاوضات، متقدمة أو مؤكدة. كل ما صوتك يعلى المكسب يزيد والخسارة كمان.', 'صح من أول يوم: مفاوضات +{b0}، متقدمة +{b1}، مؤكدة +{b2}. غلط: −{l}.'],
           ['اسبق المنافسين', 'انشر قبل المنافسين عشان تاخد انفراد، وبعدين اصمد في يوم الديدلاين ٦٠ ثانية.', 'أول توقع مؤكد صح: +{x} انفراد.'],
         ],
         full: 'القواعد كاملة', fullSub: 'كل رقم هنا جاي من القواعد اللي اللعبة شغالة بيها.',
@@ -129,12 +129,12 @@ export default {
         wallet: 'Monedero', shop: 'La tienda', passT: 'Semba Pass', packs: 'Packs de créditos', recent: 'Recientes', buyNow: 'Comprar',
       },
       howto: {
-        k: 'Cómo se juega', hed: 'Tier One en 60 segundos', swipe: 'Desliza', step: 'Paso {n} de {m}', next: 'Siguiente', prev: 'Atrás', go: 'Pruébalo en Práctica',
+        k: 'Cómo se juega', hed: 'Tier One en 60 segundos', swipe: 'Desliza', step: 'Paso {n} de {m}', next: 'Siguiente', prev: 'Atrás', go: 'Pruébalo en Práctica', early: 'Bonus por madrugar: un acierto suma extra por cada día que falte para el Deadline Day, así que la misma apuesta paga menos según avanza la semana.',
         steps: [
           ['Llama a tus fuentes', 'Gasta puntos de contacto llamando al utillero, al barbero, al agente y compañía.', 'El fisio dice: «Reconocimiento en el Chelsea».'],
           ['Lee las pruebas', 'Cada respuesta suma una marca a un desenlace. Las voces de la calle se repiten, así que cuenta la calle una vez.', 'Hecho ✓✓ · Robo ✓ · Roto · Humo'],
           ['Elige qué pasa', 'Solo una es verdad: Hecho, Robo, Roto o Humo.', 'Hecho: firma por el club de la historia.'],
-          ['Elige cuánto te mojas', 'Contactos, Avanzado o Confirmado. Cuanto más alto, más ganas y más pierdes.', 'Confirmado y aciertas: +{b}, más +{e} por cada día que quede. Si fallas: −{l}.'],
+          ['Elige cuánto te mojas', 'Contactos, Avanzado o Confirmado. Cuanto más alto, más ganas y más pierdes.', 'Acertado el día 1: Contactos +{b0}, Avanzado +{b1}, Confirmado +{b2}. Si fallas: −{l}.'],
           ['Gana a los rivales', 'Publica antes que los rivales para una exclusiva y sobrevive a un Deadline Day de 60 segundos.', 'Primer Confirmado acertado: +{x} de exclusiva.'],
         ],
         full: 'Las reglas completas', fullSub: 'Cada número sale de las reglas con las que funciona el juego.',

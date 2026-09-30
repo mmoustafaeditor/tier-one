@@ -11,7 +11,7 @@ export type Verdict = 'excl' | 'right' | 'wrong' | 'none';
 export interface Thread { i: number; verdict: Verdict; text: string; was: string; day: number; loud: boolean; likes: number; reposts: number; reps: number; replies: Reply[]; ratio: boolean; hot: boolean }
 
 function hash(s: string) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-const RIVAL_NAME: Record<string, string> = { tabloid: 'Back Page Bants', itk: 'Transfer ITK', insider: 'Press Box Pete' };
+const RIVAL_NAME: Record<string, string> = { tabloid: 'Back Page Bants', itk: 'ITK Kev', insider: 'Press Box Pete' };
 
 export class Banter {
   private used = new Set<string>();

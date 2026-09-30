@@ -11,6 +11,8 @@ import { Icon, GBtn, TopBar, Kit } from '../ui/game';
 import type { Chrome } from '../App';
 import { WeekEventBanner } from '../ui/season';
 
+const FIRST_DAILY = '2026-09-01';
+
 export function PracticeScreen(chrome: Chrome) {
   const t = useT();
   const s = useSave();
@@ -29,6 +31,8 @@ export function PracticeScreen(chrome: Chrome) {
     if (!r.ok) { setMsg(t('practice.archiveNeedNet')); return; }
     begin(r.seed, t('front.dailyNo', { n: r.no }));
   };
+  // Replays use the server's published seed (daily.seed), which exists from the first Daily (1 Sep 2026) up to yesterday.
+  const pastDays = [1, 2, 3, 4, 5, 6, 7].filter((d) => ymdUTC(Date.now() - d * 864e5) >= FIRST_DAILY);
   const clean = code.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
   return <div className="g-screen practice3">
     <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('nav.practice')} onMenu={chrome.openSettings} />
@@ -59,9 +63,10 @@ export function PracticeScreen(chrome: Chrome) {
         </div>
       </form>
 
-      <div className="g-sec" style={{ ['--i' as string]: 3 }}><h2>{t('g.practice.pastT')}</h2><span className="g-chip g-chip--concept">{t('common.concept')}</span></div>
+      {pastDays.length > 0 && <>
+      <div className="g-sec" style={{ ['--i' as string]: 3 }}><h2>{t('g.practice.pastT')}</h2></div>
       <div className="pastgrid" style={{ ['--i' as string]: 3 }}>
-        {[1, 2, 3, 4, 5, 6, 7].map((d) => { const ms = Date.now() - d * 864e5; return <button key={d} className={'past' + (busy === d ? ' is-busy' : '')} onClick={() => { sfx('ui.tap'); past(d); }} disabled={busy >= 0}>
+        {pastDays.map((d) => { const ms = Date.now() - d * 864e5; return <button key={d} className={'past' + (busy === d ? ' is-busy' : '')} onClick={() => { sfx('ui.tap'); past(d); }} disabled={busy >= 0}>
           <span className="past__dow g-mono">{fmtDate(ms, t.lang, { weekday: 'short' })}</span>
           <b className="past__d g-num">{fmtDate(ms, t.lang, { day: 'numeric' })}</b>
           <span className="past__m g-mono">{fmtDate(ms, t.lang, { month: 'short' })}</span>
@@ -69,6 +74,7 @@ export function PracticeScreen(chrome: Chrome) {
         </button>; })}
       </div>
       <p className="g-fine" style={{ ['--i' as string]: 4 }}>{t('practice.archiveD')}</p>
+      </>}
       {msg && <p className="g-err" role="alert"><Icon n="x" size={16} />{msg}</p>}
     </div>
   </div>;

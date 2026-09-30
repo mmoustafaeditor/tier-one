@@ -354,17 +354,34 @@
 .sharebox__acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
 @media (min-width: 900px) { .results2.g-screen { max-width: 760px; } }
 
-/* ---------- guided first saga */
-.tutor { position: fixed; z-index: 60; inset-inline: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0)); max-width: 520px; margin: 0 auto; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 16px; background: var(--m-practice); color: #06210F; box-shadow: 0 6px 0 #1C8A50, 0 20px 40px rgba(0,0,0,.5); animation: g-pop .4s var(--ease-slam) both; }
-.tutor__n { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: #06210F; color: #fff; font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 15px; }
-.tutor__b b { display: block; font-family: var(--f-display); font-size: 18px; line-height: 1.1; }
-.tutor__b p { font-size: 13px; font-weight: 600; line-height: 1.3; margin-top: 2px; }
-.tutor__skip { font-size: 12px; font-weight: 800; text-decoration: underline; opacity: .75; }
-.tutor__ok { height: 40px; padding: 0 14px; border-radius: 10px; background: #06210F; color: #fff; font-weight: 800; }
-.play:has(.tutor) .g-screen, .play:has(.tutor) { padding-bottom: 150px; }
+/* ---------- The guided first day: a spotlight around the target (the dim is the ring's own shadow, so the target stays
+   bright and clickable) and a coach mark above or below it, its caret at --cx pointing at the target. Both are placed in
+   page coordinates by TutorCoach (Window.tsx) and live on document.body. */
+.tutor-ring { position: absolute; z-index: 60; pointer-events: none; border-radius: 16px; box-shadow: 0 0 0 3px var(--gold), 0 0 0 9999px rgba(8, 7, 5, .42); animation: tutor-ring .35s var(--ease-out) both; }
+@keyframes tutor-ring { from { box-shadow: 0 0 0 3px var(--gold), 0 0 0 9999px rgba(8, 7, 5, 0); } }
+.tutor { position: absolute; z-index: 61; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 14px; border-radius: 16px; background: var(--m-practice); color: #06210F; box-shadow: 0 6px 0 #1C8A50, 0 20px 40px rgba(0,0,0,.5); animation: g-pop .4s var(--ease-slam) both; }
+.tutor::before { content: ""; position: absolute; left: var(--cx, 50%); width: 18px; height: 18px; border-radius: 3px; background: var(--m-practice); transform: translateX(-50%) rotate(45deg); }
+.tutor[data-side="below"]::before { top: -7px; }
+.tutor[data-side="above"]::before { bottom: -7px; background: #1C8A50; }
+.tutor__n { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: #06210F; color: #fff; font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 14px; letter-spacing: -.02em; }
+.tutor__b { min-width: 0; padding-top: 1px; }
+.tutor__b b { display: block; font-family: var(--f-display); font-size: 18px; line-height: 1.1; text-wrap: balance; }
+.tutor__b p { font-size: 13.5px; font-weight: 600; line-height: 1.35; margin-top: 3px; }
+.tutor__skip { align-self: center; min-height: 36px; padding: 0 6px; font-size: 12.5px; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; color: #06210F; }
+.tutor__acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.tutor__go, .tutor__ok { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; padding: 0 14px; border-radius: 11px; font-weight: 800; font-size: 14.5px; }
+.tutor__go { background: #06210F; color: #fff; box-shadow: 0 3px 0 #000; }
+.tutor__ok { background: transparent; color: #06210F; box-shadow: inset 0 0 0 2px #06210F; }
+.tutor--last { grid-template-columns: auto minmax(0, 1fr); }
+.tutor button:focus-visible { outline: 3px solid #06210F; outline-offset: 2px; }
+/* Room under the last controls so a tip below them always has somewhere to sit. */
+body:has(.tutor) .play { padding-bottom: 320px; }
 .scard.is-hint { box-shadow: 0 0 0 3px var(--gold), var(--shadow-card); animation: hint-glow 1.4s ease-in-out infinite; }
 .scard.is-hint::after { content: "👆"; position: absolute; inset-inline-end: 40px; bottom: -6px; font-size: 30px; animation: g-float 1s ease-in-out infinite; }
+@media (min-width: 960px) { .scard.is-hint::after { display: none; } }
 .scard { position: relative; }
+:root.reduce .tutor, :root.reduce .tutor-ring, :root.reduce .scard.is-hint, :root.reduce .scard.is-hint::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { .tutor, .tutor-ring, .scard.is-hint, .scard.is-hint::after { animation: none; } }
 
 /* ---------- onboarding */
 .onb2 { position: fixed; inset: 0; z-index: 140; overflow-y: auto; background: var(--desk); display: flex; justify-content: center; }

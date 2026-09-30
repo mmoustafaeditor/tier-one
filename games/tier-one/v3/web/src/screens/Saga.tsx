@@ -16,6 +16,8 @@ import { hereWeGo } from '../lib/share';
 import { Beat } from '../ui/film';
 import { stampBeat } from '../film/surfaces/manifest';
 import type { View } from '../lib/driver';
+import { vinceOf } from '../lib/career';
+import { srcNamed } from '../lib/storyMode';
 
 // Your head-to-head ledger against one rival (GOTY.md §1.3). Filled by the connect lane's rivalRecord(id).
 export interface RivalRecord { w: number; l: number; d: number }
@@ -89,6 +91,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     </div>
 
     {tw && <div className="stoppress"><b>{t('g.saga.stopPress')}</b><span>{t('saga.twistBanner', { p: c.player.s })} {t('saga.twistNote')}</span></div>}
+    {view.mode === 'career' && vinceOf(g.R)?.i === i && <div className="vince-banner"><Icon n="eye" size={18} /><span><b>{t('g.story.vince.chip')}</b> {t('g.story.vince.banner')}</span></div>}
     {g.tips && i in g.tips && <div className="g-chip g-chip--gold tipchip">{t(g.tips[i] ? 'career.tipFake' : 'career.tipReal', { p: c.player.s })}</div>}
 
     <section className="know g-card">
@@ -138,7 +141,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
           return { d: r.day + k / 1000, el: <li key={'r' + k} ref={isNew ? newRef : undefined} className={'clip clip--q' + (isNew ? ' is-new' : '')} style={{ ['--acc' as string]: accentOf(r.src) }}>
             <SrcIcon k={r.src} size={34} />
             <div className="clip__b">
-              <div className="clip__h"><b>{t('src.' + r.src)}</b><span className="g-mono">{t('common.day', { n: r.day })}</span>{isNew && <span className="clip__new">{t('cf.new')}</span>}</div>
+              <div className="clip__h"><b>{view.mode === 'career' ? srcNamed(t, r.src) : t('src.' + r.src)}</b><span className="g-mono">{t('common.day', { n: r.day })}</span>{isNew && <span className="clip__new">{t('cf.new')}</span>}</div>
               <blockquote className="clip__q" cite={t('src.' + r.src)}>{voiceLine(t.lang, c, r)}</blockquote>
               <div className="clip__f"><span className={'g-stamp clip__says g-stamp--' + OUTS[w.indexOf(Math.max(...w))]}>{saysWord(t.lang, r.src, r.r, c)}</span><span className="clip__adds g-mono">{addsText(t.lang, w) || t('g.call.nothingNew')}</span></div>
             </div>
