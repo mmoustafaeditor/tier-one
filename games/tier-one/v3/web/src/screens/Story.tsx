@@ -361,10 +361,10 @@ function ChapterScreen({ chrome, ch, onPrologue }: { chrome: Chrome; ch: Chapter
             <Icon n={t.rtl ? 'back' : 'arrow'} size={16} />
           </button>
           <div className="sm-stats">
-            <Stat icon="news" v={String(c.windows)} k={t('career.windows')} sub={c.t1 ? c.t1 + ' × ' + t('tier.T1') : ''} />
+            <Stat icon="news" v={String(c.windows)} k={t('career.windows')} sub={epi ? t('g.story.epilogue') : t('g.story.chapterOf', { n: ch.n })} />
             <Stat icon="check" v={rightPct + '%'} k={t('g.story.stats.right')} sub={t('g.story.stats.of', { n: c.calls })} />
             <Stat icon="bolt" v={String(c.exclusives)} k={t('g.story.stats.excl')} sub={t('g.story.stats.uturns', { n: c.uturns })} />
-            <Stat icon="target" v={g && g.t1 == null ? g.haveW + '/' + g.windows : String(c.t1Top || 0)} k={g && g.t1 == null ? t('g.story.goal.windows') : t('g.story.goal.t1')} sub={g && g.t1 == null ? t('g.story.goal.promo', { rank: t('career.ranks.' + (c.rank + 1)) }) : ''} />
+            <Stat icon="star" v={String(c.t1)} k={t('g.story.goal.t1')} sub={g && g.t1 != null ? (g.haveT1 || 0) + '/' + g.t1 + ' · ' + t('career.ranks.' + (RANKS.length - 1)) : ''} />
           </div>
           <h3 className="sm-sub">{t('g.story.favours.title')}<span className="g-mono">{t('g.story.favours.aside', { n: totalFavours(c) })}</span></h3>
           <div className="sm-favs">

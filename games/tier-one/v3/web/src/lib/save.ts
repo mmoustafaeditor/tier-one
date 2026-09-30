@@ -133,12 +133,13 @@ function fromV2(s: Save): Save {
   } catch { return s; }
 }
 
+let migratedOnLoad = false;
 let state: Save = load();
 const subs = new Set<() => void>();
 function load(): Save {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) return migrate(JSON.parse(raw));
+    if (raw) { const j = JSON.parse(raw); migratedOnLoad = !j || typeof j.v !== 'number' || j.v < SAVE_V; return migrate(j); }
     return fromV2(fresh());
   } catch { return fresh(); }
 }
@@ -154,6 +155,7 @@ function persist() {
   }, 120) as unknown as number;
 }
 export const getSave = () => state;
+if (migratedOnLoad) persist(); // a silent migration is written back at once, not on the first move
 // The draft an update() mutator is working on, for helpers that are handed one part of it (lib/career.ts applyWindow
 // gets `s.career` and still has to move the byline that lives beside it). Null outside a mutator.
 let active: Save | null = null;
