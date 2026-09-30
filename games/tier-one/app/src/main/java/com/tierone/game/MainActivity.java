@@ -61,7 +61,8 @@ public class MainActivity extends Activity {
     @Override
     public void onBackPressed() {
         web.evaluateJavascript("(window.__tierBack ? window.__tierBack() : 'exit')", value -> {
-            if (value == null || value.contains("exit")) {
+            // Classic game answers 'exit'; Tier One 3.x answers true when it handled Back, false otherwise.
+            if (value == null || value.contains("exit") || "false".equals(value) || "null".equals(value)) {
                 finish();
             }
         });

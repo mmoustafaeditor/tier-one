@@ -1,7 +1,8 @@
 // Our own API only (/api/tier-one/v3 and /api/data/*). No other runtime requests.
 const BASE = (() => {
-  // Android WebView loads the page from a file URL: talk to the live site.
-  if (location.protocol === 'file:' || location.hostname === 'appassets.androidplatform.net') return 'https://sembagames.app';
+  // Android WebView loads the page from a file URL: talk to the live site. Use www: the bare domain answers with a
+  // redirect, and a CORS preflight can't follow redirects.
+  if (location.protocol === 'file:' || location.hostname === 'appassets.androidplatform.net') return 'https://www.sembagames.app';
   return '';
 })();
 export type ApiResult<T> = ({ ok: true } & T) | { ok: false; error: string; [k: string]: unknown };
