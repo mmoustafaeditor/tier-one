@@ -258,7 +258,7 @@ function TermsComposer({ p, neg }: { p: Player; neg?: Negotiation }) {
   const chance = signChance(t, d, ag, known, age);
   const green = greenFrom(t, d, ag, known, age);
   const cost = neg ? dealCost(w, c, neg, t) : { total: agentFee(ag, 0, t.wage) + t.signOn, later: 0, agent: agentFee(ag, 0, t.wage), now: 0, upfront: 0, signOn: t.signOn, wage: t.wage };
-  const room = spendingRoom(w, c), wr = wageRoom(w, c);
+  const room = spendingRoom(w, c, neg?.id), wr = wageRoom(w, c);
   const step = Math.max(100, roundFee(d.wage * 0.01));
   const lo = roundFee(d.wage * 0.5), hi = roundFee(d.wage * 1.6);
   const usRounds = neg ? neg.rounds.filter((r) => r.by === 'us').length : 0;
