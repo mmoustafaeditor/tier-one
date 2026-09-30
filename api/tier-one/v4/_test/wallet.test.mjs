@@ -5,7 +5,7 @@ import { createHmac } from 'node:crypto';
 import { call, api, kv, mem, newAccount } from './_harness.mjs';
 import { stripeAdapter } from '../../../_lib/purchase/stripe.mjs';
 import { googleAdapter } from '../../../_lib/purchase/google.mjs';
-import { handle as webhook } from '../stripe-webhook.js';
+import { handle as webhook } from '../_stripe-webhook.js';
 import { dayMinus, today } from '../../../_lib/util.mjs';
 
 const snapshotV3 = () => JSON.stringify(mem.dump().filter((k) => k.startsWith('t1v3:')).sort().map((k) => [k, mem.raw.get(k)]));

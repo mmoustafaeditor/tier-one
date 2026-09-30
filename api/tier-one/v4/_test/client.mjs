@@ -1,6 +1,6 @@
 // Runs the client-side sync tests (games/tier-one/v3/web/src/lib/__tests__/*.test.ts) under node --test:
 // bundles each test with the web app's esbuild into a scratch dir, then runs node's test runner on the output.
-//   node api/tier-one/v4/test/client.mjs
+//   node api/tier-one/v4/_test/client.mjs
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';

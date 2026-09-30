@@ -1,5 +1,5 @@
 // Local smoke run of the v4 function against the in-memory store (no network):
-//   node api/tier-one/v4/test/smoke.mjs
+//   node api/tier-one/v4/_test/smoke.mjs
 // Walks the client flow once: hello, config, push/pull a save, play a v3 Daily through v4, buy in the sandbox, telemetry.
 import assert from 'node:assert/strict';
 import { call } from './_harness.mjs';
