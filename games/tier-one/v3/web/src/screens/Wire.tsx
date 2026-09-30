@@ -99,11 +99,11 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
       <div className="g-sec" style={{ ['--i' as string]: 2 }}><h2>{t('g.wire.wall')}</h2><span className="g-mono">{w.asOf ? t('wire.asOfD', { d: w.asOf }) : t('g.wire.wallAside')}</span></div>
       {!w.rumours && <p className="g-empty" style={{ ['--i' as string]: 2 }}>{w.loading ? t('common.loading') : t('wire.needNet')}</p>}
       {w.rumours && !w.online && <p className="g-empty">{t('wire.needNet')}</p>}
-      {rs.length > 0 && <div className="pick" style={{ ['--i' as string]: 3 }} role="group" aria-label={t('m.wire.group')}>
-        <span className="g-mono">{t('m.wire.group')}</span>
-        {(['star', 'window', 'league', 'team'] as const).map((g) => <button key={g} className="pick__c" aria-pressed={group === g} onClick={() => { sfx('ui.tap'); setGroup(g); }}>{g === 'window' ? t('fb.by') : t('m.wire.by.' + g)}</button>)}
+      {rs.length > 0 && <div className="pick pick--seg" style={{ ['--i' as string]: 3 }} role="group" aria-label={t('m.wire.group')}>
+        <span className="g-mono pick__k">{t('m.wire.group')}</span>
+        <span className="pick__seg">{(['star', 'window', 'league', 'team'] as const).map((g) => <button key={g} className="pick__c" aria-pressed={group === g} onClick={() => { sfx('ui.tap'); setGroup(g); }}>{g === 'window' ? t('fb.by') : t('m.wire.by.' + g)}</button>)}</span>
       </div>}
-      {groups.map(([k, list], gi) => <details key={group + k} className="g-more" open={gi === 0} style={{ ['--i' as string]: 3 }}>
+      {groups.map(([k, list]) => <details key={group + k} className="g-more g-more--desk wire3__grp" style={{ ['--i' as string]: 3 }}>
         <summary>{group === 'star' ? (Number(k) ? '★'.repeat(Number(k)) + ' ' + t('m.wire.stars', { n: k }) : t('m.wire.unrated')) : group === 'window' ? (k === w.window.id ? t('fb.thisWin') + ' · ' : '') + winLabel(t, k) : group === 'league' ? t('m.wire.lg.' + k) === 'm.wire.lg.' + k ? k : t('m.wire.lg.' + k) : k} <span className="g-mono">· {list.length}</span></summary>
         <div className="wall" style={{ padding: '0 10px 12px' }}>
           {list.map((r, j) => <RumourCard key={r.id} r={r} k={j} onOpen={(yes) => open(r.id, yes)} />)}

@@ -220,6 +220,17 @@
 .pick { display: flex; flex-wrap: wrap; gap: 6px; }
 .pick__c { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 12px; border-radius: 10px; background: var(--card-2); font-size: 13.5px; font-weight: 700; box-shadow: inset 0 0 0 1.5px rgba(0,0,0,.08); }
 .pick__c[aria-pressed="true"] { background: var(--card-ink); color: var(--card); }
+.pick__c { color: var(--card-ink); }
+/* Segmented control on the desk (Wire "Group by"): label and track share one centred row, readable in both editions. */
+.pick--seg { align-items: center; gap: 10px 12px; }
+.pick--seg .pick__k { color: var(--on-desk-2); letter-spacing: .12em; }
+.pick__seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 12px; background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); }
+.pick--seg .pick__c { justify-content: center; min-height: 36px; padding: 0 14px; background: transparent; color: var(--on-desk-2); box-shadow: none; transition: background .18s, color .18s; }
+.pick--seg .pick__c:hover { color: var(--on-desk); }
+.pick--seg .pick__c[aria-pressed="true"] { background: var(--m-wire); color: #0B0A08; }
+.pick--seg .pick__c:focus-visible { outline: 2px solid var(--m-wire); outline-offset: 2px; }
+.wire3__grp { margin-top: 0; }
+.wire3__grp summary .g-mono { color: var(--on-desk-3); }
 .loud { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .loud__b { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px 8px; border-radius: 12px; background: var(--card-2); box-shadow: 0 4px 0 #CFC5B1; transition: transform 90ms, box-shadow 90ms; min-width: 0; }
 .loud__b b { font-size: 13.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
