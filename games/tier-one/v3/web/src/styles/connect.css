@@ -206,3 +206,17 @@
 
 /* Buttons in these screens read as sentences, per the design addendum. */
 .cn-screen .g-btn, .cn-slip .g-btn, .cn-contact .g-btn { text-transform: none; letter-spacing: .01em; }
+
+/* ---- a bought byline card design (Your desk, lib/wallet.ts bylineStyle): the card takes the design's paper, ink and rule */
+.cn-byline.is-dressed { --sc: var(--by-acc); background: var(--by-bg); color: var(--by-ink); }
+.cn-byline.is-dressed .cn-byline__by { font-family: var(--by-face); }
+.cn-byline--double .cn-byline__by { font-style: normal; }
+.cn-byline.is-dressed .cn-byline__flair { font-style: normal; margin-inline-start: 6px; color: var(--by-flair-c); }
+.cn-byline.is-dressed .cn-byline__flair::before { content: var(--by-flair); }
+.cn-byline.is-dressed .cn-byline__stats { border-top-color: var(--by-ink); }
+.cn-byline--single .cn-byline__stats { border-top-width: 1.5px; }
+.cn-byline--double .cn-byline__stats { border-top: 4px double var(--by-ink); }
+.cn-byline.is-dressed .cn-byline__stats dt, .cn-byline.is-dressed .cn-byline__stats dd small, .cn-byline.is-dressed .cn-ladder__next, .cn-byline.is-dressed .cn-hot small { color: color-mix(in srgb, var(--by-ink) 70%, var(--by-bg)); }
+.cn-byline.is-dressed .cn-ladder__rungs li span { color: color-mix(in srgb, var(--by-ink) 60%, var(--by-bg)); }
+.cn-byline--halftone::after { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--by-ink) 14%, transparent) 1px, transparent 1.3px); background-size: 5px 5px; }
+.cn-byline--foil { background: linear-gradient(var(--by-bg), var(--by-bg)) padding-box, linear-gradient(135deg, #B8830B, #FFE08A, #B8830B) border-box; border: 4px solid transparent; }
