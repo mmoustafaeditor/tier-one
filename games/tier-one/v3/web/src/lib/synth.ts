@@ -105,6 +105,26 @@ const SYN=(()=>{
  P.snip=t=>snip(t);
  P.jetpass=t=>jet(t,1.4);
  P.boom=t=>boom(t,.4);
+ // 3.4 motion pieces (src/film): objects, places and paper. No voices.
+ // The presses: a low rumble spinning up under four rhythmic thumps (~1.6 s).
+ P.presses=t=>{ noise(t,1.6,{type:'lowpass',f:90,fto:260,fslide:.9,q:.8,g:.3,a:.25,r:.5}); tone(48,t,1.6,{type:'sawtooth',to:62,slide:1.2,g:.12,lp:220,a:.3,r:.5}); [0,.3,.55,.78,.98,1.16,1.32,1.46].forEach(d=>{ tone(110,t+d,.09,{type:'triangle',to:60,slide:.08,g:.14,a:.002,r:.06}); noise(t+d,.05,{type:'bandpass',f:1400,q:1,g:.08,a:.001,r:.04}); }); };
+ // A metal shutter: a rattle down the runners, then the clang on the sill.
+ P.shutter=t=>{ for(let i=0;i<10;i++){ const st=t+i*.055; noise(st,.045,{type:'bandpass',f:rnd(900,1700),q:2,g:.13,a:.001,r:.04}); } boom(t+.58,.45); tone(210,t+.58,.5,{type:'square',to:150,slide:.4,g:.06,lp:900,a:.002,r:.45}); noise(t+.58,.3,{type:'bandpass',f:2400,q:.7,g:.14,a:.001,r:.28}); };
+ // The lamp's switch: a click and the hum dropping away.
+ P.lampoff=t=>{ click(t,.35); tone(100,t,.28,{type:'triangle',to:40,slide:.25,g:.12,a:.002,r:.25}); tone(50,t,.5,{type:'sine',to:30,slide:.45,g:.1,a:.01,r:.45}); };
+ P.lampon=t=>{ click(t,.3); tone(60,t+.02,.6,{type:'sine',g:.06,a:.05,r:.5}); noise(t+.02,.12,{type:'highpass',f:6000,g:.03,a:.002,r:.1}); };
+ // A lift arriving: the bell, then the doors' hum.
+ P.lift=t=>{ bell(N.E5*2,t,1.1,.09); noise(t+.5,1.1,{type:'lowpass',f:180,q:.6,g:.16,a:.2,r:.5}); tone(70,t+.5,1.1,{type:'triangle',g:.05,a:.2,r:.5}); };
+ // A split-flap board: a clatter of cards settling.
+ P.flap=t=>{ for(let i=0;i<14;i++){ const st=t+i*.032; click(st,.16); tone(rnd(700,1500),st,.02,{type:'square',g:.02,a:.001,lp:3000}); } click(t+.48,.3); };
+ // A phone's notification: two soft high notes.
+ P.notify=t=>{ tone(1760,t,.12,{type:'sine',g:.12,a:.003,r:.1}); tone(2349,t+.11,.24,{type:'sine',g:.1,a:.003,r:.2}); };
+ // A pen on card: a scratchy scribble.
+ P.pen=t=>{ for(let i=0;i<7;i++){ const st=t+i*.09; noise(st,.08,{type:'bandpass',f:rnd(2600,4200),q:1.5,g:.1,a:.01,r:.06}); } };
+ // A camera flash charging and firing.
+ P.flash=t=>{ tone(3200,t,.25,{type:'sine',to:5200,slide:.22,g:.03,a:.02,r:.05}); click(t+.26,.4); noise(t+.26,.05,{type:'highpass',f:5000,g:.15,a:.001,r:.04}); };
+ // Headlights sweeping past: tyres on wet tarmac.
+ P.carpass=t=>{ noise(t,1.2,{type:'bandpass',f:400,fto:1400,fslide:.5,q:.8,g:.16,a:.4,r:.6}); noise(t+.5,.7,{type:'lowpass',f:2200,fto:300,fslide:.6,g:.1,a:.05,r:.5}); };
  function play(kind,arg){ const c=init(); if(!c) return; if(c.state==='suspended') c.resume(); const fn=P[kind]||P.pop; try{ fn(c.currentTime+.02,arg); }catch(e){ if(window.SFX_DEBUG) console.error('sfx '+kind,e); } }
  function unlock(){ const c=init(); if(c&&c.state==='suspended') c.resume(); }
  if(typeof window!=='undefined') ['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,unlock,{once:true,passive:true}));
