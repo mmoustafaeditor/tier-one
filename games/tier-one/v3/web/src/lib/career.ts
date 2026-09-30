@@ -57,14 +57,17 @@ export function careerRules(c: CareerSave, cast: CastSaga[]): Rules {
   return { ...RULES, SAGAS: rk.sagas, CONTACTS: rk.contacts, DD_SECONDS: rk.dd, SOURCES, RIVALS: RULES.RIVALS.filter((r) => rk.rivals.includes(r.id)), PER, AGAIN, FAVOURS: true } as Rules;
 }
 
-// ---------- Vince's play (STORY.html, chapter 4 "The War", rank index 3 on; Career only, never the Daily or rooms).
-// One saga per window is marked Vince's play, and one of its sources (the agent, the barber or the airport spotter) has
-// been fed Vince's planted story: that source becomes a street voice with no reliability, so every read it gives repeats
-// the saga's spin (the rumour mill's planted outcome, which is never the truth). The saga and the source are fixed by the
-// window's cast, so a resumed window is the same window. Scoring is untouched: it's the same per-saga source override
-// Career already uses for leaks and frozen-out kit men (Rules.PER), read by the shared engine like any other source.
+// ---------- Vince's play (STORY.html, chapter 4 "The War": rank index 3 on; Career only, never the Daily, rooms or Practice).
+// One saga per window is Vince's play, and one of its sources (the agent, the barber or the airport spotter) has been fed
+// Vince's planted story: for that saga the source becomes a street voice with no reliability, so every read it gives is
+// the saga's spin (the rumour mill's planted outcome, which is never the truth at the time). The saga and the source are
+// fixed by the window's cast, so a resumed window is the same window, and the pick is the same on every device.
+// Scoring is untouched: this is the per-saga source override Career already uses for leaks and frozen-out kit men
+// (Rules.PER), read by the shared engine like any other source; the tally weights, the two-source rule and the points
+// don't change. The engine never sees the `vince` tag: it's a Career-only marker on the override, read by vinceOf().
 export const VINCE_RANK = 3;
 const VINCE_SRC = ['agent', 'barber', 'spotter'];
+type Planted = Source & { vince: true };
 function hashStr(s: string) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 export function vincePick(c: CareerSave, cast: CastSaga[]): { i: number; src: string } | null {
   if (c.rank < VINCE_RANK || !cast.length) return null;
@@ -74,12 +77,14 @@ export function vincePick(c: CareerSave, cast: CastSaga[]): { i: number; src: st
   return { i: cast[h % cast.length].i, src: opts[(h >>> 11) % opts.length] };
 }
 function planted(so: Source, src: string): Source {
+  // A street voice keeps the source's own vocabulary (the spotter's LINKED/OTHER/NOTHING) through `map`.
   const map = src === 'spotter' || src === 'physio' ? [0, 1, 2, 2] : src === 'kitman' ? [0, 0, 1, 1] : undefined;
-  return { cost: so.cost, from: so.from, says: so.says, kind: 'street', rel: 0, ...(map ? { map } : {}), vince: true };
+  const p: Planted = { cost: so.cost, from: so.from, says: so.says, kind: 'street', rel: 0, ...(map ? { map } : {}), vince: true };
+  return p;
 }
 /** Vince's play on a window's rules, if any: the saga and the source that was fed the line. */
 export function vinceOf(R: Rules): { i: number; src: string } | null {
-  for (const [i, per] of Object.entries(R.PER || {})) for (const [src, so] of Object.entries(per)) if (so && so.vince) return { i: +i, src };
+  for (const [i, per] of Object.entries(R.PER || {})) for (const [src, so] of Object.entries(per)) if (so && (so as Planted).vince) return { i: +i, src };
   return null;
 }
 const rel0 = (c: CareerSave, id: string) => (c.relations[id] ? c.relations[id].v : 0);

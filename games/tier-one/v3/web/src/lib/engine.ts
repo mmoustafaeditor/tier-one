@@ -10,7 +10,7 @@ export interface Call { o: number; s: number; day: number; ut: boolean; two: boo
 export interface Post { i: number; id: string; day: number; claim: number }
 export interface Twist { i: number; day: number; voided: Call | null; pen: number }
 export interface Pub { day: number; left: number; posts7: number; over: boolean; clues: Clue[][]; calls: (Call | null)[]; pens: number[]; feed: Post[]; twist: Twist | null; noTwist: boolean; tips?: Record<number, number> }
-export interface Source { cost: number; from: number; kind: 'own' | 'street'; says?: string[]; M?: number[][]; rel?: number; map?: number[]; /** Career: fed Vince's line (lib/career.ts). The engine ignores it. */ vince?: boolean }
+export interface Source { cost: number; from: number; kind: 'own' | 'street'; says?: string[]; M?: number[][]; rel?: number; map?: number[] }
 export interface Rules {
   SAGAS: number; DAYS: number; CONTACTS: number; DD_CONTACTS: number; DD_POSTS: number; DD_SECONDS: number; DD_SNAP: number;
   PRIOR: number[]; BASE: number[]; LOSS: number[]; EARLY: number[]; EXCL: number[]; UT_PEN: number[];

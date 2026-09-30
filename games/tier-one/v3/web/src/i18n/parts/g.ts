@@ -11,7 +11,7 @@ export default {
         filedSub: '{p} points {r}', weekAria: 'This week', dow: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
         play: 'Open the phones', resume: 'Back to day {d}', seePage: 'See your front page', fair: 'Same five for everyone · about 6 min', tomorrow: 'New five at {t}',
         missions: 'Today’s missions', missionsReset: 'Reset at {t}', claimed: 'Claimed', modes: 'Your desk',
-        storyK: 'Story mode', storyNew: 'Someone fed you a fake. Find out who.', storySub: 'Chapter {c} · {name}',
+        storyK: 'Story mode', storyNew: 'Someone fed you a fake. Find out who.', storySub: '{name}',
         wireK: 'Real rumours', wireSub: 'Call real transfers before they happen', wireLive: '{n} calls live',
         roomsK: 'Play friends', roomsSub: 'Same board, one table', leaguePos: '{r} in your league',
         practiceK: 'No pressure', practiceSub: 'Coach shows the odds',
@@ -26,6 +26,8 @@ export default {
       story: { ch: {
         blog: { name: 'Ch. 1 · The Blog' }, post: { name: 'Ch. 2 · The Evening Post' }, nationals: { name: 'Ch. 3 · The Nationals' },
         war: { name: 'Ch. 4 · The War' }, chronicle: { name: 'Ch. 5 · The Chronicle' }, front: { name: 'Epilogue · The Front Page' },
+        // 3.3 ids, kept as aliases (lib/storyMode.ts LEGACY_CHAPTER).
+        comeback: { name: 'Ch. 2 · The Evening Post' }, stringer: { name: 'Ch. 3 · The Nationals' }, rival: { name: 'Ch. 4 · The War' },
       } },
       me: {
         pressCard: 'Press card', level: 'Level', maxed: 'Max level', streak: 'Day streak', best: 'Best {n}', dailies: 'Dailies', t1s: '{n} × Tier 1', bestScore: 'Best score', points: 'points',
@@ -44,7 +46,7 @@ export default {
         filedSub: '{p} نقطة {r}', weekAria: 'الأسبوع ده', dow: ['ن', 'ث', 'ر', 'خ', 'ج', 'س', 'ح'],
         play: 'افتح التليفونات', resume: 'ارجع لليوم {d}', seePage: 'شوف صفحتك الأولى', fair: 'نفس الخمسة للكل · حوالي ٦ دقايق', tomorrow: 'خمسة جداد الساعة {t}',
         missions: 'مهام النهارده', missionsReset: 'بتتجدد {t}', claimed: 'اتاخدت', modes: 'مكتبك',
-        storyK: 'وضع القصة', storyNew: 'في حد إدّاك خبر مضروب. اعرف مين.', storySub: 'الفصل {c} · {name}',
+        storyK: 'وضع القصة', storyNew: 'في حد إدّاك خبر مضروب. اعرف مين.', storySub: '{name}',
         wireK: 'إشاعات حقيقية', wireSub: 'اتوقع صفقات حقيقية قبل ما تحصل', wireLive: '{n} توقع شغال',
         roomsK: 'العب مع صحابك', roomsSub: 'نفس اللوحة، ترابيزة واحدة', leaguePos: 'المركز {r} في دوريك',
         practiceK: 'من غير ضغط', practiceSub: 'المدرب بيوريك النسب',
@@ -59,6 +61,7 @@ export default {
       story: { ch: {
         blog: { name: 'ف١ · البلوج' }, post: { name: 'ف٢ · الإيفننج بوست' }, nationals: { name: 'ف٣ · الجرايد الكبيرة' },
         war: { name: 'ف٤ · الحرب' }, chronicle: { name: 'ف٥ · الكرونيكل' }, front: { name: 'الخاتمة · الصفحة الأولى' },
+        comeback: { name: 'ف٢ · الإيفننج بوست' }, stringer: { name: 'ف٣ · الجرايد الكبيرة' }, rival: { name: 'ف٤ · الحرب' },
       } },
       me: {
         pressCard: 'كارنيه الصحافة', level: 'مستوى', maxed: 'أعلى مستوى', streak: 'أيام متتالية', best: 'الأفضل {n}', dailies: 'التحديات', t1s: '{n} × المستوى الأول', bestScore: 'أعلى نتيجة', points: 'نقطة',
@@ -77,7 +80,7 @@ export default {
         filedSub: '{p} puntos {r}', weekAria: 'Esta semana', dow: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
         play: 'Coge el teléfono', resume: 'Vuelve al día {d}', seePage: 'Ver tu portada', fair: 'Los mismos cinco para todos · unos 6 min', tomorrow: 'Nuevos cinco a las {t}',
         missions: 'Misiones de hoy', missionsReset: 'Se renuevan a las {t}', claimed: 'Cobrada', modes: 'Tu mesa',
-        storyK: 'Modo historia', storyNew: 'Alguien te coló un bulo. Descubre quién.', storySub: 'Capítulo {c} · {name}',
+        storyK: 'Modo historia', storyNew: 'Alguien te coló un bulo. Descubre quién.', storySub: '{name}',
         wireK: 'Rumores reales', wireSub: 'Adelanta fichajes reales', wireLive: '{n} apuestas vivas',
         roomsK: 'Con amigos', roomsSub: 'Mismo tablero, una mesa', leaguePos: '{r}.º en tu liga',
         practiceK: 'Sin presión', practiceSub: 'El entrenador te enseña las probabilidades',
@@ -92,6 +95,7 @@ export default {
       story: { ch: {
         blog: { name: 'Cap. 1 · El blog' }, post: { name: 'Cap. 2 · El Evening Post' }, nationals: { name: 'Cap. 3 · Los nacionales' },
         war: { name: 'Cap. 4 · La guerra' }, chronicle: { name: 'Cap. 5 · The Chronicle' }, front: { name: 'Epílogo · La portada' },
+        comeback: { name: 'Cap. 2 · El Evening Post' }, stringer: { name: 'Cap. 3 · Los nacionales' }, rival: { name: 'Cap. 4 · La guerra' },
       } },
       me: {
         pressCard: 'Carné de prensa', level: 'Nivel', maxed: 'Nivel máximo', streak: 'Racha', best: 'Mejor {n}', dailies: 'Diarios', t1s: '{n} × Tier 1', bestScore: 'Mejor puntuación', points: 'puntos',

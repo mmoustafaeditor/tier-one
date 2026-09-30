@@ -30,7 +30,8 @@ export function chapterFor(c: CareerSave): Chapter {
   // Rank Tier One: back at The Chronicle; three Tier 1 windows and the front page is yours.
   const t1 = c.t1Top ?? 0;
   if (t1 < FINALE_T1) return { i: 4, id: 'chronicle', n: 5, progress: t1 / FINALE_T1, goal: { windows: 0, rep: 0, t1: FINALE_T1, haveW: c.windows, haveRep: Math.round(c.rep), haveT1: t1 }, done: false };
-  return { i: EPILOGUE, id: 'front', n: 6, progress: 1, goal: null, done: true };
+  // The epilogue is still "chapter 5" wherever a number is shown (Home's mode bar): five chapters, then the front page.
+  return { i: EPILOGUE, id: 'front', n: 5, progress: 1, goal: null, done: true };
 }
 export function chapterOf(s: Save): Chapter | null { return s.career ? chapterFor(s.career) : null; }
 /** The i18n key of a chapter's full name ("Ch. 2 · The Evening Post"). Old ids are mapped. */
@@ -80,8 +81,8 @@ export const beatKey = (b: { key: string }) => 'g.story.beat.' + b.key;
 export interface BeatOpts {
   /** save.story.beats: one-time beats already delivered (and the window each chapter began at). */
   seen?: Record<string, number>;
-  /** Vince's play in this window (Career, chapter 4 on): the saga and the source that was fed the line. */
-  vince?: { i: number; src: string } | null;
+  /** Vince's play in this window (Career, chapter 4 on): the saga, the source that was fed the line, and its name. */
+  vince?: { i: number; src: string; who: string } | null;
 }
 
 /** The 0–2 most relevant lines for a finished Career window. Call it after applyWindow(c, …) returned `rep`. */
@@ -100,11 +101,13 @@ export function storyBeats(c: CareerSave, res: Result, rep: CareerReport, o: Bea
     const n = c.t1Top ?? 0;
     out.push(n >= FINALE_T1 ? { from: 'editor', key: 'finale' } : { from: 'editor', key: 't1Top', v: { n, of: FINALE_T1 } });
   }
-  // 4. Vince's play: did you bite?
+  // 4. Vince's play: the reveal ("Vince's play on X: Rosa lied"), and whether you bit. Always, so the file is complete.
   if (o.vince) {
     const p = res.per.find((x) => x.i === o.vince!.i);
-    if (p && p.call && !p.right) out.push({ from: 'tabloid', key: 'vinceBurned', v: { p: name(p.i) } });
-    else if (p && p.call && p.right) out.push({ from: 'editor', key: seen.vinceFirst ? 'vinceDodged' : 'vinceFirst', v: { p: name(p.i) } });
+    const v = { p: name(o.vince.i), s: o.vince.who };
+    if (p && p.call && !p.right) out.push({ from: 'tabloid', key: 'vinceBurned', v });
+    else if (p && p.call && p.right) out.push({ from: 'editor', key: seen.vinceFirst ? 'vinceDodged' : 'vinceFirst', v });
+    else out.push({ from: 'editor', key: 'vinceQuiet', v });
   }
   // 5. A big miss: a wrong Confirmed. The tabloid never lets it go.
   const miss = called.find((p) => !p.right && p.call!.s === 2);

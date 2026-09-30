@@ -7,8 +7,9 @@ import type { SceneMeta } from '../cues';
 
 export type StoryCardProps = { kicker: string; title: string; line: string; num?: string; tone?: 'gold' | 'red'; rtl?: boolean };
 
-const T = { kick: 4, title: 12, rule: 30, line: 38, end: 78 };
-export const STORY_CARD: SceneMeta = { dur: T.end, beats: [0], cues: [{ f: 1, k: 'whoosh' }, { f: T.title, k: 'typewriter' }, { f: T.rule, k: 'thock' }] };
+// 72 frames and a short hold: about 2.5 s on screen.
+const T = { kick: 4, title: 12, rule: 30, line: 38, end: 72 };
+export const STORY_CARD: SceneMeta = { dur: T.end, beats: [0], cues: [{ f: 1, k: 'whoosh' }, { f: T.title, k: 'typewriter' }, { f: T.rule, k: 'thock' }], hold: 250 };
 
 export function StoryCard(p: StoryCardProps) {
   const { f, P } = useStage();

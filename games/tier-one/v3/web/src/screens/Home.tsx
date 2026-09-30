@@ -106,7 +106,7 @@ export function Home(chrome: Chrome) {
       {/* ---------- modes */}
       <div className="g-sec" style={{ ['--i' as string]: 3 }}><h2>{t('g.home.modes')}</h2></div>
       <div className="modes" style={{ ['--i' as string]: 3 }}>
-        <ModeTile c="story" icon="story" k={t('g.home.storyK')} title={t('g.tabs.story')} sub={ch ? (ch.done ? t('g.story.ch.' + ch.id + '.name') : t('g.home.storySub', { c: ch.n, name: t('g.story.ch.' + ch.id + '.name').replace(/^[^·]*·\s*/, '') })) : t('g.home.storyNew')} progress={ch ? ch.progress : undefined} onClick={() => chrome.go({ n: 'story' })} wide />
+        <ModeTile c="story" icon="story" k={t('g.home.storyK')} title={t('g.tabs.story')} sub={ch ? t('g.home.storySub', { c: ch.n, name: t('g.story.ch.' + ch.id + '.name') }) : t('g.home.storyNew')} progress={ch ? ch.progress : undefined} onClick={() => chrome.go({ n: 'story' })} wide />
         <ModeTile c="wire" icon="wire" k={t('g.home.wireK')} title={t('nav.wire')} sub={openCalls ? t('g.home.wireLive', { n: openCalls }) : t('g.home.wireSub')} badge={openCalls || undefined} onClick={() => chrome.go({ n: 'wire' })} />
         <ModeTile c="rooms" icon="friends" k={t('g.home.roomsK')} title={t('g.tabs.friends')} sub={me >= 0 && lg && lg.rows[me].pts > 0 ? t('g.home.leaguePos', { r: me + 1 }) : t('g.home.roomsSub')} onClick={() => chrome.go({ n: 'rooms' })} />
         <ModeTile c="practice" icon="target" k={t('g.home.practiceK')} title={t('nav.practice')} sub={t('g.home.practiceSub')} onClick={() => chrome.go({ n: 'practice' })} />
@@ -158,7 +158,7 @@ export function ModeBar({ chrome, s, lg }: { chrome: Chrome; s: Save; lg: League
   const daily = played ? t('tier.' + played.tier) + (played.rank ? ' · #' + played.rank : '') : t('g.bar.toPlay');
   const items = [
     { c: 'daily', ic: 'flame', k: t('g.bar.daily'), v: daily, x: s.streak.n ? String(s.streak.n) : '', go: () => chrome.go({ n: 'daily' }) },
-    { c: 'story', ic: 'story', k: t('g.bar.career'), v: ch ? t('g.bar.ch', { c: Math.min(5, ch.n), n: levelOf(s.pp).n }) : t('g.bar.start'), x: '', go: () => chrome.go({ n: 'story' }) },
+    { c: 'story', ic: 'story', k: t('g.bar.career'), v: ch ? t('g.bar.ch', { c: ch.n, n: levelOf(s.pp).n }) : t('g.bar.start'), x: '', go: () => chrome.go({ n: 'story' }) },
     { c: 'rooms', ic: 'friends', k: t('g.bar.room'), v: room, x: '', go: () => chrome.go({ n: 'rooms' }) },
   ];
   return <div className="mbar">{items.map((m) => <button key={m.c} className={'mbar__i mode--' + m.c} onClick={() => { sfx('ui.tap'); m.go(); }}>
@@ -178,7 +178,7 @@ export function PressPass({ chrome, s, lg, onTop }: { chrome: Chrome; s: Save; l
           <span className="pass__badge"><span className="pass__init">{initials}</span><span className="pass__lv">{lv.n}</span></span>
           <span className="pass__main">
             <span className="pass__name">{s.nick || t('g.home.noName')}</span>
-            <span className="pass__rank">{ch && s.career ? (s.career.paper || t('g.story.paperDefault', { n: s.nick || t('common.you') })) + ' · ' + t('career.ranks.' + s.career.rank) : t('g.home.freelance')}</span>
+            <span className="pass__rank">{ch ? t('g.story.ch.' + ch.id + '.name') : t('g.home.freelance')}</span>
             <span className="g-bar g-bar--sm" style={{ marginTop: 8, ['--bar' as string]: 'linear-gradient(90deg,#FFD35C,#F7B928)' }}><i style={{ width: lv.into + '%' }} /></span>
             <span className="pass__meta"><span>{t('g.home.xp', { a: lv.into, b: lv.need })}</span><span>{t('g.home.followers', { n: fmtK(bylineOf(s).followers) })}</span></span>
           </span>

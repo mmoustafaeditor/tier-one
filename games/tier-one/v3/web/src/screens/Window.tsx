@@ -66,7 +66,10 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       const g = d.game ? d.game() : null;
       let rep: CareerReport | null = null;
       let added: Beat[] = [];
-      update((s) => { if (s.career && g) { rep = applyWindow(s.career, g, r, v.cast, s.milestones); added = pushBeats(s, storyBeats(s.career, { ...r, cast: r.cast && r.cast.length ? r.cast : v.cast }, rep, { seen: { ...(s.story?.beats || {}) }, vince: vinceOf(v.R) })); } });
+      // Vince's play (Story, chapter 4 on): who lied is revealed with the results, by name.
+      const vp = vinceOf(v.R);
+      const vince = vp ? { ...vp, who: t('g.story.who.' + vp.src) } : null;
+      update((s) => { if (s.career && g) { rep = applyWindow(s.career, g, r, v.cast, s.milestones); added = pushBeats(s, storyBeats(s.career, { ...r, cast: r.cast && r.cast.length ? r.cast : v.cast }, rep, { seen: { ...(s.story?.beats || {}) }, vince })); } });
       if (added[0]) setBeat(added[0]);
       // The story's films: a mid-chapter reveal or the finale plays over the results.
       added.map(beatScene).forEach((id) => { if (id) playScene(id); });
