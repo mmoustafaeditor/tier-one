@@ -5,6 +5,7 @@
 import { update, getSave, type Save } from './save';
 import type { Result, Tier } from './engine';
 import type { Sfx } from './sfx';
+import { t } from './i18n';
 
 const DAY = 864e5;
 const utc = (y: number, m: number, d: number) => Date.UTC(y, m - 1, d);
@@ -45,6 +46,8 @@ export function seasonById(id: string): Season | null {
   const c = CAL.find((x) => x.key === m[1])!;
   return seasonAt(utc(+m[2], c.from[0], c.from[1]) + DAY / 2);
 }
+// For the season opener and other lanes: the live season, its display name in the player's language and its accent.
+export function currentSeason(ms = Date.now()) { const x = seasonAt(ms); return { id: x.id, name: t(x.nameKey), accent: x.accent, start: x.start, end: x.end }; }
 export const nextSeason = (ms = Date.now()) => seasonAt(seasonAt(ms).end + DAY / 2);
 
 // ---------- Season state in the save
