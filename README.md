@@ -14,7 +14,7 @@
 <p align="center">
   <a href="https://sembagames.app"><img alt="Website" src="https://img.shields.io/badge/play-sembagames.app-FF5A36?style=for-the-badge&labelColor=07090B"></a>
   <a href="#-our-games"><img alt="Games" src="https://img.shields.io/badge/games-2-B6FF3A?style=for-the-badge&labelColor=07090B"></a>
-  <a href="https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TierOne.apk"><img alt="Platform" src="https://img.shields.io/badge/platform-Android%20%7C%20Web-3D8BFF?style=for-the-badge&labelColor=0B1224"></a>
+  <a href="https://www.sembagames.app/downloads/TierOne.apk"><img alt="Platform" src="https://img.shields.io/badge/platform-Android%20%7C%20Web-3D8BFF?style=for-the-badge&labelColor=0B1224"></a>
 </p>
 
 ---
@@ -31,8 +31,8 @@ Play them all at **[sembagames.app](https://sembagames.app)**. Tap a game below 
 
 | Game | Genre | Status | Play |
 |---|---|---|---|
-| **[Tier One](games/tier-one)** | Football transfer-journalist strategy game | Web `v3.1.0` · Android `3.1.0` | [🌐 Play](https://sembagames.app/tier-one) · [⬇️ Download APK](https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TierOne.apk) |
-| **[The Gaffer](games/the-gaffer)** | Football manager: Europe's big five leagues + Arab leagues | Web `v2.1.0` · Android app `0.12.0` (updates itself to the latest web build) | [🌐 Play](https://sembagames.app/the-gaffer) · [⬇️ Download APK](https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TheGaffer.apk) |
+| **[Tier One](games/tier-one)** | Football transfer-journalist strategy game | Web `v3.1.0` · Android `3.1.0` | [🌐 Play](https://sembagames.app/tier-one) · [⬇️ Download APK](https://www.sembagames.app/downloads/TierOne.apk) |
+| **[The Gaffer](games/the-gaffer)** | Football manager: Europe's big five leagues + Arab leagues | Web `v2.1.0` · Android `2.1.0` (updates itself to the latest web build) | [🌐 Play](https://sembagames.app/the-gaffer) · [⬇️ Download APK](https://www.sembagames.app/downloads/TheGaffer.apk) |
 
 ---
 

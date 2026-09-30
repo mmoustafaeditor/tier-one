@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-30 · saifsaber · README: APK links from the site, The Gaffer Android 2.1.0
+- **What changed:** The root README's APK links now point to `https://www.sembagames.app/downloads/*.apk`. The old GitHub `raw` links give a 404 to anyone who isn't signed in, because the repo is private. The Gaffer's row now shows Android `2.1.0`, which its workflow published after PR #5 (new icon). Checked that the site serves the new APKs: Tier One 3.1.0 and The Gaffer 2.1.0 match `downloads/` on `main`, and both update feeds are live.
+- **Files:** `README.md`, `UPDATES.md`
+- **Heads-up for the team:** `games/tier-one/README.md` and `games/the-gaffer/README.md` still use the GitHub `raw` links, which 404 for the public.
+
 ## 2026-09-30 · saifsaber · Tier One Android 3.1.0: the app now runs the v3 game
 - **What changed:** Tier One Android 3.1.0 (versionCode 17), done from Saif's session at Mostafa's request. The app now bundles the v3 build (`tier-one/index.html`, the same 3.1.0 game as sembagames.app/tier-one) instead of the classic game, with the new app icon. Two fixes make v3 work inside the app: from a file URL it now calls `https://www.sembagames.app` (the bare domain answers with a 308 redirect, and CORS preflights can't follow redirects, so every API call would have failed), and Android Back closes the app when v3 answers `false` (it used to wait for `'exit'`, which only the classic game sends). Checked by loading the new build from a `file://` URL: the v3 API and `/api/data` calls all return 200 and the home screen renders. `tier-one/` was rebuilt with `npm run build:min` (same game; only the build number and that file-URL API base changed). A 2.4.1 icon-only APK was built on the branch first and replaced by this one before release.
 - **Files:** `games/tier-one/app/build.gradle`, `games/tier-one/app/src/main/java/com/tierone/game/MainActivity.java`, `games/tier-one/v3/web/src/lib/api.ts`, `tier-one/{index.html,version.json}`, `downloads/TierOne.apk`, `api/tier-one/latest.js`, `games/tier-one/README.md`, `README.md`, `CLAUDE.md` (current versions, repo map)
