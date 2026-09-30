@@ -5,6 +5,12 @@
     },
     "api/tier-one/v3/index.js": {
       "includeFiles": "data/seed/**"
+    },
+    "api/tier-one/v4/index.js": {
+      "includeFiles": "{data/seed/**,api/tier-one/v4/config/*.json}"
+    },
+    "api/tier-one/v4/stripe-webhook.js": {
+      "includeFiles": "{data/seed/**,api/tier-one/v4/config/*.json}"
     }
   },
   "rewrites": [
