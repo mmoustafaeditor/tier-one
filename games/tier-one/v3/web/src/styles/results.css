@@ -36,7 +36,8 @@
 
 /* ---- share, right under the verdict (the ChallengeButton slot sits beside it) ---- */
 .res4__share { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.res4__share .g-btn { width: auto; flex: 1 1 140px; }
+.res4__share > .g-btn, .res4__share > .so-chbtn { width: auto; flex: 1 1 140px; }
+.res4__share > .so-chbtn .g-btn { width: 100%; }
 .res4__save { min-height: 42px; padding: 0 12px; border-radius: 10px; color: var(--on-desk-2); font-weight: 700; font-size: 13.5px; box-shadow: inset 0 0 0 1.5px var(--desk-line); white-space: nowrap; }
 .res4__save:hover { color: var(--on-desk); background: var(--desk-2); }
 

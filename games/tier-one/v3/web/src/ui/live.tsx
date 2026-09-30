@@ -87,6 +87,9 @@ export function MorningPapers({ route }: { route: string }) {
   const t = useT(); const s = useSave(); const ctx = useDeskCtx();
   const [paper, setPaper] = useState<Paper | null>(null);
   const armed = useRef('');
+  // The route as of now: the page swap can land a frame after this effect ran (view transitions), and onboarding flips
+  // `onboarded` while Home is still the route, so the paper only opens if the desk is still where the player is.
+  const routeRef = useRef(route); routeRef.current = route;
   useEffect(() => {
     if (route !== 'front' || !s.onboarded || paper) return;
     touchDesk();
@@ -94,9 +97,13 @@ export function MorningPapers({ route }: { route: string }) {
     const day = p?.day || '';
     if (!p || armed.current === day) return;
     armed.current = day;
-    const hed = paperHed(t, p, getSave());
-    playScene(firstToday('paper') ? 'paper' : 'paper-short', { hed, what: t('live.paper.k') });
-    afterScenes(() => setPaper(p));
+    // Never stack on another film (the prologue, a moment): wait it out, then check the desk is still on screen.
+    afterScenes(() => {
+      if (routeRef.current !== 'front') { armed.current = ''; return; }
+      const hed = paperHed(t, p, getSave());
+      playScene(firstToday('paper') ? 'paper' : 'paper-short', { hed, what: t('live.paper.k') });
+      afterScenes(() => { if (routeRef.current === 'front') setPaper(p); else armed.current = ''; });
+    });
   }, [route, s.onboarded]); // eslint-disable-line react-hooks/exhaustive-deps
   const close = useCallback(() => { markPaperSeen(); setPaper(null); }, []);
   if (!paper) return null;
