@@ -188,3 +188,58 @@ The Daily keeps its own card below when it isn't the hero.
 | **season** | `lib/season.ts`, `lib/monet.ts`, the Pass (free and Gold tracks), the store, weekly events |
 | **shell** | desktop layouts, the left rail, motion tokens, view transitions, tilt, haptics, keyboard |
 | **football** | the world data refresh, Wire freshness, ON THE WIRE chips |
+
+## 7. The connected game (3.4 "One Newsroom")
+Owner's brief (30 Sept, evening): every feature connects game-to-game (mode to mode), game-to-player and
+game-to-multiplayer. The test is still §"North star": one journalist, one newsroom, one loop. Films everywhere the
+game changes state for you, and nothing is a dead end.
+
+### 7.1 Game to game: every mode is an assignment from the same desk
+- **The editor's desk** (`lib/desk.ts`) hands out assignments. The Daily is "today's brief", Career windows are
+  "the story", the Wire is "the live desk", rooms are "the press box", Practice is "off the record". One queue,
+  one voice (Mags Doyle after the story lane lands; the current editor before).
+- **Cross-mode consequences:** a Wire call that lands moves your Career editor's opinion (an inbox line) and
+  unlocks a Career favour; a Career promotion changes your Daily share card flair; a room win puts that friend in
+  your rivals ledger; a Daily Tier 1 earns a Wire credit. Everything routes through `lib/byline.ts` events.
+- **The morning papers:** one daily recap (first open of the day) across all modes: what settled overnight
+  (Wire, rooms, Daily rank, streak), who taunted, what's due today. Film: `moment-paper`.
+- **Deadline Day is a calendar event, not just a window day.** On the real deadline days (winter: 2 Feb 2027,
+  summer: 1 Sep 2027, `lib/season.ts` dates) the game runs **Deadline Day Live**: a 24-hour shared board where
+  every player calls the same real sagas, a live ticker of what the room is calling (counts, not names), a
+  countdown to 23:00 local, and results at midnight with a global table. Rooms can pin a DD Live round.
+  Between deadline days, the Daily still has its in-window Deadline Day (day 7) as now.
+
+### 7.2 Game to player: the game knows you
+- **One profile, one number set:** followers, rep tier, hot hand, contacts, rivals, coins, Pass, streak, trophies.
+  Career keeps its story rank but reads the same followers/contacts (the onecareer lane unifies the data).
+- **Playstyle profile** (`save.style`): tracked from calls (early vs late, loud vs quiet, source trust, U-turns).
+  Shown on Me as a card ("The Sniper: files early, rarely wrong"), used by rivals' banter, by the editor's notes and by
+  the Daily brief ("you've been quiet on day 1; the Market is wrong early this week").
+- **Rivals remember:** ledgers already exist; add "grudge" beats (a rival who beat you twice targets your next call),
+  and friend rivals (7.3).
+- **Streaks and returns:** a Daily streak with a real cost of missing (the rival takes your slot on the table) and a
+  "welcome back" desk note after 3+ days away, never punitive, always a next step.
+- **Films for the player:** the `moment-*` set plus `moment-style-<id>` when a playstyle title is earned and
+  `moment-streak-<7|30|100>`.
+
+### 7.3 Game to multiplayer: the press box
+- **Rooms → Press box** (`screens/Rooms.tsx` becomes the press box): a room is a newsroom of friends with a
+  league table over a season, weekly rounds on the real calendar, a room feed (calls, taunts, HERE WE GO cards).
+- **Beat my board:** any finished window (Daily, Practice, Career) makes a challenge link: same seed, your score
+  to beat, 24 h; the result posts to both feeds and the rivals ledger.
+- **Friend rivals:** a friend you've played 3+ rooms with becomes a named rival on your Rivals screen with the same
+  ledger, taunt lines from a friend pool, and a "scalp" film with their byline on the TV.
+- **Newsroom (clan):** up to 20 players under one masthead; a weekly combined table across the whole game;
+  masthead cosmetics from the Pass. Server: `newsroom.*` actions beside `room.*`.
+- **Spectate:** a finished room round can be replayed as a film strip of everyone's calls per day.
+- **Live presence:** the Daily board shows "N reporters on this board now" and "first to break it" (first correct
+  Confirmed call, by byline) once results are out; DD Live adds the live ticker (7.1).
+- **Films:** `moment-room-win`, `moment-friend-scalp`, `moment-newsroom-week`, `moment-ddlive-open`, `moment-ddlive-close`.
+
+### 7.4 Lanes for 3.4 (own disjoint files)
+| Lane | Owns |
+|---|---|
+| **pressbox** | `screens/Rooms.tsx`, new `screens/Newsroom.tsx`, `lib/social.ts`, server `room.*`/`newsroom.*`/`challenge.*` actions in `api/tier-one/v3/index.js`, App routes (additive), `i18n/parts/social.ts`; byline.ts additive only (friend rivals) |
+| **live** | `lib/desk.ts` (assignments, morning papers), `lib/live.ts` + server `live.*` (presence, first-to-break, DD Live board), `ui/live.tsx`, `lib/style.ts` (playstyle), Window.tsx additive (Daily brief sheet, DD Live ticker), `i18n/parts/live.ts`; season.ts additive (DD dates) |
+| **onecareer** (after story merges) | `lib/byline.ts` + `lib/career.ts` data unification, save migration, Me/Story readouts |
+| **film3d** | all clips, including the new `moment-*` ids above (queued after the calls/moments/story sets) |
