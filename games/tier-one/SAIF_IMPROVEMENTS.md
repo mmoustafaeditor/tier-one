@@ -14,8 +14,8 @@ When a status changes, update it in the table **and** add a dated line to that p
 
 | ID | Proposal | Status |
 |---|---|---|
-| TIERONE-SAIF-01 | Restore and improve deal-related comments and reactions | Proposed |
-| TIERONE-SAIF-02 | Restore and upgrade the game's humor and personality | Proposed |
+| TIERONE-SAIF-01 | Restore and improve deal-related comments and reactions | In Progress |
+| TIERONE-SAIF-02 | Restore and upgrade the game's humor and personality | In Progress |
 | TIERONE-SAIF-03 | Restore and upgrade leaderboards, prizes, achievements and badges | Proposed |
 | TIERONE-SAIF-04 | Fix overlapping UI elements, especially around publishing controls | Proposed |
 
@@ -34,7 +34,7 @@ When a status changes, update it in the table **and** add a dated line to that p
 
 ## TIERONE-SAIF-01 — Restore and improve deal-related comments and reactions
 
-**Status:** Proposed — pending verification and owner review.
+**Status:** In Progress.
 
 **Saif's observation:** The previous version had comments and reactions on the player's in-game blog and Twitter feed
 when deals were completed or succeeded. These interactions seem missing or less visible after the redesign.
@@ -47,10 +47,11 @@ when deals were completed or succeeded. These interactions seem missing or less 
 
 **Log:**
 - 2026-09-30 · Recorded from Saif. Not yet verified.
+- 2026-09-30 · Verified: the classic fan roast/praise, U-turn and source-reply pools (tier-one-classic, lane/content 2f2ed0c) never reached v3. Restored in `i18n/parts/banter.ts` as replies under each call on the results page, tied to the real outcome; settled Wire calls get one reply.
 
 ## TIERONE-SAIF-02 — Restore and upgrade the game's humor and personality
 
-**Status:** Proposed — pending verification and owner review.
+**Status:** In Progress.
 
 **Saif's observation:** The previous version had more personality in its comments, Twitter interactions, phone calls,
 and dialogue with agents, mission-related characters and airport situations. Characters sometimes hinted at a deal's
@@ -69,6 +70,7 @@ and made the world feel alive.
 
 **Log:**
 - 2026-09-30 · Recorded from Saif. Not yet verified.
+- 2026-09-30 · Results page redesigned for every window mode: verdict card with tier quip and native idiom, calls as tweets with rival jabs, fan banter and source smirks, the rest in closable sheets. Calls, agents and airport dialogue still to do.
 
 ## TIERONE-SAIF-03 — Restore and upgrade leaderboards, prizes, achievements and badges
 
