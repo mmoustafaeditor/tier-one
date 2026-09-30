@@ -20,6 +20,7 @@ import { isDeadlineDay, windowOf } from './windows';
 import { staffWeek } from './staff';
 import { SQUAD_SELL_MIN } from './transfers';
 import { roomPull } from './room';
+import { applyCards, serveCupBans } from './discipline';
 
 // ---------- fixtures ----------
 
@@ -110,11 +111,18 @@ function applyMatch(rec: MatchRecord, get: (id: string) => Player, byClub: Map<s
     const swing = diff > 0 ? 6 : diff < 0 ? (clubId === calm ? -4 : -6) : 0;
     for (const p of byClub.get(clubId) ?? []) p.morale = clamp(p.morale + (on.has(p.id) ? swing : swing / 2 - 1), 5, 100);
   });
+  // gf-ref: suspensions per competition, from its own rules (sim/discipline.ts, sim/competitions.ts).
+  const comp = rec.comp ?? rec.cup;
+  if (comp) {
+    serveCupBans(comp, rec.clubs, byClub, on);
+    applyCards(rec, get, comp, rec.round + 1);
+  }
+  void r;
   for (const e of rec.events) {
     const p = get(e.playerId);
     if (e.kind === 'goal' && stat) { stat(e.playerId)[1]++; if (e.assistId) stat(e.assistId)[2]++; }
-    if (e.kind === 'yellow' && stat) { const s = stat(e.playerId); s[3]++; if (s[3] % 5 === 0) p.banned = Math.max(p.banned, 1); }
-    if (e.kind === 'red') { if (stat) stat(e.playerId)[4]++; p.banned = Math.max(p.banned, r() < 0.3 ? 2 : 1); }
+    if (e.kind === 'yellow' && stat) stat(e.playerId)[3]++;
+    if (e.kind === 'red' && stat) stat(e.playerId)[4]++;
     if (e.kind === 'injury') {
       const out = care && p.clubId === care.clubId ? Math.max(1, Math.round((e.out ?? 1) * (1 - care.cut))) : e.out ?? 1;
       p.injured = Math.max(p.injured, out);
@@ -549,7 +557,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     const value = valueOf(rating, age, potential);
     const q: Player = {
       ...p, rating, potential, marketValue: value, wage: Math.max(p.wage, wageOf(value, lid)), attrs: shiftAttrs(p.attrs, 0),
-      fitness: 100, morale: 65, injured: 0, banned: 0, listed: undefined,
+      fitness: 100, morale: 65, injured: 0, banned: p.banned, yc: undefined, listed: undefined, // gf-ref: bans carry over, yellow counts start again
       rh: [...(p.rh ?? []), enc(c.season, 99, rating)].slice(-60), ms: undefined, run: undefined, load: undefined, m5: p.m5 ? Math.round(p.m5 * 0.3) : undefined, inj0: undefined, rr: undefined,
     };
     if (!free && p.contractUntil <= season) {

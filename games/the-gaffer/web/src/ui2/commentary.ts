@@ -6,8 +6,10 @@ import { txOf } from '../lang-tac-all';
 import type { RoleId } from '../sim/engine/roles';
 import type { LiveMatch, MatchEvent } from '../sim/match';
 import { fmt, type FormationId } from '../sim/tactics';
+import { R_EN, type RefStrings } from '../lang-ref';
+import { PERIOD_END, playOver } from '../sim/engine/clock';
 
-export interface Line { min: number; at: number; text: string; cls: string; ev?: MatchEvent }
+export interface Line { min: number; plus?: number; at: number; text: string; cls: string; ev?: MatchEvent }
 
 const fill = (s: string, v: Record<string, string | number | undefined>) => s.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
 const cap = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
@@ -34,8 +36,11 @@ export function describeChange(t: Strings, note: string | undefined, name: (id: 
   return { what, why: reason };
 }
 
-export function commentary(m: LiveMatch, t: Strings, name: (id: string) => string, club: (i: 0 | 1) => string): Line[] {
+// gf-ref: `rs` the officials' copy: the referee's decisions (cards, advantage, penalties, VAR) are read out too.
+export function commentary(m: LiveMatch, t: Strings, name: (id: string) => string, club: (i: 0 | 1) => string, rs: RefStrings = R_EN, refName = ''): Line[] {
   const C = t.eng.c;
+  const RC = rs.c;
+  const ref = refName || (m.ref ? m.ref.n.en : '');
   const used = new Map<string, Set<number>>();
   const seed = hash(m.key);
   let n = 0;
@@ -52,14 +57,15 @@ export function commentary(m: LiveMatch, t: Strings, name: (id: string) => strin
     }
     return fill(list[0][0], v);
   };
-  const lines: Line[] = [{ min: 0, at: 0, text: t.ev.kickoff, cls: '' }];
+  const lines: Line[] = [{ min: 0, at: 0, text: ref ? fill(RC.kickoff[hash(m.key) % RC.kickoff.length], { r: ref }) : t.ev.kickoff, cls: '' }];
   const score: [number, number] = [0, 0];
   const goalsBy = new Map<string, number>();
   const ev = m.events;
   for (let k = 0; k < ev.length; k++) {
     const e = ev[k];
     const c = club(e.side);
-    const push = (text: string, cls = '') => { lines.push({ min: e.min, at: e.min + k * 1e-4, text, cls, ev: e }); };
+    const at0 = e.min + (e.plus ? e.plus / 100 : 0);
+    const push = (text: string, cls = '') => { lines.push({ min: e.min, ...(e.plus ? { plus: e.plus } : {}), at: at0 + k * 1e-4, text, cls, ev: e }); };
     if (e.kind === 'goal' || e.kind === 'save' || e.kind === 'miss' || e.kind === 'block') {
       const side = (e.kind === 'save' ? 1 - e.side : e.side) as 0 | 1;
       const shooter = e.kind === 'save' ? e.by ?? '' : e.playerId;
@@ -86,9 +92,22 @@ export function commentary(m: LiveMatch, t: Strings, name: (id: string) => strin
       const after = tally === 3 ? draw(A.hat, 'hat', v) : e.min >= 85 && score[side] >= score[o] ? draw(A.late, 'late', v)
         : score[side] === score[o] ? draw(A.equal, 'equal', v) : score[side] === score[o] + 1 && score[o] === 0 && score[side] === 1 ? draw(A.lead, 'lead', v)
         : score[side] < score[o] ? draw(A.back, 'back', v) : score[side] === score[o] + 1 ? draw(A.lead, 'lead', v) : tally === 2 ? draw(A.brace, 'brace', v) : draw(A.more, 'more', v);
-      lines.push({ min: e.min, at: e.min + k * 1e-4 + 5e-5, text: after, cls: ' goal after', ev: e });
+      lines.push({ min: e.min, ...(e.plus ? { plus: e.plus } : {}), at: at0 + k * 1e-4 + 5e-5, text: after, cls: ' goal after', ev: e });
+    } else if (e.kind === 'yellow' && ref) {
+      // A second yellow reads as the sending-off (the red event just after).
+      if (ev[k + 1]?.kind === 'red' && ev[k + 1].how === '2y' && ev[k + 1].playerId === e.playerId) continue;
+      const pool = e.how === 'waste' ? RC.yellowWaste : e.how === 'dissent' ? RC.yellowDissent : e.how === 'spa' ? RC.yellowSpa : e.how === 'hand' ? RC.yellowHand
+        : e.how === 'dogso' ? RC.yellowDogso : e.how === 'dive' ? RC.yellowDive : RC.yellow;
+      push(draw(pool, 'y:' + (e.how ?? ''), { s: name(e.playerId), r: ref }), ' card');
+    } else if (e.kind === 'red' && ref) {
+      const pool = e.how === '2y' ? RC.y2 : e.how === 'dogso' ? RC.redDogso : e.how === 'violent' ? RC.redViolent : e.how === 'hand' ? RC.redHand : RC.red;
+      push(draw(pool, 'r:' + (e.how ?? ''), { s: name(e.playerId), r: ref }), ' bad');
     } else if (e.kind === 'yellow') push(draw(e.how === 'waste' ? C.yellowWaste : C.yellow, 'yellow', { s: name(e.playerId) }), ' card');
     else if (e.kind === 'red') push(draw(C.red, 'red', { s: name(e.playerId) }), ' bad');
+    else if (e.kind === 'pen') push(draw(e.note === 'hand' ? RC.penHand : RC.pen, 'pen', { r: ref, v: name(e.playerId), s: e.vs ? name(e.vs) : undefined }), ' big');
+    else if (e.kind === 'var') push(rs.varLine(e.note ?? '', ref, name(e.playerId)), ' var');
+    else if (e.kind === 'nogoal') push(draw(RC.nogoal, 'nogoal', { s: name(e.playerId) }), ' big');
+    else if (e.kind === 'foul' && e.note === 'adv' && ref) push(draw(RC.adv, 'adv', { r: ref }));
     else if (e.kind === 'injury') push(draw(C.injury, 'injury', { s: name(e.playerId) }), ' bad');
     else if (e.kind === 'sub') push(draw(C.sub, 'sub', { s: name(e.playerId), a: name(e.inId ?? ''), c }), ' sub');
     else if (e.kind === 'offside') push(draw(C.offside, 'offside', { s: name(e.playerId) }));
@@ -113,7 +132,13 @@ export function commentary(m: LiveMatch, t: Strings, name: (id: string) => strin
     const text = fill(pool[(seed + min) % pool.length], { c: club(win > 0 ? 0 : 1) });
     lines.push({ min, at: min - 0.5, text, cls: ' flow' });
   }
-  if (m.minute >= 45) lines.push({ min: 45, at: 45.5, text: t.ev.half, cls: ' whistle' });
-  if (m.minute >= 90) lines.push({ min: 90, at: 90.5, text: t.ev.full, cls: ' whistle' });
+  // gf-ref: the board, half-time and full time after the added time, extra time and penalties.
+  (m.added ?? []).forEach((n, p) => { if (n !== undefined && n !== null) lines.push({ min: PERIOD_END[p], at: PERIOD_END[p] + 0.001, text: RC.added(n), cls: ' whistle' }); });
+  const over = (p: number) => m.minute > PERIOD_END[p] || (m.minute === PERIOD_END[p] && m.added?.[p] !== undefined && (m.plus ?? 0) >= (m.added[p] ?? 0));
+  if (over(0)) lines.push({ min: 45, at: 45.5, text: t.ev.half, cls: ' whistle' });
+  if (m.minute > 90) lines.push({ min: 90, at: 90.5, text: RC.et, cls: ' whistle' });
+  if (m.minute > 105 || over(2)) lines.push({ min: 105, at: 105.5, text: RC.etHalf, cls: ' whistle' });
+  if (m.pens) lines.push({ min: m.minute, at: m.minute + 0.6, text: RC.shootout, cls: ' whistle' });
+  if (playOver(m)) lines.push({ min: m.minute, at: m.minute + 0.7, text: t.ev.full, cls: ' whistle' });
   return lines.sort((x, y) => y.at - x.at);
 }

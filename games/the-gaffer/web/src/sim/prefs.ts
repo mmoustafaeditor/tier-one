@@ -4,7 +4,8 @@ import type { UiLang } from '../i18n';
 // look: club look (0 violet, free; 1-3 come with the Supporter pack). supporter: the pack was bought on this device.
 // stop: when "sim to the next decision" stops (0 any decision, 1 important ones, 2 important ones and big matches).
 // credits: Semba Credits earned on this device (concept on the web: local only, nothing is sold).
-export interface Prefs { lang: UiLang; speed: 0 | 1 | 2; openOn: 0 | 1; camera: 0 | 1 | 2; look: 0 | 1 | 2 | 3; supporter: boolean; paid?: string[]; stop?: 0 | 1 | 2; credits?: number; adsToday?: [string, number] }
+// pace (gf-ref): watched-match speed, 0 slow, 1 normal (the default), 2 fast. `speed` (the old 1×/2×/4×) is no longer read.
+export interface Prefs { lang: UiLang; speed: 0 | 1 | 2; pace?: 0 | 1 | 2; openOn: 0 | 1; camera: 0 | 1 | 2; look: 0 | 1 | 2 | 3; supporter: boolean; paid?: string[]; stop?: 0 | 1 | 2; credits?: number; adsToday?: [string, number] }
 const KEY = 'gaffer.prefs.v1';
 const PHOTO = 'gaffer.photo.v1';
 const DEFAULT: Prefs = { lang: 'en', speed: 0, openOn: 0, camera: 0, look: 0, supporter: false };
@@ -15,6 +16,7 @@ export function loadPrefs(): Prefs {
     return {
       lang: ['en', 'ar', 'es', 'fr'].includes(p.lang) ? p.lang : DEFAULT.lang,
       speed: [0, 1, 2].includes(p.speed) ? p.speed : DEFAULT.speed,
+      pace: [0, 1, 2].includes(p.pace) ? p.pace : 1,
       openOn: p.openOn === 1 ? 1 : 0,
       camera: [0, 1, 2].includes(p.camera) ? p.camera : DEFAULT.camera,
       supporter: p.supporter === true,

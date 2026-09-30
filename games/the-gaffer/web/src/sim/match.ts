@@ -17,17 +17,24 @@ import { riskMult } from './youth';
 import { playerOf, squadOf, squadStrength, type World } from './world';
 import { balanceOf, oppBoost } from './balance';
 import {
-  FORMATIONS, aiTactics, autoXI, available, formOf, fullTactics, setPieces, slotValue, xiFor, DEFAULT_TACTICS, type FormationId, type Tactics,
+  FORMATIONS, aiTactics, autoXI, availableIn, formOf, fullTactics, setPieces, slotValue, xiFor, DEFAULT_TACTICS, type FormationId, type Tactics,
 } from './tactics';
 import { TUNE, buildModel, patchSub, rates as modelRates, type Model, type Rates, type SideInput } from './engine/model';
 import { newTally, playMinute, type Ball, type Flow, type Rules, type Tally } from './engine/play';
 import { aiRead, reslot } from './engine/story';
 import { autoRoles, carryRoles, planFor, planOf, slotLoad } from './engine/phases';
+import { EV } from './engine/model';
+import { RS, RSN, TUNE_REF, callFoul, callGoal, callOffside, ensureRef, foulFactor, initRef, misconduct, refereeFor, restartOnTurnover, settle, wasteBooking, type Acts, type RefState } from './engine/referee';
+import { PERIOD_END, afterTick, isExtraBreak, isHalfTime, knockout, needsExtra, periodOver, playOver, tick } from './engine/clock';
+import { SUBS } from './competitions';
 import { AI_COH, cohLevel, cohesionOfClub } from './cohesion';
 
-export type EventKind = 'goal' | 'miss' | 'save' | 'block' | 'yellow' | 'red' | 'injury' | 'sub' | 'corner' | 'foul' | 'offside' | 'duel' | 'tactic';
+// gf-ref: 'pen' a penalty given (side = the side awarded it, playerId = the player fouled, vs = the offender),
+// 'var' a VAR check or on-field review (note `what:check|ofr:stands|over[:why]`), 'nogoal' a goal ruled out.
+export type EventKind = 'goal' | 'miss' | 'save' | 'block' | 'yellow' | 'red' | 'injury' | 'sub' | 'corner' | 'foul' | 'offside' | 'duel' | 'tactic' | 'pen' | 'var' | 'nogoal';
 export interface MatchEvent {
   min: number; side: 0 | 1; kind: EventKind;
+  plus?: number;          // gf-ref: a minute of added time (45+2 → min 45, plus 2)
   playerId: string;       // save: the keeper (on the keeper's side); tactic: '' (the manager)
   assistId?: string;
   how?: string;           // shots: box, cutback, header, through, counter, press, long, corner, set, fk, pen; duels: wing, mid, run, break, press, air
@@ -57,6 +64,8 @@ export interface SideState {
   mods?: { fatigue: number; press: number; level: number }; // the user's courses and staff
   mastery?: number;    // how well the side knows its philosophy, 0-100
   coh?: number;        // v2.4: team cohesion at kick-off in a user match (its level is in mods.level; the Why reads it)
+  win?: number;        // gf-ref: substitution windows used (half-time and the break before extra time are free)
+  lastWin?: string;    // gf-ref: the stoppage of the last window (more changes at the same stoppage are the same window)
 }
 
 export interface LiveMatch {
@@ -86,6 +95,13 @@ export interface LiveMatch {
   rev?: number;        // bumps on every change the model depends on (subs, cards, tactics)
   dirty?: boolean;     // the model must be rebuilt now (a red card mid-minute)
   base?: { stats: [TeamStats, TeamStats]; xg: [number, number]; from: number }; // a v1 match resumed on v2
+  // gf-ref (all optional: a match saved before the referee gets one at its next minute)
+  comp?: string;       // competition id: the league, or the cup (m.cup)
+  season?: number;
+  stage?: number | 'group'; // cup ties: clubs left in the round, or the group stage
+  ref?: RefState;      // the referee, his incidents and counters (engine/referee.ts)
+  added?: number[];    // added time shown at the end of each period (45, 90, 105, 120)
+  plus?: number;       // the minute of added time being played (0 = regulation time)
 }
 
 export const SUBS_MAX = 5;
@@ -98,15 +114,16 @@ export const rngFor = (key: string, minute: number) => makeRng(hash(`${key}:${mi
 
 const level = squadStrength;
 
-function side(w: World, c: Career | null, clubId: string, oppLevel: number, form: number, opp: Player[]): SideState {
+function side(w: World, c: Career | null, clubId: string, oppLevel: number, form: number, opp: Player[], cup?: string): SideState {
   const squad = squadOf(w, clubId);
   const mine = c?.clubId === clubId;
   const tactics: Tactics = mine ? (c!.tactics ?? DEFAULT_TACTICS) : aiTactics(squad, level(squad), oppLevel, opp, w.managers?.[clubId]?.style);
-  const xi = mine ? xiFor(w, c!).xi : autoXI(squad, tactics.formation);
+  // gf-ref: suspensions are per competition (a cup ban doesn't keep a player out of the league, and back).
+  const xi = mine ? xiFor(w, c!, cup).xi : autoXI(squad, tactics.formation, cup);
   // Tactics v3: an AI manager gives each player the role that suits him (and the club's style) in each phase.
   if (!mine && !tactics.roles) Object.assign(tactics, autoRoles(xi, fullTactics(tactics)));
   const inXI = new Set(xi.map((p) => p.id));
-  const bench = squad.filter((p) => !inXI.has(p.id) && available(p)).sort((a, b) => formOf(b) - formOf(a)).slice(0, BENCH_MAX);
+  const bench = squad.filter((p) => !inXI.has(p.id) && availableIn(p, cup)).sort((a, b) => formOf(b) - formOf(a)).slice(0, BENCH_MAX);
   const sp = setPieces(xi, mine ? c!.tactics ?? DEFAULT_TACTICS : tactics, c?.season ?? 2026);
   const { xi: _x, captain: _c, penalties: _p, freeKicks: _f, corners: _k, ...plain } = { xi: null, captain: null, penalties: null, freeKicks: null, corners: null, ...tactics } as Tactics & Record<string, unknown>;
   void _x; void _c; void _p; void _f; void _k;
@@ -127,11 +144,13 @@ function side(w: World, c: Career | null, clubId: string, oppLevel: number, form
 }
 
 // `full`: record everything (the user's match; a quick match). Other matches play FAST on the same odds.
-export function startMatch(w: World, c: Career | null, home: string, away: string, key: string, round: number, full?: boolean): LiveMatch {
+// gf-ref: `cup` (a cup tie: its id, and `stage`: clubs left in the round, or 'group') sets the competition's rules.
+export function startMatch(w: World, c: Career | null, home: string, away: string, key: string, round: number, full?: boolean,
+  cup?: { id: string; stage?: number | 'group' }): LiveMatch {
   const r = rngFor(key, -1);
   const sh = squadOf(w, home), sa = squadOf(w, away);
   const lh = level(sh), la = level(sa);
-  const sides: [SideState, SideState] = [side(w, c, home, la, 1 + bell(r) * 0.07, sa), side(w, c, away, lh, 1 + bell(r) * 0.07, sh)];
+  const sides: [SideState, SideState] = [side(w, c, home, la, 1 + bell(r) * 0.07, sa, cup?.id), side(w, c, away, lh, 1 + bell(r) * 0.07, sh, cup?.id)];
   // Balance settings: stronger or weaker opponents in the user's matches.
   const b = c && (home === c.clubId || away === c.clubId) ? balanceOf(c) : null;
   if (b?.difficulty) for (const s of sides) if (s.clubId !== c!.clubId) s.mods = { fatigue: s.mods?.fatigue ?? 1, press: s.mods?.press ?? 1, level: (s.mods?.level ?? 0) + oppBoost(b) };
@@ -145,11 +164,18 @@ export function startMatch(w: World, c: Career | null, home: string, away: strin
   const fit: Record<string, number> = {};
   const risk: Record<string, number> = {};
   for (const s of sides) for (const id of [...s.onPitch, ...s.bench]) { const p = playerOf(w, id)!; fit[id] = p.fitness; const k = riskMult(p.load); if (k > 1) risk[id] = Math.round(k * 100) / 100; }
-  return {
+  const leagueOfClub = (id: string) => w.clubs.find((x) => x.id === id)?.leagueId ?? 'eng1';
+  const countryOf = (id: string) => w.leagues.find((l) => l.id === leagueOfClub(id))?.country ?? 'ENG';
+  const season = c?.season ?? 2026;
+  const m: LiveMatch = {
     key, round, sides, minute: 0, goals: [0, 0], events: [], possSum: 0, fit, injuries: b?.injuries ?? 1, risk,
     stats: [[50, 0, 0, 0, 0, 0, 0], [50, 0, 0, 0, 0, 0, 0]], played: [...sides[0].onPitch, ...sides[1].onPitch], xg: [0, 0],
     v: 2, full: full ?? !!(c && (home === c.clubId || away === c.clubId)), ball: { s: 0, n: 0, c: 0 }, tl: newTally(), rev: 0,
+    comp: cup?.id ?? leagueOfClub(home), season, plus: 0,
   };
+  if (cup) { m.cup = cup.id; if (cup.stage === 'group') m.group = true; m.stage = cup.stage; }
+  m.ref = initRef(m, refereeFor(key, m.comp!, [countryOf(home), countryOf(away)]), season);
+  return m;
 }
 
 // A match saved by the v1 engine carries on under v2: what happened so far is kept as a base the new events add to.
@@ -188,11 +214,13 @@ export function inputsOf(m: LiveMatch, get: Lookup, over?: { side: 0 | 1; tactic
     const s = m.sides[i];
     const tactics = over && over.side === i ? over.tactics : s.tactics;
     const drain = ahead * 0.135 * [0.85, 1, 1.28][tactics.pressing] * [0.93, 1, 1.08][tactics.tempo ?? 1] * [0.97, 1, 1.06][tactics.cpress ?? 1] * (s.mods?.fatigue ?? 1);
+    const short = s.onPitch.filter((id) => !id).length; // gf-ref: down to ten (or fewer): everyone covers more ground
     return {
       xi: s.onPitch.map((id) => (id ? get(id) : null)),
       tactics,
       fit: (id) => Math.max(20, (m.fit[id] ?? 100) - drain),
-      bonus: (i === 0 ? TUNE.HOME : 0) + (s.form - 1) * 30 + (s.onPitch.includes(s.pieces.captain) ? 0.5 : 0) + (s.mods?.level ?? 0),
+      foulK: m.ref ? foulFactor(m, i, get) : undefined,
+      bonus: (i === 0 ? TUNE.HOME : 0) + (s.form - 1) * 30 + (s.onPitch.includes(s.pieces.captain) ? 0.5 : 0) + (s.mods?.level ?? 0) - TUNE_REF.short * short,
       cohesion: ((s.mastery ?? 60) / 100 - 0.6) * 0.2 + ((s.mods?.press ?? 1) - 1) * (tactics.pressing === 2 ? 2 : 0),
       talk: s.talk,
       mark: tactics.mark ?? null,
@@ -243,15 +271,31 @@ export function predict(m: LiveMatch, get: Lookup): [number, number, number] {
 
 function changed(m: LiveMatch) { m.rev = (m.rev ?? 0) + 1; m.dirty = true; }
 
+// gf-ref: five changes in three windows (half-time and the break before extra time are free); one more of each in
+// extra time. A sent-off player's place can't be filled: an empty slot is never an `outId`.
+const stamp = (m: LiveMatch) => (m.plus ? { min: m.minute, plus: m.plus } : { min: m.minute });
+const stoppage = (m: LiveMatch) => `${m.minute}+${m.plus ?? 0}`;
+const inBreak = (m: LiveMatch) => m.minute === 0 || isHalfTime(m) || isExtraBreak(m) || periodOver(m, 2);
+export const subsMax = (m: LiveMatch) => SUBS.max + (m.minute > 90 || isExtraBreak(m) ? SUBS.etExtra : 0);
+export const windowsMax = (m: LiveMatch) => SUBS.windows + (m.minute > 90 || isExtraBreak(m) ? SUBS.etExtra : 0);
+export function canSub(m: LiveMatch, i: 0 | 1): boolean {
+  const s = m.sides[i];
+  if (s.subs >= subsMax(m)) return false;
+  return inBreak(m) || s.lastWin === stoppage(m) || (s.win ?? 0) < windowsMax(m);
+}
+export const windowsLeft = (m: LiveMatch, i: 0 | 1) => Math.max(0, windowsMax(m) - (m.sides[i].win ?? 0));
+
 function sub(m: LiveMatch, i: 0 | 1, outId: string, inId: string, get?: Lookup) {
   const s = m.sides[i];
-  const k = s.onPitch.indexOf(outId);
-  if (k < 0 || s.subs >= SUBS_MAX || !s.bench.includes(inId)) return false;
+  const k = outId ? s.onPitch.indexOf(outId) : -1;
+  if (k < 0 || !canSub(m, i) || !s.bench.includes(inId)) return false;
+  if (m.events.some((e) => e.kind === 'red' && e.playerId === inId)) return false;
+  if (!inBreak(m) && s.lastWin !== stoppage(m)) { s.win = (s.win ?? 0) + 1; s.lastWin = stoppage(m); }
   s.onPitch[k] = inId;
   s.bench = s.bench.filter((x) => x !== inId);
   s.subs++;
   if (!m.played.includes(inId)) m.played.push(inId);
-  m.events.push({ min: m.minute, side: i, kind: 'sub', playerId: outId, inId });
+  m.events.push({ ...stamp(m), side: i, kind: 'sub', playerId: outId, inId });
   const cached = !m.full && get ? CACHE.get(m) : undefined;
   if (cached) patchSub(cached.model, i, outId, get!(inId), m.fit[inId] ?? 100, inputsOf(m, get!)[i].bonus);
   else changed(m);
@@ -261,13 +305,14 @@ function sub(m: LiveMatch, i: 0 | 1, outId: string, inId: string, get?: Lookup) 
 // Best bench player for a slot.
 function bestIn(m: LiveMatch, i: 0 | 1, slotPos: Position, get: Lookup): string | null {
   const s = m.sides[i];
-  const opts = s.bench.map(get).filter(available);
+  const opts = s.bench.map(get).filter((p) => availableIn(p, m.cup) && !m.events.some((e) => e.kind === 'red' && e.playerId === p.id));
   if (!opts.length) return null;
   return opts.sort((a, b) => slotValue(b, slotPos, m.fit[b.id]) - slotValue(a, slotPos, m.fit[a.id]))[0].id;
 }
 
 export function userSub(m: LiveMatch, i: 0 | 1, outId: string, inId: string): boolean {
   ensureV2(m);
+  if (!outId || !m.sides[i].onPitch.includes(outId)) return false;
   return sub(m, i, outId, inId);
 }
 
@@ -315,7 +360,7 @@ export function setTalk(m: LiveMatch, i: 0 | 1, talk: Talk) {
   ensureV2(m);
   if (m.sides[i].talk === talk) return;
   m.sides[i].talk = talk;
-  m.events.push({ min: m.minute, side: i, kind: 'tactic', playerId: '', note: `talk:${talk}` });
+  m.events.push({ ...stamp(m), side: i, kind: 'tactic', playerId: '', note: `talk:${talk}` });
   changed(m);
 }
 
@@ -330,9 +375,23 @@ export function applyDismissal(m: LiveMatch, i: 0 | 1, id: string): boolean {
   return true;
 }
 
-function sendOff(m: LiveMatch, i: 0 | 1, id: string) {
-  m.events.push({ min: m.minute, side: i, kind: 'red', playerId: id });
-  applyDismissal(m, i, id);
+// gf-ref: a sending-off takes the player off for good; the side reorganises (a keeper from the bench if the keeper
+// went, otherwise the most advanced position is the one left empty) and plays on with ten.
+function sendOff(m: LiveMatch, i: 0 | 1, id: string, how = 'sfp', get?: Lookup) {
+  m.events.push({ min: m.minute, side: i, kind: 'red', playerId: id, how });
+  const s = m.sides[i];
+  const k = s.onPitch.indexOf(id);
+  if (k >= 0) s.onPitch[k] = '';
+  if (get && k >= 0) {
+    const slots = FORMATIONS[s.tactics.formation].slots;
+    if (slots[k]?.pos === 'GK' && canSub(m, i)) {
+      const gk = s.bench.map(get).find((p) => p.position === 'GK' && availableIn(p, m.cup));
+      const outs = s.onPitch.map((x, j) => ({ x, j })).filter(({ x, j }) => x && slots[j]?.pos !== 'GK').sort((a, b) => (slots[b.j]?.y ?? 0) - (slots[a.j]?.y ?? 0));
+      if (gk && outs.length) sub(m, i, outs[0].x, gk.id);
+    }
+    s.onPitch = reslot(s.onPitch, s.tactics.formation, get);
+  }
+  changed(m);
   // The AI manager reacts at once: down to ten, tighten up unless chasing; against ten, go for it.
   const o = (1 - i) as 0 | 1;
   const d = m.goals[i] - m.goals[o];
@@ -340,23 +399,33 @@ function sendOff(m: LiveMatch, i: 0 | 1, id: string) {
   if (m.sides[o].ai && m.goals[o] - m.goals[i] <= 0) setTactics(m, o, { mentality: Math.min(2, m.sides[o].tactics.mentality + 1) }, 'tenmen');
 }
 
-function rulesOf(m: LiveMatch): Rules {
+// gf-ref: the rules layer hands every foul, goal and offside to the referee (engine/referee.ts); only final rulings
+// reach the log. Nothing is logged for a player who isn't on the pitch.
+function pushEvent(m: LiveMatch, e: MatchEvent) {
+  const onP = (side: number, id?: string) => !!id && m.sides[side].onPitch.includes(id);
+  const x: MatchEvent = { ...e, ...stamp(m) };
+  if (x.assistId && !onP(x.side, x.assistId)) delete x.assistId;
+  if (x.vs && x.kind !== 'goal' && x.kind !== 'pen' && x.kind !== 'duel' && !onP(1 - x.side, x.vs) && !onP(x.side, x.vs)) delete x.vs;
+  m.events.push(x);
+  if (x.kind === 'goal') m.goals[x.side]++;
+}
+function actsOf(m: LiveMatch, get: Lookup): Acts {
+  return { push: (e) => pushEvent(m, e), sendOff: (side, id, how) => sendOff(m, side, id, how, get), get };
+}
+function rulesOf(m: LiveMatch, get: Lookup, rr: () => number): Rules {
+  const acts = actsOf(m, get);
   return {
-    event: (e) => { m.events.push(e); if (e.kind === 'goal') m.goals[e.side]++; },
-    foul: (i, id, victim, kind, r) => {
-      if (!m.sides[i].onPitch.includes(id)) return false;
-      m.events.push({ min: m.minute, side: i, kind: 'foul', playerId: id, vs: victim, how: kind === 'foul' ? undefined : kind });
-      const calm = m.sides[i].talk === 2 ? 0.7 : m.sides[i].talk === 1 ? 1.2 : 1;
-      const yp = (kind === 'tfoul' ? 0.5 : kind === 'pen' ? 0.3 : 0.14) * calm;
-      const straight = kind === 'pen' ? 0.05 : 0.003;
-      // A booked player goes into tackles more carefully.
-      const booked = m.events.some((e) => e.kind === 'yellow' && e.playerId === id);
-      if (r() < yp * (booked ? 0.4 : 1)) {
-        m.events.push({ min: m.minute, side: i, kind: 'yellow', playerId: id });
-        if (booked) { sendOff(m, i, id); return true; }
-      } else if (r() < straight) { sendOff(m, i, id); return true; }
-      return false;
+    event: (e) => {
+      if (e.kind === 'goal') { callGoal(m, acts, rr, { ...e, ...stamp(m) }); return; }
+      if (e.kind === 'offside') callOffside(m, e);
+      pushEvent(m, e);
     },
+    foul: (i, id, victim, kind, _r, at) => {
+      if (!m.sides[i].onPitch.includes(id)) return { red: false, go: kind === 'pen' ? 'pen' : 'fk' };
+      const phase = at?.phase ?? 1;
+      return callFoul(m, acts, rr, { side: i, by: id, vs: victim, kind: kind === 'tfoul' ? 'tfoul' : 'foul', box: at?.box ?? kind === 'pen', z: at?.z ?? 12, phase });
+    },
+    turnover: (s, node, start, ev) => restartOnTurnover(m, rr, s, node, start, ev === EV.MISS),
   };
 }
 
@@ -378,21 +447,24 @@ function aiDecisions(m: LiveMatch, i: 0 | 1, get: Lookup) {
   }
   // Facing a human at half-time, the AI reads the first half and makes the one change that helps it most.
   if (s.ai && m.minute === 46 && !m.sides[o].ai && m.full) aiRead(m, i, get);
-  // Fresh legs around the hour: swap the most tired outfield player when the bench has someone nearly as good.
-  if (s.autoSubs && [58, 66, 72, 78, 84].includes(m.minute) && s.subs < SUBS_MAX) {
+  // Fresh legs around the hour: swap the most tired outfield players when the bench has someone nearly as good.
+  // gf-ref: in three windows (two changes at each of the first two), and one in extra time.
+  const plan = m.minute === 60 || m.minute === 72 ? 2 : m.minute === 82 || m.minute === 100 ? 1 : 0;
+  if (s.autoSubs && plan && !m.plus) {
     const slots = FORMATIONS[s.tactics.formation].slots;
     // The most tired outfielder with a bench player nearly as good for his slot (tactics v3: a tired wing-back with no
     // full-back on the bench no longer blocks every other change).
-    const tired = s.onPitch
-      .map((id, k) => ({ id, k }))
-      .filter(({ id, k }) => id && slots[k].pos !== 'GK')
-      .sort((a, b) => (m.fit[a.id] ?? 100) - (m.fit[b.id] ?? 100)).slice(0, 3);
-    for (const t of tired) {
-      const inId = bestIn(m, i, slots[t.k].pos, get);
-      if (!inId) continue;
-      const now = slotValue(get(t.id), slots[t.k].pos, m.fit[t.id]);
-      const fresh = slotValue(get(inId), slots[t.k].pos, m.fit[inId]);
-      if (fresh >= now - 7) { sub(m, i, t.id, inId, get); break; }
+    // gf-ref: in three windows (two changes at each of the first two), and one in extra time.
+    for (let n = 0; n < plan && canSub(m, i); n++) {
+      const tired = s.onPitch
+        .map((id, k) => ({ id, k }))
+        .filter(({ id, k }) => id && slots[k].pos !== 'GK')
+        .sort((a, b) => (m.fit[a.id] ?? 100) - (m.fit[b.id] ?? 100))[0];
+      const inId = tired && bestIn(m, i, slots[tired.k].pos, get);
+      if (!tired || !inId) break;
+      const now = slotValue(get(tired.id), slots[tired.k].pos, m.fit[tired.id]);
+      const fresh = slotValue(get(inId), slots[tired.k].pos, m.fit[inId]);
+      if (fresh >= now - 7) sub(m, i, tired.id, inId, get); else break;
     }
   }
 }
@@ -412,19 +484,28 @@ function playersOf(m: LiveMatch, get: Lookup): Lookup {
 
 export function stepMinute(m: LiveMatch, get: Lookup) {
   ensureV2(m);
-  m.minute++;
-  const r = rngFor(m.key, m.minute);
+  if (playOver(m)) return;
+  ensureRef(m);
+  tick(m); // gf-ref: the next regulation minute, or a minute of added time (engine/clock.ts)
+  const t = m.plus ? 1000 + m.minute * 20 + m.plus : m.minute;
+  const r = rngFor(m.key, t);
+  const rr = rngFor(`${m.key}:ref`, t); // the referee's own stream
+  const R = m.ref!;
+  if (!m.plus && (m.minute === 1 || m.minute === 46 || m.minute === 91 || m.minute === 106)) R.rs[(m.minute === 46 || m.minute === 106 ? 1 : 0) * RSN + RS.ko]++;
   for (const i of [0, 1] as const) aiDecisions(m, i, get);
   let model: Model | null = null;
   const current = () => { if (!model || m.dirty) { model = modelNow(m, get); m.dirty = false; } return model; };
-  playMinute(m, r, current, rulesOf(m), !!m.full);
+  const acts = actsOf(m, get);
+  playMinute(m, r, current, rulesOf(m, get, rr), !!m.full);
+  settle(m, acts);       // DOGSO with advantage: a card, or none if the move ended in a goal
+  misconduct(m, acts, rr); // dissent, violent conduct
   // Time wasting: a booking now and then for the side running the clock.
   for (const i of [0, 1] as const) {
     const s = m.sides[i];
     if (s.tactics.waste && m.goals[i] > m.goals[1 - i] && r() < 0.012) {
       const on = s.onPitch.filter((id) => id && !m.events.some((e) => e.kind === 'yellow' && e.playerId === id));
       const gk = on.find((id) => get(id).position === 'GK') ?? on[0];
-      if (gk) m.events.push({ min: m.minute, side: i, kind: 'yellow', playerId: gk, how: 'waste' });
+      if (gk) wasteBooking(m, acts, i, gk);
     }
   }
   const share = (m.tl!.poss[1] + 1) / (m.tl!.poss[0] + m.tl!.poss[1] + 2); // side 0 chases when side 1 has had it
@@ -461,17 +542,20 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
       while (hi < on.length - 1 && pickAt >= rk[hi]) pickAt -= rk[hi++];
       const hurt = on[hi];
       const out = r() < 0.12 ? 6 + Math.floor(r() * 7) : 1 + Math.floor(r() * 5);
-      m.events.push({ min: m.minute, side: i, kind: 'injury', playerId: hurt, out });
+      m.events.push({ ...stamp(m), side: i, kind: 'injury', playerId: hurt, out });
       const k = s.onPitch.indexOf(hurt);
       const pos = slots[k]?.pos ?? 'CM';
-      const inId = s.subs < SUBS_MAX ? bestIn(m, i, pos, get) : null;
+      const inId = canSub(m, i) ? bestIn(m, i, pos, get) : null;
       if (inId) sub(m, i, hurt, inId, get); else { s.onPitch[k] = ''; changed(m); }
     }
-    if (m.full && m.minute % 15 === 0) m.tl!.fit[i].push(Math.round(outSum / Math.max(1, outN)));
+    if (m.full && m.minute % 15 === 0 && !m.plus) m.tl!.fit[i].push(Math.round(outSum / Math.max(1, outN)));
   }
+  afterTick(m); // the board goes up at 45, 90, 105 and 120
   if (m.full || m.minute >= 90) derive(m);
-  if (m.minute === 90 && m.cup && !m.group && m.goals[0] === m.goals[1]) shootout(m, get);
+  // Knockout ties: extra time when the competition plays it, then penalties.
+  if (knockout(m) && !m.pens && m.goals[0] === m.goals[1] && (periodOver(m, 3) || (periodOver(m, 1) && !needsExtra(m)))) shootout(m, get);
 }
+export { PERIOD_END };
 
 // ---------- projection: everything counted from the event log ----------
 
@@ -499,7 +583,7 @@ export function derive(m: LiveMatch) {
 
 // Knockout draw: five penalties each, then sudden death. Takers go by shooting, the set penalty taker first.
 function shootout(m: LiveMatch, get: Lookup) {
-  const r = rngFor(m.key, 91);
+  const r = rngFor(`${m.key}:shootout`, 0);
   const order = ([0, 1] as const).map((i) => {
     const s = m.sides[i];
     const on = s.onPitch.filter(Boolean).map(get);
@@ -533,8 +617,11 @@ function shootout(m: LiveMatch, get: Lookup) {
 export const winnerOf = (m: LiveMatch): 0 | 1 =>
   m.goals[0] !== m.goals[1] ? (m.goals[0] > m.goals[1] ? 0 : 1) : ((m.pens?.[0] ?? 0) >= (m.pens?.[1] ?? 0) ? 0 : 1);
 
+// `until` 90 (the default): to the final whistle, added time and extra time included. A smaller `until` stops there.
 export function simulate(m: LiveMatch, get: Lookup, until = 90) {
-  while (m.minute < until) stepMinute(m, get);
+  let guard = 0;
+  if (until >= 90) { while (!playOver(m) && guard++ < 200) stepMinute(m, get); return; }
+  while (m.minute < until && guard++ < 200) stepMinute(m, get);
 }
 
 export const isUserSide = (m: LiveMatch, c: Career) => (m.sides[0].clubId === c.clubId ? 0 : m.sides[1].clubId === c.clubId ? 1 : -1);

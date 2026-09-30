@@ -7,10 +7,12 @@ import type { LiveMatch, MatchEvent } from './match';
 import { matchRatings } from './ratings';
 import { explain, type Why } from './engine/story';
 
-export interface KeyMoment { min: number; side: 0 | 1; kind: 'goal' | 'chance' | 'save' | 'red' | 'injury' | 'pen'; playerId: string; xg?: number; ev: number }
+// gf-ref: cards, second yellows, penalties given, VAR reviews and disallowed goals are moments too.
+export interface KeyMoment { min: number; plus?: number; side: 0 | 1; kind: 'goal' | 'chance' | 'save' | 'red' | 'injury' | 'pen' | 'yellow' | 'y2' | 'penGiven' | 'var' | 'nogoal'; playerId: string; xg?: number; ev: number; note?: string }
 
 export interface MatchRecord {
   key: string; round: number; cup?: string; group?: boolean;
+  comp?: string;                        // gf-ref: the competition (league id or cup id) whose rules apply
   clubs: [string, string];
   goals: [number, number]; pens?: [number, number];
   xg: [number, number];
@@ -24,6 +26,7 @@ export interface MatchRecord {
   moments: KeyMoment[];                 // chances with xG ≥ 0.15, goals, penalties, big saves, red cards, injuries
   why: Why | null;                      // the user's matches: up to four causes and the engine's own suggestions
   full: boolean;
+  ref?: MatchRecordLite['ref'];         // gf-ref: the referee and his numbers
 }
 
 const SHOT = new Set(['goal', 'miss', 'save', 'block']);
@@ -48,13 +51,18 @@ export function minutesOf(m: LiveMatch): Record<string, number> {
 export function momentsOf(m: LiveMatch): KeyMoment[] {
   const out: KeyMoment[] = [];
   m.events.forEach((e, i) => {
-    if (e.kind === 'goal') out.push({ min: e.min, side: e.side, kind: 'goal', playerId: e.playerId, xg: e.xg, ev: i });
-    else if (e.kind === 'red') out.push({ min: e.min, side: e.side, kind: 'red', playerId: e.playerId, ev: i });
-    else if (e.kind === 'injury') out.push({ min: e.min, side: e.side, kind: 'injury', playerId: e.playerId, ev: i });
+    const t = e.plus ? { min: e.min, plus: e.plus } : { min: e.min };
+    if (e.kind === 'goal') out.push({ ...t, side: e.side, kind: 'goal', playerId: e.playerId, xg: e.xg, ev: i });
+    else if (e.kind === 'red') out.push({ ...t, side: e.side, kind: e.how === '2y' ? 'y2' : 'red', playerId: e.playerId, ev: i, note: e.how });
+    else if (e.kind === 'yellow') { if (!m.events.some((x, j) => j > i && x.kind === 'red' && x.how === '2y' && x.playerId === e.playerId && x.min === e.min)) out.push({ ...t, side: e.side, kind: 'yellow', playerId: e.playerId, ev: i, note: e.how }); }
+    else if (e.kind === 'pen') out.push({ ...t, side: e.side, kind: 'penGiven', playerId: e.playerId, ev: i, note: e.note });
+    else if (e.kind === 'var') out.push({ ...t, side: e.side, kind: 'var', playerId: e.playerId, ev: i, note: e.note });
+    else if (e.kind === 'nogoal') out.push({ ...t, side: e.side, kind: 'nogoal', playerId: e.playerId, xg: e.xg, ev: i, note: e.note });
+    else if (e.kind === 'injury') out.push({ ...t, side: e.side, kind: 'injury', playerId: e.playerId, ev: i });
     else if (SHOT.has(e.kind) && (e.xg ?? 0) >= BIG_CHANCE) {
       // A save is logged on the keeper's side; the chance belongs to the shooter's.
       const side = (e.kind === 'save' ? 1 - e.side : e.side) as 0 | 1;
-      out.push({ min: e.min, side, kind: e.how === 'pen' ? 'pen' : e.kind === 'save' ? 'save' : 'chance', playerId: e.kind === 'save' ? e.by ?? e.playerId : e.playerId, xg: e.xg, ev: i });
+      out.push({ ...t, side, kind: e.how === 'pen' ? 'pen' : e.kind === 'save' ? 'save' : 'chance', playerId: e.kind === 'save' ? e.by ?? e.playerId : e.playerId, xg: e.xg, ev: i });
     }
   });
   return out;
@@ -67,12 +75,13 @@ export function toRecord(m: LiveMatch, get: (id: string) => Player, userSide: 0 
   for (const e of m.events) if (e.kind === 'sub') { sideOf[e.playerId] = e.side; if (e.inId) sideOf[e.inId] = e.side; }
   for (const e of m.events) if (e.kind !== 'save' && e.playerId && sideOf[e.playerId] === undefined) sideOf[e.playerId] = e.side;
   return {
-    key: m.key, round: m.round, cup: m.cup, group: m.group, clubs: [m.sides[0].clubId, m.sides[1].clubId],
+    key: m.key, round: m.round, cup: m.cup, group: m.group, comp: m.cup ?? m.comp, clubs: [m.sides[0].clubId, m.sides[1].clubId],
     goals: [m.goals[0], m.goals[1]], pens: m.pens, xg: m.xg ? [m.xg[0], m.xg[1]] : [0, 0],
     events: m.events, minutes: minutesOf(m), condition: { ...m.fit }, played: [...m.played], sideOf,
     ratings: rt.rating, motm: rt.motm, moments: momentsOf(m),
     why: userSide >= 0 && m.full && m.tl ? explain(m, userSide as 0 | 1, get) : null,
     full: !!m.full,
+    ...(m.ref ? { ref: { n: m.ref.n, strict: m.ref.strict, var: m.ref.var, fouls: [m.events.filter((e) => e.kind === 'foul' && e.side === 0).length, m.events.filter((e) => e.kind === 'foul' && e.side === 1).length] as [number, number], checks: m.ref.checks, reviews: m.ref.ofr, changed: m.ref.over } } : {}),
   };
 }
 
@@ -83,6 +92,11 @@ export function reconcile(r: MatchRecord): string[] {
     const g = r.events.filter((e) => e.kind === 'goal' && e.side === i).length;
     if (g !== r.goals[i]) out.push(`${r.key}: side ${i} has ${r.goals[i]} goals but ${g} in the log`);
   }
+  // gf-ref: a sent-off player does nothing after his red card, and nobody comes on for him.
+  r.events.forEach((e, i) => {
+    if (e.kind !== 'red') return;
+    if (r.events.slice(i + 1).some((x) => (x.playerId === e.playerId && x.kind !== 'var') || x.assistId === e.playerId || x.inId === e.playerId)) out.push(`${r.key}: ${e.playerId} appears after his red card`);
+  });
   return out;
 }
 
@@ -96,6 +110,12 @@ export function keepRecord(c: Career, r: MatchRecord, get: (id: string) => Playe
     scorers: r.events.filter((e) => e.kind === 'goal').map((e) => ({ side: e.side, pn: name(e.playerId), min: e.min })),
     motm: r.motm ? { pn: name(r.motm), rating: r.ratings[r.motm] ?? 0, side: r.sideOf[r.motm] ?? 0 } : undefined,
     why: (r.why?.points ?? []).slice(0, 3).map((p) => ({ k: p.k, good: p.good })),
+    // gf-ref: the officials' part, kept with the match
+    ...(r.ref ? { ref: r.ref } : {}),
+    cards: r.events.filter((e) => e.kind === 'red' || (e.kind === 'yellow' && !r.events.some((x) => x.kind === 'red' && x.how === '2y' && x.playerId === e.playerId && x.min === e.min && (x.plus ?? 0) === (e.plus ?? 0))))
+      .map((e) => ({ side: e.side, pn: name(e.playerId), min: e.min, ...(e.plus ? { plus: e.plus } : {}), k: e.kind === 'yellow' ? 'Y' as const : e.how === '2y' ? 'YR' as const : 'R' as const })),
+    vars: r.events.filter((e) => e.kind === 'var').map((e) => ({ side: e.side, min: e.min, ...(e.plus ? { plus: e.plus } : {}), note: e.note ?? '', pn: name(e.playerId) })),
+    nogoals: r.events.filter((e) => e.kind === 'nogoal').map((e) => ({ side: e.side, min: e.min, ...(e.plus ? { plus: e.plus } : {}), pn: name(e.playerId), why: e.note ?? '' })),
   };
   return { ...c, matches: [lite, ...(c.matches ?? []).filter((x) => x.key !== r.key)].slice(0, MATCHES_KEPT) };
 }

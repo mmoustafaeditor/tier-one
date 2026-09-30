@@ -59,7 +59,9 @@ export interface Player {
   fitness: number;       // 0-100, drops in matches, recovers between them
   morale: number;        // 0-100, moves with results
   injured: number;       // matchdays out, 0 = fit
-  banned: number;        // matchdays suspended
+  banned: number;        // league matchdays suspended
+  sus?: Record<string, number>; // gf-ref: cup matches suspended, per cup id (missing = none)
+  yc?: Record<string, number>;  // gf-ref: yellow cards this season, per competition (league id or cup id), for accumulation
   listed?: boolean;      // on the user's transfer list
   prog?: number;         // training progress towards the next +1 (0-100)
   savings?: number;      // bonuses paid to the player
@@ -143,6 +145,11 @@ export interface MatchRecordLite {
   xg: [number, number]; scorers: { side: 0 | 1; pn: LocalizedName; min: number }[];
   motm?: { pn: LocalizedName; rating: number; side: 0 | 1 };
   why: { k: string; good: boolean; text?: string }[];
+  // gf-ref (optional): the officials' part of the match, as it stood at full time
+  ref?: { n: LocalizedName; strict: number; var: boolean; fouls: [number, number]; checks: number; reviews: number; changed: number };
+  cards?: { side: 0 | 1; pn: LocalizedName; min: number; plus?: number; k: 'Y' | 'YR' | 'R' }[];
+  vars?: { side: 0 | 1; min: number; plus?: number; note: string; pn: LocalizedName }[];
+  nogoals?: { side: 0 | 1; min: number; plus?: number; pn: LocalizedName; why: string }[];
 }
 
 export interface Digest { from: [number, number]; to: [number, number]; results: { key: string; home: string; away: string; goals: [number, number]; cup?: string }[]; staff: number; stopped: string }

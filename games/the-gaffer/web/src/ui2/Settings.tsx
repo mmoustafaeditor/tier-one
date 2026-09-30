@@ -1,6 +1,7 @@
 // Settings and saves: language, real or fictional names, how far "Sim to the next decision" runs, match speed and
 // sound, difficulty, export / import / delete, and the small print. Career settings go through commands like
 // everything else; device settings are prefs.
+import { RF } from '../lang-ref-all';
 import { useRef, useState } from 'react';
 import type { Career, NamesMode } from '../model/types';
 import type { Prefs } from '../sim/prefs';
@@ -64,8 +65,8 @@ export function SettingsScreen({ prefs, onPrefs, onTitle, slot, onDelete, onImpo
           <Seg label={S.sim} value={prefs.stop ?? 1} onChange={(stop) => onPrefs({ ...prefs, stop })}
             options={[{ v: 0, label: S.stopAll }, { v: 1, label: S.stopImportant }, { v: 2, label: S.stopBig }]} />
           <div className="setrow"><span className="grow"><b>{S.speed}</b></span></div>
-          <Seg label={S.speed} value={prefs.speed} onChange={(speed) => onPrefs({ ...prefs, speed })}
-            options={S.speeds.map((l, i) => ({ v: i as 0 | 1 | 2, label: <span className="ltr">{l}</span> }))} />
+          <Seg label={S.speed} value={prefs.pace ?? 1} onChange={(pace) => onPrefs({ ...prefs, pace })}
+            options={RF[g.ui].speeds.map((l, i) => ({ v: i as 0 | 1 | 2, label: <span className="ltr">{l}</span> }))} />
           <div className="setrow">
             <span className="grow"><b>{S.sound}</b></span>
             <Switch on={sound} label={S.sound} onChange={(v) => { setSound(v); setSoundState(v); }} />

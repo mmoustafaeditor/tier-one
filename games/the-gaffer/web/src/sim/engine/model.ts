@@ -129,6 +129,7 @@ export interface SideInput {
   cohesion: number;      // logit: mastery of the philosophy
   talk: number;          // 0 none, 1 fire up, 2 calm down, 3 focus
   mark: string | null;   // the opponent this side man-marks
+  foulK?: number;        // gf-ref: how many fouls this side commits (referee.ts foulFactor); missing = 1
 }
 
 // [tactics v3] Where a player stands in each phase (his in- and out-of-possession slots, the instructions and his
@@ -310,10 +311,10 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
     b.B + bonusA + [0.55, 0, -0.4][td.pressing] + [0.2, 0, -0.2][ta.build] + eB, mark);
   const bLong = clamp([0.08, 0.2, 0.45][ta.build] + 0.35 * (1 - bShort.mean), 0, 0.8);
   const bLoss = [0.2, 0.3, 0.42][td.pressing];
-  // [tactics v3] fouls: the defending side's instructions × the aggression of the roles in that contest.
+  // [tactics v3] + [gf-ref]: fouls: the defending side's instructions × the aggression of the roles in that contest × referee foul factor
   const foulTeam = teamFoulFactor(td) * (id.talk === 2 ? 0.7 : id.talk === 1 ? 1.25 : 1);
   const aggr = (d: Duel) => d.wf.reduce((s, v) => s + v, 0) / (d.wd.reduce((s, v) => s + v, 0) || 1);
-  const fouls = (f: number, d?: Duel) => f * foulTeam * (d ? aggr(d) : 1);
+  const fouls = (f: number, d?: Duel) => f * foulTeam * (d ? aggr(d) : 1) * (id.foulK ?? 1); // gf-ref: foulK
   // Long ball: our target against their centre-backs; a high line invites the ball in behind.
   const inBehind = td.line === 2 ? 0.3 : td.line === 0 ? -0.2 : 0;
   const aerial = A.some((x) => ROLES[x.ip].fx.air); // [tactics v3] a target man: long balls go to his head

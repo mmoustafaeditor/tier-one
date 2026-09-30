@@ -5,10 +5,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Player } from '../model/types';
 import { playerOf } from '../sim/world';
 import { FORMATIONS, FORMATION_IDS, fmt, fullTactics, type Tactics } from '../sim/tactics';
-import { SUBS_MAX, expected, isUserSide, reshape, reshapeOop, setTactics, setTalk, simulate, stepMinute, userSub, type LiveMatch, type Talk } from '../sim/match';
+import { expected, isUserSide, reshape, setTactics, setTalk, simulate, stepMinute, userSub, type LiveMatch, type Talk } from '../sim/match';
+import { canSub, subsMax, windowsLeft } from '../sim/match';
 import { planOf, rolesArrays } from '../sim/engine/phases';
 import { ROLES, roleFit, rolesFor, POOR_FIT } from '../sim/engine/roles';
 import { TX } from '../lang-tac-all';
+import { PERIOD_END, clockOf, isExtraBreak, isHalfTime, playOver } from '../sim/engine/clock';
+import { RSN, RS } from '../sim/engine/referee';
+import { Banner, CommentaryFeed, MomentIcon, RefLine, VarBanner, bannerOf, momentText, refOf } from './Officials';
 import { applyTip, explain, suggest, winChance, type Point, type Tip } from '../sim/engine/story';
 import { momentsOf, type KeyMoment } from '../sim/record';
 import { Crest, I, LineChart, MiniPitch, Momentum, Portrait, Spark } from './kit';
@@ -19,11 +23,16 @@ import { pointText, tipWhat, tipWhy } from './why';
 import { sfx, soundOn, setSound } from './sfx';
 
 const clone = (m: LiveMatch): LiveMatch => JSON.parse(JSON.stringify(m));
-const SPEEDS = [400, 200, 90];
+// gf-ref: a watched match reads at a human pace: Slow ≈ 6, Normal ≈ 4, Fast ≈ 1.5 real minutes for the ninety (plus
+// the pauses on big moments). Instant plays to the whistle at once.
+const SPEEDS = [3600, 2400, 900];
+const HOLD_K = [1.25, 1, 0.55];
+const PHASE_MS = 1500;
 const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish }: {
+export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish, onSpeed }: {
   m: LiveMatch; locked: boolean; speed0: 0 | 1 | 2; onUpdate: (m: LiveMatch) => void; onSave: (m: LiveMatch) => void; onFinish: (m: LiveMatch) => void;
+  onSpeed?: (s: 0 | 1 | 2) => void;
 }) {
   const g = useGame();
   const { w, c, x, lang } = g;
@@ -37,24 +46,44 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish }: {
   const [htSeen, setHtSeen] = useState(m.minute > 45);
   const [flash, setFlash] = useState<{ side: 0 | 1; id: string; n: number } | null>(null);
   const [sound, setSoundState] = useState(soundOn());
-  const done = m.minute >= 90;
-  const ht = m.minute === 45 && !htSeen;
+  const done = playOver(m);
+  const ht = isHalfTime(m) && !htSeen;
+  const R = refOf(g);
+  // gf-ref: the pause after a big moment, and the decision banner (incident → call → VAR → ruling).
+  const [hold, setHold] = useState(0);
+  const [banner, setBanner] = useState<Banner | null>(null);
+  const clock = clockOf(m);
   const home = clubOf(w, m.sides[0].clubId)!, away = clubOf(w, m.sides[1].clubId)!;
   const name = (id: string) => (id ? sn(get(id) ?? { name: { en: '', ar: '' } }, lang) : '');
 
   // The clock: one match minute per tick. Stops at half-time for the analysts and at full time.
   useEffect(() => {
-    if (locked || paused || done || changes || ht) return;
+    if (locked || paused || done || changes || ht || banner) return;
     const id = setTimeout(() => {
       const n = clone(m);
+      const before = n.events.length, seq = n.ref?.seq ?? 0;
       stepMinute(n, get);
       onUpdate(n);
-      if (n.minute === 45 || n.minute === 90) { onSave(n); if (!reduced()) sfx('whistle'); }
-      else if (n.minute % 5 === 0) onSave(n);
-    }, key ? 45 : SPEEDS[speed]);
+      const fresh = n.events.slice(before);
+      const b = bannerOf((n.ref?.inc ?? []).filter((x) => x.i >= seq), R, name, n.ref ? n.ref.n[lang] : '');
+      if (b) setBanner(b);
+      const whistle = isHalfTime(n) || playOver(n) || isExtraBreak(n);
+      const k = fresh.some((e) => e.kind === 'goal') ? 2600 : fresh.some((e) => e.kind === 'red') ? 2200 : fresh.some((e) => e.kind === 'pen') ? 1600
+        : fresh.some((e) => e.kind === 'yellow') ? 900 : whistle ? 1800 : 0;
+      setHold(Math.round(k * HOLD_K[speed]));
+      if (whistle) { onSave(n); if (!reduced()) sfx('whistle'); }
+      else if (n.minute % 5 === 0 && !n.plus) onSave(n);
+    }, (key ? 45 : SPEEDS[speed]) + hold);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [m, paused, done, changes, ht, locked, speed, key]);
+  }, [m, paused, done, changes, ht, locked, speed, key, banner]);
+  // The banner steps through its phases, then play resumes.
+  useEffect(() => {
+    if (!banner) return;
+    const last = banner.i === banner.ph.length - 1;
+    const id = setTimeout(() => setBanner((b) => (b && b.i + 1 < b.ph.length ? { ...b, i: b.i + 1 } : null)), Math.round(PHASE_MS * HOLD_K[speed] * (last ? 1.6 : 1)));
+    return () => clearTimeout(id);
+  }, [banner, speed]);
 
   // Goals: the flash and the roar.
   const goals = m.goals[0] + m.goals[1];
@@ -75,12 +104,18 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish }: {
   useEffect(() => { if (!flash) return; const id = setTimeout(() => setFlash(null), reduced() ? 1200 : 2200); return () => clearTimeout(id); }, [flash]);
 
   const change = (f: (n: LiveMatch) => void) => { const n = clone(m); f(n); onUpdate(n); onSave(n); };
+  const pickSpeed = (i: 0 | 1 | 2) => { setKey(false); setSpeed(i); onSpeed?.(i); };
+  const [feed, setFeed] = useState(0);
+  // While the banner is up the scoreboard shows the goal as the crowd saw it, then the ruling.
+  const shown: [number, number] = banner?.adj && banner.i < banner.ph.length - 1 ? [m.goals[0] + banner.adj[0], m.goals[1] + banner.adj[1]] : m.goals;
+  const period = PERIOD_END.indexOf(m.minute);
+  const board = period >= 0 && m.added?.[period] !== undefined && !done ? m.added[period] : undefined;
   const moments = useMemo(() => momentsOf(m).reverse(), [m.events.length]);
   const tacKey = JSON.stringify(m.sides[me].tactics) + m.sides[me].onPitch.join();
   const tip = useMemo<Tip | null>(() => (m.minute >= 15 && !done ? suggest(m, me, get, 1)[0] ?? null : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [Math.floor(m.minute / 10), tacKey]);
-  const scorers = (s: 0 | 1) => m.events.filter((e) => e.kind === 'goal' && e.side === s).map((e) => `${name(e.playerId)} ${e.min}′`).join(', ');
+  const scorers = (s: 0 | 1) => m.events.filter((e) => e.kind === 'goal' && e.side === s).map((e) => `${name(e.playerId)} ${e.min}${e.plus ? `+${e.plus}` : ''}′`).join(', ');
   const xgLine = (s: 0 | 1) => {
     const pts = new Array(Math.max(2, m.minute + 1)).fill(0);
     for (const e of m.events) { const sh = (e.kind === 'save' ? 1 - e.side : e.side); if ((e.kind === 'goal' || e.kind === 'miss' || e.kind === 'save' || e.kind === 'block') && sh === s && e.xg) pts[Math.min(pts.length - 1, e.min)] += e.xg; }
@@ -97,7 +132,11 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish }: {
   if (ht) return <HalfTime m={m} me={me} onSecondHalf={(n) => { onUpdate(n); onSave(n); setHtSeen(true); }} />;
 
   const s = m.sides[me];
-  const stats = x.live.stats.map((l, k) => [l, m.stats[me][k], m.stats[1 - me][k]] as const);
+  const rs = (i: 0 | 1, k: keyof typeof RS) => m.ref?.rs[i * RSN + RS[k]] ?? 0;
+  const o = (1 - me) as 0 | 1;
+  const stats = [...x.live.stats.map((l, k) => [l, m.stats[me][k], m.stats[o][k]] as const),
+    [R.statsExtra[0], m.stats[me][6], m.stats[o][6]] as const, [R.statsExtra[1], rs(me, 'off'), rs(o, 'off')] as const,
+    [R.statsExtra[2], rs(me, 'fk'), rs(o, 'fk')] as const, [R.statsExtra[3], rs(me, 'ti'), rs(o, 'ti')] as const, [R.statsExtra[4], rs(me, 'gk'), rs(o, 'gk')] as const];
   const us = me === 0 ? home : away, them = me === 0 ? away : home;
   const shout = (k: string, v: number) => change((n) => setTactics(n, me, { [k]: v } as Partial<Tactics>, 'shout'));
   const ft = fullTactics(s.tactics);
@@ -106,35 +145,39 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish }: {
       <header className="topbar on-ground">
         <div className="club">
           <button className="icon-btn" aria-label={x.back} onClick={() => g.go({ s: 'today' })}><I n="back" /></button>
-          <div className="grow"><b>{matchLabel(g, m)}</b><small>{done ? x.live.ft : m.minute >= 45 && m.minute < 46 ? x.live.ht : x.live.min(m.minute)}</small></div>
+          <div className="grow"><b>{matchLabel(g, m)}</b><small>{done ? x.live.ft : isHalfTime(m) ? x.live.ht : `${clock}′`}</small><RefLine m={m} /></div>
         </div>
         <button className="icon-btn" aria-pressed={sound} aria-label={x.live.sound} onClick={() => { setSound(!sound); setSoundState(!sound); }}><I n={sound ? 'sound' : 'mute'} /></button>
       </header>
       <div className="grid">
-        <Panel className={`g-score board-top${flash ? ' goalflash' : ''}`} i={0} label={`${cn(home, lang)} ${m.goals[0]} ${cn(away, lang)} ${m.goals[1]}`}>
+        <Panel className={`g-score board-top${flash ? ' goalflash' : ''}`} i={0} label={`${cn(home, lang)} ${shown[0]} ${cn(away, lang)} ${shown[1]}`}>
           <span className="floodglow" aria-hidden="true" />
           <span className="lights l" aria-hidden="true"><i /><i /><i /><i /></span><span className="lights r" aria-hidden="true"><i /><i /><i /><i /></span>
           <div className="scoreboard">
             <div className="side"><Crest club={home} size={48} /><b>{cn(home, lang)}</b></div>
-            <div className="mid"><span className="score ltr" aria-live="polite">{m.goals[0]}–{m.goals[1]}</span>{m.pens && <span className="pens ltr">({m.pens[0]}–{m.pens[1]})</span>}<span className={`clock${done ? ' stop' : ''}`}>{done ? x.live.ft : x.live.min(m.minute)}</span></div>
+            <div className="mid"><span className="score ltr" aria-live="polite">{shown[0]}–{shown[1]}</span>{m.pens && <span className="pens ltr">({m.pens[0]}–{m.pens[1]})</span>}<span className={`clock${done ? ' stop' : ''}`}>{done ? x.live.ft : <><span className="ltr">{clock}′</span>{board !== undefined && <span className="board ltr">+{board}</span>}</>}</span></div>
             <div className="side"><Crest club={away} size={48} /><b>{cn(away, lang)}</b></div>
           </div>
           <div className="scorers"><span>{scorers(0)}</span><span /><span>{scorers(1)}</span></div>
-          {flash && <div className={`goalbanner${flash.side === me ? ' mine' : ''}`} role="status"><b>{x.live.goal}</b><span>{name(flash.id)}</span></div>}
+          {flash && !banner && <div className={`goalbanner${flash.side === me ? ' mine' : ''}`} role="status"><b>{x.live.goal}</b><span>{name(flash.id)}</span></div>}
+          {banner && <VarBanner b={banner} mine={banner.side === me} />}
         </Panel>
 
         <Panel className="g-feed" i={1} label={x.live.moments}>
-          <PanelHead title={x.live.moments} />
-          <div className="feed">
-            {moments.length === 0 && <p className="small muted">{x.live.noMoments}</p>}
-            {moments.slice(0, 8).map((k) => <MomentRow key={k.ev} k={k} m={m} me={me} name={name} />)}
-          </div>
+          <PanelHead title={feed === 0 ? x.live.moments : R.commentary} right={<div className="chips feed-tabs">{[R.moments, R.commentary].map((l, i) => <button key={l} className="chip" aria-pressed={feed === i} onClick={() => setFeed(i)}>{l}</button>)}</div>} />
+          {feed === 0 ? (
+            <div className="feed">
+              {moments.length === 0 && <p className="small muted">{x.live.noMoments}</p>}
+              {/* while a decision is on screen, its outcome stays off the timeline */}
+              {moments.filter((k) => !banner || !(k.min === m.minute && (k.plus ?? 0) === (m.plus ?? 0))).slice(0, 10).map((k) => <MomentRow key={k.ev} k={k} m={m} me={me} name={name} />)}
+            </div>
+          ) : <CommentaryFeed m={m} name={name} club={(i) => cn(i === 0 ? home : away, lang)} hideNow={!!banner} />}
         </Panel>
 
         <Panel className="g-pitch pitch-card" i={2} label={x.live.where}>
           <span className="eyebrow">{x.live.where} · {x.live.whereSub}</span>
           <div className="chips view-chips">{x.live.views.map((v, i) => <button key={v} className="chip" aria-pressed={view === i} onClick={() => setView(i)}>{v}</button>)}</div>
-          {view === 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={key ? 45 : SPEEDS[speed]} running={!paused && !done && !changes} goalWord={x.live.goal} /></div>
+          {view === 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={key ? 45 : SPEEDS[speed]} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} /></div>
             : <ZonePitch m={m} me={me} mode={view} />}
           <div className="mom-h"><b>{x.live.momentum}</b><span>{x.live.momentumKey(cn(us, lang), cn(them, lang))}</span></div>
           <Momentum data={mom} rtl={g.rtl} label={x.live.momentum} />
@@ -191,11 +234,11 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish }: {
           <>
             <button className="icon-btn" aria-label={paused ? x.live.play : x.live.pause} onClick={() => setPaused(!paused)}><I n={paused ? 'play' : 'pause'} /></button>
             <div className="seg" role="group" aria-label={x.live.speed}>
-              {['1×', '2×', '4×'].map((l, i) => <button key={l} aria-pressed={!key && speed === i} onClick={() => { setKey(false); setSpeed(i); }}>{l}</button>)}
+              {R.speeds.map((l, i) => <button key={l} aria-pressed={!key && speed === i} onClick={() => pickSpeed(i as 0 | 1 | 2)}>{l}</button>)}
               <button aria-pressed={key} onClick={() => setKey(!key)}>{x.live.key}</button>
             </div>
             <span className="grow" />
-            <button className="btn btn--ghost btn--sm skipbtn" onClick={() => { const n = clone(m); n.sides[me].autoSubs = true; simulate(n, get); onUpdate(n); onSave(n); }}>{x.live.skip}</button>
+            <button className="btn btn--ghost btn--sm skipbtn" title={x.live.skip} onClick={() => { const n = clone(m); n.sides[me].autoSubs = true; simulate(n, get); setBanner(null); onUpdate(n); onSave(n); }}>{R.instant}</button>
             <button className="btn btn--accent" onClick={() => setChanges(true)}><I n="swap" />{x.live.changes}</button>
           </>
         ) : (
@@ -215,15 +258,28 @@ function MomentRow({ k, m, me, name }: { k: KeyMoment; m: LiveMatch; me: 0 | 1; 
   const L = g.x.live.ev;
   const e = m.events[k.ev];
   const pn = name(k.playerId);
+  const RR = refOf(g);
+  const extra = momentText(k, RR, pn, m.ref ? m.ref.n[g.lang] : '');
+  if (extra || k.kind === 'red') {
+    const [t, sb] = extra ?? [L.red(pn), k.note ? RR.ev.redHow[k.note] ?? L.redSub : L.redSub];
+    const cls = k.kind === 'yellow' ? 'yel' : k.kind === 'y2' ? 'y2' : k.kind === 'penGiven' ? 'pen' : k.kind;
+    return (
+      <div className={`ev-row ${cls}${k.side === me ? ' ours' : ' theirs'}`}>
+        <span className="min ltr">{k.min}{k.plus ? `+${k.plus}` : ''}′</span>
+        <span className="ico"><MomentIcon kind={k.kind} /></span>
+        <div><b>{t}</b><p>{sb}</p></div>
+      </div>
+    );
+  }
   const [title, sub, icon, cls] = k.kind === 'goal' ? [L.goal(pn), L.goalSub((k.xg ?? 0).toFixed(2)), 'ball', 'goal']
     : k.kind === 'pen' ? [L.pen(pn), L.chanceSub((k.xg ?? 0).toFixed(2)), 'flag', 'chance']
     : k.kind === 'save' ? [L.save(pn), L.chanceSub((k.xg ?? 0).toFixed(2)), 'alert', 'chance']
     : k.kind === 'chance' ? [L.chance(pn), L.chanceSub((k.xg ?? 0).toFixed(2)), 'alert', 'chance']
-    : k.kind === 'red' ? [L.red(pn), L.redSub, 'red', 'red'] : [L.injury(pn), L.injurySub, 'medic', 'inj'];
+    : [L.injury(pn), L.injurySub, 'medic', 'inj'];
   void e;
   return (
     <div className={`ev-row ${cls}${k.side === me ? ' ours' : ' theirs'}`}>
-      <span className="min">{k.min}′</span>
+      <span className="min ltr">{k.min}{k.plus ? `+${k.plus}` : ''}′</span>
       <span className="ico"><I n={icon} size="sm" /></span>
       <div><b>{title}</b><p>{sub}</p></div>
     </div>
@@ -278,14 +334,14 @@ function Changes({ m, me, onChange, onClose }: { m: LiveMatch; me: 0 | 1; onChan
   return (
     <Sheet label={x.live.changes} onClose={onClose} wide>
       <div className="between"><h2 className="h2">{x.live.changes}</h2><span className="tag tag--good">{g.x.pre.winChance} {win}%</span></div>
-      <div className="section-h"><span className="eyebrow">{x.live.subsLeft(SUBS_MAX - s.subs)}</span></div>
+      <div className="section-h"><span className="eyebrow">{x.live.subsLeft(subsMax(m) - s.subs)} · {refOf(g).windows(windowsLeft(m, me))}</span></div>
       <div className="subcols">
         <div><span className="eyebrow">{x.live.off}</span>{s.onPitch.map((id, k) => (id ? row(get(id), x.common.pos[slots[k]?.pos ?? 'CM'], false, outId === id, () => setOut(outId === id ? '' : id)) : null))}</div>
         <div><span className="eyebrow">{x.live.on}</span>{s.bench.map((id) => row(get(id), x.common.pos[get(id).position], false, inId === id, () => setIn(inId === id ? '' : id)))}</div>
       </div>
       <div className="subfoot">
         <span className={outId && inId ? '' : 'muted'}>{outId && inId ? x.live.confirm(sn(get(outId), lang), sn(get(inId), lang)) : x.live.pickTwo}</span>
-        <button className="btn btn--primary" disabled={!outId || !inId || s.subs >= SUBS_MAX} onClick={() => { onChange((n) => userSub(n, me, outId, inId)); setOut(''); setIn(''); }}>{x.live.makeSub}</button>
+        <button className="btn btn--primary" disabled={!outId || !inId || !canSub(m, me)} onClick={() => { onChange((n) => userSub(n, me, outId, inId)); setOut(''); setIn(''); }}>{x.live.makeSub}</button>
       </div>
       <div className="section-h"><span className="eyebrow">{T.shape}</span></div>
       <div className="chips wrap">{FORMATION_IDS.map((f) => <button key={f} className="chip ltr" aria-pressed={ft.formation === f} onClick={() => onChange((n) => reshape(n, me, f, get))}>{fmt(f)}</button>)}</div>
@@ -343,7 +399,7 @@ function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHa
   const s = m.sides[me];
   const slots = FORMATIONS[s.tactics.formation].slots;
   const tired = s.onPitch.map((id, k) => ({ id, k })).filter((o) => o.id && slots[o.k]?.pos !== 'GK').sort((a, b) => (m.fit[a.id] ?? 100) - (m.fit[b.id] ?? 100))[0];
-  const subIn = tired && s.subs < SUBS_MAX ? s.bench.map(get).filter((p) => p.position !== 'GK').sort((a, b) => b.rating - a.rating - (a.position === slots[tired.k].pos ? 0 : 0))
+  const subIn = tired && canSub(m, me) ? s.bench.map(get).filter((p) => p.position !== 'GK').sort((a, b) => b.rating - a.rating - (a.position === slots[tired.k].pos ? 0 : 0))
     .find((p) => p.position === slots[tired.k].pos) ?? s.bench.map(get).filter((p) => p.position !== 'GK')[0] : undefined;
   const [doSub, setDoSub] = useState(false);
   const plan = (sel: number[], sub: boolean) => {
@@ -391,7 +447,7 @@ function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHa
           </Panel>
           {tired && subIn && (
             <Panel i={3} label={x.ht.yourChange}>
-              <PanelHead title={x.ht.yourChange} right={<span className="eyebrow">{x.live.subsLeft(SUBS_MAX - s.subs)}</span>} />
+              <PanelHead title={x.ht.yourChange} right={<span className="eyebrow">{x.live.subsLeft(subsMax(m) - s.subs)}</span>} />
               <button className={`sub subbtn${doSub ? ' on' : ''}`} aria-pressed={doSub} onClick={() => setDoSub(!doSub)}>
                 <span className="p"><Portrait p={get(tired.id)} club={g.club} size={40} /><span><b>{name(tired.id)}</b><span>{x.live.off} · {Math.round(m.fit[tired.id] ?? 0)}%</span></span></span>
                 <span className="arrow"><I n="swap" /></span>

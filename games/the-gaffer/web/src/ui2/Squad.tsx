@@ -1,5 +1,9 @@
 // The squad: who we have, where we're thin, and the three things worth glancing at for every player
 // (condition, mood, years left). One tap reaches any player.
+import { RF } from '../lang-ref-all';
+import type { Player as PlayerT } from '../model/types';
+// gf-ref: suspended in a cup (the league ban is `banned`).
+const cupBanned = (p: PlayerT) => Object.values(p.sus ?? {}).some((n) => n > 0);
 import { useMemo, useState } from 'react';
 import type { Player } from '../model/types';
 import { squadOf, wageBill } from '../sim/world';
@@ -40,7 +44,7 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
   const age = squad.reduce((s, p) => s + ageOf(p, c.season), 0) / Math.max(1, squad.length);
   const unhappy = squad.filter((p) => p.morale < 45).length;
   const list = squad.filter((p) => lens === 'all' || (lens === 'starters' && inXI.has(p.id)) || (lens === 'ending' && p.contractUntil <= c.season + 1)
-    || (lens === 'unhappy' && p.morale < 50) || (lens === 'injured' && (p.injured > 0 || p.banned > 0)) || (lens === 'loans' && !!loanOf(c, p.id)) || (lens === 'listed' && !!p.listed))
+    || (lens === 'unhappy' && p.morale < 50) || (lens === 'injured' && (p.injured > 0 || p.banned > 0 || cupBanned(p))) || (lens === 'loans' && !!loanOf(c, p.id)) || (lens === 'listed' && !!p.listed))
     .sort((a, b) => (Number(inXI.has(b.id)) - Number(inXI.has(a.id))) || b.rating - a.rating);
   const ending = squad.filter((p) => p.contractUntil <= c.season + 1);
   const L = x.squad.lens;
@@ -49,6 +53,7 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
     const r = avgRating(c.ratings?.[p.id]);
     if (r) bits.push(x.squad.form(r.toFixed(1)));
     if (p.injured) bits.push(x.squad.sub2.inj(p.injured)); else if (p.banned) bits.push(x.squad.sub2.ban);
+    else if (cupBanned(p)) bits.push(RF[g.ui].suspended); // gf-ref: a cup suspension
     else if (riskBand(p) > 0) bits.push(`${Y[g.ui].cv.load} ${Y[g.ui].bands[riskBand(p)].toLowerCase()}`); // v2.6
     if (p.captain) bits.push(x.squad.sub2.captain);
     if (loanOf(c, p.id)) bits.push(x.squad.sub2.loan);
