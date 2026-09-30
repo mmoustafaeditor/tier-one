@@ -11,7 +11,8 @@ import { onWireFiled, onWireRight, toast } from '../lib/meta';
 import { sfx } from '../lib/sfx';
 import { Crest } from '../ui/bits';
 import { Icon, Kit, GBtn, TopBar } from '../ui/game';
-import { HeatMeter } from '../ui/screenbits';
+import { HeatMeter, Avatar } from '../ui/screenbits';
+import { wireReply } from '../lib/banter';
 import { rumourHed } from './Front';
 import type { Chrome } from '../App';
 
@@ -312,5 +313,14 @@ function FiledCard({ c }: { c: WireCall }) {
     </div>
     {!c.done && <HeatLine a={c.m} b={now} yes={c.yes} />}
     <div className="filed3__pnl"><small className="g-mono">{c.done ? t('g.wire.settledPts') : t('g.wire.pnl')}</small><b className={'g-num ' + (v < 0 ? 'neg' : 'pos')}>{num(round1(v), true)}</b></div>
+    {c.done && c.outcome !== 'void' && c.right != null && <WireReply c={c} />}
   </div>;
+}
+
+// The mentions under a settled Wire call (TIERONE-SAIF-01): one fan, reacting to what really happened.
+function WireReply({ c }: { c: WireCall }) {
+  const t = useT();
+  const x = wireReply(t.lang, c.rid, !!c.right, c.s >= 3, c.player || '');
+  if (!x.text) return null;
+  return <div className="wreply"><Avatar name={x.handle} size={28} /><div><b>{x.name}</b> <span className="g-mono">{x.handle}</span><p dir="auto">{x.text}</p></div></div>;
 }
