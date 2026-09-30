@@ -3,7 +3,11 @@
 // GF-10: a keeper's rating is bounded by the shots on target he faced, and a keeper who faced at most one
 // can't be man of the match: a quiet clean sheet is a good day, not a heroic one.
 import type { Player } from '../model/types';
-import { FORMATIONS } from './tactics';
+import { FORMATIONS, fullTactics } from './tactics';
+import { planOf } from './engine/phases';
+import { roleFit } from './engine/roles';
+
+const PRESS_ROLE = new Set(['press_forward', 'ball_winner', 'step_out', 'screen']);
 import type { LiveMatch } from './match';
 
 const hash = (s: string) => [...s].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 11);
@@ -25,6 +29,12 @@ export function matchRatings(m: LiveMatch, get: (id: string) => Player): Ratings
   m.sides.forEach((s, i) => { for (const id of [...s.onPitch, ...s.bench]) if (id) sideOf.set(id, i as 0 | 1); });
   for (const e of m.events) if (e.kind === 'sub' && e.inId) sideOf.set(e.inId, e.side);
   const keepers = new Map<string, 0 | 1>();
+  // Tactics v3: each player's out-of-possession role (last known slot), and how well both his roles suit him.
+  const roleOf = new Map<string, string>(), fitOf = new Map<string, number>();
+  for (const s of m.sides) {
+    const plan = planOf(fullTactics(s.tactics));
+    s.onPitch.forEach((id, k) => { if (!id || !plan.ip[k]) return; roleOf.set(id, plan.oop[k]); const p = get(id); if (p) fitOf.set(id, roleFit(p, plan.ip[k], plan.slots[k].pos) + roleFit(p, plan.oop[k], plan.oslots[k].pos)); });
+  }
 
   for (const id of m.played) {
     const p = get(id);
@@ -37,6 +47,8 @@ export function matchRatings(m: LiveMatch, get: (id: string) => Player): Ratings
     let v = 6.2 + noise + (p.rating - 75) * 0.03 + (diff > 0 ? 0.35 : diff < 0 ? -0.3 : 0);
     if (DEF.has(pos) && m.goals[1 - i] === 0 && minutes >= 60) v += pos === 'GK' ? 0.8 : 0.5;
     if (DEF.has(pos)) v -= Math.min(3, m.goals[1 - i]) * (pos === 'GK' ? 0.3 : 0.15);
+    // A player asked to do what he is good at plays a little better; a square peg a little worse (±0.2).
+    v += Math.max(-0.2, Math.min(0.15, (fitOf.get(id) ?? 0) * 0.02));
     if (pos === 'GK') keepers.set(id, i);
     rating[id] = v;
   }
@@ -47,7 +59,10 @@ export function matchRatings(m: LiveMatch, get: (id: string) => Player): Ratings
     if (e.kind === 'save') { add(e.playerId, m.v === 2 ? 0.25 : 0.35); add(e.assistId, 0.08); }
     if (e.kind === 'miss') { add(e.playerId, m.v === 2 ? -0.06 : -0.15); add(e.assistId, 0.05); }
     if (e.kind === 'block') { add(e.playerId, -0.03); add(e.vs, 0.12); }
-    if (e.kind === 'duel') { add(e.playerId, e.ok ? 0.06 : -0.03); add(e.vs, e.ok ? -0.05 : 0.06); }
+    // Tactics v3: a press that wins the ball back in their build-up (logged only when it does) is worth a little more;
+    // players in pressing or screening roles are rated on it (their job), and on their other won duels too.
+    if (e.kind === 'duel' && e.how === 'build') { add(e.playerId, -0.04); add(e.vs, 0.08 * (PRESS_ROLE.has(roleOf.get(e.vs ?? '') ?? '') ? 1.25 : 1)); }
+    else if (e.kind === 'duel') { add(e.playerId, e.ok ? 0.06 : -0.03); add(e.vs, e.ok ? -0.05 : 0.06 * (PRESS_ROLE.has(roleOf.get(e.vs ?? '') ?? '') ? 1.25 : 1)); }
     if (e.kind === 'foul') add(e.playerId, -0.03);
     if (e.kind === 'offside') add(e.playerId, -0.02);
     if (e.kind === 'yellow') add(e.playerId, -0.3);

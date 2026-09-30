@@ -6,6 +6,8 @@ import { FORMATIONS, FORMATION_IDS, fitPenalty, fullTactics, type FormationId, t
 import { SHOTS, type Model, type Rates, type ShotType } from './model';
 import { expected, modelOf, outcome, reshape, setTactics, type LiveMatch } from '../match';
 import { cohLevel } from '../cohesion';
+import { carryRoles, planOf } from './phases';
+import { ROLES, isDefault, roleFit, rolesFor, type RoleId } from './roles';
 
 type Lookup = (id: string) => Player;
 
@@ -45,6 +47,8 @@ export function withTactics(m: LiveMatch, side: 0 | 1, patch: Partial<Tactics>, 
   const s = m.sides[side];
   const tactics = { ...s.tactics, ...patch };
   const onPitch = patch.formation && patch.formation !== s.tactics.formation ? reslot(s.onPitch, patch.formation, get) : s.onPitch;
+  // Tactics v3: a new shape keeps the roles its positions still allow (as reshape() does in the match).
+  if (patch.formation && patch.formation !== s.tactics.formation && !patch.roles && (s.tactics.roles || s.tactics.oopRoles)) Object.assign(tactics, carryRoles(fullTactics(s.tactics), patch.formation));
   const sides = [...m.sides] as LiveMatch['sides'];
   sides[side] = { ...s, tactics, onPitch };
   return { ...m, sides };
@@ -70,17 +74,39 @@ export interface Tip {
   ours: boolean;            // true: more of our chances of that kind; false: fewer of theirs
   dxg: number;              // xG per 90 of that kind, change
   a?: string; d?: string;   // the matchup behind it: attacker and defender
+  note?: string;            // tactics v3: a role change, "role:<phase>:<player>:<role>" (as the match log writes it)
 }
 
-function candidates(t: Tactics, m: LiveMatch, side: 0 | 1): Partial<Tactics>[] {
+function candidates(t: Tactics, m: LiveMatch, side: 0 | 1, get?: Lookup): Partial<Tactics>[] {
   const f = fullTactics(t);
   const out: Partial<Tactics>[] = [];
+  // Tactics v3: one player's role in one phase (only roles he can play: fit above −4), and the shape without the ball.
+  if (get) {
+    const plan = planOf(f);
+    const on = m.sides[side].onPitch;
+    for (const ph of ['ip', 'oop'] as const) {
+      const cur = [...plan[ph]] as string[];
+      const slots = ph === 'ip' ? plan.slots : plan.oslots;
+      slots.forEach((sl, k) => {
+        if (!on[k]) return;
+        const p = get(on[k]);
+        for (const r of rolesFor(sl.pos, ph)) {
+          if (r === cur[k] || (ROLES[r].fx.w && roleFit(p, r, sl.pos) < -4)) continue;
+          const next = [...cur]; next[k] = r;
+          out.push(ph === 'ip' ? { roles: next } : { oopRoles: next });
+        }
+      });
+    }
+    for (const fm of FORMATION_IDS) if (fm !== f.oop) out.push({ oop: fm });
+  }
   const step = <K extends 'pressing' | 'passing' | 'line' | 'width' | 'tempo'>(k: K) => { for (const d of [-1, 1]) { const v = f[k] + d; if (v >= 0 && v <= 2) out.push({ [k]: v } as Partial<Tactics>); } };
   for (const d of [-1, 1]) { const v = f.mentality + d; if (v >= -2 && v <= 2) out.push({ mentality: v }); }
   step('pressing'); step('passing'); step('line'); step('width'); step('tempo');
   out.push({ counter: !f.counter });
-  for (const v of [0, 1, 2] as const) if (v !== f.fullback) out.push({ fullback: v });
-  for (const v of [0, 1, 2, 3] as const) if (v !== f.striker) out.push({ striker: v });
+  // (full-backs and strikers are roles now: see above)
+  if (!get) { for (const v of [0, 1, 2] as const) if (v !== f.fullback) out.push({ fullback: v }); for (const v of [0, 1, 2, 3] as const) if (v !== f.striker) out.push({ striker: v }); }
+  for (const v of [0, 1, 2] as const) if (v !== f.build) out.push({ build: v });
+  for (const v of [0, 1, 2] as const) if (v !== f.cpress) out.push({ cpress: v });
   if (f.pressing >= 1) for (const v of [0, 1, 2, 3] as const) if (v !== f.trap) out.push({ trap: v });
   for (const v of [0, 1, 2] as const) if (v !== f.routine) out.push({ routine: v });
   if (m.goals[side] > m.goals[1 - side] && m.minute >= 60 && !f.waste) out.push({ waste: true });
@@ -94,7 +120,8 @@ export function suggest(m: LiveMatch, side: 0 | 1, get: Lookup, n = 2, minGain =
   const p0 = pointsLeft(m, side, base), w0 = winChance(m, side, base);
   const t0 = [byTheme(base.xgBy[side]), byTheme(base.xgBy[1 - side])];
   const tips: Tip[] = [];
-  for (const patch of candidates(m.sides[side].tactics, m, side)) {
+  const t0s = m.sides[side].tactics;
+  for (const patch of candidates(t0s, m, side, get)) {
     if (allowed && !allowed(patch)) continue;
     const m2 = withTactics(m, side, patch, get);
     const model = modelOf(m2, get);
@@ -109,12 +136,22 @@ export function suggest(m: LiveMatch, side: 0 | 1, get: Lookup, n = 2, minGain =
       if (down > best) { best = down; theme = th; ours = false; }
     }
     const [a, d] = matchup(model, side, theme, ours);
-    tips.push({ patch, key: Object.keys(patch)[0] as keyof Tactics, gain, win: [w0, winChance(m2, side, R)], theme, ours, dxg: best, a, d });
+    const note = roleNote(m, side, t0s, patch);
+    tips.push({ patch, key: Object.keys(patch)[0] as keyof Tactics, gain, win: [w0, winChance(m2, side, R)], theme, ours, dxg: best, a, d, ...(note ? { note } : {}) });
   }
   tips.sort((x, y) => y.gain - x.gain);
-  // One change per instruction.
+  // One change per instruction (and one role change per phase).
   const seen = new Set<string>();
   return tips.filter((t) => (seen.has(t.key) ? false : (seen.add(t.key), true))).slice(0, n);
+}
+
+// The player and role a role patch changes, in the log's words ("role:ip:<player>:<role>").
+function roleNote(m: LiveMatch, side: 0 | 1, t: Tactics, patch: Partial<Tactics>): string | undefined {
+  if (!patch.roles && !patch.oopRoles) return undefined;
+  const ph = patch.roles ? 'ip' : 'oop';
+  const was = planOf(fullTactics(t))[ph], now = (patch.roles ?? patch.oopRoles)!;
+  const k = now.findIndex((r, i) => r !== was[i]);
+  return k < 0 ? undefined : `role:${ph}:${m.sides[side].onPitch[k]}:${now[k]}`;
 }
 
 // The two players a theme turns on (from the model): e.g. our winger against their full-back.
@@ -139,11 +176,49 @@ export function applyTip(m: LiveMatch, side: 0 | 1, tip: Tip, get: Lookup) {
   else setTactics(m, side, tip.patch, 'tip');
 }
 
+// ---------- what the roles did ----------
+
+// For every player of side `s` in a non-default role: the thing that role is for, counted from the event log.
+//   pressing roles (press forward, ball winner, step out, screen): balls won in duels out of possession,
+//   scoring roles (inside forward, shadow striker, box-to-box, target man): shots and their xG,
+//   creating roles (playmaker, ball-playing CB, false 9, wing-back, inverted full-back, distributor): chances created,
+//   outlets: shots and chances on the break.
+export interface RoleImpact { id: string; phase: 'ip' | 'oop'; role: RoleId; kind: 'won' | 'shots' | 'made'; n: number; x: number; score: number }
+const PRESS_ROLES: RoleId[] = ['press_forward', 'ball_winner', 'step_out', 'screen', 'sweeper_keeper'];
+const SHOOT_ROLES: RoleId[] = ['inside_forward', 'shadow_striker', 'box_to_box', 'target_man'];
+export function roleImpact(m: LiveMatch, s: 0 | 1): RoleImpact | null {
+  const plan = planOf(fullTactics(m.sides[s].tactics));
+  const ev = m.events;
+  let best: RoleImpact | null = null;
+  m.sides[s].onPitch.forEach((id, k) => {
+    if (!id) return;
+    for (const phase of ['ip', 'oop'] as const) {
+      const role = plan[phase][k];
+      if (!role || isDefault(role)) continue;
+      let r: RoleImpact;
+      if (PRESS_ROLES.includes(role)) {
+        const won = ev.filter((e) => e.kind === 'duel' && e.vs === id && e.ok === 0).length;
+        r = { id, phase, role, kind: 'won', n: won, x: 0, score: won / 3 };
+      } else if (SHOOT_ROLES.includes(role) || role === 'outlet') {
+        const sh = ev.filter((e) => (e.kind === 'goal' || e.kind === 'miss' || e.kind === 'block' ? e.playerId === id : e.kind === 'save' && e.by === id) && (role !== 'outlet' || e.how === 'counter'));
+        const x = sh.reduce((a, e) => a + (e.xg ?? 0), 0);
+        r = { id, phase, role, kind: 'shots', n: sh.length, x: Math.round(x * 100) / 100, score: sh.length / 2 + x * 2 };
+      } else {
+        const made = ev.filter((e) => (e.kind === 'goal' || e.kind === 'miss' || e.kind === 'save') && e.assistId === id);
+        const x = made.reduce((a, e) => a + (e.xg ?? 0), 0);
+        r = { id, phase, role, kind: 'made', n: made.length, x: Math.round(x * 100) / 100, score: made.length / 1.5 + x * 2 };
+      }
+      if (r.n >= 3 && r.score >= 1.5 && (!best || r.score > best.score)) best = r;
+    }
+  });
+  return best;
+}
+
 // ---------- why it happened ----------
 
 export type Verdict = 'deserved' | 'robbed' | 'smash' | 'beaten' | 'even' | 'clinical' | 'wasteful' | 'level';
 export interface Point {
-  k: 'source' | 'midfield' | 'pressed' | 'pressing' | 'duel' | 'finish' | 'keeper' | 'tired' | 'red' | 'change' | 'theyChanged' | 'setpiece' | 'cohesion';
+  k: 'source' | 'midfield' | 'pressed' | 'pressing' | 'duel' | 'finish' | 'keeper' | 'tired' | 'red' | 'change' | 'theyChanged' | 'setpiece' | 'cohesion' | 'role';
   me: boolean;              // about us (true) or them
   theme?: Theme;
   n?: number; of?: number;  // counts
@@ -202,7 +277,7 @@ export function explain(m: LiveMatch, me: 0 | 1, get: Lookup, tips = true): Why 
   // The matchup: the most one-sided pair of players.
   const pairs = new Map<string, { a: string; d: string; side: 0 | 1; won: number; n: number; how: string }>();
   for (const e of ev) {
-    if (e.kind !== 'duel' || !e.vs || e.how === 'air') continue;
+    if (e.kind !== 'duel' || !e.vs || e.how === 'air' || e.how === 'build') continue;
     const key = `${e.playerId}>${e.vs}`;
     const p = pairs.get(key) ?? { a: e.playerId, d: e.vs, side: e.side, won: 0, n: 0, how: e.how ?? '' };
     p.n++; if (e.ok) p.won++;
@@ -244,6 +319,11 @@ export function explain(m: LiveMatch, me: 0 | 1, get: Lookup, tips = true): Why 
   }
   const theirs = [...ev].reverse().find((e) => e.kind === 'tactic' && e.side === them && e.note?.includes('|read'));
   if (theirs) pts.push({ k: 'theyChanged', me: false, note: theirs.note, min: theirs.min, good: false, w: 0.9 });
+  // Tactics v3: the role that mattered most on each side (a non-default role, by what its player did in it).
+  for (const [s, mine] of [[me, true], [them, false]] as const) {
+    const r = roleImpact(m, s);
+    if (r) pts.push({ k: 'role', me: mine, a: r.id, note: `${r.phase}:${r.role}:${r.kind}`, n: r.n, x: r.x, good: mine, w: 0.75 + r.score / 4 });
+  }
   // v2.4: the dressing room on the pitch. Cohesion is a real input (±2 levels); it makes the Why when it was big enough.
   const coh = m.sides[me].coh;
   if (coh !== undefined) {

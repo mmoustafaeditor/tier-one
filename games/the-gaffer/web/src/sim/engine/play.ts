@@ -109,7 +109,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       // Fouls: the defender in the contest (or one of them) brings the attacker down.
       if (edge.ev === EV.FOUL || edge.ev === EV.TFOUL || edge.ev === EV.PENFOUL) {
         const d = node.duel ?? at.nodes[N.F1].duel!;
-        const j = dId ? -1 : pickW(r, d.wd);
+        const j = dId ? -1 : pickW(r, d.wf ?? d.wd); // [tactics v3] the aggressive roles in the contest foul more
         const fouler = dId ?? d.d[j]?.id ?? '';
         const victim = aId ?? d.a[pickW(r, d.wa)]?.id;
         if (fouler) {
@@ -132,8 +132,9 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         const col = COL[nodeIx] ?? 3;
         const z = absZone(s, col, laneRow(lane, ax));
         const how = nodeIx === N.F0 || nodeIx === N.F2 ? 'wing' : nodeIx === N.F1 ? 'mid' : nodeIx === N.THR ? 'run' : nodeIx === N.CTR ? 'break'
-          : nodeIx === N.RHIGH ? 'press' : nodeIx === N.CRS || nodeIx === N.CRN || nodeIx === N.SETH ? 'air' : '';
-        if (how && aId && dId) rules.event({ min: m.minute, side: s, kind: 'duel', playerId: aId, vs: dId, how, ok: won ? 1 : 0, z });
+          : nodeIx === N.RHIGH ? 'press' : nodeIx === N.CRS || nodeIx === N.CRN || nodeIx === N.SETH ? 'air'
+          : nodeIx === N.B ? 'build' : ''; // [tactics v3] build-up duels the press WON: who won it back from whom
+        if (how && aId && dId && (how !== 'build' || !won)) rules.event({ min: m.minute, side: s, kind: 'duel', playerId: aId, vs: dId, how, ok: won ? 1 : 0, z });
         if (nodeIx === N.B) { tl.bu[s * 2 + 1]++; if (won) tl.bu[s * 2]++; }
         if (nodeIx >= N.P0 && nodeIx <= N.P2) { tl.mid[s * 2 + 1]++; if (won) { tl.mid[s * 2]++; tl.ent[s * 3 + lane]++; threat[s] += 0.03; } }
         if (won) { b.a = aId; b.d = dId; } else b.d = dId;

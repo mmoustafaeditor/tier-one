@@ -22,29 +22,46 @@ export interface Tactics {
   waste?: boolean;          // slow every restart down (runs the clock, risks a booking)
   mark?: string | null;     // opponent player id to man-mark
   routine?: 0 | 1 | 2;      // corner routine: mixed, big men up (aerial), short
+  // Tactics v3 (all optional: missing = what the engine did before, so every old save plays as it did).
+  oop?: FormationId;        // out-of-possession shape (missing = the same as `formation`, the in-possession shape)
+  roles?: string[];         // in-possession role per slot of `formation` ('' or missing = the position's default)
+  oopRoles?: string[];      // out-of-possession role per slot of `formation` (the player in that slot), for his OOP position
+  build?: 0 | 1 | 2;        // build-up: play out from the back, mixed, go long (missing = follows `passing`)
+  cpress?: 0 | 1 | 2;       // when we lose it: regroup, balanced, counter-press
 }
 
 // Every instruction filled in: what the engine reads.
-export type FullTactics = Required<Omit<Tactics, 'mark'>> & { mark: string | null };
+export type FullTactics = Required<Omit<Tactics, 'mark' | 'roles' | 'oopRoles'>> & { mark: string | null; roles: string[] | null; oopRoles: string[] | null };
 export const fullTactics = (t: Tactics): FullTactics => ({
   formation: t.formation, mentality: t.mentality ?? 0, pressing: t.pressing ?? 1, passing: t.passing ?? 1, fullback: t.fullback ?? 0,
   striker: t.striker ?? 0, trap: t.trap ?? 0, philosophy: t.philosophy ?? 'balanced', line: t.line ?? 1, width: t.width ?? 1,
   tempo: t.tempo ?? 1, counter: !!t.counter, waste: !!t.waste, mark: t.mark ?? null, routine: t.routine ?? 0,
+  oop: t.oop && t.oop in FORMATIONS ? t.oop : t.formation, roles: t.roles ?? null, oopRoles: t.oopRoles ?? null,
+  build: t.build ?? t.passing ?? 1, cpress: t.cpress ?? 1,
 });
 
 // A philosophy is a starting set of instructions; mastery of it is the team's cohesion when playing it.
-export type Instructions = Pick<FullTactics, 'mentality' | 'pressing' | 'passing' | 'fullback' | 'striker' | 'trap' | 'line' | 'width' | 'tempo' | 'counter' | 'waste' | 'routine'>;
-const BASE: Instructions = { mentality: 0, pressing: 1, passing: 1, fullback: 0, striker: 0, trap: 0, line: 1, width: 1, tempo: 1, counter: false, waste: false, routine: 0 };
+export type Instructions = Pick<FullTactics, 'mentality' | 'pressing' | 'passing' | 'fullback' | 'striker' | 'trap' | 'line' | 'width' | 'tempo' | 'counter' | 'waste' | 'routine' | 'build' | 'cpress'>;
+const BASE: Instructions = { mentality: 0, pressing: 1, passing: 1, fullback: 0, striker: 0, trap: 0, line: 1, width: 1, tempo: 1, counter: false, waste: false, routine: 0, build: 1, cpress: 1 };
 export const PRESETS: Record<Philosophy, Instructions> = {
   balanced: BASE,
-  possession: { ...BASE, passing: 0, tempo: 0, fullback: 2, width: 1, striker: 2 },
-  counter: { ...BASE, mentality: -1, pressing: 0, line: 0, passing: 2, tempo: 2, counter: true },
-  gegenpress: { ...BASE, mentality: 1, pressing: 2, line: 2, tempo: 2, striker: 3, trap: 2 },
-  bus: { ...BASE, mentality: -2, pressing: 0, line: 0, width: 0, passing: 2, counter: true },
+  possession: { ...BASE, passing: 0, build: 0, tempo: 0, fullback: 2, width: 1, striker: 2, cpress: 2 },
+  counter: { ...BASE, mentality: -1, pressing: 0, line: 0, passing: 2, build: 2, tempo: 2, counter: true, cpress: 0 },
+  gegenpress: { ...BASE, mentality: 1, pressing: 2, line: 2, tempo: 2, striker: 3, trap: 2, cpress: 2 },
+  bus: { ...BASE, mentality: -2, pressing: 0, line: 0, width: 0, passing: 2, build: 2, counter: true, cpress: 0 },
   wings: { ...BASE, width: 2, fullback: 1, routine: 1, trap: 1 },
-  direct: { ...BASE, passing: 2, striker: 1, tempo: 2, routine: 1 },
+  direct: { ...BASE, passing: 2, build: 2, striker: 1, tempo: 2, routine: 1 },
 };
-export const applyPreset = <X extends Tactics>(t: X, ph: Philosophy): X => ({ ...t, ...PRESETS[ph], philosophy: ph });
+// The out-of-possession shape a style drops into from an in-possession shape: wing-backs drop into a back five, a
+// deep block adds a fourth midfielder, a counter keeps two up. Everything else defends in the shape it attacks in.
+export function oopFor(ip: FormationId, ph: Philosophy): FormationId {
+  if (ip === '3-5-2') return ph === 'gegenpress' ? '3-5-2' : '5-3-2';
+  if (ph === 'bus' || ph === 'wings') return ip === '5-3-2' ? '5-3-2' : '4-1-4-1';
+  if (ph === 'counter') return ip === '4-3-3' || ip === '4-2-3-1' ? '4-4-2' : ip;
+  return ip;
+}
+// A style is a starting set of instructions, roles (from its full-back and striker knobs) and a defensive shape.
+export const applyPreset = <X extends Tactics>(t: X, ph: Philosophy): X => ({ ...t, ...PRESETS[ph], philosophy: ph, roles: undefined, oopRoles: undefined, oop: oopFor(t.formation, ph) });
 
 // Playing philosophies (from the old game's list). Each beats two others; mastery grows with every game played with it.
 export type Philosophy = 'balanced' | 'possession' | 'counter' | 'gegenpress' | 'bus' | 'wings' | 'direct';
@@ -184,7 +201,7 @@ export function aiTactics(squad: Player[], myLevel: number, theirLevel: number, 
   const seed = squad.reduce((s, p) => s + p.id.length + p.shirtNumber, 0);
   const philosophy: Philosophy = style ?? (myLevel >= 82 ? (['possession', 'gegenpress', 'wings'] as const)[seed % 3]
     : myLevel <= 68 ? (['bus', 'counter', 'direct'] as const)[seed % 3] : PHILOSOPHIES[1 + (seed % 6)]);
-  const t: Tactics = { formation, ...PRESETS[philosophy], philosophy };
+  const t: Tactics = { formation, ...PRESETS[philosophy], philosophy, oop: oopFor(formation, philosophy) };
   t.mentality = Math.max(-2, Math.min(2, t.mentality + (gap > 5 ? 1 : gap < -6 ? -1 : 0)));
   if (opp?.length) {
     const top = [...opp].filter(available).sort((a, b) => b.rating - a.rating).slice(0, 11);
@@ -193,7 +210,7 @@ export function aiTactics(squad: Player[], myLevel: number, theirLevel: number, 
     const mine = [...squad].filter(available).sort((a, b) => b.rating - a.rating).slice(0, 11);
     const myFront = mine.filter((p) => ['ST', 'LW', 'RW'].includes(p.position));
     // Slow back line and quick forwards: play in behind.
-    if (avg(theirBack, 0) + 8 < avg(myFront, 0)) { t.tempo = 2; if (philosophy !== 'possession') t.passing = 2; }
+    if (avg(theirBack, 0) + 8 < avg(myFront, 0)) { t.tempo = 2; if (philosophy !== 'possession') { t.passing = 2; t.build = 2; } }
     // A much stronger opponent: drop the line and break.
     if (gap < -7) { t.line = 0; t.counter = true; t.pressing = Math.min(t.pressing, 1) as 0 | 1 | 2; }
   }

@@ -4,6 +4,8 @@ import { fmt, type FormationId, type Tactics } from '../sim/tactics';
 import type { Point, Tip, Why } from '../sim/engine/story';
 import { describeChange } from './commentary';
 import { roomPoint } from './roomText';
+import { txOf } from '../lang-tac-all';
+import type { RoleId } from '../sim/engine/roles';
 
 const fill = (s: string, v: Record<string, string | number | undefined>) => s.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
 const x1 = (v: number | undefined) => (v ?? 0).toFixed(1);
@@ -24,12 +26,21 @@ export function pointText(p: Point, t: Strings, name: (id: string) => string): s
     case 'change': return fill(p.good ? P.changeGood : P.changeBad, { ...v, what: describeChange(t, p.note, name).what });
     case 'theyChanged': return fill(P.theyChanged, { ...v, what: describeChange(t, p.note, name).what });
     case 'cohesion': return roomPoint(p, t);
+    case 'role': {
+      // Tactics v3: "Ali won it back 7 times as Ball winner." (note = phase:role:kind)
+      const X = txOf(t).why, [, role, kind] = (p.note ?? '').split(':');
+      const rn = txOf(t).roles[role as RoleId]?.[0] ?? role, a = p.a ? name(p.a) : '', x = (p.x ?? 0).toFixed(1), n = p.n ?? 0;
+      if (kind === 'won') return p.me ? X.won(a, rn, n) : X.themWon(a, rn, n);
+      if (kind === 'shots') return p.me ? X.shots(a, rn, n, x) : X.themShots(a, rn, n, x);
+      return p.me ? X.made(a, rn, n, x) : X.themMade(a, rn, n, x);
+    }
   }
   return '';
 }
 
 // "Pressing: High press", "Shape 4-4-2", "Counter at once: On".
-export function tipWhat(patch: Partial<Tactics>, t: Strings, name: (id: string) => string): string {
+export function tipWhat(patch: Partial<Tactics>, t: Strings, name: (id: string) => string, note?: string): string {
+  if (note) return describeChange(t, note, name).what; // tactics v3: a role change
   const [k, v] = Object.entries(patch)[0] ?? ['', ''];
   if (k === 'formation') return t.eng.shape(fmt(v as FormationId));
   return describeChange(t, `${k}:${String(v)}`, name).what;
