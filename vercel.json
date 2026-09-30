@@ -15,7 +15,56 @@
   ],
   "headers": [
     {
-      "source": "/tier-one/(index.html|version.json)?",
+      "source": "/tier-one/(index.html|version.json|sw.js|manifest.webmanifest)?",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/tier-one/sw.js",
+      "headers": [
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/tier-one/"
+        }
+      ]
+    },
+    {
+      "source": "/tier-one/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/tier-one/icons/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, s-maxage=604800"
+        }
+      ]
+    },
+    {
+      "source": "/tier-one/films/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000, s-maxage=2592000, stale-while-revalidate=86400"
+        },
+        {
+          "key": "Accept-Ranges",
+          "value": "bytes"
+        }
+      ]
+    },
+    {
+      "source": "/tier-one/apk/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

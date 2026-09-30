@@ -8,9 +8,13 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
     "build:min": "node scripts/build-world.mjs && tsc --noEmit && vite build --mode min",
+    "build:web": "node scripts/build-world.mjs && tsc --noEmit && tsc -p tsconfig.sw.json && vite build --mode web",
+    "build:all": "npm run build:min && npm run build:web",
     "serve": "node scripts/dev-server.mjs",
     "smoke:api": "node scripts/api-smoke.mjs",
-    "world": "node scripts/build-world.mjs"
+    "world": "node scripts/build-world.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "perf": "node scripts/perf.mjs"
   },
   "dependencies": {
     "react": "^19.1.1",
