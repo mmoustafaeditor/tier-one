@@ -36,10 +36,11 @@ const seasonLabel = (t: TF, s?: string) => { const m = /^(\d{4})-(\w+)$/.exec(s 
 // Coins for a right call, by the player's star level (0 = unrated).
 const STAR_COINS = [15, 25, 40, 70];
 const starOf = (r?: Rumour) => (r && WORLD.players.find((x) => x.id === r.playerId)?.star) || 0;
-function windowLine(now: number, cur?: WireWindow): { k: 'opens' | 'closes'; left: string } | null {
+// The countdown's units are dictionary strings (m.wire.leftDh / leftHm), not the English letters they were.
+function windowLine(now: number, cur?: WireWindow): { k: 'opens' | 'closes'; d: number; h: number; m: number } | null {
   for (const [a, b] of cur ? [[cur.opens, cur.closes] as [string, string], ...WINDOWS] : WINDOWS) {
     const o = Date.parse(a), c = Date.parse(b);
-    if (now < o || now < c) { const ms = (now < o ? o : c) - now, d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4); return { k: now < o ? 'opens' : 'closes', left: d ? d + 'd ' + h + 'h' : h + 'h ' + m + 'm' }; }
+    if (now < o || now < c) { const ms = (now < o ? o : c) - now, d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4); return { k: now < o ? 'opens' : 'closes', d, h, m }; }
   }
   return null;
 }
@@ -95,7 +96,7 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
         <p className="g-hero__s"><b>{t('m.wire.real')}</b> {t('m.wire.realSub', { a: STAR_COINS[1], b: STAR_COINS[3] })}</p>
         <div className="wwin">
           <span className="wwin__now"><i className="g-dot" />{t('fb.now', { w: winLabel(t, w.window.id), d: t('fb.dates') })}</span>
-          {win && <span className="g-chip g-chip--gold"><Icon n="clock" size={14} />{t('m.wire.' + win.k, { t: win.left })}</span>}
+          {win && <span className="g-chip g-chip--gold"><Icon n="clock" size={14} />{t('m.wire.' + win.k, { t: win.d ? t('m.wire.leftDh', { d: win.d, h: win.h }) : t('m.wire.leftHm', { h: win.h, m: win.m }) })}</span>}
         </div>
         <details className="wire3__how" open={howOpen} onToggle={(e) => setHowOpen(e.currentTarget.open)}>
           <summary><Icon n="help" size={16} />{t('m.wire.how')}</summary>

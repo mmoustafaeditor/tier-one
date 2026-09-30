@@ -22,10 +22,14 @@ export function tr(lang: string, key: string, v?: Vars): string {
 export function trList(lang: string, key: string): any { return get(DICTS[lang] || EN, key) ?? get(EN, key); }
 export const t = (key: string, v?: Vars) => tr(getSave().lang, key, v);
 export const tl = (key: string) => trList(getSave().lang, key);
+/** True when `key` has a string in this language or in English: `tr()` returns the key itself otherwise. */
+export const has = (lang: string, key: string) => typeof (get(DICTS[lang] || EN, key) ?? get(EN, key)) === 'string';
 export function useT() {
   const s = useSave();
   const f = (key: string, v?: Vars) => tr(s.lang, key, v);
   f.list = (key: string) => trList(s.lang, key);
+  /** `key` if it exists, else `fallback` (a server error code with no line of its own, say). */
+  f.or = (key: string, fallback: string, v?: Vars) => tr(s.lang, has(s.lang, key) ? key : fallback, v);
   f.lang = s.lang;
   f.rtl = s.lang === 'ar';
   return f;

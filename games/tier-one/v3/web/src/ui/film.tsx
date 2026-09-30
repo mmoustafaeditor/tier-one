@@ -337,6 +337,6 @@ export function FilmSetting({ children }: { children?: ReactNode }) {
   return <div className="filmset">
     <div className="filmset__t"><span><b>{t('film.setting.title')}</b><small>{t('film.setting.hint')}</small></span>{children}</div>
     <Seg<FilmMode> value={mode} options={opts} onChange={(v) => { setFilmMode(v); sfx('ui.pop'); }} label={t('film.setting.title')} />
-    {mode !== 'off' && b.level !== 'clips' && <span className="filmset__why g-mono">{t('film.setting.now.' + b.level)} · {b.why}</span>}
+    {mode !== 'off' && b.level !== 'clips' && <span className="filmset__why g-mono" title={b.why}>{t('film.setting.now.' + b.level)}</span>}
   </div>;
 }

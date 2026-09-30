@@ -1,8 +1,8 @@
 {
   "game": "tier-one-v3",
-  "version": "3.3.0",
-  "build": 29846664,
+  "version": "3.4.0",
+  "build": 29846742,
   "kind": "apk",
-  "bytes": 3117624,
-  "sha256": "f29dfa932fc824e3f5282fb9d182c03b35c4e22a4fb2ce1e08b3ed14e8a78c04"
+  "bytes": 3527114,
+  "sha256": "4242c09f7c9c64d2c14a8d1a396f0f5f0aacd15eb380c14efa1d95a3311d059b"
 }

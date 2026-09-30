@@ -10,7 +10,7 @@ export default {
       rename: { free: 'First rename is free. After that: {n} coins.', cost: 'Renaming costs {n} coins. You have {have}.', broke: 'Not enough coins ({n} needed).' },
       wire: {
         real: 'Real transfer rumours from the real market.', realSub: 'Real-world calls, the same byline: they settle on what actually happens and build the name you’re rebuilding in the story. Right calls pay {a}–{b} coins, more for bigger stars.',
-        opens: 'Window opens in {t}', closes: 'Window closes in {t}', paid: '+{n} coins for right calls on the Wire',
+        opens: 'Window opens in {t}', closes: 'Window closes in {t}', leftDh: '{d}d {h}h', leftHm: '{h}h {m}m', paid: '+{n} coins for right calls on the Wire',
         group: 'Group by', by: { star: 'Stars', league: 'League', team: 'Team' }, stars: '{n}-star players', unrated: 'Other players',
         lg: { eng1: 'Premier League', esp1: 'LaLiga', ita1: 'Serie A', ger1: 'Bundesliga', fra1: 'Ligue 1', egy1: 'Egyptian Premier League', ksa1: 'Saudi Pro League' },
         board: 'Wire leaderboard', boardAside: 'This season', you: 'You: #{r}', boardEmpty: 'No settled calls yet this season.',
@@ -30,7 +30,7 @@ export default {
       rename: { free: 'أول تغيير للاسم ببلاش. بعد كده: {n} عملة.', cost: 'تغيير الاسم بـ {n} عملة. معاك {have}.', broke: 'العملات مش كفاية (محتاج {n}).' },
       wire: {
         real: 'إشاعات انتقالات حقيقية من السوق الحقيقي.', realSub: 'توقعات من الدنيا الحقيقية، بنفس اسمك: بتتحسم على اللي بيحصل فعلًا وبتبني الاسم اللي بترجّعه في القصة. التوقع الصح بيديك {a}–{b} عملة، أكتر للنجوم الأكبر.',
-        opens: 'الميركاتو يفتح بعد {t}', closes: 'الميركاتو يقفل بعد {t}', paid: '+{n} عملة لتوقعاتك الصح في الواير',
+        opens: 'الميركاتو يفتح بعد {t}', closes: 'الميركاتو يقفل بعد {t}', leftDh: '{d} يوم و{h} ساعة', leftHm: '{h} ساعة و{m} دقيقة', paid: '+{n} عملة لتوقعاتك الصح في الواير',
         group: 'رتّب حسب', by: { star: 'النجوم', league: 'الدوري', team: 'الفريق' }, stars: 'لاعيبة {n} نجوم', unrated: 'لاعيبة تانيين',
         lg: { eng1: 'الدوري الإنجليزي', esp1: 'الدوري الإسباني', ita1: 'الدوري الإيطالي', ger1: 'الدوري الألماني', fra1: 'الدوري الفرنسي', egy1: 'الدوري المصري', ksa1: 'الدوري السعودي' },
         board: 'ترتيب الواير', boardAside: 'الموسم ده', you: 'إنت: #{r}', boardEmpty: 'مفيش توقعات اتحسمت لسه الموسم ده.',
@@ -50,7 +50,7 @@ export default {
       rename: { free: 'El primer cambio de nombre es gratis. Después: {n} monedas.', cost: 'Cambiar el nombre cuesta {n} monedas. Tienes {have}.', broke: 'No te llegan las monedas (necesitas {n}).' },
       wire: {
         real: 'Rumores de fichajes reales del mercado real.', realSub: 'Apuestas del mundo real, la misma firma: se resuelven con lo que pasa de verdad y construyen el nombre que recuperas en la historia. Acertar paga {a}–{b} monedas, más cuanto mayor la estrella.',
-        opens: 'El mercado abre en {t}', closes: 'El mercado cierra en {t}', paid: '+{n} monedas por aciertos en el Wire',
+        opens: 'El mercado abre en {t}', closes: 'El mercado cierra en {t}', leftDh: '{d} d {h} h', leftHm: '{h} h {m} min', paid: '+{n} monedas por aciertos en el Wire',
         group: 'Agrupar por', by: { star: 'Estrellas', league: 'Liga', team: 'Equipo' }, stars: 'Jugadores de {n} estrellas', unrated: 'Otros jugadores',
         lg: { eng1: 'Premier League', esp1: 'LaLiga', ita1: 'Serie A', ger1: 'Bundesliga', fra1: 'Ligue 1', egy1: 'Liga egipcia', ksa1: 'Liga saudí' },
         board: 'Clasificación del Wire', boardAside: 'Esta temporada', you: 'Tú: #{r}', boardEmpty: 'Aún no hay apuestas resueltas esta temporada.',

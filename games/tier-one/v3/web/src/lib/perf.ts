@@ -64,7 +64,8 @@ export function prefetchFilms(stems: string[]): Promise<void> { return stems.red
 // ---------- service worker
 let reg: ServiceWorkerRegistration | null = null;
 let askedReload = false;
-export const swSupported = () => 'serviceWorker' in navigator && !isApp() && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+// Never under the dev server: there is no sw.js there (Vite answers with index.html, and the register() throws a MIME error).
+export const swSupported = () => !import.meta.env.DEV && 'serviceWorker' in navigator && !isApp() && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
 async function registerSW(): Promise<void> {
   if (!swSupported()) return;
   try {
