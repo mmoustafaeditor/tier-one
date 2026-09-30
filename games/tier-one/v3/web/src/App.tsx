@@ -3,8 +3,8 @@ import { flushSync } from 'react-dom';
 import { useSaveSel, shallowEq, update, getSave } from './lib/save';
 import { useT } from './lib/i18n';
 import { sfx } from './lib/sfx';
-import { onToasts } from './lib/meta';
 import { checkPurchase } from './lib/monet';
+import { Toasts } from './ui/bits';
 import { bootPlatform } from './lib/account';
 import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
@@ -70,8 +70,6 @@ export function App() {
   const t = useT();
   const [route, setRoute] = useState<Route>(initialRoute);
   const [settings, setSettings] = useState(false);
-  const [toasts, setToasts] = useState<{ id: number; kind: string; title: string; body?: string }[]>([]);
-  useEffect(() => onToasts(setToasts), []);
   useEffect(() => { checkPurchase(); bootPlatform(__APP_VERSION__).catch(() => { /* offline: the game runs on the local save */ }); }, []);
   useEffect(() => { captureReferral(); }, []); // ?ref=CODE (lib/wallet.ts): both players earn credits after the friend's first window
 
@@ -183,7 +181,7 @@ export function App() {
       <span className="g-tabs__brand" aria-hidden="true">T<b>1</b></span>
       {TABS.map((x) => <a key={x.n} href={'?tab=' + x.n} style={{ ['--tab-c' as string]: x.c }} aria-current={tab === x.n ? 'page' : undefined} onClick={(e) => { e.preventDefault(); go({ n: x.n } as Route); }}><Icon n={x.icon} /><span>{t(x.k)}</span></a>)}
     </nav>}
-    <div className="toasts" aria-live="polite">{toasts.map((x) => <div key={x.id} className={'toast toast--' + x.kind}><b>{x.title}</b>{x.body && <span className="meta">{x.body}</span>}</div>)}</div>
+    <Toasts />
     <Suspense fallback={null}>
       {settings && <SettingsSheet open={settings} onClose={() => setSettings(false)} go={go} />}
       {!s.onboarded && <Onboarding go={go} />}
