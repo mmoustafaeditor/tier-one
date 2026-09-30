@@ -19,6 +19,7 @@ import { Icon, Kit, confetti } from './game';
 import { PostFilm, Hands } from '../film/calls/PostFilm';
 import { postStem, aspectNow, type PostKind } from '../film/calls/manifest';
 import { useFilmSlot, FilmVideo, FilmPoster } from '../film/calls/FilmSlot';
+import { Beat } from './film'; // the filmed shred under a Delete & repost (GOTY.md §9); nothing without the clip
 import '../film/calls/callfilms.css';
 
 const T0 = 120, PER = 20, TYPE_MAX = 720, PRESS = 120, SENT_GAP = 100, HOLD = 1200, HOLD_UT = 900, OUT = 300, CUT = 260;
@@ -126,6 +127,7 @@ export function PostScene({ c, o, s, ut, prev, onDone }: PostSceneProps) {
       <div className="pf__shot">
         {slot.mode === 'poster' ? <FilmPoster stem={stem} fallback={backdrop} /> : <>{slot.mode !== 'video' && backdrop}<FilmVideo stem={stem} mode={slot.mode} setMode={slot.setMode} /></>}
       </div>
+      {pre > 0 && <Beat stem="beat-shred" trigger={1} className="fl-beat--shred" />}
       <div className="pf__screen">
         {inPre && prev && <div className={'ps ps--old oc--' + OUTS[prev.o] + (el >= UT_STRIKE ? ' is-struck' : '') + (el >= UT_AWAY ? ' is-away' : '')}>
           <div className="ps__h">{av}<span className="ps__who"><b>{who}</b><span className="g-mono">{handle} · {strWord(t.lang, prev.s)} · {outWord(t.lang, prev.o)}</span></span></div>

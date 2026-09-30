@@ -12,6 +12,7 @@ import { Avatar } from '../ui/screenbits';
 import { Byline, Flair, Handle } from '../ui/social';
 import { identity, syncNewsroom, newsroomUrl, type Newsroom, type NewsroomTop } from '../lib/social';
 import type { Chrome } from '../App';
+import { MastheadFilm } from '../ui/film';
 
 const sx = (i: number): CSSProperties => ({ ['--i' as string]: i });
 type Data = { newsroom: Newsroom | null; top: NewsroomTop[] };
@@ -52,6 +53,7 @@ export function NewsroomScreen({ code, ...chrome }: Chrome & { code?: string }) 
   const wantsJoin = !!code && (!nr || nr.code !== code);
   const copy = () => { if (!nr) return; navigator.clipboard?.writeText(newsroomUrl(nr.code)); sfx('ui.pop'); setCopied(true); setTimeout(() => setCopied(false), 1800); };
   return <div className="g-screen rooms3 pressbox so-nr">
+    {nr && <MastheadFilm />}
     <TopBar back={{ label: t('so.tabs.rooms'), onClick: () => chrome.go({ n: 'rooms' }) }} onMenu={chrome.openSettings} />
     <div className="stagger g-stack">
       {nr ? <>
