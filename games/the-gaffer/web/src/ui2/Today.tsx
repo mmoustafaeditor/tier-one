@@ -5,7 +5,8 @@ import type { Choice, Decision } from '../sim/decisions';
 import { decisions, staffCallsSinceMatch } from '../sim/decisions';
 import { predict } from '../sim/match';
 import { advice } from '../sim/scouting';
-import { objectiveOf, playerOf, squadOf } from '../sim/world';
+import { playerOf, squadOf } from '../sim/world';
+import { userObjective } from '../sim/vision';
 import { nextUserMatch, seasonOver } from '../sim/season';
 import { available } from '../sim/tactics';
 import { dayName, dayNum, shortDate, dateOf } from '../sim/calendar';
@@ -192,7 +193,7 @@ function PulsePanel({ pos }: { pos: number }) {
   const low = [...squad].sort((a, b) => a.morale - b.morale)[0];
   const lastM = c.matches?.[0];
   const res = lastM ? (() => { const me = lastM.home === c.clubId ? 0 : 1; const d = lastM.goals[me] - lastM.goals[1 - me]; const o = clubOf(w, me === 0 ? lastM.away : lastM.home); return `${x.today.lastResult}: ${lastM.goals[me]}–${lastM.goals[1 - me]} v ${cn(o, g.lang)}${d > 0 ? '' : ''}`; })() : '';
-  const obj = g.t.objective[objectiveOf(w, g.club)];
+  const obj = g.t.objective[userObjective(w, c)]; // V2.7: after the board meeting
   const rows: [string, string, string, string, number, number[]][] = [
     ['board', x.today.board, x.today.mood(board), x.today.boardWhy(obj.toLowerCase(), x.place(pos)), board, last(1, board)],
     ['fans', x.today.fans, x.today.fansMood(fans), res, fans, last(2, fans)],

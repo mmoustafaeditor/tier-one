@@ -6,7 +6,8 @@
 import type { Career, Dept, LocalizedName, Pending, Player, PrepFocus, StaffRole } from '../model/types';
 import type { Command } from './commands';
 import { available, formOf, slotValue, xiFor, FORMATIONS, DEFAULT_TACTICS } from './tactics';
-import { playerOf, squadOf, strengthOf, type World } from './world';
+import { objectiveOf, playerOf, squadOf, strengthOf, type World } from './world';
+import { VISION_DEADLINE, kittyFor, needsMeeting, raiseObjective } from './vision';
 import { renewDemand, wageBillOf, SQUAD_COMFORT, SQUAD_THIN } from './transfers';
 import { balanceOf } from './balance';
 import { CAP_MONTHS_UP } from './economy';
@@ -23,7 +24,7 @@ import { anyPlayer } from './youth';
 import { recruitDecisions } from './recruit/decide';
 import { rcOf } from './recruit/state';
 
-export type DecKind = 'welcome' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline'
+export type DecKind = 'welcome' | 'vision' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline'
   | 'talk' | 'request' | 'promise' | 'armband' | 'clause' // v2.4 dressing room (sim/room-decisions.ts)
   | 'bidAnswer' | 'agent' | 'rival' | 'loanClause' | 'recall' // v2.5 recruitment (sim/recruit/decide.ts)
   | 'risk' | 'rush' | 'intake' | 'ready' | 'loanee' | 'benched' | 'full' | 'ageout'; // v2.6 (sim/youthDecisions.ts)
@@ -62,6 +63,27 @@ export function decisions(w: World, c: Career): Decision[] {
         { id: 'staff', key: 'leaveIt', cmds: [{ type: 'delegation.all', level: 'staff' }], fx: [{ tone: 'good', icon: 'check', key: 'fewestCalls' }, { tone: 'warn', icon: 'market', key: 'staffSign' }] },
       ],
       score: 65, open: { to: 'staff' },
+    });
+  }
+
+  // 0b. V2.7 the pre-season board meeting: the board's league target, or one step higher with the owner's money and a
+  // stricter board (sim/vision.ts). Unanswered by matchday 3 it lapses to the board's target.
+  if (needsMeeting(c)) {
+    const base = objectiveOf(w, w.clubs.find((x) => x.id === c.clubId)!);
+    const high = raiseObjective(base);
+    const kitty = kittyFor(w, c);
+    add({
+      id: `vision:${c.season}`, kind: 'vision', dept: null, role: 'director', icon: 'club',
+      title: { key: 'cl.vision', n: c.season }, advice: { key: 'cl.vision', s: base }, due: days(VISION_DEADLINE - c.round),
+      choices: [
+        { id: 'expected', key: 'cl.expected', cmds: [{ type: 'vision.set', level: 'expected' }], pick: true, fx: [{ tone: 'good', icon: 'check', key: 'cl.goodwill' }] },
+        { id: 'ambitious', key: 'cl.ambitious', s: high, cmds: [{ type: 'vision.set', level: 'ambitious' }], fx: [
+          ...(high !== base ? [{ tone: 'warn' as const, icon: 'star', key: 'cl.target', s: high }] : []),
+          ...(kitty > 0 ? [{ tone: 'good' as const, icon: 'pound', key: 'cl.kitty', n: kitty }] : []),
+          { tone: 'bad', icon: 'alert', key: 'cl.strict' },
+        ] },
+      ],
+      score: 80, open: { to: 'office' },
     });
   }
 

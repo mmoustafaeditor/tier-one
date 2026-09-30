@@ -212,7 +212,14 @@ export interface Career {
   // V2.6 training & pathway (sim/youth.ts)
   intake?: Intake;                                // this season's Intake Day for the user's club (prepared at the preview)
   trainRep?: TrainReport;                         // last matchday's training report (growth, knocks, load)
+  // V2.7 club vision (sim/vision.ts): the pre-season board meeting's answer for this season (missing = not met yet)
+  vision?: Vision;
 }
+
+// V2.7: the pre-season board meeting. 'expected': the board's own targets and its goodwill (+5 confidence).
+// 'ambitious': the league target one step higher, the owner's money on the table (`kitty`), a stricter board.
+export type VisionLevel = 'expected' | 'ambitious';
+export interface Vision { season: number; level: VisionLevel; kitty?: number }
 
 // ---------- v2.4 dressing room (save v6) ----------
 export type SquadRole = 'star' | 'starter' | 'rotation' | 'prospect';
@@ -316,7 +323,11 @@ export interface ClubOps {
   lastLedger?: Record<string, number>;
   report: { improved: string[]; hurt: string[] }; // last training week
   lastGate?: { attendance: number; revenue: number };
+  build?: FacilityBuild;                 // V2.7: the one facility under construction (its level applies at readyAt)
 }
+
+// A facility project: paid when started, open once the calendar reaches `readyAt` (season × 100 + matchday).
+export interface FacilityBuild { f: Facility; level: number; readyAt: number }
 
 // Knockout tie: [home, away, homeGoals, awayGoals, homePens, awayPens, winner]. away '' = bye. Goals -1 until played.
 export type Tie = [string, string, number, number, number, number, string];

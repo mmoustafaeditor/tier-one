@@ -21,6 +21,7 @@ import { staffWeek } from './staff';
 import { SQUAD_SELL_MIN } from './transfers';
 import { roomPull } from './room';
 import { facilityNorm, staffEdge } from './norms';
+import { userObjective } from './vision';
 import { applyCards, serveCupBans } from './discipline';
 
 // ---------- fixtures ----------
@@ -391,7 +392,7 @@ export const MOOD_PER_POINT = 0.05;
 export function tableMood(w: World, c: Career, club: Club): number {
   const rows = table(w, c, club.leagueId);
   const pos = rows.findIndex((x) => x.clubId === c.clubId) + 1;
-  const obj = objectiveOf(w, club);
+  const obj = userObjective(w, c); // V2.7: one step higher after an ambitious board meeting
   const mine = rows[pos - 1].pts;
   if (objectiveMet(obj, pos, rows.length)) {
     // On course: the first place that misses the objective is the line to stay clear of.
@@ -412,7 +413,7 @@ export function tableMood(w: World, c: Career, club: Club): number {
 export function onCourse(w: World, c: Career, club: Club): boolean {
   const rows = table(w, c, club.leagueId);
   const pos = rows.findIndex((x) => x.clubId === c.clubId) + 1;
-  const obj = objectiveOf(w, club);
+  const obj = userObjective(w, c); // V2.7: one step higher after an ambitious board meeting
   if (objectiveMet(obj, pos, rows.length)) return true;
   let target = pos;
   while (target > 1 && !objectiveMet(obj, target, rows.length)) target--;
@@ -526,6 +527,7 @@ const AI_SQUAD = 22;               // AI clubs sign free agents up to this
 // and a small club's cheque is measured against its own wages (a mid-table finish is worth about half a month's cap,
 // a title about two), not against the giants' budgets.
 export const PRIZE_POT = 1.0;
+export const PARACHUTE_MONTHS = 6;
 export const PRIZE_STEEPNESS = 1.5;
 
 // Closes the season: records the result, moves clubs up and down, ages and develops players, retires veterans,
@@ -539,8 +541,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
   const myLeague = leagueOf(w, c.clubId);
   const tables = new Map(w.leagues.map((l) => [l.id, table(w, c, l.id)]));
   const myTable = tables.get(myLeague)!;
-  const myClub = w.clubs.find((x) => x.id === c.clubId)!;
-  const objective = objectiveOf(w, myClub);
+  const objective = userObjective(w, c);
   const position = myTable.findIndex((x) => x.clubId === c.clubId) + 1;
   const record: SeasonRecord = {
     season: c.season, clubId: c.clubId, leagueId: myLeague, position, objective,
@@ -558,6 +559,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
   const clubs: Club[] = w.clubs.map((x) => ({ ...x }));
   const byId = new Map(clubs.map((x) => [x.id, x]));
   const promoted: string[] = [], relegated: string[] = [];
+  let parachute = 0;
   for (const lg of w.leagues) {
     const t = tables.get(lg.id)!;
     const pot = PRIZE_POT * clubs.filter((x) => x.leagueId === lg.id).reduce((s, x) => s + x.wageCap, 0);
@@ -574,7 +576,8 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     if (lower) {
       const down = t.slice(-MOVERS).map((x) => x.clubId);
       const up = tables.get(lower.id)!.slice(0, MOVERS).map((x) => x.clubId);
-      for (const id of down) { byId.get(id)!.leagueId = lower.id; relegated.push(id); }
+      // V2.7 parachute: a relegated club gets PARACHUTE_MONTHS of its wage cap to soften the drop.
+      for (const id of down) { const x = byId.get(id)!; x.leagueId = lower.id; relegated.push(id); x.budget += roundFee(x.wageCap * PARACHUTE_MONTHS); if (id === c.clubId) parachute = roundFee(x.wageCap * PARACHUTE_MONTHS); }
       for (const id of up) { byId.get(id)!.leagueId = lg.id; promoted.push(id); }
     }
   }
@@ -603,7 +606,8 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     const { potential } = seasonDev(p, c.season, r);
     const value = valueOf(rating, age, potential);
     const q: Player = {
-      ...p, rating, potential, marketValue: value, wage: Math.max(p.wage, wageOf(value, lid)), attrs: shiftAttrs(p.attrs, 0),
+      // GF-015: a contract's wage holds until the player renews or moves (no summer ratchet); AI renewals below re-price it.
+      ...p, rating, potential, marketValue: value, wage: p.wage, attrs: shiftAttrs(p.attrs, 0),
       fitness: 100, morale: 65, injured: 0, banned: p.banned, yc: undefined, listed: undefined, // gf-ref: bans carry over, yellow counts start again
       rh: [...(p.rh ?? []), enc(c.season, 99, rating)].slice(-60), ms: undefined, run: undefined, load: undefined, m5: p.m5 ? Math.round(p.m5 * 0.3) : undefined, inj0: undefined, rr: undefined,
     };
@@ -618,6 +622,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
         continue;
       }
       q.contractUntil = season + int(r, 2, 4);
+      q.wage = wageOf(value, lid); // an AI club's new deal is priced at today's value
     }
     players.push(q);
   }
@@ -692,8 +697,8 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
   let ops = c.ops;
   if (ops) {
     const mine = clubs.find((x) => x.id === c.clubId)!;
-    const prize = mine.budget - (coachEnd?.cash ?? 0) - w.clubs.find((x) => x.id === c.clubId)!.budget;
-    const ledger = { ...ops.ledger, prizes: (ops.ledger.prizes ?? 0) + prize, milestones: (ops.ledger.milestones ?? 0) + (coachEnd?.cash ?? 0) };
+    const prize = mine.budget - (coachEnd?.cash ?? 0) - parachute - w.clubs.find((x) => x.id === c.clubId)!.budget;
+    const ledger = { ...ops.ledger, prizes: (ops.ledger.prizes ?? 0) + prize, milestones: (ops.ledger.milestones ?? 0) + (coachEnd?.cash ?? 0), ...(parachute ? { parachute } : {}) };
     const titles = (coachEnd?.career.coach.trophies.length ?? 0) - (c.coach?.trophies.length ?? 0);
     ops = resetExams({ ...ops, lastLedger: ledger, ledger: {}, devPoints: 0 });
     void titles;

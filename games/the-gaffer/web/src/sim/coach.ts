@@ -4,13 +4,14 @@
 // moving club never locks the career and the new club welcomes you (#40, #49, #50, #27), the inbox trims itself (#37).
 import type { Career, Club, Coach, Licence, LocalizedName, Msg, MsgKind, Objective } from '../model/types';
 import { clamp } from './rng';
-import { objectiveOf, squadOf, type World } from './world';
+import { squadOf, type World } from './world';
 import type { FormationId } from './tactics';
 import { cupRun, cupWinner } from './cups';
 import { newOps } from './economy';
 import { myWorldRank } from './rankings';
 import { addNews } from './news';
 import { balanceOf, sackLine, seasonSackLine } from './balance';
+import { strictness, userObjective } from './vision';
 
 // `board.hired` (coach days at the hire) is written by newBoard and read by sinceHire; saves from before this change have none.
 type Board = Career['board'] & { hired?: number };
@@ -143,7 +144,7 @@ export function objectivesOf(w: World, c: Career): Objectives {
   const lg = w.leagues.find((l) => l.id === club.leagueId)!;
   const country = w.clubs.filter((x) => w.leagues.find((l) => l.id === x.leagueId)?.country === lg.country).sort((a, b) => b.reputation - a.reputation);
   const rank = country.findIndex((x) => x.id === club.id);
-  return { league: objectiveOf(w, club), cup: rank < 2 ? 'win' : rank < 8 ? 'semi' : 'round2', youth: club.reputation >= 85 ? 5 : 15, finance: true };
+  return { league: userObjective(w, c), cup: rank < 2 ? 'win' : rank < 8 ? 'semi' : 'round2', youth: club.reputation >= 85 ? 5 : 15, finance: true };
 }
 
 export const youthApps = (w: World, c: Career) =>
@@ -221,7 +222,7 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
 // `onCourse`: the club meets its objective or is within touching distance of it (season.ts onCourse); a board doesn't
 // sack a manager who is delivering what it asked for (audit GF-004: a Man City side 2nd with 33 wins was sacked).
 export function sackCheck(w: World, c: Career, onCourse = false): Career {
-  if (c.sacked || onCourse || c.round < HONEYMOON || sinceHire(c) < HONEYMOON || c.board.confidence >= sackLine(balanceOf(c))) return c;
+  if (c.sacked || onCourse || c.round < HONEYMOON || sinceHire(c) < HONEYMOON || c.board.confidence >= sackLine(balanceOf(c)) + strictness(c)) return c;
   const career: Career = { ...c, sacked: true, jobs: jobOffers(w, c, true) };
   return addNews(addMsg(career, 'board', 'sacked', { club: c.clubId }), 'managers', 'sacked', { club: c.clubId, s: c.managerName });
 }
@@ -311,7 +312,7 @@ export function coachSeasonEnd(w: World, c: Career, position: number, leagueId: 
   career = addMsg(career, 'board', met ? 'seasonGood' : 'seasonBad', { n: position });
   const ms = checkMilestones(career, null);
   career = ms.career;
-  if (career.board.confidence < seasonSackLine(balanceOf(career))) {
+  if (career.board.confidence < seasonSackLine(balanceOf(career)) + strictness(c)) {
     career = { ...career, sacked: true, jobs: jobOffers(w, career, true) };
     career = addMsg(career, 'board', 'sacked', { club: c.clubId });
     career = addNews(career, 'managers', 'sacked', { club: c.clubId, s: c.managerName });

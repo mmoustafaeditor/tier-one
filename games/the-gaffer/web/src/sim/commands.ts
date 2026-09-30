@@ -2,7 +2,8 @@
 // through `dispatch`. It is pure: it validates inside the simulation, never in the UI, and returns either the next
 // world and career plus the events it appended, or a typed refusal. Screens never compute the next state themselves;
 // they build a Command and hand it to the App, which dispatches it and saves.
-import type { Balance, Career, Dept, DeptLevel, Facility, LocalizedName, NamesMode, PrepFocus, SponsorDeal } from '../model/types';
+import type { Balance, Career, Dept, DeptLevel, Facility, LocalizedName, NamesMode, PrepFocus, SponsorDeal, VisionLevel } from '../model/types';
+import { setVision } from './vision';
 import { withNames } from './seed';
 import type { UserTactics, Tactics, Philosophy } from './tactics';
 import type { LiveMatch } from './match';
@@ -56,6 +57,7 @@ export type Command =
   | { type: 'ticket.set'; price: number }
   | { type: 'facility.upgrade'; facility: Facility }
   | { type: 'wagecap.move'; perMonth: number }
+  | { type: 'vision.set'; level: VisionLevel } // V2.7: the pre-season board meeting
   | { type: 'squad.bonus'; ids: string[]; each: number; fromWallet: boolean }
   | { type: 'squad.talk' }
   | { type: 'training.set'; load?: 0 | 1 | 2; focus?: { playerId: string; attr: number | null }; pos?: { playerId: string; pos: Position | null } }
@@ -247,7 +249,11 @@ function run(w: World, c: Career, cmd: Command): { world: World; career: Career;
       return { world: w, career: { ...c, ops: { ...c.ops, ticket: Math.round(cmd.price * 10) / 10 } } };
     case 'facility.upgrade': {
       const r = upgradeFacility(w, c, cmd.facility);
-      return r.ok ? { world: r.world, career: r.career } : no('budget');
+      return r.ok ? { world: r.world, career: r.career } : no(r.reason ?? 'budget');
+    }
+    case 'vision.set': {
+      const r = setVision(w, c, cmd.level);
+      return r ?? no('gone');
     }
     case 'wagecap.move': {
       if (!cmd.perMonth) return no('amount');
