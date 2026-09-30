@@ -61,3 +61,9 @@
 :root[data-film="none"] .fl, :root[data-film="none"] .fl-beat, :root[data-film="none"] .desk3d { display: none !important; }
 @media (prefers-reduced-motion: reduce) { .fl > video, .fl-beat, .desk3d > canvas { display: none !important; } .fl, .fl > video { transition: none; } }
 :root.reduce .fl > video, :root.reduce .fl-beat, :root.reduce .desk3d > canvas { display: none !important; }
+
+/* ---------- a drawn loop (GOTY.md §10; film/surfaces/drawn.tsx): an SVG set animated by CSS, dimmed like a clip */
+.fl--draw > svg.dl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.fl--draw.fl--dim > svg.dl { opacity: .62; }
+.fl--draw { background: #0C0B09; }
+.fl--draw.fl--inline { background: transparent; }

@@ -24,6 +24,7 @@ import { playScene, afterScenes, firstToday } from '../lib/scenes';
 import { WindowFilm, ResultsFilm, DDClockFilm, Beat as FilmBeat, playBeat, warmBeat } from '../ui/film';
 import { pickupBeat, stampBeat, SRCS as FILM_SRCS } from '../film/surfaces/manifest';
 import type { Chrome } from '../App';
+import { DayEnd } from '../film/calls/DayEnd'; // GOTY.md §10: the 1.5 s day end between window days (additive)
 // The editor's desk (GOTY.md §7.1): the Daily brief before day 1 and the Deadline Day Live ticker (ui/live.tsx).
 import { DailyBriefSheet, DDLiveTicker } from '../ui/live';
 import { LivePresence } from '../ui/social';
@@ -47,6 +48,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const [sel, setSel] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [last, setLast] = useState<{ i: number; c: Clue } | null>(null);
+  const [dayEnd, setDayEnd] = useState<{ k: number; day: number } | null>(null);
   const [night, setNight] = useState<Night | null>(null);
   const [report, setReport] = useState<CareerReport | null>(null);
   const [beat, setBeat] = useState<Beat | null>(null);
@@ -147,6 +149,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     const posts = st.feed.filter((f) => f.day === before.day);
     const twist = st.twist && !before.twist ? st.twist : null;
     setNight({ day: st.day, posts, twist, noTwist: st.noTwist && !before.noTwist, dd: st.day === view.R.DAYS });
+    setDayEnd({ k: Date.now(), day: st.day });
   };
   // Deadline Day opens with its film (full once a day, the short cut after); the clock only starts once it ends.
   const startDD = () => { setNight(null); playScene(firstToday('deadline') ? 'deadline' : 'deadline-short'); afterScenes(async () => { const v = await driver.dd(); setView(v); }); };
@@ -208,6 +211,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <div className="sheet__body"><h2 className="g-h2">{t('daily.endConfirm', { n: view.state.day, c: view.state.left })}</h2><p className="g-sub" style={{ marginTop: 8 }}>{t('daily.contactsNote')}</p>
         <GBtn kind="dark" style={{ marginTop: 16 }} onClick={endDay}><Icon n="moon" />{t('daily.endConfirmOk')}</GBtn><GBtn kind="paper" style={{ marginTop: 12 }} onClick={() => setConfirmEnd(false)}>{t('common.cancel')}</GBtn></div>
     </Sheet>
+    {dayEnd && createPortal(<DayEnd key={dayEnd.k} day={dayEnd.day} lang={t.lang} rtl={t.rtl} label={t('g.win.dayH', { n: dayEnd.day })} kicker={t('mo.dawn')} onDone={() => setDayEnd(null)} />, document.body)}
     {night && createPortal(<NightScene night={night} view={view} onGo={() => (night.dd ? startDD() : setNight(null))} />, document.body)}
     {view.mode === 'daily' && !night && !calling && <DailyBriefSheet view={view} go={chrome.go} />}
   </div>;
