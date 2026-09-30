@@ -22,6 +22,7 @@ import { playScene, afterScenes, firstToday } from '../lib/scenes';
 import type { Chrome } from '../App';
 // The editor's desk (GOTY.md §7.1): the Daily brief before day 1 and the Deadline Day Live ticker (ui/live.tsx).
 import { DailyBriefSheet, DDLiveTicker } from '../ui/live';
+import { LivePresence } from '../ui/social';
 
 // The rival ledger (GOTY.md §1.3) lives in the connect lane's lib/byline.ts. Picked up here if that module exists and
 // exports rivalRecord(id); otherwise the race strip and overnight taunts simply run without it.
@@ -166,6 +167,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     <div className="play__cols">
       <main className={mob ? 'only-desk' : ''}>
         {view.mode === 'daily' && !dd && <DDLiveTicker go={chrome.go} />}
+        {view.mode === 'daily' && !dd && <LivePresence board="daily" />}
         {!dd && <section className="dayhead">
           <DayStrip day={view.state.day} days={view.R.DAYS} />
           <div className="dayhead__row">
