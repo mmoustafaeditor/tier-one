@@ -7,6 +7,8 @@ import { predict } from '../sim/match';
 import { advice } from '../sim/scouting';
 import { playerOf, squadOf } from '../sim/world';
 import { userObjective } from '../sim/vision';
+import { isDerby } from '../sim/rivalry';
+import { CL } from '../lang-club-all';
 import { nextUserMatch, seasonOver } from '../sim/season';
 import { available } from '../sim/tactics';
 import { dayName, dayNum, shortDate, dateOf } from '../sim/calendar';
@@ -125,7 +127,7 @@ function FixtureCard() {
       <div className="top">
         <div className="between">
           <span className="eyebrow">{matchLabel(g, { cup: u.cup, round: u.round, group: u.group })}</span>
-          <span className="tag"><I n="stadium" size="sm" />{mine ? x.today.ourGround : x.today.theirGround}</span>
+          <span className="chips">{isDerby(home.id, away.id) && <span className="tag tag--warn"><I n="fans" size="sm" />{CL[g.ui].derby}</span>}<span className="tag"><I n="stadium" size="sm" />{mine ? x.today.ourGround : x.today.theirGround}</span></span>
         </div>
         <div className="vs">
           <div className="team"><Crest club={home} size={64} /><b>{cn(home, lang)}</b><Form list={formOf(rows, home.id)} letters={x.wdl} /></div>

@@ -12,6 +12,7 @@ import { myWorldRank } from './rankings';
 import { addNews } from './news';
 import { balanceOf, sackLine, seasonSackLine } from './balance';
 import { strictness, userObjective } from './vision';
+import { DERBY_WEIGHT, isDerby } from './rivalry';
 
 // `board.hired` (coach days at the hire) is written by newBoard and read by sinceHire; saves from before this change have none.
 type Board = Career['board'] & { hired?: number };
@@ -185,6 +186,7 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
   const pts = o.mine > o.theirs ? 3 : o.mine === o.theirs ? 1 : 0;
   const expected = o.expected ?? clamp(1.4 + (o.myLevel - o.oppLevel) * 0.1 + (o.home ? 0.2 : -0.2), 0.3, 2.6);
   const surprise = pts - expected;
+  const k = isDerby(c.clubId, o.oppId) ? DERBY_WEIGHT : 1; // V2.8: a derby's result counts 1.5 times with the board and the fans
   const coach: Coach = {
     ...c.coach,
     record: [c.coach.record[0] + 1, c.coach.record[1] + (pts === 3 ? 1 : 0), c.coach.record[2] + (pts === 1 ? 1 : 0), c.coach.record[3] + (pts === 0 ? 1 : 0), 0],
@@ -196,10 +198,10 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
   };
   const before = c.board;
   const board = {
-    confidence: clamp(Math.round((before.confidence + surprise * BOARD_PER_SURPRISE) * 10) / 10, 0, 100),
+    confidence: clamp(Math.round((before.confidence + surprise * BOARD_PER_SURPRISE * k) * 10) / 10, 0, 100),
     // Fans enjoy winning whatever the odds said, and a surprise moves them on top: odds alone left a winning
     // favourite's fans "muttering" all season (audit GF-004).
-    fans: clamp(Math.round((before.fans + FANS_RESULT[pts] + surprise * FANS_PER_SURPRISE + (o.mine >= 3 ? 1 : 0) + (FANS_REST - before.fans) * FANS_SETTLE) * 10) / 10, 0, 100),
+    fans: clamp(Math.round((before.fans + (FANS_RESULT[pts] + surprise * FANS_PER_SURPRISE) * k + (o.mine >= 3 ? 1 : 0) + (FANS_REST - before.fans) * FANS_SETTLE) * 10) / 10, 0, 100),
   };
   let career: Career = { ...c, coach, board };
   // Messages that match what really happened (E2E #19).

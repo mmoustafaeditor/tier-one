@@ -214,7 +214,13 @@ export interface Career {
   trainRep?: TrainReport;                         // last matchday's training report (growth, knocks, load)
   // V2.7 club vision (sim/vision.ts): the pre-season board meeting's answer for this season (missing = not met yet)
   vision?: Vision;
+  awards?: import('../sim/awards').AwardSet[];     // V2.8: recent awards nights, newest first (last 30 league sets)
+  clubTally?: Record<string, [number, number, number]>; // V2.8: '<club>:<player>' -> league apps, goals, trophies there
+  legends?: Legend[];                             // V2.8: club legends (they stay listed after they leave or retire)
 }
+
+// V2.8 a club legend: 200 league apps, or 80 league goals, or 100 apps and 2 trophies at the club.
+export interface Legend { clubId: string; id: string; pn: LocalizedName; apps: number; goals: number; trophies: number; season: number }
 
 // V2.7: the pre-season board meeting. 'expected': the board's own targets and its goodwill (+5 confidence).
 // 'ambitious': the league target one step higher, the owner's money on the table (`kitty`), a stricter board.
