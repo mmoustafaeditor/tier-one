@@ -28,6 +28,7 @@ import { RS, RSN, TUNE_REF, callFoul, callGoal, callOffside, ensureRef, foulFact
 import { PERIOD_END, afterTick, isExtraBreak, isHalfTime, knockout, needsExtra, periodOver, playOver, tick } from './engine/clock';
 import { SUBS } from './competitions';
 import { AI_COH, cohLevel, cohesionOfClub } from './cohesion';
+import { staffEdge } from './norms';
 
 // gf-ref: 'pen' a penalty given (side = the side awarded it, playerId = the player fouled, vs = the offender),
 // 'var' a VAR check or on-field review (note `what:check|ofr:stands|over[:why]`), 'nogoal' a goal ruled out.
@@ -134,10 +135,12 @@ function side(w: World, c: Career | null, clubId: string, oppLevel: number, form
     talk: mine ? c!.talk ?? 0 : 0, onPitch: xi.map((p) => p.id), bench: bench.map((p) => p.id), subs: 0,
     pieces: { captain: sp.captain.id, penalties: sp.penalties.id, freeKicks: sp.freeKicks.id, corners: sp.corners.id }, form,
     mods: mine ? {
-      fatigue: (c!.coach?.courses.includes('conditioning') ? 0.85 : 1) * (1 - (c!.ops?.staff.fitness?.quality ?? 0) / 500),
+      // Staff count against what a club this size normally has (economy.ts staffNorm): AI sides play at that norm.
+      fatigue: (c!.coach?.courses.includes('conditioning') ? 0.85 : 1) * (1 - staffEdge(c!.ops, w.clubs.find((x) => x.id === clubId), 'fitness') / 500),
       press: c!.coach?.courses.includes('gegenpress') ? 1.03 : 1,
-      // a great assistant is worth up to one rating point; v2.4: cohesion ±2 levels (sim/cohesion.ts)
-      level: (c!.ops?.staff.assistant?.quality ?? 0) / 100 + cohLevel(cohesionOfClub(w.clubs, clubId)),
+      // an assistant 30 points above the norm is worth about a third of a rating point; v2.4: cohesion ±2 levels
+      // (sim/cohesion.ts), measured against the normal room the other side brings (AI_COH)
+      level: staffEdge(c!.ops, w.clubs.find((x) => x.id === clubId), 'assistant') / 100 + cohLevel(cohesionOfClub(w.clubs, clubId)),
     } : undefined,
     ...(mine ? { coh: cohesionOfClub(w.clubs, clubId) } : {}),
   };

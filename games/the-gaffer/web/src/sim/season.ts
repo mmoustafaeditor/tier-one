@@ -7,7 +7,7 @@ import { cupRun, cupWinner, groupTable, playCupDay, tiesOn, userCupMatch, userTi
 import { addNews, newsRound, rumoursRound } from './news';
 import { addMsg, afterMatch, coachSeasonEnd, newBoard, newCoach, sackCheck, salaryOf } from './coach';
 import { available } from './tactics';
-import { aiEconomyWeek, economyWeek, newOps, sponsorBonus, staffQ } from './economy';
+import { aiEconomyWeek, economyWeek, newOps, sponsorBonus } from './economy';
 import { applyElo } from './rankings';
 import { FOCUS_TACTICAL, earnDev, resetExams } from './training';
 import { academySeasonEnd, addMinutes, developDay, enc, pathwayDay, returnAcademyLoans, seasonDev } from './youth';
@@ -20,6 +20,7 @@ import { isDeadlineDay, windowOf } from './windows';
 import { staffWeek } from './staff';
 import { SQUAD_SELL_MIN } from './transfers';
 import { roomPull } from './room';
+import { facilityNorm, staffEdge } from './norms';
 import { applyCards, serveCupBans } from './discipline';
 
 // ---------- fixtures ----------
@@ -107,6 +108,19 @@ export function settleMorale(morale: number, target: number): number {
   return morale + Math.sign(gap) * Math.max(1, Math.round(Math.abs(gap) * MORALE_SETTLE));
 }
 
+// The leaders' pull for every club but the user's: 0.25 × (mean morale of its three best players − 60), rounded.
+export function aiRoomPulls(w: World, userClub: string): Map<string, number> {
+  const best = new Map<string, Player[]>();
+  for (const p of w.players) {
+    if (p.clubId === userClub || p.clubId === FREE_AGENT) continue;
+    const top = best.get(p.clubId) ?? best.set(p.clubId, []).get(p.clubId)!;
+    top.push(p); top.sort((a, b) => b.rating - a.rating); if (top.length > 3) top.pop();
+  }
+  const out = new Map<string, number>();
+  for (const [id, top] of best) out.set(id, Math.round(0.25 * (top.reduce((s, p) => s + p.morale, 0) / top.length - 60)));
+  return out;
+}
+
 // Applies one finished match to the players: condition, morale, cards, injuries, and (league games only) season stats.
 // `care`: the user's club, where the doctor and medical centre shorten injuries.
 type Rate = (id: string, v: number, motm: boolean) => void;
@@ -144,7 +158,12 @@ function applyMatch(rec: MatchRecord, get: (id: string) => Player, byClub: Map<s
 const recordFor = (m: LiveMatch, get: (id: string) => Player, userClub: string | null) =>
   toRecord(m, get, userClub === m.sides[0].clubId ? 0 : userClub === m.sides[1].clubId ? 1 : -1);
 
-const careOf = (c: Career) => (c.ops ? { clubId: c.clubId, cut: Math.min(0.5, staffQ(c.ops, 'doctor') / 300 + (c.ops.facilities.medical - 1) * 0.05) } : null);
+// The doctor and medical centre shorten (or, below the club's norm, lengthen) the user's injuries against what a club
+// this size normally has; AI clubs heal at that norm (norms.ts, audit GF-002).
+const careOf = (w: World, c: Career) => {
+  const club = w.clubs.find((x) => x.id === c.clubId);
+  return c.ops && club ? { clubId: c.clubId, cut: clamp(staffEdge(c.ops, club, 'doctor') / 300 + (c.ops.facilities.medical - facilityNorm(club)) * 0.05, -0.3, 0.5) } : null;
+};
 
 const mutable = (w: World) => {
   const players = w.players.map((p) => ({ ...p }));
@@ -173,7 +192,11 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
   const calm = c.coach?.courses.includes('psychology') ? c.clubId : null;
   // The user's squad settles at a higher morale with the psychology course and a good psychologist.
   // v2.4: the leaders pull the room's settle point with their own mood (sim/room.ts roomPull).
-  const moraleTarget = 60 + (calm ? 5 : 0) + Math.round(staffQ(c.ops, 'psychologist') / 20) + Math.round(roomPull(w, c));
+  const moraleTarget = 60 + (calm ? 5 : 0) + Math.round(staffEdge(c.ops, w.clubs.find((x) => x.id === c.clubId), 'psychologist') / 20) + Math.round(roomPull(w, c));
+  // Every other club's room is pulled by its leaders too, the same 0.25 × (their morale − 60) as roomPull, with its three
+  // best players standing in for the leaders (AI clubs keep no dressing-room state). Without it only the user's squad had
+  // this lift, and user-managed clubs ran hotter than the same club under the AI (audit GF-002).
+  const aiPull = aiRoomPulls(w, c.clubId);
   let mine: LiveMatch | null = null;
 
   for (const [lid, rounds] of Object.entries(c.fixtures)) {
@@ -188,7 +211,7 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
         simulate(m, get);
       }
       if (isMine) mine = m;
-      applyMatch(recordFor(m, get, null), get, byClub, stat, r, calm, careOf(c), rate);
+      applyMatch(recordFor(m, get, null), get, byClub, stat, r, calm, careOf(w, c), rate);
       return [f[0], f[1], m.goals[0], m.goals[1]];
     });
     next.fixtures[lid] = rounds.map((g, i) => (i === c.round ? results : g));
@@ -201,7 +224,7 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
       if (p.banned > 0) p.banned--;
     }
     p.fitness = Math.min(100, p.fitness + 12);
-    p.morale = settleMorale(p.morale, p.clubId === c.clubId ? moraleTarget : 60);
+    p.morale = settleMorale(p.morale, p.clubId === c.clubId ? moraleTarget : 60 + (aiPull.get(p.clubId) ?? 0));
   }
 
   const world: World = { ...w, players, clubs: applyElo(w.clubs, Object.values(next.fixtures).map((rs) => rs[c.round] ?? []).flat()) };
@@ -271,7 +294,7 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
     const calm = c.coach?.courses.includes('psychology') ? c.clubId : null;
     const ratings = { ...(cd.career.ratings ?? {}) };
     const rate: Rate = (id, v, motm) => { const o = ratings[id] ?? [0, 0, 0]; ratings[id] = [Math.round((o[0] + v) * 10) / 10, o[1] + 1, o[2] + (motm ? 1 : 0)]; };
-    for (const m of cd.matches) applyMatch(recordFor(m, get, null), get, byClub, null, r, calm, careOf(c), rate);
+    for (const m of cd.matches) applyMatch(recordFor(m, get, null), get, byClub, null, r, calm, careOf(w, c), rate);
     const clubs = w.clubs.map((x) => (cd.prizes.has(x.id) ? { ...x, budget: x.budget + cd.prizes.get(x.id)! } : x));
     const cupResults = cd.matches.map((m): [string, string, number, number] => [m.sides[0].clubId, m.sides[1].clubId, m.goals[0], m.goals[1]]);
     world = { ...w, players, clubs: applyElo(clubs, cupResults) };
