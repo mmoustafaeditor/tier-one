@@ -11,6 +11,7 @@
     "serve": "node scripts/dev-server.mjs",
     "smoke:api": "node scripts/api-smoke.mjs",
     "test:live": "node --test scripts/live.test.mjs",
+    "test:social": "node --test scripts/social-api.test.mjs",
     "world": "node scripts/build-world.mjs"
   },
   "dependencies": {
