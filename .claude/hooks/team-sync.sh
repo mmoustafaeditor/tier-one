@@ -85,6 +85,29 @@ if [ -n "$requests" ]; then
   echo "  → When the person it's for confirms it's done, delete it from .claude/requests.md and log it in UPDATES.md."
 fi
 
+# Saif's work and proposals for mmoustafaeditor (CLAUDE.md § 1c). Read from origin/main so a stale checkout still sees them.
+updates=$(git show origin/main:UPDATES.md 2>/dev/null || cat UPDATES.md 2>/dev/null)
+saif=$(printf '%s\n' "$updates" | awk '
+  /^## [0-9]{4}-[0-9]{2}-[0-9]{2} · / { if ($0 ~ / · mmoustafaeditor · /) exit; keep = ($0 ~ / · saifsaber · /); if (keep) print "  " substr($0, 4); next }
+  keep && /^- \*\*(Files|Heads-up for the team):\*\*/ { print "     " substr($0, 3) }')
+if [ -n "$saif" ]; then
+  echo ""
+  echo "🧑‍💻 SAIF'S UPDATES since mmoustafaeditor's last UPDATES.md entry (newest first; details in UPDATES.md):"
+  printf '%s\n' "$saif" | cut -c1-400
+fi
+for g in tier-one:"Tier One" the-gaffer:"The Gaffer"; do
+  f="games/${g%%:*}/SAIF_IMPROVEMENTS.md"
+  open=$( (git show "origin/main:$f" 2>/dev/null || cat "$f" 2>/dev/null) | grep -E '^\| [A-Z]+-SAIF-[0-9]+ \|.*\| (Proposed|Approved|In Progress) \|$')
+  [ -n "$open" ] || continue
+  echo ""
+  echo "💡 SAIF'S OPEN PROPOSALS — ${g#*:} ($f):"
+  printf '%s\n' "$open" | sed 's/^| /  /; s/ |$//; s/ | / — /g'
+done
+if [ -n "$saif" ] || git show origin/main:games/tier-one/SAIF_IMPROVEMENTS.md >/dev/null 2>&1; then
+  echo "  → Working for mmoustafaeditor: before starting his task, tell him what Saif updated and what Saif recommends"
+  echo "    for the game he is working on (CLAUDE.md § 1c), then ask whether to include any proposals."
+fi
+
 if [ -f UPDATES.md ]; then
   echo ""
   echo "Latest entries in UPDATES.md (newest first):"

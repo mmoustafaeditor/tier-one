@@ -47,6 +47,46 @@ whoever it is working for:
   on `main` has "Require review from Code Owners" turned on (repo Settings → Branches); until then the rule is a team
   agreement enforced by the hook and this file.
 
+## 1c. Saif's improvement proposals (one file per game)
+
+This repo holds **two separate games**: **Tier One** (also written "TierOne"; same game) and **The Gaffer**. Saif's proposals
+are kept per game and never mixed:
+
+| Game | Proposal file | IDs |
+|---|---|---|
+| Tier One | [`games/tier-one/SAIF_IMPROVEMENTS.md`](games/tier-one/SAIF_IMPROVEMENTS.md) | `TIERONE-SAIF-nn` |
+| The Gaffer | [`games/the-gaffer/SAIF_IMPROVEMENTS.md`](games/the-gaffer/SAIF_IMPROVEMENTS.md) | `GAFFER-SAIF-nn` |
+
+- **First identify the target game** from the request and repo context (paths, screens, features). Don't ask about spelling
+  variants like "TierOne" vs "Tier One"; ask only if the actual game is unclear. Then read **that game's** file.
+- When working for **mmoustafaeditor**, **before implementing** a new request, in one short message:
+  1. acknowledge the request in a line;
+  2. **what Saif updated**: the session hook lists Saif's `UPDATES.md` entries since Mostafa's last entry. Summarize those
+     for the game he's working on first (a line each: what changed, anything he must know or do), then one line for the
+     other game and site/docs, and say what is already live;
+  3. **what Saif recommends**: Saif's open proposals for that game (the hook lists them; highlight any that relate to the
+     task);
+  4. ask whether to include any proposal or keep to his request.
+  E.g. "Got it, Mostafa. I'll work on X in Tier One. Since your last update, Saif: shipped Android 3.1.0 (the app now runs
+  v3 and needs internet), new app icons, README redesign. Saif also recommends: TIERONE-SAIF-01 … (relevant here), -02 …
+  Include any, or keep this focused on your request?" Skip a part when it's empty. Once per new task.
+- Attribute them to Saif; they are proposals, not approved requirements. Once per new task, not repeatedly within it.
+- Don't implement a proposal or widen scope unless he picks it or already approved a scope that includes it; don't
+  re-ask for ones already approved in the current scope. If he says to proceed with only his request, do so.
+- "Open" = `Proposed`, `Approved`, `In Progress`. Never resurface `Completed` or `Rejected`; resurface `Deferred` only at
+  its agreed review point or when asked. Follow any preference he states about future reminders (record it in that file).
+- Update the proposal's status and Log in that game's file as decisions and work progress. New feedback from Saif goes
+  only in the file of the game it is about; don't assume one game has the other's issues.
+- **Keep games apart:** when working on one game, don't modify the other. If a change touches shared code (`design/`,
+  `api/data/`, `data/`, `vercel.json`, `index.html`, root docs), explain the impact on both games before proceeding.
+- **Before any deployment**, verify the target app, build, workflow and deploy target belong to the intended game
+  (Tier One: `tier-one/`, `api/tier-one/`, `build-tier-one.yml`, `com.tierone.game` in `games/tier-one/app`; The Gaffer:
+  `the-gaffer/`, `api/the-gaffer/`, `build-the-gaffer.yml`, `com.sembagames.thegaffer`). Both games share the single
+  Vercel project `semba-game-studios/tier-one`, so any push to `main` deploys the whole site.
+- Note: a push to `main` touching `games/the-gaffer/**` (even its proposal file) runs `build-the-gaffer.yml`, which
+  commits a build and calls the Vercel deploy hook; a push to any branch touching `games/tier-one/**` runs the Tier One
+  APK build.
+
 ## 2. At the end of every change: log it
 
 Every commit that changes something real (game, build, docs, config) must come with a new entry
@@ -80,7 +120,7 @@ an APK that still needs rebuilding, config they must fill in, etc.
 | `index.html` | Semba Games studio home page, served at sembagames.app |
 | `assets/` | Web-sized copies of the Semba logo for the home page (made from `.github/assets/semba-logo.png`) |
 | `tier-one/index.html` | **Tier One v3** (React + Vite single-file build of `games/tier-one/v3/web`, `npm run build:min` writes it here), served at sembagames.app/tier-one. API `api/tier-one/v3/`. Never edit by hand. |
-| `tier-one-classic/index.html` | **Tier One: the entire game** (HTML + CSS + JS, EN/ES/AR), the classic v2 game, served at sembagames.app/tier-one-classic; the Android build bundles it (v3 needs the server API). |
+| `tier-one-classic/index.html` | **Tier One: the entire game** (HTML + CSS + JS, EN/ES/AR), the classic v2 game, served at sembagames.app/tier-one-classic. Since Android 3.1.0 the app bundles v3 (`tier-one/index.html`) instead, which calls the API at www.sembagames.app. |
 | `tier-one/semba-intro.{webm,mp4,jpg}` | Legacy intro video files (no longer used by the game; still bundled into the APK). The Semba Studios intro is now drawn live in `tier-one/index.html` (`#boot`) around the embedded real logo, full screen in any orientation, with an embedded trailer-style MP3 soundtrack whose source is `games/tier-one/intro-sound/render.js` (re-embed with `embed.py`). It plays on every load with sound, straight through: no "Tap to start", no loading bar, no skip (if the browser refuses sound autoplay it plays silently and the first tap turns the sound on in sync). Only payment returns and Privacy/Terms links bypass it. |
 | `api/tier-one/latest.js` | Android update feed (Vercel function) polled by the app's UpdateChecker |
 | `api/online.js` | Online features (Vercel function): career transfer codes, multiplayer rooms and the Daily/weekly leaderboards (`lb.submit`, `lb.top`, `lb.me`; anonymous device id `save.online.dev` + nickname; Redis keys `lb:d:<day>*` 40 d, `lb:w:<ISO week>*` 60 d; one entry per device per day, never overwritten). Needs a Redis store connected in Vercel (see `games/tier-one/LAUNCH.md` › Online play); without it the game shows "Online play is switching on soon" and the leaderboards show a placeholder. The landing page reads `lb.top` too. |
@@ -114,7 +154,7 @@ signed with it or installed apps refuse the update.
   APK from the run and replace `downloads/TierOne.apk`; bump `version`,
   `versionCode` and `changelog` in `api/tier-one/latest.js`; update the version badge in
   `games/tier-one/README.md`. Say in `UPDATES.md` if the APK is not rebuilt yet.
-- Current versions: web game `2.4.0`, Android `2.4` (versionCode 15).
+- Current versions: web game `3.1.0` (classic `2.4.0`), Android `3.1.0` (versionCode 17, bundles the v3 build `tier-one/index.html`).
 - Game math (v2 "Plot Twists", tuned by simulation; full rules and metrics were written to `MATH_NOTES.md` during the overhaul): 5 players, 7 days, `CONFIG.CONTACTS` 3 a day, Deadline Day `CONFIG.DD_CONTACTS` 3 and `CONFIG.DD_SECONDS` 60 (real-time clock, `game.ddEndsAt`, resumes on reload). Sources open over the week (airport spotter day 4, physio day 6 and DD). 1–3 real deals twist per window (uniform, seeded from `seed+':tw'`; the count is hidden until results: `game.twistN`, `result.twistN`, `result.twisted`, `twistsTotal()` is `null` mid-window): pre-twist reads go outdated, that player's sources can be asked again, and updating a call after a twist is free of the follower loss, the Tabloid post and the −10 (`s.twUturn`) — but the re-call still scores base × `MATH.TW_UT_FRAC` (.5) with no early bonus and can never be an exclusive (a hidden rule the howto only half states). **Go louder** (`escalateCall`) re-dates the call to today (`c.day=game.day`), so it forfeits the earlier early-bonus days and the earlier exclusive position; only `escFrom` keeps the original day for the post-twist bonus. Scoring: +4 per day left on right calls, exclusive +20 (`MATH.EX_RULE='correct'`: a right call posted before the first *correct* rival post of the current era — a rival who posted the wrong outcome earlier does not take it; mid-window UI states come from `exclusiveState(id)` → `open|contested|uturn` and `previewPoints().exState/exMaybe`), +10 for a right post-twist call; wrong Sure −12 / Confirmed −45. Daily/Practice: all sources open Day 1 (physio/airport give 55% hunches before day 6/4), 4 contacts. Career/Rooms: 3 contacts, airport from day 4, physio day 6, plus a source upgrade tree (3 reliability levels per source, physio/airport unlock earlier) and Career-only tier bars that rise with upgrade progress (395/270/200 new → 405/365/320 maxed; locked per window). Daily tiers `CONFIG.TIERS` 370/240/180/70: strong Daily play ≈ 20% T1 with ≈ 2 exclusives per window; maxed career ≈ 43% T1; final calls on days 6–7 in ~76% of Dailies; career crunch drops with gear to ~47%. Boost prices double per repeat buy within a window.
 - Sources stick to their story: each source can be asked once per player per window, and again after that player's twist (`contactSource` returns false otherwise). Half of the telling news-wire events after the first one per saga (`idx>=1`, `MATH.EV_RH:.5`) are planted red herrings (`e.o`, rolled from a separate `seed+':rh'` RNG so base boards are unchanged). Rival/wire news is shown per player: a NEW chip on the card and a BREAKING banner when that player is opened (`s.newsSeen`); an Overnight sheet summarises news after End day. Bribe $1,800 base (`BOOSTS.bribe`, doubling per repeat buy within a window), once per player: 75% a guaranteed true leak, 25% rep −8 and a Tabloid post.
 - Text freshness: every source line, source DM, rival post, news-wire item, official line and DM opener is chosen with `freshPick()`, so nothing repeats within a window and recently seen lines are avoided. New text goes in a voice pack (v2–v5 blocks) as appended arrays. v5 is the harsher banter pack: still no slurs, sexual content, family/body/identity insults or claims about real people beyond football.

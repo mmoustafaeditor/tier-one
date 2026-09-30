@@ -13,6 +13,19 @@ Template:
 
 <!-- requests start -->
 
+## 2026-09-30 · from saifsaber → for mmoustafaeditor · Tier One APK: new app icon + release (APK is still 2.4)
+Branch `ccr-692b713a-3z28u5` has a new Tier One launcher icon in the 3.1 newsroom look (`games/tier-one/app/src/main/res/mipmap-*`,
+`games/tier-one/store/play-store-icon-512.png`, source `store/icon.svg`). It needs your OK before `main` (game path).
+The published `downloads/TierOne.apk` is still 2.4 with the old icon and the classic game: merging doesn't replace it. To ship it,
+follow `CLAUDE.md` › Conventions › Releasing (bump versionCode/versionName, download the APK from the build run into
+`downloads/TierOne.apk`, update `api/tier-one/latest.js`). Also decide whether the app should move to 3.1 (it needs the server API).
+
+## 2026-09-30 · from saifsaber → for mmoustafaeditor · OK to merge Saif's proposal files (docs only)
+Branch `ccr-692b713a-3z28u5` adds `games/tier-one/SAIF_IMPROVEMENTS.md` (4 Tier One proposals, all `Proposed`),
+`games/the-gaffer/SAIF_IMPROVEMENTS.md` (empty) and `CLAUDE.md` › 1c so your sessions show Saif's open proposals for the
+game you're working on and ask before including any. No game code changes. It touches `games/tier-one/`, so it needs your
+OK before `main`. Merging runs the Tier One APK build and The Gaffer build/deploy workflow. Then decide on each proposal.
+
 ## 2026-09-28 · from saifsaber → for mmoustafaeditor · Vercel deploy hook for The Gaffer's live updates
 The Gaffer's workflow publishes each build to `main` as github-actions[bot], and Vercel skips commits from outside your team.
 Please create a deploy hook (Vercel › tier-one › Settings › Git › Deploy Hooks, branch `main`) and save its URL as the GitHub
