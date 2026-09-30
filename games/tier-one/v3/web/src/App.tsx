@@ -8,7 +8,7 @@ import { Toasts } from './ui/bits';
 import { bootPlatform } from './lib/account';
 import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
-import { Icon, installTilt, prefersReducedMotion } from './ui/game';
+import { Icon, installTilt, prefersReducedMotion, TopBar } from './ui/game';
 // Surface films (GOTY.md §9, ui/film.tsx): filmed page turns in go(); the ambient loops are placed by each screen.
 import { filmTurn } from './ui/film';
 // Code-split web build (GOTY.md §8.2): Home ships with the shell; every other screen, the settings sheet, onboarding
@@ -40,6 +40,7 @@ import { MorningPapers } from './ui/live';
 // Shell layer (GOTY.md §4): motion tokens + view transitions, then the tablet/desktop layouts. Loaded after the screen styles.
 import './styles/motion.css';
 import './styles/desktop.css';
+import './styles/system.css'; // the one design system (docs/DESIGN_SYSTEM.md): last word on the shared parts
 
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
@@ -176,7 +177,7 @@ export function App() {
     case 'editor': screen = <EditorDeskScreen {...chrome} />; break;
   }
   return <>
-    <Suspense fallback={null}>{screen}</Suspense>
+    <Suspense fallback={<RouteStage />}>{screen}</Suspense>
     {!inWindow && <nav className="g-tabs" aria-label="Sections" style={{ ['--tab-i' as string]: Math.max(0, TABS.findIndex((x) => x.n === tab)), ['--tab-c' as string]: TABS.find((x) => x.n === tab)?.c }}>
       <span className="g-tabs__brand" aria-hidden="true">T<b>1</b></span>
       {TABS.map((x) => <a key={x.n} href={'?tab=' + x.n} style={{ ['--tab-c' as string]: x.c }} aria-current={tab === x.n ? 'page' : undefined} onClick={(e) => { e.preventDefault(); go({ n: x.n } as Route); }}><Icon n={x.icon} /><span>{t(x.k)}</span></a>)}
@@ -190,6 +191,11 @@ export function App() {
       <SocialWatch />
     </Suspense>
   </>;
+}
+// A route's chunk on its first (uncached) load: the top bar and tab bar stay put and a paper-toned stage holds the
+// content area, so the page never blinks to an empty desk. It fades its paper in after 120 ms (a cached chunk never shows it).
+function RouteStage() {
+  return <div className="g-screen g-stage" aria-busy="true"><TopBar /><div className="g-stage__paper"><i /><i /><i /></div></div>;
 }
 const TAB_ORDER = TABS.map((x) => x.n);
 const isWindow = (r: Route) => r.n === 'daily' || r.n === 'room' || r.n === 'play';

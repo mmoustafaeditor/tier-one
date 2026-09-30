@@ -11,7 +11,7 @@ import { useWire, refreshWire, gradeOf, bestTier, stageOf, windowParts, type Rum
 import { clubById, WORLD, WR } from '../lib/engine';
 import { onWireFiled, onWireRight, toast } from '../lib/meta';
 import { sfx } from '../lib/sfx';
-import { Crest } from '../ui/bits';
+import { Crest, Sheet } from '../ui/bits';
 import { Icon, Kit, GBtn, TopBar, useCountUp, confetti } from '../ui/game';
 import { HeatMeter, Avatar } from '../ui/screenbits';
 import { wireReply } from '../lib/banter';
@@ -282,12 +282,6 @@ function RumourSheet({ r, pre, onClose }: { r: Rumour; pre?: boolean; onClose: (
   const correctable = mine && !mine.corrected && !mine.done && Date.now() - mine.at < WR.WIRE.CORRECT_MIN * 60e3;
   const open = !b || b.state === 'open';
   const st8 = stageOf(r);
-  useEffect(() => {
-    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', k);
-    const ov = document.body.style.overflow; document.body.style.overflow = 'hidden';
-    return () => { window.removeEventListener('keydown', k); document.body.style.overflow = ov; };
-  }, [onClose]);
   const file = async (correct: boolean) => {
     setBusy(true);
     const res = await v3<{ call: WireCall }>(correct ? 'wire.correct' : 'wire.file', { dev: s.dev, nick: s.nick, rid: r.id, yes, s: st, club: yes ? club : null, fee: yes ? fee : null });
@@ -298,8 +292,8 @@ function RumourSheet({ r, pre, onClose }: { r: Rumour; pre?: boolean; onClose: (
   };
   const FEES = WR.WIRE.FEE_BANDS;
   const pickYN = (y: boolean) => { sfx('ui.tap'); setYes(y); setPicked(true); };
-  return <div className="g-overlay wsheet-wrap" onClick={onClose}>
-    <div className="wsheet" role="dialog" aria-modal="true" aria-label={r.playerName} onClick={(e) => e.stopPropagation()}>
+  return <Sheet open onClose={onClose} label={r.playerName} wide accent="var(--m-wire)">
+    <div className="wsheet">
       <div className="wsheet__band"><span className="g-mono"><i className="g-dot" />{t('nav.wire')} · {t('wire.window', { w: winLabel(t, r.window) })}</span>
         <button className="wsheet__x" onClick={() => { sfx('ui.tap'); onClose(); }} aria-label={t('g.wire.close')}><Icon n="x" size={20} /></button></div>
 
@@ -367,7 +361,7 @@ function RumourSheet({ r, pre, onClose }: { r: Rumour; pre?: boolean; onClose: (
         </details>
       </section>
     </div>
-  </div>;
+  </Sheet>;
 }
 
 function FiledCard({ c }: { c: WireCall }) {

@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode, type CSSProperties, type PointerEvent as RPointerEvent } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type CSSProperties, type PointerEvent as RPointerEvent, type KeyboardEvent as RKeyboardEvent } from 'react';
 import { crestSVG, portraitSVG, tallySVG } from '../lib/kit';
 import type { WClub } from '../lib/engine';
 import { sfx, type Sfx } from '../lib/sfx';
 import { prefersReducedMotion } from '../lib/motion';
-import { onToasts, dismissToast } from '../lib/meta';
+import { onToasts } from '../lib/meta';
 import { useT, fmtDate } from '../lib/i18n';
-import { Icon, GBtn } from './game';
+import { Icon, GBtn, haptic } from './game';
 
 export function Crest({ club, size = 24, style }: { club?: WClub; size?: number; style?: CSSProperties }) {
   return <i className="crest" style={{ ['--size' as string]: size + 'px', ...style }} dangerouslySetInnerHTML={{ __html: crestSVG(club) }} />;
@@ -136,11 +136,13 @@ const TOAST_IC: Record<string, string> = { ach: 'star', info: 'news', warn: 'x' 
 export function Toasts() {
   const t = useT();
   const [list, setList] = useState<{ id: number; kind: string; title: string; body?: string }[]>([]);
+  const [binned, setBinned] = useState<ReadonlySet<number>>(() => new Set());
   useEffect(() => onToasts(setList), []);
-  const shown = list.slice(-3);
-  return <div className="toasts" aria-live="polite">{shown.map((x, k) => <ToastSlip key={x.id} x={x} depth={shown.length - 1 - k} label={t('common.close')} />)}</div>;
+  const shown = list.filter((x) => !binned.has(x.id)).slice(-3);
+  const dismissToast = (id: number) => setBinned((b) => new Set(b).add(id)); // binned locally; lib/meta expires it on its timer
+  return <div className="toasts" aria-live="polite">{shown.map((x, k) => <ToastSlip key={x.id} x={x} depth={shown.length - 1 - k} label={t('common.close')} dismissToast={dismissToast} />)}</div>;
 }
-function ToastSlip({ x, depth, label }: { x: { id: number; kind: string; title: string; body?: string }; depth: number; label: string }) {
+function ToastSlip({ x, depth, label, dismissToast }: { x: { id: number; kind: string; title: string; body?: string }; depth: number; label: string; dismissToast: (id: number) => void }) {
   const el = useRef<HTMLDivElement>(null);
   const d = useRef({ on: false, x0: 0, dx: 0 });
   const bin = () => { el.current?.classList.add('is-out'); setTimeout(() => dismissToast(x.id), prefersReducedMotion() ? 0 : 180); };
@@ -155,11 +157,12 @@ function ToastSlip({ x, depth, label }: { x: { id: number; kind: string; title: 
 }
 
 // ---------------------------------------------------------------- the empty state: a note on the desk with the next thing to do
-export function Empty({ icon = 'news', title, body, action, card, style }: { icon?: string; title?: ReactNode; body?: ReactNode; action?: { label: ReactNode; onClick: () => void; icon?: string; kind?: '' | 'gold' | 'dark' | 'paper' | 'green' | 'ghost' }; card?: boolean; style?: CSSProperties }) {
-  return <div className={'g-empty' + (card ? ' g-empty--card' : '')} style={style}>
+// `big` stacks it (icon, one line, one full-width primary button): the whole screen's first viewport when there's nothing yet.
+export function Empty({ icon = 'news', title, body, action, card, big, style }: { icon?: string; title?: ReactNode; body?: ReactNode; action?: { label: ReactNode; onClick: () => void; icon?: string; kind?: '' | 'gold' | 'dark' | 'paper' | 'green' | 'ghost' }; card?: boolean; big?: boolean; style?: CSSProperties }) {
+  return <div className={'g-empty' + (card ? ' g-empty--card' : '') + (big ? ' g-empty--big' : '')} style={style}>
     <span className="g-empty__ic" aria-hidden="true"><Icon n={icon} size={22} /></span>
     <div className="g-empty__b">{title && <b dir="auto">{title}</b>}{body && <p dir="auto">{body}</p>}</div>
-    {action && <GBtn size="sm" kind={action.kind ?? 'dark'} sound="open" onClick={action.onClick}>{action.icon && <Icon n={action.icon} size={18} />}{action.label}</GBtn>}
+    {action && <GBtn size={big ? '' : 'sm'} kind={action.kind ?? 'dark'} primary={big} sound="open" onClick={action.onClick}>{action.icon && <Icon n={action.icon} size={18} />}{action.label}</GBtn>}
   </div>;
 }
 
@@ -170,4 +173,25 @@ export function useNow(ms = 1000, on = true) {
 }
 export function Lines({ n, max = 3, letters }: { n: number; max?: number; letters?: string[] }) {
   return <span className="lines" aria-hidden="true">{Array.from({ length: Math.max(max, n) }, (_, i) => <i key={i} className={i < n ? 'solid' : ''}>{letters ? letters[i] || '' : ''}</i>)}</span>;
+}
+
+// ---------------------------------------------------------------- the chip picker: one choice from a short list, as big chips
+// (never a native <select>). A radiogroup: arrow keys move, the picked chip fills with the ink colour and pops.
+export function Picks<V extends string>({ label, value, options, onChange }: { label: ReactNode; value: V; options: { v: V; label: ReactNode }[]; onChange: (v: V) => void }) {
+  const pick = (v: V) => { if (v === value) return; sfx('ui.tap'); haptic('tap'); onChange(v); };
+  const key = (e: RKeyboardEvent<HTMLDivElement>) => {
+    const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0; if (!d) return;
+    e.preventDefault(); const i = options.findIndex((o) => o.v === value); const n = options[(i + d + options.length) % options.length];
+    const row = e.currentTarget; pick(n.v); requestAnimationFrame(() => (row.querySelector('[aria-checked="true"]') as HTMLElement | null)?.focus());
+  };
+  return <div className="g-picks"><span className="g-picks__l g-mono">{label}</span>
+    <div className="g-picks__row" role="radiogroup" onKeyDown={key}>{options.map((o) => <button key={o.v} type="button" role="radio" aria-checked={o.v === value} tabIndex={o.v === value ? 0 : -1}
+      className="g-chip g-chip--pick" onClick={() => pick(o.v)}>{o.v === value && <Icon n="check" size={14} />}<span dir="auto">{o.label}</span></button>)}</div>
+  </div>;
+}
+
+// ---------------------------------------------------------------- the catchphrase stamp (GOTY.md §12): the player's own line,
+// slammed once on a Confirmed call that lands. The text is always the player's (a prop); the kit ships no default line.
+export function CatchStamp({ line, slam = true, size = 'lg' }: { line: string; slam?: boolean; size?: 'sm' | 'lg' | 'xl' | '' }) {
+  return <Stamp kind="catch" size={size} slam={slam}><span dir="auto">{line}</span></Stamp>;
 }

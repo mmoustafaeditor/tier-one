@@ -164,9 +164,12 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
             <button className="door" onClick={open({ k: 'replies' })}><Icon n="reply" /><span>{t('hr.res.repliesN', { n: replies })}</span></button>
             <button className="door" onClick={open({ k: 'breakdown' })}><Icon n="news" /><span>{t('bn.ui.breakdown')}</span></button>
             {view.mode !== 'practice' && <button className="door" onClick={onBoard}><Icon n={view.mode === 'career' ? 'story' : 'trophy'} /><span>{boardLabel}</span></button>}
+            {/* no dead ends: the rivals' reply and the feed are one tap from every result */}
+            <button className="door" onClick={() => chrome.go({ n: 'rivals' })}><Icon n="friends" /><span>{t('cn.rivals.title')}</span></button>
+            <button className="door" onClick={() => chrome.go({ n: 'feed' })}><Icon n="news" /><span>{t('cn.feed.title')}</span></button>
           </nav>
           <div className="prog__acts" style={{ ['--i' as string]: 1 }}>
-            <GBtn size="lg" shine onClick={view.mode === 'daily' ? () => chrome.go({ n: 'practice' }) : again}><Icon n={view.mode === 'daily' ? 'target' : 'phone'} />{view.mode === 'daily' ? t('g.res.practice') : view.mode === 'career' ? t('g.res.nextWindow') : view.mode === 'room' ? t('bn.ui.openRoom') : t('results.again')}</GBtn>
+            <GBtn size="lg" shine primary onClick={view.mode === 'daily' ? () => chrome.go({ n: 'practice' }) : again}><Icon n={view.mode === 'daily' ? 'target' : 'phone'} />{view.mode === 'daily' ? t('g.res.practice') : view.mode === 'career' ? t('g.res.nextWindow') : view.mode === 'room' ? t('bn.ui.openRoom') : t('results.again')}</GBtn>
             <GBtn kind="dark" onClick={home}><Icon n="home" />{t('g.res.home')}</GBtn>
           </div>
           {view.mode === 'daily' && <p className="g-mono prog__tomorrow">{t('results.tomorrow', { t: resetAt() })}</p>}
