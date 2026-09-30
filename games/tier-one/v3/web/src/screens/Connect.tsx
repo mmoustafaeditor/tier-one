@@ -106,7 +106,7 @@ function ContactCard({ src }: { src: string }) {
     <header className="cn-contact__h">
       <SrcIcon k={src} size={48} />
       <div className="cn-contact__id">
-        <h2>{t('src.' + src)}</h2>
+        <h2>{t('g.story.who.' + src)}<span className="cn-contact__role"> · {t('src.' + src)}</span></h2>
         {p.lv >= 4 ? <p className="cn-contact__nick">{t('cn.contacts.calls', { n: t('cn.nick.' + src) })}</p> : <p>{t('src.' + src + 'P')}</p>}
       </div>
       <span className="cn-lv" aria-label={t('cn.contacts.lv', { n: p.lv })}>

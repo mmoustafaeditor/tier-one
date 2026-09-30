@@ -5,6 +5,7 @@ import { useSave } from '../lib/save';
 import { playScene } from '../lib/scenes';
 import { sfx } from '../lib/sfx';
 import { SCENE_IDS } from './registry';
+import { STORY_SCENE_IDS, buildStoryScene } from './story';
 import { ICON, SRC_C } from './kit';
 import { seasonOf } from './season';
 
@@ -16,10 +17,10 @@ export function ScenesGallery() {
   return <section className="g-card g-card--desk" aria-labelledby="reels-h" style={{ padding: 16 }}>
     <div className="g-sec" style={{ margin: '0 0 10px' }}><h2 id="reels-h">{t('film.gallery.title')}</h2><span className="g-mono">{t('film.gallery.aside')}</span></div>
     <div className="reels">
-      {SCENE_IDS.map((id) => {
+      {[...SCENE_IDS, ...STORY_SCENE_IDS.filter((id) => got.includes(id))].map((id) => {
         const src = id.startsWith('source:') ? id.slice(7) : '';
         const on = id === 'season' ? got.some((x) => x.startsWith('season')) : got.includes(id);
-        const title = src ? t('film.name.source', { n: t('src.' + src) }) : id === 'season' ? t('film.season.names.' + se.key) : t('film.name.' + id);
+        const title = src ? t('film.name.source', { n: t('g.story.who.' + src) }) : id === 'season' ? t('film.season.names.' + se.key) : id.startsWith('story-') ? buildStoryScene(id, s)?.title || id : t('film.name.' + id);
         const col = src ? SRC_C[src] : id === 'season' ? se.accent : '#FF5A36';
         const ic = src ? ICON[src] : id === 'season' ? 'M4 4h16v16H4zM8 8h8M8 12h8M8 16h5' : 'M4 5h13v14a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2zM17 9h3v10a2 2 0 0 1-2 2M7 9h7M7 13h7M7 17h4';
         return <div key={id} className={'reels__row' + (on ? '' : ' is-locked')} style={{ ['--rc' as string]: col }}>

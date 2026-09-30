@@ -9,6 +9,7 @@ import { seasonOf } from './season';
 import { ColdOpen, COLD_OPEN, COLD_OPEN_CAREER } from './scenes/ColdOpen';
 import { SourceIntro, sourceIntroMeta } from './scenes/SourceIntro';
 import { SeasonOpener, SEASON_OPENER } from './scenes/SeasonOpener';
+import { buildStoryScene } from './story';
 
 export type SceneSpec = { id: string; title: string; Comp: ComponentType<any>; props: Record<string, unknown>; meta: SceneMeta; rtl: boolean };
 /** Every scene the replay list knows about, in story order. */
@@ -17,6 +18,8 @@ export const SCENE_IDS = ['coldopen', ...SOURCES.map((s) => 'source:' + s), 'sea
 export function buildScene(id: string, s: Save): SceneSpec | null {
   const L = s.lang, rtl = L === 'ar', t = (k: string, v?: Record<string, string | number>) => tr(L, k, v);
   if (id === 'career') id = 'coldopen';
+  // Story mode moments (story-prologue, story-ch1-open, …): a title card until a film is registered for the id.
+  if (id.startsWith('story-')) return buildStoryScene(id, s);
   if (id === 'coldopen' || id === 'coldopen-career') {
     const career = id === 'coldopen-career';
     const byline = s.nick.trim() || t('film.cold.anon');
@@ -35,7 +38,8 @@ export function buildScene(id: string, s: Save): SceneSpec | null {
   if (id.startsWith('source:')) {
     const src = id.slice(7);
     if (!(SOURCES as readonly string[]).includes(src)) return null;
-    const name = t('src.' + src);
+    // The sources have names now (Story mode's cast): "Meet Sal".
+    const name = t('g.story.who.' + src);
     return {
       id, rtl, title: t('film.name.source', { n: name }), Comp: SourceIntro, meta: sourceIntroMeta(src),
       props: { src, name, trait: t(`film.source.${src}.trait`), line: t(`film.source.${src}.line`), calling: t('film.source.calling'), unknown: t('film.source.unknown'), rtl },

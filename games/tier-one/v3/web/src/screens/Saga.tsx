@@ -11,6 +11,8 @@ import { GRADE_BARS } from '../ui/CallScene';
 import { sfx, buzz } from '../lib/sfx';
 import { hereWeGo } from '../lib/share';
 import type { View } from '../lib/driver';
+import { vinceOf } from '../lib/career';
+import { srcNamed } from '../lib/storyMode';
 
 // Your head-to-head ledger against one rival (GOTY.md §1.3). Filled by the connect lane's rivalRecord(id).
 export interface RivalRecord { w: number; l: number; d: number }
@@ -74,6 +76,7 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
     </div>
 
     {tw && <div className="stoppress"><b>{t('g.saga.stopPress')}</b><span>{t('saga.twistBanner', { p: c.player.s })} {t('saga.twistNote')}</span></div>}
+    {view.mode === 'career' && vinceOf(g.R)?.i === i && <div className="vince-banner"><Icon n="eye" size={18} /><span><b>{t('g.story.vince.chip')}</b> {t('g.story.vince.banner')}</span></div>}
     {g.tips && i in g.tips && <div className="g-chip g-chip--gold tipchip">{t(g.tips[i] ? 'career.tipFake' : 'career.tipReal', { p: c.player.s })}</div>}
 
     <section className="know g-card">
@@ -117,7 +120,7 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
     {(curReads.length > 0 || livePosts.length > 0) && <section className="clips">
       <button className="clips__h" onClick={() => setClips(!clips)} aria-expanded={clips}><span>{t('g.saga.clippings', { n: curReads.length + livePosts.length })}</span><Icon n={clips ? 'x' : 'news'} size={18} /></button>
       {clips && <ol className="clips__l">
-        {[...curReads.map((r, k) => ({ d: r.day, el: <li key={'r' + k} className="clip"><SrcIcon k={r.src} size={30} /><div><div className="clip__h"><b>{t('src.' + r.src)}</b><span className="g-mono">{t('common.day', { n: r.day })}</span><span className="g-chip">{saysWord(t.lang, r.src, r.r, c)}</span></div><p>{voiceLine(t.lang, c, r)}</p><span className="clip__adds g-mono">{addsText(t.lang, E.weights(g.R, r.src, r.r))}</span></div></li> })),
+        {[...curReads.map((r, k) => ({ d: r.day, el: <li key={'r' + k} className="clip"><SrcIcon k={r.src} size={30} /><div><div className="clip__h"><b>{view.mode === 'career' ? srcNamed(t, r.src) : t('src.' + r.src)}</b><span className="g-mono">{t('common.day', { n: r.day })}</span><span className="g-chip">{saysWord(t.lang, r.src, r.r, c)}</span></div><p>{voiceLine(t.lang, c, r)}</p><span className="clip__adds g-mono">{addsText(t.lang, E.weights(g.R, r.src, r.r))}</span></div></li> })),
           ...livePosts.map((p, k) => ({ d: p.day + .5, el: <li key={'p' + k} className="clip clip--rival"><span className={'rv-av rv-av--' + p.id}>{RIVAL_IC[p.id]}</span><div><div className="clip__h"><b>{t('rival.' + p.id)}</b><span className="g-mono">{t('common.day', { n: p.day })}</span><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div><p>{postLine(t.lang, c, p)}</p></div></li> }))].sort((a, b) => b.d - a.d).map((x) => x.el)}
       </ol>}
     </section>}
