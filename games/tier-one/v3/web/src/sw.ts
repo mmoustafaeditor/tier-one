@@ -1,5 +1,5 @@
 // Tier One's service worker (GOTY.md §8.2). Hand-rolled, no Workbox: four caches and four rules.
-//   shell   the page, scripts, styles, icons and the Latin fonts, precached on install (the list is injected by
+//   shell   the page, the play loop's route chunks, styles, icons and the Latin fonts, precached on install (the list is injected by
 //           vite.config.ts as __PRECACHE__; one cache per build, old ones dropped on activate).
 //   runtime hashed assets (Arabic/extended fonts, art, later chunks): cache-first, filled on first use.
 //   films   films/<stem>-<p|l>.mp4 and .jpg: cached whole the first time they play (or when lib/perf.ts prefetches

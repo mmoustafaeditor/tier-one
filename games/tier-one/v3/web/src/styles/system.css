@@ -1,0 +1,149 @@
+/* Tier One: the one design system (docs/DESIGN_SYSTEM.md, GOTY.md §11.1, §12). Loaded last by App.tsx, so these are
+   the final word on the shared parts: button, sheet, card, row, chip, chip picker, toast, empty state, top bar, tabs,
+   the route stage, entrances and the "new" signals. Screens compose these; they don't restyle them.
+   Motion scale: 90 (tap) · 180 (state) · 260 (move) · 520 (the one hero beat), from motion.css. */
+
+/* ---------------------------------------------------------------- buttons: primary · dark · paper · ghost (+ gold, green)
+   48px floor on every size; press = scale + drop; the screen's one primary action wears a slow ring once. */
+.g-btn { min-height: 56px; font-size: 21px; transition: transform var(--d-tap) var(--ease-out), box-shadow var(--d-tap) var(--ease-out), filter var(--d-ui); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.g-btn:active:not(:disabled) { transform: translateY(4px) scale(.97); }
+.g-btn--sm { min-height: 48px; font-size: 17px; padding: 0 16px; }
+.g-btn--lg { min-height: 64px; font-size: 25px; }
+.g-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.g-btn[data-primary] { animation: sys-call 1.4s var(--ease-out) var(--d-reveal) 1 both; }
+@keyframes sys-call { 0% { box-shadow: 0 5px 0 var(--bd), 0 0 0 0 color-mix(in srgb, var(--red) 55%, transparent); } 100% { box-shadow: 0 5px 0 var(--bd), 0 0 0 18px transparent; } }
+.g-btn.is-loading { color: transparent; pointer-events: none; }
+.g-btn.is-loading::after { content: ""; position: absolute; inset: auto 18px 14px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--bt), transparent) 0 0 / 40% 100% no-repeat; animation: sys-sweep .9s var(--ease-in-out) infinite; }
+@keyframes sys-sweep { from { background-position: -60% 0; } to { background-position: 160% 0; } }
+.g-icbtn { width: 44px; height: 44px; transition: transform var(--d-tap) var(--ease-out), background-color var(--d-ui); }
+.g-icbtn:active { transform: scale(.9); }
+.g-icbtn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* ---------------------------------------------------------------- top bar: logo or back, then coins · level · bell */
+.g-top { min-height: 64px; }
+.g-top__back { min-height: 48px; padding-inline-end: 8px; font-size: 16px; border-radius: 12px; transition: transform var(--d-tap) var(--ease-out); }
+.g-top__back:active { transform: scale(.96); }
+.g-pill { height: 36px; }
+/* the bell: a new item rings it once, with one ripple (never a loop) */
+.cn-bell.is-pop::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 0 color-mix(in srgb, var(--red) 60%, transparent); animation: sys-ripple .7s var(--ease-out) 1 both; pointer-events: none; }
+@keyframes sys-ripple { to { box-shadow: 0 0 0 14px transparent; } }
+
+/* ---------------------------------------------------------------- tab bar: 64px, one sliding indicator in the mode colour */
+.g-tabs a { font-size: 12px; min-height: 48px; }
+.g-tabs::after { width: 40px; height: 4px; margin-inline-start: -3px; }
+
+/* ---------------------------------------------------------------- the card and the list row */
+.g-card { border-radius: var(--r-card); }
+.g-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 64px; padding: 10px 16px; text-align: start; border-radius: var(--r-card);
+  background: var(--desk-2); color: var(--on-desk); box-shadow: inset 0 0 0 1px var(--desk-line); font-size: 16px; line-height: 1.3; transition: transform var(--d-tap) var(--ease-out), background-color var(--d-ui); }
+.g-row + .g-row { margin-top: 8px; }
+button.g-row:active, a.g-row:active { transform: scale(.98); }
+.g-row__ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--row-c, var(--red)) 20%, transparent); color: var(--row-c, var(--red)); }
+.g-row__b { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.g-row__b b { font-weight: 800; }
+.g-row__b small { color: var(--on-desk-2); font-size: 14px; }
+.g-row__go { flex: none; color: var(--on-desk-3); }
+
+/* ---------------------------------------------------------------- chips, and the chip picker (replaces every <select>) */
+.g-chip { height: 30px; padding: 0 11px; font-size: 13px; }
+.g-picks { display: grid; gap: 8px; }
+.g-picks__l { color: inherit; opacity: .7; }
+.g-picks__row { display: flex; flex-wrap: wrap; gap: 8px; }
+.g-chip--pick { height: 44px; padding: 0 16px; font-size: 15px; cursor: pointer; background: rgba(127, 120, 105, .16); color: inherit; box-shadow: inset 0 0 0 2px rgba(127, 120, 105, .28);
+  transition: transform var(--d-tap) var(--ease-out), background-color var(--d-ui), color var(--d-ui), box-shadow var(--d-ui); }
+.g-chip--pick:active { transform: scale(.94); }
+.g-chip--pick[aria-checked="true"], .g-chip--pick[aria-pressed="true"] { background: var(--card-ink); color: var(--card); box-shadow: none; animation: g-pop var(--d-ui2) var(--ease-spring) both; }
+.g-card--desk .g-chip--pick[aria-checked="true"], .g-desk .g-chip--pick[aria-checked="true"] { background: var(--on-desk); color: var(--desk); }
+.g-chip--pick:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* ---------------------------------------------------------------- the one sheet: ink-wash scrim, paper springs up, pulled down to close */
+.scrim { z-index: 110; background: rgba(8, 7, 5, calc(.62 * var(--wash, 1))); backdrop-filter: none; -webkit-backdrop-filter: none; animation: sys-wash var(--d-ui2) var(--ease-out) both; }
+.scrim.is-out { animation: sys-unwash var(--d-ui2) var(--ease-in-out) both; }
+@keyframes sys-wash { from { background-color: rgba(8, 7, 5, 0); } }
+@keyframes sys-unwash { to { background-color: rgba(8, 7, 5, 0); } }
+.sheet--float { position: relative; padding: 0 18px calc(20px + env(safe-area-inset-bottom, 0)); font-size: 16px; box-shadow: 0 -24px 60px -24px rgba(0, 0, 0, .9);
+  animation: sys-sheet-in var(--d-reveal) var(--ease-spring) both; overscroll-behavior: contain; }
+.sheet--float.is-out { animation: sys-sheet-out var(--d-ui2) var(--ease-in-out) both; }
+.sheet--float.is-drag { animation: none; transition: none; }
+.sheet--float:not(.is-drag) { transition: transform var(--d-ui2) var(--ease-spring); }
+@keyframes sys-sheet-in { from { transform: translateY(100%); } }
+@keyframes sys-sheet-out { to { transform: translateY(105%); } }
+@media (min-width: 960px) {
+  @keyframes sys-sheet-in { from { transform: translateY(32px) scale(.97); opacity: 0; } }
+  @keyframes sys-sheet-out { to { transform: translateY(24px) scale(.98); opacity: 0; } }
+}
+.sheet__handle { position: sticky; top: 0; z-index: 3; display: grid; place-items: center; height: 28px; margin: 0 -18px; cursor: grab; touch-action: none; background: inherit; }
+.sheet__grip { width: 44px; height: 5px; border-radius: 3px; background: color-mix(in srgb, currentColor 22%, transparent); }
+.sheet__head { display: flex; align-items: flex-start; gap: 12px; padding: 4px 0 14px; }
+.sheet__ht { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.sheet__ht b { font-family: var(--f-display); font-weight: 800; font-size: 26px; line-height: 1.05; letter-spacing: -.02em; }
+.sheet__k, .sheet__aside { opacity: .65; }
+.sheet__x { flex: none; background: rgba(127, 120, 105, .18); color: inherit; box-shadow: none; }
+.sheet--float[style*="--sheet-c"] { box-shadow: inset 0 5px 0 var(--sheet-c), 0 -24px 60px -24px rgba(0, 0, 0, .9); }
+/* screens' own sheet bodies sit flat inside the one sheet */
+.sheet--float > .wsheet, .sheet--float.cz-sheet { max-width: none; max-height: none; overflow: visible; margin: 0; border-radius: 0; background: none; box-shadow: none; animation: none; padding-inline: 0; }
+.sheet--float.cz-sheet { max-width: 560px; padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0)); max-height: 92vh; overflow-y: auto; background: var(--card); border-radius: 18px 18px 0 0; }
+.sheet--float > .wsheet .wsheet__band { margin-inline: 0; }
+
+/* ---------------------------------------------------------------- toasts: wire slips, three deep, swipe or tap to bin */
+.toasts { gap: 8px; padding-inline: 12px; pointer-events: none; }
+.toast { pointer-events: auto; display: flex; align-items: center; gap: 12px; width: min(440px, 100%); min-height: 56px; padding: 8px 8px 8px 14px; font-size: 15px; touch-action: pan-y;
+  transform: translateY(calc(var(--depth, 0) * -2px)) scale(calc(1 - var(--depth, 0) * .03)); opacity: calc(1 - var(--depth, 0) * .18);
+  transition: transform var(--d-ui2) var(--ease-spring), opacity var(--d-ui); animation: sys-slip var(--d-ui2) var(--ease-spring) both; }
+.toast.is-out { animation: sys-slip-out var(--d-ui) var(--ease-in-out) both; }
+@keyframes sys-slip { from { transform: translateY(-120%) rotate(-2deg); opacity: 0; } }
+@keyframes sys-slip-out { to { transform: translateX(40%) rotate(4deg); opacity: 0; } }
+.toast__ic { flex: none; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--red) 16%, transparent); color: var(--red-deep); }
+.toast--ach .toast__ic { background: color-mix(in srgb, var(--gold) 26%, transparent); color: var(--gold-deep); }
+.toast--warn { border-inline-start-color: var(--c-hijack); }
+.toast__b { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.toast__b b { font-weight: 800; line-height: 1.25; }
+.toast__b .g-mono { color: var(--card-ink-3); text-transform: none; letter-spacing: .02em; font-size: 12px; }
+.toast__x { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 10px; color: var(--card-ink-3); }
+.toasts .toast:nth-last-child(n+3) { display: flex; }
+
+/* ---------------------------------------------------------------- the empty state: a note with the next thing to do */
+.g-empty { display: flex; align-items: center; gap: 14px; padding: 16px; color: var(--on-desk-2); font-size: 16px; line-height: 1.4; }
+.g-empty--card { border-radius: var(--r-card); background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); }
+.g-empty__ic { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--desk-3); color: var(--on-desk-2); }
+.g-empty__b { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.g-empty__b b { color: var(--on-desk); font-weight: 800; font-size: 17px; }
+.g-empty__b p { margin: 0; }
+.g-empty > .g-btn { width: auto; flex: none; }
+.g-empty--big { flex-direction: column; text-align: center; gap: 16px; padding: 32px 20px 20px; margin-top: 12px; }
+.g-empty--big .g-empty__ic { width: 64px; height: 64px; border-radius: 20px; background: color-mix(in srgb, var(--red) 16%, transparent); color: var(--red); }
+.g-empty--big .g-empty__ic svg { width: 30px; height: 30px; }
+.g-empty--big .g-empty__b b { font-family: var(--f-display); font-size: 24px; line-height: 1.1; }
+.g-empty--big > .g-btn { width: 100%; max-width: 420px; }
+
+/* ---------------------------------------------------------------- the route stage (App's Suspense fallback) */
+.g-stage__paper { display: grid; gap: 12px; margin-top: 8px; opacity: 0; animation: g-fade var(--d-ui) var(--ease-out) 120ms forwards; }
+.g-stage__paper i { display: block; height: 96px; border-radius: var(--r-card); background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); }
+.g-stage__paper i:first-child { height: 180px; background: color-mix(in srgb, var(--card) 14%, var(--desk-2)); }
+
+/* ---------------------------------------------------------------- entrances: children dealt in by --i (one stagger per screen) */
+/* `backwards` only: no transform is left behind to trap a fixed overlay inside a section. Capped at six steps. */
+.g-in > *, .stagger > [style*="--i"] { animation: sys-rise var(--d-ui2) var(--ease-out) backwards; animation-delay: calc(min(var(--i, 0), 6) * 45ms + var(--d-tap)); }
+@keyframes sys-rise { from { opacity: 0; transform: translateY(14px); } }
+/* the stamp slams exactly once; a re-render never replays it */
+.stamp.is-slam, .g-stamp.is-slam { animation-iteration-count: 1; }
+.stamp--catch { --stamp-size: 28px; }
+.stamp--catch.stamp--xl { --stamp-size: 44px; }
+
+/* ---------------------------------------------------------------- "new": a quiet glow on the case file and the editor's notes */
+.sm-case.is-fresh, .sm-drawer.is-fresh { box-shadow: var(--shadow-card), 0 0 0 2px color-mix(in srgb, var(--gold) 70%, transparent), 0 0 24px -4px color-mix(in srgb, var(--gold) 55%, transparent); animation: sys-glow 2.4s var(--ease-in-out) 2 both; }
+@keyframes sys-glow { 50% { box-shadow: var(--shadow-card), 0 0 0 2px color-mix(in srgb, var(--gold) 40%, transparent), 0 0 10px -4px color-mix(in srgb, var(--gold) 30%, transparent); } }
+
+/* ---------------------------------------------------------------- store / newsroom tails */
+.cz-desk { margin-top: 24px; }
+.so-mastedit__grid { display: grid; gap: 16px; }
+.so-mastedit__acts .g-btn { width: auto; min-width: 160px; }
+
+/* ---------------------------------------------------------------- reduced motion: everything lands in place */
+:root.reduce :is(.scrim, .sheet--float, .toast, .g-in > *, .stagger > *, .g-btn[data-primary], .cn-bell.is-pop::after, .sm-case.is-fresh, .sm-drawer.is-fresh, .g-chip--pick, .g-stage__paper) { animation: none !important; }
+:root.reduce .g-stage__paper { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.scrim, .sheet--float, .toast, .g-in > *, .stagger > *, .g-btn[data-primary], .cn-bell.is-pop::after, .sm-case.is-fresh, .sm-drawer.is-fresh, .g-chip--pick, .g-stage__paper) { animation: none !important; }
+  .g-stage__paper { opacity: 1; }
+  .sheet--float:not(.is-drag) { transition: none; }
+}

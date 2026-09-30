@@ -402,6 +402,8 @@ ol, ul { list-style: none; }
 .stamp--fake { --stamp-c: var(--o-fake); --rot: -9deg; }
 .stamp--dead { --stamp-c: var(--dead); --rot: 5deg; }
 .stamp--dead .x { text-decoration: line-through; text-decoration-thickness: .12em; }
+/* The catchphrase stamp (GOTY.md §12): the player's own line, passed in as text. The kit never ships a default line. */
+.stamp--catch { --stamp-c: var(--gold-deep, #B8830B); --rot: -7deg; max-width: min(88vw, 16em); white-space: normal; text-align: center; line-height: 1; }
 .stamp--solid { background: var(--stamp-c); color: var(--paper); outline-color: var(--stamp-c); }
 .stamp--exclusive { filter: drop-shadow(0 0 .7px var(--stamp-c)) drop-shadow(0 0 3px color-mix(in srgb, var(--stamp-c) 35%, transparent)); } /* ink bleed */
 .stamp--sm { --stamp-size: 11px; -webkit-mask: none; mask: none; }

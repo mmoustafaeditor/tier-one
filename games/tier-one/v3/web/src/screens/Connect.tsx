@@ -11,6 +11,7 @@ import {
 } from '../lib/byline';
 import { Icon, GBtn, TopBar, SrcIcon, CountUp } from '../ui/game';
 import { FeedRow, RivalMark, Handle, tn } from '../ui/connect';
+import { Empty } from '../ui/bits';
 import type { Chrome } from '../App';
 
 export { setNav } from '../ui/connect';
@@ -31,11 +32,7 @@ export function FeedScreen(chrome: Chrome) {
   let k = 0;
   return <div className="g-screen cn-screen cn-feed">
     <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('cn.feed.title')} />
-    {!feed.length ? <div className="cn-empty">
-      <Icon n="news" size={40} />
-      <p>{t('cn.feed.empty')}</p>
-      <GBtn onClick={() => chrome.go({ n: 'daily' })}><Icon n="phone" />{t('cn.feed.play')}</GBtn>
-    </div> : groups.map(([g, items]) => <section key={g} className="cn-day">
+    {!feed.length ? <Empty card big icon="news" title={t('cn.feed.empty')} action={{ label: t('cn.feed.play'), icon: 'phone', kind: '', onClick: () => chrome.go({ n: 'daily' }) }} /> : groups.map(([g, items]) => <section key={g} className="cn-day">
       <h2 className="cn-day__h">{t('cn.feed.' + g)}{g === 'today' && fresh.size > 0 && <span className="cn-day__new">{t('cn.feed.unread', { n: fresh.size })}</span>}</h2>
       <div className="cn-sheet">{items.map((f) => { const isNew = fresh.has(f.id); const style = isNew ? { ['--k' as string]: k++ } as CSSProperties : undefined;
         return <FeedRow key={f.id} f={isNew ? { ...f, read: false } : f} onOpen={() => chrome.go(toRoute(f.to))} style={style} />; })}</div>
@@ -56,10 +53,7 @@ export function RivalsScreen(chrome: Chrome) {
     <RivalsTotal />
     <div className="cn-rgrid">{RIVALS.map((id, i) => <RivalCard key={id} id={id} i={i} />)}</div>
     {friends.length > 0 && <div className="cn-rgrid cn-rgrid--friends">{friends.map((r, k) => <FriendRivalCard key={r.id} rec={r} i={RIVALS.length + k} />)}</div>}
-    {!RIVALS.some((id) => { const r = rivalOf(s, id); return r.w + r.l + r.d; }) && <div className="cn-empty cn-empty--inline">
-      <p>{t('cn.rivals.none')}</p>
-      <GBtn size="sm" onClick={() => chrome.go({ n: 'daily' })}><Icon n="phone" />{t('cn.feed.play')}</GBtn>
-    </div>}
+    {!RIVALS.some((id) => { const r = rivalOf(s, id); return r.w + r.l + r.d; }) && <Empty card big icon="friends" title={t('cn.rivals.none')} action={{ label: t('cn.feed.play'), icon: 'phone', kind: '', onClick: () => chrome.go({ n: 'daily' }) }} />}
   </div>;
 }
 // The whole ledger in one line: your record against all three, how many you lead and how many scalps you hold.

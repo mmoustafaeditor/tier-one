@@ -11,6 +11,7 @@ import { Icon, GBtn, TopBar } from '../ui/game';
 import { Avatar } from '../ui/screenbits';
 import { Byline, Flair, Handle } from '../ui/social';
 import { identity, syncNewsroom, newsroomUrl, type Newsroom, type NewsroomTop } from '../lib/social';
+import { Empty, Picks } from '../ui/bits';
 import type { Chrome } from '../App';
 import { MastheadFilm } from '../ui/film';
 
@@ -148,14 +149,11 @@ function MastheadEditor({ nr, onSaved }: { nr: Newsroom; onSaved: (r: { ok: bool
     <div className="g-sec" style={{ margin: '0 0 6px' }}><h2 style={{ color: 'inherit' }}>{t('so.nr.masthead')}</h2><span className="g-mono">{t('so.nr.host')}</span></div>
     <p className="g-sub">{t('so.nr.mastheadSub')}</p>
     <div className="so-mastedit__grid">
-      {kinds.map((k) => <label key={k}><small className="g-mono">{t('so.nr.' + k)}</small>
-        <select value={m[k as keyof typeof m] || ''} onChange={(e) => setM({ ...m, [k]: e.target.value })}>
-          <option value="">{t('so.nr.standard')}</option>
-          {ownedItems(s, k).map((c) => <option key={c.id} value={c.id}>{t(c.nameKey, c.nameVars)}{c.g ? ' ' + c.g : ''}</option>)}
-        </select></label>)}
+      {kinds.map((k) => <Picks key={k} label={t('so.nr.' + k)} value={m[k as keyof typeof m] || ''} onChange={(v) => setM({ ...m, [k]: v })}
+        options={[{ v: '', label: t('so.nr.standard') }, ...ownedItems(s, k).map((c) => ({ v: c.id, label: t(c.nameKey, c.nameVars) + (c.g ? ' ' + c.g : '') }))]} />)}
       <label className="so-mastedit__motto"><small className="g-mono">{t('so.nr.motto')}</small><input className="g-input" value={motto} maxLength={60} onChange={(e) => setMotto(e.target.value)} placeholder={t('so.nr.mottoPh')} /></label>
     </div>
-    <div className="so-mastedit__acts"><GBtn size="sm" kind="gold" disabled={busy} onClick={save}><Icon n="check" size={18} />{t('so.nr.save')}</GBtn>{msg && <span className="g-mono" role="status">{msg}</span>}</div>
+    <div className="so-mastedit__acts"><GBtn kind="gold" loading={busy} onClick={save}><Icon n="check" size={18} />{t('so.nr.save')}</GBtn>{msg && <span className="g-mono" role="status">{msg}</span>}</div>
   </section>;
 }
 function TopList({ top, mine }: { top: NewsroomTop[]; mine?: string }) {
@@ -168,6 +166,6 @@ function TopList({ top, mine }: { top: NewsroomTop[]; mine?: string }) {
         <span className="lrow__who"><b><Handle>{x.name}</Handle></b></span>
         <span className="lrow__x">{x.n}</span><b className="lrow__p g-num">{num(x.pts)}</b>
       </div>)}
-    </div> : <div className="g-empty g-card g-card--desk"><Icon n="trophy" size={22} /><span>{t('so.nr.topNone')}</span></div>}
+    </div> : <Empty card icon="trophy" title={t('so.nr.topNone')} />}
   </>;
 }

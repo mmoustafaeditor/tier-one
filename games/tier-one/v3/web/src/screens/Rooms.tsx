@@ -12,7 +12,7 @@ import { currentSeason, isoWeek } from '../lib/season';
 import { OUTS } from '../lib/engine';
 import { Icon, GBtn, TopBar } from '../ui/game';
 import { Avatar, Seg } from '../ui/screenbits';
-import { Glyph } from '../ui/bits';
+import { Glyph, Empty } from '../ui/bits';
 import { Byline, ChallengeButton, FriendRivalCard, Handle, withHandle } from '../ui/social';
 import {
   identity, syncRoom, standings, roundState, roundOpens, roundCloses, currentRound, friendRivals, pending, dropPending, acceptChallenge, submitChallenge, refreshMine, settleChallenge, hoursLeft, roomUrl,
@@ -116,7 +116,7 @@ export function RoomsScreen({ code, challenge, ...chrome }: Chrome & { code?: st
 
         <div className="g-sec" style={sx(6)}><h2>{t('so.box.friends')}</h2><button className="cn-link" onClick={() => chrome.go({ n: 'rivals' })}>{t('so.box.friendsAll')}</button></div>
         {friends.length ? <div className="so-fgrid" style={sx(6)}>{(named.length ? named : friends).slice(0, 3).map((f, k) => <FriendRivalCard key={f.id} rec={f} i={k} />)}</div>
-          : <div className="g-empty g-card g-card--desk" style={sx(6)}><Icon n="reply" size={24} /><span>{t('so.fr.none')}</span></div>}
+          : <Empty card icon="reply" title={t('so.fr.none')} style={sx(6)} />}
 
         <button className="so-nrcard g-card g-card--desk" style={sx(7)} onClick={() => { sfx('open'); chrome.go({ n: 'newsroom', code: s.social?.newsroom?.code }); }}>
           <span className="so-nrcard__ic" aria-hidden="true"><Icon n="news" /></span>
@@ -319,7 +319,7 @@ function SeasonTable({ rows }: { rows: Standing[] }) {
 function Feed({ room, myPid }: { room: Room; myPid: string }) {
   const t = useT();
   const lines = t.list('so.room.taunts') as string[];
-  if (!room.feed.length) return <div className="g-empty g-card g-card--desk"><Icon n="news" size={22} /><span>{t('so.room.empty')}</span></div>;
+  if (!room.feed.length) return <Empty card icon="news" title={t('so.room.empty')} />;
   const who = (n: string) => <Handle>{n}</Handle>;
   return <div className="so-feed cn-sheet">{room.feed.map((ev, k) => {
     const me = ev.pid === myPid;
@@ -425,7 +425,7 @@ function LeagueCard() {
         </div>
         {lg.up > 0 && k === lg.up - 1 && n > lg.up && <div className="zline zline--up"><Icon n="arrow" size={14} style={{ transform: 'rotate(-90deg)' }} />{t('league.up')}</div>}
       </Fragment>)}
-    </div> : <div className="g-empty g-card g-card--desk" style={sx(2)}><Icon n="trophy" size={28} /><span>{lg ? t('league.empty') : t('wire.needNet')}</span></div>}
+    </div> : <Empty card icon="trophy" title={lg ? t('league.empty') : t('wire.needNet')} style={sx(2)} />}
     <details className="g-more g-more--desk" style={sx(3)}><summary><Icon n="help" size={16} />{t('g.rooms.how')}</summary><p>{t('league.note')}</p></details>
   </>;
 }
