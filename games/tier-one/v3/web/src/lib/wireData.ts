@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { data, v3 } from './api';
 import { getSave } from './save';
 import { recordWireResolution } from './byline';
+import { currentWireWindow } from './season';
 
 export interface Rumour {
   id: string; playerId: string; playerName: string; currentClubId: string; currentClubName: string; linked: { clubId: string | null; name: string; stage: string }[];
@@ -16,7 +17,7 @@ export interface WireWindow { id: string; opens: string; closes: string }
 export interface WireState { rumours: Rumour[] | null; asOf: string; names: string; board: Record<string, BoardItem>; callsToday: number; mine: { calls: WireCall[]; cred: number; hitRate: number; resolved: number; season?: string } | null; online: boolean; loading: boolean; window: WireWindow }
 
 // The window the Wire is framed for (GOTY §5). The server sends its own (wire.mjs › WIRE.CURRENT); this is the fallback.
-export const CURRENT_WINDOW: WireWindow = { id: '2027-01', opens: '2027-01-01T00:00:00Z', closes: '2027-02-02T23:00:00Z' };
+export const CURRENT_WINDOW: WireWindow = (() => { const w = currentWireWindow(); return { id: w.id, opens: w.opens, closes: w.closes }; })(); // lib/season.ts › WIRE_WINDOWS is the one list
 let cache: WireState = { rumours: null, asOf: '', names: 'real', board: {}, callsToday: 0, mine: null, online: true, loading: false, window: CURRENT_WINDOW };
 const subs = new Set<(s: WireState) => void>();
 const emit = () => subs.forEach((f) => f(cache));
