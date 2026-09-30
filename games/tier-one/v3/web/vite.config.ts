@@ -46,12 +46,23 @@ const publishApk = (): Plugin => ({
 
 // ---------- code-split web build
 const walk = (dir: string, base = dir): string[] => readdirSync(dir).flatMap((n) => { const p = join(dir, n); return statSync(p).isDirectory() ? walk(p, base) : [relative(base, p).split('\\').join('/')]; });
-/** PWA bits in index.html: manifest, icons, the two fonts the first paint uses (the rest arrive by unicode-range). */
+/** PWA bits in index.html: manifest, icons, the two fonts the first paint uses (the rest arrive by unicode-range), and
+ *  the page's own stylesheets inlined: on slow 4G a render-blocking CSS file shares the pipe with ~440 KB of JS and the
+ *  first paint waits ~2 s for it; inline, it arrives with the HTML (~48 KB brotli, and the worker precaches the page). */
 const webHtml = (): Plugin => ({
   name: 't1-web-html',
   enforce: 'post',
   transformIndexHtml(html, ctx) {
-    const fonts = Object.keys(ctx.bundle || {}).filter((f) => /(Newsreader-normal-200-800-latin|SchibstedGrotesk-normal-400-900-latin)-[\w-]{8}\.woff2$/.test(f));
+    const bundle = ctx.bundle || {};
+    const names = new Set(Object.keys(bundle).map((f) => f.replace(/^assets\//, '')));
+    html = html.replace(/<link rel="stylesheet" crossorigin href="\.\/(assets\/[\w.-]+\.css)">/g, (m, file) => {
+      const a = bundle[file];
+      if (!a || a.type !== 'asset' || typeof a.source !== 'string') return m;
+      // url(x.woff2) was relative to assets/; from the page it is ./assets/x.woff2
+      const css = a.source.replace(/url\((['"]?)(?:\.\/)?([\w.-]+\.\w+)\1\)/g, (u: string, _q: string, n: string) => (names.has(n) ? `url(./assets/${n})` : u));
+      return `<style>${css}</style>`;
+    });
+    const fonts = Object.keys(bundle).filter((f) => /(Newsreader-normal-200-800-latin|SchibstedGrotesk-normal-400-900-latin)-[\w-]{8}\.woff2$/.test(f));
     const head = [
       '<link rel="manifest" href="./manifest.webmanifest">',
       '<link rel="apple-touch-icon" href="./icons/icon-180.png">',
