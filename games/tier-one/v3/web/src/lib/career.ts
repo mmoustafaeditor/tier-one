@@ -1,26 +1,38 @@
 // Career: local blogger → Tier One (DESIGN §6). Runs the Daily engine with rank modifiers, locally. Never ranked.
-import { RULES, E, type Rules, type Source, type Result, type CastSaga, type Game, OUTS } from './engine';
-import type { CareerSave } from './save';
+//
+// One career (3.4, GOTY.md §7.2): a Career slot is a story, not a second set of numbers. Followers, reputation
+// ("credibility" is Career's word for the same 0–100), the contacts' trust (the Contacts Book level) and the rival
+// ledgers are the byline's (lib/byline.ts) and move the same way in every mode. What a slot owns: rank/chapter, windows,
+// favours, club relations, counters, history and Vince's play. Promotion reads the global rep; the rep gates are the
+// byline's tier thresholds, so a promotion and the new word on your byline arrive together.
+import { RULES, type Rules, type Source, type Result, type CastSaga, type Game, OUTS } from './engine';
+import { activeDraft, getSave, type CareerSave, type Save } from './save';
+import { REP_TIERS, bookOf, lvOfXp, recordInto, careerWindowKey, type WindowSummary } from './byline';
+import { toast } from './meta';
 
+const repGate = (i: number) => REP_TIERS[i][1];
 export const RANKS = [
-  { sagas: 3, contacts: 3, src: ['kitman', 'barber', 'agent'], rivals: ['tabloid'], pool: 'small' as const, gate: [0, 0], dd: 60 },
-  { sagas: 4, contacts: 4, src: ['kitman', 'barber', 'agent', 'spotter'], rivals: ['tabloid', 'itk'], pool: 'small' as const, gate: [8, 55], dd: 60 },
-  { sagas: 5, contacts: 4, src: ['kitman', 'barber', 'agent', 'spotter', 'physio'], rivals: ['tabloid', 'itk', 'insider'], pool: 'top' as const, gate: [20, 65], dd: 60 },
-  { sagas: 5, contacts: 4, src: ['kitman', 'barber', 'agent', 'spotter', 'physio'], rivals: ['tabloid', 'itk', 'insider'], pool: 'top' as const, gate: [36, 75], dd: 60 },
-  { sagas: 6, contacts: 5, src: ['kitman', 'barber', 'agent', 'spotter', 'physio'], rivals: ['tabloid', 'itk', 'insider'], pool: 'stars' as const, gate: [56, 85], dd: 45 },
+  { sagas: 3, contacts: 3, src: ['kitman', 'barber', 'agent'], rivals: ['tabloid'], pool: 'small' as const, gate: [0, repGate(0)], dd: 60 },
+  { sagas: 4, contacts: 4, src: ['kitman', 'barber', 'agent', 'spotter'], rivals: ['tabloid', 'itk'], pool: 'small' as const, gate: [8, repGate(1)], dd: 60 },
+  { sagas: 5, contacts: 4, src: ['kitman', 'barber', 'agent', 'spotter', 'physio'], rivals: ['tabloid', 'itk', 'insider'], pool: 'top' as const, gate: [20, repGate(2)], dd: 60 },
+  { sagas: 5, contacts: 4, src: ['kitman', 'barber', 'agent', 'spotter', 'physio'], rivals: ['tabloid', 'itk', 'insider'], pool: 'top' as const, gate: [36, repGate(3)], dd: 60 },
+  { sagas: 6, contacts: 5, src: ['kitman', 'barber', 'agent', 'spotter', 'physio'], rivals: ['tabloid', 'itk', 'insider'], pool: 'stars' as const, gate: [56, repGate(4)], dd: 45 },
 ];
-export const TRUST_LV = [6, 15, 28, 45, 70];
-export const trustLevel = (pts: number) => TRUST_LV.filter((x) => pts >= x).length;
-export const FOLLOWER_MILESTONES: [number, number][] = [[10000, 50], [50000, 100], [100000, 200], [250000, 300]];
+/** A source's trust in Career is its Contacts Book level (1–5, every mode). The accuracy steps below count from
+ *  level 2, so a new contact plays exactly as the plain rules do. */
+export const careerTrust = (s: Save, src: string) => lvOfXp(bookOf(s, src).xp);
+const trustSteps = (s: Save, src: string) => careerTrust(s, src) - 1;
+/** The Contacts Book level at which a source opens a day early (spotter, physio) and at which a second opinion is free. */
+export const TRUST_EARLY = 3, TRUST_AGAIN = 5;
 
 export function newCareer(slot = 1, restarts = 0): CareerSave {
   return {
-    slot, paper: '', rank: 0, windows: 0, rep: 50, followers: 0, favours: { burner: 1, tipoff: 1, stakeout: 0 },
-    contacts: {}, relations: {}, t1: 0, exclusives: 0, right: 0, calls: 0, uturns: 0, history: [], live: null, restarts,
+    slot, paper: '', rank: 0, windows: 0, favours: { burner: 1, tipoff: 1, stakeout: 0 },
+    relations: {}, t1: 0, exclusives: 0, right: 0, calls: 0, uturns: 0, history: [], live: null, restarts,
   };
 }
 
-// Trust makes an 'own' source more accurate: each level removes 12% of its remaining error (L5 = 60% fewer).
+// Trust makes an 'own' source more accurate: each step removes 12% of its remaining error (book Lv5 = 48% fewer).
 function trusted(so: Source, src: string, lv: number): Source {
   if (!lv) return so;
   if (so.kind === 'street') return { ...so, rel: Math.min(0.95, (so.rel || 0.45) + 0.05 * lv) };
@@ -31,7 +43,7 @@ function trusted(so: Source, src: string, lv: number): Source {
     const sumW = wrong.reduce((a, b) => a + b, 0);
     return row.map((_, r) => (r === r0 ? 1 - sumW : wrong[r]));
   });
-  const from = lv >= 3 && src === 'spotter' ? 2 : lv >= 3 && src === 'physio' ? 4 : so.from;
+  const from = lv >= TRUST_EARLY - 1 && src === 'spotter' ? 2 : lv >= TRUST_EARLY - 1 && src === 'physio' ? 4 : so.from;
   return { ...so, M, from };
 }
 function rightReport(src: string, t: number) {
@@ -40,10 +52,10 @@ function rightReport(src: string, t: number) {
   return t;
 }
 
-export function careerRules(c: CareerSave, cast: CastSaga[]): Rules {
+export function careerRules(c: CareerSave, cast: CastSaga[], s: Save = getSave()): Rules {
   const rk = RANKS[c.rank];
   const SOURCES: Record<string, Source> = {};
-  for (const k of rk.src) SOURCES[k] = trusted(RULES.SOURCES[k], k, trustLevel((c.contacts[k] || { trust: 0 }).trust));
+  for (const k of rk.src) SOURCES[k] = trusted(RULES.SOURCES[k], k, trustSteps(s, k));
   const PER: Record<number, Record<string, Source>> = {};
   if (c.rank >= 2) cast.forEach((s) => {
     const rel = Math.max(rel0(c, s.from.id), rel0(c, s.to.id)), low = Math.min(rel0(c, s.from.id), rel0(c, s.to.id));
@@ -53,7 +65,7 @@ export function careerRules(c: CareerSave, cast: CastSaga[]): Rules {
   // Vince's play (chapter 4 on): one saga, one source fed a planted line. Same PER hook as the frozen-out kit man.
   const vp = vincePick(c, cast);
   if (vp && SOURCES[vp.src]) PER[vp.i] = { ...(PER[vp.i] || {}), [vp.src]: planted(SOURCES[vp.src], vp.src) };
-  const AGAIN = c.rank >= 3 ? rk.src.filter((k) => trustLevel((c.contacts[k] || { trust: 0 }).trust) >= 5) : [];
+  const AGAIN = c.rank >= 3 ? rk.src.filter((k) => careerTrust(s, k) >= TRUST_AGAIN) : [];
   return { ...RULES, SAGAS: rk.sagas, CONTACTS: rk.contacts, DD_SECONDS: rk.dd, SOURCES, RIVALS: RULES.RIVALS.filter((r) => rk.rivals.includes(r.id)), PER, AGAIN, FAVOURS: true } as Rules;
 }
 
@@ -91,36 +103,49 @@ const rel0 = (c: CareerSave, id: string) => (c.relations[id] ? c.relations[id].v
 export const castOpts = (c: CareerSave) => ({ n: RANKS[c.rank].sagas, pool: RANKS[c.rank].pool, ...(c.rank < 2 ? { maxStar: 2 } : {}) });
 
 export interface CareerReport {
-  repBefore: number; repAfter: number; followers: number; favours: number; promoted: number | null; trust: Record<string, [number, number]>;
-  rel: Record<string, [number, number]>; leaks: string[]; frozen: string[]; milestoneCredits: number;
+  /** Reputation (Career's "credibility") before and after: the one global rep. */
+  repBefore: number; repAfter: number;
+  /** Followers this window moved on the one global count, and the count after. */
+  followers: number; followersAfter: number;
+  favours: number; promoted: number | null;
+  /** Contacts Book level before and after, for the sources this window asked. */
+  trust: Record<string, [number, number]>;
+  rel: Record<string, [number, number]>; leaks: string[]; frozen: string[];
+  /** Always 0 since 3.4: follower milestones are paid by lib/byline.ts in every mode. Kept for callers. */
+  milestoneCredits: number;
+  /** What the window did to the byline (lib/byline.ts WindowSummary), for Results. */
+  byline: WindowSummary | null;
 }
-const STAR = [1, 1, 1.5, 2.5];
 // Apply a finished window to the career (DESIGN §6.2–6.6). Returns what changed, for the results page.
-export function applyWindow(c: CareerSave, g: Game, res: Result, cast: CastSaga[], milestonesPaid: Record<string, number>): CareerReport {
-  const rep0 = c.rep, trust0: Record<string, number> = {}, rel0s: Record<string, number> = {};
-  let delta = 0, followers = 0, favours = 0;
+// Call it inside update(): `c` is the draft's career, and the byline beside it is moved through lib/byline.ts
+// recordInto() with the Career mode factor (GOTY.md §1.1), once per window seed. `milestonesPaid` is kept for the
+// call signature; milestones are paid by the byline now. Pass `s` explicitly outside a mutator (tests).
+export function applyWindow(c: CareerSave, g: Game, res: Result, cast: CastSaga[], _milestonesPaid?: Record<string, number>, s: Save | null = activeDraft()): CareerReport {
+  if (!s || s.career !== c) throw new Error('applyWindow: call inside update() on the draft career');
+  const rel0s: Record<string, number> = {};
+  const book0: Record<string, number> = {}; for (const src of Object.keys(RULES.SOURCES)) book0[src] = careerTrust(s, src);
+  // One career: the byline, the book and the ledgers move exactly as they do in every other mode.
+  const toasts: [string, string][] = [];
+  const key = careerWindowKey(g.board.seed);
+  let sum = recordInto(s, { mode: 'career', key, per: res.per, cast, tier: res.tier, total: res.total }, toasts);
+  if (!sum && s.byline?.last && s.byline.last.key === key) sum = s.byline.last;
+  if (toasts.length) setTimeout(() => { for (const [a, b] of toasts) toast('ach', a, b); }, 0);
+  const b = s.byline!;
+  const followers = sum ? sum.followers : 0, repAfter = b.rep, rep0 = sum ? b.rep - sum.rep : b.rep;
+  let favours = 0;
   res.per.forEach((p) => {
-    const s = cast[p.i], star = STAR[s.player.star] || 1;
-    const clubs = [s.from.id, s.to.id];
-    // Trust: +1 per ask; +2 when a read pointed to the truth and you published a call that matched it.
-    for (const cl of g.clues[p.i]) {
-      const k = cl.src; if (!(k in c.contacts)) c.contacts[k] = { trust: 0 };
-      if (!(k in trust0)) trust0[k] = c.contacts[k].trust;
-      c.contacts[k].trust += 1;
-      const w = E.weights(g.R, k, cl.r);
-      if (p.right && p.call && w[p.truth] > 0 && w[p.truth] === Math.max(...w)) c.contacts[k].trust += 2;
-    }
+    const sg = cast[p.i];
+    const clubs = [sg.from.id, sg.to.id];
     if (!p.call) return;
     c.calls++;
     const st = p.call.s;
     for (const id of clubs) { if (!(id in rel0s)) rel0s[id] = rel0(c, id); }
     if (p.right) {
-      c.right++; delta += [0.5, 1, 2][st]; followers += 100 * [1, 2, 4][st] * star;
-      if (p.excl) { delta += 2; followers += 500 * star; favours++; c.exclusives++; }
+      c.right++;
+      if (p.excl) { favours++; c.exclusives++; }
       for (const id of clubs) bump(c, id, p.excl ? 2 : 1);
     } else {
-      delta -= [0.5, 1.5, 4][st];
-      if (st === 2) { followers -= 300 * star; for (const id of clubs) bump(c, id, -2); }
+      if (st === 2) for (const id of clubs) bump(c, id, -2);
       if (st === 1) for (const id of clubs) bump(c, id, -1);
     }
     if (p.call.ut) c.uturns++;
@@ -128,27 +153,22 @@ export function applyWindow(c: CareerSave, g: Game, res: Result, cast: CastSaga[
   c.windows++;
   // Drift: a relation with no story for 10 windows moves one step toward 0.
   for (const [id, r] of Object.entries(c.relations)) if (!(id in rel0s) && c.windows - r.last >= 10 && r.v !== 0) { r.v += r.v > 0 ? -1 : 1; r.last = c.windows; }
-  c.rep = Math.max(0, Math.min(100, Math.round((c.rep + delta - 0.05 * (c.rep - 50)) * 10) / 10));
-  c.followers = Math.max(0, Math.round(c.followers + followers));
   if (res.tier === 'T1') { c.t1++; favours++; if (c.rank === RANKS.length - 1) c.t1Top = (c.t1Top || 0) + 1; }
   const fav = favours;
   for (let k = 0; k < fav; k++) { const kinds = ['burner', 'tipoff', 'stakeout'] as const; const kind = kinds[(c.windows + k) % 3]; if (totalFavours(c) < 5) c.favours[kind]++; }
   let promoted: number | null = null;
   const nx = RANKS[c.rank + 1];
-  if (nx && c.windows >= nx.gate[0] && c.rep >= nx.gate[1]) { c.rank++; promoted = c.rank; }
-  c.history = [{ n: c.windows, total: res.total, tier: res.tier, repAfter: c.rep, at: Date.now() }, ...c.history].slice(0, 12);
-  let milestoneCredits = 0;
-  for (const [f, cr] of FOLLOWER_MILESTONES) if (c.followers >= f && !milestonesPaid['f' + f]) { milestonesPaid['f' + f] = Date.now(); milestoneCredits += cr; }
+  if (nx && c.windows >= nx.gate[0] && repAfter >= nx.gate[1]) { c.rank++; promoted = c.rank; }
+  c.history = [{ n: c.windows, total: res.total, tier: res.tier, repAfter, at: Date.now() }, ...c.history].slice(0, 12);
   const trust: Record<string, [number, number]> = {};
-  for (const k of Object.keys(trust0)) trust[k] = [trust0[k], c.contacts[k].trust];
+  for (const src of Object.keys(sum ? sum.xp : {})) trust[src] = [book0[src] || 1, careerTrust(s, src)];
   const rel: Record<string, [number, number]> = {}, leaks: string[] = [], frozen: string[] = [];
-  for (const id of Object.keys(rel0s)) { const a = rel0s[id], b = rel0(c, id); rel[id] = [a, b]; if (a < 3 && b >= 3) leaks.push(id); if (a > -3 && b <= -3) frozen.push(id); }
-  return { repBefore: rep0, repAfter: c.rep, followers, favours: fav, promoted, trust, rel, leaks, frozen, milestoneCredits };
+  for (const id of Object.keys(rel0s)) { const a = rel0s[id], b2 = rel0(c, id); rel[id] = [a, b2]; if (a < 3 && b2 >= 3) leaks.push(id); if (a > -3 && b2 <= -3) frozen.push(id); }
+  return { repBefore: rep0, repAfter, followers, followersAfter: b.followers, favours: fav, promoted, trust, rel, leaks, frozen, milestoneCredits: 0, byline: sum };
 }
 function bump(c: CareerSave, id: string, d: number) {
   const r = c.relations[id] || { v: 0, last: c.windows };
   r.v = Math.max(-5, Math.min(5, r.v + d)); r.last = c.windows; c.relations[id] = r;
 }
 export const totalFavours = (c: CareerSave) => c.favours.burner + c.favours.tipoff + c.favours.stakeout;
-export const repEquilibrium = (d: number) => Math.round(50 + 20 * d);
 export const outKey = (o: number) => OUTS[o];

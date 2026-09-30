@@ -135,7 +135,10 @@ comeback and a mystery: someone fed you the fake that ended you at *The Chronicl
   banner, and after the window Mags's note names who lied.
 
 ## 8. Progress (cosmetic; never touches Daily scoring)
-- **Level:** Pass tier = `floor(pp / 100) + 1`, capped at 40. XP is the existing Press Points.
+- **Level:** the season Pass level (`lib/season.ts` seasonLevel, 40 levels, reset each real-calendar season) is the
+  one level number on screen. Press Points are lifetime (`save.pp`) and feed the season; the old
+  `floor(pp / 100) + 1` account level is hidden since 3.4 (`lib/progress.ts` levelOf returns the Pass level).
+- **Identity:** the byline's rep tier (Blogger → Tier One, GOTY.md §1.1), the same word in Story, on Me and on cards.
 - **Missions:** 3 per UTC day from a pool, rewarding 5–15 coins.
 - **Trophies:** the existing 30 achievements, shown as a shelf.
 

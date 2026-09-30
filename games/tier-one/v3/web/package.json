@@ -12,6 +12,7 @@
     "smoke:api": "node scripts/api-smoke.mjs",
     "test:live": "node --test scripts/live.test.mjs",
     "test:social": "node --test scripts/social-api.test.mjs",
+    "test:onecareer": "node scripts/test-onecareer.mjs",
     "world": "node scripts/build-world.mjs"
   },
   "dependencies": {

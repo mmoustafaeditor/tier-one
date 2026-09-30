@@ -7,6 +7,7 @@
 // renamed (comeback → post, stringer → nationals, rival → war); LEGACY_CHAPTER maps any old id that turns up.
 // Inbox entries keep their old beat keys (promo1, firstRight, …): the keys still exist, only the lines were rewritten.
 import { RANKS, type CareerReport } from './career';
+import { bylineOf } from './byline';
 import type { Result } from './engine';
 import type { Save, CareerSave } from './save';
 
@@ -20,20 +21,21 @@ export const FINALE_T1 = 3;
 
 export interface Chapter { i: number; id: ChapterId; n: number; progress: number; goal: { windows: number; rep: number; t1?: number; haveW: number; haveRep: number; haveT1?: number } | null; done: boolean }
 
-export function chapterFor(c: CareerSave): Chapter {
+/** The chapter a career is in. `rep` is the one reputation (save.byline.rep): Career's "credibility" gate. */
+export function chapterFor(c: CareerSave, rep: number): Chapter {
   const r = c.rank;
   if (r < RANKS.length - 1) {
     const [gw, grep] = RANKS[r + 1].gate;
-    const pw = gw ? Math.min(1, c.windows / gw) : 1, pr = Math.min(1, Math.max(0, (c.rep - 40) / Math.max(1, grep - 40)));
-    return { i: r, id: CHAPTERS[r], n: r + 1, progress: (pw + pr) / 2, goal: { windows: gw, rep: grep, haveW: c.windows, haveRep: Math.round(c.rep) }, done: false };
+    const pw = gw ? Math.min(1, c.windows / gw) : 1, pr = Math.min(1, Math.max(0, (rep - 40) / Math.max(1, grep - 40)));
+    return { i: r, id: CHAPTERS[r], n: r + 1, progress: (pw + pr) / 2, goal: { windows: gw, rep: grep, haveW: c.windows, haveRep: Math.round(rep) }, done: false };
   }
   // Rank Tier One: back at The Chronicle; three Tier 1 windows and the front page is yours.
   const t1 = c.t1Top ?? 0;
-  if (t1 < FINALE_T1) return { i: 4, id: 'chronicle', n: 5, progress: t1 / FINALE_T1, goal: { windows: 0, rep: 0, t1: FINALE_T1, haveW: c.windows, haveRep: Math.round(c.rep), haveT1: t1 }, done: false };
+  if (t1 < FINALE_T1) return { i: 4, id: 'chronicle', n: 5, progress: t1 / FINALE_T1, goal: { windows: 0, rep: 0, t1: FINALE_T1, haveW: c.windows, haveRep: Math.round(rep), haveT1: t1 }, done: false };
   // The epilogue is still "chapter 5" wherever a number is shown (Home's mode bar): five chapters, then the front page.
   return { i: EPILOGUE, id: 'front', n: 5, progress: 1, goal: null, done: true };
 }
-export function chapterOf(s: Save): Chapter | null { return s.career ? chapterFor(s.career) : null; }
+export function chapterOf(s: Save): Chapter | null { return s.career ? chapterFor(s.career, bylineOf(s).rep) : null; }
 /** The i18n key of a chapter's full name ("Ch. 2 · The Evening Post"). Old ids are mapped. */
 export const chapterName = (id: string) => 'g.story.ch.' + chapterId(id) + '.name';
 
@@ -118,10 +120,10 @@ export function storyBeats(c: CareerSave, res: Result, rep: CareerReport, o: Bea
   // 7. Firsts (counters are already updated by applyWindow).
   if (excl.length && c.exclusives === excl.length) out.push({ from: 'editor', key: 'firstExcl', v: { p: name(excl[0].i) } });
   else if (right.length && c.right === right.length) out.push({ from: 'editor', key: 'firstRight' });
-  // 8. A follower milestone crossed this window.
-  const before = c.followers - rep.followers;
-  const m = [...BEAT_FOLLOWERS].reverse().find((x) => before < x && c.followers >= x);
-  if (m) out.push({ from: 'editor', key: m === 38200 ? 'followersBack' : 'followers', v: { m, n: c.followers } });
+  // 8. A follower milestone crossed this window (the one global count, GOTY.md §1.1).
+  const before = rep.followersAfter - rep.followers;
+  const m = [...BEAT_FOLLOWERS].reverse().find((x) => before < x && rep.followersAfter >= x);
+  if (m) out.push({ from: 'editor', key: m === 38200 ? 'followersBack' : 'followers', v: { m, n: rep.followersAfter } });
   // 9. Nothing happened: Mags still has an opinion.
   if (!out.length) out.push({ from: 'editor', key: !called.length ? 'quiet' : res.tier === 'T1' || res.tier === 'T2' ? 'solid' : 'meh' });
   return out.slice(0, 2);

@@ -174,8 +174,8 @@ const es: Dict = {
     start: 'Empieza tu carrera', startD: 'Un portátil, un blog y tres personas que te cogen el teléfono. Reputación 50 de 100.', window: 'Trabajar un mercado', resume: 'Volver a tu mercado',
     rep: 'Reputación', repEq: 'Mantén {d} por mercado y te estabilizas en {r}.', toNext: '{w} mercados y reputación {r} para {rank}', top: 'En lo más alto.',
     right: 'Aciertos', calls: 'de {n} apuestas', scoops: 'Bombazos', exclusives: 'Exclusivas', uturns: 'Rectificaciones', ownedUp: 'Asumidas', followers: 'Seguidores', windows: 'Mercados',
-    book: 'La agenda', bookAside: 'Confianza · contigo', level: 'N{n}', trustNext: '{n} para N{l}', trustMax: 'Al máximo',
-    trustFx: ['Contacto nuevo.', '12% menos errores.', '24% menos errores, y abre un día antes.', '36% menos errores, acceso anticipado.', '48% menos errores, acceso anticipado.', '60% menos errores, acceso anticipado, segunda opinión.'],
+    book: 'La agenda', bookAside: 'Confianza · contigo', level: 'N{n}', trustNext: '{n} XP para N{l}', trustMax: 'Tarjeta de oro', trustEarly: 'abre un día antes en N{l}', trustAgain: 'segunda opinión en N{l}',
+    trustFx: ['Contesta. Y va de frente.', '12% menos errores.', '24% menos errores, y abre un día antes.', '36% menos errores, acceso anticipado.', '48% menos errores, acceso anticipado, segunda opinión.'],
     barberFx: 'Acierta el {p}% de las veces contigo.', locked: 'Abre en {rank}',
     clubs: 'Clubes', clubsAside: 'Relaciones', clubsEmpty: 'Ningún club sabe tu nombre aún. Publica una apuesta acertada sobre uno.', leak: 'Te coge el teléfono', frozen: 'Te ha cerrado la puerta', neutral: 'Neutral',
     unlocks: 'Desbloqueos', unlocksAside: 'Ganados, no comprados', favours: 'Favores', favoursAside: '{n} de 5', burner: 'Móvil de prepago', burnerD: '+1 contacto hoy', tipoff: 'Chivatazo', tipoffD: 'Te dice si un culebrón es Humo',
@@ -225,6 +225,7 @@ const es: Dict = {
     s7: ['Rectificar', 'Una vez por culebrón. La apuesta vieja cuesta su penalización; la nueva puntúa desde hoy y no puede ser exclusiva.'],
     s8: ['Día de cierre', 'Sesenta segundos de reloj real, tres contactos, tres publicaciones como máximo. Los últimos quince segundos abren la publicación rápida.'],
     s9: ['Tiers', 'Tier 1: {t1}+ y al menos una exclusiva. Tier 2: {t2}+. Tier 3: {t3}+. Tier 4: 0+. Bajo cero: a la papelera.'],
+    s10: ['Una firma', 'Tus seguidores, reputación, agenda y rivales son los mismos en todos los modos: el Diario, Historia, el Cable, las salas y la práctica los mueven. Tu firma es tuya; cada ranura de carrera es otra historia (su capítulo, sus favores, su bandeja), no otro tú. Nada de esto cambia el tablero ni la puntuación del Diario.'],
     table: ['Fuerza', 'Acierto', 'Por día restante', 'Exclusiva', 'Fallo', 'Rectificar'], srcTable: ['Fuente', 'Coste', 'Abre', 'Recuento'], thumb: 'Confirmado si apostarías 3 a 2. Avanzado si es más probable que no. Contactos si sólo tienes una intuición.',
   },
   onb: {
