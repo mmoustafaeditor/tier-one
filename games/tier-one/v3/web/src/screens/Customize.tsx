@@ -9,33 +9,55 @@ import { toast } from '../lib/meta';
 import { sfx } from '../lib/sfx';
 import { seasonAt } from '../lib/season';
 import { MONET, goldOnSale, buyGold } from '../lib/monet';
-import { KINDS, itemsOf, item, featuredView, seasonSet, priceNow, onSale, isStandard, GOLD_CREDITS, type Item, type Kind } from '../lib/catalog';
+import {
+  KINDS, itemsOf, item, featuredView, seasonSet, priceNow, onSale, isStandard, kindDef, GOLD_CREDITS, newThisWeek, lastChance, bookSets, applyRemoteCatalog,
+  activeWindow, windowsOf, dropped, type Item, type Kind, type RemoteCatalog,
+} from '../lib/catalog';
 import {
   equipped, owns, buy, equipItem, refund, refundable, bestCurrency, balance, ledger, shortBy, referralCode, referralLink, CREDITS_EARN, giftable,
-  setPaperName, paperName, PAPER_NAME_MAX, whyText, giftOutbox, type Currency,
+  setPaperName, paperName, PAPER_NAME_MAX, whyText, giftOutbox, toggleShowcase, SHOWCASE_MAX, priceText, type Currency,
 } from '../lib/wallet';
+import { syncEarned, earnProgress } from '../lib/earned';
+import { setCustomCatchphrase, customUnlocked, customLine, catchDef, cleanLine, CUSTOM_MAX, CUSTOM_ID, TONE_SFX } from '../lib/catchphrase';
+import { getConfig } from '../lib/flags';
 import { Icon, TopBar, GBtn, confetti } from '../ui/game';
 import { Seg } from '../ui/screenbits';
 import { WalletStrip, Stage, Tile, Thumb, PriceTag, CreditIcon, Countdown, GiftSheet, PacksSheet, itemName, type Try } from '../ui/customize';
+import type { Save } from '../lib/save';
+
+type Tab = Kind | 'book';
+let remoteApplied = false;
+/** Once per session: the v4 config's looks, drops, rails, vault and earned-only list (lib/catalog.ts applyRemoteCatalog). */
+function applyRemoteOnce() {
+  if (remoteApplied) return; remoteApplied = true;
+  try { const c = getConfig()?.catalog as unknown as RemoteCatalog | undefined; if (c && (c.looks || c.vault || c.drops || c.rails)) applyRemoteCatalog(c); } catch { /* the built-in catalog stands */ }
+}
 import type { Chrome } from '../App';
 
 export function CustomizeScreen(chrome: Chrome) {
   const t = useT();
   const s = useSave();
-  const [tab, setTab] = useState<Kind>('byline');
+  const [tab, setTab] = useState<Tab>('byline');
   const [sel, setSel] = useState<string>(() => equipped('byline').id);
+  useEffect(() => { applyRemoteOnce(); const got = syncEarned(); if (got.length) { sfx('unlock'); const it = item(got[0]); if (it) toast('ach', t('eco.toast.bought', { n: itemName(t, it) })); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [giftFor, setGiftFor] = useState<Item | null>(null);
   const [packs, setPacks] = useState(false);
   const [name, setName] = useState(() => s.desk?.paper || '');
   const now = Date.now();
   const season = seasonAt(now);
-  const items = useMemo(() => itemsOf(tab, now), [tab, now]);
+  const book = tab === 'book';
+  const kind: Kind = book ? 'byline' : tab;
+  const items = useMemo(() => itemsOf(kind, now), [kind, now]);
   const feat = useMemo(() => featuredView(now), [now]);
   const set = useMemo(() => seasonSet(season.id), [season.id]);
+  const fresh = useMemo(() => newThisWeek(now), [now]);
+  const last = useMemo(() => lastChance(now), [now]);
   const selected = item(sel) || items[0];
   const tryOn: Try = selected && !owns(selected.id, s) ? { [selected.kind]: selected.id } : {};
   const pick = (id: string) => { const it = item(id); if (!it) return; sfx('ui.tap'); if (it.kind !== tab) setTab(it.kind); setSel(id); if (it.kind === 'ringtone' && it.preview.k === 'ringtone') sfx(it.preview.sfx); };
-  const changeTab = (k: Kind) => { setTab(k); setSel(equipped(k, s).id); };
+  const changeTab = (k: Tab) => { setTab(k); if (k !== 'book') setSel(equipped(k, s).id); };
+  const pinned = (s.desk?.show || []).includes(selected?.id || '');
+  const doPin = (it: Item) => { sfx('ui.pop'); toggleShowcase(it.id); };
 
   // Keyboard: arrows move between tiles; Enter/Space picks (native button).
   const grid = useRef<HTMLDivElement>(null);
@@ -65,7 +87,7 @@ export function CustomizeScreen(chrome: Chrome) {
   const doRefund = (id: string) => {
     const e = ledger(s).find((x) => x.id === id); const it = e?.item ? item(e.item) : null;
     const r = refund(id);
-    if (r.ok) { sfx('shred'); if (it) toast('info', t('eco.toast.refunded', { n: itemName(t, it) })); setSel(equipped(tab).id); } else sfx('bad');
+    if (r.ok) { sfx('shred'); if (it) toast('info', t('eco.toast.refunded', { n: itemName(t, it) })); if (tab !== 'book') setSel(equipped(tab).id); } else sfx('bad');
   };
   const copyLink = async () => { try { await navigator.clipboard.writeText(referralLink(s)); sfx('ui.pop'); toast('info', t('eco.ref.copied')); } catch { toast('info', referralLink(s)); } };
   const saveName = () => { if (setPaperName(name)) { sfx('stamp.done'); toast('info', t('eco.toast.renamed', { n: paperName() })); } };
@@ -75,6 +97,7 @@ export function CustomizeScreen(chrome: Chrome) {
   const isOn = !!selected && equipped(selected.kind, s).id === selected.id;
   const owned = !!selected && owns(selected.id, s);
   const gold = tab === 'gold';
+  const catchTab = tab === 'catchphrase';
   const goldId = 'gold.' + season.id;
   const haveGold = owns(goldId, s);
 
@@ -83,14 +106,14 @@ export function CustomizeScreen(chrome: Chrome) {
     <div className="cz__grid">
       <aside className="cz__side">
         <WalletStrip onGet={() => setPacks(true)} />
-        <Stage tab={tab} s={s} tryOn={tryOn} />
+        <Stage tab={book ? 'byline' : tab} s={s} tryOn={book ? {} : tryOn} />
         <p className="cz-hint">{t('eco.sub')}</p>
       </aside>
 
       <div className="cz__main">
-        <Seg<Kind> className="cz-tabs" value={tab} onChange={changeTab} label={t('eco.title')} options={KINDS.map((k) => ({ v: k, label: t('eco.tabs.' + k) }))} />
+        <Seg<Tab> className="cz-tabs" value={tab} onChange={changeTab} label={t('eco.title')} options={[...KINDS.map((k) => ({ v: k as Tab, label: k === 'catchphrase' ? t('cp.ui.tab') : t('eco.tabs.' + k) })), { v: 'book' as Tab, label: t('eco.tabs.book') }]} />
 
-        {gold ? <GoldTab have={haveGold} sname={t(season.nameKey)} onBuy={() => doBuy(item(goldId)!, 'credits')} credits={balance('credits', s)} />
+        {book ? <BookView s={s} now={now} onPick={(id) => pick(id)} /> : gold ? <GoldTab have={haveGold} sname={t(season.nameKey)} onBuy={() => doBuy(item(goldId)!, 'credits')} credits={balance('credits', s)} />
           : <>
             <p className="cz-hint">{t('eco.act.tryOn')}</p>
             <div className="cz-tiles" ref={grid} onKeyDown={onKey} role="listbox" aria-label={t('eco.tabs.' + tab)}>
@@ -98,15 +121,18 @@ export function CustomizeScreen(chrome: Chrome) {
             </div>
           </>}
 
-        {selected && !gold && <section className="cz-act" aria-live="polite">
+        {catchTab && <CatchPanel s={s} />}
+
+        {selected && !gold && !book && <section className="cz-act" aria-live="polite">
           <div className="cz-act__head"><h2 className="cz-act__name" dir="auto">{itemName(t, selected)}</h2><span className="cz-act__rar">{t('eco.rarity.' + selected.rarity)}{selected.set && !/^\w+-\d{4}$/.test(selected.set) ? ' · ' + selected.set : ''}</span></div>
           {selected.descKey && <p className="cz-act__desc">{t(selected.descKey)}</p>}
           <div className="cz-act__line">
             {isOn ? <span className="cz-tile__on"><Icon n="check" size={13} />{t('eco.state.on')}</span> : owned ? <span>{t('eco.state.owned')}</span>
               : price ? <><PriceTag price={price} /> {was && <span className="cz-act__was">({t('eco.price.usual', { p: t('eco.price.' + (was.credits != null ? 'credits' : 'coins'), { n: was.credits ?? was.coins ?? 0 }) })})</span>}</>
                 : <span>{t('eco.source.' + selected.source)}</span>}
-            {selected.window && !owned && <span className="cz-act__count"><Countdown to={selected.window.to} lang={t.lang} /></span>}
+            {!owned && activeWindow(selected, now) && <span className="cz-act__count">{t('eco.rails.leaves')} · <Countdown to={activeWindow(selected, now)!.to} lang={t.lang} /></span>}
           </div>
+          {selected.source === 'earned' && selected.earn && !owned && <p className="cz-act__desc"><Icon n="lock" size={13} /> {earnText(t, selected, s)} · {t('eco.book.never')}</p>}
           {selected.kind === 'paper' && owned && <label className="cz-field"><span className="cz-field__l">{t('eco.paper.hed')}</span>
             <input className="cz-input" value={name} onChange={(e) => setName(e.target.value)} maxLength={PAPER_NAME_MAX} placeholder={t('eco.paper.ph')} dir="auto" />
             <small>{s.desk?.paper ? t('eco.paper.current', { n: s.desk.paper }) : t('eco.paper.std')}</small></label>}
@@ -119,8 +145,20 @@ export function CustomizeScreen(chrome: Chrome) {
                 </> : <span className="cz-act__desc">{t('eco.season.earn')}</span>}
             {selected.kind === 'ringtone' && selected.preview.k === 'ringtone' && <GBtn kind="ghost" size="sm" onClick={() => sfx((selected.preview as { sfx: 'phone.ring' }).sfx)}><Icon n="sound" />{t('eco.act.hear')}</GBtn>}
             {giftable(selected) && onSale(selected, now) && <GBtn kind="ghost" size="sm" onClick={() => setGiftFor(selected)}><Icon n="gift" />{t('eco.act.gift')}</GBtn>}
+            {owned && !isStandard(selected.id) && kindDef(selected.kind).showcase && <GBtn kind="ghost" size="sm" onClick={() => doPin(selected)}><Icon n="star" />{pinned ? t('eco.act.unpin') : t('eco.act.pin')}{!pinned && ` (${(s.desk?.show || []).length}/${SHOWCASE_MAX})`}</GBtn>}
           </div>
         </section>}
+
+        {/* ---------- drops: new this week, last chance (season sets and vault returns, real dates only) */}
+        <section className="cz-rails" aria-labelledby="new-h">
+          <div className="g-sec" style={{ marginTop: 6 }}><h2 id="new-h">{t('eco.rails.new')}</h2></div>
+          {fresh.length ? <div className="cz-feat__row">{fresh.map((it) => <RailCard key={it.id} it={it} s={s} now={now} onPick={() => pick(it.id)} />)}</div> : <p className="g-fine">{t('eco.rails.none')}</p>}
+          {last.length > 0 && <>
+            <div className="g-sec"><h2 id="last-h" className="cz-rails__last">{t('eco.rails.last')}</h2></div>
+            <div className="cz-feat__row">{last.map(({ item: it, ends, vault }) => <RailCard key={it.id} it={it} s={s} now={now} onPick={() => pick(it.id)} badge={vault ? t('eco.rails.vault') : undefined} ends={ends} />)}</div>
+            <p className="g-fine">{t('eco.rails.lastNote', { d: fmtDate(last[0].ends - 864e5, t.lang, { weekday: 'short', day: 'numeric', month: 'short' }) })}</p>
+          </>}
+        </section>
 
         {/* ---------- this week's featured */}
         <section className="cz-feat" aria-labelledby="feat-h">
@@ -181,6 +219,83 @@ export function CustomizeScreen(chrome: Chrome) {
     {giftFor && <GiftSheet it={giftFor} onClose={() => setGiftFor(null)} onSent={(to, queued) => toast('ach', t(queued ? 'eco.gift.queued' : 'eco.gift.sent', { c: to }))} />}
     {packs && <PacksSheet onClose={() => setPacks(false)} />}
   </div>;
+}
+
+function earnText(t: ReturnType<typeof useT>, it: Item, s: Save): string {
+  const e = it.earn!; const [have, need] = earnProgress(e, s);
+  const r = e.ref ? (e.via === 'rank' ? t('cn.tier.' + e.ref) : e.via === 'rivalry' ? t('g.rival.' + e.ref + '.name') : e.ref) : '';
+  const base = t('eco.book.earn.' + e.via, { n: e.n ?? '', r: r.startsWith('g.rival.') ? e.ref! : r });
+  return e.via === 'streak' || e.via === 'referral' || e.via === 'story' ? base + ' · ' + t('eco.book.have', { a: have, b: need }) : base;
+}
+function RailCard({ it, s, now, onPick, badge, ends }: { it: Item; s: Save; now: number; onPick: () => void; badge?: string; ends?: number }) {
+  const t = useT(); const own = owns(it.id, s); const p = onSale(it, now) ? priceNow(it, now) : null;
+  return <button type="button" className={'cz-feat__card' + (own ? ' is-owned' : '')} onClick={onPick} aria-label={itemName(t, it)}>
+    <span className="cz-tile__art"><Thumb it={it} s={s} /></span>
+    <b dir="auto">{itemName(t, it)}</b>
+    {badge && <span className="cz-feat__off">{badge}</span>}
+    {ends && !own && <small className="cz-rails__ends"><Countdown to={ends} lang={t.lang} /></small>}
+    {own ? <span className="cz-tile__owned">{t('eco.state.owned')}</span> : p && <PriceTag price={p} />}
+  </button>;
+}
+
+/** "Your catchphrase": the line fires on a Confirmed call that lands. Tiles above pick it; this writes your own. */
+function CatchPanel({ s }: { s: Save }) {
+  const t = useT();
+  const cur = customLine(s);
+  const [draft, setDraft] = useState(cur?.text || '');
+  const [err, setErr] = useState('');
+  const open = customUnlocked(s);
+  const on = equipped('catchphrase', s); const d = catchDef(on);
+  const save = () => {
+    const r = setCustomCatchphrase(draft);
+    if (!r.ok) { sfx('bad'); setErr(t('cp.ui.err.' + r.error)); return; }
+    setErr(''); sfx(TONE_SFX.gold); toast('ach', t('cp.ui.saved', { t: r.text }));
+  };
+  return <section className="cz-cpp" aria-labelledby="cp-h">
+    <h2 id="cp-h">{t('cp.ui.hed')}</h2>
+    <p className="cz-cpp__dek">{t('cp.ui.dek')}</p>
+    <p className="cz-cpp__now"><span>{t('cp.ui.now')}</span><b className={'cz-cp cz-cp--' + d.tone} style={{ ['--cp' as string]: d.c }} dir="auto">{on.id === CUSTOM_ID && cur?.text && cur.ok !== false ? cur.text : t(d.key)}</b><small>{t('cp.ui.' + d.from)}</small></p>
+    {cur?.ok === false && <p className="cz-err" role="alert">{t('cp.ui.refused')}</p>}
+    <div className={'cz-cpp__write' + (open ? '' : ' is-locked')}>
+      <label className="cz-field"><span className="cz-field__l">{open ? t('cp.ui.write') : <><Icon n="lock" size={13} /> {t('cp.ui.write')}</>}</span>
+        <input className="cz-input cz-input--cp" value={draft} disabled={!open} onChange={(e) => { setDraft(e.target.value.slice(0, CUSTOM_MAX)); setErr(''); }} maxLength={CUSTOM_MAX} placeholder={t('cp.ui.ph')} dir="auto" spellCheck={false} />
+        <small>{open ? t('cp.ui.writeHint') + ' · ' + t('cp.ui.left', { n: CUSTOM_MAX - draft.length }) : t('cp.ui.locked')}</small></label>
+      {err && <p className="cz-err" role="alert">{err}</p>}
+      {open && <GBtn kind="gold" size="sm" onClick={save} disabled={!cleanLine(draft) || (cleanLine(draft) === cur?.text && on.id === CUSTOM_ID)}><Icon n="pen" />{t('cp.ui.set')}</GBtn>}
+      {cur && cur.ok == null && on.id === CUSTOM_ID && <small className="g-fine">{t('cp.ui.pending')}</small>}
+    </div>
+  </section>;
+}
+
+/** The collection book: every set, owned and missing, and how each missing look is won. */
+function BookView({ s, now, onPick }: { s: Save; now: number; onPick: (id: string) => void }) {
+  const t = useT();
+  const sets = useMemo(() => bookSets(now), [now]);
+  const how = (it: Item): string => {
+    if (it.source === 'earned' && it.earn) return earnText(t, it, s);
+    if (it.source === 'track') return t('eco.book.how.track');
+    if (it.source === 'event') return t('eco.book.how.event');
+    if (it.source === 'gold') return t('eco.book.how.gold');
+    if (!dropped(it, now)) return t('eco.book.how.soon', { d: fmtDate(it.drop!, t.lang, { day: 'numeric', month: 'short' }) });
+    const w = activeWindow(it, now);
+    if (w) return t('eco.book.how.window', { d: fmtDate(w.to - 864e5, t.lang, { day: 'numeric', month: 'short' }), p: priceText(priceNow(it, now)) });
+    if (windowsOf(it).length) return t('eco.book.how.gone');
+    return t('eco.book.how.buy', { p: priceText(priceNow(it, now)) });
+  };
+  const setName = (k: string) => { if (/^\w+-\d{4}$/.test(k)) { const [n, y] = k.split('-'); return t('season.name.' + n) === 'season.name.' + n ? k : t('season.name.' + n) + ' ' + y; } const v = t('eco.book.sets.' + k); return v === 'eco.book.sets.' + k ? k : v; };
+  return <section className="cz-book" aria-labelledby="book-h">
+    <h2 id="book-h">{t('eco.book.hed')}</h2>
+    <p className="cz-hint">{t('eco.book.dek')}</p>
+    {sets.map(({ set, items }) => { const have = items.filter((x) => owns(x.id, s)).length; return <div key={set} className={'cz-book__set' + (have === items.length ? ' is-done' : '')}>
+      <div className="cz-book__h"><h3 dir="auto">{setName(set)}</h3><span className="g-num">{have === items.length ? t('eco.book.done') : t('eco.book.have', { a: have, b: items.length })}</span></div>
+      <span className="g-bar g-bar--sm"><i style={{ width: Math.round((have / items.length) * 100) + '%' }} /></span>
+      <ul className="cz-book__list">{items.map((it) => { const own = owns(it.id, s); return <li key={it.id} className={own ? 'is-own' : 'is-miss'}>
+        <button type="button" onClick={() => onPick(it.id)} aria-label={itemName(t, it)}><span className="cz-tile__art"><Thumb it={it} s={s} /></span></button>
+        <span className="cz-book__txt"><b dir="auto">{itemName(t, it)}</b><small>{own ? t('eco.state.owned') : how(it)}</small></span>
+        {own ? <Icon n="check" size={16} /> : it.source === 'earned' ? <Icon n="lock" size={14} /> : null}
+      </li>; })}</ul>
+    </div>; })}
+  </section>;
 }
 
 function GoldTab({ have, sname, onBuy, credits }: { have: boolean; sname: string; onBuy: () => void; credits: number }) {

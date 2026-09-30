@@ -14,5 +14,18 @@
     { "id": "coins.500", "kind": "coins", "name": "500 Coins", "price": { "credits": 5 }, "grants": { "coins": 500 } }
   ],
   "earn": { "season_end": 10, "streak_30": 15, "first_t1": 10, "referral": 5 },
-  "gift": { "max": 50, "perDay": 100 }
+  "gift": { "max": 50, "perDay": 100 },
+  "looks": [],
+  "drops": [
+    {"id": "cp.kettle", "at": "2026-11-30"},
+    {"id": "fp.gilt", "at": "2026-12-07"}
+  ],
+  "rails": {"newDays": 7, "lastDays": 7, "max": 8},
+  "vault": [
+    {"id": "summer-2026.mh", "from": "2026-09-28", "to": "2026-10-05"},
+    {"id": "spring-2026.by", "from": "2026-10-12", "to": "2026-10-19"},
+    {"id": "winter-2026.po", "from": "2026-11-16", "to": "2026-11-23"},
+    {"id": "summer-2026.by", "from": "2027-03-01", "to": "2027-03-08"}
+  ],
+  "earnedOnly": ["st.ch1", "st.ch2", "st.ch3", "st.ch4", "st.ch5", "rk.chief", "rk.tierone", "sk.30", "sk.100", "rv.tabloid", "rv.itk", "rv.insider", "rf.3", "cp.pen", "cp.dusted", "cp.announce", "cp.sealed", "cp.medical", "cp.bags", "cp.front", "cp.shirt", "cp.inkdry", "cp.wheels", "cp.custom"]
 }

@@ -19,6 +19,9 @@ import { MONET } from './monet';
 import { syncSeason, seasonAt, installThemeCSS, equipped as seasonEquipped, type CosKind } from './season';
 import { item, priceNow, onSale, isStandard, isLegacyKind, standardOf, legacy, GOLD_CREDITS, type Item, type Kind, type Price } from './catalog';
 import { t } from './i18n';
+import { earnMet } from './earned';
+import { catchphraseOf, catchphraseColor, type Catchphrase } from './catchphrase';
+import { kindDef, type HeadlineFace, type RingSource } from './kinds';
 
 // ---------------------------------------------------------------- types (module augmentation: no edit to save.ts)
 export type Currency = 'coins' | 'credits';
@@ -31,7 +34,12 @@ export interface WalletSave {
   gifts?: GiftOut[];                                  // outbox for the press box lane / v4 wallet.gift
   refunds?: number;
 }
-export interface DeskSave { equip: Partial<Record<Kind, string>>; paper?: string }
+export interface DeskSave {
+  equip: Partial<Record<Kind, string>>; paper?: string;
+  peak?: string;                                       // highest rep tier reached (lib/earned.ts), so earned looks stay earned
+  cp?: { text: string; at: number; ok?: boolean };     // your own catchphrase (lib/catchphrase.ts); ok=false: refused by the server
+  show?: string[];                                     // the byline card's showcase: up to three owned looks
+}
 declare module './save' { interface Save { wallet?: WalletSave; desk?: DeskSave } }
 
 export type Tx = { ok: true; id: string; n: number; cur: Currency } | { ok: false; error: 'short' | 'off' | 'dup' | 'bad' | 'owned' | 'late' | 'nogift' | 'window' | 'self' };
@@ -123,7 +131,12 @@ export function bestCurrency(p: Price, s: Save = getSave()): Currency | null {
   if (p.credits != null && (s.wallet?.credits || 0) >= p.credits) return 'credits';
   return p.coins != null ? 'coins' : p.credits != null ? 'credits' : null;
 }
-export const owns = (id: string, s: Save = getSave()) => isStandard(id) || s.owned.includes(id) || (item(id)?.kind === 'gold' && !!s.season && s.season.id === item(id)!.set && s.season.gold);
+export const owns = (id: string, s: Save = getSave()) => {
+  if (isStandard(id) || s.owned.includes(id)) return true;
+  const it = item(id); if (!it) return false;
+  if (it.kind === 'gold') return !!s.season && s.season.id === it.set && !!s.season.gold;
+  return it.source === 'earned' && !!it.earn && earnMet(it.earn, s);
+};
 
 /** Buys an item with `cur` at today's price (featured or usual) and equips it. */
 export function buy(id: string, cur: Currency, ms = Date.now()): Tx {
@@ -168,7 +181,7 @@ export function equipped(kind: Kind, s: Save = getSave()): Item {
   if (isLegacyKind(kind)) { const c = seasonEquipped(kind as CosKind, s); return (c && item(c.id)) || standardOf(kind); }
   const id = s.desk?.equip?.[kind];
   const it = id ? item(id) : null;
-  return it && it.kind === kind && s.owned.includes(it.id) ? it : standardOf(kind);
+  return it && it.kind === kind && owns(it.id, s) ? it : standardOf(kind);
 }
 export const isEquipped = (id: string, s: Save = getSave()) => { const it = item(id); return !!it && equipped(it.kind, s).id === id; };
 
@@ -291,14 +304,15 @@ export const goldItemId = (ms = Date.now()) => 'gold.' + seasonAt(ms).id;
 export function bylineStyle(s: Save = getSave()): Record<string, string> {
   const p = equipped('byline', s).preview; if (p.k !== 'byline') return {};
   const f = equipped('flair', s).preview;
-  return { '--by-bg': p.bg, '--by-ink': p.ink, '--by-acc': p.accent, '--by-rule': p.rule, '--by-face': p.face === 'cond' ? 'var(--f-cond)' : 'var(--f-display)', '--by-tex': p.tex || 'none', '--by-flair': f.k === 'flair' ? JSON.stringify(f.g) : '""', '--by-flair-c': f.k === 'flair' ? f.c : 'inherit' };
+  return { '--by-bg': p.bg, '--by-ink': p.ink, '--by-acc': p.accent, '--by-rule': p.rule, '--by-face': p.face === 'cond' ? 'var(--f-cond)' : 'var(--f-display)', '--by-tex': p.tex || 'none', '--by-flair': f.k === 'flair' ? JSON.stringify(f.g) : '""', '--by-flair-c': f.k === 'flair' ? f.c : 'inherit', '--by-cp': JSON.stringify(catchphraseOf(s).text), '--by-cp-c': catchphraseColor(s) };
 }
-export interface ShareStyle { paper: string; ink: string; accent: string; style: 'classic' | 'redtop' | 'broadsheet' | 'night' | 'wire'; frame: { c: string; c2: string; pat: string } | null; masthead: string }
+export interface ShareStyle { paper: string; ink: string; accent: string; style: 'classic' | 'redtop' | 'broadsheet' | 'night' | 'wire'; frame: { c: string; c2: string; pat: string } | null; masthead: string; catchphrase: Catchphrase; catchColor: string; headline: HeadlineStyle }
 /** Colours and frame for lib/share.ts renderCard (additive `style` on Card) and the card previews. */
 export function shareStyle(s: Save = getSave()): ShareStyle {
   const p = equipped('sharecard', s).preview; const f = equipped('frame', s);
   const fr = f.source !== 'standard' && f.preview.k === 'frame' ? { c: f.preview.c, c2: f.preview.c2, pat: f.preview.pat } : null;
-  return p.k === 'sharecard' ? { paper: p.paper, ink: p.ink, accent: p.accent, style: p.style, frame: fr, masthead: paperName(s) } : { paper: '#F2EEE5', ink: '#15130F', accent: '#D2381B', style: 'classic', frame: fr, masthead: paperName(s) };
+  const extra = { catchphrase: catchphraseOf(s), catchColor: catchphraseColor(s), headline: headlineStyle(s) };
+  return p.k === 'sharecard' ? { paper: p.paper, ink: p.ink, accent: p.accent, style: p.style, frame: fr, masthead: paperName(s), ...extra } : { paper: '#F2EEE5', ink: '#15130F', accent: '#D2381B', style: 'classic', frame: fr, masthead: paperName(s), ...extra };
 }
 /** The frame around a film's poster (ScenePlayer / moment overlays): a CSS style object. */
 export function posterStyle(s: Save = getSave()): Record<string, string> {
@@ -329,6 +343,46 @@ export function setPaperName(name: string): boolean {
   return true;
 }
 export const ringtoneOf = (s: Save = getSave()) => { const c = legacy(equipped('ringtone', s)); return c?.sfx || 'phone.ring'; };
+
+// ---------------------------------------------------------------- 3.4 long-tail kinds: what their surfaces read
+export interface HeadlineStyle { face: HeadlineFace; family: string; upper: boolean; ink: string | null }
+const FACE_FAMILY: Record<HeadlineFace, string> = { wood: 'var(--f-display)', serif: 'var(--f-serif, Georgia, serif)', slab: 'var(--f-cond)', stencil: 'var(--f-cond)', mono: 'var(--f-mono)' };
+/** Headline font for the share card and the results front page: font family, case, optional ink. */
+export function headlineStyle(s: Save = getSave()): HeadlineStyle {
+  const p = equipped('headline', s).preview; if (p.k !== 'headline') return { face: 'wood', family: FACE_FAMILY.wood, upper: true, ink: null };
+  return { face: p.face, family: FACE_FAMILY[p.face], upper: !!p.upper, ink: p.ink || null };
+}
+/** CSS variables for the headline surfaces (results front page): --hd-face, --hd-case, --hd-ink. */
+export const headlineVars = (s: Save = getSave()): Record<string, string> => { const h = headlineStyle(s); return { '--hd-face': h.family, '--hd-case': h.upper ? 'uppercase' : 'none', ...(h.ink ? { '--hd-ink': h.ink } : {}) }; };
+/** The desk lamp on Home's film stage: glow and pool colours plus a warmth word (data-lamp on the stage). */
+export function lampStyle(s: Save = getSave()): { vars: Record<string, string>; warmth: 'warm' | 'cool' | 'neon' } {
+  const p = equipped('lamp', s).preview; if (p.k !== 'lamp') return { vars: {}, warmth: 'warm' };
+  return { vars: { '--lamp-glow': p.glow, '--lamp-pool': p.pool }, warmth: p.warmth };
+}
+/** Who is calling, by sound: the ring pack's cue for this source, else the single ringtone (a pack overrides it). */
+export function ringFor(src: string, s: Save = getSave()): string {
+  const pk = equipped('ringpack', s);
+  if (pk.source !== 'standard' && pk.preview.k === 'ringpack') return pk.preview.rings[src as RingSource] || pk.preview.fallback;
+  return ringtoneOf(s);
+}
+/** Feed row skin: a data attribute value and CSS variables (ui/connect.tsx FeedRow). */
+export function feedSkin(s: Save = getSave()): { skin: string; vars: Record<string, string> } {
+  const p = equipped('feedskin', s).preview; if (p.k !== 'feedskin') return { skin: 'wire', vars: {} };
+  return { skin: p.style, vars: { '--fs-rule': p.rule, '--fs-bg': p.bg, '--fs-ink': p.ink } };
+}
+
+// ---------------------------------------------------------------- the showcase: three looks on the byline card
+export const SHOWCASE_MAX = 3;
+/** The pinned looks that are still owned and pinnable, in order. */
+export const showcaseOf = (s: Save = getSave()): Item[] => (s.desk?.show || []).map((id) => item(id)).filter((it): it is Item => !!it && !isStandard(it.id) && kindDef(it.kind).showcase && owns(it.id, s)).slice(0, SHOWCASE_MAX);
+/** Pin or unpin a look. Pinning a fourth drops the oldest. Returns the new list of ids. */
+export function toggleShowcase(id: string): string[] {
+  const it = item(id); const s = getSave();
+  if (!it || isStandard(id) || !kindDef(it.kind).showcase || !owns(id, s)) return s.desk?.show || [];
+  let out: string[] = [];
+  update((x) => { const d = desk(x); const cur = (d.show || []).filter((y) => y !== id); out = cur.length === (d.show || []).length ? [...cur, id].slice(-SHOWCASE_MAX) : cur; d.show = out; });
+  return out;
+}
 
 // ---------------------------------------------------------------- price display (i18n)
 export const fmtCredits = (n: number) => n.toLocaleString('en');
