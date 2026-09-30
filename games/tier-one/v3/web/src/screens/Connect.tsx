@@ -2,7 +2,7 @@
 // Each screen has one moment: the feed prints its new copy, the rivals' scalp stamps slam, a contact's card fills.
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useT, num } from '../lib/i18n';
-import { useSave } from '../lib/save';
+import { useSave, type Save } from '../lib/save';
 import { spend } from '../lib/meta';
 import { sfx, buzz } from '../lib/sfx';
 import {
@@ -10,7 +10,7 @@ import {
   COFFEE_COST, XP_COFFEE, BOOK_LV, toRoute, type FeedItem,
 } from '../lib/byline';
 import { Icon, GBtn, TopBar, SrcIcon, CountUp } from '../ui/game';
-import { FeedRow, RivalMark } from '../ui/connect';
+import { FeedRow, RivalMark, Handle, tn } from '../ui/connect';
 import type { Chrome } from '../App';
 
 export { setNav } from '../ui/connect';
@@ -44,17 +44,38 @@ export function FeedScreen(chrome: Chrome) {
 }
 
 // ---------------------------------------------------------------- Rivals
+// GOTY.md §7 slot: friendRivals(save) from lib/social.ts (social lane) lists the friends you duel with, under the three
+// house rivals. A no-op until that lane lands: the list is empty, so nothing renders.
+const friendRivals = (_s: Save): { id: string; nick: string }[] => [];
 export function RivalsScreen(chrome: Chrome) {
   const t = useT(); const s = useSave();
+  const friends = friendRivals(s);
   return <div className="g-screen g-screen--wide cn-screen cn-rivals">
     <TopBar back={{ label: t('g.tabs.me'), onClick: () => chrome.go({ n: 'me' }) }} title={t('cn.rivals.title')} />
     <header className="cn-head"><h1>{t('cn.rivals.hed')}</h1><p>{t('cn.rivals.sub')}</p></header>
+    <RivalsTotal />
     <div className="cn-rgrid">{RIVALS.map((id, i) => <RivalCard key={id} id={id} i={i} />)}</div>
+    {friends.length > 0 && <div className="cn-rgrid cn-rgrid--friends">{/* social lane: one card per friend rival */}</div>}
     {!RIVALS.some((id) => { const r = rivalOf(s, id); return r.w + r.l + r.d; }) && <div className="cn-empty cn-empty--inline">
       <p>{t('cn.rivals.none')}</p>
       <GBtn size="sm" onClick={() => chrome.go({ n: 'daily' })}><Icon n="phone" />{t('cn.feed.play')}</GBtn>
     </div>}
   </div>;
+}
+// The whole ledger in one line: your record against all three, how many you lead and how many scalps you hold.
+function RivalsTotal() {
+  const t = useT(); const s = useSave();
+  const rs = RIVALS.map((id) => rivalOf(s, id));
+  const w = rs.reduce((a, r) => a + r.w, 0), l = rs.reduce((a, r) => a + r.l, 0), d = rs.reduce((a, r) => a + r.d, 0);
+  if (!(w + l + d)) return null;
+  const ahead = rs.filter((r) => netOf(r) > 0).length, scalps = rs.filter((r) => r.scalp).length;
+  return <p className="cn-total">
+    <span className="cn-total__k">{t('cn.rivals.total')}</span>
+    <b className="g-num" dir="ltr">{w}–{l}</b>
+    {d > 0 && <span>{tn(t, 'cn.rivals.draws', d)}</span>}
+    <span>{tn(t, 'cn.rivals.beaten', ahead)}</span>
+    {scalps > 0 && <span className="cn-total__scalp">{tn(t, 'cn.rivals.scalps', scalps)}</span>}
+  </p>;
 }
 function RivalCard({ id, i }: { id: string; i: number }) {
   const t = useT(); const s = useSave();
@@ -62,12 +83,12 @@ function RivalCard({ id, i }: { id: string; i: number }) {
   const goal = r.scalp ? TROPHY_NET : SCALP_NET;
   const pct = Math.max(0, Math.min(100, (100 * Math.max(0, n)) / goal));
   const st = rivalState(r);
-  const taunt = r.taunt ? t('cn.taunt.' + id + '.' + r.taunt, { rec: r.w + '–' + r.l + (r.d ? '–' + r.d : ''), p: r.tp || '' }) : '';
+  const taunt = r.taunt ? t('cn.taunt.' + id + '.' + r.taunt, { rec: '\u2066' + r.w + '–' + r.l + (r.d ? '–' + r.d : '') + '\u2069', p: r.tp ? '\u2068' + r.tp + '\u2069' : '' }) : '';
   useEffect(() => { if (r.scalp && !s.reduced) { const id2 = setTimeout(() => { sfx('stamp.done'); buzz(25); }, 380 + i * 160); return () => clearTimeout(id2); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return <article className={'cn-rival cn-rival--' + id + ' is-' + st} style={{ ['--i' as string]: i }}>
     <header className="cn-rival__h">
       <RivalMark id={id} size={48} />
-      <div><h2>{t('rival.' + id)}</h2><p>{t('cn.rivals.blurb.' + id)}</p></div>
+      <div><h2><Handle id={id} /></h2><p>{t('cn.rivals.blurb.' + id)}</p></div>
     </header>
     <div className="cn-rec" aria-label={`${t('cn.rivals.you')} ${r.w}, ${t('cn.rivals.them')} ${r.l}, ${t('cn.rivals.drawn')} ${r.d}`}>
       <span className="cn-rec__side"><b className="g-num"><CountUp to={r.w} ms={700} /></b><small>{t('cn.rivals.you')}</small></span>
@@ -76,7 +97,7 @@ function RivalCard({ id, i }: { id: string; i: number }) {
       {r.scalp && <span className={'g-stamp cn-rival__stamp is-slam' + (r.trophy ? ' g-stamp--gold' : '')} style={{ animationDelay: 380 + i * 160 + 'ms' }}>{r.trophy ? t('cn.rivals.trophy') : t('cn.rivals.scalp')}</span>}
     </div>
     {played > 0 ? <>
-      <p className="cn-rival__streak">{r.streak > 0 ? t('cn.rivals.streakW', { n: r.streak }) : r.streak < 0 ? t('cn.rivals.streakL', { n: -r.streak }) : t('cn.rivals.even')}{r.d > 0 && <span className="cn-rec__d">{r.d} {t('cn.rivals.drawn')}</span>}</p>
+      <p className="cn-rival__streak"><span>{r.streak > 0 ? tn(t, 'cn.rivals.runW', r.streak) : r.streak < 0 ? tn(t, 'cn.rivals.runL', -r.streak) : t('cn.rivals.even')}</span>{r.d > 0 && <span className="cn-rec__d">{tn(t, 'cn.rivals.draws', r.d)}</span>}</p>
       {!r.trophy && <div className="cn-rival__goal"><span className="g-bar g-bar--sm" style={{ ['--bar' as string]: r.scalp ? 'var(--gold)' : 'var(--red)' }}><i style={{ width: pct + '%' }} /></span>
         <small>{r.scalp ? t('cn.rivals.toTrophy', { n: Math.max(0, TROPHY_NET - n) }) : t('cn.rivals.toScalp', { n: Math.max(0, SCALP_NET - n) })}</small></div>}
       {taunt && <blockquote className="cn-rival__said"><small>{t('cn.rivals.said')}</small><p dir="auto">{taunt}</p></blockquote>}

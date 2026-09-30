@@ -76,7 +76,7 @@
   .wire3 .g-stack:has(> .live) { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr); gap: 16px 24px; align-items: start; }
   .wire3 .g-stack:has(> .live) > * { grid-column: 1 / -1; }
   .wire3 .g-stack:has(> .live) > .live { grid-column: 1; grid-row: 2; }
-  .wire3 .g-stack:has(> .live) > section:not(.live):not(.g-hero) { grid-column: 2; grid-row: 2; }
+  .wire3 .g-stack:has(> .live) > .wboard { grid-column: 2; grid-row: 2; }
 
   /* ---------- Story, Friends, Pass, Me, Practice, How to: wider sheets; their own 2-column grids take over */
   .sm.g-screen--wide { max-width: 1200px; }

@@ -71,23 +71,62 @@
 .cn-rmark { --rc: var(--red); width: var(--sz, 40px); height: var(--sz, 40px); border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--rc); color: #fff; font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; font-size: calc(var(--sz, 40px) * .42); letter-spacing: .02em; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .2); }
 .cn-rmark--itk { --rc: #1F8FB0; } .cn-rmark--insider { --rc: #2E2A24; }
 
-/* ---------- Me: the byline */
-.cn-byline { background: var(--card); color: var(--card-ink); border-radius: var(--r-card); box-shadow: var(--shadow-card); padding: 16px; }
-.cn-byline__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 2px solid var(--card-ink); }
-.cn-byline__by { font-family: var(--f-display); font-style: italic; font-weight: 700; font-size: 26px; line-height: 1.05; letter-spacing: -.01em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cn-byline__stamp { font-size: 18px; flex: none; }
-.cn-tier--blogger { --sc: var(--c-off-deep); } .cn-tier--stringer { --sc: var(--c-done-deep); } .cn-tier--correspondent { --sc: #1F7FA0; } .cn-tier--chief { --sc: var(--red-deep); } .cn-tier--tierone { --sc: var(--gold-deep); }
-.cn-byline__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+/* ---------- Me: the byline. The name is set big and never cut; the tier stamp and the ladder say where it stands. */
+.me__grid { display: flex; flex-direction: column; gap: 14px; }
+.me__grid > .me__h { margin: 10px 2px -2px; }
+.cn-byline { --sc: var(--card-ink-2); position: relative; background: var(--card); color: var(--card-ink); border-radius: var(--r-card); box-shadow: var(--shadow-card); padding: 18px 16px 16px; overflow: hidden; }
+.cn-byline::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: var(--sc); }
+.cn-byline__top { display: flex; align-items: center; gap: 14px; }
+.cn-byline__av { flex: none; display: grid; place-items: center; width: 60px; height: 60px; border-radius: 16px; background: var(--sc); color: #fff; font-family: var(--f-display); font-weight: 800; font-size: 26px; box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .2); }
+.cn-byline__id { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.cn-byline__by { font-family: var(--f-display); font-style: italic; font-weight: 700; font-size: clamp(24px, 3vw + 14px, 34px); line-height: 1.02; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.cn-byline__stamp { font-size: 15px; --rot: -3deg; color: var(--sc); border-color: var(--sc); }
+.cn-tier--blogger { --sc: #6B6358; } .cn-tier--stringer { --sc: var(--c-done-deep); } .cn-tier--correspondent { --sc: #1A6F8E; } .cn-tier--chief { --sc: var(--red-deep); } .cn-tier--tierone { --sc: #8A5F00; }
+.cn-ladder { margin-top: 16px; }
+.cn-ladder__rungs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; list-style: none; padding: 0; margin: 0; }
+.cn-ladder__rungs li { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.cn-ladder__rungs i { position: relative; display: block; height: 8px; border-radius: 4px; background: rgba(21, 19, 15, .12); overflow: hidden; }
+.cn-ladder__rungs .is-past i { background: color-mix(in srgb, var(--sc) 55%, transparent); }
+.cn-ladder__rungs .is-now i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--into, 0%); background: var(--sc); border-radius: 4px; transition: width var(--d-slow, .52s) var(--ease-out); }
+[dir="rtl"] .cn-ladder__rungs .is-now i::after { inset: 0 0 0 auto; }
+.cn-ladder__rungs span { font-size: 11px; font-weight: 700; color: var(--card-ink-2); white-space: nowrap; }
+.cn-ladder__rungs .is-now span { color: var(--card-ink); font-weight: 800; }
+/* On a phone the five names don't fit under five rungs: only the rung you're on is named (the line below names the next). */
+@media (max-width: 559px) { .cn-ladder__rungs li:not(.is-now) span { visibility: hidden; } .cn-ladder__rungs .is-now span { overflow: visible; } }
+.cn-ladder__next { margin-top: 8px; font-size: 13.5px; font-weight: 700; color: var(--card-ink-2); }
+.cn-byline__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 2px solid var(--card-ink); }
 .cn-byline__stats dt { font-size: 12.5px; font-weight: 700; color: var(--card-ink-2); }
-.cn-byline__stats dd { display: flex; align-items: center; gap: 6px; font-size: 32px; margin-top: 4px; }
-.cn-byline__rep { flex: 1; min-width: 30px; }
+.cn-byline__stats dd { display: flex; align-items: baseline; gap: 4px; font-size: 32px; margin-top: 4px; }
+.cn-byline__stats dd small { font-size: 14px; color: var(--card-ink-2); }
+.cn-hot dd { align-items: center; }
 .cn-hot dd svg { color: var(--card-ink-3); }
 .cn-hot.is-lit dd svg { color: #E8650F; fill: rgba(255, 176, 31, .55); animation: g-flame 1.4s ease-in-out infinite; }
 .cn-hot small { display: block; font-size: 12px; color: var(--card-ink-2); margin-top: 2px; }
-.cn-byline__links { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-.cn-byline__links button { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border-radius: 10px; font-weight: 800; font-size: 14px; color: var(--card-ink); box-shadow: inset 0 0 0 1.5px var(--cn-rule, rgba(21, 19, 15, .18)); }
-.cn-byline__links button:hover { background: rgba(21, 19, 15, .05); }
-.cn-byline__links .g-badge { height: 19px; min-width: 19px; font-size: 12px; }
+
+/* The hub: one door per part of your name. Desk-toned so the byline stays the only paper up top. */
+.cn-hub { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.cn-hub__t { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 64px; padding: 10px 12px; border-radius: var(--r-card); background: var(--desk-2); color: var(--on-desk); box-shadow: inset 0 0 0 1px var(--desk-line); text-align: start; transition: transform var(--d-fast, .09s) var(--ease-out), background var(--d-fast, .09s); }
+.cn-hub__t:hover { background: color-mix(in srgb, var(--desk-2) 85%, #fff); }
+.cn-hub__t:active { transform: scale(.98); }
+.cn-hub__t:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.cn-hub__ic { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: color-mix(in srgb, var(--hc, var(--gold)) 18%, transparent); color: var(--hc, var(--gold)); }
+.cn-hub__t--feed { --hc: #FF7A5C; } .cn-hub__t--rivals { --hc: #FF7A5C; } .cn-hub__t--contacts { --hc: #5FD08E; } .cn-hub__t--pass { --hc: var(--gold); } .cn-hub__t--films { --hc: #6FD3EE; }
+.cn-hub__txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.cn-hub__txt b { font-weight: 800; font-size: 15.5px; }
+.cn-hub__txt small { font-size: 12.5px; color: var(--on-desk-2); overflow-wrap: anywhere; }
+.cn-hub__t.is-up small { color: var(--c-done); } .cn-hub__t.is-down small { color: #FF9A80; }
+.cn-hub__go { color: var(--on-desk-3); }
+.cn-hub .g-badge { height: 20px; min-width: 20px; font-size: 12px; }
+.cn-hub__t--films { grid-column: 1 / -1; min-height: 52px; }
+@media (min-width: 700px) { .cn-hub { grid-template-columns: repeat(5, minmax(0, 1fr)); } .cn-hub__t--films { grid-column: auto; min-height: 64px; } .cn-hub__t { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; align-content: start; padding: 12px; } .cn-hub__go, .cn-hub .g-badge { position: absolute; top: 12px; inset-inline-end: 12px; } .cn-hub__t { position: relative; } }
+.me__links { display: flex !important; flex-wrap: wrap; gap: 8px !important; }
+.me__links .g-btn { width: auto; flex: 1 1 auto; text-transform: none; letter-spacing: .01em; }
+
+/* Rivals: the whole ledger in one line */
+.cn-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: -4px 2px 14px; padding: 10px 14px; border-radius: var(--r-card); background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); color: var(--on-desk-2); font-size: 14px; font-weight: 700; }
+.cn-total__k { color: var(--on-desk); font-weight: 800; }
+.cn-total b { font-size: 24px; color: var(--on-desk); }
+.cn-total__scalp { color: var(--gold); }
 
 /* ---------- Results: what the window did to the byline */
 .cn-resline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; padding: 12px 14px; border-radius: var(--r-card); background: var(--desk-2); color: var(--on-desk); box-shadow: inset 0 0 0 1px var(--desk-line); }
@@ -100,7 +139,8 @@
 /* ---------- Rivals: a dossier each; the record set big in wood type */
 .cn-rgrid { display: grid; gap: 14px; }
 @media (min-width: 1024px) { .cn-rgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; } }
-.cn-rival { --rc: var(--red); position: relative; padding: 16px; background: var(--card); color: var(--card-ink); border-radius: var(--r-card); box-shadow: var(--shadow-card); border-top: 6px solid var(--rc); }
+/* overflow: hidden clips the scalp stamp's slam (it starts far larger than the card), so the page never scrolls sideways. */
+.cn-rival { --rc: var(--red); position: relative; overflow: hidden; padding: 16px; background: var(--card); color: var(--card-ink); border-radius: var(--r-card); box-shadow: var(--shadow-card); border-top: 6px solid var(--rc); }
 .cn-rival--itk { --rc: #1F8FB0; } .cn-rival--insider { --rc: #2E2A24; }
 .cn-rival__h { display: flex; gap: 12px; align-items: center; }
 .cn-rival__h h2 { font-weight: 800; font-size: 18px; }
@@ -110,9 +150,10 @@
 .cn-rec__side b { font-size: 68px; line-height: .85; }
 .cn-rec__side small { font-size: 12.5px; font-weight: 700; color: var(--card-ink-2); margin-top: 4px; }
 .cn-rec__dash { font-family: var(--f-cond); font-weight: 900; font-size: 44px; color: var(--card-ink-3); padding-bottom: 22px; }
-.cn-rec__d { font-weight: 500; font-size: 13px; color: var(--card-ink-2); margin-inline-start: 8px; }
+.cn-rec__d { font-weight: 600; font-size: 13px; color: var(--card-ink-2); }
+.cn-rec__d::before { content: "·"; margin-inline: 8px 6px; color: var(--card-ink-3); }
 .cn-rival__stamp { position: absolute; inset-inline-end: 4px; top: 50%; margin-top: -20px; font-size: 26px; --rot: -12deg; }
-.cn-rival__streak { font-size: 14.5px; font-weight: 700; margin-top: 8px; }
+.cn-rival__streak { display: flex; flex-wrap: wrap; align-items: baseline; font-size: 14.5px; font-weight: 700; margin-top: 8px; }
 .cn-rival.is-losing .cn-rival__streak { color: var(--red-deep); }
 .cn-rival.is-winning .cn-rival__streak { color: var(--c-done-deep); }
 .cn-rival__goal { margin-top: 10px; }
@@ -158,6 +199,7 @@
 .cn-fair { margin: 18px 2px 0; max-width: 62ch; font-size: 13.5px; line-height: 1.45; color: var(--on-desk-2); }
 
 @media (prefers-reduced-motion: reduce) {
+  .cn-hub__t, .cn-ladder__rungs .is-now i::after { transition: none; }
   .cn-feed .cn-row[style*="--k"], .cn-bell.is-pop svg, .cn-bell.is-pop .cn-bell__n, .cn-lv b, .cn-xp__pop, .cn-resline__lv, .cn-hot.is-lit dd svg { animation: none; }
 }
 :root:lang(ar) .cn-rmark { font-family: var(--f-cond); }
