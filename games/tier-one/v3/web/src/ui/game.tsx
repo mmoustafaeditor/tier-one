@@ -1,8 +1,11 @@
 // Game-layer components (HYBRID.md): icons, kit shirts, chunky buttons, counters, confetti, top bar and tabs.
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { WClub, WPlayer } from '../lib/engine';
-import { sfx, type Sfx } from '../lib/sfx';
-import { getSave, useSave } from '../lib/save';
+import { sfx, haptic, type Sfx } from '../lib/sfx';
+export { haptic, type Haptic } from '../lib/sfx';
+import { prefersReducedMotion } from '../lib/motion';
+export { prefersReducedMotion } from '../lib/motion';
+import { useSave } from '../lib/save';
 import { useT } from '../lib/i18n';
 import { levelOf } from '../lib/progress';
 
@@ -88,14 +91,14 @@ export function Kit({ club, player, size = 56, mystery, style }: { club?: WClub;
 
 // ---------- chunky button
 export function GBtn({ kind = '', size = '', children, onClick, disabled, sound = 'ui.tap', style, className = '', label, pulse, shine }: { kind?: '' | 'gold' | 'dark' | 'paper' | 'green' | 'ghost'; size?: '' | 'lg' | 'sm'; children: ReactNode; onClick?: () => void; disabled?: boolean; sound?: Sfx | null; style?: CSSProperties; className?: string; label?: string; pulse?: boolean; shine?: boolean }) {
-  return <button type="button" aria-label={label} disabled={disabled} style={style} className={['g-btn', kind && 'g-btn--' + kind, size && 'g-btn--' + size, pulse && 'is-pulse', className].filter(Boolean).join(' ')} onClick={() => { if (sound) sfx(sound); onClick?.(); }}>{shine && <span className="shine" />}{children}</button>;
+  return <button type="button" aria-label={label} disabled={disabled} style={style} className={['g-btn', kind && 'g-btn--' + kind, size && 'g-btn--' + size, pulse && 'is-pulse', className].filter(Boolean).join(' ')} onClick={() => { if (sound) { sfx(sound); haptic('tap'); } onClick?.(); }}>{shine && <span className="shine" />}{children}</button>;
 }
 
 // ---------- numbers that count up
 export function useCountUp(to: number, ms = 900, on = true, tick = false) {
   const [v, setV] = useState(on ? 0 : to);
   useEffect(() => {
-    if (!on || getSave().reduced) { setV(to); return; }
+    if (!on || prefersReducedMotion()) { setV(to); return; }
     let raf = 0; const t0 = performance.now(), from = 0;
     const step = (t: number) => { const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3); setV(Math.round(from + (to - from) * e)); if (tick && k < 1) sfx('count'); if (k < 1) raf = requestAnimationFrame(step); };
     raf = requestAnimationFrame(step); return () => cancelAnimationFrame(raf);
@@ -107,9 +110,72 @@ export function CountUp({ to, ms, sign, tick }: { to: number; ms?: number; sign?
   return <>{v < 0 ? '−' + Math.abs(v) : (sign && v > 0 ? '+' : '') + v}</>;
 }
 
+// ---------- a rolling counter: each digit is a strip that spins to its value (GOTY.md §4, "numbers roll").
+// <Roll n={credits} /> · <Roll n={pts} sign /> · <Roll n={x} format={num} />. Non-digits (commas, signs, locale digits) sit still.
+// Digits are keyed from the right, so 99 → 100 rolls the tens and units and slides a new hundreds digit in.
+export function Roll({ n, sign, format, className = '', from0 = true }: { n: number; sign?: boolean; format?: (n: number) => string; className?: string; from0?: boolean }) {
+  const [armed, setArmed] = useState(() => !from0 || prefersReducedMotion());
+  useEffect(() => { if (armed) return; const id = requestAnimationFrame(() => requestAnimationFrame(() => setArmed(true))); return () => cancelAnimationFrame(id); }, []);
+  const body = format ? format(Math.abs(n)) : String(Math.abs(Math.round(n)));
+  const str = (n < 0 ? '−' : sign && n > 0 ? '+' : '') + body;
+  const chars = [...str];
+  return <span className={'g-roll ' + className}>
+    <span className="sr-only">{str}</span>
+    <span className="g-roll__vis" aria-hidden="true">{chars.map((ch, i) => {
+      const k = chars.length - i, d = ch >= '0' && ch <= '9' ? ch.charCodeAt(0) - 48 : -1;
+      return d < 0 ? <span key={'s' + k} className="g-roll__s">{ch}</span>
+        : <span key={'d' + k} className="g-roll__d" style={{ ['--k' as string]: k }}><span className="g-roll__col" style={{ ['--v' as string]: armed ? d : 0 }}>{DIGITS}</span></span>;
+    })}</span>
+  </span>;
+}
+const DIGITS = Array.from({ length: 10 }, (_, k) => <i key={k}>{k}</i>);
+
+// ---------- pointer tilt (desktop): one delegated listener; any matching card leans toward the pointer, ±6°, with a sheen.
+// Hero and collectible cards only (the addendum's rule): Today's five kits, earned trophies, the results scoop card, and
+// anything a screen opts in with `g-tilt` / `g-card--tilt`. Ordinary list cards and buttons never tilt.
+export const TILT_SEL = '.g-tilt, .g-card--tilt, .five__kit, .trophy.is-on, .vcard';
+const TILT_MAX = 6;
+export function installTilt(sel = TILT_SEL) {
+  if (typeof window === 'undefined') return () => {};
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
+  let cur: HTMLElement | null = null, raf = 0, x = 0, y = 0, target: Element | null = null;
+  const reset = () => { if (!cur) return; cur.classList.remove('is-tilt'); cur.style.removeProperty('--rx'); cur.style.removeProperty('--ry'); cur = null; };
+  const apply = () => {
+    raf = 0;
+    const el = (target?.closest?.(sel) as HTMLElement | null) || null;
+    if (el !== cur) reset();
+    if (!el || (el as HTMLButtonElement).disabled) return;
+    const r = el.getBoundingClientRect();
+    const px = Math.min(1, Math.max(0, (x - r.left) / r.width)), py = Math.min(1, Math.max(0, (y - r.top) / r.height));
+    el.style.setProperty('--rx', ((0.5 - py) * 2 * TILT_MAX).toFixed(2) + 'deg');
+    el.style.setProperty('--ry', ((px - 0.5) * 2 * TILT_MAX).toFixed(2) + 'deg');
+    el.style.setProperty('--mx', (px * 100).toFixed(1) + '%');
+    el.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+    el.classList.add('is-tilt'); cur = el;
+  };
+  const move = (e: PointerEvent) => {
+    if (e.pointerType !== 'mouse' || !fine.matches || prefersReducedMotion()) { reset(); return; }
+    x = e.clientX; y = e.clientY; target = e.target as Element;
+    if (!raf) raf = requestAnimationFrame(apply);
+  };
+  const out = (e: PointerEvent) => { if (!e.relatedTarget) { target = null; reset(); } };
+  const down = () => reset();
+  document.addEventListener('pointermove', move, { passive: true });
+  document.addEventListener('pointerout', out, { passive: true });
+  document.addEventListener('pointerdown', down, { passive: true });
+  window.addEventListener('scroll', down, { passive: true });
+  return () => { document.removeEventListener('pointermove', move); document.removeEventListener('pointerout', out); document.removeEventListener('pointerdown', down); window.removeEventListener('scroll', down); if (raf) cancelAnimationFrame(raf); reset(); };
+}
+// Per-element opt-in for screens that want it without the class: const ref = useTilt<HTMLDivElement>().
+export function useTilt<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  useEffect(() => { ref.current?.classList.add('g-tilt'); }, []);
+  return ref;
+}
+
 // ---------- confetti (canvas, 1.8 s)
 export function confetti(colors = ['#FF5A36', '#F7B928', '#2FBF71', '#35C3E6', '#A77BFF', '#F4EFE4'], n = 140) {
-  if (getSave().reduced || typeof document === 'undefined') return;
+  if (typeof document === 'undefined' || prefersReducedMotion()) return;
   const cv = document.createElement('canvas'); cv.className = 'g-confetti'; document.body.appendChild(cv);
   const dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight; cv.width = W * dpr; cv.height = H * dpr;
   const x = cv.getContext('2d')!; x.scale(dpr, dpr);
@@ -123,7 +189,7 @@ export function confetti(colors = ['#FF5A36', '#F7B928', '#2FBF71', '#35C3E6', '
   requestAnimationFrame(step);
 }
 export function shake(el?: Element | null) {
-  if (!el || getSave().reduced) return;
+  if (!el || prefersReducedMotion()) return;
   el.classList.remove('is-shaking'); void (el as HTMLElement).offsetWidth; el.classList.add('is-shaking');
 }
 
@@ -131,7 +197,7 @@ export function shake(el?: Element | null) {
 export function useTyped(text: string, cps = 38, on = true) {
   const [n, setN] = useState(on ? 0 : text.length);
   useEffect(() => {
-    if (!on || getSave().reduced) { setN(text.length); return; }
+    if (!on || prefersReducedMotion()) { setN(text.length); return; }
     setN(0); let i = 0; const id = setInterval(() => { i++; setN(i); if (i >= text.length) clearInterval(id); }, 1000 / cps);
     return () => clearInterval(id);
   }, [text, on]);

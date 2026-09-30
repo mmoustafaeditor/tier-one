@@ -34,7 +34,9 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-i
 body, #root { min-height: 0; }
 .g-screen { max-width: 720px; margin: 0 auto; padding: 0 16px calc(var(--tabs-h) + 14px + env(safe-area-inset-bottom, 0)); }
 .g-screen--wide { max-width: 1120px; }
-.stagger > * { animation: g-rise .5s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
+/* Sections no longer fade in one by one (addendum §2: one orchestrated moment per screen; the page sheet sliding in is the
+   entrance). `.stagger` stays as a harmless hook. Opt in with .stagger--deal where cards really are dealt, as on the board. */
+.stagger--deal > *, .sagas.stagger > * { animation: g-rise var(--d-reveal, .5s) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
 @keyframes g-rise { from { opacity: 0; transform: translateY(16px) scale(.98); } }
 @keyframes g-pop { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
 @keyframes g-slam { 0% { transform: scale(2.4) rotate(var(--rot, -8deg)); opacity: 0; } 55% { transform: scale(.92) rotate(var(--rot, -8deg)); opacity: 1; } 100% { transform: scale(1) rotate(var(--rot, -8deg)); } }
@@ -53,7 +55,7 @@ body, #root { min-height: 0; }
 .reduce *, .reduce *::before, .reduce *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 
 /* ---------- top bar */
-.g-top { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px; padding: 10px 16px 10px; margin: 0 -16px 6px;
+.g-top { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px; padding: max(10px, env(safe-area-inset-top, 0px)) 16px 10px; margin: 0 -16px 6px;
   background: linear-gradient(var(--desk) 70%, transparent); }
 .g-top__logo { font-family: var(--f-display); font-weight: 800; font-size: 26px; letter-spacing: -.03em; line-height: 1; color: var(--on-desk); display: flex; align-items: center; gap: 6px; }
 .g-top__logo b { background: var(--red); color: #fff; font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; font-size: 15px; padding: 3px 6px 2px; border-radius: 5px; transform: rotate(-4deg); letter-spacing: .02em; }
@@ -66,19 +68,21 @@ body, #root { min-height: 0; }
 .g-icbtn svg { width: 20px; height: 20px; }
 .g-coin { width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFE08A, var(--gold) 55%, var(--gold-deep)); box-shadow: inset 0 0 0 1.5px rgba(0,0,0,.18); flex: none; }
 
-/* ---------- bottom tabs */
-.g-tabs { position: fixed; z-index: 40; inset-inline: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); height: calc(var(--tabs-h) + env(safe-area-inset-bottom, 0)); padding-bottom: env(safe-area-inset-bottom, 0);
-  background: color-mix(in srgb, var(--desk) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--desk-line); }
-.g-tabs a { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--on-desk-3); font-size: 11px; font-weight: 800; letter-spacing: .02em; }
-.g-tabs a svg { width: 24px; height: 24px; transition: transform var(--d-quick) var(--ease-slam); }
+/* ---------- bottom tabs (phones); the tablet pill and the desktop rail are in desktop.css.
+   One indicator slides between tabs (--tab-i is set by App), in the active tab's mode colour (--tab-c). */
+.g-tabs { position: fixed; z-index: 40; inset-inline: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); height: calc(var(--tabs-h) + env(safe-area-inset-bottom, 0)); padding-bottom: env(safe-area-inset-bottom, 0); padding-inline: env(safe-area-inset-left, 0) env(safe-area-inset-right, 0);
+  background: color-mix(in srgb, var(--desk) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--desk-line); view-transition-name: g-tabs; }
+.g-tabs::after { content: ""; position: absolute; top: 0; inset-inline-start: calc((var(--tab-i, 0) + .5) * (100% - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) / 5 + env(safe-area-inset-left, 0px) - 17px); width: 34px; height: 3px; border-radius: 0 0 3px 3px; background: var(--tab-c, var(--red));
+  transition: inset-inline-start var(--d-ui2, 260ms) var(--ease-spring, var(--ease-out)), background-color var(--d-ui2, 260ms); }
+.g-tabs__brand { display: none; }
+.g-tabs a { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--on-desk-3); font-size: 11px; font-weight: 800; letter-spacing: .02em; -webkit-tap-highlight-color: transparent; transition: color var(--d-ui, 180ms) var(--ease-out); }
+.g-tabs a svg { width: 24px; height: 24px; transition: transform var(--d-ui2, 260ms) var(--ease-spring, var(--ease-slam)), color var(--d-ui, 180ms); }
+.g-tabs a:hover { color: var(--on-desk-2); }
+.g-tabs a:active svg { transform: scale(.9); }
 .g-tabs a[aria-current] { color: var(--on-desk); }
 .g-tabs a[aria-current] svg { transform: translateY(-2px) scale(1.12); color: var(--tab-c, var(--red)); }
-.g-tabs a[aria-current]::before { content: ""; position: absolute; top: 0; width: 34px; height: 3px; border-radius: 0 0 3px 3px; background: var(--tab-c, var(--red)); }
+.g-tabs a:focus-visible { outline: 2.5px solid var(--tab-c, var(--red)); outline-offset: -6px; border-radius: 14px; }
 .g-tabs .dot { position: absolute; top: 9px; inset-inline-start: calc(50% + 8px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--red); color: #fff; font-size: 10px; line-height: 16px; text-align: center; }
-@media (min-width: 960px) {
-  .g-tabs { inset-inline: auto; left: 50%; transform: translateX(-50%); bottom: 14px; width: 520px; border-radius: 20px; border: 1px solid var(--desk-line); height: 64px; padding: 0; box-shadow: 0 16px 40px -16px rgba(0,0,0,.7); }
-  [dir="rtl"] .g-tabs { left: auto; right: 50%; transform: translateX(50%); }
-}
 
 /* ---------- buttons (chunky, press down) */
 .g-btn { --b: var(--red); --bd: var(--red-deep); --bt: #fff; position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; padding: 0 18px;
