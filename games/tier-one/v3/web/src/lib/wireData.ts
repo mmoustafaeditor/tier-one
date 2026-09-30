@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { data, v3 } from './api';
 import { getSave } from './save';
+import { recordWireResolution } from './byline';
 
 export interface Rumour {
   id: string; playerId: string; playerName: string; currentClubId: string; currentClubName: string; linked: { clubId: string | null; name: string; stage: string }[];
@@ -37,6 +38,7 @@ export function refreshWire(force = false): Promise<void> {
       mine: mine.ok ? { calls: mine.calls, cred: mine.cred, hitRate: mine.hitRate, resolved: mine.resolved, season: mine.season } : cache.mine,
       online: !!(rs && rs.ok), loading: false, window: board.ok && board.window ? board.window : cache.window,
     };
+    if (cache.mine) { const rs2 = cache.rumours || []; recordWireResolution(cache.mine.calls, (rid) => rs2.find((r) => r.id === rid)?.playerName); }
     emit(); inflight = null;
   })();
   return inflight;

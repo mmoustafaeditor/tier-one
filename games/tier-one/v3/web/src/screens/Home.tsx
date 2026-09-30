@@ -17,6 +17,8 @@ import { dailyNoToday } from './Front';
 import { chapterOf } from '../lib/storyMode';
 import type { Chrome } from '../App';
 import { WeekEventBanner } from '../ui/season';
+import { bylineOf, dailyFeed } from '../lib/byline';
+import { NextUpSlip, ForYou, RivalStrip } from '../ui/connect';
 
 const hms = (ms: number) => { const s = Math.max(0, Math.floor(ms / 1000)); return [s / 3600, (s % 3600) / 60, s % 60].map((x) => String(Math.floor(x)).padStart(2, '0')).join(':'); };
 const TIER_STAMP: Record<string, string> = { T1: 'gold', T2: 'done', T3: 'done', T4: 'off', SPIKED: '' };
@@ -27,7 +29,7 @@ export function Home(chrome: Chrome) {
   const w = useWire();
   const lg = useLeague();
   const now = useNow(1000);
-  useEffect(() => { update((x) => { ensureMissions(x); }); }, []);
+  useEffect(() => { update((x) => { ensureMissions(x); }); dailyFeed(); }, []);
   const today = ymdUTC(), no = dailyNoToday();
   const played = s.daily[today];
   const live = s.last && new Date(s.last.at).toISOString().slice(0, 10) === today && !s.last.pub.over ? s.last.pub : null;
@@ -49,6 +51,9 @@ export function Home(chrome: Chrome) {
 
       {/* ---------- press pass + the three modes at a glance */}
       <PressPass chrome={chrome} s={s} lg={lg} onTop={() => chrome.go({ n: 'me' })} />
+
+      {/* ---------- next up (GOTY §1.5): the hero when the Daily is done */}
+      <NextUpSlip go={chrome.go} style={{ ['--i' as string]: 1 }} />
 
       {/* ---------- today's five */}
       <section className="five g-card" style={{ ['--i' as string]: 1 }}>
@@ -79,6 +84,8 @@ export function Home(chrome: Chrome) {
         </div>
       </section>
 
+      <ForYou go={chrome.go} style={{ ['--i' as string]: 2 }} />
+
       {/* ---------- missions */}
       {ms.length > 0 && <section className="missions g-card g-card--desk" style={{ ['--i' as string]: 2 }}>
         <div className="g-sec" style={{ margin: '0 0 8px' }}><h2>{t('g.home.missions')}</h2><span className="g-mono">{t('g.home.missionsReset', { t: resetAt() })}</span></div>
@@ -93,6 +100,8 @@ export function Home(chrome: Chrome) {
 
       {/* ---------- weekly event banner */}
       <WeekEventBanner onPlay={(mode: string) => chrome.go({ n: mode })} />
+
+      <RivalStrip go={chrome.go} style={{ ['--i' as string]: 3 }} />
 
       {/* ---------- modes */}
       <div className="g-sec" style={{ ['--i' as string]: 3 }}><h2>{t('g.home.modes')}</h2></div>
@@ -171,7 +180,7 @@ export function PressPass({ chrome, s, lg, onTop }: { chrome: Chrome; s: Save; l
             <span className="pass__name">{s.nick || t('g.home.noName')}</span>
             <span className="pass__rank">{ch ? t('g.story.ch.' + ch.id + '.name') : t('g.home.freelance')}</span>
             <span className="g-bar g-bar--sm" style={{ marginTop: 8, ['--bar' as string]: 'linear-gradient(90deg,#FFD35C,#F7B928)' }}><i style={{ width: lv.into + '%' }} /></span>
-            <span className="pass__meta"><span>{t('g.home.xp', { a: lv.into, b: lv.need })}</span>{s.career && <span>{t('g.home.followers', { n: fmtK(s.career.followers) })}</span>}</span>
+            <span className="pass__meta"><span>{t('g.home.xp', { a: lv.into, b: lv.need })}</span><span>{t('g.home.followers', { n: fmtK(bylineOf(s).followers) })}</span></span>
           </span>
           <span className="pass__coins" aria-label={t('g.coins', { n: s.credits })}><span className="g-coin" /><b className="g-num">{num(s.credits)}</b></span>
         </button>

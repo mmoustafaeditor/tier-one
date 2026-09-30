@@ -18,6 +18,7 @@ import { v3 } from '../lib/api';
 import { Banter, compact, type Thread, type Reply } from '../lib/banter';
 import { Icon, Kit, GBtn, TopBar, CountUp, confetti, shake, SrcIcon, useCountUp } from '../ui/game';
 import { Avatar } from '../ui/screenbits';
+import { BylineLine, useRecordWindow } from '../ui/connect';
 import { Sheet } from '../ui/bits';
 import { renderCard, shareText } from '../lib/share';
 import type { Chrome } from '../App';
@@ -37,6 +38,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   const [stage, setStage] = useState(s.reduced ? 99 : 0);
   const [modal, setModal] = useState<Modal>(null);
   const root = useRef<HTMLDivElement>(null);
+  const byline = useRecordWindow(view, beat, start?.pp); // One Byline (lib/byline.ts)
   const what = view.mode === 'daily' ? t('g.win.daily', { n: view.no || '' }) : view.mode === 'room' ? t('nav.rooms') + ' · ' + t('rooms.round', { n: (view.room?.round || 0) + 1 }) : view.mode === 'career' ? t('g.tabs.story') : t('nav.practice');
   const home = () => chrome.go({ n: 'front' });
   const again = () => chrome.go(view.mode === 'career' ? { n: 'story' } : view.mode === 'practice' ? { n: 'practice' } : view.mode === 'room' ? { n: 'rooms', code: view.room?.code } : { n: 'front' });
@@ -149,6 +151,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
             {view.mode === 'daily' && <span className="g-mono res3__streak"><Icon n="flame" size={14} /> {t('g.res.streak', { n: s.streak.n })} · {t('results.league', { n: LEAGUE_PTS[r.tier] })}</span>}</span>
           {coins > 0 && <span className="prog__coins"><span className="g-coin" />+{coins}</span>}
         </div>
+        <BylineLine sum={byline} style={{ ['--i' as string]: 1 }} />
         {report && s.career && <StoryBlock report={report} beat={beat || null} style={{ ['--i' as string]: 2 }} />}
         <div className="prog__acts" style={{ ['--i' as string]: 3 }}>
           <GBtn size="lg" shine onClick={view.mode === 'daily' ? () => chrome.go({ n: 'practice' }) : again}><Icon n={view.mode === 'daily' ? 'target' : 'phone'} />{view.mode === 'daily' ? t('g.res.practice') : view.mode === 'career' ? t('g.res.nextWindow') : view.mode === 'room' ? t('bn.ui.openRoom') : t('results.again')}</GBtn>
