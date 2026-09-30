@@ -21,3 +21,9 @@
 .reels__t { display: flex; flex-direction: column; min-width: 0; }
 .reels__t b { font-family: var(--f-display); font-size: 18px; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .reels__t span { font-size: 13px; color: var(--on-desk-3, #8C8475); }
+
+/* Moment clips (ScenePlayer `video`): the clip covers the whole screen; the stage above it holds only the game's words. */
+.film__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.film__stage.is-over { background: transparent; }
+/* The app's global `svg { max-width: 100% }` would squash scene art inside zero-width camera layers. */
+.film__stage svg { max-width: none; }

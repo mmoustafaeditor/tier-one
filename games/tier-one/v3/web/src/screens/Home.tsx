@@ -178,7 +178,7 @@ export function PressPass({ chrome, s, lg, onTop }: { chrome: Chrome; s: Save; l
           <span className="pass__badge"><span className="pass__init">{initials}</span><span className="pass__lv">{lv.n}</span></span>
           <span className="pass__main">
             <span className="pass__name">{s.nick || t('g.home.noName')}</span>
-            <span className="pass__rank">{ch ? t('g.story.ch.' + ch.id + '.name') : t('g.home.freelance')}</span>
+            <span className="pass__rank">{ch && s.career ? (s.career.paper || t('g.story.paperDefault', { n: s.nick || t('common.you') })) + ' · ' + t('career.ranks.' + s.career.rank) : t('g.home.freelance')}</span>
             <span className="g-bar g-bar--sm" style={{ marginTop: 8, ['--bar' as string]: 'linear-gradient(90deg,#FFD35C,#F7B928)' }}><i style={{ width: lv.into + '%' }} /></span>
             <span className="pass__meta"><span>{t('g.home.xp', { a: lv.into, b: lv.need })}</span><span>{t('g.home.followers', { n: fmtK(bylineOf(s).followers) })}</span></span>
           </span>

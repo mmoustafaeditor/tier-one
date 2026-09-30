@@ -23,7 +23,9 @@ import { Sheet } from '../ui/bits';
 import { renderCard, shareText, hereWeGoOf } from '../lib/share';
 import type { Chrome } from '../App';
 import '../styles/results.css';
-import { flushDeferredScenes } from '../lib/scenes';
+import { flushDeferredScenes, playScene, afterScenes, firstToday } from '../lib/scenes';
+import { windowKey } from '../lib/byline';
+import { getSave } from '../lib/save';
 
 const TIER_C: Record<string, string> = { T1: 'gold', T2: 'done', T3: 'done', T4: 'off', SPIKED: '' };
 const LEAGUE_PTS: Record<string, number> = { T1: 30, T2: 20, T3: 12, T4: 6, SPIKED: 2 };
@@ -37,6 +39,9 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   const r = view.result!;
   const cast = (r.cast && r.cast.length ? r.cast : view.cast) as CastSaga[];
   const [stage, setStage] = useState(s.reduced ? 99 : 0);
+  // "The paper's out" film replaces the press stage the first time a Daily/Career/Practice window lands (full cut once
+  // a day, the short cut after). Read before useRecordWindow records the window, so revisits skip it.
+  const [film, setFilm] = useState(() => stage === 0 && view.mode !== 'room' && !matchMedia('(prefers-reduced-motion: reduce)').matches && !(getSave().byline?.keys || []).includes(windowKey(view)));
   const [modal, setModal] = useState<Modal>(null);
   const root = useRef<HTMLDivElement>(null);
   const byline = useRecordWindow(view, beat, start?.pp); // One Byline (lib/byline.ts)
@@ -58,15 +63,22 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   const n = called.length;
   const TIER = 2 + n, PROG = 3 + n;
   useEffect(() => { if (stage >= PROG) flushDeferredScenes(); }, [stage >= PROG]);
+  const filmOn = useRef(false);
   useEffect(() => {
-    if (stage >= PROG) return;
+    if (!film || filmOn.current) return;
+    filmOn.current = true; // once, even under StrictMode's double effects
+    playScene(firstToday('paper') ? 'paper' : 'paper-short', { hed, what, paper: view.mode === 'career' ? s.career?.paper || undefined : undefined });
+    afterScenes(() => { setFilm(false); setStage((x) => Math.max(x, 1)); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (stage >= PROG || film) return;
     const ms = stage === 0 ? 900 : stage === 1 ? 600 : stage < TIER ? 520 : 800;
     const id = setTimeout(() => setStage(stage + 1), ms);
     if (stage === 0) sfx('typewriter');
     if (stage === 1) sfx('reveal');
     if (stage >= 2 && stage < TIER) { const th = called[stage - 2]; sfx(th.verdict === 'excl' ? 'star' : th.verdict === 'right' ? 'good' : 'bad', stage - 2); }
     return () => clearTimeout(id);
-  }, [stage]);
+  }, [stage, film]);
   useEffect(() => {
     if (stage !== TIER) return;
     if (r.tier === 'T1') { sfx('fanfare'); confetti(); buzz([30, 60, 30, 60, 80]); }
@@ -99,7 +111,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   return <div className="g-screen results2 res3" ref={root} onClick={skip}>
     <TopBar back={{ label: t('g.tabs.home'), onClick: home }} title={what} />
 
-    {stage === 0 && <div className="press" aria-hidden="true"><div className="press__roll" /><div className="press__sheet" /><p className="g-mono">{t('g.res.rolling')}</p></div>}
+    {stage === 0 && !film && <div className="press" aria-hidden="true"><div className="press__roll" /><div className="press__sheet" /><p className="g-mono">{t('g.res.rolling')}</p></div>}
 
     {stage >= 1 && <>
       {/* ---- the verdict ---- */}

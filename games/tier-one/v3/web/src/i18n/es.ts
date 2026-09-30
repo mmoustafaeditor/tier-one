@@ -80,7 +80,7 @@ const es: Dict = {
     heroHed: { lean: ['El {to} acelera por {p}', '{p} y el {to}: el expediente engorda', 'El {from} en guardia: el {to} ronda a {p}'], none: ['El {to}, vinculado a {p}. Nadie dice nada', '¿{p} al {to}? Empieza a llamar', '{p} al {to}: un rumor en busca de fuente'] },
   },
   night: {
-    title: 'De madrugada', kicker: 'Día {n} · la prensa de la mañana', none: 'Noche tranquila. Nadie publicó sobre tus cinco.', contested: 'La exclusiva de {o} sobre {p} se esfumó: la tiene {r}.',
+    title: 'De madrugada', kicker: 'Día {n} · la prensa de la mañana', none: 'Noche tranquila. Nadie publicó sobre tus {n}.', contested: 'La exclusiva de {o} sobre {p} se esfumó: la tiene {r}.',
     twist: 'GIRO · el culebrón de {p} ha dado la vuelta', twistBody: 'La historia cambió al amanecer. Lo que dijeron las fuentes era cierto entonces. Ya no cuenta, y tu apuesta se retiró sin coste.',
     noTwist: 'Sin giro este mercado. Lo que tienes es lo que hay.', back: 'Vuelve al teléfono · día {n}', ddGo: 'Poner el reloj en marcha',
     ddBody: 'Día de cierre. Sesenta segundos, tres puntos de contacto, tres publicaciones. El reloj arranca al pasar la página.',

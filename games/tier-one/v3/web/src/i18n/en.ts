@@ -79,7 +79,7 @@ const en = {
     heroHed: { lean: ['{to} move for {p} gathers pace', '{p} and {to}: the file thickens', '{from} braced as {to} circle {p}'], none: ['{to} linked with {p}. Nobody’s said a word', 'Is {p} going to {to}? Start ringing', '{p} to {to}: a rumour looking for a source'] },
   },
   night: {
-    title: 'Overnight', kicker: 'Day {n} · the morning papers', none: 'Quiet night. Nobody posted on your five.', contested: 'An exclusive on {o} for {p} is gone: {r} has it.',
+    title: 'Overnight', kicker: 'Day {n} · the morning papers', none: 'Quiet night. Nobody posted on your {n}.', contested: 'An exclusive on {o} for {p} is gone: {r} has it.',
     twist: 'TWIST · the {p} saga has turned', twistBody: 'The story changed at dawn. What the sources said before was true then. It doesn’t count now, and your call on it was withdrawn at no cost.',
     noTwist: 'No twist this window. What you’ve got is what it is.', back: 'Back to the phones · day {n}', ddGo: 'Start the clock',
     ddBody: 'Deadline Day. Sixty seconds, three contact points, three posts. The clock starts when you turn the page.',

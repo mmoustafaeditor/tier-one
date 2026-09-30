@@ -14,11 +14,11 @@ import { PostScene } from '../ui/PostScene';
 import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } from '../lib/meta';
 import { applyWindow, totalFavours, vinceOf, type CareerReport } from '../lib/career';
 import { storyBeats, pushBeats, beatScene, type Beat } from '../lib/storyMode';
-import { playScene } from '../lib/scenes';
 import { Sheet, useNow, Crest } from '../ui/bits';
 import { SagaFile, RIVAL_IC, type RivalRecord } from './Saga';
 import { hereWeGo } from '../lib/share';
 import { Results } from './Results';
+import { playScene, afterScenes, firstToday } from '../lib/scenes';
 import type { Chrome } from '../App';
 
 // The rival ledger (GOTY.md §1.3) lives in the connect lane's lib/byline.ts. Picked up here if that module exists and
@@ -131,7 +131,8 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     const twist = st.twist && !before.twist ? st.twist : null;
     setNight({ day: st.day, posts, twist, noTwist: st.noTwist && !before.noTwist, dd: st.day === view.R.DAYS });
   };
-  const startDD = async () => { setNight(null); const v = await driver.dd(); setView(v); };
+  // Deadline Day opens with its film (full once a day, the short cut after); the clock only starts once it ends.
+  const startDD = () => { setNight(null); playScene(firstToday('deadline') ? 'deadline' : 'deadline-short'); afterScenes(async () => { const v = await driver.dd(); setView(v); }); };
   const finish = useCallback(async () => { const v = await driver.finish(); setView(v); settle(v); sfx('dd.whistle'); }, [driver, settle]);
 
   // ---------- states
@@ -149,7 +150,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const mob = sel != null;
   const tutor = view.mode === 'practice' && view.label === 'tutorial' && !(sv.tut && sv.tut.done);
   const favours = view.mode === 'career' ? <FavourTray g={g} i={deskSel} onUse={(k) => act(['f', k, deskSel])} /> : null;
-  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
+  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={calling ? null : last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
 
   return <div className={'g-screen g-screen--wide play' + (dd ? ' is-dd' : '')} ref={rootRef}>
     <TopBar back={mob ? { label: t('g.win.board'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : title} />
@@ -288,7 +289,7 @@ function NightScene({ night, view, onGo }: { night: Night; view: View; onGo: () 
     <div className="night2__sky" aria-hidden="true"><span className="night2__moon" /><span className="night2__sun" />{Array.from({ length: 24 }, (_, k) => <i key={k} className="night2__star" style={{ left: (k * 41) % 100 + '%', top: (k * 23) % 60 + '%', animationDelay: k * 90 + 'ms' }} />)}<span className="night2__city" /></div>
     <div className="night2__body">
       <div className="g-mono night2__k">{t('night.kicker', { n: night.day })}</div>
-      <h2 className="night2__h">{night.dd ? t('g.win.ddIncoming') : night.posts.length ? t('g.win.overnight', { n: night.posts.length }) : t('night.none')}</h2>
+      <h2 className="night2__h">{night.dd ? t('g.win.ddIncoming') : night.posts.length ? t('g.win.overnight', { n: night.posts.length }) : t('night.none', { n: view.cast.length })}</h2>
       {stage >= 1 && night.twist && <div className="twistcard"><span className={'g-stamp g-stamp--xl' + (skip ? '' : ' is-slam')} style={{ ['--sc' as string]: '#fff' }}>{t('g.saga.stopPress')}</span><b>{t('night.twist', { p: view.cast[night.twist.i].player.s })}</b><p>{t('night.twistBody')}</p></div>}
       {stage >= 1 && night.dd && <p className="night2__dd">{t('night.ddBody')}</p>}
       {stage >= 1 && night.posts.length > 0 && <div className="breaks">{night.posts.map((p, k) => { const c = view.cast[p.i]; const tn = tauntFor(t, g, p); return <div key={k} className="brk" style={{ animationDelay: skip ? '0ms' : lead + Math.min(k, 5) * NIGHT_STEP + 'ms' }}>

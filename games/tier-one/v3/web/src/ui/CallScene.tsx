@@ -1,82 +1,99 @@
-// The source call (HYBRID.md §5): a full-screen scene per source. Ring (the classic sound scene), the line opens,
-// a mumbled voice with the subtitle typing out, the "says" stamp, and the clue clipped to the file.
-// Characters appear only as painted art (ART) when it exists; until then the caller card is an icon, never a drawing.
-import { useEffect, useMemo, useRef, useState } from 'react';
+// The source call (HYBRID.md §5, 3.3 films): one screen, a short wordless film. The source does something that tells
+// you what they know (the barber's client leaves in the buying club's scarf, the kit man tears the tag off the bag, …),
+// chosen by the clue's read (the best outcome of E.weights). What they actually said lands on the call page as a quote
+// card (Saga.tsx), so the film never needs words. First call to a source in 6 h plays the full cut (~3.5 s), repeats
+// the short one (~2 s). Unskippable; it returns to the call page by itself. Rendered clips (film/calls/manifest.ts)
+// play when they're on the site; the SVG film is the fallback, and reduced motion shows the last frame for ~1.2 s.
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CastSaga, Clue, Rules } from '../lib/engine';
-import { E, OUTS } from '../lib/engine';
+import { E } from '../lib/engine';
 import { useT } from '../lib/i18n';
 import { getSave, update } from '../lib/save';
-import { sfx, voice, buzz, type Sfx } from '../lib/sfx';
-import { voiceLine, saysWord, addsText, GRADE } from '../lib/story';
-import { Icon, SRC_ICON, Rel, kitSVG, useTyped } from './game';
+import { sfx, buzz, type Sfx } from '../lib/sfx';
+import { prefersReducedMotion } from '../lib/motion';
+import { hash } from '../lib/kit';
+import SYN from '../lib/synth';
+import { GRADE } from '../lib/story';
+import { Rel } from './game';
 import { ringtoneSfx } from '../lib/season';
+import { CallFilm, accentOf } from '../film/calls/CallFilm';
+import { SETS } from '../film/calls/sets';
+import { kitOf, SKIN } from '../film/calls/rig';
+import { callStem, aspectNow } from '../film/calls/manifest';
+import { useFilmSlot, FilmVideo, FilmPoster } from '../film/calls/FilmSlot';
+import '../film/calls/callfilms.css';
 
-// Painted character art slots (the art pack). Keys: source id → image URL. Empty until the art lands.
+// Painted character art slots (the art pack). Keys: source id → image URL. The films don't use it; kept for the pack.
 export const ART: Record<string, string> = {};
-// Source intros (scenes lane): lib/scenes.ts exports maybeSourceIntro(src, mode), a no-op when not applicable. Loaded
-// through an eager glob so this file still builds if that module hasn't merged yet. Integrator: once lib/scenes.ts is
-// on the branch this can become `import { maybeSourceIntro } from '../lib/scenes'`.
-const SCENES = Object.values(import.meta.glob('../lib/scenes.ts', { eager: true })) as { maybeSourceIntro?: (src: string, mode: string) => void }[];
-const maybeSourceIntro = (src: string, mode: string) => { try { SCENES[0]?.maybeSourceIntro?.(src, mode); } catch { /* optional */ } };
-const RING_MS: Record<string, number> = { agent: 2150, barber: 1250, spotter: 1500, physio: 1300, kitman: 1100, leak: 1450 };
 export const GRADE_BARS: Record<string, number> = { A: 3, B: 2, C: 1, D: 1 };
+const FPS = 30, HOLD_MS = 380, STILL_MS = 1200;
+const cue = (k: string) => { if (!getSave().sound) return; try { SYN.play(k, undefined); } catch { /* no audio */ } };
+// Dev preview: ?callfilm=<source> / ?postfilm=1|hwg|ut (film/calls/preview.tsx; stripped from builds).
+if (import.meta.env.DEV && /[?&](callfilm|postfilm)=/.test(location.search)) setTimeout(() => { void import('../film/calls/preview'); }, 0);
+const ALT = { c1: '#6B3FA0', c2: '#F7B928' };
 
-export function CallScene({ src, clue, c, R, onDone, mode }: { src: string; clue: Clue; c: CastSaga; R: Rules; onDone: () => void; mode?: string }) {
+// `mode` stays in the props for callers; the source intro card no longer plays before a call (one screen per call).
+export function CallScene({ src, clue, c, R, onDone }: { src: string; clue: Clue; c: CastSaga; R: Rules; onDone: () => void; mode?: string }) {
   const t = useT();
-  const reduced = getSave().reduced;
-  // The first call to a source in a session plays the whole scene; repeats go straight to the line.
-  const full = useMemo(() => { const seen = getSave().scenes || {}; return !reduced && !(seen[src] && Date.now() - seen[src] < 6 * 3600e3); }, [src]);
-  const [phase, setPhase] = useState<'ring' | 'talk' | 'said'>(full ? 'ring' : 'talk');
-  const line = voiceLine(t.lang, c, clue) || '…';
-  const typed = useTyped(line, full ? 34 : 60, phase !== 'ring');
-  const says = saysWord(t.lang, src, clue.r, c);
-  const adds = addsText(t.lang, E.weights(R, src, clue.r));
-  const w = E.weights(R, src, clue.r); const best = w.indexOf(Math.max(...w));
-  const done = useRef(false);
-  const finish = () => { if (done.current) return; done.current = true; sfx('ui.pop'); onDone(); };
+  const [reduced] = useState(prefersReducedMotion);
+  const full = useMemo(() => { const seen = getSave().scenes || {}; return !(seen[src] && Date.now() - seen[src] < 6 * 3600e3); }, [src]);
+  const S = SETS[src] || SETS.leak;
+  const w = E.weights(R, src, clue.r) || [0, 0, 0, 1]; const o = Math.max(0, w.indexOf(Math.max(...w)));
+  const [aspect] = useState(aspectNow);
+  const stem = callStem(src, o, full ? 'full' : 'short', aspect);
+  const slot = useFilmSlot(stem, reduced);
+  const start = full ? 0 : S.tell;
+  const [f, setF] = useState(reduced ? S.end : start);
+  const done = useRef(false), root = useRef<HTMLDivElement>(null);
+  const finish = () => { if (done.current) return; done.current = true; onDone(); };
+  const film = useMemo(() => ({ kit: kitOf(c.from?.c1, c.from?.c2), skin: SKIN[hash(c.player.id) % SKIN.length], to: { c1: c.to.c1, c2: c.to.c2 }, from: { c1: c.from.c1, c2: c.from.c2 }, alt: c.alt ? { c1: c.alt.c1, c2: c.alt.c2 } : ALT }), [c]);
 
   useEffect(() => {
-    if (mode && mode !== 'daily') maybeSourceIntro(src, mode);
     update((s) => { s.scenes = { ...(s.scenes || {}), [src]: Date.now() }; });
-    if (full) { sfx(('scene.' + src) as Sfx); buzz(src === 'agent' ? [60, 120, 60, 500, 60, 120, 60] : 30); const id = setTimeout(() => setPhase('talk'), RING_MS[src] || 1200); return () => clearTimeout(id); }
-    sfx(ringtoneSfx());
+    if (reduced) { const id = setTimeout(finish, STILL_MS); return () => clearTimeout(id); }
+    if (full) sfx(('scene.' + src) as Sfx); else sfx(ringtoneSfx());
+    buzz(src === 'agent' && full ? [60, 120, 60] : 20);
+    // Safety net: however the clip behaves, the call page comes back.
+    const id = setTimeout(finish, (full ? 4200 : 2400) + 2500);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  useEffect(() => { if (phase === 'talk') voice(src, Math.min(2.2, 0.5 + line.length / 45)); }, [phase]);
-  useEffect(() => { if (phase === 'talk' && typed.length >= line.length) { const id = setTimeout(() => { setPhase('said'); sfx('stamp.done'); buzz(18); }, full ? 350 : 120); return () => clearTimeout(id); } }, [typed, phase]);
+  // The SVG film's clock (only when it's the one playing): frames from real time; foley on the frames it passes.
+  useEffect(() => {
+    if (slot.mode !== 'svg' || reduced) return;
+    let raf = 0, prev = performance.now(), acc = 0, fr = start, endAt = 0;
+    const cues = S.cues(o);
+    const tick = (now: number) => {
+      acc += Math.min(100, now - prev); prev = now;
+      const a = fr;
+      while (acc >= 1000 / FPS && fr < S.end) { acc -= 1000 / FPS; fr++; }
+      if (fr !== a) { cues.forEach((q) => { if (a < q.f && fr >= q.f) cue(q.k); }); setF(fr); }
+      if (fr >= S.end) { if (!endAt) endAt = now; else if (now - endAt > HOLD_MS) return finish(); }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slot.mode]);
+  useLayoutEffect(() => {
+    const was = document.activeElement as HTMLElement | null, ov = document.body.style.overflow, hov = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden'; root.current?.focus({ preventScroll: true });
+    return () => { document.body.style.overflow = ov; document.documentElement.style.overflow = hov; was?.focus?.({ preventScroll: true }); };
+  }, []);
 
-  const skip = () => { if (phase === 'said') finish(); else { setPhase('said'); } };
-  const art = ART[src];
-  return <div className={'call-scene cs--' + src + ' is-' + phase} role="dialog" aria-modal="true" aria-label={t('src.' + src)} onClick={skip}>
-    <Scenery src={src} c={c} />
-    <div className="cs__top">
-      <span className="g-mono cs__status">{phase === 'ring' ? t('g.call.calling') : t('g.call.onLine')}{phase !== 'ring' && <i className="cs__live" />}</span>
-      <h2 className="cs__who">{t('src.' + src)}</h2>
-      <p className="cs__about">{t('g.call.about', { p: c.player.s, to: c.to.s })}</p>
+  const svg = <CallFilm src={src} o={o} f={f} {...film} no={String(c.player.no || '')} rtl={t.rtl} still={reduced || slot.mode === 'try'} portrait={aspect === 'p'} />;
+  const who = t('src.' + src), about = t('g.call.about', { p: c.player.s, to: c.to.s });
+  return <div ref={root} tabIndex={-1} className={'call-scene cs--' + src + ' is-' + slot.mode} role="dialog" aria-modal="true" aria-label={who + ' · ' + about} style={{ ['--acc' as string]: accentOf(src) }}>
+    <div className="cs__stage">
+      {slot.mode === 'poster' ? <FilmPoster stem={stem} fallback={svg} /> : <>
+        {svg}
+        <FilmVideo stem={stem} mode={slot.mode} setMode={slot.setMode} onEnded={() => setTimeout(finish, 200)} />
+      </>}
     </div>
-    <div className="cs__caller">
-      {phase === 'ring' && <><i className="cs__ring" /><i className="cs__ring cs__ring--2" /><i className="cs__ring cs__ring--3" /></>}
-      <span className="cs__avatar">{art ? <img src={art} alt="" /> : <Icon n={SRC_ICON[src] || 'phone'} />}</span>
-      <span className="cs__rel"><Rel n={GRADE_BARS[GRADE[src]] || 1} /> {t('g.call.rel.' + (GRADE[src] || 'C'))}</span>
-    </div>
-    <div className="cs__wave" aria-hidden="true">{Array.from({ length: 18 }, (_, k) => <i key={k} style={{ animationDelay: (k * 53) % 400 + 'ms' }} />)}</div>
-    {phase !== 'ring' && <div className="cs__bubble" aria-live="polite">
-      <p>{typed}<span className="cs__caret" /></p>
-    </div>}
-    {phase === 'said' && <div className="cs__clip" onClick={(e) => { e.stopPropagation(); finish(); }}>
-      <span className={'g-stamp is-slam g-stamp--' + OUTS[best]} style={{ ['--rot' as string]: '-7deg' }}>{says}</span>
-      <span className="cs__clipt"><b>{t('g.call.clipped')}</b><span>{adds || t('g.call.nothingNew')}</span></span>
-      <span className="g-btn g-btn--sm cs__ok">{t('g.call.toFile')}<Icon n="arrow" size={18} /></span>
-    </div>}
-    <p className="cs__skip g-mono">{phase === 'said' ? '' : t('g.call.tapSkip')}</p>
+    <header className="cs__top" aria-hidden="true">
+      <span className="cs__who">{who}</span>
+      <span className="cs__about"><span>{about}</span><span className="cs__rel"><Rel n={GRADE_BARS[GRADE[src]] || 1} /> {t('g.call.rel.' + (GRADE[src] || 'C'))}</span></span>
+    </header>
+    <i className="cs__bar" aria-hidden="true" style={{ ['--dur' as string]: Math.round(((S.end - start) * 1000) / FPS + HOLD_MS) + 'ms' }} />
   </div>;
-}
-
-// Moving backdrops, one per source. CSS-driven; no people.
-function Scenery({ src, c }: { src: string; c: CastSaga }) {
-  if (src === 'barber') return <div className="sc sc--barber" aria-hidden="true"><span className="sc__pole"><i /></span><span className="sc__mirror">{Array.from({ length: 6 }, (_, k) => <i key={k} />)}</span>{Array.from({ length: 16 }, (_, k) => <b key={k} className="sc__hair" style={{ left: (k * 61) % 100 + '%', animationDelay: (k * 170) % 2400 + 'ms', ['--rot' as string]: (k * 47) % 180 + 'deg' }} />)}</div>;
-  if (src === 'agent') return <div className="sc sc--agent" aria-hidden="true">{Array.from({ length: 12 }, (_, k) => <i key={k} className="sc__bokeh" style={{ left: (k * 37) % 100 + '%', top: (k * 53) % 70 + '%', animationDelay: k * 300 + 'ms', ['--s' as string]: 30 + (k * 17) % 60 + 'px' }} />)}<span className="sc__rain" /></div>;
-  if (src === 'spotter') return <div className="sc sc--spotter" aria-hidden="true"><span className="sc__sun" /><span className="sc__plane"><Icon n="plane" /></span><span className="sc__runway">{Array.from({ length: 10 }, (_, k) => <i key={k} style={{ animationDelay: k * 120 + 'ms' }} />)}</span><span className="sc__fence" /></div>;
-  if (src === 'physio') return <div className="sc sc--physio" aria-hidden="true"><svg className="sc__ecg" viewBox="0 0 400 100" preserveAspectRatio="none"><path d="M0 60 H90 L105 60 L115 20 L128 95 L140 50 L150 60 H250 L265 60 L275 20 L288 95 L300 50 L310 60 H400" /></svg><span className="sc__grid" /></div>;
-  if (src === 'kitman') return <div className="sc sc--kitman" aria-hidden="true"><span className="sc__lamp" /><span className="sc__rail">{[0, 1, 2, 3, 4].map((k) => <i key={k} className="sc__shirt" style={{ animationDelay: k * 260 + 'ms' }} dangerouslySetInnerHTML={{ __html: kitSVG(c.from, String([7, 9, 10, 11, 4][k])) }} />)}</span></div>;
-  return <div className="sc sc--leak" aria-hidden="true">{Array.from({ length: 5 }, (_, k) => <i key={k} className="sc__flash" style={{ left: 10 + k * 20 + '%', animationDelay: k * 530 + 'ms' }} />)}<span className="sc__paper" /></div>;
 }

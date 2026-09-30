@@ -9,17 +9,26 @@ import { seasonOf } from './season';
 import { ColdOpen, COLD_OPEN, COLD_OPEN_CAREER } from './scenes/ColdOpen';
 import { SourceIntro, sourceIntroMeta } from './scenes/SourceIntro';
 import { SeasonOpener, SEASON_OPENER } from './scenes/SeasonOpener';
-import { buildStoryScene } from './story';
+import { buildStory } from './story/build';
+import { buildMoment, MOMENT_IDS } from './moments/build';
 
-export type SceneSpec = { id: string; title: string; Comp: ComponentType<any>; props: Record<string, unknown>; meta: SceneMeta; rtl: boolean };
+/** A clip to play instead of the drawn scene: `stem` resolves to films/<stem>-p|l.mp4 (film/clips.ts), `dur` is its
+ *  expected length in frames (drives the overlay clock and the stall safety net), and `Overlay` draws the game's own
+ *  words on top with `overlayProps`. */
+export type SceneVideo = { stem: string; dur: number; Overlay?: ComponentType<any>; overlayProps?: Record<string, unknown> };
+/** Films play straight through (no Skip, tap-to-jump or Esc) unless `skippable: true`. */
+export type SceneSpec = { id: string; title: string; Comp: ComponentType<any>; props: Record<string, unknown>; meta: SceneMeta; rtl: boolean; skippable?: boolean; video?: SceneVideo };
 /** Every scene the replay list knows about, in story order. */
-export const SCENE_IDS = ['coldopen', ...SOURCES.map((s) => 'source:' + s), 'season'];
+export const SCENE_IDS = ['coldopen', ...SOURCES.map((s) => 'source:' + s), 'season', ...MOMENT_IDS];
 
-export function buildScene(id: string, s: Save): SceneSpec | null {
+export function buildScene(id: string, s: Save, extra?: Record<string, unknown>): SceneSpec | null {
   const L = s.lang, rtl = L === 'ar', t = (k: string, v?: Record<string, string | number>) => tr(L, k, v);
+  const m = buildMoment(id, s, extra);
+  if (m !== undefined) return m;
+  // Story mode (story-prologue, story-ch1-open, …): its clip, or a drawn title card.
+  const st = buildStory(id, s);
+  if (st !== undefined) return st;
   if (id === 'career') id = 'coldopen';
-  // Story mode moments (story-prologue, story-ch1-open, …): a title card until a film is registered for the id.
-  if (id.startsWith('story-')) return buildStoryScene(id, s);
   if (id === 'coldopen' || id === 'coldopen-career') {
     const career = id === 'coldopen-career';
     const byline = s.nick.trim() || t('film.cold.anon');

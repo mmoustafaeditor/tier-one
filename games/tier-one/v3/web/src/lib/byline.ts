@@ -8,6 +8,7 @@ import { credit, toast, ymdUTC } from './meta';
 import { levelOf, missionsView } from './progress';
 import { t } from './i18n';
 import type { Route } from '../App';
+import { moment } from './moments';
 
 // ---------------------------------------------------------------- types (stored in the save; all optional there)
 export type BMode = 'daily' | 'career' | 'room' | 'wire' | 'practice';
@@ -166,6 +167,7 @@ export function recordWindow(w: WindowIn): WindowSummary | null {
     sum.hot = b.hot;
     if (b.hot > sum.hotBefore && [3, 5, 10, 15, 20].some((m) => sum.hotBefore < m && b.hot >= m)) pushFeed(s, { kind: 'hot', key: 'cn.feed.hot', v: { n: b.hot }, to: { n: 'me' }, tone: 'gold' });
     if (repTier(rep0) !== repTier(b.rep)) pushFeed(s, { kind: 'level', key: b.rep > rep0 ? 'cn.feed.tierUp' : 'cn.feed.tierDown', v: { rt: repTier(b.rep) }, to: { n: 'me' }, tone: b.rep > rep0 ? 'gold' : 'bad' });
+    if (b.rep > rep0 && repTier(rep0) !== repTier(b.rep)) moment('tier:' + repTier(b.rep), undefined, true); // film: the new press pass
 
     // 1.2 contacts: +10 per ask, +25 read right and call matched, +5 right call that ignored a wrong read
     const book = (s.book = s.book || {});
@@ -200,8 +202,8 @@ export function recordWindow(w: WindowIn): WindowSummary | null {
     }
     for (const [id, x] of touched) {
       const rec = rv[id];
-      if (netOf(rec) >= SCALP_NET && !rec.scalp) { rec.scalp = Date.now(); credit(s, SCALP_COINS, 'scalp:' + id); pushFeed(s, { kind: 'rival', from: id, key: 'cn.feed.scalp', v: { rival: id, n: SCALP_COINS }, to: { n: 'rivals' }, tone: 'gold' }); toasts.push([t('cn.toast.scalp', { r: t('rival.' + id) }), t('cn.toast.coins', { n: SCALP_COINS })]); }
-      if (netOf(rec) >= TROPHY_NET && !rec.trophy) { rec.trophy = Date.now(); credit(s, TROPHY_COINS, 'rivalry:' + id); pushFeed(s, { kind: 'rival', from: id, key: 'cn.feed.trophy', v: { rival: id, n: TROPHY_COINS }, to: { n: 'rivals' }, tone: 'gold' }); }
+      if (netOf(rec) >= SCALP_NET && !rec.scalp) { rec.scalp = Date.now(); credit(s, SCALP_COINS, 'scalp:' + id); pushFeed(s, { kind: 'rival', from: id, key: 'cn.feed.scalp', v: { rival: id, n: SCALP_COINS }, to: { n: 'rivals' }, tone: 'gold' }); toasts.push([t('cn.toast.scalp', { r: t('rival.' + id) }), t('cn.toast.coins', { n: SCALP_COINS })]); moment('scalp:' + id, undefined, true); }
+      if (netOf(rec) >= TROPHY_NET && !rec.trophy) { rec.trophy = Date.now(); credit(s, TROPHY_COINS, 'rivalry:' + id); pushFeed(s, { kind: 'rival', from: id, key: 'cn.feed.trophy', v: { rival: id, n: TROPHY_COINS }, to: { n: 'rivals' }, tone: 'gold' }); moment('trophy:' + id, undefined, true); }
       const st = rivalState(rec);
       const prevIdx = rec.taunt && rec.taunt.startsWith(st + '.') ? Number(rec.taunt.split('.')[1]) : -1;
       let idx = hash(w.key + id) % TAUNTS; if (idx === prevIdx) idx = (idx + 1) % TAUNTS;
@@ -230,6 +232,7 @@ function levelUp(s: Save, src: string, lv: number, sum: WindowSummary | null, to
   sum?.levels.push({ src, lv });
   pushFeed(s, { kind: 'contact', from: src, key: 'cn.feed.contact', v: { src, lv, perk: 'cn.perk.l' + lv, n: coins }, to: { n: 'contacts' }, tone: lv >= 5 ? 'gold' : 'good' });
   toasts.push([t('cn.toast.contact', { s: t('src.' + src), n: lv }), t('cn.perk.l' + lv) + ' · ' + t('cn.toast.coins', { n: coins })]);
+  if (lv >= 5) moment('contact:' + src, undefined, true); // film: the gold card
 }
 function missionFeed(s: Save) {
   const b = (s.byline = s.byline || freshByline());
@@ -248,6 +251,8 @@ export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: strin
   const b0 = getSave().byline;
   const fresh = calls.filter((c) => c.done && (c.right === true || c.right === false) && !(b0 && seen(b0, 'wire:' + c.rid + ':' + c.at)));
   if (!fresh.length) return;
+  let official: string | null = null;
+  const repW0 = (getSave().byline || freshByline()).rep;
   update((s) => {
     const b = (s.byline = s.byline || freshByline());
     const list = fresh.filter((c) => !seen(b, 'wire:' + c.rid + ':' + c.at)).sort((a, c) => a.at - c.at);
@@ -255,13 +260,17 @@ export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: strin
       mark(b, 'wire:' + c.rid + ':' + c.at);
       const st = Math.max(0, Math.min(2, (c.s || 1) - 1));
       const d = followerDelta('wire', st, !!c.right, false, b.hot);
-      if (c.right) { b.hot++; b.best = Math.max(b.best, b.hot); b.rep = Math.min(100, b.rep + 1); }
+      if (c.right) { b.hot++; b.best = Math.max(b.best, b.hot); b.rep = Math.min(100, b.rep + 1); official = nameOf?.(c.rid) || c.player || ''; }
       else { b.hot = 0; if (st === 2) b.rep = Math.max(0, b.rep - 2); }
       b.followers = Math.max(0, b.followers + d);
       // Old backlog lands quietly; the newest few make the feed.
       if (k >= list.length - 5) pushFeed(s, { id: 'wire:' + c.rid + ':' + c.at, kind: 'wire', key: c.right ? 'cn.feed.wireRight' : 'cn.feed.wireWrong', v: { p: nameOf?.(c.rid) || c.player || '?', f: (d > 0 ? '+' : '−') + Math.abs(d).toLocaleString('en') }, to: { n: 'wire', rid: c.rid }, tone: c.right ? 'good' : 'bad' });
     });
   });
+  // Film: the newest call that settled your way gets its OFFICIAL broadcast (one per refresh).
+  if (official != null) moment('official', official ? { p: official } : undefined);
+  const b1 = getSave().byline;
+  if (b1 && b1.rep > repW0 && repTier(repW0) !== repTier(b1.rep)) moment('tier:' + repTier(b1.rep), undefined, true);
 }
 
 // ---------------------------------------------------------------- contacts: coffee
