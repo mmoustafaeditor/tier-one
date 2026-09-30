@@ -18,7 +18,7 @@
 //   • Any beat  → <Beat stem="beat-…" trigger={n} onEnd={…} /> inside a positioned box, or playBeat('beat-…') full screen.
 // Match cuts: lastFrameOf(stem) hands a film the loop's current frame (film/surfaces/manifest.ts says which frame each
 // loop rests on, so the studio can start the next film from it).
-import { createElement, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
+import { createElement, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ComponentType, type CSSProperties, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { filmUrl, type Aspect } from '../film/clips';
 import { surfaceOf, homeLoop, placeLoop, seasonLoop, toneNow, type Beat as BeatSpec } from '../film/surfaces/manifest';
@@ -27,6 +27,8 @@ import { getFilmBudget, onFilmBudget, useFilmBudget, filmMode, setFilmMode, type
 import { useT } from '../lib/i18n';
 import { sfx } from '../lib/sfx';
 import { Seg } from './screenbits';
+import { drawnOf } from '../film/surfaces/drawn';
+import { prefersReducedMotion } from '../lib/motion';
 import '../film/surfaces/surfaces.css';
 export { useFilmBudget, getFilmBudget, filmMode, setFilmMode } from '../lib/filmgate';
 
@@ -120,20 +122,46 @@ function LoopLayer({ stem, playing, fit = 'cover', tone = 'dim', inline, classNa
   </div>;
 }
 
+// ---------- a drawn loop (GOTY.md §10): an SVG composition animated by CSS (transform / opacity only). It never fetches
+// a poster or a clip. It plays only while it is the registry's playing loop, on screen, in a visible tab and without
+// reduced motion; otherwise it holds its frame (.is-paused).
+function DrawnLayer({ stem, Comp, playing, fit = 'cover', tone = 'dim', inline, className = '', style }: { stem: string; Comp: ComponentType; playing: boolean; fit?: Fit; tone?: Tone; inline?: boolean; className?: string; style?: CSSProperties }) {
+  const b = useFilmBudget();
+  const tab = useTabVisible();
+  const [seen, setSeen] = useState(!inline);
+  const [reduced] = useState(prefersReducedMotion);
+  const box = useRef<HTMLDivElement>(null);
+  const nothing = b.level === 'none';
+  useLayoutEffect(() => { if (!inline || nothing) return; const p = box.current?.parentElement; if (!p) return; p.classList.add('fl-host'); return () => { p.classList.remove('fl-host'); }; }, [inline, nothing]);
+  useEffect(() => {
+    if (!inline || nothing || typeof IntersectionObserver === 'undefined') return;
+    const el = box.current; if (!el) return;
+    const io = new IntersectionObserver(([e]) => setSeen(e.isIntersecting), { threshold: 0.05 });
+    io.observe(el); return () => io.disconnect();
+  }, [inline, nothing]);
+  if (nothing) return null;
+  const go = playing && seen && tab && !reduced;
+  return <div ref={box} className={['fl', 'fl--draw', inline ? 'fl--inline' : 'fl--stage', 'fl--' + fit, 'fl--' + tone, 'is-in', go ? '' : 'is-paused', className].filter(Boolean).join(' ')} style={style} data-stem={stem} aria-hidden="true"><Comp /></div>;
+}
+
 /**
  * An ambient loop. `layer="screen"` (default) plays on the fixed stage behind the whole page and crossfades with
  * whatever was there; `layer="inline"` fills its parent (make the parent position: relative; overflow: hidden and put
  * the loop first). Muted, looping, poster first; pauses off screen, in a hidden tab, and whenever a later loop mounts.
  */
-export function FilmLoop({ stem, fit = 'cover', tone = 'dim', layer = 'screen', className, style }: { stem: string; fit?: Fit; tone?: Tone; layer?: 'screen' | 'inline'; className?: string; style?: CSSProperties }) {
+export function FilmLoop({ stem, Comp, fit = 'cover', tone = 'dim', layer = 'screen', className, style }: { stem: string; Comp?: ComponentType; fit?: Fit; tone?: Tone; layer?: 'screen' | 'inline'; className?: string; style?: CSSProperties }) {
   const inline = layer === 'inline';
   const [id, setId] = useState(0);
-  useEffect(() => { if (!inline) stageOpts.set(stem, { fit, tone }); const c = claim(stem, inline); setId(c.id); return c.off; }, [stem, inline, fit, tone]);
+  const Drawn = Comp || drawnOf(stem);
+  useEffect(() => { if (!inline) stageOpts.set(stem, { fit, tone, Comp: Drawn }); const c = claim(stem, inline); setId(c.id); return c.off; }, [stem, inline, fit, tone, Drawn]);
   const reg = useRegistry();
   if (!inline) return null; // the stage renders it
-  return <LoopLayer stem={stem} playing={top(reg)?.id === id} fit={fit} tone={tone} inline className={className} style={style} />;
+  const playing = top(reg)?.id === id;
+  // A stem with a drawn composition never touches a poster or a clip.
+  if (Drawn) return <DrawnLayer stem={stem} Comp={Drawn} playing={playing} fit={fit} tone={tone} inline className={className} style={style} />;
+  return <LoopLayer stem={stem} playing={playing} fit={fit} tone={tone} inline className={className} style={style} />;
 }
-const stageOpts = new Map<string, { fit: Fit; tone: Tone }>();
+const stageOpts = new Map<string, { fit: Fit; tone: Tone; Comp?: ComponentType }>();
 
 // ---------- the stage: the screen-level loop (or the 3D desk), with a crossfade between stems
 let desk: { poster: string; tone: 'morning' | 'night' } | null = null;
@@ -157,7 +185,8 @@ function FilmStage() {
   }, [cur]);
   const t = top(reg);
   return <>
-    {!d && layers.map((s) => <LoopLayer key={s} stem={s} playing={!!t && !t.inline && t.stem === s} {...(stageOpts.get(s) || {})} />)}
+    {!d && layers.map((s) => { const o: { fit?: Fit; tone?: Tone; Comp?: ComponentType } = stageOpts.get(s) || {}; const C = o.Comp || drawnOf(s); const on = !!t && !t.inline && t.stem === s;
+      return C ? <DrawnLayer key={s} stem={s} Comp={C} playing={on} fit={o.fit} tone={o.tone} /> : <LoopLayer key={s} stem={s} playing={on} fit={o.fit} tone={o.tone} />; })}
   </>;
 }
 let stageHost: HTMLElement | null = null, beatHost: HTMLElement | null = null;

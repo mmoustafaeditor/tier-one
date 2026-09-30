@@ -4,7 +4,7 @@
 import { Glows, Glow, Rain, Contract, Newspaper, Flap, Shield, arc, live, useLive, noise, k, lerp, cl, rnd, MText, F_MONO } from './world';
 import { Phones, doneDrop, heroGlow, TELL } from './tells';
 import { bloom, type PlaceSpec, type PlaceZ } from './spec';
-import { EASE } from '../kit';
+import { EASE } from '../../kit';
 
 const SEAT = { y: 600 }, DOC = { x: 880, y: 640 }, DASH = { x: 800, y: 470 };
 
@@ -60,7 +60,7 @@ function Scene(z: PlaceZ) {
       <rect x={-140} y={-30} width={280} height={60} rx={8} fill="#0E0F14" stroke="#23252E" strokeWidth={3} />
       <MText x={-60} y={10} size={26} fill="#FF9A1F" font={F_MONO} stretch="100%" weight={700}>{on ? '23:41' : `23:${String(41 + Math.floor(f / 30) % 2).padStart(2, '0')}`}</MText>
       <g transform="translate(6 -20)">
-        {['0', '1'].map((ch, i) => <Flap key={i} x={i * 30} y={0} w={28} h={40} a={i === 0 ? '2' : '8'} b={i === 0 ? '0' : '1'} flip={flipOff} ink="#FF9A1F" size={24} fill="#0E0F14" />)}
+        {['0', '1'].map((_, i) => <Flap key={i} x={i * 30} y={0} w={28} h={40} a={i === 0 ? '2' : '8'} b={i === 0 ? '0' : '1'} flip={flipOff} ink="#FF9A1F" size={24} fill="#0E0F14" />)}
         <Flap x={64} y={0} w={64} h={40} a={z.month.slice(0, 3).toUpperCase()} b={z.next.slice(0, 3).toUpperCase()} flip={flipOff} ink={flipOff > 0.5 ? '#FF3B1E' : '#FF9A1F'} size={20} fill="#0E0F14" />
         {flipOff > 0.5 && <Glow x={60} y={20} r={200} ry={90} col="#FF3B1E" o={0.6 * bl} />}
       </g>

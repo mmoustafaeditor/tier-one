@@ -3,7 +3,7 @@
 import { Glows, Glow, Cone, Motes, Envelope, Coffee, live, useLive, noise, k, lerp, cl, FLOOR, PAPER, MText, F_COND } from './world';
 import { Phones, CalendarTell, PaperTell, doneDrop, heroGlow, TELL } from './tells';
 import type { PlaceSpec, PlaceZ } from './spec';
-import { EASE } from '../kit';
+import { EASE } from '../../kit';
 
 const DESK = { x0: 720, x1: 1320, y: 620 }, COPIER = { x: 460, y: 520 }, ENV = { x: 1000, y: 606 }, CAL = { x: 1240, y: 300 };
 

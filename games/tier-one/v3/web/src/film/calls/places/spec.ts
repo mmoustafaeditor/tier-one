@@ -2,7 +2,7 @@
 // phone (0.6 s); the call film runs 3.5 s (a repeat call starts at SHORT: 2 s) and tells the tip in its final second
 // with the outcome object as the brightest, most saturated thing in frame. All frames at 30 fps.
 import type { ReactNode } from 'react';
-import type { Key } from '../kit';
+import type { Key } from '../../kit';
 import type { Col } from './world';
 import { k, cl } from './world';
 

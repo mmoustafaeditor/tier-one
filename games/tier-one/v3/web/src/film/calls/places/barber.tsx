@@ -3,7 +3,6 @@
 import { Glows, Glow, Cone, Motes, Scarf, Shield, live, useLive, noise, k, lerp, FLOOR, INK, PAPER, F_COND, MText } from './world';
 import { Phones, CalendarTell, PaperTell, doneDrop, heroGlow, TELL } from './tells';
 import type { PlaceSpec, PlaceZ } from './spec';
-import { EASE } from '../kit';
 
 const WALL = '#3A2413', WALL2 = '#1C1108', FLOOR1 = '#2B1E14', FLOOR2 = '#0E0906', CHROME = '#B9AE98', LEATHER = '#8E1C1C';
 const CHAIR = { x: 1010, y: 560 }, COUNTER = { x0: 470, x1: 900, y: 590 }, CAL = { x: 445, y: 330 }, POLE = { x: 1300, y: 250 };

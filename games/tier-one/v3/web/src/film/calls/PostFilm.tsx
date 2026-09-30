@@ -1,126 +1,127 @@
-// The post going out, as a film (3.3): your desk at night (lamp, coffee, the city through the window) while the post
-// types on the laptop, then a cut to the fans: a terrace crowd, phones lighting up one by one as it lands. HERE WE GO
-// plays the gold version (floodlights, the stand bouncing). Pure: (frame, props) → SVG; PostScene owns the clock and
-// lays the real post card over the laptop screen.
-import type { ReactElement } from 'react';
+// The post going out, as a drawn film (GOTY.md §10, §12): your desk at night (lamp, coffee, the city in the window)
+// while the real post card types itself over it (PostScene lays it on), the little press on the desk warms (rollers pick
+// up speed, the ink light glows) and fires as it sends; cut to the city: windows light in a sweep and the phones in them
+// light up, more of them the louder the post. The Confirmed-and-Done variant (`catch`) adds stadium light towers and a
+// gold ticker running the player's catchphrase. No people, no hands. Pure: (frame, props) → SVG; PostScene owns the clock.
 import { FrameProvider } from '../remotion-shim';
-import { FilmLook, noise } from '../kit';
-import { MirrorCtx, INK } from './rig';
+import { FilmLook } from '../kit';
+import { City, Blinds, Lamp, Coffee, Phone, Glow, Glows, Cone, MText, MirrorCtx, F_COND, GOLD, k, cl, hit, lerp, rnd } from './places/world';
 
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const cl = (x: number) => Math.max(0, Math.min(1, x));
+export type PostFilmKind = 'talks' | 'advanced' | 'confirmed' | 'catch' | 'repost';
+const LIT = { talks: 0.35, advanced: 0.62, confirmed: 0.9, catch: 1, repost: 0.62 } as const;
 
-function Desk({ f }: { f: number }) {
-  const fl = 0.9 + 0.1 * noise(f / 8, 2);
+function Press({ f, fSend, cA }: { f: number; fSend: number; cA: string }) {
+  const warm = cl(f / Math.max(1, fSend));
+  const spin = f * (2 + 14 * warm * warm);
+  const fire = hit(f, fSend, 12);
+  const sheet = cl((f - fSend) / 10);
+  const roller = (x: number, y: number, r: number, d: number) => <g transform={`translate(${x} ${y}) rotate(${spin * d})`}>
+    <circle r={r} fill="#2E2A24" stroke="#6E6656" strokeWidth={4} />
+    {[0, 60, 120].map((a) => <line key={a} x1={-r + 6} y1={0} x2={r - 6} y2={0} stroke="#8A8272" strokeWidth={4} transform={`rotate(${a})`} />)}
+  </g>;
+  return <g transform="translate(1180 520)">
+    <Glow x={0} y={20} r={200} ry={130} col="#FFB25A" o={0.15 + 0.45 * warm + 0.4 * fire} />
+    <rect x={-120} y={-40} width={240} height={140} rx={10} fill="#1F1C17" stroke="#3A342A" strokeWidth={6} />
+    {roller(-50, 30, 42, 1)}{roller(50, 30, 42, -1)}
+    <rect x={-110} y={-70} width={220} height={30} rx={6} fill="#2E2A24" />
+    <circle cx={90} cy={-55} r={9} fill="#FF5A36" opacity={0.25 + 0.75 * warm} />
+    <Glow x={90} y={-55} r={40} col="#FF6A48" o={warm} />
+    {f >= fSend && <g transform={`translate(${lerp(0, -160, sheet)} ${lerp(-60, -330, sheet)}) rotate(${lerp(0, -18, sheet)})`} opacity={1 - cl((f - fSend - 10) / 6)}>
+      <rect x={-70} y={-46} width={140} height={92} fill="#F4EFE4" />
+      <rect x={-56} y={-34} width={112} height={12} fill="#15130F" />
+      {[0, 1, 2].map((i) => <rect key={i} x={-56} y={-12 + i * 14} width={i === 2 ? 60 : 112} height={6} fill="#4A443A" />)}
+      <rect x={-70} y={36} width={140} height={10} fill={cA} />
+    </g>}
+  </g>;
+}
+
+function Desk({ f, fSend, cA }: { f: number; fSend: number; cA: string }) {
+  const warm = cl(f / Math.max(1, fSend));
   return <g>
-    <defs>
-      <linearGradient id="pfw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A1712" /><stop offset="1" stopColor="#0C0B09" /></linearGradient>
-      <radialGradient id="pfl" cx=".5" cy=".5" r=".5"><stop offset="0" stopColor="#FFC873" stopOpacity=".5" /><stop offset="1" stopColor="#FFC873" stopOpacity="0" /></radialGradient>
-      <radialGradient id="pfs" cx=".5" cy=".5" r=".5"><stop offset="0" stopColor="#9FD8FF" stopOpacity=".35" /><stop offset="1" stopColor="#9FD8FF" stopOpacity="0" /></radialGradient>
-    </defs>
+    <defs><linearGradient id="pfw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A1712" /><stop offset="1" stopColor="#0C0B09" /></linearGradient></defs>
     <rect x={-1400} y={-1400} width={4400} height={2100} fill="url(#pfw)" />
-    {/* the window: city at night */}
-    <rect x={930} y={-80} width={520} height={470} fill="#0E1630" />
-    {Array.from({ length: 7 }, (_, i) => <rect key={i} x={950 + i * 72} y={140 + ((i * 53) % 120)} width={56} height={400} fill="#0A1024" />)}
-    {Array.from({ length: 26 }, (_, i) => <rect key={'w' + i} x={960 + (i * 37) % 480} y={170 + ((i * 71) % 200)} width={8} height={10} fill="#FFD58A" opacity={0.35 + 0.3 * (noise(f / 30 + i, i) > 0.3 ? 1 : 0)} />)}
-    <rect x={1180} y={-80} width={12} height={470} fill="#1A1712" /><rect x={930} y={150} width={520} height={10} fill="#1A1712" />
-    <rect x={916} y={-80} width={548} height={484} fill="none" stroke="#2A241C" strokeWidth={18} />
-    {/* pinned clippings */}
-    {[0, 1, 2].map((i) => <g key={i} transform={`translate(${250 + i * 120} ${90 + (i % 2) * 40}) rotate(${(i - 1) * 5})`}><rect width={96} height={120} fill="#E9E2D3" opacity=".75" />{[0, 1, 2, 3].map((j) => <rect key={j} x={10} y={16 + j * 22} width={j ? 70 : 76} height={j ? 5 : 10} fill="#4A443A" opacity=".6" />)}<circle cx={48} cy={6} r={5} fill="#FF5A36" /></g>)}
+    {/* the window: the city at night behind half-open blinds */}
+    <rect x={260} y={60} width={1080} height={420} fill="#0E1630" />
+    <City x={260} y={170} w={1080} h={310} seed={7} lit={0.3} f={f} />
+    <Blinds x={260} y={60} w={1080} h={210} open={0.3} col="#15120E" n={7} />
+    <rect x={250} y={50} width={1100} height={440} fill="none" stroke="#2A241C" strokeWidth={20} />
+    <rect x={795} y={50} width={10} height={440} fill="#2A241C" />
     {/* the desk */}
-    <rect x={-1400} y={620} width={4400} height={1400} fill="#2C271F" />
-    <rect x={-1400} y={620} width={4400} height={1400} fill="url(#pfw)" opacity=".4" />
-    <rect x={-1400} y={616} width={4400} height={8} fill="#4A3E2E" />
-    {/* the lamp and its pool */}
-    <ellipse cx={330} cy={660} rx={420} ry={150} fill="url(#pfl)" opacity={fl} />
-    <path d="M250 640 H330 M290 640 L250 470 L360 380" stroke="#3A342A" strokeWidth={12} fill="none" strokeLinecap="round" />
-    <path d="M340 350 L430 380 L400 430 L320 400 Z" fill="#3A342A" /><ellipse cx={400} cy={420} rx={30} ry={10} fill="#FFE3A3" opacity={fl} />
-    <path d="M400 425 L200 900 L760 900 Z" fill="#FFC873" opacity={0.06 * fl} />
-    {/* coffee */}
-    <g transform="translate(1180 640)"><path d="M0 -70 H80 V-10 Q80 10 60 10 H20 Q0 10 0 -10 Z" fill="#E9E2D3" /><path d="M80 -56 Q108 -52 104 -30 Q100 -14 80 -18" stroke="#E9E2D3" strokeWidth={10} fill="none" /><rect x={4} y={-66} width={72} height={8} fill="#5A3A1E" />
-      {[0, 1].map((i) => <path key={i} d={`M${24 + i * 26} -80 q${10 * Math.sin(f / 6 + i)} -26 0 -52 q${-10 * Math.sin(f / 7 + i)} -26 0 -52`} stroke="#F4EFE4" strokeOpacity={0.18} strokeWidth={6} fill="none" />)}</g>
-    {/* the screen's glow on the wall behind */}
-    <ellipse cx={800} cy={420} rx={500} ry={320} fill="url(#pfs)" />
+    <rect x={-1400} y={600} width={4400} height={1400} fill="#2C271F" />
+    <rect x={-1400} y={596} width={4400} height={8} fill="#4A3E2E" />
+    <Cone x={430} y={420} w0={30} w1={300} h={200} col="#FFC873" o={0.07} />
+    <ellipse cx={440} cy={640} rx={360} ry={70} fill="#FFC873" opacity={0.12} />
+    <Lamp x={330} y={612} on={1} s={0.9} />
+    <Coffee x={560} y={560} f={f} />
+    {/* the screen's glow on the wall: the card sits here */}
+    <Glow x={800} y={380} r={420} ry={260} col="#9FD8FF" o={0.28 + 0.12 * warm} />
+    <Phone x={980} y={640} rot={-70} s={0.6} lit={0} />
+    <Press f={f} fSend={fSend} cA={cA} />
   </g>;
 }
 
-/** Hands on the keyboard (under the laptop); fingers tap while `typing`. */
-export function Hands({ f, typing }: { f: number; typing: boolean }) {
-  const tap = (i: number) => (typing ? Math.max(0, Math.sin(f * 2.3 + i * 1.7)) * 7 : 0);
-  const hand = (x: number, m: number) => <g transform={`translate(${x} 0) scale(${m} 1)`}>
-    <path d="M-70 90 Q-60 30 -20 20 L40 18 Q56 20 56 34 Q56 46 40 48 L0 50 Q-30 70 -34 110 Z" fill="#1E2230" />
-    <path d="M-30 30 Q0 4 34 10 L50 12 Q60 14 58 24 L56 36 Q20 44 -10 50 Z" fill="#C68A5E" />
-    {[0, 1, 2, 3].map((i) => <rect key={i} x={6 + i * 12} y={2 - tap(i + (m > 0 ? 0 : 4))} width={10} height={22} rx={5} fill="#B77B52" />)}
-  </g>;
-  return <svg className="pf__hands" viewBox="-200 0 400 110" aria-hidden="true" focusable="false">{hand(-60, 1)}{hand(60, -1)}</svg>;
+function Towers({ fc }: { fc: number }) {
+  const on = k(fc, 2, 14);
+  return <g>{[380, 1220].map((x, i) => <g key={x}>
+    <Cone x={x} y={110} w0={80} w1={420} h={900} col="#FFF3C0" o={0.12 * on} />
+    <path d={`M${x - 30} 900 L${x - 8} 150 H${x + 8} L${x + 30} 900 Z`} fill="#0B0A10" />
+    {Array.from({ length: 10 }, (_, j) => <line key={j} x1={x - 26 + j * 0.2} y1={880 - j * 72} x2={x + 22} y2={820 - j * 72} stroke="#1E1C26" strokeWidth={4} />)}
+    <rect x={x - 90} y={60} width={180} height={100} rx={8} fill="#15141A" />
+    {Array.from({ length: 12 }, (_, j) => <circle key={j} cx={x - 66 + (j % 6) * 26} cy={88 + Math.floor(j / 6) * 40} r={11} fill="#FFF8E0" opacity={j / 12 < on ? 1 : 0.15} />)}
+    <Glow x={x} y={110} r={300} ry={200} col="#FFE3A3" o={on * (0.8 + 0.2 * Math.sin(fc * 0.3 + i))} />
+  </g>)}</g>;
 }
 
-function Crowd({ f, fc, hwg, cA, cB }: { f: number; fc: number; hwg: boolean; cA: string; cB: string }) {
-  // Three rows of fans, back to front. Each phone lights up a moment after the post lands (staggered by seat).
-  const rows = [{ y: 520, s: 0.62, n: 13 }, { y: 650, s: 0.82, n: 10 }, { y: 800, s: 1.05, n: 8 }];
-  const jump = hwg ? 1 : 0.35;
-  const out: ReactElement[] = [];
-  rows.forEach((r, ri) => {
-    for (let i = 0; i < r.n; i++) {
-      const id = ri * 20 + i, x = -100 + (i + (ri % 2) * 0.5) * (1800 / r.n);
-      const litAt = 3 + ((id * 7) % 17) * 0.9 + ri * 2;
-      const lit = cl((fc - litAt) / 3);
-      const bob = -Math.max(0, Math.sin(f * 0.5 + id)) * 14 * jump * lit;
-      const scarf = id % 3 === 0 ? cB : cA;
-      const skin = ['#8D5A3B', '#C68A5E', '#E3B48E', '#5E3B26', '#A8704A'][id % 5];
-      const up = id % 4 !== 1; // most hold a phone up; some just point
-      out.push(<g key={id} transform={`translate(${x} ${r.y + bob}) scale(${r.s})`}>
-        <path d="M-70 200 Q-70 40 0 34 Q70 40 70 200 Z" fill={ri === 2 ? '#15130F' : ri === 1 ? '#1E1A15' : '#26211B'} />
-        <path d="M-40 44 Q0 70 40 44 L44 60 Q0 86 -44 60 Z" fill={scarf} />
-        <circle cx={0} cy={0} r={36} fill={skin} style={{ filter: `brightness(${0.45 + 0.5 * lit})` }} />
-        <path d="M-36 -4 C-38 -40 38 -44 36 -6 C20 -22 -20 -22 -36 -4 Z" fill={INK} />
-        {up ? <g transform={`translate(${id % 2 ? 46 : -46} ${-60})`}>
-          <line x1={0} y1={40} x2={id % 2 ? -18 : 18} y2={110} stroke={ri === 2 ? '#15130F' : '#1E1A15'} strokeWidth={22} strokeLinecap="round" />
-          {lit > 0 && <circle cx={0} cy={0} r={34} fill={hwg ? "#FFD76A" : "#9FD8FF"} opacity={0.22 * lit} />}
-          <rect x={-14} y={-24} width={28} height={48} rx={5} fill={INK} />
-          <rect x={-11} y={-20} width={22} height={40} rx={3} fill={hwg ? '#FFD76A' : '#CFEAFF'} opacity={0.12 + 0.88 * lit} />
-        </g> : <line x1={40} y1={50} x2={70} y2={-50 + Math.sin(f * 0.6 + id) * 10} stroke="#1E1A15" strokeWidth={20} strokeLinecap="round" />}
-      </g>);
-    }
-  });
+function Ticker({ fc, text }: { fc: number; text: string }) {
+  const on = k(fc, 6, 14);
+  const item = text.toUpperCase() + '  ★  ';
+  const shift = (fc * 9) % 1200;
+  return <g opacity={on} transform={`translate(0 ${lerp(60, 0, on)})`}>
+    <rect x={-1400} y={790} width={4400} height={90} fill={GOLD} />
+    <rect x={-1400} y={790} width={4400} height={6} fill="#FFE39A" /><rect x={-1400} y={874} width={4400} height={6} fill="#A36F00" />
+    <g transform={`translate(${-shift} 0)`}>{Array.from({ length: 6 }, (_, i) => <MText key={i} x={-200 + i * 600} y={852} size={50} fill="#15130F" font={F_COND} anchor="start">{item}</MText>)}</g>
+  </g>;
+}
+
+function CityCut({ fc, kind, cA, cB, cp }: { fc: number; kind: PostFilmKind; cA: string; cB: string; cp: string }) {
+  const gold = kind === 'catch';
+  const wave = k(fc, 0, 26);
+  const share = LIT[kind];
+  const col = gold ? '#FFD76A' : '#9FD8FF';
+  const wins = Array.from({ length: 18 }, (_, i) => ({ x: 330 + (i % 6) * 190, y: 440 + Math.floor(i / 6) * 150, at: 4 + rnd(i, 3) * 20, on: rnd(i, 5) < share }));
   return <g>
-    <defs>
-      <linearGradient id="pfc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={hwg ? '#3A2A08' : '#10131E'} /><stop offset="1" stopColor="#0A0908" /></linearGradient>
-      <radialGradient id="pff" cx=".5" cy=".5" r=".5"><stop offset="0" stopColor="#FFF3C0" stopOpacity=".9" /><stop offset="1" stopColor="#FFF3C0" stopOpacity="0" /></radialGradient>
-    </defs>
-    <rect x={-1400} y={-1400} width={4400} height={3800} fill="url(#pfc)" />
-    {/* the stand's roof and the far side */}
-    <path d="M-1400 120 L3000 60 V0 H-1400 Z" fill="#050505" />
-    {Array.from({ length: 30 }, (_, i) => <circle key={i} cx={-200 + i * 70} cy={330 + (i % 3) * 16} r={4} fill={hwg ? '#FFD76A' : '#FFE3A3'} opacity={0.25 + 0.2 * Math.sin(f * 0.2 + i)} />)}
-    {/* floodlights */}
-    {[260, 1340].map((x, i) => <g key={x}>
-      <path d={`M${x} 120 L${x - 360 + i * 520} 1200 L${x + 160 + i * 200 - 200} 1200 Z`} fill={hwg ? '#FFE3A3' : '#DDE8FF'} opacity={hwg ? 0.14 : 0.05} />
-      <rect x={x - 60} y={90} width={120} height={50} rx={6} fill="#1A1A1A" />
-      {[0, 1, 2].map((j) => <circle key={j} cx={x - 36 + j * 36} cy={115} r={13} fill="#FFF8E0" />)}
-      <circle cx={x} cy={115} r={hwg ? 170 : 90} fill="url(#pff)" opacity={hwg ? 0.9 : 0.5} />
-    </g>)}
-    {/* bunting */}
-    <path d="M-400 400 Q800 470 2000 400" stroke="#3A342A" strokeWidth={3} fill="none" />
-    {Array.from({ length: 18 }, (_, i) => { const x = -300 + i * 130, y = 404 + Math.sin((i / 17) * Math.PI) * 58; return <path key={i} d={`M${x} ${y} l30 0 l-15 34 z`} fill={i % 2 ? cA : cB} opacity=".85" />; })}
-    {out}
+    <defs><linearGradient id="pfsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={gold ? '#2A1A04' : '#070B1C'} /><stop offset="1" stopColor={gold ? '#6A4A10' : '#16204A'} /></linearGradient></defs>
+    <rect x={-1400} y={-1400} width={4400} height={3800} fill="url(#pfsky)" />
+    {gold && <Towers fc={fc} />}
+    <City x={-200} y={180} w={2000} h={260} seed={3} n={20} wave={wave} win={gold ? '#FFD76A' : '#FFD58A'} />
+    {/* the block across the street: a window each, a phone in each lighting as the post lands */}
+    <rect x={240} y={400} width={1120} height={520} fill="#0C0E18" />
+    {wins.map((w, i) => { const lit = w.on ? cl((fc - w.at) / 4) : 0; return <g key={i}>
+      <rect x={w.x - 70} y={w.y - 52} width={140} height={104} fill={lit > 0 ? '#1B2440' : '#101421'} />
+      {lit > 0 && <Glow x={w.x} y={w.y} r={120} ry={80} col={i % 5 === 0 ? cA : col} o={0.7 * lit} />}
+      <Phone x={w.x} y={w.y + 6} rot={i % 2 ? -8 : 10} s={0.5} lit={lit} col={i % 5 === 0 ? cA : i % 7 === 0 ? cB : col} buzz={lit > 0 && lit < 1 ? fc : 0} />
+      <rect x={w.x - 70} y={w.y - 4} width={140} height={6} fill="#0C0E18" />
+    </g>; })}
+    {gold && <Ticker fc={fc} text={cp} />}
   </g>;
 }
 
-export function PostFilm({ f, fCut, hwg, cA, cB, rtl, still }: { f: number; fCut: number; typing?: boolean; hwg: boolean; cA: string; cB: string; rtl?: boolean; still?: boolean }) {
+export function PostFilm({ f, fSend, fCut, kind, cA, cB, cp = '', rtl, still }: { f: number; fSend: number; fCut: number; kind: PostFilmKind; cA: string; cB: string; cp?: string; rtl?: boolean; still?: boolean }) {
   const cut = f >= fCut;
   const fc = f - fCut;
-  // The cut is a whip: the desk slides away and the crowd slides in, a few frames.
   const w = cut ? cl(fc / 5) : 0;
   const M = rtl ? -1 : 1;
-  const push = 1 + 0.03 * Math.min(1, f / 60);
+  const push = 1 + 0.04 * cl(f / Math.max(1, fSend));
   return <FrameProvider frame={f} width={1600} height={900} fps={30} durationInFrames={Math.max(1, f + 1)}>
     <svg className="cf" viewBox="200 0 1200 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+      <Glows cols={['#FFC873', '#FFB25A', '#FF6A48', '#9FD8FF', '#FFD76A', '#FFE3A3', cA]} />
       <MirrorCtx.Provider value={M}>
         <g transform={M < 0 ? 'matrix(-1 0 0 1 1600 0)' : undefined}>
-          {w < 1 && <g transform={`translate(${-w * 700} 0) translate(800 450) scale(${push}) translate(-800 -450)`} opacity={1 - w}><Desk f={f} /></g>}
-          {cut && <g transform={`translate(${(1 - w) * 700} 0) translate(800 450) scale(${lerp(1.08, 1, cl(fc / 30))}) translate(-800 -450)`} opacity={w}><Crowd f={f} fc={fc} hwg={hwg} cA={cA} cB={cB} /></g>}
+          {w < 1 && <g transform={`translate(${-w * 600} 0) translate(800 450) scale(${push}) translate(-800 -450)`} opacity={1 - w}><Desk f={f} fSend={fSend} cA={cA} /></g>}
+          {cut && <g transform={`translate(${(1 - w) * 600} 0) translate(800 450) scale(${lerp(1.1, 1, cl(fc / 30))}) translate(-800 -450)`} opacity={w}><CityCut fc={fc} kind={kind} cA={cA} cB={cB} cp={cp} /></g>}
         </g>
       </MirrorCtx.Provider>
+      {f >= fSend && hit(f, fSend, 6) > 0.02 && <rect x={0} y={0} width={1600} height={900} fill="#FFF3D8" opacity={0.5 * hit(f, fSend, 6)} />}
     </svg>
     <FilmLook vignette={0.75} grain={!still} />
   </FrameProvider>;

@@ -1,6 +1,6 @@
 // The boot room: lockers, a rail of shirts with numbers, a bench with a kit bag, a strip light that buzzes, the phone
 // on the bench. Done: a tag in the buying club's colours drops onto the bag's strap and swings.
-import { Glows, Glow, Motes, Bag, Tag, Shirt, live, useLive, noise, k, lerp, FLOOR, MText, F_COND } from './world';
+import { Glows, Glow, Motes, Bag, Tag, Shirt, live, useLive, noise, lerp, FLOOR, MText, F_COND } from './world';
 import { Phones, CalendarTell, PaperTell, doneDrop, heroGlow, TELL } from './tells';
 import type { PlaceSpec, PlaceZ } from './spec';
 

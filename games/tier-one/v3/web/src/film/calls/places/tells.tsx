@@ -4,9 +4,9 @@
 //   Off    → the calendar page tears off and flips to next month: he's staying; the player's own club stays lit.
 //   Fake   → the newspaper with the rumour is screwed up and thrown in the bin.
 // Every tell starts at TELL and peaks at HERO; each takes the anchors the set gives it.
-import { Bin, Calendar, Glow, Newspaper, Phone, Pennant, arc, cl, hit, k, lerp, settle, type Col } from './world';
+import { Bin, Calendar, Glow, Newspaper, Phone, Pennant, arc, cl, hit, k, lerp, settle } from './world';
 import { HERO, TELL, phoneLit, phoneBuzz, bloom, type PlaceZ } from './spec';
-import { EASE } from '../kit';
+import { EASE } from '../../kit';
 
 type P = { x: number; y: number };
 

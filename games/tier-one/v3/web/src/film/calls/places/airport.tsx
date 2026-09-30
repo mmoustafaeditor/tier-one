@@ -1,10 +1,10 @@
 // The airport at dusk from the mezzanine: the departures board flipping, the big window, landing lights, a jet's
 // silhouette, a case on a trolley by the rail, the phone on the rail. Done: the board flips to the buying club's city
 // and BOARDING, and the case's tag drops in the club's colours. Off: the board's date flips to next month, CANCELLED.
-import { Glows, Glow, Motes, Tag, Flap, Newspaper, Bin, arc, live, useLive, noise, k, lerp, cl, hit, FLOOR, MText, F_MONO, F_COND } from './world';
+import { Glows, Glow, Motes, Tag, Flap, Newspaper, Bin, arc, live, useLive, k, lerp, cl, hit, FLOOR, MText, F_MONO, F_COND } from './world';
 import { Phones, doneDrop, heroGlow, TELL, HERO } from './tells';
 import { bloom, type PlaceSpec, type PlaceZ } from './spec';
-import { EASE } from '../kit';
+import { EASE } from '../../kit';
 
 const BOARD = { x: 520, y: 150, w: 560 }, RAIL = { y: 600 }, CASE = { x: 1140, y: 700 };
 const cells = (s: string, n: number) => s.toUpperCase().padEnd(n, ' ').slice(0, n).split('');

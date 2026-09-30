@@ -3,7 +3,8 @@
 // drawing serves the ambient loop (CSS-animated, `live`), the pick-up beat and the call film (frame-driven).
 // World units: 1600×900, the floor at y 780, the action inside x 400–1200 so a phone's portrait crop keeps it.
 import { createContext, useContext, type ReactNode } from 'react';
-import { EASE, k01, noise, spring } from '../kit';
+import { EASE, k01, noise } from '../../kit';
+import { spring } from '../../remotion-shim';
 
 export type Col = { c1: string; c2: string };
 export const INK = '#15130F', PAPER = '#F4EFE4', PAPER2 = '#E9E2D3', RED = '#FF5A36', GOLD = '#F7B928';
