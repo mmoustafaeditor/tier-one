@@ -3,7 +3,9 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import type { WClub, WPlayer } from '../lib/engine';
 import { sfx, haptic, type Sfx } from '../lib/sfx';
 export { haptic, type Haptic } from '../lib/sfx';
-import { getSave, useSave } from '../lib/save';
+import { prefersReducedMotion } from '../lib/motion';
+export { prefersReducedMotion } from '../lib/motion';
+import { useSave } from '../lib/save';
 import { useT } from '../lib/i18n';
 import { levelOf } from '../lib/progress';
 
@@ -96,7 +98,7 @@ export function GBtn({ kind = '', size = '', children, onClick, disabled, sound 
 export function useCountUp(to: number, ms = 900, on = true, tick = false) {
   const [v, setV] = useState(on ? 0 : to);
   useEffect(() => {
-    if (!on || getSave().reduced) { setV(to); return; }
+    if (!on || prefersReducedMotion()) { setV(to); return; }
     let raf = 0; const t0 = performance.now(), from = 0;
     const step = (t: number) => { const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3); setV(Math.round(from + (to - from) * e)); if (tick && k < 1) sfx('count'); if (k < 1) raf = requestAnimationFrame(step); };
     raf = requestAnimationFrame(step); return () => cancelAnimationFrame(raf);
@@ -112,7 +114,7 @@ export function CountUp({ to, ms, sign, tick }: { to: number; ms?: number; sign?
 // <Roll n={credits} /> · <Roll n={pts} sign /> · <Roll n={x} format={num} />. Non-digits (commas, signs, locale digits) sit still.
 // Digits are keyed from the right, so 99 → 100 rolls the tens and units and slides a new hundreds digit in.
 export function Roll({ n, sign, format, className = '', from0 = true }: { n: number; sign?: boolean; format?: (n: number) => string; className?: string; from0?: boolean }) {
-  const [armed, setArmed] = useState(!from0);
+  const [armed, setArmed] = useState(() => !from0 || prefersReducedMotion());
   useEffect(() => { if (armed) return; const id = requestAnimationFrame(() => requestAnimationFrame(() => setArmed(true))); return () => cancelAnimationFrame(id); }, []);
   const body = format ? format(Math.abs(n)) : String(Math.abs(Math.round(n)));
   const str = (n < 0 ? '−' : sign && n > 0 ? '+' : '') + body;
@@ -129,12 +131,13 @@ export function Roll({ n, sign, format, className = '', from0 = true }: { n: num
 const DIGITS = Array.from({ length: 10 }, (_, k) => <i key={k}>{k}</i>);
 
 // ---------- pointer tilt (desktop): one delegated listener; any matching card leans toward the pointer, ±6°, with a sheen.
-// Opt a card in with the class `g-tilt` (or `g-card--tilt`); mode tiles, Today's five kits and the saga cards are in by default.
-export const TILT_SEL = '.g-tilt, .g-card--tilt, .mode, .five__kit, .scard, .me__stat, .rcard';
+// Hero and collectible cards only (the addendum's rule): Today's five kits, earned trophies, the results scoop card, and
+// anything a screen opts in with `g-tilt` / `g-card--tilt`. Ordinary list cards and buttons never tilt.
+export const TILT_SEL = '.g-tilt, .g-card--tilt, .five__kit, .trophy.is-on, .vcard';
 const TILT_MAX = 6;
 export function installTilt(sel = TILT_SEL) {
   if (typeof window === 'undefined') return () => {};
-  const fine = matchMedia('(hover: hover) and (pointer: fine)'), rm = matchMedia('(prefers-reduced-motion: reduce)');
+  const fine = matchMedia('(hover: hover) and (pointer: fine)');
   let cur: HTMLElement | null = null, raf = 0, x = 0, y = 0, target: Element | null = null;
   const reset = () => { if (!cur) return; cur.classList.remove('is-tilt'); cur.style.removeProperty('--rx'); cur.style.removeProperty('--ry'); cur = null; };
   const apply = () => {
@@ -151,7 +154,7 @@ export function installTilt(sel = TILT_SEL) {
     el.classList.add('is-tilt'); cur = el;
   };
   const move = (e: PointerEvent) => {
-    if (e.pointerType !== 'mouse' || !fine.matches || rm.matches || getSave().reduced) { reset(); return; }
+    if (e.pointerType !== 'mouse' || !fine.matches || prefersReducedMotion()) { reset(); return; }
     x = e.clientX; y = e.clientY; target = e.target as Element;
     if (!raf) raf = requestAnimationFrame(apply);
   };
@@ -172,7 +175,7 @@ export function useTilt<T extends HTMLElement>() {
 
 // ---------- confetti (canvas, 1.8 s)
 export function confetti(colors = ['#FF5A36', '#F7B928', '#2FBF71', '#35C3E6', '#A77BFF', '#F4EFE4'], n = 140) {
-  if (getSave().reduced || typeof document === 'undefined') return;
+  if (typeof document === 'undefined' || prefersReducedMotion()) return;
   const cv = document.createElement('canvas'); cv.className = 'g-confetti'; document.body.appendChild(cv);
   const dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight; cv.width = W * dpr; cv.height = H * dpr;
   const x = cv.getContext('2d')!; x.scale(dpr, dpr);
@@ -186,7 +189,7 @@ export function confetti(colors = ['#FF5A36', '#F7B928', '#2FBF71', '#35C3E6', '
   requestAnimationFrame(step);
 }
 export function shake(el?: Element | null) {
-  if (!el || getSave().reduced) return;
+  if (!el || prefersReducedMotion()) return;
   el.classList.remove('is-shaking'); void (el as HTMLElement).offsetWidth; el.classList.add('is-shaking');
 }
 
@@ -194,7 +197,7 @@ export function shake(el?: Element | null) {
 export function useTyped(text: string, cps = 38, on = true) {
   const [n, setN] = useState(on ? 0 : text.length);
   useEffect(() => {
-    if (!on || getSave().reduced) { setN(text.length); return; }
+    if (!on || prefersReducedMotion()) { setN(text.length); return; }
     setN(0); let i = 0; const id = setInterval(() => { i++; setN(i); if (i >= text.length) clearInterval(id); }, 1000 / cps);
     return () => clearInterval(id);
   }, [text, on]);

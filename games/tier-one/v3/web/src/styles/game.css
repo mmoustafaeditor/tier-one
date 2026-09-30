@@ -34,7 +34,9 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-i
 body, #root { min-height: 0; }
 .g-screen { max-width: 720px; margin: 0 auto; padding: 0 16px calc(var(--tabs-h) + 14px + env(safe-area-inset-bottom, 0)); }
 .g-screen--wide { max-width: 1120px; }
-.stagger > * { animation: g-rise .5s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
+/* Sections no longer fade in one by one (addendum §2: one orchestrated moment per screen; the page sheet sliding in is the
+   entrance). `.stagger` stays as a harmless hook. Opt in with .stagger--deal where cards really are dealt, as on the board. */
+.stagger--deal > *, .sagas.stagger > * { animation: g-rise var(--d-reveal, .5s) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
 @keyframes g-rise { from { opacity: 0; transform: translateY(16px) scale(.98); } }
 @keyframes g-pop { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
 @keyframes g-slam { 0% { transform: scale(2.4) rotate(var(--rot, -8deg)); opacity: 0; } 55% { transform: scale(.92) rotate(var(--rot, -8deg)); opacity: 1; } 100% { transform: scale(1) rotate(var(--rot, -8deg)); } }
@@ -53,7 +55,7 @@ body, #root { min-height: 0; }
 .reduce *, .reduce *::before, .reduce *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 
 /* ---------- top bar */
-.g-top { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px; padding: 10px 16px 10px; margin: 0 -16px 6px;
+.g-top { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 8px; padding: max(10px, env(safe-area-inset-top, 0px)) 16px 10px; margin: 0 -16px 6px;
   background: linear-gradient(var(--desk) 70%, transparent); }
 .g-top__logo { font-family: var(--f-display); font-weight: 800; font-size: 26px; letter-spacing: -.03em; line-height: 1; color: var(--on-desk); display: flex; align-items: center; gap: 6px; }
 .g-top__logo b { background: var(--red); color: #fff; font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; font-size: 15px; padding: 3px 6px 2px; border-radius: 5px; transform: rotate(-4deg); letter-spacing: .02em; }

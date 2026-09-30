@@ -7,7 +7,7 @@ import { onToasts } from './lib/meta';
 import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
 import { MeScreen } from './screens/Me';
-import { Icon, installTilt } from './ui/game';
+import { Icon, installTilt, prefersReducedMotion } from './ui/game';
 import { WindowScreen } from './screens/Window';
 import { WireScreen } from './screens/Wire';
 import { StoryScreen } from './screens/Story';
@@ -64,7 +64,7 @@ export function App() {
   // the window it scales like picking up a sheet. Without the API, motion.css plays the same slide on the new .g-screen.
   const routeRef = useRef(route); routeRef.current = route;
   const go: Go = useCallback((r: Route) => {
-    const reduce = getSave().reduced || matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduce = prefersReducedMotion();
     const swap = () => { setRoute(r); window.scrollTo(0, 0); };
     const d = document as Document & { startViewTransition?: (f: () => void) => { finished: Promise<void> } };
     const h = document.documentElement;

@@ -1,103 +1,123 @@
-/* Tier One 3.3 — motion (GOTY.md §4, HYBRID.md §10). Tokens, page transitions, tilt, the number roller.
-   Durations: tap 90 · UI 180 / 260 · reveal 520. Everything collapses under Reduce motion (the setting or the OS). */
+/* Tier One 3.3: motion (GOTY.md §4, HYBRID.md §10, design addendum §2).
+   The rule: one orchestrated moment per screen. The page itself arrives as a sheet of paper slid across the desk
+   (the same everywhere); each screen then gets ONE hero beat (the five kits dealt, a stamp slamming, the press rolling).
+   Sections don't fade in one by one, and cards don't lift on hover. Motion that answers the player (press, publish,
+   confirm, level-up) is welcome and should show what changed. Everything collapses under Reduce motion. */
 
 :root {
-  --ease-out: cubic-bezier(.16, 1, .3, 1);
-  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
-  --ease-spring: cubic-bezier(.34, 1.4, .64, 1);
-  --d-tap: 90ms;
-  --d-ui: 180ms;
-  --d-ui2: 260ms;
-  --d-reveal: 520ms;
+  /* curves */
+  --ease-out: cubic-bezier(.16, 1, .3, 1);          /* settle: most UI */
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);      /* leave: things going away */
+  --ease-spring: cubic-bezier(.34, 1.4, .64, 1);    /* overshoot: counters, indicators, a dealt card */
+  /* durations */
+  --d-tap: 90ms;      /* press feedback */
+  --d-ui: 180ms;      /* small state changes: colour, opacity */
+  --d-ui2: 260ms;     /* moves: the page sheet, sliding indicators, sheets */
+  --d-reveal: 520ms;  /* the screen's one hero beat */
+  /* ready-made pairs, so the right choice is the short one: `transition: transform var(--tr-tap)` */
+  --tr-tap: var(--d-tap) var(--ease-out);
+  --tr-ui: var(--d-ui) var(--ease-out);
+  --tr-move: var(--d-ui2) var(--ease-out);
+  --tr-spring: var(--d-ui2) var(--ease-spring);
+  --tr-reveal: var(--d-reveal) var(--ease-out);
+  /* the hero beat waits for the page sheet to land */
+  --hero-delay: var(--d-ui2);
 }
-/* A real damped spring where linear() is supported (~8% overshoot, settles by 60%). */
+/* A real damped spring where linear() is supported (~8% overshoot). */
 @supports (transition-timing-function: linear(0, 1)) {
   :root { --ease-spring: linear(0, .127, .389, .657, .867, 1.001, 1.066, 1.084, 1.073, 1.051, 1.029, 1.011, 1, .994, .993, .994, .996, .998, .999, 1, 1); }
 }
-:root.reduce { --d-tap: 0ms; --d-ui: 0ms; --d-ui2: 0ms; --d-reveal: 0ms; }
-@media (prefers-reduced-motion: reduce) { :root { --d-tap: 0ms; --d-ui: 0ms; --d-ui2: 0ms; --d-reveal: 0ms; } }
+:root.reduce { --d-tap: 0ms; --d-ui: 0ms; --d-ui2: 0ms; --d-reveal: 0ms; --hero-delay: 0ms; }
+@media (prefers-reduced-motion: reduce) { :root { --d-tap: 0ms; --d-ui: 0ms; --d-ui2: 0ms; --d-reveal: 0ms; --hero-delay: 0ms; } }
 
-/* ---------- page changes: View Transitions (App sets html[data-vt] = fwd | back | up | down | fade) */
-::view-transition-group(root) { animation-duration: var(--d-ui2); }
-::view-transition-old(root) { animation: var(--d-ui) var(--ease-in-out) both vt-fade-out; }
-::view-transition-new(root) { animation: var(--d-ui2) var(--ease-out) both vt-fade-in; }
-:root[data-vt="fwd"]::view-transition-old(root) { animation: var(--d-ui2) var(--ease-in-out) both vt-out-start; }
-:root[data-vt="fwd"]::view-transition-new(root) { animation: var(--d-ui2) var(--ease-out) both vt-in-end; }
-:root[data-vt="back"]::view-transition-old(root) { animation: var(--d-ui2) var(--ease-in-out) both vt-out-end; }
-:root[data-vt="back"]::view-transition-new(root) { animation: var(--d-ui2) var(--ease-out) both vt-in-start; }
-/* Arabic reads right to left, so "forward" slides the other way. */
-:root[dir="rtl"][data-vt="fwd"]::view-transition-old(root) { animation-name: vt-out-end; }
-:root[dir="rtl"][data-vt="fwd"]::view-transition-new(root) { animation-name: vt-in-start; }
-:root[dir="rtl"][data-vt="back"]::view-transition-old(root) { animation-name: vt-out-start; }
-:root[dir="rtl"][data-vt="back"]::view-transition-new(root) { animation-name: vt-in-end; }
-:root[data-vt="up"]::view-transition-old(root) { animation: var(--d-ui2) var(--ease-in-out) both vt-recede; }
-:root[data-vt="up"]::view-transition-new(root) { animation: var(--d-reveal) var(--ease-out) both vt-rise; }
-:root[data-vt="down"]::view-transition-old(root) { animation: var(--d-ui2) var(--ease-in-out) both vt-sink; }
-:root[data-vt="down"]::view-transition-new(root) { animation: var(--d-ui2) var(--ease-out) both vt-fade-in; }
-:root[data-vt="none"]::view-transition-old(root), :root[data-vt="none"]::view-transition-new(root) { animation: none; }
-/* The tab bar / rail stays put while the page moves; its indicator slides on its own. */
+/* ---------- helpers for other lanes
+   .m-hero   the screen's one hero beat (a card dealt onto the desk). Use once per screen.
+   .m-press  press feedback for anything tappable that isn't a GBtn (GBtn already presses down). */
+.m-hero { animation: m-deal var(--d-reveal) var(--ease-spring) var(--hero-delay) backwards; }
+.m-press { transition: transform var(--tr-tap); }
+.m-press:active:not(:disabled) { transform: scale(.97); }
+@keyframes m-deal { from { opacity: 0; transform: translateY(-18px) rotate(-2.5deg) scale(1.04); } }
+
+/* ---------- page changes: the sheet slides across the desk.
+   App sets html[data-vt] = fwd | back | up | down | fade for the length of a View Transition. Only the screen (the paper)
+   moves; the desk (root) and the tab bar / rail stay still. The name is set only during the transition, so .g-screen
+   isn't a stacking context the rest of the time (its fixed overlays must stay above the tab bar). */
+:root.has-vt[data-vt]:not([data-vt="none"]) .g-screen { view-transition-name: g-page; }
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-group(g-page) { animation: none; }
+::view-transition-old(g-page) { animation: var(--d-ui) var(--ease-in-out) both vt-lift-off; }
+::view-transition-new(g-page) { animation: var(--d-ui2) var(--ease-out) both vt-set-down; }
+/* along the tabs: the old sheet is pushed off one side as the new one slides in from the other */
+:root[data-vt="fwd"]::view-transition-old(g-page) { animation: var(--d-ui2) var(--ease-in-out) both vt-off-start; }
+:root[data-vt="fwd"]::view-transition-new(g-page) { animation: var(--d-ui2) var(--ease-out) both vt-in-end; }
+:root[data-vt="back"]::view-transition-old(g-page) { animation: var(--d-ui2) var(--ease-in-out) both vt-off-end; }
+:root[data-vt="back"]::view-transition-new(g-page) { animation: var(--d-ui2) var(--ease-out) both vt-in-start; }
+:root[dir="rtl"][data-vt="fwd"]::view-transition-old(g-page) { animation-name: vt-off-end; }
+:root[dir="rtl"][data-vt="fwd"]::view-transition-new(g-page) { animation-name: vt-in-start; }
+:root[dir="rtl"][data-vt="back"]::view-transition-old(g-page) { animation-name: vt-off-start; }
+:root[dir="rtl"][data-vt="back"]::view-transition-new(g-page) { animation-name: vt-in-end; }
+/* into the window: the board is pulled up over the page; out of it, the board drops away */
+:root[data-vt="up"]::view-transition-old(g-page) { animation: var(--d-ui2) var(--ease-in-out) both vt-recede; }
+:root[data-vt="up"]::view-transition-new(g-page) { animation: var(--d-reveal) var(--ease-out) both vt-pull-up; }
+:root[data-vt="down"]::view-transition-old(g-page) { animation: var(--d-ui2) var(--ease-in-out) both vt-drop; }
+:root[data-vt="down"]::view-transition-new(g-page) { animation: var(--d-ui2) var(--ease-out) both vt-set-down; }
+/* the tab bar / rail never moves; its indicator slides on its own */
 ::view-transition-old(g-tabs) { display: none; }
-::view-transition-new(g-tabs) { animation: none; }
-::view-transition-group(g-tabs) { animation: none; }
+::view-transition-new(g-tabs), ::view-transition-group(g-tabs) { animation: none; }
 
-@keyframes vt-fade-out { to { opacity: 0; } }
-@keyframes vt-fade-in { from { opacity: 0; } }
-@keyframes vt-out-start { to { opacity: 0; transform: translateX(-44px) scale(.985); } }
-@keyframes vt-out-end { to { opacity: 0; transform: translateX(44px) scale(.985); } }
-@keyframes vt-in-end { from { opacity: 0; transform: translateX(56px); } }
-@keyframes vt-in-start { from { opacity: 0; transform: translateX(-56px); } }
-@keyframes vt-recede { to { opacity: 0; transform: scale(.94); } }
-@keyframes vt-rise { from { opacity: 0; transform: translateY(28px) scale(.97); } }
-@keyframes vt-sink { to { opacity: 0; transform: translateY(28px) scale(.97); } }
+@keyframes vt-lift-off { to { opacity: 0; } }
+@keyframes vt-set-down { from { opacity: 0; transform: translateY(8px); } }
+@keyframes vt-off-start { to { opacity: 0; transform: translateX(-9%) rotate(-1.2deg); } }
+@keyframes vt-off-end { to { opacity: 0; transform: translateX(9%) rotate(1.2deg); } }
+@keyframes vt-in-end { from { opacity: 0; transform: translateX(14%) rotate(1.4deg); } }
+@keyframes vt-in-start { from { opacity: 0; transform: translateX(-14%) rotate(-1.4deg); } }
+@keyframes vt-recede { to { opacity: 0; transform: scale(.96); } }
+@keyframes vt-pull-up { from { opacity: 0; transform: translateY(12%) rotate(.8deg); } }
+@keyframes vt-drop { to { opacity: 0; transform: translateY(10%) rotate(-.8deg); } }
 
-/* Fallback without the API: the new screen slides/scales in by itself. No fill after the end, so fixed overlays inside
-   the screen are never trapped by a leftover transform. */
-:root:not(.has-vt) .g-screen, :root:not(.has-vt) .page { animation: var(--d-ui2) var(--ease-out) backwards vt-fade-in; }
-:root:not(.has-vt)[data-vt="fwd"] .g-screen { animation-name: vt-in-end; }
-:root:not(.has-vt)[data-vt="back"] .g-screen { animation-name: vt-in-start; }
-:root:not(.has-vt)[dir="rtl"][data-vt="fwd"] .g-screen { animation-name: vt-in-start; }
-:root:not(.has-vt)[dir="rtl"][data-vt="back"] .g-screen { animation-name: vt-in-end; }
-:root:not(.has-vt)[data-vt="up"] .g-screen { animation: var(--d-reveal) var(--ease-out) backwards vt-rise; }
-:root:not(.has-vt)[data-vt="none"] .g-screen, :root:not(.has-vt)[data-vt="none"] .page { animation: none; }
+/* Without the API the new sheet plays the same entrance by itself. `backwards` only: no transform is left behind to
+   trap fixed overlays inside the screen. */
+:root:not(.has-vt)[data-vt] .g-screen { animation: var(--d-ui2) var(--ease-out) backwards vt-set-down; }
+:root:not(.has-vt)[data-vt="fwd"] .g-screen, :root:not(.has-vt)[dir="rtl"][data-vt="back"] .g-screen { animation-name: vt-in-end; }
+:root:not(.has-vt)[data-vt="back"] .g-screen, :root:not(.has-vt)[dir="rtl"][data-vt="fwd"] .g-screen { animation-name: vt-in-start; }
+:root:not(.has-vt)[data-vt="up"] .g-screen { animation: var(--d-reveal) var(--ease-out) backwards vt-pull-up; }
+:root:not(.has-vt)[data-vt="none"] .g-screen { animation: none; }
 
-/* ---------- pointer tilt (installTilt in ui/game.tsx sets --rx/--ry/--mx/--my and .is-tilt; fine pointers only) */
-.g-tilt, .g-card--tilt, .mode, .five__kit, .scard, .me__stat, .rcard { transition: transform var(--d-ui2) var(--ease-out), box-shadow var(--d-ui2) var(--ease-out); }
-:is(.g-tilt, .g-card--tilt, .mode, .scard, .me__stat, .rcard).is-tilt { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-2px); transition-duration: 90ms, var(--d-ui2); }
-.five__kit.is-tilt { transform: perspective(600px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) rotate(var(--r, 0deg)) translateY(-3px) scale(1.04); }
-.mode.is-tilt, .g-card--tilt.is-tilt { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mc, var(--red)) 55%, var(--desk-line)), 0 22px 36px -18px rgba(0,0,0,.85); }
-/* Sheen: a soft light under the pointer. Only on elements whose ::after is free. */
-.g-tilt::after, .g-card--tilt::after, .mode::after, .five__kit::after, .me__stat::after, .rcard::after {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity var(--d-ui2) var(--ease-out);
-  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 55%); mix-blend-mode: soft-light; }
+/* ---------- pointer tilt: hero and collectible cards only (installTilt in ui/game.tsx; fine pointers only).
+   The selector list here mirrors TILT_SEL. */
+.g-tilt, .g-card--tilt, .five__kit, .trophy.is-on, .vcard { transition: transform var(--tr-move); }
+:is(.g-tilt, .g-card--tilt, .trophy.is-on, .vcard).is-tilt { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition-duration: 90ms; }
+.five__kit.is-tilt { transform: perspective(600px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) rotate(var(--r, 0deg)) scale(1.04); transition-duration: 90ms; }
+/* Sheen: light catching the card under the pointer. Only where ::after is free (.vcard uses ::before; it has none). */
+:is(.g-tilt, .g-card--tilt, .five__kit, .trophy.is-on)::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity var(--tr-move);
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, .24), rgba(255, 255, 255, 0) 55%); mix-blend-mode: soft-light; }
 .is-tilt::after { opacity: 1; }
-.me__stat, .rcard, .g-tilt { position: relative; }
-:root.reduce .is-tilt.is-tilt { transform: none; }
+.g-tilt, .trophy { position: relative; }
 
 /* ---------- the number roller (<Roll/>) */
 .g-roll { display: inline-flex; font-variant-numeric: tabular-nums; }
 .g-roll__vis { display: inline-flex; align-items: baseline; }
 .g-roll__d { display: inline-block; height: 1em; line-height: 1em; overflow: hidden; vertical-align: -.1em; }
-.g-roll__col { display: flex; flex-direction: column; transform: translateY(calc(var(--v, 0) * -1em)); transition: transform var(--d-reveal) var(--ease-spring); transition-delay: calc(var(--k, 1) * 35ms); }
+.g-roll__col { display: flex; flex-direction: column; transform: translateY(calc(var(--v, 0) * -1em)); transition: transform var(--d-reveal) var(--ease-spring) calc(var(--k, 1) * 35ms); }
 .g-roll__col i { display: block; height: 1em; line-height: 1em; font-style: normal; text-align: center; }
 .g-roll__s { line-height: 1em; }
 
-/* ---------- press feedback and hover for the chunky buttons and mode tiles */
-.g-btn { transition: transform var(--d-tap) var(--ease-out), box-shadow var(--d-tap) var(--ease-out), filter var(--d-ui) var(--ease-out); -webkit-tap-highlight-color: transparent; }
+/* ---------- buttons and mode tiles: they answer the press; hover only brightens (no lifts) */
+.g-btn { transition: transform var(--tr-tap), box-shadow var(--tr-tap), filter var(--tr-ui); -webkit-tap-highlight-color: transparent; }
+.g-btn:active:not(:disabled) { filter: brightness(.96); }
+.g-btn--ghost:active:not(:disabled) { transform: translateY(1px); }
 @media (hover: hover) and (pointer: fine) {
-  .g-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.07); box-shadow: 0 6px 0 var(--bd), 0 14px 26px -12px rgba(0,0,0,.65); }
-  .g-btn--sm:hover:not(:disabled) { box-shadow: 0 4px 0 var(--bd), 0 10px 18px -10px rgba(0,0,0,.6); }
   .g-btn--ghost:hover:not(:disabled) { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--on-desk) 30%, transparent); }
   .g-icbtn:hover { background: color-mix(in srgb, var(--on-desk) 10%, var(--desk-3)); }
-  .mode:hover { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mc) 60%, var(--desk-line)), 0 18px 30px -16px rgba(0,0,0,.85); }
+  .mode:hover { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--mc) 70%, var(--desk-line)), 0 12px 24px -16px rgba(0,0,0,.8); }
 }
-.g-btn:active:not(:disabled) { transform: translateY(4px); filter: brightness(.97); }
-.g-btn--ghost:active:not(:disabled) { transform: translateY(1px); }
-.g-icbtn, .g-top__back { transition: background-color var(--d-ui) var(--ease-out), transform var(--d-tap) var(--ease-out); }
+.g-icbtn, .g-top__back { transition: background-color var(--tr-ui), transform var(--tr-tap); }
 .g-icbtn:active, .g-top__back:active { transform: scale(.94); }
 
-/* ---------- focus rings: visible for keyboards only, in the element's own colour where it has one */
+/* ---------- focus rings: keyboard only, in the element's own colour where it has one */
 .g-btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--on-desk) 85%, transparent); outline-offset: 3px; }
 .g-btn--gold:focus-visible { outline-color: var(--gold); }
 .mode:focus-visible, .mbar__i:focus-visible { outline: 3px solid var(--mc, var(--red)); outline-offset: 3px; }
-.g-card--tap:focus-visible, .scard:focus-visible, .rcard:focus-visible, .g-ticker:focus-visible, .pass__id:focus-visible, .claim:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.g-card--tap:focus-visible, .scard:focus-visible, .rcard:focus-visible, .g-ticker:focus-visible, .pass__id:focus-visible, .claim:focus-visible, .door:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .g-icbtn:focus-visible, .g-top__back:focus-visible { outline: 2.5px solid var(--gold); outline-offset: 2px; }
