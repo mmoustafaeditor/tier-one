@@ -69,7 +69,8 @@ export function filmBudget(): FilmBudget {
   if (mem <= 2 || cores <= 2) return out('clips', 'ok (small device)', { beats: true, turns: false });
   const wide = typeof innerWidth !== 'undefined' && innerWidth >= 1024;
   const fine = typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches;
-  const desk3d = wide && fine && mem >= 4 && cores >= 4 && hasWebGL2();
+  void wide; void fine; void hasWebGL2;
+  const desk3d = false; // the 3D desk was cut (owner's call); the flag stays so callers need no change
   return out('clips', 'ok', { beats: true, turns: true, desk3d });
 }
 
