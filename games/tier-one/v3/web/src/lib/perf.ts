@@ -1,6 +1,6 @@
 // Smoothness (GOTY.md §8.2): the service worker and its update flow, the install prompt, film preloading, and small
 // helpers the rest of the app can lean on so nothing heavy lands on the boot path or inside a frame.
-//   initPerf()          main.tsx calls it once: marks boot, registers sw.js when the page is idle, wires the update
+//   initPerf()          main.tsx calls it once: marks boot, registers sw.js once the page has settled, wires the update
 //                       toast ("New edition ready → Reload"), the install chip (never on a first visit), and keeps the
 //                       theme-color meta in step with the edition.
 //   prefetchFilm(stem)  poster first, then the clip, one step ahead of the player (film players call it with the
@@ -145,5 +145,15 @@ export function initPerf(): void {
   const p = readState(); writeState({ ...p, visits: p.visits + 1 });
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); bip = e as BIPEvent; afterBoot(() => setTimeout(maybeOfferInstall, 20000)); });
   window.addEventListener('appinstalled', () => writeState({ ...readState(), installed: Date.now() }));
-  afterBoot(() => { mark('boot-done'); idle(() => { registerSW(); watchEdition(); }); });
+  afterBoot(() => {
+    mark('boot-done');
+    idle(watchEdition);
+    // The worker's install pulls ~1 MB (shell, fonts, the play loop). On a first visit over slow 4G that must not
+    // crowd out the first tap, so it starts a while after the intro, or as soon as the tab is hidden. Later visits
+    // find it installed already and register() is a no-op.
+    let done = false;
+    const go = () => { if (done) return; done = true; idle(registerSW, 4000); };
+    setTimeout(go, navigator.serviceWorker?.controller ? 0 : 9000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') go(); }, { once: true });
+  });
 }

@@ -119,8 +119,8 @@ an APK that still needs rebuilding, config they must fill in, etc.
 | `UPDATES.md` | Team update log, newest first |
 | `index.html` | Semba Games studio home page, served at sembagames.app |
 | `assets/` | Web-sized copies of the Semba logo for the home page (made from `.github/assets/semba-logo.png`) |
-| `tier-one/index.html` | **Tier One v3** (React + Vite single-file build of `games/tier-one/v3/web`, `npm run build:min` writes it here), served at sembagames.app/tier-one. API `api/tier-one/v3/`. Never edit by hand. |
-| `tier-one-classic/index.html` | **Tier One: the entire game** (HTML + CSS + JS, EN/ES/AR), the classic v2 game, served at sembagames.app/tier-one-classic. Since Android 3.1.0 the app bundles v3 (`tier-one/index.html`) instead, which calls the API at www.sembagames.app. |
+| `tier-one/` | **Tier One v3** web build of `games/tier-one/v3/web` (`npm run build:web`: code-split `index.html` + hashed `assets/`, `sw.js` service worker, `manifest.webmanifest`, `icons/`, `version.json`), served at sembagames.app/tier-one. `films/` holds the rendered clips (film lane). `apk/index.html` is the single-file build (`npm run build:min`) the Android app bundles. API `api/tier-one/v3/`. Never edit by hand. |
+| `tier-one-classic/index.html` | **Tier One: the entire game** (HTML + CSS + JS, EN/ES/AR), the classic v2 game, served at sembagames.app/tier-one-classic. Since Android 3.1.0 the app bundles v3 (`tier-one/apk/index.html`) instead, which calls the API at www.sembagames.app. |
 | `tier-one/semba-intro.{webm,mp4,jpg}` | Legacy intro video files (no longer used by the game; still bundled into the APK). The Semba Studios intro is now drawn live in `tier-one/index.html` (`#boot`) around the embedded real logo, full screen in any orientation, with an embedded trailer-style MP3 soundtrack whose source is `games/tier-one/intro-sound/render.js` (re-embed with `embed.py`). It plays on every load with sound, straight through: no "Tap to start", no loading bar, no skip (if the browser refuses sound autoplay it plays silently and the first tap turns the sound on in sync). Only payment returns and Privacy/Terms links bypass it. |
 | `api/tier-one/latest.js` | Android update feed (Vercel function) polled by the app's UpdateChecker |
 | `api/online.js` | Online features (Vercel function): career transfer codes, multiplayer rooms and the Daily/weekly leaderboards (`lb.submit`, `lb.top`, `lb.me`; anonymous device id `save.online.dev` + nickname; Redis keys `lb:d:<day>*` 40 d, `lb:w:<ISO week>*` 60 d; one entry per device per day, never overwritten). Needs a Redis store connected in Vercel (see `games/tier-one/LAUNCH.md` › Online play); without it the game shows "Online play is switching on soon" and the leaderboards show a placeholder. The landing page reads `lb.top` too. |
@@ -144,7 +144,7 @@ installed apps load them from there (`https://sembagames.app/api/tier-one/latest
 `https://www.sembagames.app/downloads/TierOne.apk`).
 
 The Android wrapper lives in `games/tier-one/`. It has no copy of the game: Gradle copies
-`tier-one/index.html` and the intro video into the app's assets at build time. Keep `app/debug.keystore`: every release must be
+`tier-one/apk/index.html` (the single-file `build:min`) and the intro video into the app's assets at build time. Keep `app/debug.keystore`: every release must be
 signed with it or installed apps refuse the update.
 
 ## 4. Conventions

@@ -8,9 +8,15 @@
     <meta name="description" content="Tier One: the transfer-journalist game. Five sagas, seven days, one window." />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F2EEE5'/%3E%3Ctext x='32' y='46' text-anchor='middle' font-family='Georgia,serif' font-weight='700' font-size='40' fill='%2315130F'%3ET%3C/text%3E%3Crect x='10' y='52' width='44' height='4' fill='%23D2381B'/%3E%3C/svg%3E" />
     <title>Tier One</title>
+    <style>
+      /* The first paint, before any script: the studio card the intro takes over (main.tsx replaces this markup). */
+      #boot { position: fixed; inset: 0; z-index: 200; background: #010302; display: grid; place-items: center; }
+      .boot-pre { margin: 0; font: 700 clamp(18px, 5vw, 28px)/1 system-ui, sans-serif; letter-spacing: .34em; padding-inline-start: .34em; color: #eef2ea; opacity: .28; text-align: center; }
+      .boot-pre small { display: block; margin-top: .6em; font-size: .4em; font-weight: 500; letter-spacing: .62em; padding-inline-start: .62em; color: #B6FF3A; }
+    </style>
   </head>
   <body>
-    <div id="boot" aria-label="Semba Studios"></div>
+    <div id="boot" aria-label="Semba Studios"><p class="boot-pre" aria-hidden="true">SEMBA<small>STUDIOS</small></p></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

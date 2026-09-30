@@ -58,7 +58,7 @@ const webHtml = (): Plugin => ({
       '<meta name="apple-mobile-web-app-capable" content="yes">',
       '<meta name="mobile-web-app-capable" content="yes">',
       '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">',
-      ...fonts.map((f) => `<link rel="preload" href="./${f}" as="font" type="font/woff2" crossorigin>`),
+      ...fonts.map((f) => `<link rel="preload" href="./${f}" as="font" type="font/woff2" crossorigin fetchpriority="low">`),
     ].join('');
     return html.replace('</head>', head + '</head>').replace(/>\s+</g, '><').trim();
   },
@@ -70,9 +70,12 @@ const publishWeb = (): Plugin => ({
   async closeBundle() {
     const out = resolve(HERE, 'dist-web');
     const files = walk(out).filter((f) => f !== 'sw.js' && f !== 'version.json');
-    // The shell: the page, every script and stylesheet, the manifest and icons, and the Latin fonts. Arabic and
-    // Latin-extended fonts, art and world data chunks are cached the first time they're used.
-    const shell = files.filter((f) => /\.(js|css|webmanifest)$/.test(f) || f === 'index.html' || /^icons\//.test(f) || /-latin-[\w-]{8}\.woff2$/.test(f));
+    // The shell: the page, the boot-path chunks and the core play loop (the window, the scenes, settings, onboarding),
+    // every stylesheet, the manifest and icons, and the Latin fonts: what an offline open of Home and a practice window
+    // needs. Other screens, Arabic and Latin-extended fonts and art are cached the first time they're used, so the
+    // install stays small (~1 MB) and never crowds out a first tap on slow 4G.
+    const CORE = /^assets\/(index|vendor|boot|world|i18n|Window|scenes|Settings|Onboarding|screenbits|banter)-[\w-]{8}\.js$/;
+    const shell = files.filter((f) => CORE.test(f) || /\.(css|webmanifest)$/.test(f) || f === 'index.html' || /^icons\//.test(f) || /-latin-[\w-]{8}\.woff2$/.test(f));
     const rev = (f: string) => sha(readFileSync(resolve(out, f))).slice(0, 8);
     const precache = shell.map((f) => ({ url: f, rev: /\/[\w.-]+-[\w-]{8}\.\w+$/.test(f) ? null : rev(f) }));
     await esbuild({
@@ -83,6 +86,7 @@ const publishWeb = (): Plugin => ({
     const html = readFileSync(resolve(out, 'index.html'));
     writeFileSync(resolve(out, 'version.json'), versionInfo({ kind: 'web', bytes, sha256: sha(html), files: files.length }));
     // /tier-one: replace index.html, assets/, icons/, sw.js, manifest and version.json; leave films/ and apk/ alone.
+    if (process.env.T1_NOMIN) return; // a readable build for profiling (npm run perf) never goes live
     mkdirSync(SITE, { recursive: true });
     for (const d of ['assets', 'icons']) rmSync(resolve(SITE, d), { recursive: true, force: true });
     for (const f of walk(out)) { mkdirSync(dirname(resolve(SITE, f)), { recursive: true }); copyFileSync(resolve(out, f), resolve(SITE, f)); }
@@ -93,7 +97,8 @@ const publishWeb = (): Plugin => ({
 export default defineConfig(({ mode }) => {
   const min = mode === 'min';
   const web = mode === 'web';
-  const terser = { minify: 'terser' as const, terserOptions: { compress: { passes: 2, drop_console: true, drop_debugger: true }, mangle: { toplevel: true }, format: { comments: false } } };
+  // T1_NOMIN=1 keeps names readable (CPU profiles in scripts/perf.mjs); that build is never published.
+  const terser = process.env.T1_NOMIN ? { minify: false as const } : { minify: 'terser' as const, terserOptions: { compress: { passes: 2, drop_console: true, drop_debugger: true }, mangle: { toplevel: true }, format: { comments: false } } };
   return {
     base: './',
     publicDir: web ? 'public' : false,

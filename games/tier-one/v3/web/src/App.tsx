@@ -8,9 +8,9 @@ import { checkPurchase } from './lib/monet';
 import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
 import { Icon, installTilt, prefersReducedMotion } from './ui/game';
-import { idle, afterBoot } from './lib/perf';
 // Code-split web build (GOTY.md §8.2): Home ships with the shell; every other screen, the settings sheet, onboarding
-// and the scene host (with the films) are their own chunks, fetched on first use and warmed when the page is idle.
+// and the scene host (with the films) are their own chunks, fetched on first use (the service worker keeps the play
+// loop's chunks cached after its install; nothing is evaluated early, so idle time stays free for scrolling).
 // The single-file build inlines them all the same (Vite folds dynamic imports into one bundle there).
 const MeScreen = lazy(() => import('./screens/Me').then((m) => ({ default: m.MeScreen })));
 const WindowScreen = lazy(() => import('./screens/Window').then((m) => ({ default: m.WindowScreen })));
@@ -27,13 +27,6 @@ const FeedScreen = lazy(() => import('./screens/Connect').then((m) => ({ default
 const RivalsScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.RivalsScreen })));
 const ContactsScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.ContactsScreen })));
 import { setNav } from './screens/Connect';
-/** Warm the chunks the player is most likely to open next, once the intro is over and the thread is idle. */
-function warmChunks(onboarded: boolean) {
-  afterBoot(() => idle(() => {
-    const next = onboarded ? [() => import('./screens/Window'), () => import('./lib/scenes'), () => import('./screens/Settings')] : [() => import('./screens/Onboarding'), () => import('./lib/scenes'), () => import('./screens/Window')];
-    next.reduce((p, f) => p.then(() => f().then(() => undefined, () => undefined)), Promise.resolve());
-  }, 4000));
-}
 // Shell layer (GOTY.md §4): motion tokens + view transitions, then the tablet/desktop layouts. Loaded after the screen styles.
 import './styles/motion.css';
 import './styles/desktop.css';
@@ -68,7 +61,6 @@ export function App() {
   const [toasts, setToasts] = useState<{ id: number; kind: string; title: string; body?: string }[]>([]);
   useEffect(() => onToasts(setToasts), []);
   useEffect(() => { checkPurchase(); }, []);
-  useEffect(() => { warmChunks(s.onboarded); }, [s.onboarded]);
 
   // Language, direction and edition live on <html> so tokens.css and :lang(ar) rules apply everywhere.
   useEffect(() => {
