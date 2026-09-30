@@ -108,7 +108,8 @@ export const paperSeenToday = (s: Save, now = Date.now()) => liveOf(s).paperDay 
 /** Today's recap, or null when it was already read today or there's nothing to recap yet (a brand-new save). */
 export function morningPaper(s: Save, now = Date.now(), ctx: DeskCtx = {}): Paper | null {
   if (paperSeenToday(s, now)) return null;
-  const hasHistory = Object.keys(s.daily).length > 0 || (s.feed || []).length > 0 || !!s.career;
+  // A career only counts once a window has been played: onboarding creates one, and the tutorial's first day is no time for a recap.
+  const hasHistory = Object.keys(s.daily).length > 0 || (s.feed || []).length > 0 || !!(s.career && s.career.windows > 0);
   if (!hasHistory) return null;
   const today = ymdUTC(now), l = liveOf(s);
   const since = Math.max(l.lastOpen && l.lastDay !== today ? l.lastOpen : 0, now - 36 * 3600e3);
