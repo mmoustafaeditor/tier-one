@@ -1,0 +1,37 @@
+/* Football lane (GOTY §1.6, §5): ON THE WIRE chip, the Wire's window framing and the settled-calls reel. */
+
+/* ---------- ON THE WIRE chip */
+.wchip { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px; border-radius: 999px; cursor: pointer;
+  font: 800 11px/1 var(--f-mono, ui-monospace, monospace); letter-spacing: .02em; white-space: nowrap;
+  color: #062B35; background: var(--m-wire, #35C3E6); box-shadow: 0 2px 0 rgba(0, 0, 0, .35); user-select: none;
+  transition: transform 90ms var(--ease-out, ease-out); -webkit-tap-highlight-color: transparent; }
+.wchip:active { transform: scale(.95); }
+.wchip:focus-visible { outline: 2px solid var(--gold, #F7B928); outline-offset: 2px; }
+.wchip--sm { height: 20px; padding: 0 7px 0 6px; font-size: 10px; gap: 5px; }
+.wchip__dot { width: 7px; height: 7px; border-radius: 50%; background: #FF5A36; flex: none; }
+
+/* ---------- window framing on the Wire hero */
+.wwin { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.wwin__now { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
+.wwin__note { margin: 0; font-size: 13px; opacity: .75; max-width: 60ch; }
+
+/* ---------- settled-calls reel */
+.wreel { display: flex; flex-direction: column; gap: 12px; padding: 14px; border: 2px solid var(--c-done, #2FBF71); }
+.wreel.is-down { border-color: var(--red, #FF5A36); }
+.wreel__head { margin: 0; font-size: 15px; font-weight: 800; }
+.wreel__total { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.wreel__total b { font-size: clamp(40px, 9vw, 60px); line-height: 1; }
+.wreel__total small { opacity: .75; }
+.wreel__row { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 4px; }
+.wreel__c { flex: none; width: 150px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 6px; padding: 12px 10px; border-radius: 12px;
+  background: rgba(127, 120, 105, .12); }
+.wreel__c .g-stamp { align-self: flex-start; font-size: 15px; animation-delay: calc(var(--k, 0) * 140ms + 220ms); }
+.wreel__c b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wreel__c .g-mono { font-size: 11px; opacity: .75; }
+
+/* settled chips in the live strip get a coloured edge */
+.cchip.is-right { box-shadow: inset 0 0 0 2px var(--c-done, #2FBF71); }
+.cchip.is-wrong { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--red, #FF5A36) 70%, transparent); }
+
+:root.reduce .wreel__c .g-stamp { animation: none; }
+@media (prefers-reduced-motion: reduce) { .wreel__c .g-stamp { animation: none; } }

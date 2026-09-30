@@ -5,16 +5,17 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { useT, num } from '../lib/i18n';
 import { useSave, getSave, update } from '../lib/save';
 import { v3 } from '../lib/api';
-import { useWire, refreshWire, gradeOf, bestTier, stageOf, type Rumour, type WireCall } from '../lib/wireData';
+import { useWire, refreshWire, gradeOf, bestTier, stageOf, windowParts, type Rumour, type WireCall, type WireWindow } from '../lib/wireData';
 import { clubById, WORLD, WR } from '../lib/engine';
 import { onWireFiled, onWireRight, toast } from '../lib/meta';
 import { sfx } from '../lib/sfx';
 import { Crest } from '../ui/bits';
-import { Icon, Kit, GBtn, TopBar } from '../ui/game';
+import { Icon, Kit, GBtn, TopBar, useCountUp, confetti } from '../ui/game';
 import { HeatMeter, Avatar } from '../ui/screenbits';
 import { wireReply } from '../lib/banter';
 import { rumourHed } from './Front';
 import type { Chrome } from '../App';
+import '../styles/football.css';
 
 const round1 = (x: number) => Math.round(x * 10) / 10;
 function odds(yes: boolean, s: number, m: number) { const c = yes ? m : 1 - m; return { win: round1(s * (10 * (1 - c) + 2)), lose: round1(s * 10 * c), c }; }
@@ -22,19 +23,24 @@ const STR = ['talks', 'advanced', 'confirmed'];
 const STAGES = ['interest', 'talks', 'bid', 'agreed'];
 const stageKey = (s: string) => (STAGES.includes(s) ? s : 'interest');
 const pct = (x: number) => Math.round(x * 100);
-// Real transfer windows (UK deadlines, UTC). Keep this table current.
+// Real transfer windows (UK deadlines, UTC). The current one comes from the server (wire.mjs › WIRE.CURRENT); the rest
+// of this table is the fallback and what follows it. Keep it current.
 const WINDOWS: [string, string][] = [['2027-01-01T00:00:00Z', '2027-02-02T23:00:00Z'], ['2027-06-15T23:00:00Z', '2027-09-01T18:00:00Z']];
+type TF = ReturnType<typeof useT>;
+// '2027-01' → 'Winter window 2027' (long) or 'Jan 2027' (short); anything else as it is.
+export const winLabel = (t: TF, w: string, short = false) => { const p = windowParts(w); return p ? t('fb.win.' + p.k + (short ? 'S' : ''), { y: p.y }) : w; };
+const seasonLabel = (t: TF, s?: string) => { const m = /^(\d{4})-(\w+)$/.exec(s || ''); return m ? t('fb.season.' + m[2], { y: m[1] }) : ''; };
 // Coins for a right call, by the player's star level (0 = unrated).
 const STAR_COINS = [15, 25, 40, 70];
 const starOf = (r?: Rumour) => (r && WORLD.players.find((x) => x.id === r.playerId)?.star) || 0;
-function windowLine(now: number): { k: 'opens' | 'closes'; left: string } | null {
-  for (const [a, b] of WINDOWS) {
+function windowLine(now: number, cur?: WireWindow): { k: 'opens' | 'closes'; left: string } | null {
+  for (const [a, b] of cur ? [[cur.opens, cur.closes] as [string, string], ...WINDOWS] : WINDOWS) {
     const o = Date.parse(a), c = Date.parse(b);
     if (now < o || now < c) { const ms = (now < o ? o : c) - now, d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4); return { k: now < o ? 'opens' : 'closes', left: d ? d + 'd ' + h + 'h' : h + 'h ' + m + 'm' }; }
   }
   return null;
 }
-type Group = 'star' | 'league' | 'team';
+type Group = 'star' | 'window' | 'league' | 'team';
 
 export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
   const t = useT();
@@ -54,12 +60,12 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
   }, [w.mine, w.rumours]); // eslint-disable-line react-hooks/exhaustive-deps
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 30e3); return () => clearInterval(i); }, []);
-  const win = windowLine(now);
+  const win = windowLine(now, w.window);
   const [group, setGroup] = useState<Group>('star');
-  const keyOf = (r: Rumour) => group === 'star' ? String(starOf(r)) : group === 'team' ? r.currentClubName || '—' : clubById(r.currentClubId)?.l || '—';
+  const keyOf = (r: Rumour) => group === 'star' ? String(starOf(r)) : group === 'team' ? r.currentClubName || '—' : group === 'window' ? r.window || '—' : clubById(r.currentClubId)?.l || '—';
   const groups: [string, Rumour[]][] = [];
   for (const r of rs) { const k = keyOf(r); const g = groups.find((x) => x[0] === k); if (g) g[1].push(r); else groups.push([k, [r]]); }
-  groups.sort((a, b) => group === 'star' ? Number(b[0]) - Number(a[0]) : b[1].length - a[1].length || a[0].localeCompare(b[0]));
+  groups.sort((a, b) => group === 'star' ? Number(b[0]) - Number(a[0]) : group === 'window' ? (a[0] === w.window.id ? -1 : b[0] === w.window.id ? 1 : a[0].localeCompare(b[0])) : b[1].length - a[1].length || a[0].localeCompare(b[0]));
   const open = (id: string, yes?: boolean) => { sfx('sheet.open'); setPre(yes); setSel(id); };
   const m = w.mine;
   const openCalls = m ? m.calls.filter((c) => !c.done).length : 0;
@@ -73,7 +79,11 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
         <span className="g-mono g-hero__k"><i className="g-dot" />{t('g.wire.k')}</span>
         <h1 className="g-hero__t">{t('g.wire.hed')}</h1>
         <p className="g-hero__s"><b>{t('m.wire.real')}</b> {t('m.wire.realSub', { a: STAR_COINS[1], b: STAR_COINS[3] })}</p>
-        {win && <span className="g-chip g-chip--gold" style={{ alignSelf: 'flex-start' }}><Icon n="clock" size={14} />{t('m.wire.' + win.k, { t: win.left })}</span>}
+        <div className="wwin">
+          <span className="wwin__now"><i className="g-dot" />{t('fb.now', { w: winLabel(t, w.window.id), d: t('fb.dates') })}</span>
+          {win && <span className="g-chip g-chip--gold"><Icon n="clock" size={14} />{t('m.wire.' + win.k, { t: win.left })}</span>}
+        </div>
+        <p className="wwin__note">{t('fb.closed')}</p>
         <ol className="wire3__how">{(t.list('g.wire.how') as string[]).map((x, k) => <li key={k}><span className="g-num">{k + 1}</span>{x}</li>)}</ol>
         <div className="kpis3">
           <span><b className="g-num">{m ? num(Math.round(m.cred)) : '–'}</b><small className="g-mono">{t('wire.cred')}</small></span>
@@ -83,6 +93,7 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
         </div>
       </section>
 
+      <SettledReel style={{ ['--i' as string]: 1 }} />
       <LiveCalls onOpen={(id) => open(id)} style={{ ['--i' as string]: 1 }} />
 
       <div className="g-sec" style={{ ['--i' as string]: 2 }}><h2>{t('g.wire.wall')}</h2><span className="g-mono">{w.asOf ? t('wire.asOfD', { d: w.asOf }) : t('g.wire.wallAside')}</span></div>
@@ -90,10 +101,10 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
       {w.rumours && !w.online && <p className="g-empty">{t('wire.needNet')}</p>}
       {rs.length > 0 && <div className="pick" style={{ ['--i' as string]: 3 }} role="group" aria-label={t('m.wire.group')}>
         <span className="g-mono">{t('m.wire.group')}</span>
-        {(['star', 'league', 'team'] as const).map((g) => <button key={g} className="pick__c" aria-pressed={group === g} onClick={() => { sfx('ui.tap'); setGroup(g); }}>{t('m.wire.by.' + g)}</button>)}
+        {(['star', 'window', 'league', 'team'] as const).map((g) => <button key={g} className="pick__c" aria-pressed={group === g} onClick={() => { sfx('ui.tap'); setGroup(g); }}>{g === 'window' ? t('fb.by') : t('m.wire.by.' + g)}</button>)}
       </div>}
       {groups.map(([k, list], gi) => <details key={group + k} className="g-more" open={gi === 0} style={{ ['--i' as string]: 3 }}>
-        <summary>{group === 'star' ? (Number(k) ? '★'.repeat(Number(k)) + ' ' + t('m.wire.stars', { n: k }) : t('m.wire.unrated')) : group === 'league' ? t('m.wire.lg.' + k) === 'm.wire.lg.' + k ? k : t('m.wire.lg.' + k) : k} <span className="g-mono">· {list.length}</span></summary>
+        <summary>{group === 'star' ? (Number(k) ? '★'.repeat(Number(k)) + ' ' + t('m.wire.stars', { n: k }) : t('m.wire.unrated')) : group === 'window' ? (k === w.window.id ? t('fb.thisWin') + ' · ' : '') + winLabel(t, k) : group === 'league' ? t('m.wire.lg.' + k) === 'm.wire.lg.' + k ? k : t('m.wire.lg.' + k) : k} <span className="g-mono">· {list.length}</span></summary>
         <div className="wall" style={{ padding: '0 10px 12px' }}>
           {list.map((r, j) => <RumourCard key={r.id} r={r} k={j} onOpen={(yes) => open(r.id, yes)} />)}
         </div>
@@ -109,11 +120,12 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
 function WireBoard({ style }: { style?: CSSProperties }) {
   const t = useT();
   const s = useSave();
+  const w = useWire();
   const [rows, setRows] = useState<{ nick: string; score: number; me: boolean }[] | null>(null);
   const [me, setMe] = useState<{ rank: number; score: number } | null>(null);
   useEffect(() => { v3<{ rows: { nick: string; score: number; me: boolean }[]; me?: { rank: number; score: number } }>('lb.top', { period: 'wire', dev: s.dev }).then((r) => { if (r.ok) { setRows(r.rows); setMe(r.me || null); } }); }, [s.dev]);
   return <section style={style}>
-    <div className="g-sec"><h2>{t('m.wire.board')}</h2><span className="g-mono">{me ? t('m.wire.you', { r: me.rank }) : t('m.wire.boardAside')}</span></div>
+    <div className="g-sec"><h2>{t('m.wire.board')}</h2><span className="g-mono">{me ? t('m.wire.you', { r: me.rank }) : seasonLabel(t, w.mine?.season) || t('m.wire.boardAside')}</span></div>
     {rows && rows.length ? <div className="ltable g-card">
       <div className="ltable__h g-mono"><span>#</span><span>{t('league.reporter')}</span><span /><span>{t('wire.cred')}</span></div>
       {rows.slice(0, 10).map((p, k) => <div key={k} className={'lrow' + (p.me ? ' is-me' : '') + (k === 0 ? ' is-top' : '')}>
@@ -140,12 +152,12 @@ function CallChip({ c, onOpen }: { c: WireCall; onOpen: () => void }) {
   const t = useT();
   const now = c.mNow ?? c.m;
   const v = c.done ? c.pts || 0 : c.paper || 0;
-  return <button className={'cchip' + (c.done ? ' is-done' : '')} onClick={() => { sfx('ui.tap'); onOpen(); }}>
+  return <button className={'cchip' + (c.done ? ' is-done' + (c.outcome !== 'void' ? (c.right ? ' is-right' : ' is-wrong') : '') : '')} onClick={() => { sfx('ui.tap'); onOpen(); }}>
     <span className="cchip__top"><span className={'yn-tag ' + (c.yes ? 'is-yes' : 'is-no')}>{c.yes ? t('wire.yesS') : t('wire.noS')}</span><span className="g-mono">{t('str.' + STR[c.s - 1])}</span></span>
     <b className="cchip__name">{c.player || '—'}</b>
-    {c.done ? <span className="cchip__res">{c.outcome === 'void' ? <span className="g-mono">{t('wire.voidS')}</span> : <span className={'g-stamp ' + (c.right ? 'g-stamp--done' : '')} style={{ ['--rot' as string]: '-4deg', fontSize: 14 }}>{c.right ? t('wire.right') : t('wire.wrong')}</span>}</span>
+    {c.done ? <span className="cchip__res">{c.outcome === 'void' ? <span className="g-mono">{t('wire.voidS')}</span> : <span className={'g-stamp is-slam ' + (c.right ? 'g-stamp--done' : '')} style={{ ['--rot' as string]: '-4deg', fontSize: 14 }}>{c.right ? t('wire.right') : t('wire.wrong')}</span>}</span>
       : <HeatLine a={c.m} b={now} yes={c.yes} />}
-    <span className="cchip__foot"><span className="g-mono">{c.done ? t('g.wire.settledPts') : pct(c.m) + '% → ' + pct(now) + '%'}</span><b className={'g-num ' + (v < 0 ? 'neg' : 'pos')}>{num(round1(v), true)}</b></span>
+    <span className="cchip__foot"><span className="g-mono">{c.done ? t('g.wire.settledPts') : pct(c.m) + '% → ' + pct(now) + '%'}</span><b className={'g-num ' + (v < 0 ? 'neg' : 'pos')}>{c.done ? <Roll v={v} /> : num(round1(v), true)}</b></span>
   </button>;
 }
 function HeatLine({ a, b, yes }: { a: number; b: number; yes: boolean }) {
@@ -171,7 +183,7 @@ function RumourCard({ r, k, onOpen }: { r: Rumour; k: number; onOpen: (yes?: boo
     <button className="rum__head" onClick={() => onOpen()}>
       <span className="rum__kit"><Kit club={from} player={p} size={58} /></span>
       <span className="rum__main">
-        <span className="rum__chips"><span className={'stage stage--' + st}>{t('g.wire.stage.' + st)}</span><span className={'grade3 grade3--' + g.toLowerCase()}>{g}</span><span className="g-mono rum__win">{r.window}</span></span>
+        <span className="rum__chips"><span className={'stage stage--' + st}>{t('g.wire.stage.' + st)}</span><span className={'grade3 grade3--' + g.toLowerCase()}>{g}</span><span className="g-mono rum__win">{winLabel(t, r.window, true)}</span></span>
         <span className="rum__hed">{rumourHed(t, r)}</span>
         <span className="rum__route"><Crest club={from} size={20} /><Icon n={t.rtl ? 'back' : 'arrow'} size={14} />{r.linked.slice(0, 3).map((l, i) => <Crest key={i} club={l.clubId ? clubById(l.clubId) : undefined} size={20} />)}{r.linked.length > 3 && <span className="g-mono">+{r.linked.length - 3}</span>}</span>
       </span>
@@ -230,7 +242,7 @@ function RumourSheet({ r, pre, onClose }: { r: Rumour; pre?: boolean; onClose: (
   const pickYN = (y: boolean) => { sfx('ui.tap'); setYes(y); setPicked(true); };
   return <div className="g-overlay wsheet-wrap" onClick={onClose}>
     <div className="wsheet" role="dialog" aria-modal="true" aria-label={r.playerName} onClick={(e) => e.stopPropagation()}>
-      <div className="wsheet__band"><span className="g-mono"><i className="g-dot" />{t('nav.wire')} · {t('wire.window', { w: r.window })}</span>
+      <div className="wsheet__band"><span className="g-mono"><i className="g-dot" />{t('nav.wire')} · {t('wire.window', { w: winLabel(t, r.window) })}</span>
         <button className="wsheet__x" onClick={() => { sfx('ui.tap'); onClose(); }} aria-label={t('g.wire.close')}><Icon n="x" size={20} /></button></div>
 
       <header className="wsheet__head">
@@ -312,7 +324,7 @@ function FiledCard({ c }: { c: WireCall }) {
       {!c.done && <span className="g-mono">{t('g.wire.now', { m: pct(now) })}</span>}
     </div>
     {!c.done && <HeatLine a={c.m} b={now} yes={c.yes} />}
-    <div className="filed3__pnl"><small className="g-mono">{c.done ? t('g.wire.settledPts') : t('g.wire.pnl')}</small><b className={'g-num ' + (v < 0 ? 'neg' : 'pos')}>{num(round1(v), true)}</b></div>
+    <div className="filed3__pnl"><small className="g-mono">{c.done ? t('g.wire.settledPts') : t('g.wire.pnl')}</small><b className={'g-num ' + (v < 0 ? 'neg' : 'pos')}>{c.done ? <Roll v={v} ms={1100} /> : num(round1(v), true)}</b></div>
     {c.done && c.outcome !== 'void' && c.right != null && <WireReply c={c} />}
   </div>;
 }
@@ -323,4 +335,42 @@ function WireReply({ c }: { c: WireCall }) {
   const x = wireReply(t.lang, c.rid, !!c.right, c.s >= 3, c.player || '');
   if (!x.text) return null;
   return <div className="wreply"><Avatar name={x.handle} size={28} /><div><b>{x.name}</b> <span className="g-mono">{x.handle}</span><p dir="auto">{x.text}</p></div></div>;
+}
+
+// A settled number rolls up to its value (one decimal, like the scores).
+function Roll({ v, ms = 900 }: { v: number; ms?: number }) {
+  const x = useCountUp(Math.round(v * 10), ms) / 10;
+  return <>{num(round1(x), true)}</>;
+}
+
+// ---------- settled since you last looked: stamps slam in one by one, the total rolls up (GOTY §1.6: resolved calls
+// feed the byline, so they deserve a moment). Shown until dismissed; each call is shown once (save.stats['ws:'+rid]).
+function SettledReel({ style }: { style?: CSSProperties }) {
+  const t = useT();
+  const w = useWire();
+  const s = useSave();
+  const fresh = (w.mine?.calls || []).filter((c) => c.done && !s.stats['ws:' + c.rid]);
+  const key = fresh.map((c) => c.rid).join('|');
+  const right = fresh.filter((c) => c.right && c.outcome !== 'void').length;
+  const total = round1(fresh.reduce((a, c) => a + (c.outcome === 'void' ? 0 : c.pts || 0), 0));
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (!key) return;
+    setShown(true);
+    const tm = setTimeout(() => { sfx(right ? 'stamp.done' : 'stamp.wrong'); if (right) { confetti(); if (navigator.vibrate) try { navigator.vibrate(30); } catch { /* not supported */ } } }, 260);
+    return () => clearTimeout(tm);
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  const shown2 = useCountUp(Math.round(total * 10), 1200, shown) / 10;
+  if (!fresh.length) return null;
+  const seen = () => { sfx('ui.tap'); update((x) => { for (const c of fresh) x.stats['ws:' + c.rid] = 1; }); };
+  return <section className={'wreel g-card' + (total >= 0 ? ' is-up' : ' is-down')} style={style} aria-live="polite">
+    <h2 className="wreel__head">{t('fb.settled.n', { n: fresh.length })}</h2>
+    <div className="wreel__total"><b className={'g-num ' + (total < 0 ? 'neg' : 'pos')}>{num(round1(shown2), true)}</b><small className="g-mono">{t('fb.settled.total')}</small></div>
+    <div className="wreel__row">{fresh.slice(0, 8).map((c, k) => <div key={c.rid} className="wreel__c" style={{ ['--k' as string]: k }}>
+      <span className={'g-stamp is-slam ' + (c.outcome === 'void' ? '' : c.right ? 'g-stamp--done' : 'g-stamp--fake')} style={{ ['--rot' as string]: (k % 2 ? 4 : -5) + 'deg' }}>{c.outcome === 'void' ? t('fb.settled.void') : c.right ? t('fb.settled.right') : t('fb.settled.wrong')}</span>
+      <b>{c.player || '—'}</b>
+      <b className={'g-num ' + ((c.pts || 0) < 0 ? 'neg' : 'pos')}>{c.outcome === 'void' ? '0' : num(round1(c.pts || 0), true)}</b>
+    </div>)}</div>
+    <GBtn kind={total >= 0 ? 'green' : ''} sound={null} onClick={seen}>{t('common.done')}</GBtn>
+  </section>;
 }
