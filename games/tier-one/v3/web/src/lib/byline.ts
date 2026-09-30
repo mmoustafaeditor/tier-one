@@ -15,9 +15,13 @@ export type BMode = 'daily' | 'career' | 'room' | 'wire' | 'practice';
 export interface Byline { followers: number; rep: number; hot: number; best: number; keys?: string[]; last?: WindowSummary }
 export interface BookEntry { xp: number; lv: number; coffee?: string; asks?: number; hits?: number }
 export type RivalResult = 'w' | 'l' | 'd';
-export interface RivalRec { w: number; l: number; d: number; streak: number; last: RivalResult | ''; at?: number; taunt?: string; tp?: string; scalp?: number; trophy?: number }
-export type FeedKind = 'editor' | 'rival' | 'wire' | 'room' | 'contact' | 'mission' | 'level' | 'season' | 'streak' | 'window' | 'hot';
-export type FeedRoute = { n: 'front' | 'daily' | 'wire' | 'story' | 'me' | 'pass' | 'practice' | 'rooms' | 'rivals' | 'contacts' | 'feed'; rid?: string; code?: string };
+// 3.4 friend rivals (§7.3, lib/social.ts) share this shape under the `friend:<pub>` id namespace: `name` is the friend's
+// byline, `plays` how many rooms/challenges you've met in (3+ makes them a named rival), `pub` their public id.
+export interface RivalRec { w: number; l: number; d: number; streak: number; last: RivalResult | ''; at?: number; taunt?: string; tp?: string; scalp?: number; trophy?: number; name?: string; plays?: number; pub?: string }
+export type FeedKind = 'editor' | 'rival' | 'wire' | 'room' | 'contact' | 'mission' | 'level' | 'season' | 'streak' | 'window' | 'hot' | 'challenge' | 'friend' | 'newsroom';
+export type FeedRoute = { n: 'front' | 'daily' | 'wire' | 'story' | 'me' | 'pass' | 'practice' | 'rooms' | 'rivals' | 'contacts' | 'feed' | 'newsroom'; rid?: string; code?: string; challenge?: string };
+export const FRIEND_NS = 'friend:';
+export const isFriendRival = (id: string) => id.startsWith(FRIEND_NS);
 export interface FeedItem { id: string; at: number; kind: FeedKind; key: string; v?: Record<string, string | number>; to?: FeedRoute; from?: string; tone?: 'good' | 'bad' | 'gold'; read?: boolean }
 export interface WindowSummary {
   key: string; mode: BMode; followers: number; rep: number; hot: number; hotBefore: number;
@@ -111,7 +115,8 @@ export function markRead(ids?: string[]) {
 export function toRoute(f?: FeedRoute): Route {
   if (!f) return { n: 'feed' } as Route;
   if (f.n === 'wire') return { n: 'wire', rid: f.rid };
-  if (f.n === 'rooms') return { n: 'rooms', code: f.code };
+  if (f.n === 'rooms') return { n: 'rooms', code: f.code, challenge: f.challenge };
+  if (f.n === 'newsroom') return { n: 'newsroom', code: f.code };
   return { n: f.n } as Route;
 }
 const seen = (b: Byline, key: string) => (b.keys || []).includes(key);

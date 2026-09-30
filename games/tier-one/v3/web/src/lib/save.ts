@@ -5,6 +5,7 @@ import type { Pub, Tier, Act } from './engine';
 import type { MissionState } from './progress';
 import type { SeasonSave, SeasonRecap, WeekEvState, CosKind } from './season';
 import type { Byline, BookEntry, RivalRec, FeedItem } from './byline';
+import type { SocialSave } from './social';
 
 export const SAVE_KEY = 'tierone_v3';
 export const SAVE_V = 2;
@@ -44,6 +45,8 @@ export interface Save {
   season?: SeasonSave; seasonLog?: SeasonRecap[]; equip?: Partial<Record<Exclude<CosKind, 'theme'>, string>>; weekEv?: WeekEvState; adDay?: string;
   // 3.3 One Byline (lib/byline.ts): global followers/rep/hot hand, the Contacts Book, rival ledgers, the Feed.
   byline?: Byline; book?: Record<string, BookEntry>; rivals?: Record<string, RivalRec>; feed?: FeedItem[];
+  // 3.4 the press box (lib/social.ts): challenges, the newsroom, friend-rival bookkeeping, the last local window.
+  social?: SocialSave;
 }
 
 const rid = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; let s = ''; const b = new Uint8Array(16); crypto.getRandomValues(b); for (const x of b) s += a[x % a.length]; return s; };
