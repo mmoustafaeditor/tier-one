@@ -27,6 +27,12 @@ export function NewCareer({ t, x, ui, slot, onBack, onStart }: { t: Strings; x: 
   const P = x.pick;
   const ageOk = /^\d+$/.test(age) && +age >= 20 && +age <= 80;
   const covered = new Set(world.clubs.filter((c) => c.real).map((c) => c.leagueId));
+  // A league with only some real clubs (Egypt, Saudi Arabia: the big six) says so, instead of "Real squads" for all (GF-011).
+  const realIn = (lid: string) => world.clubs.filter((c) => c.real && c.leagueId === lid).length;
+  const squadsLabel = (lid: string, n: number) => {
+    const k = realIn(lid);
+    return !k ? `${P.generated} · ${P.clubs(n)}` : k >= n ? `${P.covered} · ${P.clubs(n)}` : `${P.covered} · ${P.clubs(k)} · ${P.generated} · ${P.clubs(n - k)}`;
+  };
   const leagues = [...world.leagues].sort((a, b) => Number(covered.has(b.id)) - Number(covered.has(a.id)) || a.tier - b.tier || COUNTRIES.findIndex((c) => c.code === a.country) - COUNTRIES.findIndex((c) => c.code === b.country));
   const search = q.trim().toLowerCase();
   const found = search.length >= 2 ? world.clubs.filter((c) => c.name.en.toLowerCase().includes(search) || c.name.ar.includes(q.trim())).slice(0, 12) : [];
@@ -72,7 +78,7 @@ export function NewCareer({ t, x, ui, slot, onBack, onStart }: { t: Strings; x: 
                     <span className="eyebrow">{country?.flag} {country?.name[lang]} · {P.tiers[l.tier - 1] ?? l.tier}</span>
                     <b className="h3">{l.name[lang]}</b>
                     <span className="crests">{top.map((c) => <Crest key={c.id} club={c} size={26} />)}</span>
-                    <span className={`tag${covered.has(l.id) ? ' tag--good' : ''}`}>{covered.has(l.id) ? P.covered : P.generated} · {P.clubs(l.clubs)}</span>
+                    <span className={`tag${covered.has(l.id) ? ' tag--good' : ''}`}>{squadsLabel(l.id, l.clubs)}</span>
                   </button>
                 );
               })}
