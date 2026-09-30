@@ -118,7 +118,6 @@ jobs:
         env:
           BEFORE: ${{ github.event.before }}
           WANT_APK: ${{ inputs.apk }}
-          MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           set -e
           # A new APK only when the Android app itself changed, when asked, or when there is none yet.
@@ -131,7 +130,8 @@ jobs:
           BUILD=$(node -p "require('./games/the-gaffer/build/version.json').build")
           FILES="the-gaffer/index.html the-gaffer/version.json games/the-gaffer/build/index.html games/the-gaffer/build/version.json"
           if [ "$APK" = "true" ]; then
-            node games/the-gaffer/scripts/publish-apk.mjs games/the-gaffer/android/app/build/outputs/apk/debug/app-debug.apk "$BUILD" "$VERSION" "$(printf '%s' "$MESSAGE" | head -n 1)"
+            # No commit subject as the changelog: main mixes both games, so it could name Tier One work (GF-014).
+            node games/the-gaffer/scripts/publish-apk.mjs games/the-gaffer/android/app/build/outputs/apk/debug/app-debug.apk "$BUILD" "$VERSION"
             FILES="$FILES downloads/TheGaffer.apk api/the-gaffer/latest.js"
           fi
           git config user.name "github-actions[bot]"

@@ -99,7 +99,7 @@ export const X_EN = {
     mood: (v: number): string => (v >= 75 ? 'Delighted' : v >= 60 ? 'Confident' : v >= 45 ? 'Watching' : v >= 30 ? 'Restless' : 'Losing patience'),
     fansMood: (v: number): string => (v >= 80 ? 'Buzzing' : v >= 60 ? 'Behind you' : v >= 40 ? 'Muttering' : 'Turning'),
     roomMood: (v: number): string => (v >= 75 ? 'Flying' : v >= 62 ? 'Settled' : v >= 50 ? 'Restless' : 'Flat'),
-    boardWhy: (obj: string, pos: string): string => `${pos} now. They want ${obj}.`,
+    boardWhy: (obj: string, pos: string): string => `${pos} now. They want you to ${obj}.`,
     fansWhy: (res: string): string => res,
     roomWhy: (low: string | null): string => (low ? `${low} is the one to watch` : 'Nobody sulking this week'),
     table: 'The table', after: (n: number): string => `After ${n}`, next: 'Next',

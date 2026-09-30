@@ -52,7 +52,13 @@ function Money() {
   // The runway: cash month by month to the end of the season on the current monthly picture.
   const last = roundsIn(c);
   const months: Date[] = [];
-  for (let r = c.round; r <= last; r += 4) months.push(dateOf(c.season, r));
+  // One point per calendar month (the first matchday in it), not every four matchdays: 28-day steps gave 13 points a
+  // season and a month label twice (GF-010).
+  for (let r = c.round; r <= last; r++) {
+    const d = dateOf(c.season, r);
+    const prev = months[months.length - 1];
+    if (!prev || prev.getUTCMonth() !== d.getUTCMonth() || prev.getUTCFullYear() !== d.getUTCFullYear()) months.push(d);
+  }
   const cash = months.map((_, i) => Math.round((club.budget + mo.net * i) / 1e5) / 10);
   const low = Math.min(...cash);
   const lowI = cash.indexOf(low);

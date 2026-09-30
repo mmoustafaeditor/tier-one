@@ -71,7 +71,10 @@ export function decisions(w: World, c: Career): Decision[] {
     for (const o of c.offers) {
       const p = playerOf(w, o.playerId);
       if (!p) continue;
-      const want = p.marketValue * (core.has(p.id) ? 1.4 : p.listed ? 0.85 : 1.1) * (b === 'money' ? 0.87 : b === 'loyal' ? 1.2 : 1);
+      // A player we listed is for sale: the director's bias (a loyalist holding on, a money man cashing in) doesn't
+      // apply to him, in the price or the advice, or the staff would contradict their own listing (GF-016).
+      const lean = p.listed ? null : b === 'money' || b === 'loyal' ? b : null;
+      const want = p.marketValue * (core.has(p.id) ? 1.4 : p.listed ? 0.85 : 1.1) * (lean === 'money' ? 0.87 : lean === 'loyal' ? 1.2 : 1);
       const counter = roundFee(o.fee * 1.15);
       const call = o.fee >= want ? 'accept' : o.fee >= want * 0.8 ? 'counter' : 'reject';
       // v2.5: a club that bid because it NEEDS him (and he's unhappy or running down his deal) is a rival bid.
@@ -79,7 +82,7 @@ export function decisions(w: World, c: Career): Decision[] {
       add({
         id: `offer:${o.id}`, kind: 'offer', dept: 'contracts', role: 'director', icon: 'market', ev: undefined,
         title: { key: why ? 'rc.rivalBid' : 'offer', pn: P(p), n: o.fee, club: o.clubId, p: p.id, s: why },
-        advice: { key: `offer_${call}${b === 'money' || b === 'loyal' ? `_${b}` : ''}`, pn: P(p), n: p.marketValue },
+        advice: { key: `offer_${call}${lean ? `_${lean}` : ''}`, pn: P(p), n: p.marketValue },
         due: days(o.round + 3 - c.round),
         choices: [
           { id: 'accept', key: 'accept', n: o.fee, cmds: [{ type: 'offer.accept', offerId: o.id }], pick: call === 'accept' && pledgeOf(c, p.id)?.type !== 'keep', fx: [{ tone: 'good', icon: 'pound', key: 'cash', n: o.fee }, { tone: core.has(p.id) ? 'bad' : 'plain', icon: 'squad', key: core.has(p.id) ? 'loseStarter' : 'loseSquad' }, ...(pledgeOf(c, p.id)?.type === 'keep' ? [{ tone: 'bad' as const, icon: 'alert', key: 'dr.fx.keepWord' }] : [])] },

@@ -38,7 +38,8 @@ export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision,
   const today = new Date(nowDate.getTime() - 2 * 86400000);
   const daysTo = nm0 ? Math.round((nm0.date.getTime() - today.getTime()) / 86400000) : 0;
   const dayWord = nm0 ? dayName(nm0.date, g.ui) : '';
-  const head = c.sacked ? x.today.sacked : over ? x.today.seasonDone : nm0?.cup ? x.today.headCup(list.length) : x.today.head(list.length, dayWord);
+  // No match left for us (our league finished while others play on) reads as season over, never as an empty day (GF-007).
+  const head = c.sacked ? x.today.sacked : over || !nm0 ? x.today.seasonDone : nm0?.cup ? x.today.headCup(list.length) : x.today.head(list.length, dayWord);
   const resolve = async (d: Decision, ch: Choice) => {
     const ok = await onResolve(d, ch);
     if (ok) setReceipts((r) => [{ id: d.id, label: `${titleText(g, d)} · ${choiceText(g, ch)}` }, ...r].slice(0, 3));
@@ -156,7 +157,8 @@ function FitPanel() {
   const out = squad.filter((p) => !available(p) || cupBan(p) || p.fitness < 78 || (c.rested ?? []).includes(p.id))
     .sort((a, b) => (b.injured + b.banned) - (a.injured + a.banned) || a.fitness - b.fitness).slice(0, 3);
   const u = upcoming(w, c, 1)[0];
-  const day = u ? dayName(u.date, g.ui) : '';
+  if (!u) return null; // nothing left to be fit for this season (GF-007)
+  const day = dayName(u.date, g.ui);
   const fit = squad.filter(available).length;
   return (
     <Panel i={3} className="a-avail" label={x.today.fit(day)}>
