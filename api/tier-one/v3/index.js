@@ -11,7 +11,7 @@
 import { RULES, buildBoard, newGame, apply, replay, pub, resolve, isOver, finish, gridRow, OUT } from './_lib/engine.mjs';
 import { compactWorld, buildCast } from './_lib/world.mjs';
 import { hashStr } from './_lib/rng.mjs';
-import { WIRE, marketOf, rumourState, wirePoints, hitRate } from './_lib/wire.mjs';
+import { WIRE, marketOf, rumourState, wirePoints, hitRate, ghostRumour } from './_lib/wire.mjs';
 import { loadSnapshot } from '../../data/_lib/store.js';
 import OVERRIDES from './_lib/wire-overrides.mjs';
 import { createHash } from 'node:crypto';
@@ -261,7 +261,7 @@ const actions = {
     const items = {};
     rs.forEach((r, k) => { const sp = hashObj(splits[k]); items[r.id] = { market: marketOf(r), state: rumourState(r, snap, OVERRIDES, now).state, split: { yes: Number(sp.yes) || 0, no: Number(sp.no) || 0 }, mine: mine[r.id] || null }; });
     const dk = dev ? Number(await one('GET', 't1v3:w:n:' + dev + ':' + today())) || 0 : 0;
-    return { asOf: snap.meta.asOf, names: snap.mode, items, callsToday: dk, limits: { daily: WIRE.DAILY_CALLS, open: WIRE.OPEN_CALLS } };
+    return { asOf: snap.meta.asOf, names: snap.mode, items, callsToday: dk, limits: { daily: WIRE.DAILY_CALLS, open: WIRE.OPEN_CALLS }, window: WIRE.CURRENT };
   },
   async 'wire.file'(b) {
     const dev = devId(b.dev); if (!dev) return { error: 'dev' };
@@ -280,7 +280,7 @@ const actions = {
     const m = marketOf(r), sp = hashObj(await one('HGETALL', 't1v3:w:split:' + r.id));
     const yesN = Number(sp.yes) || 0, clubN = club ? Number(sp['c:' + club]) || 0 : 0;
     const cClub = club ? (yesN >= 5 ? clubN / yesN : 1 / ((r.linked || []).length + 1)) : null;
-    const call = { rid: r.id, yes, s, club, fee, m, c: yes ? m : 1 - m, cClub, at: Date.now(), nick: nickOf(b.nick, dev) };
+    const call = { rid: r.id, pn: r.playerName, yes, s, club, fee, m, c: yes ? m : 1 - m, cClub, at: Date.now(), nick: nickOf(b.nick, dev) };
     const cmds = [['HSET', 't1v3:w:calls:' + dev, r.id, JSON.stringify(call)], ['HINCRBY', 't1v3:w:split:' + r.id, yes ? 'yes' : 'no', 1]];
     if (club) cmds.push(['HINCRBY', 't1v3:w:split:' + r.id, 'c:' + club, 1]);
     await redis(cmds);
@@ -309,9 +309,9 @@ const actions = {
     const byId = new Map(snap.rumours.map((r) => [r.id, r]));
     const writes = [];
     for (const c of Object.values(calls)) {
-      const r = byId.get(c.rid);
-      if (!r) continue;
-      c.player = r.playerName; c.from = r.currentClubName; c.linked = r.linked; c.mNow = marketOf(r);
+      const r = byId.get(c.rid) || ghostRumour(c.rid);
+      if (r.status !== 'gone') { c.player = r.playerName; c.from = r.currentClubName; c.linked = r.linked; c.mNow = marketOf(r); }
+      else { c.player = c.pn || ''; c.mNow = c.m; }
       // Heat points: the first time the market moves 15 points toward your side after lock.
       if (!c.heat && !c.done && (c.yes ? c.mNow - c.m : c.m - c.mNow) >= WIRE.HEAT_MOVE) { c.heat = c.s; writes.push(c); await leagueAdd(dev, nick, today(), c.s, 'wire'); }
       if (c.done) continue;

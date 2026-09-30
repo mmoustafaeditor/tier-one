@@ -12,6 +12,8 @@ export const WIRE = {
   HEAT_MOVE: 0.15,           // Heat points: the market moves 15 points toward you after lock (+1 × s, once)
   // Transfer windows close (UTC) — the date a "no move" rumour resolves NO (+ grace).
   CLOSES: { '2026-summer': '2026-09-02', '2027-01': '2027-02-03', '2027-summer': '2027-09-01' },
+  // The window the Wire is framed for right now (GOTY §5): Winter 2027, 1 Jan – 2 Feb 2027 (UK deadline 23:00).
+  CURRENT: { id: '2027-01', opens: '2027-01-01T00:00:00Z', closes: '2027-02-02T23:00:00Z' },
   FEE_BANDS: ['u20', '20-50', '50-80', '80+', 'free'],
   GBP_EUR: 1.17,
 };
@@ -37,10 +39,23 @@ export function feeBand(t) {
   return m <= 20 ? 'u20' : m <= 50 ? '20-50' : m <= 80 ? '50-80' : '80+';
 }
 
+// A call can outlive its rumour (a snapshot refresh drops it). Rumour ids end in their window ('…-202701', '…-2026summer').
+export function windowOfId(rid) {
+  const m = /-(\d{4})(01|summer)$/.exec(String(rid || ''));
+  return m ? m[1] + (m[2] === '01' ? '-01' : '-summer') : null;
+}
+export const ghostRumour = (rid) => ({ id: rid, playerId: null, currentClubId: null, linked: [], window: windowOfId(rid), status: 'gone' });
+
 // How a rumour stands now: { state: 'open'|'frozen'|'moved'|'stayed'|'void', club, fee, at }
 export function rumourState(r, snap, overrides, now = Date.now()) {
   const o = overrides && overrides[r.id];
   if (o && o.outcome) return { state: o.outcome === 'moved' ? 'moved' : o.outcome === 'void' ? 'void' : 'stayed', club: o.clubId || null, fee: o.fee || null, at: Date.parse(o.at || '') || now, manual: true };
+  // Gone from the snapshot with no hand correction: nobody can say what happened, so the stake comes back (void)
+  // once its window has closed; until then it's frozen.
+  if (r.status === 'gone') {
+    const close = WIRE.CLOSES[r.window];
+    return close && now > Date.parse(close + 'T00:00:00Z') + WIRE.GRACE_H * 3600e3 ? { state: 'void', club: null, fee: null, at: Date.parse(close + 'T00:00:00Z') } : { state: 'frozen' };
+  }
   const since = r.firstSeen || '0000';
   const t = (snap.transfers || []).filter((x) => x.playerId === r.playerId && x.date && x.date >= since && x.fromClubId === r.currentClubId)
     .sort((a, b) => a.date.localeCompare(b.date))[0];
@@ -48,6 +63,8 @@ export function rumourState(r, snap, overrides, now = Date.now()) {
     const linked = (r.linked || []).some((l) => l.clubId && l.clubId === t.toClubId);
     return { state: 'moved', club: linked ? t.toClubId : 'other', fee: feeBand(t), at: Date.parse(t.date + 'T00:00:00Z') };
   }
+  // Marked dead by the refresh (talks called off, a new contract signed): it settles NO on the day it died.
+  if (r.status === 'dead') return { state: 'stayed', club: null, fee: null, at: Date.parse((r.lastSeen || '') + 'T00:00:00Z') || now };
   const close = WIRE.CLOSES[r.window];
   if (close && now > Date.parse(close + 'T00:00:00Z') + WIRE.GRACE_H * 3600e3) return { state: 'stayed', club: null, fee: null, at: Date.parse(close + 'T00:00:00Z') };
   if (r.status !== 'open' || (r.linked || []).some((l) => l.stage === 'agreed')) return { state: 'frozen' };

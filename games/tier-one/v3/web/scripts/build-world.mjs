@@ -9,7 +9,7 @@ const ROOT = path.resolve(HERE, '../../../../..');
 process.chdir(ROOT);
 const { loadSnapshot } = await import(path.join(ROOT, 'api/data/_lib/store.js'));
 const { compactWorld } = await import(path.join(ROOT, 'api/tier-one/v3/_lib/world.mjs'));
-const w = compactWorld(loadSnapshot(), 7);
+const w = compactWorld(loadSnapshot(), 9);
 fs.mkdirSync(path.join(HERE, '../src/data'), { recursive: true });
 fs.writeFileSync(path.join(HERE, '../src/data/world.json'), JSON.stringify(w));
 console.log('world.json', w.clubs.length, 'clubs', w.players.length, 'players', w.mode, w.asOf);

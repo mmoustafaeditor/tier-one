@@ -13,6 +13,12 @@ export const BUYERS = [
 const KEY_SHIRTS = new Set([7, 8, 9, 10, 11]);
 const TOP5 = new Set(['eng1', 'esp1', 'ita1', 'ger1', 'fra1']);
 
+// The window that just closed (GOTY §5): its big-money signings are the names people know right now, so they make the
+// saga-able cut at their new club even without a 7–11 shirt yet.
+export const LAST_WINDOW = '2026-summer';
+const MARQUEE_EUR = 35e6;
+const eurOf = (t) => (t && t.fee && t.fee.value ? (t.fee.currency === 'GBP' ? t.fee.value * 1.17 : t.fee.value) : 0);
+
 const ageOn = (birth, asOf) => {
   if (!birth) return 0;
   const b = Date.parse(birth + 'T00:00:00Z'), n = Date.parse((asOf || '2026-09-29') + 'T00:00:00Z');
@@ -25,18 +31,23 @@ export function compactWorld(snap, perClub = 9) {
   const clubs = snap.clubs.map((c) => ({ id: c.id, n: c.name, s: c.shortName, k: c.code, l: c.leagueId, c1: c.colors.primary, c2: c.colors.secondary }));
   const clubIds = new Set(clubs.map((c) => c.id));
   const byClub = new Map();
+  const marquee = new Set((snap.transfers || []).filter((t) => t.window === LAST_WINDOW && t.toClubId && eurOf(t) >= MARQUEE_EUR && eurOf(t) < 3e8)
+    .map((t) => t.playerId + '>' + t.toClubId));
+  // Players live on the Wire stay in the world too, so Career/Practice can put them on a board (ON THE WIRE chips).
+  const onWire = new Set((snap.rumours || []).filter((r) => r.status === 'open').map((r) => r.playerId));
   for (const p of snap.players) {
     if (!clubIds.has(p.clubId) || p.position === 'GK' || (p.loan && p.loan.direction === 'out')) continue;
     const age = ageOn(p.birthDate, snap.meta && snap.meta.asOf);
     if (age && (age < 18 || age > 33)) continue;
     let w = (p.position === 'FW' ? 3 : p.position === 'MF' ? 2.5 : 1) + (KEY_SHIRTS.has(p.shirtNumber) ? 3 : 0) + (p.captain ? 2 : 0)
-      + (p.refs && p.refs.wikidata ? 1 : 0) + (p.shirtNumber > 0 && p.shirtNumber < 30 ? 1 : 0) - (p.confidence === 'high' ? 0 : 2);
+      + (p.refs && p.refs.wikidata ? 1 : 0) + (p.shirtNumber > 0 && p.shirtNumber < 30 ? 1 : 0) - (p.confidence === 'high' ? 0 : 2)
+      + (marquee.has(p.id + '>' + p.clubId) ? 3 : 0) + (onWire.has(p.id) ? 3 : 0);
     if (!byClub.has(p.clubId)) byClub.set(p.clubId, []);
     byClub.get(p.clubId).push({ w, p, age });
   }
   const players = [];
   for (const c of clubs) {
-    const list = (byClub.get(c.id) || []).sort((a, b) => b.w - a.w || a.p.id.localeCompare(b.p.id)).slice(0, perClub);
+    const list = (byClub.get(c.id) || []).sort((a, b) => b.w - a.w || a.p.id.localeCompare(b.p.id)).slice(0, perClub + (buyers.has(c.id) ? 2 : 0));
     for (const { p, age } of list) {
       const star = buyers.has(c.id) ? (KEY_SHIRTS.has(p.shirtNumber) || p.captain ? 3 : 2) : KEY_SHIRTS.has(p.shirtNumber) ? 2 : 1;
       players.push({ id: p.id, n: p.name, s: p.shortName || p.name, c: c.id, pos: p.position, no: p.shirtNumber || 0, nat: p.nationality || '', age, star });
