@@ -9,6 +9,7 @@ import { sfx, buzz } from '../lib/sfx';
 import { leanOf, outWord, strWord, postLine, vars } from '../lib/story';
 import { Icon, Kit, GBtn, TopBar, shake } from '../ui/game';
 import { CallScene } from '../ui/CallScene';
+import { PostScene } from '../ui/PostScene';
 import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } from '../lib/meta';
 import { applyWindow, totalFavours, type CareerReport } from '../lib/career';
 import { storyBeats, pushBeats, type Beat } from '../lib/storyMode';
@@ -34,6 +35,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const [calling, setCalling] = useState<{ i: number; c: Clue } | null>(null);
   const [burst, setBurst] = useState<{ k: number; kind: number } | null>(null);
   const [filedAt, setFiledAt] = useState<Record<number, number>>({});
+  const [posting, setPosting] = useState<{ i: number; o: number; s: number; ut: boolean; k: number } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const startRef = useRef({ pp: getSave().pp, credits: getSave().credits, streak: getSave().streak.n });
   const recorded = useRef(false);
@@ -91,8 +93,12 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const postCall = async (i: number, o: number, s: number, ut: boolean) => {
     const out = await act(ut ? ['u', i, o, s] : ['c', i, o, s]);
     if (out && !out.error) {
-      sfx((['publish.talks', 'publish.advanced', 'publish.confirmed'] as const)[s]); setTimeout(() => sfx('stamp.done'), 120); buzz(s === 2 ? [20, 40, 30] : 18);
-      setFiledAt((f) => ({ ...f, [i]: Date.now() })); setBurst({ k: Date.now(), kind: s }); setTimeout(() => setBurst(null), 1700); shake(rootRef.current);
+      const late = view && view.state.day === view.R.DAYS;
+      if (late) {
+        // Deadline Day: the clock is running, so the quick burst instead of the full post.
+        sfx((['publish.talks', 'publish.advanced', 'publish.confirmed'] as const)[s]); setTimeout(() => sfx('stamp.done'), 120); buzz(s === 2 ? [20, 40, 30] : 18);
+        setFiledAt((f) => ({ ...f, [i]: Date.now() })); setBurst({ k: Date.now(), kind: s }); setTimeout(() => setBurst(null), 1700); shake(rootRef.current);
+      } else setPosting({ i, o, s, ut, k: Date.now() });
       if (view && view.state.day === view.R.DAYS && view.ddEndsAt && view.ddEndsAt - Date.now() <= 15000) ddLate.current = true;
     }
   };
@@ -127,7 +133,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const mob = sel != null;
   const tutor = view.mode === 'practice' && view.label === 'tutorial' && !(sv.tut && sv.tut.done);
   const favours = view.mode === 'career' ? <FavourTray g={g} i={deskSel} onUse={(k) => act(['f', k, deskSel])} /> : null;
-  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy} last={last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} />;
+  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} />;
 
   return <div className={'g-screen g-screen--wide play' + (dd ? ' is-dd' : '')} ref={rootRef}>
     <TopBar back={mob ? { label: t('g.win.board'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : title} />
@@ -157,6 +163,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     {tutor && !calling && !night && <TutorCoach g={g} sel={sel} onDone={() => update((x) => { x.tut = { ...(x.tut || {}), done: true }; })} />}
     {calling && view.cast[calling.i] && <CallScene src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} onDone={() => setCalling(null)} />}
     {burst && <Burst key={burst.k} kind={burst.kind} />}
+    {posting && view.cast[posting.i] && <PostScene key={posting.k} c={view.cast[posting.i]} o={posting.o} s={posting.s} ut={posting.ut} onDone={() => { const p = posting; setPosting(null); setFiledAt((f) => ({ ...f, [p.i]: Date.now() })); shake(rootRef.current); }} />}
 
     <Sheet open={confirmEnd} onClose={() => setConfirmEnd(false)} label={t('daily.endConfirmOk')}>
       <div className="sheet__body"><h2 className="g-h2">{t('daily.endConfirm', { n: view.state.day, c: view.state.left })}</h2><p className="g-sub" style={{ marginTop: 8 }}>{t('daily.contactsNote')}</p>

@@ -1,9 +1,9 @@
-// The file: one saga on one screen (HYBRID.md §5). Player card, What we know, the coach's next move, source tiles,
-// Make the call (what happens → how loud → publish), rivals. The maths sits behind "How's this scored?".
+// The file: one saga on one screen (HYBRID.md §5). Player card, What we know, source tiles (locked ones say when they open),
+// Make the call (Make a call / Decide later → what happens → how loud → publish), rivals. The maths sits behind "How's this scored?".
 import { useEffect, useState } from 'react';
 import { E, OUTS, type Game, type Clue } from '../lib/engine';
 import { useT, num } from '../lib/i18n';
-import { leanOf, voiceLine, postLine, saysWord, addsText, outWord, strWord, nextMove, streetCount, GRADE, vars, varsH } from '../lib/story';
+import { leanOf, voiceLine, postLine, saysWord, addsText, outWord, strWord, streetCount, GRADE, vars, varsH } from '../lib/story';
 import { Glyph, Lines, Crest } from '../ui/bits';
 import { Icon, Kit, SrcIcon, Rel, GBtn } from '../ui/game';
 import { GRADE_BARS } from '../ui/CallScene';
@@ -12,11 +12,11 @@ import type { View } from '../lib/driver';
 
 export interface SagaProps {
   view: View; g: Game; i: number; busy: boolean; last: { i: number; c: Clue } | null; dd: boolean;
-  onAsk: (src: string) => void; onPost: (o: number, s: number, ut: boolean) => void; favours?: React.ReactNode; justFiled?: number;
+  onAsk: (src: string) => void; onPost: (o: number, s: number, ut: boolean) => void; favours?: React.ReactNode; justFiled?: number; onLater?: () => void;
 }
 export const RIVAL_IC: Record<string, string> = { tabloid: 'BB', itk: '?', insider: 'PP' };
 
-export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFiled }: SagaProps) {
+export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFiled, onLater }: SagaProps) {
   const t = useT();
   const c = view.cast[i];
   const ln = leanOf(g, i);
@@ -28,15 +28,16 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
   const [how, setHow] = useState(false);
   const [clips, setClips] = useState(true);
   const [utOpen, setUtOpen] = useState(false);
-  useEffect(() => { setO(null); setS(1); setUtOpen(false); }, [i, call ? call.o + ':' + call.s : '']);
-  const selO = o ?? (call ? null : ln.none ? null : ln.o);
+  const [going, setGoing] = useState(false);
+  useEffect(() => { setO(null); setS(1); setUtOpen(false); setGoing(false); }, [i, call ? call.o + ':' + call.s : '']);
+  // Nothing is pre-picked: the call is yours.
+  const selO = o;
   const pv = selO != null && (cs === 'ok' || canUt) && !(call && call.o === selO) ? E.preview(g, i, selO, s) : null;
   const tw = g.twist && g.twist.i === i ? g.twist : null;
   const reads = g.clues[i];
   const era = tw && g.day >= tw.day ? 1 : 0;
   const curReads = reads.filter((r) => r.era === era);
   const livePosts = E.livePosts(g, i);
-  const nm = nextMove(g, i);
   const srcs = E.sourcesFor(g.R, i);
   const post7 = g.day === g.R.DAYS ? g.R.DD_POSTS - g.posts7 : null;
   const maxT = Math.max(3, ...ln.tally);
@@ -45,15 +46,6 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
     ...curReads.filter((r) => { const w = E.weights(g.R, r.src, r.r); return w[k] > 0 && w[k] === Math.max(...w); }).map((r) => ({ k: r.src, rival: false })),
     ...livePosts.filter((p) => p.claim === k).map((p) => ({ k: p.id, rival: true })),
   ];
-  // "Ring the kit man." — the source's name mid-sentence (English drops the capital on "The").
-  const srcName = (k: string) => { const n = t('src.' + k); return t.lang === 'en' ? n.replace(/^The /, 'the ') : n; };
-  const coach = (() => {
-    if (call && !canUt) return { b: t('g.saga.coachFiled', { s: strWord(t.lang, call.s), o: outWord(t.lang, call.o) }), p: t('g.saga.coachFiledP') };
-    if (nm.kind === 'ask') return { b: t('g.saga.coachAsk', { s: srcName(nm.src) }), p: t('g.saga.why.' + nm.src) };
-    if (nm.kind === 'file') return { b: t('g.saga.coachFile', { o: outWord(t.lang, nm.o) }), p: t('g.saga.coachFileP', { n: E.circlesFor(g, i, nm.o).size }) };
-    if (nm.kind === 'wait') return { b: t('g.saga.coachWait', { s: t('src.' + nm.src), d: nm.day }), p: t('g.saga.coachWaitP') };
-    return { b: t('g.saga.coachLeave'), p: t('g.saga.coachLeaveP') };
-  })();
   const post = () => { if (selO == null) return; onPost(selO, s, !!call); };
 
   return <div className="file2">
@@ -88,8 +80,6 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
       {view.posterior && <p className="know__coach g-mono">{t('saga.coach')} · {view.posterior(i).map((p, k) => `${outWord(t.lang, k)} ${Math.round(p * 100)}%`).join(' · ')}</p>}
     </section>
 
-    {!dd && <div className="g-coach saga-coach" key={coach.b}><b>{coach.b}</b><p>{coach.p}</p></div>}
-
     <section>
       <div className="g-sec"><h2>{t('g.saga.ring')}</h2><span className="g-mono phones-left"><span className="phones">{Array.from({ length: Math.min(8, Math.max(g.left, 0)) }, (_, k) => <Icon key={k} n="phone" size={13} />)}</span>{t('g.saga.left', { n: g.left })}</span></div>
       <div className="srcs">
@@ -97,13 +87,13 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
           const st = E.askState(g, i, k), so = E.srcOf(g.R, i, k)!;
           const asked = curReads.filter((r) => r.src === k);
           const lastR = asked[asked.length - 1];
-          const hint = nm.kind === 'ask' && nm.src === k && !call && st === 'ok';
           const lw = lastR ? E.weights(g.R, k, lastR.r) : null;
-          return <button key={k} className={'src' + (st === 'ok' ? '' : ' is-' + st) + (hint ? ' is-hint' : '')} data-src={k} disabled={st !== 'ok' || busy} onClick={() => onAsk(k)}>
-            <span className="src__cost">{st === 'closed' ? <><Icon n="lock" size={11} />{t('g.saga.dayShort', { n: so.from })}</> : <><Icon n="phone" size={11} />{so.cost}</>}</span>
+          return <button key={k} className={'src' + (st === 'ok' ? '' : ' is-' + st)} data-src={k} disabled={st !== 'ok' || busy} onClick={() => onAsk(k)}>
+            <span className="src__cost">{st === 'closed' ? <Icon n="lock" size={11} /> : <><Icon n="phone" size={11} />{so.cost}</>}</span>
             <SrcIcon k={k} size={46} />
             <span className="src__n">{t('g.src.' + k)}</span>
             {lastR && lw ? <span className={'g-chip src__says g-chip--' + OUTS[lw.indexOf(Math.max(...lw))]}>{saysWord(t.lang, k, lastR.r, c)}</span>
+              : st === 'closed' ? <span className="src__opens">{t('d2.opens', { n: so.from })}</span>
               : <span className="src__rel"><Rel n={GRADE_BARS[GRADE[k]] || 1} /></span>}
           </button>;
         })}
@@ -123,7 +113,14 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
       <div className="callbox__h"><h2>{call ? (utOpen ? t('g.saga.changeCall') : t('g.saga.yourCall')) : t('g.saga.makeCall')}</h2>{post7 != null && <span className="g-chip g-chip--red">{t('dd.posts', { n: post7 })}</span>}</div>
       {call && <p className="callbox__filed">{t('g.saga.filedLine', { s: strWord(t.lang, call.s), o: outWord(t.lang, call.o), d: call.day })}{canUt ? ' ' + t('saga.uturnNote', { p: g.R.UT_PEN[call.s] }) : call.ut ? ' ' + t('saga.uturnUsed') : ''}</p>}
       {canUt && !utOpen && <GBtn kind="paper" size="sm" className="callbox__ut" onClick={() => setUtOpen(true)}><Icon n="uturn" />{t('g.saga.changeCall')}</GBtn>}
-      {(cs === 'ok' || (canUt && utOpen)) && <>
+      {cs === 'ok' && !call && !going && <div className="callgate">
+        <p className="callgate__q">{t('d2.call.lead', { p: c.player.s })}</p>
+        <div className="callgate__b">
+          <GBtn kind="paper" onClick={() => onLater?.()}><Icon n="clock" />{t('d2.call.later')}</GBtn>
+          <GBtn onClick={() => setGoing(true)} sound="page.turn"><Icon n="pen" />{t('d2.call.make')}</GBtn>
+        </div>
+      </div>}
+      {((cs === 'ok' && (going || !!call)) || (canUt && utOpen)) && <div className="callform">
         <div className="step"><span className="step__n">1</span>{t('g.saga.what')}</div>
         <div className="outs">
           {[0, 1, 2, 3].map((k) => <button key={k} className={'out oc--' + OUTS[k]} aria-pressed={selO === k} disabled={!!call && call.o === k} onClick={() => { sfx('thock', OUTS[k]); setO(k); }}>
@@ -131,18 +128,18 @@ export function SagaFile({ view, g, i, busy, dd, onAsk, onPost, favours, justFil
           </button>)}
         </div>
         <div className="step"><span className="step__n">2</span>{t('g.saga.loud')}</div>
-        <div className="louds">
-          {[0, 1, 2].map((k) => { const p = selO != null ? E.preview(g, i, selO, k) : null; return <button key={k} className={'loud loud--' + k} aria-pressed={s === k} onClick={() => { sfx('ui.tap'); setS(k); }}>
-            <span className="loud__meter">{[0, 1, 2].map((m) => <i key={m} className={m <= k ? 'on' : ''} />)}</span>
+        <div className="vols">
+          {[0, 1, 2].map((k) => { const p = selO != null ? E.preview(g, i, selO, k) : null; return <button key={k} className={'vol vol--' + k} aria-pressed={s === k} onClick={() => { sfx('ui.tap'); setS(k); }}>
+            <span className="vol__meter">{[0, 1, 2].map((m) => <i key={m} className={m <= k ? 'on' : ''} />)}</span>
             <b>{strWord(t.lang, k)}</b>
-            {p ? <span className="loud__odds"><span className="w">+{p.win}</span><span className="l">{num(p.lose)}</span></span> : <span className="loud__d">{t('str.' + ['talks', 'advanced', 'confirmed'][k] + 'D')}</span>}
+            {p ? <span className="vol__odds"><span className="w">+{p.win}</span><span className="l">{num(p.lose)}</span></span> : <span className="vol__d">{t('str.' + ['talks', 'advanced', 'confirmed'][k] + 'D')}</span>}
           </button>; })}
         </div>
         {pv && <p className="callbox__excl">{pv.exclPossible ? <><span className="g-chip g-chip--gold"><Icon n="bolt" />{t('stamp.exclusive')}</span> {t('g.saga.exclOpen', { x: pv.excl })}</> : call ? t('saga.exclUturn') : !pv.open ? t('saga.exclGone', { o: outWord(t.lang, selO!) }) : s !== 2 ? t('saga.exclStrength') : t('saga.exclTwo', { n: E.circlesFor(g, i, selO!).size, o: outWord(t.lang, selO!) })}</p>}
         <GBtn size="lg" disabled={selO == null || busy || (!!call && call.o === selO)} onClick={post} sound={null} shine={selO != null} className="publish">
-          <Icon n={call ? 'uturn' : 'news'} size={24} />{selO == null ? t('saga.pick') : call ? t('g.saga.uturnBtn', { o: outWord(t.lang, selO) }) : t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}
+          <Icon n={call ? 'uturn' : 'news'} size={24} /><span className="publish__t">{selO == null ? t('saga.pick') : call ? t('g.saga.uturnBtn', { o: outWord(t.lang, selO) }) : (() => { const [h, ...rest] = t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) }).split(' · '); return rest.length ? <><b>{h}</b><em>{rest.join(' · ')}</em></> : h; })()}</span>
         </GBtn>
-      </>}
+      </div>}
       {cs === 'nosource' && !call && <p className="callbox__none"><Icon n="phone" size={16} /> {t('g.saga.noStory')}</p>}
     </section>
 

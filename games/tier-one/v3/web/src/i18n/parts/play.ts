@@ -30,7 +30,7 @@ export default {
       },
       tut: {
         open: 'Tap a player to open his file.', openP: 'Five transfer stories this week. Start with the glowing one.',
-        ring: 'Ring the source glowing gold.', ringP: 'Every call costs phone points. You get a few a day.',
+        ring: 'Ring any source.', ringP: 'Every call costs phone points. You get a few a day.',
         second: 'Now ring a different source.', secondP: 'Two different kinds of source agreeing is how you land an exclusive.',
         call: 'Make the call.', callP: 'Pick what happens, pick how loud, then publish. Louder pays more and costs more if you’re wrong.',
         sleep: 'Filed. You’re a journalist now.', sleepP: 'Head back to the board and sleep on it. Rivals post overnight; day 7 is a 60-second Deadline Day.',
@@ -80,7 +80,7 @@ export default {
       },
       tut: {
         open: 'دوس على لاعب عشان تفتح ملفه.', openP: 'خمس قصص انتقالات الأسبوع ده. ابدأ باللي منور.',
-        ring: 'كلم المصدر اللي منور دهبي.', ringP: 'كل مكالمة بنقط. عندك كام واحدة في اليوم.',
+        ring: 'كلم أي مصدر.', ringP: 'كل مكالمة بنقط. عندك كام واحدة في اليوم.',
         second: 'دلوقتي كلم مصدر من نوع تاني.', secondP: 'لما نوعين مختلفين من المصادر يتفقوا، كده تاخد سبق.',
         call: 'خد قرارك.', callP: 'اختار إيه اللي هيحصل، وبصوت عالي قد إيه، وانشر. كل ما تعلي تكسب أكتر وتخسر أكتر لو غلطت.',
         sleep: 'اتنشر. بقيت صحفي رسمي.', sleepP: 'ارجع للوحة ونام عليها. المنافسين بينشروا بالليل، واليوم السابع ديدلاين ٦٠ ثانية.',
@@ -130,7 +130,7 @@ export default {
       },
       tut: {
         open: 'Toca un jugador para abrir su carpeta.', openP: 'Cinco culebrones esta semana. Empieza por el que brilla.',
-        ring: 'Llama a la fuente que brilla en dorado.', ringP: 'Cada llamada gasta puntos de teléfono. Tienes unos pocos al día.',
+        ring: 'Llama a cualquier fuente.', ringP: 'Cada llamada gasta puntos de teléfono. Tienes unos pocos al día.',
         second: 'Ahora llama a otro tipo de fuente.', secondP: 'Si dos tipos de fuente distintos coinciden, puedes conseguir una exclusiva.',
         call: 'Haz tu apuesta.', callP: 'Elige qué pasa, con qué fuerza, y publica. Más fuerte paga más y cuesta más si fallas.',
         sleep: 'Publicado. Ya eres periodista.', sleepP: 'Vuelve al tablero y duerme. Los rivales publican de madrugada; el día 7 es un cierre de 60 segundos.',
