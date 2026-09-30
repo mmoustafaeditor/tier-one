@@ -139,7 +139,8 @@
 /* ---------- Rivals: a dossier each; the record set big in wood type */
 .cn-rgrid { display: grid; gap: 14px; }
 @media (min-width: 1024px) { .cn-rgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; } }
-.cn-rival { --rc: var(--red); position: relative; padding: 16px; background: var(--card); color: var(--card-ink); border-radius: var(--r-card); box-shadow: var(--shadow-card); border-top: 6px solid var(--rc); }
+/* overflow: hidden clips the scalp stamp's slam (it starts far larger than the card), so the page never scrolls sideways. */
+.cn-rival { --rc: var(--red); position: relative; overflow: hidden; padding: 16px; background: var(--card); color: var(--card-ink); border-radius: var(--r-card); box-shadow: var(--shadow-card); border-top: 6px solid var(--rc); }
 .cn-rival--itk { --rc: #1F8FB0; } .cn-rival--insider { --rc: #2E2A24; }
 .cn-rival__h { display: flex; gap: 12px; align-items: center; }
 .cn-rival__h h2 { font-weight: 800; font-size: 18px; }
