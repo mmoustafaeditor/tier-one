@@ -72,5 +72,12 @@ export const CL_EN = {
       claim: 'Public claim: lose to them and it’s board −3, fans −4', safe: 'Costs nothing',
     },
   },
+  // V2.10 looks bought with Semba Credits (meta/looks.ts); presentation only.
+  store: {
+    base: 'Semba teal', free: 'Free', buy: (price: string): string => `Unlock · ${price}`, use: 'Use it', inUse: 'In use',
+    short: (n: number): string => `${n} cr short`, bought: 'Look unlocked.',
+    seasonEarn: 'You earn 50 cr for every season you finish (a career’s first 10 seasons).',
+    seasonToast: (n: number): string => `+${n} Semba Credits for finishing the season.`,
+  },
 };
 export type CLStrings = typeof CL_EN;

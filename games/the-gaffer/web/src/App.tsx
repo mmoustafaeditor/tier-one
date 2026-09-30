@@ -31,6 +31,8 @@ import { Digest } from './ui2/Digest';
 import { TransfersScreen } from './ui2/Transfers';
 import { OfficeScreen } from './ui2/Office';
 import { CareerScreen } from './ui2/Career';
+import { seasonCredits } from './meta/wallet';
+import { CL } from './lang-club-all';
 import { PassScreen } from './ui2/Pass';
 import { SettingsScreen } from './ui2/Settings';
 import { NewsScreen } from './ui2/News';
@@ -86,6 +88,8 @@ export function App() {
   }, [top, route.s]);
   useEffect(() => { if (!toastText) return; const id = setTimeout(() => setToast(''), 2800); return () => clearTimeout(id); }, [toastText]);
   useEffect(() => { window.scrollTo(0, 0); }, [route.s, top?.s]);
+  // V2.10: the club look bought with credits or the Supporter pack (meta/looks.ts), presentation only.
+  useEffect(() => { document.documentElement.dataset.look = prefs.look ? String(prefs.look) : ''; }, [prefs.look]);
   // Club colours drive crests, tokens and the identity stripe.
   useEffect(() => {
     const club = world && career ? world.clubs.find((c) => c.id === career.clubId) : null;
@@ -240,6 +244,9 @@ export function App() {
     const e = endOfSeason(cc.w!, cc.c!);
     await commit(e.world, e.career);
     setSummary(e.summary);
+    // V2.10: Semba Credits for a finished season (meta only; the simulation never sees them).
+    const earned = seasonCredits(`${cc.c!.seed}:${cc.c!.managerName}`, cc.c!.season);
+    if (earned) setToast(CL[ui].store.seasonToast(earned));
     setBusy(false);
   };
   const takeStaffCalls = async () => {

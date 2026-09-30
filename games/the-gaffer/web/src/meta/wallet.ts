@@ -21,3 +21,27 @@ export function adsWatchedToday(): number {
 export function countAd() {
   try { localStorage.setItem(ADS, JSON.stringify([today(), adsWatchedToday() + 1])); } catch { /* ignore */ }
 }
+
+// V2.10: spend credits (false when the balance is short; nothing is taken then).
+export function spendCredits(n: number): boolean {
+  const have = credits();
+  if (n <= 0 || have < n) return false;
+  try { localStorage.setItem(KEY, String(have - n)); return true; } catch { return false; }
+}
+
+// V2.10: +50 credits for every season a career finishes, for its first 10 seasons (V2_DESIGN §6.3, "earned credits").
+// Keyed by the career (its world seed and manager name) and the season, so replaying a season end pays nothing twice.
+export const SEASON_CREDITS = 50;
+export const SEASON_CREDITS_CAP = 10;
+const SEASONS = 'gaffer.seasonCredits.v1';
+export function seasonCredits(career: string, season: number): number {
+  try {
+    const all = JSON.parse(localStorage.getItem(SEASONS) ?? '{}') as Record<string, number[]>;
+    const done = all[career] ?? [];
+    if (done.includes(season) || done.length >= SEASON_CREDITS_CAP) return 0;
+    all[career] = [...done, season];
+    localStorage.setItem(SEASONS, JSON.stringify(all));
+    addCredits(SEASON_CREDITS);
+    return SEASON_CREDITS;
+  } catch { return 0; }
+}

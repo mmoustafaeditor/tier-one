@@ -71,4 +71,10 @@ export const CL_FR: CLStrings = {
       claim: 'Promesse publique : une défaite contre eux et c’est direction −3, supporters −4', safe: 'Ne coûte rien',
     },
   },
+  store: {
+    base: 'Vert Semba', free: 'Gratuit', buy: (price: string) => `Débloquer · ${price}`, use: 'Utiliser', inUse: 'Utilisé',
+    short: (n: number) => `Il manque ${n} cr`, bought: 'Style débloqué.',
+    seasonEarn: 'Vous gagnez 50 cr pour chaque saison terminée (les 10 premières d’une carrière).',
+    seasonToast: (n: number) => `+${n} Semba Credits pour la saison terminée.`,
+  },
 };
