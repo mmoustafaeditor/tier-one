@@ -64,8 +64,10 @@ function cameraKeys(P: boolean): Key[] {
     { f: 200, x: 0, y: P ? 220 : 130, z: P ? 0.84 : 0.82 },
     { f: 214, x: PRESS.x, y: P ? 40 : -40, z: P ? 1.0 : 0.78 },
     { f: 262, x: PRESS.x, y: P ? 70 : -20, z: P ? 1.04 : 0.8 },
-    { f: 272, x: PRESS.x + 60, y: P ? 180 : 40, z: P ? 1.18 : 0.9 },
-    { f: 300, x: PRESS.x + 60, y: P ? 190 : 50, z: P ? 1.2 : 0.92 },
+    // Portrait: the front page (880 wide) has to stay inside the 1080 stage, so the last push-in keeps it centred
+    // and gentler; the +60 drift is landscape only (it cropped the headline's left edge on a 390 px phone).
+    { f: 272, x: PRESS.x + (P ? 0 : 60), y: P ? 180 : 40, z: P ? 1.1 : 0.9 },
+    { f: 300, x: PRESS.x + (P ? 0 : 60), y: P ? 190 : 50, z: P ? 1.12 : 0.92 },
   ];
 }
 

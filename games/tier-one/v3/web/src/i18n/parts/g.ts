@@ -6,12 +6,12 @@ export default {
       bar: { daily: 'Daily', career: 'Career', room: 'Room', toPlay: 'Play today', ch: 'Ch {c} · Lv {n}', noRank: 'Unranked', start: 'Start', rank: '#{r}' },
       tabs: { home: 'Home', story: 'Story', wire: 'Wire', friends: 'Friends', me: 'Me' },
       home: {
-        noName: 'New reporter', freelance: 'Freelance · no paper yet', xp: 'XP {a}/{b}', followers: '{n} followers', streak: 'Streak',
+        noName: 'New reporter', freelance: 'Out of work since Deadline Day', xp: 'XP {a}/{b}', followers: '{n} followers', streak: 'Streak',
         dailyNo: 'The Daily · No. {n}', todaysFive: 'Today’s five', filed: 'Filed.', tag: 'Five transfer sagas. Some are lying. Break them first or get ratio’d trying.',
         filedSub: '{p} points {r}', weekAria: 'This week', dow: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
         play: 'Open the phones', resume: 'Back to day {d}', seePage: 'See your front page', fair: 'Same five for everyone · about 6 min', tomorrow: 'New five at {t}',
         missions: 'Today’s missions', missionsReset: 'Reset at {t}', claimed: 'Claimed', modes: 'Your desk',
-        storyK: 'Story mode', storyNew: 'You blew it last season. Win it all back.', storySub: 'Chapter {c} · {name}',
+        storyK: 'Story mode', storyNew: 'Someone fed you a fake. Find out who.', storySub: '{name}',
         wireK: 'Real rumours', wireSub: 'Call real transfers before they happen', wireLive: '{n} calls live',
         roomsK: 'Play friends', roomsSub: 'Same board, one table', leaguePos: '{r} in your league',
         practiceK: 'No pressure', practiceSub: 'Coach shows the odds',
@@ -24,8 +24,10 @@ export default {
         practice: 'Play a Practice board', story: 'Play a Story window', wire: 'File a call on the Wire', twist: 'Be right on a twisted saga', room: 'Play a Friends room',
       },
       story: { ch: {
-        blog: { name: 'Ch. 1 · The Blog' }, comeback: { name: 'Ch. 2 · The Comeback' }, stringer: { name: 'Ch. 3 · Stringer' },
-        rival: { name: 'Ch. 4 · The Rival' }, chronicle: { name: 'Ch. 5 · Back at The Chronicle' }, front: { name: 'Ch. 6 · The Front Page' },
+        blog: { name: 'Ch. 1 · The Blog' }, post: { name: 'Ch. 2 · The Evening Post' }, nationals: { name: 'Ch. 3 · The Nationals' },
+        war: { name: 'Ch. 4 · The War' }, chronicle: { name: 'Ch. 5 · The Chronicle' }, front: { name: 'Epilogue · The Front Page' },
+        // 3.3 ids, kept as aliases (lib/storyMode.ts LEGACY_CHAPTER).
+        comeback: { name: 'Ch. 2 · The Evening Post' }, stringer: { name: 'Ch. 3 · The Nationals' }, rival: { name: 'Ch. 4 · The War' },
       } },
       me: {
         pressCard: 'Press card', level: 'Level', maxed: 'Max level', streak: 'Day streak', best: 'Best {n}', dailies: 'Dailies', t1s: '{n} × Tier 1', bestScore: 'Best score', points: 'points',
@@ -39,12 +41,12 @@ export default {
       bar: { daily: 'اليومي', career: 'المسيرة', room: 'الأوضة', toPlay: 'العب النهارده', ch: 'فصل {c} · مستوى {n}', noRank: 'من غير ترتيب', start: 'ابدأ', rank: '#{r}' },
       tabs: { home: 'الرئيسية', story: 'القصة', wire: 'الوكالة', friends: 'الصحاب', me: 'أنا' },
       home: {
-        noName: 'صحفي جديد', freelance: 'فري لانس · من غير جرنال لسه', xp: 'خبرة {a}/{b}', followers: '{n} متابع', streak: 'السلسلة',
+        noName: 'صحفي جديد', freelance: 'قاعد من غير شغل من آخر يوم', xp: 'خبرة {a}/{b}', followers: '{n} متابع', streak: 'السلسلة',
         dailyNo: 'التحدي اليومي · رقم {n}', todaysFive: 'خمسة النهارده', filed: 'اتقفل.', tag: 'خمس صفقات. فيهم كدب. اكشفهم الأول ولا هتبقى تريند بالغلط.',
         filedSub: '{p} نقطة {r}', weekAria: 'الأسبوع ده', dow: ['ن', 'ث', 'ر', 'خ', 'ج', 'س', 'ح'],
         play: 'افتح التليفونات', resume: 'ارجع لليوم {d}', seePage: 'شوف صفحتك الأولى', fair: 'نفس الخمسة للكل · حوالي ٦ دقايق', tomorrow: 'خمسة جداد الساعة {t}',
         missions: 'مهام النهارده', missionsReset: 'بتتجدد {t}', claimed: 'اتاخدت', modes: 'مكتبك',
-        storyK: 'وضع القصة', storyNew: 'بوظتها الموسم اللي فات. رجّع كل حاجة.', storySub: 'الفصل {c} · {name}',
+        storyK: 'وضع القصة', storyNew: 'في حد إدّاك خبر مضروب. اعرف مين.', storySub: '{name}',
         wireK: 'إشاعات حقيقية', wireSub: 'اتوقع صفقات حقيقية قبل ما تحصل', wireLive: '{n} توقع شغال',
         roomsK: 'العب مع صحابك', roomsSub: 'نفس اللوحة، ترابيزة واحدة', leaguePos: 'المركز {r} في دوريك',
         practiceK: 'من غير ضغط', practiceSub: 'المدرب بيوريك النسب',
@@ -57,8 +59,9 @@ export default {
         practice: 'العب لوحة تدريب', story: 'العب فترة في القصة', wire: 'سجل توقع في الوكالة', twist: 'صيب في صفقة اتقلبت', room: 'العب أوضة مع صحابك',
       },
       story: { ch: {
-        blog: { name: 'ف١ · المدونة' }, comeback: { name: 'ف٢ · الرجوع' }, stringer: { name: 'ف٣ · مراسل حر' },
-        rival: { name: 'ف٤ · المنافس' }, chronicle: { name: 'ف٥ · راجع للكرونيكل' }, front: { name: 'ف٦ · الصفحة الأولى' },
+        blog: { name: 'ف١ · البلوج' }, post: { name: 'ف٢ · الإيفننج بوست' }, nationals: { name: 'ف٣ · الجرايد الكبيرة' },
+        war: { name: 'ف٤ · الحرب' }, chronicle: { name: 'ف٥ · الكرونيكل' }, front: { name: 'الخاتمة · الصفحة الأولى' },
+        comeback: { name: 'ف٢ · الإيفننج بوست' }, stringer: { name: 'ف٣ · الجرايد الكبيرة' }, rival: { name: 'ف٤ · الحرب' },
       } },
       me: {
         pressCard: 'كارنيه الصحافة', level: 'مستوى', maxed: 'أعلى مستوى', streak: 'أيام متتالية', best: 'الأفضل {n}', dailies: 'التحديات', t1s: '{n} × المستوى الأول', bestScore: 'أعلى نتيجة', points: 'نقطة',
@@ -72,12 +75,12 @@ export default {
       bar: { daily: 'Diario', career: 'Carrera', room: 'Sala', toPlay: 'Juega hoy', ch: 'Cap {c} · Nv {n}', noRank: 'Sin puesto', start: 'Empezar', rank: '#{r}' },
       tabs: { home: 'Inicio', story: 'Historia', wire: 'Teletipo', friends: 'Amigos', me: 'Yo' },
       home: {
-        noName: 'Nuevo periodista', freelance: 'Freelance · aún sin periódico', xp: 'XP {a}/{b}', followers: '{n} seguidores', streak: 'Racha',
+        noName: 'Nuevo periodista', freelance: 'En paro desde el último día de mercado', xp: 'XP {a}/{b}', followers: '{n} seguidores', streak: 'Racha',
         dailyNo: 'El Diario · N.º {n}', todaysFive: 'Los cinco de hoy', filed: 'Enviado.', tag: 'Cinco culebrones de fichajes. Alguno miente. Dalo antes que nadie o hazte viral por errar.',
         filedSub: '{p} puntos {r}', weekAria: 'Esta semana', dow: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
         play: 'Coge el teléfono', resume: 'Vuelve al día {d}', seePage: 'Ver tu portada', fair: 'Los mismos cinco para todos · unos 6 min', tomorrow: 'Nuevos cinco a las {t}',
         missions: 'Misiones de hoy', missionsReset: 'Se renuevan a las {t}', claimed: 'Cobrada', modes: 'Tu mesa',
-        storyK: 'Modo historia', storyNew: 'La liaste la temporada pasada. Recupéralo todo.', storySub: 'Capítulo {c} · {name}',
+        storyK: 'Modo historia', storyNew: 'Alguien te coló un bulo. Descubre quién.', storySub: '{name}',
         wireK: 'Rumores reales', wireSub: 'Adelanta fichajes reales', wireLive: '{n} apuestas vivas',
         roomsK: 'Con amigos', roomsSub: 'Mismo tablero, una mesa', leaguePos: '{r}.º en tu liga',
         practiceK: 'Sin presión', practiceSub: 'El entrenador te enseña las probabilidades',
@@ -90,8 +93,9 @@ export default {
         practice: 'Juega una práctica', story: 'Juega una ventana de historia', wire: 'Apuesta en el Teletipo', twist: 'Acierta un culebrón con giro', room: 'Juega una sala con amigos',
       },
       story: { ch: {
-        blog: { name: 'Cap. 1 · El blog' }, comeback: { name: 'Cap. 2 · La vuelta' }, stringer: { name: 'Cap. 3 · Corresponsal' },
-        rival: { name: 'Cap. 4 · El rival' }, chronicle: { name: 'Cap. 5 · De vuelta en The Chronicle' }, front: { name: 'Cap. 6 · La portada' },
+        blog: { name: 'Cap. 1 · El blog' }, post: { name: 'Cap. 2 · El Evening Post' }, nationals: { name: 'Cap. 3 · Los nacionales' },
+        war: { name: 'Cap. 4 · La guerra' }, chronicle: { name: 'Cap. 5 · The Chronicle' }, front: { name: 'Epílogo · La portada' },
+        comeback: { name: 'Cap. 2 · El Evening Post' }, stringer: { name: 'Cap. 3 · Los nacionales' }, rival: { name: 'Cap. 4 · La guerra' },
       } },
       me: {
         pressCard: 'Carné de prensa', level: 'Nivel', maxed: 'Nivel máximo', streak: 'Racha', best: 'Mejor {n}', dailies: 'Diarios', t1s: '{n} × Tier 1', bestScore: 'Mejor puntuación', points: 'puntos',

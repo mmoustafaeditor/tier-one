@@ -26,7 +26,7 @@ const en = {
   },
   src: {
     kitman: 'The kit man', barber: 'The barber', agent: 'The agent', spotter: 'The airport spotter', physio: 'The physio', leak: 'The press office',
-    kitmanP: 'Cheap and honest. Knows if, never where.', barberP: 'Hears everything the street hears, including the lies.', agentP: 'Sells a move for a living. His “done” means little.',
+    kitmanP: 'Cheap and honest. Knows if, never where.', barberP: 'Hears everything the street hears, including the lies.', agentP: 'Sells a move for a living. Her “done” means little.',
     spotterP: 'No jets before day 3. When he sees one, believe it.', physioP: 'Near certain, once medicals start. Can’t tell Off from Fake.', leakP: 'The club’s own line. Returns your calls now.',
     kitmanRule: 'LEAVING: +1 Done, +1 Hijack · STAYING: +1 Off, +1 Fake', barberRule: '+1 to what he says. Street: count the street once.',
     agentRule: 'Done +1 · Hijack, Off or Fake +3', spotterRule: 'LINKED +3 Done · OTHER +3 Hijack · NOTHING +1 Off, +1 Fake',
@@ -38,7 +38,7 @@ const en = {
     opens: 'Opens day {n}', asked: 'Asked', again: 'Second opinion', broke: 'Not enough contacts', cost: '{n} pt', costs: '{n} pts', frozen: 'Frozen out: repeats the street',
   },
   rival: {
-    tabloid: '@BackPageBants', itk: '@TransferITK_', insider: '@PressBoxPete',
+    tabloid: '@BackPageBants', itk: '@ITK_Kev', insider: '@PressBoxPete',
     tabloidO: 'Tabloid · loud, early, often wrong', itkO: 'In the know, allegedly', insiderO: 'Press box regular · rarely wrong',
     when: 'Posts days {a}–{b} · on {p}% of stories', silent: 'Silent so far', posted: 'Posted {o} on day {d}', beforeTwist: 'Before the twist · no longer counts',
   },
@@ -79,7 +79,7 @@ const en = {
     heroHed: { lean: ['{to} move for {p} gathers pace', '{p} and {to}: the file thickens', '{from} braced as {to} circle {p}'], none: ['{to} linked with {p}. Nobody’s said a word', 'Is {p} going to {to}? Start ringing', '{p} to {to}: a rumour looking for a source'] },
   },
   night: {
-    title: 'Overnight', kicker: 'Day {n} · the morning papers', none: 'Quiet night. Nobody posted on your five.', contested: 'An exclusive on {o} for {p} is gone: {r} has it.',
+    title: 'Overnight', kicker: 'Day {n} · the morning papers', none: 'Quiet night. Nobody posted on your {n}.', contested: 'An exclusive on {o} for {p} is gone: {r} has it.',
     twist: 'TWIST · the {p} saga has turned', twistBody: 'The story changed at dawn. What the sources said before was true then. It doesn’t count now, and your call on it was withdrawn at no cost.',
     noTwist: 'No twist this window. What you’ve got is what it is.', back: 'Back to the phones · day {n}', ddGo: 'Start the clock',
     ddBody: 'Deadline Day. Sixty seconds, three contact points, three posts. The clock starts when you turn the page.',
@@ -169,7 +169,7 @@ const en = {
     play: 'Play this board', resume: 'Resume practice', archiveNeedNet: 'Past Dailies need a connection to fetch the board.', played: '{n} practice windows',
   },
   career: {
-    title: 'Career Desk', ranks: ['Local Blogger', 'Regional Reporter', 'National Correspondent', 'Chief Correspondent', 'Tier One'],
+    title: 'Career Desk', ranks: ['Blogger', 'Stringer', 'Correspondent', 'Chief', 'Tier One'],
     start: 'Start your career', startD: 'A laptop, a blog and three people who answer the phone. Rep 50 of 100.', window: 'Work a window', resume: 'Back to your window',
     rep: 'Reputation', repEq: 'Sustain {d} a window and you settle at {r}.', toNext: '{w} windows and Rep {r} to {rank}', top: 'Top of the tree.',
     right: 'Right', calls: 'of {n} calls', scoops: 'Scoops', exclusives: 'Exclusives', uturns: 'U-turns', ownedUp: 'Owned up', followers: 'Followers', windows: 'Windows',
@@ -181,7 +181,7 @@ const en = {
     stakeout: 'Stakeout', stakeoutD: 'Spotter a day early on one saga', use: 'Use', useOn: 'Use on this saga', tipFake: 'Tip-off: the {p} story is Fake.', tipReal: 'Tip-off: the {p} talks are real.',
     promoted: 'Promoted: {rank}', history: 'Recent windows', rival: 'Start again at a rival paper', rivalD: 'A new name and a fresh contact book. Your trophies stay.',
     leakToast: '{c}’s press office is returning your calls.', frozenToast: '{c} have frozen you out.', repLine: 'Rep {a} → {b}', followersLine: '+{n} followers', favoursEarned: '+{n} favour',
-    unl: ['Kit man, barber, agent · the tabloid', 'Airport spotter, the ITK · club relations', 'Physio, the insider · club leaks · Daily rules exactly', 'Superstar sagas · second opinions at Trust 5', '6 sagas, 5 contacts, a 45-second Deadline Day · the “Here we go” moment'],
+    unl: ['Dougie, Sal and Rosa · @BackPageBants', 'Terminal Tony, @ITK_Kev · club relations', 'Dr Inès, @PressBoxPete · club leaks · Daily rules exactly', 'Superstar sagas · second opinions at Trust 5 · Vince’s play', '6 sagas, 5 contacts, a 45-second Deadline Day · the “Here we go” moment'],
     boardLine: '{s} sagas · {c} contact points a day · Deadline Day {d} s',
     slotNote: 'One career slot. The Semba Pass adds two more (concept).',
   },
@@ -208,7 +208,7 @@ const en = {
       clean: ['Clean sheet', 'Five filed, five right.'], uturn: ['Owned up', 'U-turn and still be right.'], twist: ['Rewrite', 'Be right on the twisted saga.'], dd: ['Buzzer', 'File in the last 15 seconds of Deadline Day.'], silent: ['No comment', 'Finish a window without filing and not be spiked.'],
       fake: ['Smoke detector', 'Call a Fake right, Confirmed.'], hijack: ['Gazumped', 'Call a Hijack right.'], agent: ['Gold from the agent', 'Act on the agent’s Off or Fake and be right.'], echo: ['Echo chamber', 'Get burned by two agreeing street voices.'], physio: ['Hammer', 'Confirm on a physio read and be right.'],
       streak7: ['A week of mornings', 'Seven-day streak.'], streak30: ['A month of mornings', 'Thirty-day streak.'], practice5: ['Off the record', 'Five practice windows.'], coach: ['Studying the tape', 'Play a practice window with Coach on.'], career1: ['Name in print', 'Finish a Career window.'],
-      rank2: ['Regional', 'Reach Regional Reporter.'], rank3: ['National', 'Reach National Correspondent.'], rank5: ['Here we go', 'Reach Tier One in Career.'], trust5: ['Inner circle', 'A contact at Trust 5.'], leak: ['Open door', 'A club leaks to you.'],
+      rank2: ['Stringer', 'Reach Stringer in Story mode.'], rank3: ['Correspondent', 'Reach Correspondent in Story mode.'], rank5: ['Here we go', 'Reach Tier One in Career.'], trust5: ['Inner circle', 'A contact at Trust 5.'], leak: ['Open door', 'A club leaks to you.'],
       wire1: ['On the wire', 'File your first Wire call.'], wireRight: ['Called it', 'Win a Wire call.'], room: ['Group chat', 'Finish a Friends room round.'], share: ['Send it', 'Share a scoop card.'], rich: ['Expenses', 'Earn 500 credits.'],
     },
     got: 'Trophy · {n}', reward: '+{n} credits',

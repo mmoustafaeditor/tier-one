@@ -132,6 +132,7 @@
 .cn-contact__h { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
 .cn-contact__id h2 { font-family: var(--f-display); font-weight: 800; font-size: 20px; line-height: 1.1; }
 .cn-contact__id p { font-size: 13px; line-height: 1.35; color: var(--card-ink-2); margin-top: 2px; }
+.cn-contact__role { font-family: var(--f-text); font-weight: 700; font-size: 13px; color: var(--card-ink-3); white-space: nowrap; }
 .cn-contact__nick { font-family: var(--f-display); font-style: italic; font-size: 15px !important; color: var(--card-ink) !important; }
 .cn-lv { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .cn-lv b { font-size: 40px; color: var(--sc); animation: g-pop .45s var(--ease-slam) both; }

@@ -50,8 +50,42 @@ export function careerRules(c: CareerSave, cast: CastSaga[]): Rules {
     if (rel >= 3) PER[s.i] = { ...(PER[s.i] || {}), leak: RULES.LEAK };
     if (low <= -3 && SOURCES.kitman) PER[s.i] = { ...(PER[s.i] || {}), kitman: { cost: 1, from: 1, kind: 'street', rel: 0.45, says: ['LEAVING', 'STAYING'], map: [0, 0, 1, 1] } as Source };
   });
+  // Vince's play (chapter 4 on): one saga, one source fed a planted line. Same PER hook as the frozen-out kit man.
+  const vp = vincePick(c, cast);
+  if (vp && SOURCES[vp.src]) PER[vp.i] = { ...(PER[vp.i] || {}), [vp.src]: planted(SOURCES[vp.src], vp.src) };
   const AGAIN = c.rank >= 3 ? rk.src.filter((k) => trustLevel((c.contacts[k] || { trust: 0 }).trust) >= 5) : [];
   return { ...RULES, SAGAS: rk.sagas, CONTACTS: rk.contacts, DD_SECONDS: rk.dd, SOURCES, RIVALS: RULES.RIVALS.filter((r) => rk.rivals.includes(r.id)), PER, AGAIN, FAVOURS: true } as Rules;
+}
+
+// ---------- Vince's play (STORY.html, chapter 4 "The War": rank index 3 on; Career only, never the Daily, rooms or Practice).
+// One saga per window is Vince's play, and one of its sources (the agent, the barber or the airport spotter) has been fed
+// Vince's planted story: for that saga the source becomes a street voice with no reliability, so every read it gives is
+// the saga's spin (the rumour mill's planted outcome, which is never the truth at the time). The saga and the source are
+// fixed by the window's cast, so a resumed window is the same window, and the pick is the same on every device.
+// Scoring is untouched: this is the per-saga source override Career already uses for leaks and frozen-out kit men
+// (Rules.PER), read by the shared engine like any other source; the tally weights, the two-source rule and the points
+// don't change. The engine never sees the `vince` tag: it's a Career-only marker on the override, read by vinceOf().
+export const VINCE_RANK = 3;
+const VINCE_SRC = ['agent', 'barber', 'spotter'];
+type Planted = Source & { vince: true };
+function hashStr(s: string) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+export function vincePick(c: CareerSave, cast: CastSaga[]): { i: number; src: string } | null {
+  if (c.rank < VINCE_RANK || !cast.length) return null;
+  const opts = VINCE_SRC.filter((k) => RANKS[c.rank].src.includes(k));
+  if (!opts.length) return null;
+  const h = hashStr('vince|' + cast.map((s) => s.player.id + '>' + s.to.id).join('|'));
+  return { i: cast[h % cast.length].i, src: opts[(h >>> 11) % opts.length] };
+}
+function planted(so: Source, src: string): Source {
+  // A street voice keeps the source's own vocabulary (the spotter's LINKED/OTHER/NOTHING) through `map`.
+  const map = src === 'spotter' || src === 'physio' ? [0, 1, 2, 2] : src === 'kitman' ? [0, 0, 1, 1] : undefined;
+  const p: Planted = { cost: so.cost, from: so.from, says: so.says, kind: 'street', rel: 0, ...(map ? { map } : {}), vince: true };
+  return p;
+}
+/** Vince's play on a window's rules, if any: the saga and the source that was fed the line. */
+export function vinceOf(R: Rules): { i: number; src: string } | null {
+  for (const [i, per] of Object.entries(R.PER || {})) for (const [src, so] of Object.entries(per)) if (so && (so as Planted).vince) return { i: +i, src };
+  return null;
 }
 const rel0 = (c: CareerSave, id: string) => (c.relations[id] ? c.relations[id].v : 0);
 export const castOpts = (c: CareerSave) => ({ n: RANKS[c.rank].sagas, pool: RANKS[c.rank].pool, ...(c.rank < 2 ? { maxStar: 2 } : {}) });

@@ -12,8 +12,8 @@ import { Icon, Kit, GBtn, TopBar, shake } from '../ui/game';
 import { CallScene } from '../ui/CallScene';
 import { PostScene } from '../ui/PostScene';
 import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } from '../lib/meta';
-import { applyWindow, totalFavours, type CareerReport } from '../lib/career';
-import { storyBeats, pushBeats, type Beat } from '../lib/storyMode';
+import { applyWindow, totalFavours, vinceOf, type CareerReport } from '../lib/career';
+import { storyBeats, pushBeats, beatScene, type Beat } from '../lib/storyMode';
 import { Sheet, useNow, Crest } from '../ui/bits';
 import { SagaFile, RIVAL_IC, type RivalRecord } from './Saga';
 import { hereWeGo } from '../lib/share';
@@ -66,8 +66,13 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       const g = d.game ? d.game() : null;
       let rep: CareerReport | null = null;
       let added: Beat[] = [];
-      update((s) => { if (s.career && g) { rep = applyWindow(s.career, g, r, v.cast, s.milestones); added = pushBeats(s, storyBeats(s.career, { ...r, cast: r.cast && r.cast.length ? r.cast : v.cast }, rep)); } });
+      // Vince's play (Story, chapter 4 on): who lied is revealed with the results, by name.
+      const vp = vinceOf(v.R);
+      const vince = vp ? { ...vp, who: t('g.story.who.' + vp.src) } : null;
+      update((s) => { if (s.career && g) { rep = applyWindow(s.career, g, r, v.cast, s.milestones); added = pushBeats(s, storyBeats(s.career, { ...r, cast: r.cast && r.cast.length ? r.cast : v.cast }, rep, { seen: { ...(s.story?.beats || {}) }, vince })); } });
       if (added[0]) setBeat(added[0]);
+      // The story's films: a mid-chapter reveal or the finale plays over the results.
+      added.map(beatScene).forEach((id) => { if (id) playScene(id); });
       if (rep) {
         setReport(rep); onCareerDone(r, (rep as CareerReport).milestoneCredits);
         const cr = (rep as CareerReport);
@@ -208,6 +213,7 @@ function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Ga
   const circ = ln.none ? 0 : E.circlesFor(g, i, ln.o).size;
   const tw = g.twist && g.twist.i === i;
   const posted = E.livePosts(g, i).length;
+  const vince = view.mode === 'career' && vinceOf(view.R)?.i === i;
   return <button className={'scard' + (open ? ' is-open' : '') + (call ? ' is-called' : '') + (hint ? ' is-hint' : '')} style={{ ['--i' as string]: i }} onClick={onOpen} aria-label={c.player.n}>
     <Kit club={c.from} player={c.player} size={58} />
     <span className="scard__b">
@@ -215,6 +221,7 @@ function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Ga
       <span className="scard__r"><Crest club={c.from} size={18} /><Icon n={t.rtl ? 'back' : 'arrow'} size={14} /><Crest club={c.to} size={18} /><span>{c.to.s}</span></span>
       <span className="scard__st">
         {tw && <span key="tw" className="g-chip g-chip--red chip-in">{t('stamp.twist')}</span>}
+        {vince && <span key="vp" className="g-chip vince-chip" title={t('g.story.vince.banner')}><Icon n="eye" />{t('g.story.vince.chip')}</span>}
         {!call && (ln.none ? <span className="g-chip">{t('g.win.notRung')}</span> : <span key={'ln' + ln.o + (ln.split ? 's' : '') + circ} className={'g-chip chip-in g-chip--' + OUTS[ln.o]}>{ln.split ? t('daily.split') : t('daily.lean', { o: outWord(t.lang, ln.o) })}{circ >= 2 ? ' ✓✓' : ''}</span>)}
         {posted > 0 && !call && <span key={'rv' + posted} className="g-chip scard__riv chip-in"><Icon n="bolt" />{t('g.win.rivalPosted', { n: posted })}</span>}
       </span>
@@ -285,7 +292,7 @@ function NightScene({ night, view, onGo }: { night: Night; view: View; onGo: () 
     <div className="night2__sky" aria-hidden="true"><span className="night2__moon" /><span className="night2__sun" />{Array.from({ length: 24 }, (_, k) => <i key={k} className="night2__star" style={{ left: (k * 41) % 100 + '%', top: (k * 23) % 60 + '%', animationDelay: k * 90 + 'ms' }} />)}<span className="night2__city" /></div>
     <div className="night2__body">
       <div className="g-mono night2__k">{t('night.kicker', { n: night.day })}</div>
-      <h2 className="night2__h">{night.dd ? t('g.win.ddIncoming') : night.posts.length ? t('g.win.overnight', { n: night.posts.length }) : t('night.none')}</h2>
+      <h2 className="night2__h">{night.dd ? t('g.win.ddIncoming') : night.posts.length ? t('g.win.overnight', { n: night.posts.length }) : t('night.none', { n: view.cast.length })}</h2>
       {stage >= 1 && night.twist && <div className="twistcard"><span className={'g-stamp g-stamp--xl' + (skip ? '' : ' is-slam')} style={{ ['--sc' as string]: '#fff' }}>{t('g.saga.stopPress')}</span><b>{t('night.twist', { p: view.cast[night.twist.i].player.s })}</b><p>{t('night.twistBody')}</p></div>}
       {stage >= 1 && night.dd && <p className="night2__dd">{t('night.ddBody')}</p>}
       {stage >= 1 && night.posts.length > 0 && <div className="breaks">{night.posts.map((p, k) => { const c = view.cast[p.i]; const tn = tauntFor(t, g, p); return <div key={k} className="brk" style={{ animationDelay: skip ? '0ms' : lead + Math.min(k, 5) * NIGHT_STEP + 'ms' }}>
