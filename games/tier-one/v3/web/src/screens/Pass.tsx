@@ -60,11 +60,13 @@ export function PassScreen(chrome: Chrome) {
     const lane = gold ? ' is-gold' : '';
     if (!r) return <span className={'nslip__cell is-empty' + lane}><span className="nslip__what">{t('season.nothing')}</span></span>;
     const c = r.cos ? cosmetic(r.cos) : null;
-    const body = c ? <CosSwatch c={c} nick={s.nick} size="sm" /> : <span className="slip__coins"><span className="g-coin" aria-hidden="true" />{r.coins}</span>;
     const label = c ? cosName(t, c) : t('season.reveal.coins', { n: r.coins || 0 });
-    if (claimed) return <span className={'nslip__cell is-claimed' + lane}>{body}<span className="nslip__what">{label}</span><span className="slip__tick" aria-label={t('season.claimed')}><Icon n="check" size={12} /></span></span>;
+    // A coin reward reads as the coin itself (with the label for screen readers); a cosmetic shows its preview and name.
+    const body = c ? <CosSwatch c={c} nick={s.nick} size="sm" /> : <span className="slip__coins slip__coins--lg" role="img" aria-label={label}><span className="g-coin" aria-hidden="true" />{r.coins}</span>;
+    const what = c ? <span className="nslip__what">{label}</span> : null;
+    if (claimed) return <span className={'nslip__cell is-claimed' + lane}>{body}{what}<span className="slip__tick" aria-label={t('season.claimed')}><Icon n="check" size={12} /></span></span>;
     if (reached && open) return <button type="button" className={'nslip__cell is-ready' + lane} onClick={() => claim(r.lane, r.lv)} aria-label={t('season.claim') + ': ' + label}>{body}<span className="slip__claim">{t('season.claim')}</span></button>;
-    return <span className={'nslip__cell is-locked' + lane}>{body}<span className="nslip__what">{label}</span></span>;
+    return <span className={'nslip__cell is-locked' + lane}>{body}{what}</span>;
   };
   const slip = (r: (typeof rows)[number], now: boolean) => <li key={r.lv} className={'nslip' + (now ? ' is-now' : '')} aria-current={now ? 'step' : undefined}>
     <span className="nslip__n"><small>{now ? t('season.here') : t('season.lvShort')}</small><span className="g-num">{r.lv}</span></span>
@@ -118,9 +120,8 @@ export function PassScreen(chrome: Chrome) {
         <p className="g-fine">{t('season.xpLv', { n: def.ppPerLv })} {showGold ? t('season.trackNote') : t('season.trackNoteFree')}</p>
       </section>
 
-      <WeekEventBanner onPlay={() => chrome.go({ n: 'practice' })} />
-
-      <div className={'pass3__cols' + (showGold ? ' has-gold' : '')}>
+      <div className="pass3__cols">
+        <WeekEventBanner onPlay={() => chrome.go({ n: 'practice' })} />
         <section className="storec g-card g-card--desk" aria-labelledby="store-h">
           <div className="storec__head">
             <h2 id="store-h" className="storec__h">{t('season.store.k')}</h2>
@@ -130,8 +131,8 @@ export function PassScreen(chrome: Chrome) {
           <div className="storec__peek" aria-hidden="true">{storeItems().filter((c, k, a) => a.findIndex((x) => x.kind === c.kind) === k).map((c) => <CosSwatch key={c.id} c={c} nick={s.nick} size="sm" />)}</div>
           <button type="button" className="g-btn g-btn--gold" onClick={() => { sfx('open'); setStore(true); }}><Icon n="gift" size={20} />{t('season.store.open')}</button>
         </section>
-        {showGold && <GoldCard sname={sname} have={tv.gold} />}
       </div>
+      {showGold && <GoldCard sname={sname} have={tv.gold} />}
     </div>
     <Sheet open={store} onClose={() => setStore(false)} label={t('season.store.k')} wide>
       <StoreSheet onClose={() => setStore(false)} />

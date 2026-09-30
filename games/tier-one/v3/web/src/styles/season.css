@@ -216,6 +216,8 @@
 .nslip__cell.is-ready:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--gold-deep); }
 .nslip__cell.is-ready .slip__coins { color: var(--gold-deep); }
 .nslip__cell .slip__tick { top: 4px; inset-inline-end: 4px; }
+.slip__coins--lg { font-size: 24px; gap: 6px; }
+.slip__coins--lg .g-coin { width: 18px; height: 18px; }
 .storec { display: grid; gap: 10px; padding: 16px; }
 .storec__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .storec__h { font-family: var(--f-display); font-weight: 800; font-size: 24px; line-height: 1.1; color: var(--on-desk); }
@@ -230,8 +232,9 @@
 .storesheet__sec { margin-top: 18px; }
 .storesheet .g-sub { color: var(--on-desk-2); font-size: 13.5px; }
 .storesheet button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.pass3__cols > .wkev { align-self: stretch; }
 @media (min-width: 1024px) {
-  .pass3__cols.has-gold { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .pass3__cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
   .snext__keys, .nslip { grid-template-rows: 48px 104px; }
   .snext__grid.has-gold .snext__keys, .snext__grid.has-gold .nslip { grid-template-rows: 48px 104px 104px; }
   .nslip__what { font-size: 12.5px; }
