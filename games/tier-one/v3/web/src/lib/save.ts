@@ -213,5 +213,5 @@ export function shallowEq(a: unknown, b: unknown): boolean {
 }
 if (typeof window !== 'undefined') {
   window.addEventListener('pagehide', flush);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
 }
