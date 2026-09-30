@@ -3,9 +3,9 @@
 // insider) still come from the rules, their ledgers still live in lib/byline.ts. This file only answers "who is this
 // account, what does it sound like, and which line does it say now".
 //
-// Voice packs are i18n (parts/rivals.<lang>.ts):
+// Voice packs are i18n (parts/rivals.ts, en/ar/es):
 //   cn.taunt.<id>.<winning|losing|level>[]   feed taunts/concessions after a window ({rec} record, {p} player, {name} you)
-//   rv.<id>.hwg.right[] / rv.<id>.hwg.wrong[] reactions to your HERE WE GO landing or not ({p})
+//   rv.<id>.cp.right[] / rv.<id>.cp.wrong[]   reactions to your catchphrase call landing or not ({p}, {phrase})
 //   rv.<id>.uturn[]                            reactions to a Delete & repost ({p})
 //   rv.<id>.dd[]                               Deadline Day lines (the in-window day 7)
 //   rv.<id>.ddlive.<open|close|lead|trail>[]   Deadline Day Live lines (the calendar event)
@@ -15,13 +15,14 @@
 //   • byline.ts / social.ts   pick a taunt with tauntIndex() so pools longer than 8 are reachable (done on this branch).
 //   • Window.tsx overnight    rivalLine(lang, id, 'dd', seed, { p }) beside the generic calls.night.* line.
 //   • DDLive.tsx / ui/live.tsx rivalLine(lang, id, 'ddlive.open' | 'ddlive.close' | 'ddlive.lead' | 'ddlive.trail', seed, { p, name }).
-//   • PostScene / Results     rivalLine(lang, id, 'hwg.right' | 'hwg.wrong' | 'uturn', seed, { p }).
+//   • PostScene / Results     rivalLine(lang, id, 'cp.right' | 'cp.wrong' | 'uturn', seed, { p }) ({phrase} defaults to yours).
 //   • Rivals screen           rivalRoster() lists house + active creator rivals; creator cards carry `creator: true`.
 import { trList, tr, fill, type Vars } from './i18n';
 import { getConfig, flag } from './flags';
 import { getSave } from './save';
+import { myCatchphrase } from './banter';
 
-export type RivalKind = 'press' | 'mod' | 'creator';
+export type RivalKind = 'press' | 'creator';
 export interface RivalCard {
   id: string;
   /** i18n key for the handle when house (`rival.<id>`), or the literal handle for a creator. */
@@ -31,7 +32,7 @@ export interface RivalCard {
   avatar?: string;
   kind: RivalKind;
   /** Which voice pack this account speaks with (a house id). */
-  voice: 'tabloid' | 'itk' | 'insider' | 'clubmod';
+  voice: Voice;
   /** True for the three engine rivals that post on sagas and keep a ledger. */
   ledger: boolean;
   creator?: CreatorRival;
@@ -39,21 +40,23 @@ export interface RivalCard {
 /** One entry of api/tier-one/v4/config/rivals.json, as config.get returns it (consent metadata stays server-side). */
 export interface CreatorRival {
   id: string; handle: string; name: string; initials?: string; avatar?: string;
-  voice: 'tabloid' | 'itk' | 'insider' | 'clubmod';
+  voice: Voice;
+  /** The creator code players type to follow them (and, later, the revenue-share attribution). */
   code?: string; from?: string; until?: string; active?: boolean; lang?: string[];
 }
 
-// The house. @ClubModFC has no ledger and never posts on a saga: it is the fan-page mod who lives in the replies.
+export type Voice = 'tabloid' | 'itk' | 'insider';
+const VOICES: Voice[] = ['tabloid', 'itk', 'insider'];
+// The house: three fictional accounts. Never a real reporter or account (docs/LEGAL_NAMES.md).
 export const HOUSE: RivalCard[] = [
   { id: 'tabloid', handle: 'rival.tabloid', name: 'Back Page Bants', initials: 'BB', kind: 'press', voice: 'tabloid', ledger: true },
   { id: 'itk', handle: 'rival.itk', name: 'ITK Kev', initials: '?', kind: 'press', voice: 'itk', ledger: true },
   { id: 'insider', handle: 'rival.insider', name: 'Press Box Pete', initials: 'PP', kind: 'press', voice: 'insider', ledger: true },
-  { id: 'clubmod', handle: 'rival.clubmod', name: 'Club Mod FC', initials: 'CM', kind: 'mod', voice: 'clubmod', ledger: false },
 ];
 export const HOUSE_IDS = HOUSE.map((r) => r.id);
 export const houseOf = (id: string) => HOUSE.find((r) => r.id === id) || null;
 /** The pack an id speaks with: a house id is its own pack; a creator id resolves through the roster; unknown → tabloid. */
-export function voiceOf(id: string): RivalCard['voice'] {
+export function voiceOf(id: string): Voice {
   const h = houseOf(id); if (h) return h.voice;
   const c = creatorRivals().find((r) => r.id === id); return c ? c.voice : 'tabloid';
 }
@@ -71,7 +74,7 @@ export function creatorRivals(lang: string = getSave().lang, day = dayNow()): Cr
   const cfg = getConfig() as (ReturnType<typeof getConfig> & { rivals?: CreatorRival[] }) | null;
   const list = cfg && Array.isArray(cfg.rivals) ? cfg.rivals : [];
   return list.filter((r) => r && r.id && r.handle && r.active !== false && (!r.from || r.from <= day) && (!r.until || r.until >= day) && (!r.lang || !r.lang.length || r.lang.includes(lang)))
-    .filter((r) => ['tabloid', 'itk', 'insider', 'clubmod'].includes(r.voice));
+    .filter((r) => VOICES.includes(r.voice));
 }
 /** House rivals first, then every active creator rival. Screens render `creator` cards with the literal handle. */
 export function rivalRoster(): RivalCard[] {
@@ -101,12 +104,12 @@ export function tauntIndex(seed: string, id: string, st: string, prev = -1): num
 /** Friend pool (so.taunt.<st>) size, same rule. */
 export function friendPoolSize(st: string): number { const l = trList('en', 'so.taunt.' + st); return Math.max(LEGACY_TAUNTS, Array.isArray(l) ? l.length : 0); }
 
-export type RivalLineKind = 'hwg.right' | 'hwg.wrong' | 'uturn' | 'dd' | 'ddlive.open' | 'ddlive.close' | 'ddlive.lead' | 'ddlive.trail';
+export type RivalLineKind = 'cp.right' | 'cp.wrong' | 'uturn' | 'dd' | 'ddlive.open' | 'ddlive.close' | 'ddlive.lead' | 'ddlive.trail';
 /** One line from a rival's voice pack, seeded (same seed, same line), with {p} {name} {rec} filled. '' when the pack is missing. */
 export function rivalLine(lang: string, id: string, kind: RivalLineKind, seed: string | number, v: Vars = {}): string {
   const l = trList(lang, 'rv.' + voiceOf(id) + '.' + kind) as string[] | undefined;
   if (!Array.isArray(l) || !l.length) return '';
-  const vars: Vars = { name: getSave().nick || tr(lang, 'd2.post.you'), ...v };
+  const vars: Vars = { name: getSave().nick || tr(lang, 'd2.post.you'), phrase: myCatchphrase(lang), ...v };
   return fill(l[hash(id + '|' + kind + '|' + seed) % l.length], vars);
 }
 /** A feed-style taunt for any state, outside the ledger flow (DD Live tables, creator cards, previews). */
@@ -115,4 +118,10 @@ export function tauntLine(lang: string, id: string, st: 'winning' | 'losing' | '
   if (!Array.isArray(l) || !l.length) return '';
   const vars: Vars = { name: getSave().nick || tr(lang, 'd2.post.you'), rec: '0–0', p: '', ...v };
   return fill(l[hash(id + '|' + st + '|' + seed) % l.length], vars);
+}
+
+/** Creator lookup by code (the "beat @creator" board and the follow flow). Case-insensitive; null when off or unknown. */
+export function creatorByCode(code: string): CreatorRival | null {
+  const k = code.trim().toUpperCase();
+  return (k && creatorRivals().find((c) => (c.code || '').toUpperCase() === k)) || null;
 }
