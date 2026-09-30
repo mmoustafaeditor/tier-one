@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-09-30 · mmoustafaeditor (Claude Code session) · Tier One 3.3 "One Byline": connected career with global byline, seasons, HERE WE GO, Remotion scenes
+- **What changed:** GOTY polish pass with six parallel lanes (connect, calls, season, shell, football, scenes). Every mode now feeds one journalist: shared byline (followers/rep/hot hand), Contacts Book (XP levels, cosmetics), rival ledgers, one unified Feed, and Home's Next Up. HERE WE GO! reaction on Done/Confirmed calls (gold frame, exclusive stamp, confetti, buzz). Hold-to-publish button with print-roller animation, Delete & repost with ratio pile-on, rival race avatars lighting up, overnight Breaking cards with taunts. Seasons follow the real 2026/27 calendar (Rumour Mill, Winter/Spring/Summer Windows) with 40-level Pass (free + Gold cosmetics: frames, inks, flairs, ringtones, byline flair, desk themes). Weekly events (seeded by ISO week) with rewards. Weekly event banners on Home and Practice. Desktop layouts: 1024px+ left-rail nav, 3-column Home dashboard, results two-column. Motion tokens, View Transitions, tilt, Roll numbers, haptics. Updated 2026/27 football data (summer transfers, Winter 2027 Wire). Three Remotion cutscenes (CareerColdOpen, SourceIntro, SeasonOpener) rendered server-side as MP4s. All text in EN, AR (Egyptian), ES with RTL/LTR logic, AA contrast, visible keyboard focus, reduced-motion respect.
+- **Files:** `games/tier-one/v3/web/src/**` (all UI lanes merged), `games/tier-one/v3/GOTY.md` (spec), `games/tier-one/v3/web/package.json` (3.3.0), `tier-one/version.json`.
+- **Heads-up for the team:** Scenes lane (Remotion cutscenes) completing separately; will merge once ready. Build is 2,945 kB (1,633 gzipped). No engine changes (Daily stays server-scored). Career perks (askCost, bookPerks) ready but not yet integrated into engine (Career/Practice windows unchanged for now; cosmetics + season progression + global byline wired).
+
 ## 2026-09-30 · mmoustafaeditor (Claude session) · Tier One: post animation, call gate, no hints, banter results
 - **What changed:** Publishing plays a new post animation (`ui/PostScene.tsx`, rebuilt from the classic composer;
   tap to skip, reduced-motion static). The call panel opens with "Make a call" / "Decide later"; loudness chips no
