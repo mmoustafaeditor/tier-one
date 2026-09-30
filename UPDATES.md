@@ -17,6 +17,23 @@ together with your change.
 
 ---
 
+## 2026-09-30 · lane9 (Claude session) · The Gaffer: purple mark replaced by the green banner mark
+- **What changed:** The violet "THE [GAFFER]" banner and violet launcher "G" (v0.12, still in the published APK) are
+  replaced by a refreshed mark in The Gaffer's own greens: same Barlow Condensed ExtraBold Italic letterforms and
+  slanted banner. Two options behind one switch, `BRAND` in `games/the-gaffer/web/src/brand.ts`: **A** green banner /
+  white type (default, shipped) and **B** white banner / green type. The switch drives the title-screen wordmark, the
+  favicon, the share-card colours, and on Android (build.gradle reads it) the launcher icons, adaptive icon
+  (foreground, background, monochrome) and the splash. Android window/status/nav colour: navy #070B16 -> #062421.
+- **Files:** `games/the-gaffer/web/src/brand.ts` (new), `web/index.html`, `web/vite.config.ts`, `web/src/ui2/Title.tsx`,
+  `web/src/ui2/share.ts`, `web/src/styles/app.css`, `scripts/brand-assets.mjs` (new generator), `android/app/build.gradle`,
+  `android/app/src/main/java/.../MainActivity.java`, `android/app/src/main/res/{values,values-v31,drawable,mipmap-anydpi-v26}`,
+  `android/app/src/brandA|brandB/res` (moved launcher PNGs), `android/store/icon.svg`, `android/store/play-store-icon-512.png`.
+- **Heads-up for the team:** Not published: `/the-gaffer/` still has the old build until someone runs `npm run build:min`.
+  **The APK must be rebuilt and republished** (`downloads/TheGaffer.apk`): launcher icons live in the APK and
+  launchers cache them, so only a new APK (higher versionCode) clears the purple. No service worker or web manifest
+  exists, so there is no web cache to bump; the build number bumps itself. Switching to option B: set `BRAND = 'B'`,
+  rebuild web + APK (both options' Android icons are already generated). Tier One and the studio site are untouched.
+
 ## 2026-09-29 · mmoustafaeditor · Tier One 3.1: the newsroom game (classic spirit + v3 newspaper)
 - **What changed:** The v3 presentation layer is rebuilt as "paper on the newsroom desk" (spec: `games/tier-one/v3/HYBRID.md`). Dark desk with newsprint cards, chunky game buttons, colour per mode, motion everywhere, and the cheeky classic voice.
   - **Home:** a press pass (level, XP, streak flame), Today's five with a live countdown and week dots, 3 daily missions with coin rewards, mode tiles and a wire ticker.

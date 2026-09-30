@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import pkg from './package.json' with { type: 'json' };
+import { faviconSvg, svgDataUri } from './src/brand';
 
 // The Gaffer ships as ONE index.html (like Tier One) so the Android WebView project can bundle it as-is.
 // The shared Semba design system lives at the repo root in design/, three levels up.
@@ -20,6 +21,12 @@ const collapseHtml = (): Plugin => ({
   name: 'gaffer-collapse-html',
   enforce: 'post',
   transformIndexHtml: (html) => html.replace(/>\s+</g, '><').trim(),
+});
+
+// The favicon is drawn from the brand mark (src/brand.ts), so the one BRAND switch covers it too.
+const brandIcon = (): Plugin => ({
+  name: 'gaffer-brand',
+  transformIndexHtml: (html) => html.replace('%GAFFER_FAVICON%', svgDataUri(faviconSvg()).replace(/'/g, '%27')),
 });
 
 // Every build gets a number: minutes since 1970. Newer builds always have a bigger number, whether they were made
@@ -49,7 +56,7 @@ const publish = (): Plugin => ({
 export default defineConfig(({ mode }) => {
   const min = mode === 'min';
   return {
-    plugins: [react(), viteSingleFile(), ...(min ? [collapseHtml(), publish()] : [])],
+    plugins: [brandIcon(), react(), viteSingleFile(), ...(min ? [collapseHtml(), publish()] : [])],
     define: { __APP_VERSION__: JSON.stringify(pkg.version), __BUILD__: String(BUILD), __MIN_SHELL__: String(MIN_SHELL) },
     server: { fs: { allow: ['..', '../../../design'] } },
     build: {

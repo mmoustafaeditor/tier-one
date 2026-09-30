@@ -158,9 +158,9 @@ select.field { appearance: auto; }
 .title-top .stripe { width: 44px; height: 4px; }
 .langs .chip { min-height: 36px; }
 .title-hero { padding: var(--s-6) 0 var(--s-2); }
-.wordmark { margin: 0; font-family: var(--f-display); font-stretch: 125%; font-weight: 900; letter-spacing: -.03em; line-height: .86; color: var(--on-ground); font-size: clamp(64px, 16vw, 148px); }
-.wordmark span { display: block; font-size: .32em; letter-spacing: .3em; font-weight: 700; color: var(--accent); margin-bottom: .1em; }
-.wordmark b { display: block; font-weight: 900; background: linear-gradient(180deg, #F4FFFB 30%, #9DEFD6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+/* The brand mark (src/brand.ts): "THE" + GAFFER on the slanted banner, an inline SVG that scales with the width. */
+.wordmark { margin: 0; line-height: 0; }
+.wordmark svg { display: block; width: clamp(240px, 84vw, 520px); height: auto; max-width: 100%; filter: drop-shadow(0 10px 28px rgba(0,0,0,.35)); }
 .tag-line { margin-top: var(--s-3); font: 600 17px/1.3 var(--f-text); color: var(--on-ground-2); }
 .title-grid { display: grid; gap: var(--s-4); }
 .title-grid > * { min-width: 0; }

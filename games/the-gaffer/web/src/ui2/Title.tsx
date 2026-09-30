@@ -5,7 +5,11 @@ import type { Strings, UiLang } from '../i18n';
 import type { XStrings } from '../lang-v2';
 import type { SaveMeta } from '../model/types';
 import { Crest, I } from './kit';
+import { wordmarkSvg } from '../brand';
 import { Panel, Sheet } from './shell';
+
+// The brand mark (brand.ts): a constant SVG string, the same one the favicon and Android icons are drawn from.
+const WORDMARK = wordmarkSvg('dark');
 
 export interface SlotView { slot: number; meta: SaveMeta | null; legacy?: boolean; bad?: boolean }
 const LANGS: [UiLang, string][] = [['en', 'EN'], ['ar', 'عربي'], ['es', 'ES'], ['fr', 'FR']];
@@ -38,7 +42,7 @@ export function Title({ t, x, slots, bad, busy, ui, onLang, onOpen, onNew, onQui
           <LangSwitch ui={ui} onLang={onLang} />
         </header>
         <section className="title-hero on-ground">
-          <h1 className="wordmark" aria-label="The Gaffer"><span>THE</span> <b>GAFFER</b></h1>
+          <h1 className="wordmark" aria-label="The Gaffer" dangerouslySetInnerHTML={{ __html: WORDMARK }} />
           <p className="tag-line">{T.tag}</p>
         </section>
         {bad && <div className="banner-warn on-ground" role="alert"><I n="alert" /><span>{T.badSave}</span></div>}

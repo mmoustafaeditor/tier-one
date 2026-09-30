@@ -2,9 +2,11 @@
 // system share sheet when the device supports sharing files. E2E #36: the old card's layout broke and its file had
 // no proper name; here the layout is fixed-size and the file name says what it is.
 
+import { GLOW, GROUND } from '../brand';
+
 export const CARD_W = 1080;
 
-const BG = '#070B16', PANEL = '#111831', LINE = 'rgba(255,255,255,.12)', TEXT = '#F4F6FB', MUTED = '#9AA3BD', ACCENT = '#A78BFA';
+const BG = GROUND, PANEL = '#0A302C', LINE = 'rgba(255,255,255,.12)', TEXT = '#F4F6FB', MUTED = '#B3D3CB', ACCENT = GLOW;
 const DISPLAY = '"Barlow Condensed", "Cairo", system-ui, sans-serif';
 const BODY = '"Barlow", "Tajawal", system-ui, sans-serif';
 
@@ -26,12 +28,12 @@ export async function painter(h: number, rtl: boolean): Promise<Painter> {
   c.height = h;
   const x = c.getContext('2d')!;
   x.direction = rtl ? 'rtl' : 'ltr';
-  // Background: deep navy with a purple glow at the top.
+  // Background: the Gaffer ground with a mint glow at the top.
   x.fillStyle = BG;
   x.fillRect(0, 0, CARD_W, h);
   const g = x.createRadialGradient(CARD_W / 2, -200, 50, CARD_W / 2, -200, 1100);
-  g.addColorStop(0, 'rgba(167,139,250,.35)');
-  g.addColorStop(1, 'rgba(167,139,250,0)');
+  g.addColorStop(0, 'rgba(125,235,203,.35)');
+  g.addColorStop(1, 'rgba(125,235,203,0)');
   x.fillStyle = g;
   x.fillRect(0, 0, CARD_W, h);
   const round = (px: number, py: number, w: number, hh: number, r: number) => {

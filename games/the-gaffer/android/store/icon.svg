@@ -1,9 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <radialGradient id="glow" cx="50%" cy="0%" r="90%"><stop offset="0" stop-color="#A78BFA" stop-opacity=".45"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></radialGradient>
-  </defs>
-  <rect width="512" height="512" rx="112" fill="#070B16"/>
-  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
-  <polygon points="150,96 432,96 362,416 80,416" fill="#A78BFA"/>
-  <text x="258" y="372" text-anchor="middle" font-family="Barlow Condensed" font-style="italic" font-weight="800" font-size="330" fill="#070B16">G</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><radialGradient id="glow" cx="50%" cy="0%" r="90%"><stop offset="0" stop-color="#7DEBCB" stop-opacity=".32"/><stop offset="1" stop-color="#7DEBCB" stop-opacity="0"/></radialGradient><linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#062421"/><stop offset="1" stop-color="#021311"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#ground)"/><rect width="512" height="512" rx="112" fill="url(#glow)"/><polygon points="148,96 430,96 362,416 80,416" fill="#0F8A70"/><g fill="#FFFFFF"><path transform="translate(178.5 372) scale(3.3)" d="M2.8 -15.8Q2.8 -16.7 3 -18.9L7 -51.2Q8 -60.2 14.2 -65.5Q20.4 -70.8 29.6 -70.8Q38 -70.8 42.9 -66.3Q47.8 -61.8 47.8 -54.1Q47.8 -53.2 47.6 -51L47.1 -47.3Q47 -46.8 46.7 -46.5Q46.3 -46.1 45.8 -46.1H32Q31.5 -46.1 31.2 -46.5Q30.9 -46.8 31 -47.3L31.5 -51.2L31.6 -52.2Q31.6 -54.2 30.6 -55.4Q29.6 -56.6 27.9 -56.6Q26 -56.6 24.7 -55.1Q23.4 -53.6 23.1 -51.2L19.1 -18.8L19 -17.7Q19 -15.7 20 -14.6Q21 -13.4 22.6 -13.4Q24.5 -13.4 25.9 -14.9Q27.2 -16.4 27.5 -18.8L28.3 -25.2Q28.5 -25.7 27.9 -25.7H25.4Q24.9 -25.7 24.6 -26.1Q24.3 -26.4 24.4 -26.9L25.7 -37.5Q25.7 -38 26.1 -38.4Q26.5 -38.7 27 -38.7H44.9Q45.4 -38.7 45.7 -38.4Q46 -38 45.9 -37.5L43.6 -18.9Q42.6 -9.9 36.4 -4.5Q30.1 0.8 20.9 0.8Q12.5 0.8 7.7 -3.6Q2.8 -8.1 2.8 -15.8Z"/></g></svg>

@@ -9,6 +9,10 @@ def buildDir0 = file('../../build')
 def webVersion = new groovy.json.JsonSlurper().parse(new File(webDir, 'package.json')).version
 def infoFile = new File(buildDir0, 'version.json')
 def webBuild = infoFile.exists() ? (new groovy.json.JsonSlurper().parse(infoFile).build as Integer) : 5
+// Brand mark option ('A' green banner / 'B' white banner): the same BRAND switch as the web game, read from brand.ts.
+// Its launcher icons and adaptive foreground live in src/brandA/res and src/brandB/res (scripts/brand-assets.mjs).
+def brandMatch = (new File(webDir, 'src/brand.ts').text =~ /export const BRAND = '([AB])'/)
+def gafferBrand = brandMatch.find() ? brandMatch.group(1) : 'A'
 
 android {
     namespace 'com.sembagames.thegaffer'
@@ -39,6 +43,8 @@ android {
         debug { signingConfig signingConfigs.debug }
         release { minifyEnabled false }
     }
+
+    sourceSets { main { res.srcDirs += "src/brand${gafferBrand}/res" } }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
