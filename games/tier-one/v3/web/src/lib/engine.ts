@@ -73,3 +73,47 @@ export function shadow(p: Pub, R: Rules = RULES): Game {
 }
 export const OUTS = ['done', 'hijack', 'off', 'fake'] as const;
 export const STRENGTHS = ['talks', 'advanced', 'confirmed'] as const;
+
+// ---------- Tier One 4 "The Call" (games/tier-one/v3/RULES4.md). The v3 exports above stay until every screen has moved. ----------
+import * as E40 from '../../../../../../api/tier-one/v3/_lib/engine4.mjs';
+export type Act4 = ['a', number, string] | ['c', number, number, number] | ['e'];
+export interface Clue4 { src: string; day: number; r: number }
+export interface Call4 { o: number; s: number; day: number }
+export interface Post4 { i: number; id: string; day: number; claim: number }
+export interface Source4 { cost: number; from: number; kind: 'own' | 'street'; says?: string[]; M?: number[][]; rel?: number }
+export interface Rules4 {
+  STORIES: number; DAYS: number; CALLS: number[]; PRIOR: number[]; SPIN: number[][];
+  WIN: number[]; LOSS: number[]; EARLY: number[]; SCOOP: number[];
+  SOURCES: Record<string, Source4>; RIVALS: { id: string; days: number[]; p: number; kind: string; rel: number }[];
+  TIERS: { T1: number; T2: number; T3: number; T4: number };
+}
+export interface Story4 { i: number; truth: number; spin: number; rivals: { id: string; day: number; claim: number }[] }
+export interface Board4 { v: 4; seed: string; stories: Story4[] }
+export interface Pub4 { v: 4; day: number; left: number; over: boolean; clues: Clue4[][]; calls: (Call4 | null)[]; feed: Post4[] }
+export interface Game4 extends Omit<Pub4, 'v' | 'over'> { board: Board4; R: Rules4; log: Act4[] }
+export interface Preview4 { win: number; lose: number; early: number; scoop: number }
+export interface ResultStory4 {
+  i: number; truth: number; spin: number; reads: (Clue4 & { right: boolean })[]; rivals: { id: string; day: number; claim: number; right: boolean }[];
+  firstRight: { id: string; day: number; claim: number } | null; call: Call4 | null; pts: number; right: boolean; scoop: boolean;
+  why: 'uncalled' | 'wrong' | 'scoop' | 'small' | 'beaten'; parts: { win: number; early: number; scoop: number; loss: number };
+}
+export interface Result4 { v: 4; total: number; right: number; wrong: number; scoops: number; called: number; per: ResultStory4[]; tier: Tier }
+type Engine4API = {
+  V: 4; OUT: string[]; RULES: Rules4; SRC: string[]; RIVAL_IDS: string[];
+  rulesFor(mode: 'daily' | 'deadline' | 'career', opts?: { rank?: number; trust?: Record<string, number> }): Rules4;
+  buildBoard(seed: string, R?: Rules4): Board4; newGame(b: Board4, R?: Rules4): Game4; apply(g: Game4, a: Act4): boolean;
+  replay(b: Board4, log: Act4[], R?: Rules4): Game4 | null; pub(g: Game4): Pub4; resolve(g: Game4): Result4; finish(g: Game4): Game4; isOver(g: Game4 | Pub4): boolean;
+  ask(g: Game4, i: number, src: string): Clue4 | null; call(g: Game4, i: number, o: number, s: number): boolean; endDay(g: Game4): boolean;
+  askState(g: Game4, i: number, src: string): 'none' | 'over' | 'asked' | 'closed' | 'broke' | 'ok';
+  callState(g: Game4, i: number): 'none' | 'over' | 'called' | 'nosource' | 'ok';
+  preview(g: Game4, i: number, o: number, s: number): Preview4; scoopOpen(g: Game4, i: number, o: number): boolean;
+  posterior(g: Game4, i: number): number[]; tierFor(total: number, scoops: number, R?: Rules4): Tier;
+  tierBars(R?: Rules4): { T1: number; T2: number; T3: number }; gridRow(r: Result4): string; readRight(R: Rules4, s: Story4, c: Clue4): boolean;
+};
+export const E4 = E40 as unknown as Engine4API;
+export const RULES4 = E4.RULES;
+export const OUTS4 = ['signs', 'elsewhere', 'stays'] as const;
+export const BACKING = ['x1', 'x2', 'allin'] as const;
+// Daily boards from this UTC date play by 4.0; older Dailies keep v3 so the archive still replays.
+export const V4_FROM = '2026-10-05';
+export const isV4Day = (ymd: string) => ymd >= V4_FROM;
