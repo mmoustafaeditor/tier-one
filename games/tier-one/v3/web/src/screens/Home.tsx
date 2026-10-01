@@ -27,7 +27,7 @@ export function Home(chrome: Chrome) {
       <Pop className="ph-me" onTap={() => chrome.openApp('lens')} label={t('os.app.lens')}>
         <span className="ph-me__ava" aria-hidden="true">{(s.nick || 'You').split(/\s+/).map((x) => x[0]).join('').slice(0, 2).toUpperCase()}</span>
         <span className="ph-me__who"><b dir="auto">{s.nick || t('g.home.noName')}</b><small className="g-mono">{t('os.home.widget.level', { n: lv.n })} · {t('os.home.widget.rep', { n: b.rep })}</small></span>
-        <Ticker n={b.followers} compact icon="me" label={t('cn.me.followers')} className="ph-me__f" />
+        <Ticker n={b.followers} compact icon="me" className="ph-me__f" />
         <Ticker n={s.credits} icon="gift" tone="gold" className="ph-me__c" />
       </Pop>
 
@@ -82,7 +82,7 @@ function Widget({ nx, go, played, total, tier }: { nx: NextUp; go: (r: Route) =>
       <span className="ph-widget__k"><AppIcon id="blurt" size={22} /><b>{t('os.app.blurt')}</b><span className="g-num ph-widget__clock">{hms}</span></span>
       <h2 className="ph-widget__t">{played ? t('os.home.widget.played') : live ? t('os.home.widget.resume', { d: live }) : t('os.tray.windowOpen')}</h2>
       <p className="ph-widget__s">{played ? t('os.home.widget.playedB', { tier: t('tier.' + tier), n: num(total || 0) }) + ' · ' + t('os.home.widget.nextB', { t: resetAt() }) : t('os.tray.windowOpenB')}</p>
-      <GBtn size="lg" primary={!played} shine={!played} kind={played ? 'dark' : ''} sound="os.open" onClick={() => go({ n: 'daily' })}>
+      <GBtn primary={!played} shine={!played} kind={played ? 'dark' : ''} sound="os.open" onClick={() => go({ n: 'daily' })}>
         <Icon n={played ? 'news' : live ? 'uturn' : 'play'} size={24} />{played ? t('os.tray.results') : live ? t('os.home.widget.resume', { d: live }) : t('os.home.widget.play')}
       </GBtn>
     </section>;
@@ -95,6 +95,6 @@ function Widget({ nx, go, played, total, tier }: { nx: NextUp; go: (r: Route) =>
     <span className="ph-widget__k"><AppIcon id={app} size={22} /><b>{t('os.app.' + app)}</b></span>
     <h2 className="ph-widget__t">{t(k + '.t')}</h2>
     <p className="ph-widget__s">{nx.kind === 'practice' && v.e ? t(k + '.se', v) : t(k + '.s', v)}</p>
-    <GBtn size="lg" kind={nx.kind === 'mission' ? 'gold' : 'dark'} sound="os.open" onClick={() => go(nx.kind === 'mission' ? { n: 'me' } : nx.to.n === 'play' ? ({ ...nx.to, key: Date.now() } as Route) : nx.to)}>{t(k + '.b')}<Icon n="arrow" size={22} /></GBtn>
+    <GBtn kind={nx.kind === 'mission' ? 'gold' : 'dark'} sound="os.open" onClick={() => go(nx.kind === 'mission' ? { n: 'me' } : nx.to.n === 'play' ? ({ ...nx.to, key: Date.now() } as Route) : nx.to)}>{t(k + '.b')}<Icon n="arrow" size={22} /></GBtn>
   </section>;
 }

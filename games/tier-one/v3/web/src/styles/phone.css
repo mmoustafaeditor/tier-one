@@ -111,7 +111,7 @@ html.os body::before { display: none; }
 .ph-me__ava { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; background: var(--app-lens); color: #2A1C00; font-family: var(--f-display); font-weight: 800; font-size: 16px; letter-spacing: -.02em; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18); }
 .ph-me__who { display: grid; gap: 1px; min-width: 0; }
 .ph-me__who b { font-family: var(--f-display); font-weight: 800; font-size: 17px; line-height: 1.05; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ph-me__who small { color: var(--os-ink-3); font-size: 10.5px; }
+.ph-me__who small { color: var(--os-ink-3); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ph-me .jc-ticker { font-size: 15px; }
 .ph-me__f svg { color: var(--os-ink-3); }
 /* the widget */
@@ -149,6 +149,7 @@ html.os body::before { display: none; }
 .ph-tile--dock { padding: 0; animation: none; }
 
 /* ---------- the home bar: a gesture pill (tap or swipe up = home) and the back arrow */
+.ph.has-app .ph-bar { background: linear-gradient(transparent, var(--os-bg) 55%); }
 .ph-bar { position: fixed; z-index: 58; inset-inline: 0; bottom: 0; height: calc(var(--os-bar-h) + env(safe-area-inset-bottom, 0)); padding-bottom: env(safe-area-inset-bottom, 0); display: grid; place-items: center; pointer-events: none; }
 .ph-bar__home { pointer-events: auto; width: 160px; height: var(--os-bar-h); display: grid; place-items: center; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .ph-bar__home i { width: 120px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--os-ink) 70%, transparent); transition: transform var(--tr-tap), background-color var(--tr-ui); }
@@ -185,7 +186,7 @@ html.os body::before { display: none; }
 /* ---------------------------------------------------------------- juice (ui/juice.tsx) */
 .jc-pop { transition: transform var(--tr-tap); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .jc-pop:active:not(:disabled) { transform: scale(.96); }
-.jc-count { font-variant-numeric: tabular-nums; }
+.jc-count, .jc-ticker .g-roll { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
 .jc-ticker { position: relative; display: inline-flex; align-items: baseline; gap: 5px; font-family: var(--f-cond); font-stretch: 80%; font-weight: 800; font-size: 18px; line-height: 1; white-space: nowrap; }
 .jc-ticker svg { align-self: center; }
 .jc-ticker small { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--os-ink-3, var(--on-desk-3)); font-weight: 500; }

@@ -2,10 +2,9 @@
 // what's next, results, deals, rivals, unlocks), and "Tap to unlock". A tap or a swipe up unlocks; tapping a tray
 // item unlocks straight into it. The wallpaper is the one the home screen wears (styles/phone.css .ph-wall).
 import { useRef, useState } from 'react';
-import { useT, fmtDate, num, resetAt } from '../lib/i18n';
+import { useT, fmtDate, resetAt } from '../lib/i18n';
 import { useSave } from '../lib/save';
 import { ymdUTC } from '../lib/meta';
-import { nextUp } from '../lib/byline';
 import { stageOf, type Rumour } from '../lib/wireData';
 import { sfx, haptic } from '../lib/sfx';
 import { Icon } from '../ui/game';
@@ -20,13 +19,10 @@ export function rumourHed(t: ReturnType<typeof useT>, r: Rumour) {
   return t('wire.heds.' + stageOf(r), { c: l ? l.name : '', p: r.playerName });
 }
 
-/** Tray lines the save itself implies (never stored): the window open / waiting, today's result. */
+/** Tray lines the save itself implies and nobody stored (a live Story window). Today's window and today's result are
+ *  posted by App.tsx through notify(), so they are not repeated here. */
 function derivedTray(s: ReturnType<typeof useSave>, t: ReturnType<typeof useT>): TrayItem[] {
-  const today = ymdUTC(), out: TrayItem[] = [];
-  const played = s.daily[today];
-  const nx = nextUp(s);
-  if (played) out.push({ id: 'd:res', at: Date.now(), app: 'blurt', title: t('os.tray.results'), body: t('os.tray.resultsB', { tier: t('tier.' + played.tier), n: num(played.total) }), action: { to: { n: 'daily' } } });
-  else if (nx.kind === 'daily') out.push({ id: 'd:win', at: Date.now(), app: 'blurt', title: t('os.tray.windowOpen'), body: nx.v?.d ? t('os.tray.resumeB', { d: nx.v.d }) : t('os.tray.windowOpenB'), action: { to: { n: 'daily' } } });
+  const out: TrayItem[] = [];
   if (s.career?.live) out.push({ id: 'd:story', at: Date.now(), app: 'story', title: t('os.app.story'), body: t('os.tray.resumeB', { d: s.career.live.log.filter((a) => a[0] === 'e').length + 1 }), action: { to: { n: 'story' } } });
   return out;
 }

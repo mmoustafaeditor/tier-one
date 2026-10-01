@@ -127,12 +127,12 @@ function chip(kind: string, title: string, body: string, actions: { label: strin
   document.body.appendChild(el);
 }
 
-// ---------- theme-color follows the edition (the manifest carries the Morning Paper; Late Edition sets it here)
+// ---------- theme-color follows the phone's theme (styles/phone.css --os-bg: dark by default, light with data-edition="morning")
 function watchEdition() {
   const meta = () => { let m = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]:not([media])'); if (!m) { m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); } return m; };
   const apply = () => {
     const ed = document.documentElement.getAttribute('data-edition') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'late' : 'morning');
-    meta().content = ed === 'late' ? '#121110' : '#F2EEE5';
+    meta().content = ed === 'late' ? '#0B0C0F' : '#EEEBE4';
   };
   apply();
   new MutationObserver(apply).observe(document.documentElement, { attributes: true, attributeFilter: ['data-edition'] });

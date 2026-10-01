@@ -124,6 +124,8 @@ export function App() {
     go({ n: 'front' }); return true;
   }, [go]);
   useEffect(() => { setTrayNav(go, openApp); }, [go, openApp]);
+  // The lock screen is not Home: the season opener and anything else that waits for Home (lib/scenes.ts onHome) waits for the unlock.
+  useEffect(() => { document.documentElement.dataset.route = locked ? 'lock' : routeRef.current.n; }, [locked]);
   useEffect(() => { document.documentElement.classList.toggle('has-vt', 'startViewTransition' in document); }, []);
   // The equipped headline font rides on <html> (data-hd + --hd-*), so the results card and the share card pick it up from CSS.
   const hdId = useSaveSel((x) => x.desk?.equip?.headline || '');
