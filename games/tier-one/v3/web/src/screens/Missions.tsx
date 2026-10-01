@@ -9,6 +9,7 @@ import { toast } from '../lib/meta';
 import { ensureMissions, missionsView, claimMission } from '../lib/progress';
 import { ensureWeekly, weeklyView, claimWeekly, weekEnds } from '../lib/missions41';
 import { trackView, claimReward, ensureSeason } from '../lib/season';
+import { Hint } from '../ui/hint';
 import { Screen, Chips } from '../ui/screen';
 import type { Chrome } from '../App';
 
@@ -62,5 +63,5 @@ export function MissionsScreen(chrome: Chrome) {
         {r.claimed ? <span className="ms-row__ok">{t('g.home.claimed')}</span>
           : <button type="button" className="s41-btn s41-btn--sm" disabled={!r.done} onClick={() => claim(r.id)}>{t('s41.ms.claim')}</button>}
       </li>) : <li className="pc-empty">{t('md4.loading')}</li>}</ul>}
-  </Screen>;
+  <Hint id="missions">{t('s41.hint.missions')}</Hint></Screen>;
 }

@@ -12,6 +12,7 @@ import { saysWord4, outWord4, backWord4 } from '../lib/story';
 import { Kit } from '../ui/game';
 import { Crest } from '../ui/bits';
 import { Pop } from '../ui/juice';
+import { Hint } from '../ui/hint';
 import { Screen } from '../ui/screen';
 import { CONTACTS, ContactAvatar, accShort, lockShort } from '../ui/CallScene';
 
@@ -20,7 +21,10 @@ export const OUT_KEYS = ['signs', 'elsewhere', 'stays'] as const;
 export function inkOn(hex: string): string {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return '#fff';
   const n = parseInt(m[1], 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-  return 0.299 * r + 0.587 * g + 0.114 * b > 150 ? '#111' : '#fff';
+  // WCAG: whichever of black / white reads better on this colour (one of them always clears 4.5:1).
+  const lin = (v: number) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  return (L + 0.05) / 0.05 >= 1.05 / (L + 0.05) ? '#000' : '#fff';
 }
 export function ClubChip({ club }: { club: WClub }) {
   return <span className="d41-club" style={{ ['--c1' as string]: club.c1, ['--c2' as string]: club.c2, ['--ci' as string]: inkOn(club.c1) } as CSSProperties}><Crest club={club} size={14} /><b dir="auto">{club.s}</b></span>;
@@ -35,7 +39,7 @@ export function windowLabel(t: ReturnType<typeof useT>, d: Driver4): string {
   switch (d.mode) {
     case 'daily': return d.no ? t('d41.win.dailyN', { n: d.no }) : t('d41.win.daily');
     case 'room': return t('d41.win.room', { n: (d.room?.round || 0) + 1 });
-    case 'career': return d.label || t('d41.win.career');
+    case 'career': { const m = /^story:(\d+):(\d+)$/.exec(d.label || ''); return m ? t('c41.sub', { n: m[1], w: m[2] }) : d.label || t('d41.win.career'); }
     case 'tutorial': return t('d41.win.tutorial');
     case 'deadline': return t('d41.win.deadline');
     case 'challenge': return t('d41.win.challenge');
@@ -110,7 +114,7 @@ export function PlayerScreen({ driver, pub, i, landed, notes, right, onBack, onA
       {lines.slice(0, hint ? 2 : 3).map((l) => <p key={l.k} className={'d41-line is-' + l.tone}>{l.who && <span dir="ltr">{l.who}</span>}{l.text}</p>)}
       {!hint && !lines.length && <p className="d41-intel__quiet">{t('d41.player.quiet')}</p>}
     </div>
-  </Screen>;
+  {driver.mode !== 'tutorial' && <Hint id="player">{t('s41.hint.player')}</Hint>}</Screen>;
 }
 
 // ---------------------------------------------------------------- the decide sheet

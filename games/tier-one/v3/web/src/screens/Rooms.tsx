@@ -56,7 +56,7 @@ function Lobby({ chrome, joinCode: j0, onOpen, onMake }: { chrome: Chrome; joinC
     remember(r, n); sfx('os.open'); buzz(15); onOpen(r.room.code);
   };
   return <Screen title={t('w41.rm.title')} sub={s.nick ? <>{withHandle(t('w41.rm.as', { n: '{n}' }), s.nick)}</> : undefined} onBack={chrome.home} tone="rooms"
-    footer={<button type="button" className="rm-btn rm-btn--main" onClick={() => { sfx('ui.tap'); onMake(); }}>{t('w41.rm.start')}</button>}>
+    footer={<><button type="button" className="rm-btn rm-btn--ghost rm-btn--slim" onClick={() => chrome.go({ n: 'boards', tab: 'rooms' })}>{t('w41.leaderboard')}</button><button type="button" className="rm-btn rm-btn--main" onClick={() => { sfx('ui.tap'); onMake(); }}>{t('w41.rm.start')}</button></>}>
     <form className="rm-join" onSubmit={(e) => { e.preventDefault(); if (code.trim().length >= 4 && !busy) void join(); }}>
       <label className="rm-lbl" htmlFor="rm-code">{t('w41.rm.joinT')}</label>
       <div className="rm-join__row">

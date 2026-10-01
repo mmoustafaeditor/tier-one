@@ -1,0 +1,1 @@
+import{t as s,ae as a,af as t,X as o,ag as n,ah as r}from"./index-CItzt3mO.js";const c=(a,t)=>s(a,"out."+r[t]),u=(a,t)=>s(a,"str."+n[t]),e=(t,o)=>s(t,"out4."+a[o]),f=(a,o)=>s(a,"back4."+t[o]);function i(s,a,t){const n=o(s,`src4.says.${a}`);return n&&null!=n[t]?n[t]:e(s,t)}export{u as a,f as b,c,e as o,i as s};

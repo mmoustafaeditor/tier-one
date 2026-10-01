@@ -13,7 +13,7 @@ import { makeDriver, type Driver4, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
 import { LockScreen } from './screens/Front';
 import { installTilt, prefersReducedMotion } from './ui/game';
-import { Phone, readFeedFor, AppIcon, appOf, appById, routeOf, isUnlocked, levelInfo, unlockLevel, callLevel, APPS, type AppId } from './ui/phone';
+import { Phone, readFeedFor, AppIcon, appOf, appById, routeOf, isUnlocked, levelInfo, unlockLevel, callLevel, APPS, HOME_ORDER, type AppId } from './ui/phone';
 import { NotifyHost, notify, setTrayNav } from './ui/juice';
 import { onGain, onDriverDone } from './lib/meta';
 import { nextCareerWindow } from './lib/storyMode';
@@ -30,8 +30,9 @@ const Onboarding = lazy(() => import('./screens/Onboarding').then((m) => ({ defa
 const ShopScreen = lazy(() => import('./screens/Customize').then((m) => ({ default: m.CustomizeScreen })));
 const DDLiveScreen = lazy(() => import('./screens/DDLive').then((m) => ({ default: m.DDLiveScreen })));
 const PressCardScreen = lazy(() => import('./screens/PressCard').then((m) => ({ default: m.PressCardScreen })));
+const BoardsScreen = lazy(() => import('./screens/Leaderboards').then((m) => ({ default: m.BoardsScreen })));
 const MissionsScreen = lazy(() => import('./screens/Missions').then((m) => ({ default: m.MissionsScreen })));
-import { setNav } from './screens/Connect';
+import { setNav } from './ui/connect';
 import { SocialWatch } from './ui/social';
 import { captureReferral, headlineVars, headlineStyle } from './lib/wallet';
 import './lib/earned'; // registers the earned-looks hook (lib/earnhook.ts) the game events call
@@ -44,14 +45,15 @@ import './styles/system.css';
 import './styles/phone.css';
 import './styles/desktop.css';
 
-export type CardTab = 'overall' | 'daily' | 'career' | 'deadline' | 'wire' | 'rooms' | 'boards' | 'sponsor';
+export type CardTab = 'overall' | 'daily' | 'career' | 'deadline' | 'wire' | 'rooms' | 'sponsor';
+export type BoardTab = 'daily' | 'rooms' | 'wire';
 export type ShopCat = 'lockface' | 'theme' | 'device' | 'catchphrase' | 'coins' | 'gold';
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'story' } | { n: 'practice' } | { n: 'ddlive' }
   | { n: 'rooms'; code?: string; challenge?: string } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'settings' }
-  | { n: 'card'; tab?: CardTab } | { n: 'missions' } | { n: 'shop'; cat?: ShopCat }
+  | { n: 'card'; tab?: CardTab } | { n: 'boards'; tab?: BoardTab; period?: 'daily' | 'weekly' | 'wire' } | { n: 'missions' } | { n: 'shop'; cat?: ShopCat }
   // 4.0 / 3.x routes kept as aliases (normalized in go()): never rendered as themselves.
-  | { n: 'desk' } | { n: 'editor' } | { n: 'me' } | { n: 'pass' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize' } | { n: 'boards'; period?: 'daily' | 'weekly' | 'wire' }
+  | { n: 'desk' } | { n: 'editor' } | { n: 'me' } | { n: 'pass' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize' }
   | { n: 'play'; mode: 'practice' | 'career' | 'tutorial' | 'deadline' | 'challenge'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
 /** What every screen gets: `go` (any route), `back` (the previous screen, or home from an app's first level), `home`,
@@ -64,19 +66,18 @@ function normalize(r: Route): Route {
     case 'feed': return { n: 'daily' };
     case 'desk': case 'editor': return { n: 'story' };
     case 'me': case 'pass': case 'rivals': case 'contacts': return { n: 'card' };
-    case 'boards': return { n: 'card', tab: 'boards' };
     case 'customize': return { n: 'shop' };
   }
   return r;
 }
-const LEGACY_TAB: Record<string, Route> = { desk: { n: 'story' }, daily: { n: 'daily' }, wire: { n: 'wire' }, story: { n: 'story' }, career: { n: 'story' }, me: { n: 'card' }, pass: { n: 'card' }, practice: { n: 'practice' }, howto: { n: 'howto' }, rooms: { n: 'rooms' }, newsroom: { n: 'newsroom' }, feed: { n: 'daily' }, rivals: { n: 'card' }, contacts: { n: 'card' }, customize: { n: 'shop' }, ddlive: { n: 'ddlive' }, editor: { n: 'story' }, boards: { n: 'card', tab: 'boards' }, settings: { n: 'settings' }, missions: { n: 'missions' } };
+const LEGACY_TAB: Record<string, Route> = { desk: { n: 'story' }, daily: { n: 'daily' }, wire: { n: 'wire' }, story: { n: 'story' }, career: { n: 'story' }, me: { n: 'card' }, pass: { n: 'card' }, practice: { n: 'practice' }, howto: { n: 'howto' }, rooms: { n: 'rooms' }, newsroom: { n: 'newsroom' }, feed: { n: 'daily' }, rivals: { n: 'card' }, contacts: { n: 'card' }, customize: { n: 'shop' }, ddlive: { n: 'ddlive' }, editor: { n: 'story' }, boards: { n: 'boards' }, settings: { n: 'settings' }, missions: { n: 'missions' } };
 function initialRoute(): { route: Route; locked: boolean } {
   const q = new URLSearchParams(location.search);
   if (q.get('room')) return { route: { n: 'rooms', code: q.get('room')!.toUpperCase().slice(0, 8) }, locked: false };
   if (q.get('challenge')) return { route: { n: 'rooms', challenge: q.get('challenge')!.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) }, locked: false };
   if (q.get('newsroom')) return { route: { n: 'newsroom', code: q.get('newsroom')!.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) }, locked: false };
   const app = q.get('app'); const def = app ? appById(app) : null;
-  if (def) return { route: isUnlocked(def.id) ? (app === 'boards' || app === 'leaderboards' ? { n: 'card', tab: 'boards' } : def.route) : { n: 'front' }, locked: false };
+  if (def) return { route: isUnlocked(def.id) ? def.route : { n: 'front' }, locked: false };
   const tab = q.get('tab');
   if (tab && LEGACY_TAB[tab]) return { route: LEGACY_TAB[tab], locked: false };
   return { route: { n: 'front' }, locked: true };
@@ -158,7 +159,7 @@ export function App() {
       if (locked) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sfx('os.unlock'); setLocked(false); } return; }
       if (modal) return;
       if (e.key === 'Escape') { if (!document.querySelector('.scr__back:not(.scr__back--none)') && back()) e.preventDefault(); return; }
-      if (routeRef.current.n === 'front' && /^[1-9]$/.test(e.key)) { const a = APPS[Number(e.key) - 1]; if (a && isUnlocked(a.id)) { e.preventDefault(); openApp(a.id); } }
+      if (routeRef.current.n === 'front' && /^[1-9]$/.test(e.key)) { const a = HOME_ORDER[Number(e.key) - 1]; if (a && isUnlocked(a)) { e.preventDefault(); openApp(a); } }
     };
     window.addEventListener('keydown', k);
     return () => window.removeEventListener('keydown', k);
@@ -206,6 +207,7 @@ export function App() {
   const app = appOf(route);
   const chrome: Chrome = { go, back: () => { back(); }, openSettings: () => go({ n: 'settings' }), edition, home, openApp };
   setNav(go);
+  if (import.meta.env.DEV) (window as any).__t1go = go; // dev: the layout check drives routes
 
   let screen;
   switch (route.n) {
@@ -219,11 +221,12 @@ export function App() {
     case 'ddlive': screen = <DDLiveScreen {...chrome} />; break;
     case 'settings': screen = <SettingsScreen {...chrome} />; break;
     case 'card': screen = <PressCardScreen {...chrome} tab={route.tab} />; break;
+    case 'boards': screen = <BoardsScreen {...chrome} tab={route.tab || (route.period === 'wire' ? 'wire' : undefined)} period={route.period === 'weekly' ? 'weekly' : undefined} />; break;
     case 'missions': screen = <MissionsScreen {...chrome} />; break;
     case 'shop': screen = <ShopScreen {...chrome} cat={route.cat} />; break;
     default: screen = <Home {...chrome} />;
   }
-  const pageKey = route.n + ('key' in route ? ':' + route.key : '') + ('tab' in route && route.tab ? ':' + route.tab : '');
+  const pageKey = route.n + ('key' in route ? ':' + route.key : '');
   return <Phone app={app} locked={locked}>
     {locked ? <LockScreen onUnlock={() => setLocked(false)} />
       : <div className="ph__page" key={pageKey} data-anim={anim || undefined} onAnimationEnd={() => setAnim('')}><Suspense fallback={<RouteStage />}>{screen}</Suspense></div>}

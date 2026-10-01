@@ -15,7 +15,7 @@
 /* ---------- filters + search */
 .wm-filters button[aria-expanded='true'] { border-color: var(--accent, #F2B632); }
 .wm-filters button { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.wm-search { flex: none; height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--wm-line); background: rgba(0, 0, 0, .2); color: inherit; font: 500 15px/1 var(--font-ui, system-ui); }
+.wm-search { flex: none; height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--wm-line); background: rgba(0, 0, 0, .2); color: inherit; font: 500 15px/1 var(--font-ui, system-ui); }
 .wm-search::placeholder { color: inherit; opacity: .6; }
 .wm-search:focus { outline: 2px solid var(--accent, #F2B632); outline-offset: 0; }
 .wm-empty { margin: auto; text-align: center; opacity: .8; }

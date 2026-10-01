@@ -1,15 +1,14 @@
-// Press Card (UI41.md §Press Card): your stats card for every mode, plus leaderboards and your sponsor. Replaces Me,
-// Lens and Boards. Eight tabs in two rows; every tab fits one screen (long lists page with <Pager>). Numbers are read
+// Press Card (UI41.md §Press Card): your stats card for every mode, plus your sponsor (leaderboards are their own app,
+// screens/Leaderboards.tsx). Seven tabs; every tab fits one screen (long lists page with <Pager>). Numbers are read
 // from the save and the server's boards; nothing here changes a score.
 import { useEffect, useState, type ReactNode } from 'react';
 import { useT, num } from '../lib/i18n';
 import { useSave, type Save } from '../lib/save';
 import { sfx } from '../lib/sfx';
-import { v3 } from '../lib/api';
 import { toast, onShared, ACH_IDS } from '../lib/meta';
 import { rankHeld, REP, nextRank, hotMult } from '../lib/economy';
 import { bylineOf } from '../lib/byline';
-import { medals, unpaid, claimPrize, checkPrizes } from '../lib/awards';
+import { medals, checkPrizes } from '../lib/awards';
 import { bossRecords, noteToday } from '../lib/lens';
 import { goalOf, chapterName } from '../lib/storyMode';
 import { marketProfile, useWire } from '../lib/wireData';
@@ -18,14 +17,14 @@ import { syncSponsors, active as activeDeals, offersFor, accept, decline, dealSt
 import { catchphraseOf, catchphraseColor } from '../lib/catchphrase';
 import { renderCpCard, postToX, X_TAGS } from '../lib/share';
 import { equipped } from '../lib/wallet';
-import { Screen, Pager, Chips } from '../ui/screen';
-import { ordinal } from '../ui/social';
+import { Hint } from '../ui/hint';
+import { Screen, Pager } from '../ui/screen';
 import { RivalMark } from '../ui/connect';
 import { BrandMark } from '../ui/customize';
 import { levelInfo, isUnlocked, unlockLevel } from '../ui/phone';
 import type { Chrome, CardTab } from '../App';
 
-const TABS: CardTab[] = ['overall', 'daily', 'career', 'deadline', 'wire', 'rooms', 'boards', 'sponsor'];
+const TABS: CardTab[] = ['overall', 'daily', 'career', 'deadline', 'wire', 'rooms', 'sponsor'];
 const fmt = (n: number) => Math.round(n).toLocaleString('en');
 
 export function PressCardScreen({ tab: want, ...chrome }: Chrome & { tab?: CardTab }) {
@@ -51,7 +50,7 @@ export function PressCardScreen({ tab: want, ...chrome }: Chrome & { tab?: CardT
   return <Screen title={t('s41.app.card')} onBack={chrome.back} footer={foot[tab]}>
     <div className="pc-tabs" role="tablist" aria-label={t('s41.app.card')}>
       {TABS.map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => { sfx('ui.tap'); setTab(k); }}>
-        {t('s41.pc.tab.' + k)}{k === 'sponsor' && offersFor(s).length > 0 && <i className="pc-dot" aria-hidden="true" />}{k === 'boards' && unpaid(s).length > 0 && <i className="pc-dot" aria-hidden="true" />}
+        {t('s41.pc.tab.' + k)}{k === 'sponsor' && offersFor(s).length > 0 && <i className="pc-dot" aria-hidden="true" />}
       </button>)}
     </div>
     <div className="pc-body" key={tab}>
@@ -61,10 +60,9 @@ export function PressCardScreen({ tab: want, ...chrome }: Chrome & { tab?: CardT
       {tab === 'deadline' && <DeadlineTab s={s} />}
       {tab === 'wire' && <WireTab />}
       {tab === 'rooms' && <RoomsTab s={s} />}
-      {tab === 'boards' && <Boards s={s} />}
       {tab === 'sponsor' && <Sponsor s={s} />}
     </div>
-  </Screen>;
+  <Hint id="card">{t('s41.hint.card')}</Hint></Screen>;
 }
 
 /** A 2-column grid of labelled numbers: the number big, the label under it. */
@@ -194,30 +192,6 @@ function RoomsTab({ s }: { s: Save }) {
     [t('s41.pc.rounds'), s.stats.m_room || 0],
     [t('s41.pc.gold'), m.gold], [t('s41.pc.silver'), m.silver], [t('s41.pc.bronze'), m.bronze],
   ]} />;
-}
-
-// ---------------------------------------------------------------- Leaderboards
-type Period = 'daily' | 'weekly' | 'wire';
-type Board = { rows: { nick: string; score: number; tier?: string; me: boolean }[]; me?: { rank: number; score: number }; players: number };
-function Boards({ s }: { s: Save }) {
-  const t = useT();
-  const [p, setP] = useState<Period>('daily');
-  const [boards, setBoards] = useState<Partial<Record<Period, Board | 'off'>>>({});
-  useEffect(() => {
-    if (boards[p]) return;
-    v3<Board>('lb.top', { period: p, dev: s.dev }).then((r) => setBoards((b) => ({ ...b, [p]: r.ok ? r : 'off' })));
-  }, [p]); // eslint-disable-line react-hooks/exhaustive-deps
-  const b = boards[p];
-  const due = unpaid(s);
-  const collect = (key: string) => { const n = claimPrize(key); if (n) { sfx('sparkle'); toast('ach', t('md4.bd.collected', { n })); } };
-  return <>
-    <Chips value={p} onChange={(k) => { sfx('ui.tap'); setP(k); }} options={[{ k: 'daily', label: t('s41.pc.today') }, { k: 'weekly', label: t('s41.pc.week') }, { k: 'wire', label: t('s41.app.wire') }]} />
-    {due[0] && <div className="pc-prize"><span>{t('s41.pc.prize', { r: ordinal(t, due[0].rank) })}</span><button type="button" className="s41-btn s41-btn--sm" onClick={() => collect(due[0].key)}>{t('s41.pc.collect', { n: due[0].coins })}</button></div>}
-    <p className="pc-you">{b && b !== 'off' && b.me ? <><b>{ordinal(t, b.me.rank)}</b><span>{t('md4.bd.of', { n: num(b.players) })}</span></> : <span>{b === undefined ? t('md4.loading') : b === 'off' ? t('md4.bd.off') : t('s41.pc.notOn')}</span>}</p>
-    {b && b !== 'off' && <Pager items={b.rows} per={5} empty={t('s41.pc.notOn')} render={(x, k) => <div key={k} className={'pc-row' + (x.me ? ' is-me' : '')}>
-      <b className="pc-row__r">{ordinal(t, k + 1)}</b><span className="pc-row__n" dir="auto">{x.me ? t('common.you') : '@' + x.nick}</span><b className="pc-row__s g-num">{num(Math.round(x.score))}</b>
-    </div>} />}
-  </>;
 }
 
 // ---------------------------------------------------------------- Sponsor

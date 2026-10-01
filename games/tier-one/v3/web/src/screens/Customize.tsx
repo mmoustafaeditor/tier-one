@@ -10,6 +10,7 @@ import { toast } from '../lib/meta';
 import { itemsOf, onSale, priceNow, isStandard, GOLD_CREDITS, type Item } from '../lib/catalog';
 import { equipped, owns, buy, equipItem, shortBy, goldItemId, buyCoinPack, buyCreditPack, creditPacksOnSale, COIN_PACKS, CREDIT_PACKS, type Currency } from '../lib/wallet';
 import { isGold } from '../lib/season';
+import { Hint } from '../ui/hint';
 import { Screen, Pager } from '../ui/screen';
 import { itemName, lineText, CreditIcon } from '../ui/customize';
 import { LookThumb } from '../ui/phone';
@@ -39,7 +40,7 @@ export function CustomizeScreen({ cat: want, ...chrome }: Chrome & { cat?: ShopC
       <p className="sh-dek">{t('s41.sh.dek.' + cat)}</p>
       <Pager key={cat} items={chunk(items, 3)} per={2} render={(row, k) => <div key={k} className="sh-row">{row.map((x) => <LookTile key={x.id} it={x} s={s} kind={cat} selected={x.id === it?.id} onPick={() => { sfx('ui.tap'); setSel((m) => ({ ...m, [cat]: x.id })); }} />)}</div>} />
     </>}
-  </Screen>;
+  <Hint id="shop">{t('s41.hint.shop')}</Hint></Screen>;
 }
 
 function LookTile({ it, s, kind, selected, onPick }: { it: Item; s: Save; kind: string; selected: boolean; onPick: () => void }) {

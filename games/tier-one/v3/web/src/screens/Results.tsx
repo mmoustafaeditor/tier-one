@@ -72,7 +72,7 @@ export function ResultsScreen({ driver, out, gain, chrome }: { driver: Driver4; 
 
   return <>
     <Screen title={t('d41.res.title')} sub={windowLabel(t, driver)} onBack={() => chrome.go(nextRoute(driver))}
-      footer={<><Pop className="d41-btn d41-btn--quiet" onTap={share}>{msg || t('d41.res.share')}</Pop><Pop className="d41-btn" onTap={() => chrome.go(nextRoute(driver))}>{t('d41.res.next.' + nextKey)}</Pop></>}>
+      footer={<><Pop className="d41-btn d41-btn--quiet" onTap={share}>{msg || t('d41.res.share')}</Pop>{driver.mode === 'daily' && <Pop className="d41-btn d41-btn--quiet" onTap={() => chrome.go({ n: 'boards', tab: 'daily' })}>{t('w41.leaderboard')}</Pop>}<Pop className="d41-btn" onTap={() => chrome.go(nextRoute(driver))}>{t('d41.res.next.' + nextKey)}</Pop></>}>
       <section className={'d41-score is-' + out.tier.toLowerCase() + (done ? ' is-done' : '')}>
         <span className="d41-score__tier">{done ? <span className="d41-tierstamp">{tierName}</span> : null}</span>
         <span className="d41-score__n"><b className="g-num"><Count n={done ? out.total : 0} sign /></b><small>{t('d41.res.pts')}</small></span>

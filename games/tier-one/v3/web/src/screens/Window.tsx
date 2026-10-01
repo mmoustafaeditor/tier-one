@@ -20,6 +20,7 @@ import { nextCareerWindow } from '../lib/storyMode';
 import { catchphraseOf } from '../lib/catchphrase';
 import { Kit } from '../ui/game';
 import { Pop } from '../ui/juice';
+import { Hint } from '../ui/hint';
 import { Screen } from '../ui/screen';
 import { TutorialLayer } from '../ui/tutorial';
 import { CallScene, lockShort } from '../ui/CallScene';
@@ -191,7 +192,7 @@ function Board({ driver, pub, busy, tagged, keys, onBack, onOpen, onEnd }: { dri
         <StatusChip pub={pub} i={i} />
       </button>)}
     </div>
-  </Screen>;
+  {driver.mode !== 'tutorial' && <Hint id="board">{t('s41.hint.board')}</Hint>}</Screen>;
 }
 
 // ---------------------------------------------------------------- Deadline Day
@@ -243,7 +244,7 @@ function DeadlineBoard({ driver, pub, clock, busy, onBack, onOpen, onEnd }: { dr
         <StatusChip pub={pub} i={i} />
       </button>)}
     </div>
-  </Screen>;
+  <Hint id="deadline">{t('s41.hint.deadline')}</Hint></Screen>;
 }
 
 /** The rival ticker: one post at a time slides in. */

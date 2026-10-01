@@ -388,7 +388,7 @@
 .rm-btn--ghost { background: transparent; border-color: var(--rm-line); }
 .rm-btn--danger { flex: 2 !important; background: #D2381B; color: #fff; }
 .rm-btn--slim { flex: 0 0 auto !important; }
-.rm-btn--sm { min-height: 36px; padding: 0 12px; font-size: 13px; border-color: var(--rm-line); }
+.rm-btn--sm { min-height: 44px; padding: 0 12px; font-size: 13px; border-color: var(--rm-line); }
 .rm-btn--line { flex: none; min-height: 44px; }
 .rm-btn:disabled { opacity: .55; cursor: default; }
 .rm-btn:focus-visible, .rm-row:focus-visible, .rm-line:focus-visible, .rm-invite:focus-visible { outline: 2px solid var(--accent, #F2B632); outline-offset: 2px; }

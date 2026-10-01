@@ -1,7 +1,7 @@
 /* 4.1 Career (screens/Story.tsx, UI41 §Career). Lives inside ui/screen.tsx <Screen>; nothing here scrolls. One accent
    (the career rose) for the main button, the chapter number and the bars; everything else is the phone's warm dark.
    Spacing 4/8/12/16/24; tap targets ≥ 44px. */
-.scr[data-tone='career'] { --cr-ac: var(--app-story, #D9486F); --cr-ac-ink: #fff; --cr-good: #1DB46A; --cr-bad: #E5484D; --cr-gold: #F2B632; --accent: var(--cr-ac); }
+.scr[data-tone='career'] { --cr-ac: #BF3B5F; --cr-ac-ink: #fff; --cr-ac-text: color-mix(in srgb, #BF3B5F 45%, var(--os-ink, #F3ECDD)); --cr-good: #1DB46A; --cr-bad: #E5484D; --cr-gold: #F2B632; --accent: var(--cr-ac); }
 .cr { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; color: var(--os-ink); }
 
 /* buttons */
@@ -47,7 +47,7 @@
 [dir='rtl'] .cr-card { padding: 12px 56px 12px 12px; }
 .cr-card__n { position: absolute; inset-inline-start: 12px; top: 12px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: var(--cr-ac); color: var(--cr-ac-ink); font: 900 18px/1 var(--f-display, system-ui); }
 .cr-card dl { margin: 0; display: flex; flex-direction: column; gap: 8px; }
-.cr-card dt { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--cr-ac); }
+.cr-card dt { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--cr-ac-text); }
 .cr-card dd { margin: 2px 0 0; font-size: 14px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .cr-epi { min-height: 44px; margin: 0; font-size: 14px; }
 .cr-epi.is-sent { color: var(--cr-good); font-weight: 700; display: flex; align-items: center; }

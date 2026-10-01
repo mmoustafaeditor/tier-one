@@ -25,9 +25,9 @@ import { levelOfSave, levelUnlocks, type LevelView } from '../lib/economy';
 import type { Route } from '../App';
 
 // ---------------------------------------------------------------- the nine apps
-export type AppKey = 'daily' | 'career' | 'deadline' | 'wire' | 'rooms' | 'card' | 'missions' | 'shop' | 'settings';
+export type AppKey = 'daily' | 'career' | 'deadline' | 'wire' | 'rooms' | 'card' | 'boards' | 'missions' | 'shop' | 'settings';
 /** 4.0 ids still used by tray items and older code; each resolves to an AppKey through appById(). */
-export type LegacyApp = 'blurt' | 'dms' | 'lens' | 'story' | 'live' | 'market' | 'groups' | 'boards';
+export type LegacyApp = 'blurt' | 'dms' | 'lens' | 'story' | 'live' | 'market' | 'groups';
 export type AppId = AppKey | LegacyApp;
 export type Badge = number;
 export interface AppDef { id: AppKey; accent: string; unlock: number; calls?: number; route: Route; aliases: string[] }
@@ -38,12 +38,17 @@ export const APPS: AppDef[] = [
   { id: 'deadline', accent: '#B51B2C', unlock: levelUnlocks.live, route: { n: 'ddlive' }, aliases: ['live', 'ddlive', 'dd'] },
   { id: 'wire', accent: '#2A93C2', unlock: 1, calls: levelUnlocks.market, route: { n: 'wire' }, aliases: ['market', 'rumours'] },
   { id: 'rooms', accent: '#3E8C86', unlock: levelUnlocks.groups, route: { n: 'rooms' }, aliases: ['groups', 'newsroom', 'friends', 'room'] },
-  { id: 'card', accent: '#E3A92B', unlock: 1, route: { n: 'card' }, aliases: ['lens', 'me', 'profile', 'boards', 'leaderboards', 'lb', 'pass', 'dms', 'contacts', 'press'] },
+  { id: 'card', accent: '#E3A92B', unlock: 1, route: { n: 'card' }, aliases: ['lens', 'me', 'profile', 'pass', 'dms', 'contacts', 'press'] },
+  { id: 'boards', accent: '#D9822B', unlock: 1, route: { n: 'boards' }, aliases: ['leaderboards', 'lb', 'leaders'] },
   { id: 'missions', accent: '#2E9E61', unlock: 1, route: { n: 'missions' }, aliases: ['mission', 'season'] },
   { id: 'shop', accent: '#7C5CFF', unlock: 1, route: { n: 'shop' }, aliases: ['customize', 'looks', 'store'] },
   { id: 'settings', accent: '#7A7266', unlock: 1, route: { n: 'settings' }, aliases: ['howto', 'options'] },
 ];
 export const APP_IDS = APPS.map((a) => a.id);
+/** The home screen (UI41 "Structure"): four mode tiles, then the utility row. Deadline Day lives inside Daily Challenge. */
+export const HOME_MODES: AppKey[] = ['daily', 'career', 'rooms', 'wire'];
+export const HOME_UTILS: AppKey[] = ['card', 'boards', 'missions', 'shop', 'settings'];
+export const HOME_ORDER: AppKey[] = [...HOME_MODES, ...HOME_UTILS];
 export const appById = (id: string): AppDef | null => APPS.find((a) => a.id === id || a.aliases.includes(id)) || null;
 export const appKey = (id: string): AppKey | null => appById(id)?.id || null;
 /** The app a route lives in (null for the home screen). */
@@ -56,7 +61,8 @@ export function appOf(r: Route): AppKey | null {
     case 'story': case 'desk': case 'editor': return 'career';
     case 'ddlive': return 'deadline';
     case 'wire': return 'wire';
-    case 'card': case 'me': case 'pass': case 'boards': case 'contacts': case 'rivals': return 'card';
+    case 'card': case 'me': case 'pass': case 'contacts': case 'rivals': return 'card';
+    case 'boards': return 'boards';
     case 'missions': return 'missions';
     case 'shop': case 'customize': return 'shop';
     case 'howto': case 'settings': return 'settings';
@@ -81,7 +87,8 @@ export function badgeOf(app: AppDef | AppKey, s: Save, tray: string[] = []): Bad
     case 'missions': return (missionsView(s) || []).filter((m) => m.done && !m.claimed).length + weeklyReady(s) + trackView(s).ready;
     case 'wire': return feedFor(s, 'wire').length + fromTray;
     case 'rooms': return feedFor(s, 'rooms').length + fromTray;
-    case 'card': return unpaid(s).length + offersFor(s).length;
+    case 'card': return offersFor(s).length;
+    case 'boards': return unpaid(s).length;
     default: return 0;
   }
 }
@@ -101,6 +108,7 @@ const IC: Record<AppKey, string> = {
   deadline: 'M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 9v4.2l2.8 1.8M9.5 2.5h5M19 5.5l1.5 1.5',
   wire: 'M3 19h18M3.5 14.5l5-5.5 4 3.5 6.5-7M14.5 5.5H19V10',
   rooms: 'M9 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16.5 10.5a3 3 0 1 0 0-6M18 14.2c2.3.7 3.5 2.6 3.5 5.8',
+  boards: 'M4 20V13h4.5v7M9.75 20V8h4.5v12M15.5 20v-9.5H20V20M3 20.5h18M12 2.8l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2L9.1 4.9l2-.3z',
   card: 'M3 6.5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM5.5 16.2c.4-1.6 1.6-2.4 3-2.4s2.6.8 3 2.4M14 9.5h4M14 13h4',
   missions: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9zM12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z',
   shop: 'M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8zM9 10.5V6.5a3 3 0 0 1 6 0v4',
