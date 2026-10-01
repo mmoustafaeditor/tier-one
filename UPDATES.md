@@ -7,6 +7,11 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-01 · mmoustafaeditor (Claude Code session) · Tier One 3.6.0: four modes, no-scroll pages, clear Career (web)
+- **What changed:** On the 3.x UI: Home = Daily Challenge (Daily, Deadline Day, Practice) · Career · Multiplayer · Transfer Market + Press Card, Leaderboards, Missions, Shop, Settings; tabs renamed; Rooms only (Leave room, 21-day idle expiry; Challenges/newsrooms removed); one-screen pages with paging and a top-left Back; Career Continue/New + chapter card; Transfer Market filters; In talks / Advanced / Confirmed; new catchphrases; first-time tips.
+- **Files:** `games/tier-one/v3/web/src/**`, `api/tier-one/v3/index.js`, `tier-one/` build.
+- **Heads-up for the team:** not browser-tested before release (owner testing).
+
 ## 2026-10-01 · mmoustafaeditor (Claude Code session) · Tier One back to the pre-phone UI (3.5.0, web)
 - **What changed:** Owner's call: the 4.x phone UI is reverted. The web client, `api/tier-one/v3/index.js`, `api/tier-one/v4/**` and `api/_lib/merge.mjs` are back to the 3.4 build (9134392, leaderboards/prizes/badges). Daily stays on the v3 rules (no 5 Oct cutover). The 4.x docs and engine4 stay in the repo, unused.
 - **Files:** `games/tier-one/v3/web/**`, `api/tier-one/v3/index.js`, `api/tier-one/v4/**`, `api/_lib/merge.mjs`, `tier-one/` build.

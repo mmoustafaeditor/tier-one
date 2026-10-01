@@ -1,0 +1,1 @@
+import"./vendor-CgP-wcIU.js";import{aM as e,dS as a}from"./index-DoBwZuPj.js";const r=()=>Math.floor((Date.parse(e()+"T00:00:00Z")-Date.parse("2026-09-01T00:00:00Z"))/864e5)+1;function s(e,r){const s=r.linked[0];return e("wire.heds."+a(r),{c:s?s.name:"",p:r.playerName})}export{r as d,s as r};
