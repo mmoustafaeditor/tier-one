@@ -51,6 +51,8 @@ interface Anim {
 }
 
 const L = 105, W = 68;
+// Measurement hook for ui-tests/pitch.mjs: only with ?pitchdebug in the address.
+const PITCH_DEBUG = typeof location !== 'undefined' && /[?&]pitchdebug\b/.test(location.search);
 const LINE: Record<Position, 'gk' | 'def' | 'mid' | 'fwd'> = {
   GK: 'gk', CB: 'def', LB: 'def', RB: 'def', CDM: 'mid', CM: 'mid', CAM: 'mid', LW: 'fwd', RW: 'fwd', ST: 'fwd',
 };
@@ -314,6 +316,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       last = now;
       const a = anim.current!;
       const mm = mRef.current;
+      if (PITCH_DEBUG) (window as unknown as { __gafferPitch?: unknown }).__gafferPitch = { a, slots: mm.sides.map((sd) => FORMATIONS[sd.tactics.formation].slots.map((x) => x.pos)), pressing: mm.sides.map((sd) => sd.tactics.pressing) };
       const { msPerMinute: ms, running: go, camera: cam } = cfg.current;
       a.time += dt;
       if (a.minute !== mm.minute) plan(a, mm, ms, worldRef.current);
