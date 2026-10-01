@@ -173,10 +173,10 @@ function openChapter(x: Save, c4: Story4Save, n: number) {
   const t0 = Date.now();
   say(x, 'sys', 'st4.card.chapter', { n }, t0);
   const lines = OPEN_LINES[n] || [];
-  lines.forEach(([from, k], j) => say(x, from, 'st4.open.' + n + '.' + k, undefined, t0 + 1 + j));
+  lines.forEach(([from, k], j) => say(x, from, 'c41.open.' + n + '.' + k, undefined, t0 + 1 + j));
   say(x, 'sys', 'st4.card.boss', { boss: d.boss }, t0 + 9);
 }
-/** Who says each chapter's opening lines (st4.open.<n>.<k>). */
+/** Who says each chapter's opening lines (c41.open.<n>.<k>; 4.0 saves keep st4.open.* in their thread). */
 const OPEN_LINES: Record<number, [Person, string][]> = {
   1: [['rosa', 'a'], ['rosa', 'b'], ['rosa', 'c']],
   2: [['hana', 'a'], ['hana', 'b'], ['hana', 'c']],
@@ -501,7 +501,7 @@ export function beatOnce(b: Beat): string {
   if (b.key === 'followers' || b.key === 'followersBack') return 'followers.' + (b.v?.m ?? '');
   return '';
 }
-export const beatKey = (b: { key: string }) => (b.key.startsWith('st4.') ? b.key : 'g.story.beat.' + b.key);
+export const beatKey = (b: { key: string }) => (b.key.startsWith('st4.') || b.key.startsWith('c41.') ? b.key : 'g.story.beat.' + b.key);
 export interface BeatOpts { seen?: Record<string, number>; vince?: { i: number; src: string; who: string } | null }
 /** The 0–2 lines for a finished 3.x Career window. */
 export function storyBeats(c: CareerSave, res: Result, rep: CareerReport, o: BeatOpts = {}): Beat[] {
