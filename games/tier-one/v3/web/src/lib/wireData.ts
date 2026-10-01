@@ -5,6 +5,7 @@ import { data, v3 } from './api';
 import { getSave } from './save';
 import { recordWireResolution } from './byline';
 import { currentWireWindow } from './season';
+import { noteRumourMoves } from './notes';
 
 export interface Rumour {
   id: string; playerId: string; playerName: string; currentClubId: string; currentClubName: string; linked: { clubId: string | null; name: string; stage: string }[];
@@ -40,6 +41,8 @@ export function refreshWire(force = false): Promise<void> {
       online: !!(rs && rs.ok), loading: false, window: board.ok && board.window ? board.window : cache.window,
     };
     if (cache.mine) { const rs2 = cache.rumours || []; recordWireResolution(cache.mine.calls, (rid) => rs2.find((r) => r.id === rid)?.playerName); }
+    // The bell: a rumour you have an open call on moved a stage (lib/notes.ts).
+    if (cache.mine && cache.rumours) { const rs3 = cache.rumours; noteRumourMoves(cache.mine.calls.filter((c) => !c.done).map((c) => { const r = rs3.find((x) => x.id === c.rid); if (!r) return null; const st = stageOf(r); return { rid: c.rid, stage: st, p: r.playerName, c: r.linked.find((l) => l.stage === st)?.name || r.linked[0]?.name || '' }; }).filter((x): x is { rid: string; stage: string; p: string; c: string } => !!x)); }
     emit(); inflight = null;
   })();
   return inflight;

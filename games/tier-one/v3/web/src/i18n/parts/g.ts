@@ -3,15 +3,15 @@ export default {
   en: {
     g: {
       coins: '{n} coins', level: 'Level {n}', lv: 'Lv {n}',
-      bar: { daily: 'Daily', career: 'Career', room: 'Room', toPlay: 'Play today', ch: 'Chapter {c}', noRank: 'Unranked', start: 'Start', rank: '#{r}' },
-      tabs: { home: 'Home', story: 'Career', wire: 'Transfer Market', friends: 'Multiplayer', me: 'Press Card' },
+      bar: { daily: 'Daily', career: 'Career Mode', room: 'Room', toPlay: 'Play today', ch: 'Chapter {c}', noRank: 'Unranked', start: 'Start', rank: '#{r}' },
+      tabs: { home: 'Home', story: 'Career Mode', wire: 'Transfer Market', friends: 'Multiplayer', me: 'My Press Card' },
       home: {
         noName: 'New reporter', freelance: 'Out of work since Deadline Day', xp: 'XP {a}/{b}', followers: '{n} followers', streak: 'Streak',
         dailyNo: 'The Daily · No. {n}', todaysFive: 'Today’s five', filed: 'Filed.', tag: 'Five transfer sagas. Some are lying. Break them first or get ratio’d trying.',
         filedSub: '{p} points {r}', weekAria: 'This week', dow: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
         play: 'Open the phones', resume: 'Back to day {d}', seePage: 'See your front page', fair: 'Same five for everyone · about 6 min', tomorrow: 'New five at {t}',
         missions: 'Today’s missions', missionsReset: 'Reset at {t}', claimed: 'Claimed', modes: 'Your desk',
-        storyK: 'Career', storyNew: 'Someone fed you a fake. Find out who.', storySub: '{name}',
+        storyK: 'Career Mode', storyNew: 'Someone fed you a fake. Find out who.', storySub: '{name}',
         wireK: 'Real rumours', wireSub: 'Call real transfers before they happen', wireLive: '{n} calls live',
         roomsK: 'Play friends', roomsSub: 'Same board, one table', leaguePos: '{r} in your league',
         practiceK: 'No pressure', practiceSub: 'Coach shows the odds',
@@ -21,7 +21,7 @@ export default {
       missions: {
         daily: 'Play today’s Daily', right3: 'Get {n} calls right', excl: 'Land an exclusive', confRight: 'Be right on a Confirmed call',
         physio: 'Ring the physio {n} times', spotter: 'Ring the airport spotter {n} times', barber: 'Ring the barber {n} times', agent: 'Ring the agent {n} times',
-        practice: 'Play a Practice board', story: 'Play a Career window', wire: 'File a call on the Transfer Market', twist: 'Be right on a twisted saga', room: 'Play a room',
+        practice: 'Play a Practice board', story: 'Play a Career Mode window', wire: 'File a call on the Transfer Market', twist: 'Be right on a twisted saga', room: 'Play a room',
       },
       story: { ch: {
         blog: { name: 'Ch. 1 · The Blog' }, post: { name: 'Ch. 2 · The Evening Post' }, nationals: { name: 'Ch. 3 · The Nationals' },
@@ -30,23 +30,23 @@ export default {
         comeback: { name: 'Ch. 2 · The Evening Post' }, stringer: { name: 'Ch. 3 · The Nationals' }, rival: { name: 'Ch. 4 · The War' },
       } },
       me: {
-        pressCard: 'Press card', level: 'Level', maxed: 'Max level', streak: 'Day streak', best: 'Best {n}', dailies: 'Dailies', t1s: '{n} × Tier 1', bestScore: 'Best score', points: 'points',
-        followers: 'Followers', rep: 'Credibility {n}', noStory: 'Start your Career', pass: 'Pass & store', training: 'Replay the training',
+        pressCard: 'My Press Card', level: 'Level', maxed: 'Max level', streak: 'Day streak', best: 'Best {n}', dailies: 'Dailies', t1s: '{n} × Tier 1', bestScore: 'Best score', points: 'points',
+        followers: 'Followers', rep: 'Credibility {n}', noStory: 'Start Career Mode', pass: 'Pass & store', training: 'Replay the training',
       },
     },
   },
   ar: {
     g: {
       coins: '{n} عملة', level: 'المستوى {n}', lv: 'مستوى {n}',
-      bar: { daily: 'اليومي', career: 'المسيرة', room: 'الأوضة', toPlay: 'العب النهارده', ch: 'الفصل {c}', noRank: 'من غير ترتيب', start: 'ابدأ', rank: '#{r}' },
-      tabs: { home: 'الرئيسية', story: 'المسيرة', wire: 'سوق الانتقالات', friends: 'جماعي', me: 'كارنيه الصحافة' },
+      bar: { daily: 'اليومي', career: 'وضع المسيرة', room: 'الأوضة', toPlay: 'العب النهارده', ch: 'الفصل {c}', noRank: 'من غير ترتيب', start: 'ابدأ', rank: '#{r}' },
+      tabs: { home: 'الرئيسية', story: 'وضع المسيرة', wire: 'سوق الانتقالات', friends: 'جماعي', me: 'كارنيه الصحافة بتاعي' },
       home: {
         noName: 'صحفي جديد', freelance: 'قاعد من غير شغل من آخر يوم', xp: 'خبرة {a}/{b}', followers: '{n} متابع', streak: 'السلسلة',
         dailyNo: 'التحدي اليومي · رقم {n}', todaysFive: 'خمسة النهارده', filed: 'اتقفل.', tag: 'خمس صفقات. فيهم كدب. اكشفهم الأول ولا هتبقى تريند بالغلط.',
         filedSub: '{p} نقطة {r}', weekAria: 'الأسبوع ده', dow: ['ن', 'ث', 'ر', 'خ', 'ج', 'س', 'ح'],
         play: 'افتح التليفونات', resume: 'ارجع لليوم {d}', seePage: 'شوف صفحتك الأولى', fair: 'نفس الخمسة للكل · حوالي ٦ دقايق', tomorrow: 'خمسة جداد الساعة {t}',
         missions: 'مهام النهارده', missionsReset: 'بتتجدد {t}', claimed: 'اتاخدت', modes: 'مكتبك',
-        storyK: 'وضع القصة', storyNew: 'في حد إدّاك خبر مضروب. اعرف مين.', storySub: '{name}',
+        storyK: 'وضع المسيرة', storyNew: 'في حد إدّاك خبر مضروب. اعرف مين.', storySub: '{name}',
         wireK: 'إشاعات حقيقية', wireSub: 'اتوقع صفقات حقيقية قبل ما تحصل', wireLive: '{n} توقع شغال',
         roomsK: 'العب مع صحابك', roomsSub: 'نفس اللوحة، ترابيزة واحدة', leaguePos: 'المركز {r} في دوريك',
         practiceK: 'من غير ضغط', practiceSub: 'المدرب بيوريك النسب',
@@ -64,7 +64,7 @@ export default {
         comeback: { name: 'ف٢ · الإيفننج بوست' }, stringer: { name: 'ف٣ · الجرايد الكبيرة' }, rival: { name: 'ف٤ · الحرب' },
       } },
       me: {
-        pressCard: 'كارنيه الصحافة', level: 'مستوى', maxed: 'أعلى مستوى', streak: 'أيام متتالية', best: 'الأفضل {n}', dailies: 'التحديات', t1s: '{n} × المستوى الأول', bestScore: 'أعلى نتيجة', points: 'نقطة',
+        pressCard: 'كارنيه الصحافة بتاعي', level: 'مستوى', maxed: 'أعلى مستوى', streak: 'أيام متتالية', best: 'الأفضل {n}', dailies: 'التحديات', t1s: '{n} × المستوى الأول', bestScore: 'أعلى نتيجة', points: 'نقطة',
         followers: 'المتابعين', rep: 'المصداقية {n}', noStory: 'ابدأ وضع القصة', pass: 'الباس والمتجر', training: 'العب التدريب تاني',
       },
     },
@@ -72,15 +72,15 @@ export default {
   es: {
     g: {
       coins: '{n} monedas', level: 'Nivel {n}', lv: 'Nv {n}',
-      bar: { daily: 'Diario', career: 'Carrera', room: 'Sala', toPlay: 'Juega hoy', ch: 'Capítulo {c}', noRank: 'Sin puesto', start: 'Empezar', rank: '#{r}' },
-      tabs: { home: 'Inicio', story: 'Carrera', wire: 'Mercado', friends: 'Multijugador', me: 'Carné de prensa' },
+      bar: { daily: 'Diario', career: 'Modo Carrera', room: 'Sala', toPlay: 'Juega hoy', ch: 'Capítulo {c}', noRank: 'Sin puesto', start: 'Empezar', rank: '#{r}' },
+      tabs: { home: 'Inicio', story: 'Modo Carrera', wire: 'Mercado', friends: 'Multijugador', me: 'Mi carné de prensa' },
       home: {
         noName: 'Nuevo periodista', freelance: 'En paro desde el último día de mercado', xp: 'XP {a}/{b}', followers: '{n} seguidores', streak: 'Racha',
         dailyNo: 'El Diario · N.º {n}', todaysFive: 'Los cinco de hoy', filed: 'Enviado.', tag: 'Cinco culebrones de fichajes. Alguno miente. Dalo antes que nadie o hazte viral por errar.',
         filedSub: '{p} puntos {r}', weekAria: 'Esta semana', dow: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
         play: 'Coge el teléfono', resume: 'Vuelve al día {d}', seePage: 'Ver tu portada', fair: 'Los mismos cinco para todos · unos 6 min', tomorrow: 'Nuevos cinco a las {t}',
         missions: 'Misiones de hoy', missionsReset: 'Se renuevan a las {t}', claimed: 'Cobrada', modes: 'Tu mesa',
-        storyK: 'Modo historia', storyNew: 'Alguien te coló un bulo. Descubre quién.', storySub: '{name}',
+        storyK: 'Modo Carrera', storyNew: 'Alguien te coló un bulo. Descubre quién.', storySub: '{name}',
         wireK: 'Rumores reales', wireSub: 'Adelanta fichajes reales', wireLive: '{n} apuestas vivas',
         roomsK: 'Con amigos', roomsSub: 'Mismo tablero, una mesa', leaguePos: '{r}.º en tu liga',
         practiceK: 'Sin presión', practiceSub: 'El entrenador te enseña las probabilidades',
@@ -98,7 +98,7 @@ export default {
         comeback: { name: 'Cap. 2 · El Evening Post' }, stringer: { name: 'Cap. 3 · Los nacionales' }, rival: { name: 'Cap. 4 · La guerra' },
       } },
       me: {
-        pressCard: 'Carné de prensa', level: 'Nivel', maxed: 'Nivel máximo', streak: 'Racha', best: 'Mejor {n}', dailies: 'Diarios', t1s: '{n} × Tier 1', bestScore: 'Mejor puntuación', points: 'puntos',
+        pressCard: 'Mi carné de prensa', level: 'Nivel', maxed: 'Nivel máximo', streak: 'Racha', best: 'Mejor {n}', dailies: 'Diarios', t1s: '{n} × Tier 1', bestScore: 'Mejor puntuación', points: 'puntos',
         followers: 'Seguidores', rep: 'Credibilidad {n}', noStory: 'Empieza el modo historia', pass: 'Pase y tienda', training: 'Repetir el tutorial',
       },
     },

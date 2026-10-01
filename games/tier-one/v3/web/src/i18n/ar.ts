@@ -4,8 +4,8 @@ import type { Dict } from './en';
 const ar: Dict = {
   meta: { lang: 'العربية', dir: 'rtl', dateLocale: 'ar-EG' },
   brand: { name: 'تير وان', edition: 'عدد الانتقالات', morning: 'الطبعة الصباحية', late: 'الطبعة المسائية', auto: 'زي جهازك' },
-  tabs: { front: 'الأولى', daily: 'اليومي', wire: 'سوق الانتقالات', desk: 'المسيرة', pass: 'البطاقة' },
-  nav: { front: 'الصفحة الأولى', daily: 'تحدي النهارده', wire: 'سوق الانتقالات', desk: 'المسيرة', pass: 'بطاقة سمبا', practice: 'تمرين', rooms: 'الأوض', howto: 'إزاي تلعب', board: 'اللوحة', back: 'رجوع' },
+  tabs: { front: 'الأولى', daily: 'اليومي', wire: 'سوق الانتقالات', desk: 'وضع المسيرة', pass: 'البطاقة' },
+  nav: { front: 'الصفحة الأولى', daily: 'تحدي النهارده', wire: 'سوق الانتقالات', desk: 'وضع المسيرة', pass: 'بطاقة سمبا', practice: 'تمرين', rooms: 'الأوض', howto: 'إزاي تلعب', board: 'اللوحة', back: 'رجوع' },
   common: {
     day: 'اليوم {n}', dayOf: 'اليوم {n} من {m}', saga: 'القصة {n} من {m}', no: 'عدد {n}', pts: '{n} نقطة', left: 'فاضل {n}', of: '{a} من {b}',
     close: 'اقفل', cancel: 'إلغاء', done: 'تمام', open: 'افتح', next: 'اللي بعده', more: 'أكتر', loading: 'بنصفّ الحروف…', retry: 'جرّب تاني',

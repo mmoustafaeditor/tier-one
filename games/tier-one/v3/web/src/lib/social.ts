@@ -149,6 +149,7 @@ export function syncRoom(room: Room, myPid: string) {
         const won = mine.score === top && room.players.filter((p) => p.results[k] && p.results[k]!.score === top).length === 1;
         const runner = room.players.filter((p) => p.pid !== myPid && p.results[k]).sort((a, b) => b.results[k]!.score - a.results[k]!.score)[0];
         pushFeed(s, { kind: 'room', key: won ? 'so.feed.roomWin' : 'so.feed.roomRound', v: { n: k + 1, room: room.name, p: mine.score, top: rows[0]?.p.nick || '' }, to: { n: 'rooms', code: room.code }, tone: won ? 'gold' : undefined });
+        if (won) s.stats.roomWins = (s.stats.roomWins || 0) + 1; // My Press Card: Multiplayer wins
         if (won) queueFilm('moment-room-win', { room: room.name, round: k + 1, score: mine.score, margin: runner ? mine.score - runner.results[k]!.score : 0, who: runner?.nick || '' });
       }
     }

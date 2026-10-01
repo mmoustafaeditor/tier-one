@@ -1,12 +1,12 @@
 // Daily Challenge (3.6): today's Daily first, then Deadline Day Live and Practice, then the Daily leaderboard. And the
-// Missions screen (Home's compact row). Both fit one screen.
+// Missions screen (Home's Missions box). Both fit one screen.
 import { useEffect, useState } from 'react';
 import { useT, num, resetAt } from '../lib/i18n';
 import { update, useSave, getSave } from '../lib/save';
 import { v3 } from '../lib/api';
 import type { CastSaga } from '../lib/engine';
 import { ymdUTC } from '../lib/meta';
-import { ensureMissions, missionsView, claimMission } from '../lib/progress';
+import { ensureMissions, allMissions, claimMission, MODE_ORDER, type MissionMode } from '../lib/progress';
 import { sfx } from '../lib/sfx';
 import { Icon, Kit, GBtn, TopBar, confetti } from '../ui/game';
 import { useNow } from '../ui/bits';
@@ -89,25 +89,31 @@ function claimAll(ids: string[]) {
   for (const id of ids) paid += claimMission(id) || 0;
   if (paid) { sfx('coin'); confetti(['#F7B928', '#FFD35C', '#fff'], 60); }
 }
-const MI: Record<string, string> = { daily: 'phone', right3: 'check', excl: 'bolt', confRight: 'star', physio: 'pulse', spotter: 'plane', barber: 'scissors', agent: 'briefcase', practice: 'target', story: 'story', wire: 'wire', twist: 'uturn', room: 'friends' };
+const MI: Record<string, string> = { daily: 'phone', right3: 'check', excl: 'bolt', confRight: 'star', physio: 'pulse', spotter: 'plane', barber: 'scissors', agent: 'briefcase', practice: 'target', story: 'story', wire: 'wire', twist: 'uturn', room: 'friends', 'w.daily': 'news', 'w.story': 'story', 'w.room': 'friends', 'w.wire': 'wire', 'w.right': 'check' };
+const MODE_KEY: Record<MissionMode, string> = { daily: 'hub.mode.daily', career: 'hub.mode.career', multi: 'hub.mode.multi', market: 'hub.mode.market', any: 'hub.missions.any' };
+// Missions (3.7): today's daily missions and this week's weekly ones, grouped by game mode, payouts and Claim. Paged.
 export function MissionsScreen(chrome: Chrome) {
   const t = useT();
   const s = useSave();
   useEffect(() => { update((x) => { ensureMissions(x); }); }, []);
-  const ms = missionsView(s) || [];
+  const ms = allMissions(s).sort((a, b) => MODE_ORDER.indexOf(a.mode) - MODE_ORDER.indexOf(b.mode) || Number(a.weekly) - Number(b.weekly));
   const ready = ms.filter((m) => m.done && !m.claimed);
-  const pg = usePaged(ms, 6);
+  const pg = usePaged(ms, 5);
   return <div className="g-screen msn fit">
     <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('hub.missions.title')} />
     <div className="fit__body">
-      <div className="g-sec" style={{ margin: 0 }}><h2>{t('hub.missions.title')}</h2><span className="g-mono">{t('hub.missions.reset', { t: resetAt() })}</span></div>
+      <div className="g-sec" style={{ margin: 0 }}><h2>{t('hub.missions.title')}</h2><span className="g-mono">{t('hub.missions.reset', { t: resetAt() })} · {t('hub.missions.weekReset')}</span></div>
       {ms.length ? <div className="missions missions--sheet g-card">
-        {pg.rows.map((m) => <div key={m.id} className={'mission' + (m.done ? ' is-done' : '') + (m.claimed ? ' is-claimed' : '')}>
-          <span className="mission__ic"><Icon n={m.claimed ? 'check' : MI[m.id] || 'target'} /></span>
-          <span className="mission__t"><b>{t('g.missions.' + m.id, { n: m.n })}</b>
-            <span className="g-bar g-bar--sm" style={{ ['--bar' as string]: m.done ? 'var(--c-done)' : 'var(--gold)' }}><i style={{ width: (100 * m.have) / m.n + '%' }} /></span></span>
-          {m.done && !m.claimed ? <button className="claim" onClick={() => claimAll([m.id])}><span className="g-coin" />+{m.coins}</button>
-            : <span className="mission__r g-mono">{m.claimed ? t('g.home.claimed') : <>{m.have + '/' + m.n}<span className="mission__c"><span className="g-coin" />+{m.coins}</span></>}</span>}
+        {pg.rows.map((m, k) => <div key={m.id} className="msn-item">
+          {(k === 0 || pg.rows[k - 1].mode !== m.mode) && <h3 className="msn-group">{t(MODE_KEY[m.mode])}</h3>}
+          <div className={'mission' + (m.done ? ' is-done' : '') + (m.claimed ? ' is-claimed' : '')}>
+            <span className="mission__ic"><Icon n={m.claimed ? 'check' : MI[m.id] || 'target'} /></span>
+            <span className="mission__t"><b>{t(m.label, { n: m.n })}</b>
+              <span className="msn-meta"><span className={'msn-tag' + (m.weekly ? ' msn-tag--w' : '')}>{t(m.weekly ? 'hub.missions.weekly' : 'hub.missions.daily')}</span>
+                <span className="g-bar g-bar--sm" style={{ ['--bar' as string]: m.done ? 'var(--c-done)' : 'var(--gold)' }}><i style={{ width: (100 * m.have) / m.n + '%' }} /></span></span></span>
+            {m.done && !m.claimed ? <button className="claim" onClick={() => claimAll([m.id])}><span className="g-coin" />{t('hub.missions.claim', { n: m.coins })}</button>
+              : <span className="mission__r g-mono">{m.claimed ? t('g.home.claimed') : <>{m.have + '/' + m.n}<span className="mission__c"><span className="g-coin" />+{m.coins}</span></>}</span>}
+          </div>
         </div>)}
       </div> : <p className="g-empty">{t('hub.missions.none')}</p>}
       <Pager p={pg} />

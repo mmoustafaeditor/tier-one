@@ -26,7 +26,7 @@ export default {
       onb: {
         tag: 'The transfer journalist game', k: 'Welcome to the desk', h: 'Break the transfer first. Or get ratio’d trying.',
         s1: 'Ring sources: the kit man, the barber, the agent… some of them lie.', s2: 'Call it: will he sign, go elsewhere, or was it never real?', s3: 'Publish before the rivals. Survive a 60-second Deadline Day.',
-        next: 'Let’s go', pressCard: 'Your press card', nickH: 'What’s your name?', nickPh: 'e.g. Mo Moustafa', first: 'Play my first story', skip: 'I’ve played before. Skip the training',
+        next: 'Let’s go', pressCard: 'My Press Card', nickH: 'What’s your name?', nickPh: 'e.g. Mo Moustafa', first: 'Play my first story', skip: 'I’ve played before. Skip the training',
       },
       tut: {
         step: 'Step {n} of {m}',
@@ -38,7 +38,7 @@ export default {
         loud: 'Pick how loud, then hold Publish.', loudP: 'In talks is safe. Confirmed pays most and hurts most if you’re wrong. The numbers on each button are today’s stake.',
         back: 'Filed. Back to the board.', backP: 'Your call is out. Head back to the board to end the day.',
         sleep: 'That’s day one.', sleepP: 'Sleep on it and the week plays out: rivals post overnight, day 7 is a 60-second Deadline Day. Or start your comeback now: Career is waiting.',
-        story: 'Go to Career', keep: 'Keep playing', skip: 'Skip',
+        story: 'Go to Career Mode', keep: 'Keep playing', skip: 'Skip',
       },
       res: {
         rolling: 'The presses are rolling…', byline: 'Exclusive by {n}', hedMove: '{p} to {c}: you called it', hedOut: '{p}: {o}. You called it', hedNone: 'A quiet edition',
@@ -80,7 +80,7 @@ export default {
       onb: {
         tag: 'لعبة صحفي الانتقالات', k: 'أهلاً بيك في الديسك', h: 'اكشف الصفقة الأول. ولا هتبقى تريند بالغلط.',
         s1: 'كلم مصادرك: مسؤول المهمات، الحلاق، الوكيل… وفيهم اللي بيكدب.', s2: 'قرر: هيمضي، هيروح حتة تانية، ولا الموضوع كله فشنك؟', s3: 'انشر قبل المنافسين. واستحمل يوم ديدلاين ٦٠ ثانية.',
-        next: 'يلا بينا', pressCard: 'كارنيه الصحافة بتاعك', nickH: 'اسمك إيه؟', nickPh: 'مثلاً: مو مصطفى', first: 'العب أول قصة ليا', skip: 'لعبت قبل كده. عدي التدريب',
+        next: 'يلا بينا', pressCard: 'كارنيه الصحافة بتاعي', nickH: 'اسمك إيه؟', nickPh: 'مثلاً: مو مصطفى', first: 'العب أول قصة ليا', skip: 'لعبت قبل كده. عدي التدريب',
       },
       tut: {
         step: 'خطوة {n} من {m}',
@@ -92,7 +92,7 @@ export default {
         loud: 'اختار صوتك، وبعدين اضغط مطوّل على انشر.', loudP: 'مفاوضات أمان. مؤكدة بتكسب أكتر وبتخسر أكتر لو غلطت. الأرقام على كل زرار هي رهان النهارده.',
         back: 'اتنشر. ارجع للوحة.', backP: 'توقعك طلع. ارجع للوحة عشان تقفل اليوم.',
         sleep: 'ده أول يوم.', sleepP: 'نام عليها والأسبوع هيكمل: المنافسين بينشروا بالليل، واليوم السابع ديدلاين ٦٠ ثانية. أو ابدأ رحلة العودة دلوقتي: القصة مستنياك.',
-        story: 'روح للقصة', keep: 'كمّل لعب', skip: 'تخطي',
+        story: 'روح لوضع المسيرة', keep: 'كمّل لعب', skip: 'تخطي',
       },
       res: {
         rolling: 'المطبعة شغالة…', byline: 'سبق صحفي من {n}', hedMove: '{p} لـ{c}: قلتها الأول', hedOut: '{p}: {o}. قلتها الأول', hedNone: 'عدد هادي',
@@ -134,7 +134,7 @@ export default {
       onb: {
         tag: 'El juego del periodista de fichajes', k: 'Bienvenido a la redacción', h: 'Da el fichaje antes que nadie. O hazte viral por errar.',
         s1: 'Llama a tus fuentes: el utillero, el barbero, el agente… alguno miente.', s2: 'Decide: ¿firma, se va a otro club o nunca fue real?', s3: 'Publica antes que los rivales. Sobrevive a un cierre de 60 segundos.',
-        next: 'Vamos', pressCard: 'Tu carné de prensa', nickH: '¿Cómo te llamas?', nickPh: 'p. ej. Mo Moustafa', first: 'Jugar mi primera historia', skip: 'Ya he jugado. Saltar el tutorial',
+        next: 'Vamos', pressCard: 'Mi carné de prensa', nickH: '¿Cómo te llamas?', nickPh: 'p. ej. Mo Moustafa', first: 'Jugar mi primera historia', skip: 'Ya he jugado. Saltar el tutorial',
       },
       tut: {
         step: 'Paso {n} de {m}',
@@ -146,7 +146,7 @@ export default {
         loud: 'Elige cuánto te mojas y mantén pulsado Publicar.', loudP: 'Contactos es seguro. Confirmado paga más y duele más si fallas. Los números de cada botón son la apuesta de hoy.',
         back: 'Publicado. Vuelve al tablero.', backP: 'Tu apuesta ya está fuera. Vuelve al tablero para cerrar el día.',
         sleep: 'Ese es el día uno.', sleepP: 'Duerme y la semana sigue: los rivales publican de madrugada y el día 7 es un cierre de 60 segundos. O empieza ya tu regreso: la Historia te espera.',
-        story: 'Ir a la Historia', keep: 'Seguir jugando', skip: 'Saltar',
+        story: 'Ir al Modo Carrera', keep: 'Seguir jugando', skip: 'Saltar',
       },
       res: {
         rolling: 'Las rotativas están en marcha…', byline: 'Exclusiva de {n}', hedMove: '{p} al {c}: lo adelantaste tú', hedOut: '{p}: {o}. Lo adelantaste tú', hedNone: 'Una edición tranquila',

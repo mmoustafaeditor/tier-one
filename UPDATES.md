@@ -7,6 +7,11 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-01 · mmoustafaeditor (Claude Code session) · Tier One 3.7.0: top bar, mini My Press Card, missions box, shop sections (web)
+- **What changed:** Bell shows only key notifications (new Daily, your calls, new in Shop); coins + credits in the top bar open the Shop; level off the top bar; Home has a mini My Press Card (stats per mode) and a Missions box (top 3), tiles Daily Challenge / Career Mode / Multiplayer / Transfer Market / Shop; Missions page by mode (daily + weekly); Shop split into Game customization and Game modes; "My Press Card" and "Career Mode" renames.
+- **Files:** `games/tier-one/v3/web/src/**`, `tier-one/` build.
+- **Heads-up for the team:** not browser-tested before release (owner testing).
+
 ## 2026-10-01 · mmoustafaeditor (Claude Code session) · Tier One 3.6.0: four modes, no-scroll pages, clear Career (web)
 - **What changed:** On the 3.x UI: Home = Daily Challenge (Daily, Deadline Day, Practice) · Career · Multiplayer · Transfer Market + Press Card, Leaderboards, Missions, Shop, Settings; tabs renamed; Rooms only (Leave room, 21-day idle expiry; Challenges/newsrooms removed); one-screen pages with paging and a top-left Back; Career Continue/New + chapter card; Transfer Market filters; In talks / Advanced / Confirmed; new catchphrases; first-time tips.
 - **Files:** `games/tier-one/v3/web/src/**`, `api/tier-one/v3/index.js`, `tier-one/` build.

@@ -37,7 +37,7 @@ export default {
         pending: 'You’re on {n}’s board', pendingSub: 'Finish the Practice window on this seed and your score answers it by itself.',
         results: 'Answers', noResults: 'Nobody has answered yet.', you: 'You', w: 'beat it', l: 'fell short', d: 'matched it', yours: '{s} pts · {r}',
         mine: 'Your challenges', answered: 'Boards you took', open: 'Open', closed: 'Closed', code: 'Code', label: 'Beat {n}’s board',
-        mode: { daily: 'The Daily', practice: 'Practice', career: 'Career' }, career: 'Story boards replay under Daily rules; the score to beat is the reporter’s word.',
+        mode: { daily: 'The Daily', practice: 'Practice', career: 'Career Mode' }, career: 'Story boards replay under Daily rules; the score to beat is the reporter’s word.',
         errors: { 'not found': 'No challenge with that code.', expired: 'That challenge has expired.', own: 'You can’t answer your own challenge.', done: 'You’ve already answered this one.', full: 'This challenge is full.', play: 'Play today’s Daily first.', log: 'That board didn’t finish. Play it through.', played: 'Play the Daily first, then mint from it.', net: 'Challenges need a connection.', dev: 'Challenges need a connection.', seed: 'That board can’t be shared.', day: 'That Daily can’t be shared.', busy: 'Try again.', rate: 'Slow down a little.' },
       },
       fr: {
@@ -107,7 +107,7 @@ export default {
         pending: 'إنت على لوحة {n}', pendingSub: 'خلّص فترة التمرين على اللوحة دي ونتيجتك بترد لوحدها.',
         results: 'الردود', noResults: 'محدش رد لسه.', you: 'إنت', w: 'غلبتها', l: 'ما وصلتش', d: 'جبت زيها', yours: '{s} نقطة · {r}',
         mine: 'تحدياتك', answered: 'لوحات خدتها', open: 'مفتوح', closed: 'اتقفل', code: 'الكود', label: 'اغلب لوحة {n}',
-        mode: { daily: 'اليومي', practice: 'التمرين', career: 'القصة' }, career: 'لوحات القصة بتتعاد بقواعد اليومي؛ والنتيجة اللي لازم تغلبها على ذمة الصحفي.',
+        mode: { daily: 'اليومي', practice: 'التمرين', career: 'وضع المسيرة' }, career: 'لوحات القصة بتتعاد بقواعد اليومي؛ والنتيجة اللي لازم تغلبها على ذمة الصحفي.',
         errors: { 'not found': 'مفيش تحدي بالكود ده.', expired: 'التحدي ده خلص.', own: 'مينفعش ترد على تحديك إنت.', done: 'إنت رديت على ده قبل كده.', full: 'التحدي ده اتملى.', play: 'العب يومي النهارده الأول.', log: 'اللوحة دي ما خلصتش. العبها للآخر.', played: 'العب اليومي الأول وبعدين اعمل منه تحدي.', net: 'التحديات محتاجة نت.', dev: 'التحديات محتاجة نت.', seed: 'اللوحة دي مينفعش تتشارك.', day: 'اليومي ده مينفعش يتشارك.', busy: 'جرّب تاني.', rate: 'على مهلك شوية.' },
       },
       fr: {
@@ -177,7 +177,7 @@ export default {
         pending: 'Estás en el tablero de {n}', pendingSub: 'Termina la ventana de Práctica con esta semilla y tu marca responde sola.',
         results: 'Respuestas', noResults: 'Nadie ha respondido todavía.', you: 'Tú', w: 'lo superó', l: 'se quedó corto', d: 'lo igualó', yours: '{s} pts · {r}',
         mine: 'Tus retos', answered: 'Tableros aceptados', open: 'Abierto', closed: 'Cerrado', code: 'Código', label: 'Supera el tablero de {n}',
-        mode: { daily: 'El Diario', practice: 'Práctica', career: 'Historia' }, career: 'Los tableros de Historia se repiten con las reglas del Diario; la marca a batir va bajo palabra del periodista.',
+        mode: { daily: 'El Diario', practice: 'Práctica', career: 'Modo Carrera' }, career: 'Los tableros de Historia se repiten con las reglas del Diario; la marca a batir va bajo palabra del periodista.',
         errors: { 'not found': 'No hay ningún reto con ese código.', expired: 'Ese reto ha caducado.', own: 'No puedes responder a tu propio reto.', done: 'Ya respondiste a este.', full: 'Este reto está lleno.', play: 'Juega antes el Diario de hoy.', log: 'Ese tablero no terminó. Juégalo hasta el final.', played: 'Juega antes el Diario y luego crea el reto.', net: 'Los retos necesitan conexión.', dev: 'Los retos necesitan conexión.', seed: 'Ese tablero no se puede compartir.', day: 'Ese Diario no se puede compartir.', busy: 'Inténtalo otra vez.', rate: 'Un poco más despacio.' },
       },
       fr: {
