@@ -4,8 +4,8 @@
 //
 // Signals per call (a ResultSaga with a call):
 //   early    filed by day 3 of 7           late     filed on day 6 or Deadline Day
-//   quiet    published at Talks            loud     published at Confirmed
-//   ut       a Delete & repost (U-turn)    contra   filed against every rival who had already posted
+//   quiet    posted as a Hint (×1)         loud     posted as a Drop (×3, All in)
+//   ut       a corrected call (3.x data only; 4.0 posts are final)    contra   posted against every rival who had already posted
 //   trust    a source read pointing at the truth was in hand and the call landed (you believed a good read)
 //   ignore   every read in hand was wrong and the call still landed (you saw through them)
 //   right / wrong, and [right, wrong] per outcome (Done, Hijack, Off, Fake)
@@ -13,11 +13,11 @@
 // Titles need STYLE_MIN calls; checked in order, the first match wins:
 //   sniper       hit ≥ .65 and early ≥ .50    files early, rarely wrong
 //   contrarian   contra ≥ .35 and hit ≥ .50   goes against the rivals and gets away with it
-//   loudmouth    loud ≥ .50                   half your calls are Confirmed
-//   quiet        quiet ≥ .50                  half your calls are Talks
+//   loudmouth    loud ≥ .50                   half your calls are Drops
+//   quiet        quiet ≥ .50                  half your calls are Hints
 //   earlybird    early ≥ .60                  files in the first three days
 //   nightowl     late ≥ .45                   files late, often on Deadline Day
-//   uturner      ut ≥ .20                     one call in five is a Delete & repost
+//   uturner      ut ≥ .20                     one call in five corrected (3.x saves only)
 //   believer     trust ≥ .60                  follows a good read
 //   sceptic      ignore ≥ .30                 wins without the sources
 //   steady       (everything else)
