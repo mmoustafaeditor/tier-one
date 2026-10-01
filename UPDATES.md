@@ -17,6 +17,23 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer: matchday weather
+- **What changed:**
+  - **Weather per match.** Every match now has weather: clear, rain, heavy rain, wind, heat or snow (`engine/weather.ts`). It is picked once from the match key and the home country's climate. England and Germany get rain and some snow; Spain and Italy are mostly clear, with heat; Egypt and Saudi get heat and never snow.
+  - **Same for both sides.** Weather changes how a match is played, never who is favoured:
+    - a wet or snowy pitch makes short combinations and carrying the ball through midfield harder, and the long ball more attractive;
+    - wind spoils long balls, crosses and corners;
+    - heat and heavy pitches tire players;
+    - the wet means more slips into fouls and more knocks.
+  - **Measured on 3,000 seeded matches against the same matches in clear weather** (`node sim-tests/build.mjs weather`):
+    - goals overall −0.1%;
+    - fouls in rain 23.6 against 22.4, heavy rain 24.3 against 22.5;
+    - fewer headed chances in the wind (5.82 against 6.12);
+    - players end hot matches more tired (88.4 against 89.3).
+  - **Where you see it.** The weather shows on the live screen's pitch card in EN/AR/ES/FR. Rain and snow fall over the 2D pitch; the animation stops when the device asks for reduced motion.
+- **Files:** `games/the-gaffer/web/src/sim/engine/weather.ts` (new), `src/sim/engine/model.ts`, `src/sim/match.ts` (`wx`), `src/ui2/Live.tsx`, `src/ui2/Pitch2D.tsx`, `src/styles/app.css`, `src/lang-ref{,-ar,-es,-fr}.ts`, `sim-tests/weather.ts` (new)
+- **Heads-up for the team:** Old saves have no weather and play as clear. Match results differ from before this change, since weather is part of each match now. `data/`, `api/data/` and `design/` are untouched. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer, foundation step 5: marking style, like FM (zonal / mixed / man, and at set pieces)
 - **What changed:** Two new team instructions on the Tactics board and the live tactics sheet, in EN/AR/ES/FR. Both default to Mixed.
   - **Marking:** Zonal / Mixed / Man.

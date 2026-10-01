@@ -416,6 +416,12 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .g-dot2 { transition: transform .14s linear; }
 .g-dot-n { font: 800 2.3px/1 var(--f-text); }
 .g-dot2.carrier circle { stroke: #FFC857; stroke-width: .8; }
+.g-wx { pointer-events: none; }
+.g-wx.rain path { stroke: rgba(220, 235, 255, .55); stroke-width: .25; stroke-linecap: round; animation: wx-rain .9s linear infinite; }
+.g-wx.snow circle { fill: rgba(255, 255, 255, .85); animation: wx-snow 4s linear infinite; }
+@keyframes wx-rain { from { transform: translate(0, -8px); opacity: 0; } 20% { opacity: 1; } to { transform: translate(-3px, 10px); opacity: 0; } }
+@keyframes wx-snow { from { transform: translate(0, -6px); opacity: 0; } 20% { opacity: 1; } to { transform: translate(2px, 8px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .g-wx path, .g-wx circle { animation: none; } }
 .g-goal { font: 900 9px var(--f-display); fill: #F4FFFB; transition: opacity .2s; paint-order: stroke; stroke: rgba(0,0,0,.4); stroke-width: .6; }
 .g-zone { transition: opacity .2s; }
 @media (prefers-reduced-motion: reduce) { .g-dot2 { transition: none; } }

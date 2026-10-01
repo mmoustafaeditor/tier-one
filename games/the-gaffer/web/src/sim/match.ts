@@ -28,6 +28,7 @@ import { RS, RSN, TUNE_REF, callFoul, callGoal, callOffside, ensureRef, foulFact
 import { PERIOD_END, afterTick, isExtraBreak, isHalfTime, knockout, needsExtra, periodOver, playOver, tick } from './engine/clock';
 import { SUBS } from './competitions';
 import { BG, HURT, proneness } from './engine/injury';
+import { WX, weatherFor, type Wx } from './engine/weather';
 import { AI_COH, cohLevel, cohesionOfClub } from './cohesion';
 import { staffEdge } from './norms';
 
@@ -84,6 +85,7 @@ export interface LiveMatch {
   cup?: string;        // cup id for a knockout tie: a draw goes to penalties
   group?: boolean;     // a cup group game: a draw stays a draw
   injuries?: number;   // injury chance × (balance settings, user's matches)
+  wx?: Wx;             // weather (engine/weather.ts); missing (old saves) = clear
   risk?: Record<string, number>; // v2.6: injury-risk multiplier per player from his load (1 = normal, up to 3)
   pens?: [number, number];
   kicks?: [0 | 1, string, boolean][]; // shootout: side, taker, scored
@@ -175,7 +177,7 @@ export function startMatch(w: World, c: Career | null, home: string, away: strin
     key, round, sides, minute: 0, goals: [0, 0], events: [], possSum: 0, fit, injuries: b?.injuries ?? 1, risk,
     stats: [[50, 0, 0, 0, 0, 0, 0], [50, 0, 0, 0, 0, 0, 0]], played: [...sides[0].onPitch, ...sides[1].onPitch], xg: [0, 0],
     v: 2, full: full ?? !!(c && (home === c.clubId || away === c.clubId)), ball: { s: 0, n: 0, c: 0 }, tl: newTally(), rev: 0,
-    comp: cup?.id ?? leagueOfClub(home), season, plus: 0,
+    comp: cup?.id ?? leagueOfClub(home), season, plus: 0, wx: weatherFor(key, countryOf(home)),
   };
   if (cup) { m.cup = cup.id; if (cup.stage === 'group') m.group = true; m.stage = cup.stage; }
   m.ref = initRef(m, refereeFor(key, m.comp!, [countryOf(home), countryOf(away)]), season);
@@ -217,13 +219,14 @@ export function inputsOf(m: LiveMatch, get: Lookup, over?: { side: 0 | 1; tactic
   return ([0, 1] as const).map((i): SideInput => {
     const s = m.sides[i];
     const tactics = over && over.side === i ? over.tactics : s.tactics;
-    const drain = ahead * 0.135 * [0.85, 1, 1.28][tactics.pressing] * [0.93, 1, 1.08][tactics.tempo ?? 1] * [0.97, 1, 1.06][tactics.cpress ?? 1] * (s.mods?.fatigue ?? 1);
+    const drain = ahead * 0.135 * WX.tire[m.wx ?? 0] * [0.85, 1, 1.28][tactics.pressing] * [0.93, 1, 1.08][tactics.tempo ?? 1] * [0.97, 1, 1.06][tactics.cpress ?? 1] * (s.mods?.fatigue ?? 1);
     const short = s.onPitch.filter((id) => !id).length; // gf-ref: down to ten (or fewer): everyone covers more ground
     return {
       xi: s.onPitch.map((id) => (id ? get(id) : null)),
       tactics,
       fit: (id) => Math.max(20, (m.fit[id] ?? 100) - drain),
       foulK: m.ref ? foulFactor(m, i, get) : undefined,
+      wx: m.wx,
       bonus: (i === 0 ? TUNE.HOME : 0) + (s.form - 1) * 30 + (s.onPitch.includes(s.pieces.captain) ? 0.5 : 0) + (s.mods?.level ?? 0) - TUNE_REF.short * short,
       cohesion: ((s.mastery ?? 60) / 100 - 0.6) * 0.2 + ((s.mods?.press ?? 1) - 1) * (tactics.pressing === 2 ? 2 : 0),
       talk: s.talk,
@@ -546,7 +549,7 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
     const cp = { cpress: t.cpress ?? 1 };
     // Fatigue: pressing, tempo, running roles, and chasing a side that keeps the ball.
     const chase = 1 + 0.35 * ((i === 0 ? share : 1 - share) - 0.5);
-    const load = [0.85, 1, 1.28][t.pressing] * [0.93, 1, 1.08][t.tempo ?? 1] * (s.mods?.fatigue ?? 1) * chase;
+    const load = [0.85, 1, 1.28][t.pressing] * [0.93, 1, 1.08][t.tempo ?? 1] * (s.mods?.fatigue ?? 1) * chase * WX.tire[m.wx ?? 0];
     let n = 0, sum = 0, outN = 0, outSum = 0;
     for (let k = 0; k < s.onPitch.length; k++) {
       const id = s.onPitch[k];
@@ -565,7 +568,7 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
     const on = s.onPitch.filter(Boolean);
     const rk = on.map((id) => m.risk?.[id] ?? 1);
     const rsum = rk.reduce((a, v) => a + v, 0);
-    if (r() < BG * 0.0014 * (m.injuries ?? 1) * (1 + Math.max(0, 75 - sum / n) / 40) * (t.pressing === 2 ? 1.12 : 1) * (rsum / Math.max(1, on.length))) {
+    if (r() < BG * WX.inj[m.wx ?? 0] * 0.0014 * (m.injuries ?? 1) * (1 + Math.max(0, 75 - sum / n) / 40) * (t.pressing === 2 ? 1.12 : 1) * (rsum / Math.max(1, on.length))) {
       // Who: his load and his hidden proneness (engine/injury.ts).
       const wk = on.map((id, j) => rk[j] * proneness(P(id)));
       let pickAt = r() * wk.reduce((a, v) => a + v, 0), hi = 0;

@@ -175,7 +175,7 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish, onSp
         </Panel>
 
         <Panel className="g-pitch pitch-card" i={2} label={x.live.where}>
-          <span className="eyebrow">{x.live.where} · {x.live.whereSub}</span>
+          <span className="eyebrow">{x.live.where} · {x.live.whereSub} · {R.wx[m.wx ?? 0]}</span>
           <div className="chips view-chips">{x.live.views.map((v, i) => <button key={v} className="chip" aria-pressed={view === i} onClick={() => setView(i)}>{v}</button>)}</div>
           {view === 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={key ? 45 : SPEEDS[speed]} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} /></div>
             : <ZonePitch m={m} me={me} mode={view} />}
