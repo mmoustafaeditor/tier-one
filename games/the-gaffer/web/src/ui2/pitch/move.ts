@@ -67,3 +67,38 @@ export function pressSpot(ball: Pt, ownGoal: Pt, gap: number): Pt {
   const d = dist(ball, ownGoal) || 1;
   return { x: ball.x + ((ownGoal.x - ball.x) / d) * gap, y: ball.y + ((ownGoal.y - ball.y) / d) * gap };
 }
+
+// ---------- PR B ----------
+// 2. Runs off the ball by role, while the side has the ball. Depths are from the attacking side's own goal (0-105),
+// `y` across (0-68). `bd` = the ball's depth, `theirLine` = the depth of the other side's back line in the same frame
+// (from OUR goal), `wide` = which touchline the player's own slot is near (-1 top, +1 bottom, 0 central).
+export interface RunCtx { bd: number; by: number; theirLine: number; d: number; y: number; wide: -1 | 0 | 1 }
+export interface Run { d: number; y: number; run: boolean } // run = a real run (counts against the cap of 3 at once)
+const sideOf = (y: number): -1 | 0 | 1 => (y < W * 0.36 ? -1 : y > W * 0.64 ? 1 : 0);
+const touch = (w: -1 | 0 | 1) => (w < 0 ? 4 : W - 4);
+export function runFor(role: string, c: RunCtx): Run | null {
+  const ballSide = sideOf(c.by);
+  const sameFlank = c.wide !== 0 && ballSide === c.wide;
+  switch (role) {
+    case 'fullback': return sameFlank && c.bd > 45 && c.bd > c.d + 5 ? { d: Math.min(c.bd + 8, 88), y: touch(c.wide), run: true } : null;
+    case 'wingback': return sameFlank && c.bd > 35 && c.bd > c.d ? { d: Math.min(c.bd + 10, 92), y: touch(c.wide), run: true } : null;
+    case 'inverted_fullback': return c.bd > 30 ? { d: Math.max(c.d, c.bd - 18), y: W / 2 + (c.wide || 1) * 10, run: false } : null;
+    case 'winger': return c.wide ? { d: c.bd > 50 ? Math.max(c.d, c.bd + 5) : c.d, y: touch(c.wide), run: false } : null;
+    case 'inside_forward': return c.bd > 60 && c.wide ? { d: Math.min(c.bd + 12, 92), y: W / 2 + c.wide * 12, run: true } : null;
+    case 'advanced_forward': return c.bd > 50 ? { d: Math.min(c.theirLine + 3, 96), y: c.y, run: true } : null;
+    case 'target_man': return { d: Math.min(c.d, c.theirLine - 2), y: W / 2 + (c.y - W / 2) * 0.4, run: false };
+    case 'false_nine': return c.bd > 35 ? { d: Math.max(c.bd - 6, c.theirLine - 14), y: W / 2 + (c.by - W / 2) * 0.3, run: false } : null;
+    case 'box_to_box': case 'attacking_mid': case 'shadow_striker':
+      return c.bd > 70 ? { d: 88, y: W / 2 + (c.y < W / 2 ? -6 : 6), run: true } : null;
+    case 'playmaker': return { d: Math.max(6, c.bd - 8), y: c.y + (c.by - c.y) * 0.4, run: false };
+    case 'holder': return { d: Math.min(c.d, Math.max(6, c.bd - 15)), y: c.y + (W / 2 - c.y) * 0.3, run: false };
+    default: return null;
+  }
+}
+export const wideOf = (y: number) => sideOf(y);
+
+// 5. Transitions. For a short while after a turnover: the side that lost the ball counter-presses (cpress 2, or a
+// high press) with its nearest 2-3 players, otherwise it races back; the side that won it breaks forward if told to.
+export interface Transition { lost: 0 | 1; at: number }
+// A match minute plays in a few real seconds, so the reaction is held for three beats to be visible.
+export const TRANSITION_MS = (beatLen: number) => Math.max(900, beatLen * 3);

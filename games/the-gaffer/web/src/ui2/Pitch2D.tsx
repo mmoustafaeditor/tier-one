@@ -9,7 +9,7 @@ import { FORMATIONS, fullTactics } from '../sim/tactics';
 import { planOf, spotOf, type Spot } from '../sim/engine/phases';
 import type { Position } from '../model/types';
 import type { World } from '../sim/world';
-import { lineDepth, pressShape, pressSpot, speedsOf, step, type LineState, type PressPlan } from './pitch/move';
+import { TRANSITION_MS, lineDepth, pressShape, pressSpot, runFor, speedsOf, step, wideOf, type LineState, type PressPlan, type Transition } from './pitch/move';
 
 type Pt = { x: number; y: number };
 
@@ -48,6 +48,8 @@ interface Anim {
   spd: number[][];        // speed ratio per [side][slot] (pace and match fitness), refreshed every minute
   line: (LineState | undefined)[]; // each side's back-line depth out of possession
   back: [number, number]; // when each side last played the ball backwards (a time, for the back line's step-up)
+  trans: Transition | null; // the last turnover: who lost it and when (counter-press, recovery runs, breaks)
+  runsN: number;          // real runs off the ball this frame (for the measurement test)
 }
 
 const L = 105, W = 68;
@@ -188,6 +190,7 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     const k = b.to ?? ks.sort((x, y) => dist(a.pos[b.side][x], a.ball) - dist(a.pos[b.side][y], a.ball))[0];
     if (k === undefined || !a.pos[b.side][k]) return;
     a.carrier = -1;
+    a.trans = { lost: (1 - b.side) as 0 | 1, at: a.time };
     if (b.z !== undefined) a.zone = b.z;
     if (b.pt) a.run = { side: b.side, slot: k, pt: b.pt };
     fly(a, a.pos[b.side][k], travel * 0.6, () => { a.poss = b.side; a.carrier = k; });
@@ -299,7 +302,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
     const a: Anim = {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: -1, time: 0,
-      spd: speedsOf(m, world), line: [undefined, undefined], back: [-1e9, -1e9],
+      spd: speedsOf(m, world), line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0,
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -345,6 +348,30 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         const ownGoal = { x: toX(side, 0), y: W / 2 };
         const tg: Pt[] = [];
         for (const k of ks) tg[k] = target(mm, a, side, k);
+        const ft = fullTactics(mm.sides[side].tactics);
+        const tr = a.trans && a.time - a.trans.at < TRANSITION_MS(a.beatLen) ? a.trans : null;
+        const boost: number[] = [];
+        if (has) {
+          // Runs off the ball by role (at most 3 real runs at once), then the break after winning the ball.
+          const other = (1 - side) as 0 | 1;
+          const theirLine = a.line[other] ? L - a.line[other]!.depth : 80;
+          const bd = depthOf(side, a.ball.x);
+          const busy = (k: number) => k === a.carrier || (a.run?.side === side && a.run.slot === k) || (a.shooter?.side === side && a.shooter.slot === k);
+          let runs = 0;
+          a.runsN = 0;
+          for (const k of [...ks].sort((p, q) => Math.abs((a.pos[side][p]?.y ?? 0) - a.ball.y) - Math.abs((a.pos[side][q]?.y ?? 0) - a.ball.y))) {
+            if (busy(k) || LINE[slots[k].pos] === 'gk') continue;
+            const d = depthOf(side, tg[k].x);
+            const r = runFor(sps[k]?.ip ?? '', { bd, by: a.ball.y, theirLine, d, y: tg[k].y, wide: wideOf(tg[k].y) });
+            if (!r) continue;
+            if (r.run) { if (runs >= 3) continue; runs++; a.runsN = runs; boost[k] = 1.25; }
+            tg[k] = { x: toX(side, clamp(r.d, 2, 103)), y: clamp(r.y, 2, W - 2) };
+          }
+          if (tr && tr.lost !== side && ft.counter) for (const k of ks) {
+            if (busy(k) || LINE[slots[k].pos] !== 'fwd') continue;
+            tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x) + 12, 96)), y: tg[k].y }; boost[k] = 1.4;
+          }
+        }
         let pp: PressPlan = { press: [], cover: -1, trigger: false };
         if (!has) {
           pp = pressShape(ks.filter((k) => LINE[slots[k].pos] !== 'gk'), a.pos[side], a.ball, depthOf(side, a.ball.x), mm.sides[side].tactics.pressing, (k) => sps[k]?.oop ?? '');
@@ -366,13 +393,32 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
           }
           for (const k of pp.press) tg[k] = pressSpot(a.ball, ownGoal, 1.8);
           if (pp.cover >= 0 && pp.press.length) tg[pp.cover] = pressSpot(a.ball, ownGoal, 7);
+          // Just lost it: counter-press with the nearest three, or everyone ahead of the ball races back.
+          if (tr && tr.lost === side) {
+            const field = ks.filter((k) => LINE[slots[k].pos] !== 'gk' && a.pos[side][k]);
+            if (ft.cpress === 2 || (ft.cpress !== 0 && ft.pressing === 2)) {
+              for (const k of [...field].sort((p, q) => Math.hypot(a.pos[side][p].x - a.ball.x, a.pos[side][p].y - a.ball.y) - Math.hypot(a.pos[side][q].x - a.ball.x, a.pos[side][q].y - a.ball.y)).slice(0, 3)) {
+                tg[k] = { ...a.ball }; boost[k] = 1.6;
+              }
+            } else {
+              const bdep = depthOf(side, a.ball.x);
+              // The back line drops as one (to 5 m behind the ball at most); the others ahead of the ball race back.
+              const lineTo = Math.min(ln.depth, bdep - 5);
+              for (const k of field) {
+                if (line(k) === 'def' && free(k)) { tg[k] = { x: toX(side, lineTo), y: tg[k].y }; if (depthOf(side, a.pos[side][k].x) > lineTo) boost[k] = 1.4; }
+                else if (depthOf(side, a.pos[side][k].x) > bdep) { tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), bdep - 5)), y: tg[k].y }; boost[k] = 1.4; }
+                // Everyone stays tied to the dropped line: midfield within 16 m of it, forwards within 38 m.
+                if (free(k) && line(k) !== 'def') tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), lineTo + (line(k) === 'mid' ? 16 : 38))), y: tg[k].y };
+              }
+            }
+          }
         } else a.line[side] = undefined;
         for (const k of ks) {
           let t = tg[k];
           if (has && k === a.carrier) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
           const wob = Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
           const p = a.pos[side][k] ?? t;
-          const sprint = pp.press.includes(k) ? (pp.trigger ? 1.6 : 1.3) : 1;
+          const sprint = Math.max(pp.press.includes(k) ? (pp.trigger ? 1.6 : 1.3) : 1, boost[k] ?? 1);
           a.pos[side][k] = step(p, { x: t.x, y: t.y + wob }, dt, ms, (a.spd[side]?.[k] ?? 1) * sprint);
         }
       }
