@@ -10,8 +10,8 @@
 //   5. Keyed records (Daily results by number) are unioned; the newer document wins a key both have.
 // Patterns: '*' matches one key. Order of checks: first-time stamps, counters, max, so 'stats.pay:*' beats 'stats.*'.
 export const RULES = {
-  counters: ['credits', 'xp', 'pp', 'season.xp', 'byline.followers', 'stats.*', 'book.*.xp', 'book.*.asks', 'book.*.hits', 'rivals.*.w', 'rivals.*.l', 'rivals.*.d'],
-  max: ['byline.hot', 'byline.best', 'byline.rank', 'streak.best', 'book.*.lv', 'practice.played'],
+  counters: ['credits', 'pp', 'byline.followers', 'stats.*', 'book.*.xp', 'book.*.asks', 'book.*.hits', 'rivals.*.w', 'rivals.*.l', 'rivals.*.d'],
+  max: ['byline.hot', 'byline.best', 'streak.best', 'book.*.lv', 'practice.played'],
   first: ['ach.*', 'milestones.*', 'scenes.*', 'rivals.*.scalp', 'rivals.*.trophy', 'stats.pay:*'],
   collections: {
     feed: { id: 'id', cap: 60, sort: 'at', flags: ['read'] },
@@ -23,7 +23,7 @@ export const RULES = {
     'byline.keys': { cap: 40 },
   },
   maps: ['daily'],
-  clampMin: { credits: 0, 'byline.followers': 0, pp: 0, xp: 0, 'season.xp': 0 },
+  clampMin: { credits: 0, 'byline.followers': 0, pp: 0 },
 };
 
 const isObj = (v) => v && typeof v === 'object' && !Array.isArray(v);

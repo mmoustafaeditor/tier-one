@@ -6,7 +6,7 @@ export default {
     cn: {
       bell: 'Feed, {n} unread',
       mode: { daily: 'The Daily', career: 'Story', room: 'Friends room', practice: 'Practice', wire: 'The Wire' },
-      tier: { blogger: 'Nobody', stringer: 'Rising', correspondent: 'ITK', chief: 'Insider', tierone: 'Tier One' },
+      tier: { blogger: 'Blogger', stringer: 'Stringer', correspondent: 'Correspondent', chief: 'Chief', tierone: 'Tier One' },
       feed: {
         title: 'Feed', empty: 'Nothing yet. Publish a call in any mode and the reactions land here.', play: 'Play today’s Daily',
         today: 'Today', yesterday: 'Yesterday', earlier: 'Earlier', unread: '{n} new',
@@ -70,7 +70,7 @@ export default {
           level: ['{rec}. We read the same room.', 'Both right on {p}. My source says hi.', 'Level. Someone’s leaking to both of us.', 'Honours even. I’ll be earlier next window.', 'Same call on {p}. Mine had more emojis.', 'Dead level. The network is watching.', '{rec}. Neither of us is buying the other a coffee.', 'Tied. Let’s see who the physio likes more.'],
         },
         insider: {
-          losing: ['{rec}. Ring the physio before you post, son.', 'I was right on {p} on day five. Patience is free.', 'Twenty years in the press box. You’ve had a week. {rec}.', 'Loud is not the same as right. {rec}.', 'I don’t post often. When I do, check the record.', 'You Dropped on vibes. I waited for a medical.', 'Slow down. The story isn’t going anywhere. Well, {p} might.', 'I’ll send you my reading list. It’s one line: wait.'],
+          losing: ['{rec}. Ring the physio before you post, son.', 'I was right on {p} on day five. Patience is free.', 'Twenty years in the press box. You’ve had a week. {rec}.', 'Loud is not the same as right. {rec}.', 'I don’t post often. When I do, check the record.', 'You went Confirmed on vibes. I went on a medical.', 'Slow down. The story isn’t going anywhere. Well, {p} might.', 'I’ll send you my reading list. It’s one line: wait.'],
           winning: ['{rec}. Noted. It won’t happen often.', 'You had {p} before me. Well found.', 'Good call. I’ll be having a word with my man at the training ground.', 'Fair play. You did the legwork.', '{rec}. I’ve started reading your posts. Don’t tell anyone.', 'You beat me to {p}. Most don’t.', 'Credit to you. My contact was at a christening.', 'One day you’ll explain how. Not today, I suspect.'],
           level: ['{rec}. We both did the homework.', 'Same answer on {p}. Some of us took longer.', 'Level. Nothing wrong with that.', 'We agree on {p}. Don’t make a habit of it.', 'Even. The honest way.', '{rec}. The record’s clean on both sides.', 'Both right. The tabloid won’t like it.', 'Honours even. See you on Deadline Day.'],
         },
@@ -81,7 +81,7 @@ export default {
     cn: {
       bell: 'التايملاين، {n} جديد',
       mode: { daily: 'التحدي اليومي', career: 'القصة', room: 'أوضة صحاب', practice: 'التمرين', wire: 'الوكالة' },
-      tier: { blogger: 'مجهول', stringer: 'طالع', correspondent: 'عارف', chief: 'من جوّه', tierone: 'تير وان' },
+      tier: { blogger: 'مدوّن', stringer: 'مراسل حر', correspondent: 'مراسل', chief: 'كبير المراسلين', tierone: 'تير وان' },
       feed: {
         title: 'التايملاين', empty: 'لسه مفيش حاجة. انشر توقّع في أي مود والردود هتوصل هنا.', play: 'العب يومي النهارده',
         today: 'النهارده', yesterday: 'امبارح', earlier: 'قبل كده', unread: '{n} جديد',
@@ -135,7 +135,7 @@ export default {
       toast: { scalp: 'خدت الراس: {r}', coins: '{n} كوين', contact: '{s} وصل للمستوى {n}', coffee: 'القهوة وصلت. {s} ‎+20 XP' },
       taunt: {
         tabloid: {
-          losing: ['{rec} ليّا. علّقها على الحيطة يا صاحبي.', 'قلت {p} قبل ما تشرب قهوتك. {rec}.', 'سكووب: انت بطيء. المصدر: النتيجة، {rec}.', 'قعدت أسبوع على {p}. أنا خدت دقيقة. خمّن مين صح.', 'الريبلايز عندي مليانة متابعينك. سلّملي عليهم.', 'واحدة كمان للفيديو الملخص. {rec} والعدّ شغال.', 'قفلتها؟ انت اللي اتقفلت. في الاتجاه الغلط.', 'كنت هعرض عليك شغل، بس احنا عندنا معايير. واطية، بس معايير.'],
+          losing: ['{rec} ليّا. علّقها على الحيطة يا صاحبي.', 'قلت {p} قبل ما تشرب قهوتك. {rec}.', 'حصري: انت بطيء. المصدر: النتيجة، {rec}.', 'قعدت أسبوع على {p}. أنا خدت دقيقة. خمّن مين صح.', 'الريبلايز عندي مليانة متابعينك. سلّملي عليهم.', 'واحدة كمان للفيديو الملخص. {rec} والعدّ شغال.', 'قفلتها؟ انت اللي اتقفلت. في الاتجاه الغلط.', 'كنت هعرض عليك شغل، بس احنا عندنا معايير. واطية، بس معايير.'],
           winning: ['ماشي. {rec}. متتغرّش.', 'حظ في {p}. حتى الساعة الواقفة بتصيب مرتين.', 'بمسح التويتة. مش علشانك طبعاً.', 'طيب، انت جبت {p}. أنا جبت الغدا.', 'بطّل تعملي كوت. فهمنا. {rec}.', 'رئيس التحرير سألني انت مين. متشكرين.', 'صدفة. صدفة. صدفة. {rec}. صدفة.', 'انت بتخسّرني متابعين، واللي فاضلين عندي مش كتير العاقلين.'],
           level: ['{rec}. اللي جاية بتاعتي، وهنشرها الأول.', 'الاتنين على {p}. العقول الكبيرة. واحد فينا يعني.', 'تعادل. دلوقتي بس. أنا بنشر الفجر.', 'واحدة بواحدة. المرة الجاية صوتي هيبقى أعلى.', 'اتقاسمنا {p}. أنا آخد الكريديت وانت خد الشيرات.', 'راس براس. والفاصل هو الصوت العالي، وأنا بكسب في ده.', 'خالصين. استمتع، مش هتطوّل.', 'الاتنين جبنا {p}. بس واحد فينا كتبها كابيتال.'],
         },
@@ -145,7 +145,7 @@ export default {
           level: ['{rec}. احنا الاتنين قريّنا الأوضة صح.', 'الاتنين صح في {p}. مصدري بيسلّم عليك.', 'تعادل. فيه حد بيسرّب للاتنين.', 'واحدة بواحدة. الفترة الجاية هبقى بدري.', 'نفس التوقّع في {p}. بتاعي كان فيه إيموجي أكتر.', 'راس براس. الشبكة بتتفرّج.', '{rec}. ولا واحد فينا هيعزم التاني على قهوة.', 'متعادلين. نشوف العلاج الطبيعي بيحب مين أكتر.'],
         },
         insider: {
-          losing: ['{rec}. كلّم العلاج الطبيعي قبل ما تنشر يا ابني.', 'كنت صح في {p} في اليوم الخامس. الصبر ببلاش.', 'عشرين سنة في المقصورة. انت لك أسبوع. {rec}.', 'الصوت العالي مش هو الصح. {rec}.', 'أنا مش بنشر كتير. لما بنشر، بص على السجل.', 'انت نزّلت دروب على إحساس. أنا استنيت الكشف الطبي.', 'بالراحة. الخبر مش رايح في حتة. {p} يمكن.', 'هبعتلك قايمة قراية. سطر واحد: استنى.'],
+          losing: ['{rec}. كلّم العلاج الطبيعي قبل ما تنشر يا ابني.', 'كنت صح في {p} في اليوم الخامس. الصبر ببلاش.', 'عشرين سنة في المقصورة. انت لك أسبوع. {rec}.', 'الصوت العالي مش هو الصح. {rec}.', 'أنا مش بنشر كتير. لما بنشر، بص على السجل.', 'انت قلت مؤكد على إحساس. أنا قلتها على كشف طبي.', 'بالراحة. الخبر مش رايح في حتة. {p} يمكن.', 'هبعتلك قايمة قراية. سطر واحد: استنى.'],
           winning: ['{rec}. اتسجّلت. مش هتتكرر كتير.', 'جبت {p} قبلي. شغل نضيف.', 'توقّع حلو. هكلّم الراجل بتاعي في التمرين.', 'برافو. انت اللي تعبت.', '{rec}. بدأت أقرا بوستاتك. متقولش لحد.', 'سبقتني على {p}. قليل اللي بيعملوها.', 'الحق عليك. مصدري كان في سبوع.', 'يوم هتشرحلي ازاي. مش النهارده غالباً.'],
           level: ['{rec}. احنا الاتنين ذاكرنا.', 'نفس الإجابة في {p}. بس فيه ناس خدت وقت أطول.', 'تعادل. مفيهاش حاجة.', 'متفقين على {p}. متخليهاش عادة.', 'خالصين. بالأمانة.', '{rec}. السجل نضيف من الناحيتين.', 'الاتنين صح. التابلويد مش هيعجبه.', 'واحدة بواحدة. نتقابل يوم الديدلاين.'],
         },
@@ -156,7 +156,7 @@ export default {
     cn: {
       bell: 'Muro, {n} sin leer',
       mode: { daily: 'El Diario', career: 'Historia', room: 'Sala de amigos', practice: 'Práctica', wire: 'El Teletipo' },
-      tier: { blogger: 'Nadie', stringer: 'En alza', correspondent: 'Enterado', chief: 'Insider', tierone: 'Tier One' },
+      tier: { blogger: 'Bloguero', stringer: 'Colaborador', correspondent: 'Corresponsal', chief: 'Jefe', tierone: 'Tier One' },
       feed: {
         title: 'Muro', empty: 'Nada todavía. Publica una apuesta en cualquier modo y las reacciones llegan aquí.', play: 'Juega el Diario de hoy',
         today: 'Hoy', yesterday: 'Ayer', earlier: 'Antes', unread: '{n} nuevas',
@@ -220,7 +220,7 @@ export default {
           level: ['{rec}. Leímos la misma sala.', 'Los dos acertamos con {p}. Mi fuente te saluda.', 'Empate. Alguien nos filtra a los dos.', 'Tablas. La próxima ventana madrugo más.', 'La misma apuesta con {p}. La mía llevaba más emojis.', 'Empatados. La red está mirando.', '{rec}. Ninguno invita al otro a un café.', 'Empate. A ver a quién prefiere el fisio.'],
         },
         insider: {
-          losing: ['{rec}. Llama al fisio antes de publicar, chaval.', 'Acerté lo de {p} el quinto día. La paciencia es gratis.', 'Veinte años en la tribuna de prensa. Tú llevas una semana. {rec}.', 'Gritar no es acertar. {rec}.', 'No publico mucho. Cuando lo hago, mira el historial.', 'Tú lanzaste un Drop por intuición. Yo esperé al reconocimiento médico.', 'Sin prisa. La noticia no se va a ninguna parte. {p}, igual sí.', 'Te paso mi lista de lecturas. Es una línea: espera.'],
+          losing: ['{rec}. Llama al fisio antes de publicar, chaval.', 'Acerté lo de {p} el quinto día. La paciencia es gratis.', 'Veinte años en la tribuna de prensa. Tú llevas una semana. {rec}.', 'Gritar no es acertar. {rec}.', 'No publico mucho. Cuando lo hago, mira el historial.', 'Tú fuiste a Confirmado por intuición. Yo, por un reconocimiento médico.', 'Sin prisa. La noticia no se va a ninguna parte. {p}, igual sí.', 'Te paso mi lista de lecturas. Es una línea: espera.'],
           winning: ['{rec}. Anotado. No pasará a menudo.', 'Tuviste lo de {p} antes que yo. Bien visto.', 'Buena apuesta. Voy a tener unas palabras con mi hombre en la ciudad deportiva.', 'Bien jugado. El trabajo de calle fue tuyo.', '{rec}. He empezado a leerte. No se lo digas a nadie.', 'Me ganaste con {p}. Pocos lo hacen.', 'Mérito tuyo. Mi contacto estaba en un bautizo.', 'Un día me explicarás cómo. Hoy no, sospecho.'],
           level: ['{rec}. Los dos hicimos los deberes.', 'La misma respuesta con {p}. Algunos tardamos más.', 'Empate. Nada que objetar.', 'Coincidimos con {p}. Que no se convierta en costumbre.', 'En paz. Por la vía honrada.', '{rec}. Historial limpio por ambos lados.', 'Los dos acertamos. Al tabloide no le va a gustar.', 'Tablas. Nos vemos el día del cierre.'],
         },

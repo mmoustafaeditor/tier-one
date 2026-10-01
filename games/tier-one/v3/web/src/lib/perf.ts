@@ -1,11 +1,15 @@
-// Smoothness (GOTY.md §8.2): the service worker and its update flow, the install prompt and small
+// Smoothness (GOTY.md §8.2): the service worker and its update flow, the install prompt, film preloading, and small
 // helpers the rest of the app can lean on so nothing heavy lands on the boot path or inside a frame.
 //   initPerf()          main.tsx calls it once: marks boot, registers sw.js once the page has settled, wires the update
 //                       toast ("New edition ready → Reload"), the install chip (never on a first visit), and keeps the
 //                       theme-color meta in step with the edition.
+//   prefetchFilm(stem)  poster first, then the clip, one step ahead of the player (film players call it with the
+//                       stem they'll most likely need next). Through the service worker the clip is cached whole, so
+//                       the next <video> starts from the cache (< 200 ms measured, scripts/perf.mjs).
 //   idle(fn), afterBoot(fn), mark(name)
 import { getSave } from './save';
 import { t } from './i18n';
+import { filmUrl, type Aspect } from '../film/clips';
 import { initPushBridge } from './push';
 
 const PERF_KEY = 'tierone_perf';
@@ -32,6 +36,30 @@ export function afterBoot(fn: () => void, maxWait = 8000): void {
 }
 /** A User Timing mark, so traces and scripts/perf.mjs can read boot timings. */
 export function mark(name: string): void { try { performance.mark('t1:' + name); } catch { /* */ } }
+
+// ---------- films: one step ahead
+const filmsWanted = new Map<string, Promise<void>>();
+const aspect = (): Aspect => (matchMedia('(orientation: landscape)').matches ? 'l' : 'p');
+async function pull(url: string, priority: 'low' | 'high' = 'low'): Promise<void> {
+  // Through the service worker the whole file lands in the films cache; without one, an immutable response still
+  // fills the HTTP cache. Body discarded either way.
+  try { const r = await fetch(url, { priority, cache: 'force-cache' } as RequestInit); await r.arrayBuffer(); } catch { /* offline or missing: the player falls back */ }
+}
+/** Poster first (the reduced-motion still and the frame under the loading clip), then the clip. Deduplicated per stem. */
+export function prefetchFilm(stem: string, a: Aspect = aspect()): Promise<void> {
+  const k = stem + '-' + a;
+  let p = filmsWanted.get(k);
+  if (p) return p;
+  p = (async () => {
+    await pull(filmUrl(stem, a, 'jpg'));
+    if (getSave().reduced || (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) return;
+    await pull(filmUrl(stem, a, 'mp4'));
+  })();
+  filmsWanted.set(k, p);
+  return p;
+}
+/** Several stems in order (the likely next moment first). */
+export function prefetchFilms(stems: string[]): Promise<void> { return stems.reduce((p, s) => p.then(() => prefetchFilm(s)), Promise.resolve()); }
 
 // ---------- service worker
 let reg: ServiceWorkerRegistration | null = null;
@@ -62,7 +90,7 @@ function offerUpdate(worker: ServiceWorker) {
   ]);
 }
 
-// ---------- install prompt: never on a first visit, at most once a fortnight, only on Home with nothing open
+// ---------- install prompt: never on a first visit, at most once a fortnight, only on Home with no film playing
 type BIPEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> };
 let bip: BIPEvent | null = null;
 const standalone = () => matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
@@ -76,7 +104,7 @@ function maybeOfferInstall() {
   const p = readState();
   if (!installEligible(p)) return;
   const r = document.documentElement.dataset.route;
-  if ((r && r !== 'front') || document.querySelector('.dm-call, .bl-fly, .bl-night, [role="dialog"]')) { setTimeout(maybeOfferInstall, 15000); return; }
+  if ((r && r !== 'front') || document.querySelector('.film, .call-scene, .post-scene, [role="dialog"]')) { setTimeout(maybeOfferInstall, 15000); return; }
   writeState({ ...p, installAsk: Date.now() });
   chip('install', t('perf.install.title'), t('perf.install.body'), [
     { label: t('perf.install.yes'), primary: true, on: async () => { const e = bip; bip = null; if (!e) return; await e.prompt(); const c = await e.userChoice; if (c.outcome === 'accepted') writeState({ ...readState(), installed: Date.now() }); } },
@@ -99,12 +127,12 @@ function chip(kind: string, title: string, body: string, actions: { label: strin
   document.body.appendChild(el);
 }
 
-// ---------- theme-color follows the phone's theme (styles/phone.css --os-bg: dark by default, light with data-edition="morning")
+// ---------- theme-color follows the edition (the manifest carries the Morning Paper; Late Edition sets it here)
 function watchEdition() {
   const meta = () => { let m = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]:not([media])'); if (!m) { m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); } return m; };
   const apply = () => {
     const ed = document.documentElement.getAttribute('data-edition') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'late' : 'morning');
-    meta().content = ed === 'late' ? '#0B0C0F' : '#EEEBE4';
+    meta().content = ed === 'late' ? '#121110' : '#F2EEE5';
   };
   apply();
   new MutationObserver(apply).observe(document.documentElement, { attributes: true, attributeFilter: ['data-edition'] });

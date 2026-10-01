@@ -1,4 +1,4 @@
-// Catchphrases (GOTY.md §12): your line replaces "DONE DEAL". A right Drop fires it (stamp, share
+// Catchphrases (GOTY.md §12): your line replaces "DONE DEAL". A Confirmed call that lands fires it (stamp, share
 // card, film title). cp.house.<id>: the ten house originals (default "Book it."); cp.unlock.<id>: how each one is
 // earned, matching the catalog's earn rules in lib/catalog.ts (rank, streak, chapter); cp.react.*: fans and rivals reacting, templated on {phrase} (+ {p} player, {name} you).
 // Nothing here is anyone else's catchphrase: every line is an original (docs/LEGAL_NAMES.md).
@@ -12,9 +12,9 @@ export default {
         ink: 'Ink’s dry.', shirt: 'Shirt’s printed.', gates: 'Through the gates.', sealed: 'Signed. Sealed.', lockin: 'Lock it in.',
       },
       unlock: {
-        default: 'Yours from day one.', bookit: 'Yours from day one.', pen: 'Reach Rising rank.', dusted: 'Reach ITK rank.', announce: 'Reach Insider rank.', sealed: 'Reach Tier One rank.',
+        default: 'Yours from day one.', bookit: 'Yours from day one.', pen: 'Reach Stringer rank.', dusted: 'Reach Correspondent rank.', announce: 'Reach Chief rank.', sealed: 'Reach Tier One rank.',
         medical: 'Hit a 7-day streak.', bags: 'Hit a 30-day streak.', front: 'Hit a 100-day streak.', shirt: 'Finish Story chapter 1.', inkdry: 'Finish Story chapter 3.', wheels: 'Finish Story chapter 5.',
-        custom: 'Reach Insider rank to write your own line.', ink: 'Finish Story chapter 3.', gates: 'One of the three lines you pick on day one.', lockin: 'One of the three lines you pick on day one.',
+        custom: 'Reach Chief rank to write your own line.', ink: 'Finish Story chapter 3.', gates: 'Reach Tier 1 in a window.', lockin: 'Beat all three rivals in one window.',
       },
       react: {
         fan: {
@@ -37,9 +37,9 @@ export default {
         ink: 'الحبر نشف.', shirt: 'القميص اتطبع.', gates: 'عدّى البوابة.', sealed: 'مضى. واتختم.', lockin: 'ثبّتها.',
       },
       unlock: {
-        default: 'بتاعتك من أول يوم.', bookit: 'بتاعتك من أول يوم.', pen: 'وصّل لرتبة طالع.', dusted: 'وصّل لرتبة عارف.', announce: 'وصّل لرتبة من جوّه.', sealed: 'وصّل لرتبة تير وان.',
+        default: 'بتاعتك من أول يوم.', bookit: 'بتاعتك من أول يوم.', pen: 'وصّل لرتبة مراسل حر.', dusted: 'وصّل لرتبة مراسل.', announce: 'وصّل لرتبة كبير المراسلين.', sealed: 'وصّل لرتبة تير وان.',
         medical: 'سلسلة ٧ أيام.', bags: 'سلسلة ٣٠ يوم.', front: 'سلسلة ١٠٠ يوم.', shirt: 'خلّص الفصل ١ في القصة.', inkdry: 'خلّص الفصل ٣ في القصة.', wheels: 'خلّص الفصل ٥ في القصة.',
-        custom: 'وصّل لرتبة من جوّه واكتب جملتك بنفسك.', ink: 'خلّص الفصل ٣ في القصة.', gates: 'واحدة من التلات جمل اللي بتختارهم أول يوم.', lockin: 'واحدة من التلات جمل اللي بتختارهم أول يوم.',
+        custom: 'وصّل لرتبة كبير المراسلين واكتب جملتك بنفسك.', ink: 'خلّص الفصل ٣ في القصة.', gates: 'وصّل للتير ١ في فترة.', lockin: 'اكسب التلات منافسين في فترة واحدة.',
       },
       react: {
         fan: {
@@ -62,9 +62,9 @@ export default {
         ink: 'La tinta está seca.', shirt: 'Camiseta impresa.', gates: 'Ya está dentro.', sealed: 'Firmado. Sellado.', lockin: 'Atado y bien atado.',
       },
       unlock: {
-        default: 'Tuya desde el primer día.', bookit: 'Tuya desde el primer día.', pen: 'Llega al rango En alza.', dusted: 'Llega al rango Enterado.', announce: 'Llega al rango Insider.', sealed: 'Llega al rango Tier One.',
+        default: 'Tuya desde el primer día.', bookit: 'Tuya desde el primer día.', pen: 'Llega al rango Colaborador.', dusted: 'Llega al rango Corresponsal.', announce: 'Llega al rango Jefe.', sealed: 'Llega al rango Tier One.',
         medical: 'Racha de 7 días.', bags: 'Racha de 30 días.', front: 'Racha de 100 días.', shirt: 'Termina el capítulo 1 de la Historia.', inkdry: 'Termina el capítulo 3 de la Historia.', wheels: 'Termina el capítulo 5 de la Historia.',
-        custom: 'Llega al rango Insider para escribir tu propia frase.', ink: 'Termina el capítulo 3 de la Historia.', gates: 'Una de las tres frases que eliges el primer día.', lockin: 'Una de las tres frases que eliges el primer día.',
+        custom: 'Llega al rango Jefe para escribir tu propia frase.', ink: 'Termina el capítulo 3 de la Historia.', gates: 'Llega a Tier 1 en un mercado.', lockin: 'Gana a los tres rivales en un mercado.',
       },
       react: {
         fan: {

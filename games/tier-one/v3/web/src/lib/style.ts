@@ -4,8 +4,8 @@
 //
 // Signals per call (a ResultSaga with a call):
 //   early    filed by day 3 of 7           late     filed on day 6 or Deadline Day
-//   quiet    posted as a Hint (×1)         loud     posted as a Drop (×3, All in)
-//   ut       a corrected call (3.x data only; 4.0 posts are final)    contra   posted against every rival who had already posted
+//   quiet    published at Talks            loud     published at Confirmed
+//   ut       a Delete & repost (U-turn)    contra   filed against every rival who had already posted
 //   trust    a source read pointing at the truth was in hand and the call landed (you believed a good read)
 //   ignore   every read in hand was wrong and the call still landed (you saw through them)
 //   right / wrong, and [right, wrong] per outcome (Done, Hijack, Off, Fake)
@@ -13,17 +13,18 @@
 // Titles need STYLE_MIN calls; checked in order, the first match wins:
 //   sniper       hit ≥ .65 and early ≥ .50    files early, rarely wrong
 //   contrarian   contra ≥ .35 and hit ≥ .50   goes against the rivals and gets away with it
-//   loudmouth    loud ≥ .50                   half your calls are Drops
-//   quiet        quiet ≥ .50                  half your calls are Hints
+//   loudmouth    loud ≥ .50                   half your calls are Confirmed
+//   quiet        quiet ≥ .50                  half your calls are Talks
 //   earlybird    early ≥ .60                  files in the first three days
 //   nightowl     late ≥ .45                   files late, often on Deadline Day
-//   uturner      ut ≥ .20                     one call in five corrected (3.x saves only)
+//   uturner      ut ≥ .20                     one call in five is a Delete & repost
 //   believer     trust ≥ .60                  follows a good read
 //   sceptic      ignore ≥ .30                 wins without the sources
 //   steady       (everything else)
 // Under STYLE_MIN calls the profile is `rookie`. A title is announced once (film moment-style-<id>, a feed line).
 import type { Save } from './save';
 import type { ResultSaga } from './engine';
+import { moment } from './moments';
 import { pushFeed } from './byline';
 import { t } from './i18n';
 
@@ -109,6 +110,7 @@ export function trackStyle(s: Save, per: ResultSaga[], mode: string, days = 7): 
   if (titles[id]) return null;
   titles[id] = Date.now();
   pushFeed(s, { kind: 'level', key: 'live.feed.style', v: { m: 'live.style.' + id + '.t' }, to: { n: 'me' }, tone: 'gold' });
+  moment('style:' + id, undefined, true); // film: moment-style-<id>, once per title
   return id;
 }
 /** The i18n key of a one-line read of your style (rivals' banter, the editor's notes, the Daily brief). */

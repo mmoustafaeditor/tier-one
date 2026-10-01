@@ -1,0 +1,53 @@
+/* Drawn loops (GOTY.md §10): the places and surfaces at rest, breathing. Transform and opacity only, using the
+   individual translate / rotate / scale properties so they compose with each part's own SVG transform. A loop that is
+   not the playing one, off screen, in a hidden tab or under reduced motion holds still (.is-paused / no animation). */
+.lp { transform-box: fill-box; transform-origin: center; animation-duration: 6s; animation-iteration-count: infinite; animation-timing-function: ease-in-out; will-change: auto; }
+.lp-push { transform-box: view-box; transform-origin: 50% 50%; animation-name: lp-push; animation-duration: 14s; animation-direction: alternate; }
+.lp-drift { animation-name: lp-drift; animation-duration: 11s; animation-direction: alternate; }
+.lp-breathe { animation-name: lp-breathe; animation-duration: 4.2s; animation-direction: alternate; }
+.lp-bulb { animation-name: lp-flick; animation-duration: 3.1s; }
+.lp-strip { animation-name: lp-strip; animation-duration: 5.3s; animation-timing-function: steps(1, end); }
+.lp-blink, .lp-led { animation-name: lp-blink; animation-duration: 1.6s; animation-timing-function: steps(1, end); }
+.lp-win { animation-name: lp-blink; animation-duration: 7s; animation-timing-function: steps(1, end); }
+.lp-flap { animation-name: lp-flap; animation-duration: 2.4s; }
+.lp-pole { transform-box: view-box; animation-name: lp-pole; animation-duration: 1.4s; animation-timing-function: linear; }
+.lp-motes { transform-box: view-box; animation-name: lp-motes; animation-duration: 9s; animation-direction: alternate; }
+.lp-rain { transform-box: view-box; animation-name: lp-rain; animation-duration: .9s; animation-timing-function: linear; }
+.lp-steam { animation-name: lp-steam; animation-duration: 3s; }
+.lp-sway { transform-origin: 50% 0; animation-name: lp-sway; animation-duration: 5s; animation-direction: alternate; }
+.lp-sway2 { transform-origin: 50% 0; animation-name: lp-sway; animation-duration: 6.2s; animation-direction: alternate-reverse; }
+.lp-slide { transform-box: view-box; animation-name: lp-slide; animation-duration: 12s; animation-timing-function: linear; }
+.lp-bokeh { transform-box: view-box; animation-name: lp-bokeh; animation-duration: 8s; animation-timing-function: linear; }
+.lp-sweep { transform-box: view-box; animation-name: lp-sweep; animation-duration: 4.5s; animation-timing-function: linear; }
+.lp-taxi { transform-box: view-box; animation-name: lp-taxi; animation-duration: 22s; animation-timing-function: linear; }
+.lp-trace { transform-box: view-box; animation-name: lp-trace; animation-duration: 1.5s; animation-timing-function: linear; }
+.lp-copier { transform-box: view-box; animation-name: lp-copier; animation-duration: 3.6s; animation-direction: alternate; }
+.lp-spin { animation-name: lp-spin; animation-duration: 2.2s; animation-timing-function: linear; }
+.lp-hand { transform-box: view-box; animation-name: lp-spin; animation-duration: 4s; animation-timing-function: steps(60, end); }
+.lp-scroll { transform-box: view-box; animation-name: lp-scroll; animation-duration: 9s; animation-timing-function: linear; }
+.lp-fall { transform-box: view-box; animation-name: lp-fall; animation-duration: 5s; animation-timing-function: linear; }
+.lp-beam { transform-origin: 50% 0; animation-name: lp-sway; animation-duration: 7s; animation-direction: alternate; }
+@keyframes lp-push { from { scale: 1; } to { scale: 1.05; } }
+@keyframes lp-drift { from { translate: -120px 0; opacity: .7; } to { translate: 120px -20px; opacity: 1; } }
+@keyframes lp-breathe { from { opacity: .72; scale: .97; } to { opacity: 1; scale: 1.03; } }
+@keyframes lp-flick { 0%, 100% { opacity: 1; } 47% { opacity: 1; } 50% { opacity: .55; } 53% { opacity: 1; } }
+@keyframes lp-strip { 0%, 100% { opacity: 1; } 71% { opacity: .5; } 73% { opacity: 1; } 76% { opacity: .6; } 78% { opacity: 1; } }
+@keyframes lp-blink { 0%, 100% { opacity: 1; } 50% { opacity: .2; } }
+@keyframes lp-flap { 0%, 80%, 100% { scale: 1 1; } 88% { scale: 1 .05; } }
+@keyframes lp-pole { from { translate: 0 0; } to { translate: 0 48px; } }
+@keyframes lp-motes { from { translate: -12px 20px; } to { translate: 14px -60px; } }
+@keyframes lp-rain { from { translate: 0 -60px; } to { translate: -6px 60px; } }
+@keyframes lp-steam { 0% { opacity: 0; translate: 0 8px; } 40% { opacity: 1; } 100% { opacity: 0; translate: 0 -24px; } }
+@keyframes lp-sway { from { rotate: -1.6deg; } to { rotate: 1.6deg; } }
+@keyframes lp-slide { from { translate: 0 0; } to { translate: -900px 0; } }
+@keyframes lp-bokeh { from { translate: 0 0; } to { translate: -1000px 0; } }
+@keyframes lp-sweep { from { translate: -500px 0; } to { translate: 1700px 0; } }
+@keyframes lp-taxi { from { translate: 0 0; } to { translate: -2400px 0; } }
+@keyframes lp-trace { from { translate: 0 0; } to { translate: -220px 0; } }
+@keyframes lp-copier { from { translate: -100px 0; } to { translate: 100px 0; } }
+@keyframes lp-spin { from { rotate: 0deg; } to { rotate: 360deg; } }
+@keyframes lp-scroll { from { translate: 0 0; } to { translate: -800px 0; } }
+@keyframes lp-fall { from { translate: 0 -300px; } to { translate: 0 300px; } }
+.is-paused .lp, .lp-still .lp { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .lp { animation: none !important; } }
+:root.reduce .lp { animation: none !important; }

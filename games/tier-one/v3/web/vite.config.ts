@@ -1,5 +1,5 @@
 import { defineConfig, type Plugin } from 'vite';
-import { mkdirSync, copyFileSync, readFileSync, writeFileSync, rmSync, readdirSync, statSync } from 'node:fs';
+import { mkdirSync, copyFileSync, readFileSync, writeFileSync, rmSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, resolve, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,11 +15,11 @@ import pkg from './package.json' with { type: 'json' };
 //                        so it runs from a file URL with no other files.
 //   npm run build:web  → dist-web/: a code-split bundle (index.html + assets/<name>-<hash>.* + sw.js + manifest +
 //                        icons + version.json) copied to /tier-one/ at the repo root: what sembagames.app/tier-one
-//                        serves. Routes load lazily; React, the boot intro, the world data
+//                        serves. Routes, films and the scene host load lazily; React, the boot intro, the world data
 //                        and the dictionaries sit in their own long-cached chunks; fonts are files picked by
 //                        unicode-range. The service worker (src/sw.ts) precaches the shell and gets the file list here.
 // The deploy layout (/tier-one, vercel.json headers): index.html, version.json, sw.js, manifest.webmanifest → no-cache;
-// assets/** → immutable; apk/index.html → the APK. (4.0 has no films: CONCEPT4 §6.)
+// assets/** → immutable; films/** (the rendered clips, filled by the film lane) → long cache; apk/index.html → the APK.
 // The rules engine is shared with the server: ../../../../api/tier-one/v3/_lib.
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = resolve(HERE, '../../../../tier-one');
@@ -81,13 +81,13 @@ const publishWeb = (): Plugin => ({
   async closeBundle() {
     const out = resolve(HERE, 'dist-web');
     const files = walk(out).filter((f) => f !== 'sw.js' && f !== 'version.json');
-    // The shell: the page, the boot-path chunks and the core play loop (the window, settings, onboarding),
+    // The shell: the page, the boot-path chunks and the core play loop (the window, the scenes, settings, onboarding),
     // every stylesheet, the manifest and icons, and the Latin fonts: what an offline open of Home and a practice window
     // needs. Other screens, Arabic and Latin-extended fonts and art are cached the first time they're used, so the
     // install stays small (~1 MB) and never crowds out a first tap on slow 4G.
-    // The play loop's route chunks ride along (Blurt → Results → DMs → Story → Market → Lens), so an app's first
+    // The play loop's route chunks ride along (Story → Window → Results → Wire / Feed / Rivals → Me), so a tab's first
     // open never waits on the network and App's route stage only flashes on a cold, uncached first visit.
-    const CORE = /^assets\/(index|vendor|boot|world|i18n|Window|Blurt|DMs|Settings|Onboarding|screenbits|banter|Story|Results|Wire|Connect|Me|Lens|Rooms|Practice|HowTo)-[\w-]{8}\.js$/;
+    const CORE = /^assets\/(index|vendor|boot|world|i18n|Window|scenes|Settings|Onboarding|screenbits|banter|Story|Results|Wire|Connect|Me|Rooms|Practice|HowTo)-[\w-]{8}\.js$/;
     const shell = files.filter((f) => CORE.test(f) || /\.(css|webmanifest)$/.test(f) || f === 'index.html' || /^icons\//.test(f) || /-latin-[\w-]{8}\.woff2$/.test(f));
     const rev = (f: string) => sha(readFileSync(resolve(out, f))).slice(0, 8);
     const precache = shell.map((f) => ({ url: f, rev: /\/[\w.-]+-[\w-]{8}\.\w+$/.test(f) ? null : rev(f) }));
@@ -98,12 +98,12 @@ const publishWeb = (): Plugin => ({
     const bytes = files.reduce((n, f) => n + statSync(resolve(out, f)).size, 0);
     const html = readFileSync(resolve(out, 'index.html'));
     writeFileSync(resolve(out, 'version.json'), versionInfo({ kind: 'web', bytes, sha256: sha(html), files: files.length }));
-    // /tier-one: replace index.html, assets/, icons/, sw.js, manifest and version.json; leave apk/ alone. films/ (3.x) is gone.
+    // /tier-one: replace index.html, assets/, icons/, sw.js, manifest and version.json; leave films/ and apk/ alone.
     if (process.env.T1_NOMIN) return; // a readable build for profiling (npm run perf) never goes live
     mkdirSync(SITE, { recursive: true });
     for (const d of ['assets', 'icons']) rmSync(resolve(SITE, d), { recursive: true, force: true });
     for (const f of walk(out)) { mkdirSync(dirname(resolve(SITE, f)), { recursive: true }); copyFileSync(resolve(out, f), resolve(SITE, f)); }
-    rmSync(resolve(SITE, 'films'), { recursive: true, force: true });
+    for (const d of ['films']) { mkdirSync(resolve(SITE, d), { recursive: true }); if (!existsSync(resolve(SITE, d, '.gitkeep'))) writeFileSync(resolve(SITE, d, '.gitkeep'), ''); }
   },
 });
 

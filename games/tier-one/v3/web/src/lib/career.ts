@@ -1,7 +1,4 @@
-// Career: the slot container and the 3.x Career rules, kept only for the v3 window until the play lane moves to Driver4.
-// 4.0: Career IS Story mode (lib/storyMode.ts): chapters, bosses, extras and the settle live there; the v4 rules come from
-// E4.rulesFor('career', …) through storyMode.nextCareerWindow(). What 3.x had that 4.0 cut (CONCEPT4 §11): club leaks,
-// the frozen-out kit man and favours are gone from these rules; a 3.x save's favours fold into Story's free extras.
+// Career: local blogger → Tier One (DESIGN §6). Runs the Daily engine with rank modifiers, locally. Never ranked.
 //
 // One career (3.4, GOTY.md §7.2): a Career slot is a story, not a second set of numbers. Followers, reputation
 // ("credibility" is Career's word for the same 0–100), the contacts' trust (the Contacts Book level) and the rival
@@ -30,7 +27,7 @@ export const TRUST_EARLY = 3, TRUST_AGAIN = 5;
 
 export function newCareer(slot = 1, restarts = 0): CareerSave {
   return {
-    slot, paper: '', rank: 0, windows: 0, favours: { burner: 0, tipoff: 0, stakeout: 0 },
+    slot, paper: '', rank: 0, windows: 0, favours: { burner: 1, tipoff: 1, stakeout: 0 },
     relations: {}, t1: 0, exclusives: 0, right: 0, calls: 0, uturns: 0, history: [], live: null, restarts,
   };
 }
@@ -60,11 +57,16 @@ export function careerRules(c: CareerSave, cast: CastSaga[], s: Save = getSave()
   const SOURCES: Record<string, Source> = {};
   for (const k of rk.src) SOURCES[k] = trusted(RULES.SOURCES[k], k, trustSteps(s, k));
   const PER: Record<number, Record<string, Source>> = {};
+  if (c.rank >= 2) cast.forEach((s) => {
+    const rel = Math.max(rel0(c, s.from.id), rel0(c, s.to.id)), low = Math.min(rel0(c, s.from.id), rel0(c, s.to.id));
+    if (rel >= 3) PER[s.i] = { ...(PER[s.i] || {}), leak: RULES.LEAK };
+    if (low <= -3 && SOURCES.kitman) PER[s.i] = { ...(PER[s.i] || {}), kitman: { cost: 1, from: 1, kind: 'street', rel: 0.45, says: ['LEAVING', 'STAYING'], map: [0, 0, 1, 1] } as Source };
+  });
   // Vince's play (chapter 4 on): one saga, one source fed a planted line. Same PER hook as the frozen-out kit man.
   const vp = vincePick(c, cast);
   if (vp && SOURCES[vp.src]) PER[vp.i] = { ...(PER[vp.i] || {}), [vp.src]: planted(SOURCES[vp.src], vp.src) };
   const AGAIN = c.rank >= 3 ? rk.src.filter((k) => careerTrust(s, k) >= TRUST_AGAIN) : [];
-  return { ...RULES, SAGAS: rk.sagas, CONTACTS: rk.contacts, DD_SECONDS: rk.dd, SOURCES, RIVALS: RULES.RIVALS.filter((r) => rk.rivals.includes(r.id)), PER, AGAIN, FAVOURS: false } as Rules;
+  return { ...RULES, SAGAS: rk.sagas, CONTACTS: rk.contacts, DD_SECONDS: rk.dd, SOURCES, RIVALS: RULES.RIVALS.filter((r) => rk.rivals.includes(r.id)), PER, AGAIN, FAVOURS: true } as Rules;
 }
 
 // ---------- Vince's play (STORY.html, chapter 4 "The War": rank index 3 on; Career only, never the Daily, rooms or Practice).
@@ -138,13 +140,22 @@ export function applyWindow(c: CareerSave, g: Game, res: Result, cast: CastSaga[
     c.calls++;
     const st = p.call.s;
     for (const id of clubs) { if (!(id in rel0s)) rel0s[id] = rel0(c, id); }
-    if (p.right) { c.right++; if (p.excl) c.exclusives++; }
-    void st;
+    if (p.right) {
+      c.right++;
+      if (p.excl) { favours++; c.exclusives++; }
+      for (const id of clubs) bump(c, id, p.excl ? 2 : 1);
+    } else {
+      if (st === 2) for (const id of clubs) bump(c, id, -2);
+      if (st === 1) for (const id of clubs) bump(c, id, -1);
+    }
     if (p.call.ut) c.uturns++;
   });
   c.windows++;
-  if (res.tier === 'T1') { c.t1++; if (c.rank === RANKS.length - 1) c.t1Top = (c.t1Top || 0) + 1; }
+  // Drift: a relation with no story for 10 windows moves one step toward 0.
+  for (const [id, r] of Object.entries(c.relations)) if (!(id in rel0s) && c.windows - r.last >= 10 && r.v !== 0) { r.v += r.v > 0 ? -1 : 1; r.last = c.windows; }
+  if (res.tier === 'T1') { c.t1++; favours++; if (c.rank === RANKS.length - 1) c.t1Top = (c.t1Top || 0) + 1; }
   const fav = favours;
+  for (let k = 0; k < fav; k++) { const kinds = ['burner', 'tipoff', 'stakeout'] as const; const kind = kinds[(c.windows + k) % 3]; if (totalFavours(c) < 5) c.favours[kind]++; }
   let promoted: number | null = null;
   const nx = RANKS[c.rank + 1];
   if (nx && c.windows >= nx.gate[0] && repAfter >= nx.gate[1]) { c.rank++; promoted = c.rank; }
@@ -154,6 +165,10 @@ export function applyWindow(c: CareerSave, g: Game, res: Result, cast: CastSaga[
   const rel: Record<string, [number, number]> = {}, leaks: string[] = [], frozen: string[] = [];
   for (const id of Object.keys(rel0s)) { const a = rel0s[id], b2 = rel0(c, id); rel[id] = [a, b2]; if (a < 3 && b2 >= 3) leaks.push(id); if (a > -3 && b2 <= -3) frozen.push(id); }
   return { repBefore: rep0, repAfter, followers, followersAfter: b.followers, favours: fav, promoted, trust, rel, leaks, frozen, milestoneCredits: 0, byline: sum };
+}
+function bump(c: CareerSave, id: string, d: number) {
+  const r = c.relations[id] || { v: 0, last: c.windows };
+  r.v = Math.max(-5, Math.min(5, r.v + d)); r.last = c.windows; c.relations[id] = r;
 }
 export const totalFavours = (c: CareerSave) => c.favours.burner + c.favours.tipoff + c.favours.stakeout;
 export const outKey = (o: number) => OUTS[o];

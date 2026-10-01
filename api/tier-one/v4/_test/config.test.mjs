@@ -42,7 +42,7 @@ test('A/B buckets are deterministic per subject and honour weights', () => {
 });
 test('config.get: catalog without provider ids, featured, events, flags, ab, update advice', async () => {
   const anon = await call({ action: 'config.get', dev: 'devCfg000001', client: { ver: '3.2.0' } });
-  assert.equal(anon.ok, true); assert.equal(anon.update, 'required'); assert.equal(anon.subject, 'account'); assert.ok(anon.featured.includes('credits.350'));
+  assert.equal(anon.ok, true); assert.equal(anon.update, 'required'); assert.equal(anon.subject, 'account'); assert.ok(anon.featured.includes('credits.60'));
   assert.ok(anon.catalog.items.every((i) => !('stripePrice' in i) && !('googleSku' in i)));
   assert.equal(anon.events.ddlive[0].id, 'ddlive-2027-winter'); assert.ok('onboarding_brief' in anon.ab); assert.ok(!('featured_slot' in anon.ab));
   assert.equal(anon.flags.cloudSync, true); assert.equal(typeof anon.minClientVersion, 'string');

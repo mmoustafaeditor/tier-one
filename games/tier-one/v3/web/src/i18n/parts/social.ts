@@ -16,16 +16,16 @@ export default {
       room: {
         table: 'Season table', feed: 'Room feed', rounds: 'Rounds', p: 'P', w: 'W', pts: 'Pts', form: 'Form', reporters: '{n} reporters', season: '{s} season',
         thisWeek: 'This week', open: 'Open all week', closes: 'Closes {t}', opens: 'Opens {t}', played: 'Filed · {p} pts', closed: 'Closed', soon: 'Soon',
-        play: 'Play', read: 'Results', watch: 'Watch', waiting: 'Waiting on {n}', notYet: 'File the round first. Then you can watch everyone’s calls.',
+        play: 'Play', read: 'Front page', watch: 'Watch', waiting: 'Waiting on {n}', notYet: 'File the round first. Then you can watch everyone’s calls.',
         taunt: 'Taunt', tauntTo: 'Taunt {n}', tauntRoom: 'The room', tauntSlow: 'One taunt a minute. Let it land.', tauntSent: 'Posted',
-        taunts: ['Three sources and still wrong. Impressive.', 'I had that on day one, mate.', 'DONE DEAL? Here you went. Wrong way.', 'Your barber is lying to you.', 'A Drop on vibes. Bold.', 'The physio rang me, not you.', 'Sleep on it? You slept through it.', 'Nice post. Shame about the score.'],
-        ev: { open: '{n} opened the press box.', join: '{n} pulled up a chair.', filed: '{n} filed round {r}: {p} pts, {tier}.', hwgT: 'DONE DEAL', hwg: '{n} Dropped {p}. Landed.', taunt: '{n}: “{t}”', tauntTo: '{n} → {to}: “{t}”' },
+        taunts: ['Three sources and still wrong. Impressive.', 'I had that on day one, mate.', 'DONE DEAL? Here you went. Wrong way.', 'Your barber is lying to you.', 'Filed at Confirmed on vibes. Bold.', 'The physio rang me, not you.', 'Sleep on it? You slept through it.', 'Nice front page. Shame about the score.'],
+        ev: { open: '{n} opened the press box.', join: '{n} pulled up a chair.', filed: '{n} filed round {r}: {p} pts, {tier}.', hwgT: 'DONE DEAL', hwg: '{n} called {p} at Confirmed. Done.', taunt: '{n}: “{t}”', tauntTo: '{n} → {to}: “{t}”' },
         empty: 'Quiet in here. Play the round and the feed starts.', invite: 'Invite', copied: 'Invite copied', you: 'You', host: 'Host',
         stateLine: { open: 'Round {n} is open. Play it before Sunday night.', soon: 'Round {n} opens on Monday.', played: 'You’ve filed round {n}. Wait for the table.', closed: 'The season is over. Start a new press box.' },
       },
       spec: {
         title: 'The round on film', sub: 'Everyone’s calls, day by day. Your row is gold.', day: 'Day {n}', play: 'Play the week', pause: 'Pause', dd: 'DD',
-        nocall: 'No call', right: 'Right', wrong: 'Wrong', truth: 'What happened', close: 'Back to the room', legend: 'Stamps: a call. Green landed, red missed. Star: Scoop.', reduced: 'Reduced motion: the strip shows all seven days at once.',
+        nocall: 'No call', right: 'Right', wrong: 'Wrong', truth: 'What happened', close: 'Back to the room', legend: 'Stamps: a call. Green landed, red missed. Star: exclusive.', reduced: 'Reduced motion: the strip shows all seven days at once.',
       },
       ch: {
         title: 'Beat my board', hed: 'Same seed. Your score to beat. 24 hours.', sub: 'Any finished window makes a link. Their result lands in both feeds and on the ledger.',
@@ -45,7 +45,7 @@ export default {
         plays: '{n} meetings', toRival: '{n} more meetings to make it a rivalry', named: 'Named rival', scalp: 'Scalp', said: 'Their last word', none: 'No friends on the ledger yet. Play a room round or answer a challenge.', new: 'New rival',
       },
       taunt: {
-        losing: ['{rec} to me. Frame it.', 'Called {p} before you’d opened the app.', 'Your sources are my sources’ leftovers. {rec}.', 'Another round, another one on you.', 'I’d taunt you properly but I’m saving it for the table.', 'You went Drop. I went to sleep. {rec}.', 'Check the feed. Then check it again.', 'DONE DEAL? Here you went. {rec}.'],
+        losing: ['{rec} to me. Frame it.', 'Called {p} before you’d opened the app.', 'Your sources are my sources’ leftovers. {rec}.', 'Another round, another one on you.', 'I’d taunt you properly but I’m saving it for the table.', 'You went Confirmed. I went to sleep. {rec}.', 'Check the feed. Then check it again.', 'DONE DEAL? Here you went. {rec}.'],
         winning: ['Fine. {rec}. Enjoy it.', 'Lucky on {p}. Even the tabloid gets one.', 'Deleting my post. Not because of you.', 'You had {p}. I had a bad barber.', 'Stop screenshotting the table. We get it.', 'Fluke. Fluke. {rec}. Fluke.', 'My editor asked who you are. Thanks for that.', 'Alright. Next round is mine.'],
         level: ['{rec}. Dead level. Next one settles it.', 'Both on {p}. One of us was guessing.', 'Level. I post at dawn on Monday.', 'Honours even. The table won’t stay that way.', 'Same board, same score. Suspicious.', 'Tied. Whoever rings the physio first.', '{rec}. Nobody’s buying the coffee.', 'Even. See you on the next board.'],
       },
@@ -86,16 +86,16 @@ export default {
       room: {
         table: 'جدول الموسم', feed: 'فيد الأوضة', rounds: 'الجولات', p: 'لعب', w: 'فاز', pts: 'نقط', form: 'الفورمة', reporters: '{n} صحفي', season: 'موسم {s}',
         thisWeek: 'الأسبوع ده', open: 'مفتوحة طول الأسبوع', closes: 'بتقفل {t}', opens: 'بتفتح {t}', played: 'اتنشر · {p} نقطة', closed: 'اتقفلت', soon: 'قريب',
-        play: 'العب', read: 'النتيجة', watch: 'اتفرج', waiting: 'مستنيين {n}', notYet: 'انشر الجولة الأول. بعدها تقدر تتفرج على توقعات الكل.',
+        play: 'العب', read: 'الصفحة الأولى', watch: 'اتفرج', waiting: 'مستنيين {n}', notYet: 'انشر الجولة الأول. بعدها تقدر تتفرج على توقعات الكل.',
         taunt: 'رَزّع', tauntTo: 'رزّع على {n}', tauntRoom: 'الأوضة كلها', tauntSlow: 'رزّة واحدة في الدقيقة. سيبها توصل.', tauntSent: 'اتنشرت',
-        taunts: ['تلات مصادر ولسه غلطان. عظمة.', 'أنا كنت عارفها من أول يوم يا صاحبي.', 'DONE DEAL؟ إنت اللي مشيت. في الاتجاه الغلط.', 'الحلاق بتاعك بيكذب عليك.', 'دروب على إحساس. جرأة.', 'العلاج الطبيعي كلّمني أنا مش إنت.', 'نام عليها؟ نمت عنها خالص.', 'بوست حلو. بس النتيجة خسارة.'],
-        ev: { open: '{n} فتح كابينة الصحافة.', join: '{n} قعد معانا.', filed: '{n} نشر الجولة {r}: {p} نقطة، {tier}.', hwgT: 'DONE DEAL', hwg: '{n} نزّل دروب على {p}. وطلع صح.', taunt: '{n}: «{t}»', tauntTo: '{n} ← {to}: «{t}»' },
+        taunts: ['تلات مصادر ولسه غلطان. عظمة.', 'أنا كنت عارفها من أول يوم يا صاحبي.', 'DONE DEAL؟ إنت اللي مشيت. في الاتجاه الغلط.', 'الحلاق بتاعك بيكذب عليك.', 'نشرت «مؤكد» على إحساس. جرأة.', 'العلاج الطبيعي كلّمني أنا مش إنت.', 'نام عليها؟ نمت عنها خالص.', 'صفحة أولى حلوة. بس النتيجة خسارة.'],
+        ev: { open: '{n} فتح كابينة الصحافة.', join: '{n} قعد معانا.', filed: '{n} نشر الجولة {r}: {p} نقطة، {tier}.', hwgT: 'DONE DEAL', hwg: '{n} قال {p} «مؤكد». وتمت.', taunt: '{n}: «{t}»', tauntTo: '{n} ← {to}: «{t}»' },
         empty: 'هادية هنا. العب الجولة والفيد يبدأ.', invite: 'ادعي', copied: 'الدعوة اتنسخت', you: 'إنت', host: 'المضيف',
         stateLine: { open: 'الجولة {n} مفتوحة. العبها قبل ليلة الحد.', soon: 'الجولة {n} بتفتح الاتنين.', played: 'نشرت الجولة {n}. استنى الجدول.', closed: 'الموسم خلص. افتح كابينة جديدة.' },
       },
       spec: {
         title: 'الجولة على الشاشة', sub: 'توقعات الكل، يوم بيوم. صفّك دهبي.', day: 'اليوم {n}', play: 'شغّل الأسبوع', pause: 'وقّف', dd: 'الحسم',
-        nocall: 'مفيش توقّع', right: 'صح', wrong: 'غلط', truth: 'اللي حصل', close: 'ارجع للأوضة', legend: 'الختم: توقّع. أخضر صح، أحمر غلط. نجمة: سكووب.', reduced: 'حركة أقل: الشريط بيعرض السبع أيام مرة واحدة.',
+        nocall: 'مفيش توقّع', right: 'صح', wrong: 'غلط', truth: 'اللي حصل', close: 'ارجع للأوضة', legend: 'الختم: توقّع. أخضر صح، أحمر غلط. نجمة: انفراد.', reduced: 'حركة أقل: الشريط بيعرض السبع أيام مرة واحدة.',
       },
       ch: {
         title: 'اغلب لوحتي', hed: 'نفس اللوحة. نتيجتك اللي لازم يغلبها. ٢٤ ساعة.', sub: 'أي فترة خلصت بتعمل لينك. نتيجته بتوصل للفيد بتاعكم انتو الاتنين وللسجل.',
@@ -115,7 +115,7 @@ export default {
         plays: '{n} مقابلات', toRival: 'فاضل {n} مقابلات وتبقى منافسة', named: 'منافس بالاسم', scalp: 'الراس', said: 'آخر كلمة قالها', none: 'مفيش صحاب في السجل لسه. العب جولة أوضة أو رد على تحدي.', new: 'منافس جديد',
       },
       taunt: {
-        losing: ['{rec} ليا. علّقها على الحيطة.', 'قلت {p} قبل ما تفتح الأبلكيشن.', 'مصادرك هي بواقي مصادري. {rec}.', 'جولة كمان، وواحدة كمان عليك.', 'كنت هرزّع صح بس مخبيها للجدول.', 'إنت روحت دروب. أنا روحت أنام. {rec}.', 'بص على الفيد. وبعدين بص تاني.', 'DONE DEAL؟ إنت اللي مشيت. {rec}.'],
+        losing: ['{rec} ليا. علّقها على الحيطة.', 'قلت {p} قبل ما تفتح الأبلكيشن.', 'مصادرك هي بواقي مصادري. {rec}.', 'جولة كمان، وواحدة كمان عليك.', 'كنت هرزّع صح بس مخبيها للجدول.', 'إنت روحت «مؤكد». أنا روحت أنام. {rec}.', 'بص على الفيد. وبعدين بص تاني.', 'DONE DEAL؟ إنت اللي مشيت. {rec}.'],
         winning: ['ماشي. {rec}. استمتع بيها.', 'حظ في {p}. حتى التابلويد بيصيب مرة.', 'بمسح البوست. مش علشانك.', 'إنت جبت {p}. أنا جبت حلاق وحش.', 'بطّل سكرين شوت للجدول. فهمنا.', 'صدفة. صدفة. {rec}. صدفة.', 'رئيس تحريري سأل إنت مين. شكراً على دي.', 'تمام. الجولة الجاية بتاعتي.'],
         level: ['{rec}. راس براس. اللي جاية بتحسم.', 'إحنا الاتنين على {p}. واحد فينا كان بيخمّن.', 'متعادلين. أنا بنشر الفجر يوم الاتنين.', 'بالتساوي. الجدول مش هيفضل كده.', 'نفس اللوحة، نفس النتيجة. مريب.', 'تعادل. اللي يكلّم العلاج الطبيعي الأول.', '{rec}. محدش هيعزم على القهوة.', 'بالتساوي. نتقابل على اللوحة الجاية.'],
       },
@@ -156,16 +156,16 @@ export default {
       room: {
         table: 'Tabla de temporada', feed: 'Muro de la sala', rounds: 'Rondas', p: 'PJ', w: 'G', pts: 'Pts', form: 'Racha', reporters: '{n} periodistas', season: 'Temporada {s}',
         thisWeek: 'Esta semana', open: 'Abierta toda la semana', closes: 'Cierra {t}', opens: 'Abre {t}', played: 'Publicado · {p} pts', closed: 'Cerrada', soon: 'Pronto',
-        play: 'Jugar', read: 'Resultados', watch: 'Ver', waiting: 'Faltan {n}', notYet: 'Publica primero tu ronda. Luego verás las llamadas de todos.',
+        play: 'Jugar', read: 'Portada', watch: 'Ver', waiting: 'Faltan {n}', notYet: 'Publica primero tu ronda. Luego verás las llamadas de todos.',
         taunt: 'Pique', tauntTo: 'Picar a {n}', tauntRoom: 'A toda la sala', tauntSlow: 'Un pique por minuto. Deja que caiga.', tauntSent: 'Publicado',
-        taunts: ['Tres fuentes y sigues fallando. Impresionante.', 'Eso lo tenía yo el día uno, colega.', '¿DONE DEAL? Te fuiste tú. Por el lado malo.', 'Tu barbero te miente.', 'Un Drop por intuición. Valiente.', 'A mí me llamó el fisio, no a ti.', '¿Consultarlo con la almohada? Te lo dormiste entero.', 'Bonito post. Lástima el marcador.'],
-        ev: { open: '{n} abrió la tribuna.', join: '{n} se sentó con nosotros.', filed: '{n} publicó la ronda {r}: {p} pts, {tier}.', hwgT: 'DONE DEAL', hwg: '{n} lanzó un Drop con {p}. Acertado.', taunt: '{n}: «{t}»', tauntTo: '{n} → {to}: «{t}»' },
+        taunts: ['Tres fuentes y sigues fallando. Impresionante.', 'Eso lo tenía yo el día uno, colega.', '¿DONE DEAL? Te fuiste tú. Por el lado malo.', 'Tu barbero te miente.', 'Confirmado por intuición. Valiente.', 'A mí me llamó el fisio, no a ti.', '¿Consultarlo con la almohada? Te lo dormiste entero.', 'Bonita portada. Lástima el marcador.'],
+        ev: { open: '{n} abrió la tribuna.', join: '{n} se sentó con nosotros.', filed: '{n} publicó la ronda {r}: {p} pts, {tier}.', hwgT: 'DONE DEAL', hwg: '{n} dio {p} en Confirmado. Hecho.', taunt: '{n}: «{t}»', tauntTo: '{n} → {to}: «{t}»' },
         empty: 'Silencio. Juega la ronda y el muro arranca.', invite: 'Invitar', copied: 'Invitación copiada', you: 'Tú', host: 'Anfitrión',
         stateLine: { open: 'La ronda {n} está abierta. Juégala antes del domingo por la noche.', soon: 'La ronda {n} abre el lunes.', played: 'Ya publicaste la ronda {n}. Espera a la tabla.', closed: 'La temporada terminó. Abre una tribuna nueva.' },
       },
       spec: {
         title: 'La ronda en película', sub: 'Las llamadas de todos, día a día. Tu fila va en dorado.', day: 'Día {n}', play: 'Reproducir la semana', pause: 'Pausa', dd: 'DD',
-        nocall: 'Sin llamada', right: 'Acierto', wrong: 'Fallo', truth: 'Lo que pasó', close: 'Volver a la sala', legend: 'Sello: una apuesta. Verde acertó, rojo falló. Estrella: Scoop.', reduced: 'Movimiento reducido: la tira muestra los siete días a la vez.',
+        nocall: 'Sin llamada', right: 'Acierto', wrong: 'Fallo', truth: 'Lo que pasó', close: 'Volver a la sala', legend: 'Sello: una llamada. Verde acertó, rojo falló. Estrella: exclusiva.', reduced: 'Movimiento reducido: la tira muestra los siete días a la vez.',
       },
       ch: {
         title: 'Supera mi tablero', hed: 'La misma semilla. Tu marca a batir. 24 horas.', sub: 'Cualquier ventana terminada genera un enlace. El resultado llega a los dos muros y al historial.',
@@ -185,7 +185,7 @@ export default {
         plays: '{n} encuentros', toRival: '{n} encuentros más y es rivalidad', named: 'Rival con nombre', scalp: 'Cabellera', said: 'Su última palabra', none: 'Aún no hay amigos en el historial. Juega una ronda o responde a un reto.', new: 'Rival nuevo',
       },
       taunt: {
-        losing: ['{rec} para mí. Enmárcalo.', 'Dije {p} antes de que abrieras la app.', 'Tus fuentes son las sobras de las mías. {rec}.', 'Otra ronda, otra para ti.', 'Te picaría en serio, pero lo guardo para la tabla.', 'Tú fuiste a por el Drop. Yo, a dormir. {rec}.', 'Mira el muro. Luego míralo otra vez.', '¿DONE DEAL? Te fuiste tú. {rec}.'],
+        losing: ['{rec} para mí. Enmárcalo.', 'Dije {p} antes de que abrieras la app.', 'Tus fuentes son las sobras de las mías. {rec}.', 'Otra ronda, otra para ti.', 'Te picaría en serio, pero lo guardo para la tabla.', 'Tú fuiste a Confirmado. Yo, a dormir. {rec}.', 'Mira el muro. Luego míralo otra vez.', '¿DONE DEAL? Te fuiste tú. {rec}.'],
         winning: ['Vale. {rec}. Disfrútalo.', 'Suerte con {p}. Hasta el tabloide acierta una.', 'Borro mi post. No por ti.', 'Tú tenías {p}. Yo, un mal barbero.', 'Deja de hacer capturas de la tabla. Ya lo pillamos.', 'Chiripa. Chiripa. {rec}. Chiripa.', 'Mi director preguntó quién eras. Gracias por eso.', 'Bien. La próxima ronda es mía.'],
         level: ['{rec}. Empate. La siguiente lo decide.', 'Los dos con {p}. Uno de nosotros iba a ciegas.', 'Empate. El lunes publico al alba.', 'Honores repartidos. La tabla no se va a quedar así.', 'Mismo tablero, misma marca. Sospechoso.', 'Empate. Quien llame antes al fisio.', '{rec}. Nadie paga el café.', 'Iguales. Nos vemos en el siguiente tablero.'],
       },

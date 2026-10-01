@@ -43,7 +43,7 @@ export default {
         "rank": "Rank",
         "right": "Right",
         "wrong": "Wrong",
-        "excl": "Scoop",
+        "excl": "Exclusive",
         "none": "Not filed",
         "dayN": "Day {n}",
         "deleted": "Deleted tweet",
@@ -53,7 +53,7 @@ export default {
         "pre": [
           "👀 Hearing",
           "📈 Moving:",
-          "🚨 BREAKING:"
+          "🚨 CONFIRMED:"
         ],
         "ut": "✏️ Correction.",
         "o": {
@@ -65,17 +65,17 @@ export default {
           "1": [
             "{p} leaves {c}, but not for {d}. Someone’s gazumped them.",
             "Late gatecrasher for {p}. {d} left standing at the altar.",
-            "{p} is going, just not to {d}. Somewhere else."
+            "{p} is off, just not to {d}. Hijack."
           ],
           "2": [
             "{p} to {d} is dead. {c} dug their heels in.",
-            "The {p} deal has collapsed. {d} walk away.",
+            "Talks for {p} have collapsed. {d} walk away.",
             "{p} stays put. The {d} deal is off."
           ],
           "3": [
             "{p} to {d}? Never real. Agent smoke.",
             "Nobody from {d} has rung about {p}. Fiction.",
-            "{p}/{d}: there was never any contact."
+            "{p}/{d}: there were never any talks."
           ]
         }
       },
@@ -163,7 +163,7 @@ export default {
       ],
       "tierQuip": {
         "T1": [
-          "Top of the timeline, and the group chat bought the first round.",
+          "Front page, above the fold, and the editor bought the first round.",
           "Hold the presses. Actually, don’t: they’re printing you.",
           "You’re not in the know. You ARE the know.",
           "The group chat has gone quiet. That’s respect.",
@@ -172,12 +172,12 @@ export default {
           "Agents are saving your number under “do not lie to”."
         ],
         "T2": [
-          "Solid shift. Not the top of the timeline, but the replies love you.",
+          "Solid shift. Not front page, but the back page loves you.",
           "A good day at the office. Nobody’s framing it, but nobody’s laughing.",
-          "Close enough to smell the top of the timeline.",
+          "Close enough to smell the ink on the front page.",
           "Tidy. Like a 2–0 away win in the rain.",
           "Decent. Your mum would share this.",
-          "One more Scoop and they’d have pinned you to the top.",
+          "One more scoop and they’d have cleared the front page for you.",
           "Good enough for a nod from the press box."
         ],
         "T3": [
@@ -262,7 +262,7 @@ export default {
           "even the barber knew. THE BARBER.",
           "actual muppet behaviour",
           "journalism degree from the back of a cereal box 🥣",
-          "blud posted this with 'ALL IN' on it 😭😭",
+          "blud posted this with 'CONFIRMED' on it 😭😭",
           "{p}'s agent just blocked you out of pity",
           "printing this and framing it in the loo",
           "you are the reason Community Notes exists",
@@ -302,7 +302,7 @@ export default {
           "{c} fans are printing this on t-shirts ironically",
           "you're not ITK, you're OTK: out the know",
           "even the pigeons outside {c}'s ground knew this was wrong",
-          "your 'Scoop' was wrong from every angle",
+          "your 'exclusive' was exclusively wrong",
           "honestly impressive to be this wrong with this much confidence",
           "strangers owe you nothing and they're still laughing",
           "you should be banned from typing the word 'sources'",
@@ -385,7 +385,7 @@ export default {
           "everyone else is quoting you now",
           "before {d} even announced it. who IS your source",
           "you had {p} before {p} had {p}",
-          "the Scoop of the window, no debate",
+          "the exclusive of the window, no debate",
           "every rival account just went quiet",
           "the clubs should be paying you for PR",
           "you broke it, they confirmed it. simple",
@@ -393,7 +393,7 @@ export default {
           "first to it and nobody close",
           "that's not a scoop, that's a whole tub",
           "rivals refreshing your page for their next tweet",
-          "a Scoop and correct. frame it"
+          "exclusive and correct. frame it"
         ],
         "late": [
           "another account had this days ago but ok 🙄",
@@ -439,7 +439,7 @@ export default {
           "tiptoed in and it was the right room",
           "right, but you said it like you were ordering a flat white",
           "the humble brag of transfer tweets",
-          "next time trust yourself and go ALL IN",
+          "next time trust yourself and hit CONFIRMED",
           "low stakes, high accuracy. sneaky",
           "had the scoop and whispered it into a pillow",
           "right and modest. who raised you",
@@ -447,7 +447,7 @@ export default {
         ],
         "softWrong": [
           "hedged it at least 😅",
-          "'in contact' doing a lot of work there",
+          "'talks ongoing' doing a lot of work there",
           "good thing you only whispered it",
           "wrong, but quietly wrong",
           "you said 'hearing', we heard wrong",
@@ -457,13 +457,13 @@ export default {
           "that's why you didn't go loud",
           "a quiet miss, we'll let it slide",
           "low confidence, correctly placed",
-          "at least you didn't go ALL IN on it",
+          "at least you didn't put CONFIRMED on it",
           "soft take, soft landing",
           "you hedged, it hedged, nobody won",
           "barely a tweet, barely a miss"
         ],
         "loudWrong": [
-          "ALL IN in capitals and still wrong. brave",
+          "CONFIRMED in capitals and still wrong. brave",
           "the megaphone made it worse 📢",
           "put your name on it and everything",
           "loudest tweet of the window, wrongest too",
@@ -700,7 +700,7 @@ export default {
         "gloat": {
           "tabloid": [
             "HAHA. Told the whole country on day {n}. You told nobody anything true.",
-            "Timeline, replies, YOUR page: all wrong. Stick to the crossword, pal.",
+            "Back page, front page, YOUR page: all wrong. Stick to the crossword, pal.",
             "Some of us have sources. Some of us have a barber. 💇",
             "We were right AND loud. You managed neither."
           ],
@@ -1079,7 +1079,7 @@ export default {
         "rank": "المركز",
         "right": "صح",
         "wrong": "غلط",
-        "excl": "سكووب",
+        "excl": "انفراد",
         "none": "مانزلتش",
         "dayN": "يوم {n}",
         "deleted": "تويتة ممسوحة",
@@ -1089,7 +1089,7 @@ export default {
         "pre": [
           "👀 سامع إن",
           "📈 بتتحرك:",
-          "🚨 عاجل:"
+          "🚨 مؤكد:"
         ],
         "ut": "✏️ تصحيح.",
         "o": {
@@ -1099,19 +1099,19 @@ export default {
             "{p} لـ{d}. اكتبوها عندكم."
           ],
           "1": [
-            "{p} ماشي من {c}، بس مش لـ{d}. راح لحد تاني من تحت إيدهم.",
-            "مفاجأة آخر لحظة: {d} اتسابوا في الكوشة و{p} رايح حتة تانية.",
-            "{p} ماشي، بس مش لـ{d}. مكان تاني."
+            "{p} ماشي من {c}، بس مش لـ{d}. حد خطفه من تحت إيدهم.",
+            "خطف في آخر لحظة: {d} اتسابوا في الكوشة و{p} رايح حتة تانية.",
+            "{p} ماشي، بس مش لـ{d}. اتخطف."
           ],
           "2": [
             "صفقة {p} و{d} ماتت. {c} ركبوا دماغهم.",
-            "صفقة {p} وقعت. {d} انسحبوا.",
+            "مفاوضات {p} وقعت. {d} انسحبوا.",
             "{p} قاعد مكانه. صفقة {d} اتلغت."
           ],
           "3": [
             "{p} لـ{d}؟ عمرها ما كانت حقيقية. دخان وكيل.",
             "محدش من {d} اتصل عشان {p}. كلام جرايد.",
-            "{p} و{d}: مفيش تواصل من الأساس."
+            "{p} و{d}: مفيش مفاوضات من الأساس."
           ]
         }
       },
@@ -1199,7 +1199,7 @@ export default {
       ],
       "tierQuip": {
         "T1": [
-          "فوق التايملاين، والجروب عازم الكل على الشاي.",
+          "الصفحة الأولى، فوق الطية، ورئيس التحرير عازم الكل على الشاي.",
           "وقّفوا المطابع… لأ خلاص، ماتوقفوهاش، دي بتطبعك انت.",
           "انت مش عارف الخبر. انت الخبر نفسه.",
           "جروب الواتساب سكت. ده اسمه احترام.",
@@ -1208,12 +1208,12 @@ export default {
           "الوكلا بيسيّفوا رقمك باسم \"ماتكدبش عليه\"."
         ],
         "T2": [
-          "شيفت محترم. مش فوق التايملاين، بس الردود بتحبك.",
+          "شيفت محترم. مش الصفحة الأولى، بس الأخيرة بتحبك.",
           "يوم حلو في الشغل. محدش هيبروزه، بس محدش بيضحك.",
-          "قربت توصل لفوق التايملاين.",
+          "قربت تشم ريحة حبر الصفحة الأولى.",
           "نضيفة. زي فوز ٢–٠ برا أرضك في المطر.",
           "كويس. مامتك هتعمله شير.",
-          "سكووب كمان وكانوا ثبّتوك فوق.",
+          "خبطة كمان وكانوا فضّولك الصفحة الأولى.",
           "تستاهل هزة راس من المقصورة."
         ],
         "T3": [
@@ -1326,7 +1326,7 @@ export default {
           "حتى جروب العيلة كان عارف الصح، والجروب ده لسه بيبعت صباح الخير بالورد 🌹",
           "التويتة دي مكانها متحف الهبد القومي",
           "{p} في {c}، وانت في خبر كان",
-          "{h} أخدوه، وانت كنت بتلم ريتويتات",
+          "{h} خطفوه، وانت كنت بتخطف ريتويتات",
           "هبدة بجودة 4K",
           "قعدت أسبوع أدافع عنك في القهوة. عايز فلوس الشاي بتاعتي 😤",
           "الواحد لو رمى عملة كان هيصيب أكتر منك 🪙",
@@ -1382,7 +1382,7 @@ export default {
           "{p} لـ{d} اللحظة ما قلت انت. احترام.",
           "ما بتغلط. نقطة.",
           "الحاجة اللي أدفع عشانها الاشتراك",
-          "Tier One أكيد 🥇 (انت يا عم مش اللعبة)",
+          "Tier One مؤكد 🥇 (انت يا عم مش اللعبة)",
           "نسبة دقتك انت... مجنونة يا جدع",
           "انت في الواتساب بتاع {d} مباشرة",
           "الدقة… الثقة… *قبلة الشيف*",
@@ -1416,15 +1416,15 @@ export default {
           "الكل بيعمل كوت ليك دلوقتي",
           "قبل ما {d} يعلنوا. مين مصدرك يا عم",
           "كنت عارف خبر {p} قبل {p} نفسه",
-          "سكووب الويندو، مفيش نقاش",
+          "انفراد النافذة، مفيش نقاش",
           "كل حسابات المنافسين سكتت",
           "الأندية المفروض تشغّلك مدير إعلام",
           "إنت قلتها وهما أكّدوها. بسيطة",
           "وكالات الأنباء بتنقل منك 📝",
           "الأول ومحدش جنبك",
-          "ده مش سكووب، ده أرشيف كامل",
+          "ده مش انفراد، ده أرشيف جرايد كامل",
           "المنافسين بيعملوا ريفريش لصفحتك عشان التويتة الجاية",
-          "سكووب وصح. يتبروز"
+          "انفراد وصح. تتبروز"
         ],
         "late": [
           "حساب تاني قالها من أيام، بس ماشي 🙄",
@@ -1458,7 +1458,7 @@ export default {
           "أعصاب. أعصاب حديد",
           "أحسن شغلك الساعة 11:59",
           "متخصص يوم القفلة، احجزوه السنة الجاية",
-          "سكووب صفارة النهاية"
+          "انفراد صفارة النهاية"
         ],
         "softRight": [
           "قلتها بالهمس وطلعت صح 🤫",
@@ -1467,7 +1467,7 @@ export default {
           "اتكسفت تقولها بصوت عالي؟ دي كانت صح!",
           "رجل جوه ورجل برا، بس دخلت الأوضة الصح",
           "صح بس قلتها كأنك بتطلب شاي في القهوة ☕",
-          "المرة الجاية ثق في نفسك وروح بكله",
+          "المرة الجاية ثق في نفسك واكتب \"مؤكد\"",
           "قلتها في ودن حد وطلعت على الشاشة",
           "خبر صح بالتقسيط",
           "ماشي جنب الحيط وطلع معاك حق",
@@ -1500,12 +1500,12 @@ export default {
           "أعلى تويتة في النافذة، وأغلط واحدة كمان",
           "زعقت بيها من فوق السطح ووقعت من السطح",
           "نسبة الثقة للصح دي تاريخية",
-          "\"بكله\" خرجت من الشات",
+          "\"مؤكدة\" خرجت من الشات",
           "أعلنتها كأنها بيان رسمي. ماكانتش",
           "كله كابيتال، ومفيش معلومة",
           "إنك تعلّي صوتك كان اختيار",
           "دي هتتعملها كوت سنين",
-          "الريشيو أكبر من السكووب",
+          "الريشيو أكبر من الانفراد",
           "راهنت بالبيت وخسرت البيت",
           "الـ📢 ده بيرن في أوضة فاضية",
           "الصوت على عشرة، والصح على صفر"
@@ -1731,7 +1731,7 @@ export default {
         "gloat": {
           "tabloid": [
             "هههه. أنا قلتها لمصر كلها يوم {n}. وانت ماقلتش ولا كلمة صح.",
-            "التايملاين والردود وصفحتك انت: كله غلط. روح حل الكلمات المتقاطعة يا باشا.",
+            "الصفحة الأولى والأخيرة وصفحتك انت: كله غلط. روح حل الكلمات المتقاطعة يا باشا.",
             "في ناس عندها مصادر، وفي ناس عندها حلاق 💇",
             "احنا كنا صح وصوتنا عالي. وانت لا دي ولا دي."
           ],
@@ -2085,7 +2085,7 @@ export default {
         "rank": "Puesto",
         "right": "Acierto",
         "wrong": "Fallo",
-        "excl": "Scoop",
+        "excl": "Exclusiva",
         "none": "Sin publicar",
         "dayN": "Día {n}",
         "deleted": "Tuit borrado",
@@ -2107,7 +2107,7 @@ export default {
           "1": [
             "{p} sale del {c}, pero no al {d}. Se lo han birlado.",
             "Sorpresa de última hora: {p} deja al {d} plantado en el altar.",
-            "{p} se va, pero no al {d}. Otro club, en toda regla."
+            "{p} se va, pero no al {d}. Robo en toda regla."
           ],
           "2": [
             "Lo de {p} al {d} está muerto. El {c} no afloja.",
@@ -2205,21 +2205,21 @@ export default {
       ],
       "tierQuip": {
         "T1": [
-          "Arriba del timeline, y el grupo paga la primera ronda.",
+          "Portada, a toda plana, y el jefe paga la primera ronda.",
           "Paren las rotativas. Bueno, no: están imprimiendo tu nombre.",
           "No es que estés enterado. Es que la fuente eres tú.",
           "El grupo de WhatsApp se ha quedado callado. Eso es respeto.",
           "Done deal. Y tú llegaste primero.",
-          "Vales tu peso en Scoops.",
+          "Vales tu peso en portadas.",
           "Los agentes te tienen guardado como \"a este no se le miente\"."
         ],
         "T2": [
-          "Buen partido. No estás arriba del timeline, pero las respuestas te adoran.",
+          "Buen partido. No es portada, pero la contra te adora.",
           "Buen día en la oficina. Nadie lo enmarca, pero nadie se ríe.",
-          "Te faltó un pelo para llegar arriba del timeline.",
+          "Te faltó un pelo para oler la tinta de portada.",
           "Limpio. Como un 0–2 fuera de casa bajo la lluvia.",
           "Aseado. Tu madre lo compartiría en Facebook.",
-          "Un Scoop más y te fijaban arriba del todo.",
+          "Una exclusiva más y te hacían hueco en portada.",
           "Para ganarte un gesto del palco de prensa."
         ],
         "T3": [
@@ -2303,7 +2303,7 @@ export default {
           "ni en {d} saben de esto jajaja",
           "ponte la nariz roja, payaso 🤡",
           "te perderías en una cabina, como para un mercado de fichajes",
-          "que te pise el Scoop el Tabloide… vergüenza ajena",
+          "que te pise la exclusiva el Tabloide… vergüenza ajena",
           "el chaval sacó la info de una pantalla de carga del FIFA",
           "por esto tu madre no dice en qué trabajas",
           "hasta el barbero lo sabía. EL BARBERO.",
@@ -2337,7 +2337,7 @@ export default {
           "ni con VAR, ni con repetición, ni con lupa se ve de dónde sacaste esto",
           "vas a ir a la redacción con gafas de sol y gorra durante un mes",
           "has puesto 'CERRADO' con la seguridad de un opositor el primer día",
-          "el Scoop más secreto: solo te lo creíste tú",
+          "la exclusiva más exclusiva: solo te la creíste tú",
           "{p} leyendo tu tuit desde {c} con un café en la mano: 😐",
           "el algoritmo te ha dado más visibilidad para que te vea más gente fallar 💀",
           "has quedado peor que el que dijo que el VAR iba a acabar con las polémicas",
@@ -2347,14 +2347,14 @@ export default {
           "tuit guardado en la carpeta 'fracasos históricos' ✅",
           "tu reputación ha durado menos que un entrenador del {c} en racha mala",
           "bajón de seguidores en directo, qué espectáculo 🍿",
-          "a ti te dan el Scoop y lo pierdes en el bolsillo del pantalón",
+          "a ti te dan la exclusiva y la pierdes en el bolsillo del pantalón",
           "{d} ni sabía que estaba en la conversación 😭",
           "te lo curras más en el tuit que en la investigación",
           "la próxima vez pronostica lo contrario y así aciertas",
           "tus fuentes cotizan en bolsa: todas a la baja 📉",
           "pregúntale a una bola de ocho mágica, tendrás más precisión",
           "tu dedo pulsó 'publicar' antes que tu cerebro pensara",
-          "esto va directo al compilado de 'peores Scoops del mercado' 🏆",
+          "esto va directo al compilado de 'peores exclusivas del mercado' 🏆",
           "{p} se ha quedado donde estaba y tú te has ido directo al banquillo",
           "periodismo de sillón con el sillón al revés",
           "tu tasa de acierto es de mercado de invierno: nula"
@@ -2402,14 +2402,14 @@ export default {
           "tío estás en el WhatsApp de {d} vaya",
           "la precisión… la confianza… *chef's kiss*",
           "alguien con otro nivel de información hermano",
-          "otra más para el museo de los Scoops 🏛️",
+          "otra más para el museo de las exclusivas 🏛️",
           "este tío tiene un micro escondido en el despacho de {d} fijo",
           "desde hoy le leo antes que al periódico",
           "{p} aún no se ha puesto la camiseta y tú ya lo sabías 🔥",
           "el mercado va a remolque tuyo",
           "confirmado: el que no te sigue va con retraso",
           "sus fuentes cobran en diamantes seguro 💎",
-          "le han dado el balón de oro de los Scoops",
+          "le han dado el balón de oro de las exclusivas",
           "lo clavaste como un penalti a lo Panenka 🎯",
           "vale, retiro todo lo que dije de ti en el grupo",
           "que le pongan una estatua en la puerta de {d}",
@@ -2417,7 +2417,7 @@ export default {
           "este es el que les cuenta los fichajes a los directores deportivos",
           "de tuitero a leyenda en un solo mercado",
           "si fueras jugador serías un fichaje galáctico",
-          "Scoop de oro, tío. Vaya tela",
+          "exclusiva de oro, tío. Vaya tela",
           "hay que clonar a este hombre y ponerlo en cada club",
           "periodista de guardia, sin fallos, sin excusas 🫡",
           "te lo juro que te voy a tatuar el tuit",
@@ -2432,15 +2432,15 @@ export default {
           "ahora todos te citan a ti",
           "antes de que el {d} lo anunciara. ¿quién es tu fuente?",
           "tenías lo de {p} antes que el propio {p}",
-          "el Scoop del mercado, sin debate",
+          "la exclusiva del mercado, sin debate",
           "todas las cuentas rivales se han quedado calladas",
           "los clubes deberían pagarte como jefe de prensa",
           "tú lo diste, ellos lo confirmaron. así de simple",
           "las agencias te copian los deberes 📝",
           "primero y sin nadie cerca",
-          "eso no es un Scoop, es una hemeroteca entera",
+          "eso no es una exclusiva, es una hemeroteca entera",
           "los rivales refrescando tu perfil para su próximo tuit",
-          "Scoop y correcto. para enmarcar"
+          "exclusiva y correcta. para enmarcar"
         ],
         "late": [
           "otra cuenta lo tenía hace días, pero vale 🙄",
@@ -2474,7 +2474,7 @@ export default {
           "sangre fría. pura sangre fría",
           "tu mejor trabajo a las 23:59",
           "especialista en día límite, fichadlo para el año que viene",
-          "el Scoop del pitido final"
+          "la exclusiva del pitido final"
         ],
         "softRight": [
           "lo susurraste y se cumplió 🤫",
@@ -2485,7 +2485,7 @@ export default {
           "soft launch de la verdad 👀",
           "la próxima vez tírate a la piscina y pon CERRADO",
           "poco riesgo, mucha puntería. qué pillo",
-          "tenías el Scoop y lo guardaste en la recámara",
+          "tenías la exclusiva y la guardaste en la recámara",
           "de puntillas, pero entraste en la habitación buena",
           "acierto de tapadillo",
           "acertaste y encima con modestia. ¿quién te ha educado?",
@@ -2521,7 +2521,7 @@ export default {
           "todo mayúsculas, cero datos",
           "ir a tope fue una elección",
           "esto lo van a citar durante años",
-          "el ratio es más grande que el Scoop",
+          "el ratio es más grande que la exclusiva",
           "apostaste la casa y perdiste la casa",
           "ese 📢 resuena en una sala vacía",
           "volumen al diez, acierto a cero"
@@ -2747,7 +2747,7 @@ export default {
         "gloat": {
           "tabloid": [
             "JAJAJA. Lo dije a toda España el día {n}. Tú no has acertado ni la hora.",
-            "Timeline, respuestas y TU tuit: todo mal. Dedícate a los crucigramas, majo.",
+            "Portada, contraportada y TU tuit: todo mal. Dedícate a los crucigramas, majo.",
             "Unos tenemos fuentes. Otros tienen un barbero 💇",
             "Nosotros acertamos Y gritamos. Tú, ni lo uno ni lo otro."
           ],
@@ -2766,7 +2766,7 @@ export default {
         },
         "concede": {
           "tabloid": [
-            "Vale. VALE. La tenías tú. Borramos el tuit 😤",
+            "Vale. VALE. La tenías tú. Reimprimimos la contraportada 😤",
             "¿Quién es tu fuente y cuánto quiere por filtrarnos a nosotros?",
             "Mi director pregunta quién eres. A gritos.",
             "Esta es tuya, disfrútala. Mañana volvemos con titular a toda plana."
@@ -2778,7 +2778,7 @@ export default {
             "Me llega que eres irritantemente bueno en esto."
           ],
           "insider": [
-            "Hay que reconocerlo: Scoop limpio.",
+            "Hay que reconocerlo: exclusiva limpia.",
             "Confirmamos: la tuvo antes que nadie.",
             "Rectificamos. Pasa. Pocas veces.",
             "Un trabajo serio. El palco de prensa ha tomado nota."
@@ -2787,7 +2787,7 @@ export default {
         "smug": {
           "tabloid": [
             "Bienvenido a la fiesta, crack. Ya nos hemos comido el jamón 🍖",
-            "Qué detalle que te sumes. El día {n} quiere su Scoop de vuelta.",
+            "Qué detalle que te sumes. El día {n} quiere su exclusiva de vuelta.",
             "¿Copiando los deberes? Al menos cambia alguna palabra.",
             "Aciertas, sí. Segundo, también 🥈"
           ],
@@ -2839,7 +2839,7 @@ export default {
           "toldYou": [
             "Te lo dije. Eso es un 10%.",
             "De nada. La factura está en tus MD.",
-            "¿Ves? Cuando pago yo la cena, la info es buena. Mi 5% por el Scoop, cuando puedas.",
+            "¿Ves? Cuando pago yo la cena, la info es buena. Mi 5% por la exclusiva, cuando puedas.",
             "Acertaste porque yo lo permití. Te mando factura por 'asesoría mediática'.",
             "Bombazo tuyo, dinero mío. Así funciona el mundo, crack 💸",
             "Hemos acertado los dos. Bueno, yo más. Te mando la factura de asesoría. En negrita, para que la veas bien.",
@@ -2848,7 +2848,7 @@ export default {
           "ignored": [
             "Te lo dije clarito. ¿Eres tonto o qué?",
             "Te lo dije por escrito. Por escrito, tío. Lo tengo hasta en el PDF del contrato.",
-            "Te regalé el Scoop y lo dejaste en visto. Eres el primero que rechaza algo gratis de mí.",
+            "Te regalé la exclusiva y la dejaste en visto. Eres el primero que rechaza algo gratis de mí.",
             "Todo el mercado me cree menos tú. Precioso. Luego no me llames.",
             "Te lo dije. Palabra por palabra. Y tú a lo tuyo. Si fueras mi cliente te habría vendido a Segunda.",
             "Me ignoraste, fallaste y ahora te mandan capturas. Yo cobro comisión hasta de tus errores. Gracias, crack."
@@ -2880,7 +2880,7 @@ export default {
             "Te lo dije con las botas en la mano. Invítame a un bocata y estamos en paz.",
             "Yo doblo camisetas y tú te llevas los likes. Así va esto, crack.",
             "Acertamos los dos, pero la pista era mía. Tú solo pusiste los emojis. Ya te traigo toalla para el sudor de la fama.",
-            "Mi lavandería te ha dado el Scoop. Que se sepa. Y lávate esa camiseta de periodista, que ya huele a Tier One."
+            "Mi lavandería te ha dado la exclusiva. Que se sepa. Y lávate esa camiseta de periodista, que ya huele a Tier One."
           ],
           "ignored": [
             "Le lavo los calzoncillos y aun así no me creíste.",
@@ -2952,7 +2952,7 @@ export default {
           "toldYou": [
             "Los aviones no mienten. ✈️",
             "Las matrículas no mienten, bro.",
-            "El radar no falla, tío. Hora, matrícula y destino. Scoop de altura 🛩️",
+            "El radar no falla, tío. Hora, matrícula y destino. Exclusiva de altura 🛩️",
             "Te lo dije desde la terraza de la T4 con los prismáticos. Eso es periodismo de verdad.",
             "Aterrizaje perfecto. Tu tuit y el jet, sincronizados.",
             "Mis radares no fallan y tú solo tuviste que mirar mi pantalla. Aterrizaje perfecto. Pilotaba yo, claro.",
@@ -2991,7 +2991,7 @@ export default {
             "Te lo dije. El corte de presentación nunca miente ✂️",
             "Nunca dudes de un barbero, chaval.",
             "El sillón no miente, tío. Aquí se cuece todo antes que en los despachos ✂️",
-            "Te lo dije mientras le rapaba la nuca. Scoop con olor a after-shave.",
+            "Te lo dije mientras le rapaba la nuca. Exclusiva con olor a after-shave.",
             "Barbería 1, periodistas 0. Pásate y te hago un degradado de campeón.",
             "¿Ves? Mi silla es la mejor fuente de España. Acertamos. Tú invitas al próximo degradado.",
             "Te lo di en bandeja y lo clavaste. Ahora que eres famoso a ver si te cortas el pelo, que das pena en la foto de perfil."
@@ -3020,7 +3020,7 @@ export default {
             "Yo sabía que eras listo. Por eso te conté una tontería. Era un test, crack.",
             "Lo mío era una teoría de sillón. Tú la afinaste. Equipo, tío.",
             "Menos mal que no me escuchas, porque ese día me había tomado cuatro cafés.",
-            "No sé qué te dije, pero acertaste. Así que te dije bien. Quiero mi nombre en tu próximo Scoop, en negrita.",
+            "No sé qué te dije, pero acertaste. Así que te dije bien. Quiero mi nombre en tu próxima exclusiva, en negrita.",
             "Te conté lo primero que me vino a la cabeza y lo clavaste. Soy un genio. Te cobro el doble el próximo corte."
           ]
         },
@@ -3031,7 +3031,7 @@ export default {
             "¿Ves? Con mis soplos brillas. Ahora cítame en el tuit, que mi jefe no se lo cree.",
             "Mi info, tu gloria, mis cañas. Tres, pagas tú 🍺",
             "Te hice un favor que mi redacción no sabe. Y que no se entere.",
-            "Mi Scoop, tu tuit, tus likes. Qué bonito es robar el trabajo de otro, ¿eh? Tres cañas. Esta semana.",
+            "Mi exclusiva, tu tuit, tus likes. Qué bonito es robar el trabajo de otro, ¿eh? Tres cañas. Esta semana.",
             "Acertamos. Mi jefe falló y tú no. Te he hecho mejor periodista que a él. Y a él le pagan. Paga tú."
           ],
           "ignored": [
@@ -3052,13 +3052,13 @@ export default {
             "Nada de remordimiento, crack. En este oficio o engañas o te engañan. Tú has elegido la segunda opción."
           ],
           "dodged": [
-            "Le has pisado el Scoop a mi propio periódico. Te odio.",
+            "Le has pisado la exclusiva a mi propio periódico. Te odio.",
             "Vale, acertaste tú. No se lo digas a mi jefe.",
             "Mi soplo era para despistar a la competencia. Tú no eres la competencia, ¿no? Bueno, acertaste.",
             "Te pasé la versión de mi jefe. Ya sabes que mi jefe no acierta. Has hecho bien.",
             "Ok, lo tuyo fue mejor. No lo digas en voz alta, que me despiden.",
             "Te mentí para despistarte y aun así acertaste. Eso es porque te he enseñado a desconfiar de mí. Genio yo.",
-            "Mi soplo era falso y tú acertaste. Ese Scoop lleva mi sello. Cítame o se lo cuento a todo Twitter."
+            "Mi soplo era falso y tú acertaste. Esa exclusiva lleva mi sello. Cítame o se lo cuento a todo Twitter."
           ]
         }
       }
