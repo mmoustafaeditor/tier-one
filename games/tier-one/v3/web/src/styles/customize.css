@@ -462,6 +462,13 @@
 .cn-byline__cp { font-size: 20px; }
 .cn-byline__desk .cz-show { margin-top: 0; margin-inline-start: auto; }
 
+/* the headline font (App.tsx sets data-hd and --hd-* on <html> when one is equipped): the results front page and the
+   byline card's name. Absent = the standard wood type, exactly as before. */
+:root[data-hd] :is(.vcard__hed, .cn-byline__by) { font-family: var(--hd-face); text-transform: var(--hd-case); color: var(--hd-ink, inherit); }
+:root[data-hd="stencil"] :is(.vcard__hed, .cn-byline__by) { letter-spacing: .06em; font-stretch: condensed; }
+:root[data-hd="slab"] :is(.vcard__hed, .cn-byline__by) { font-weight: 900; letter-spacing: -.01em; }
+:root[data-hd="serif"] .vcard__hed { font-weight: 700; letter-spacing: -.01em; }
+
 /* Home: the desk lamp's pool of light over the film stage (screens/Home.tsx data-lamp) */
 .home[data-lamp]::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background: radial-gradient(55% 38% at 50% 0%, color-mix(in srgb, var(--lamp-glow) 30%, transparent), transparent 75%), linear-gradient(180deg, transparent 55%, color-mix(in srgb, var(--lamp-pool) 55%, transparent)); }

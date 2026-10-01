@@ -67,8 +67,15 @@ function checkFlagValues(f) { const errs = []; for (const [k, v] of Object.entri
 // as store looks), store looks always do, a vault return lasts seven days at most, and a preview is colours and words:
 // no number other than a front page's column count, so nothing that could reach an engine rides in on a look.
 const PREVIEW_NUMS = new Set(['cols']);
-export function checkLooks(cat) {
+// Words that name a gameplay effect. A look (or its preview) carrying one is refused outright, whatever its value:
+// nothing sold or earned here may touch a Daily board, a score, a streak or the clock (GOTY §8.4).
+const EFFECT_RE = /^(effect|effects|boost|bonus|mult|multiplier|score|points|pts|xp|pp|odds|hint|hints|reveal|board|streak|shield|freeze|retry|retries|time|timer|clock|lives|power|perk|buff|advantage)$/i;
+/** Every reason the catalog's long-tail block is invalid (empty = fine). loadConfig() throws on any. */
+export function validateCatalog(cat) {
   const errs = [];
+  const effectKeys = (o, where) => { for (const k of Object.keys(o || {})) if (EFFECT_RE.test(k)) errs.push(where + '.' + k + ': gameplay effects are not allowed'); };
+  for (const it of cat.items || []) effectKeys(it.grants, it.id + ': grants');
+  for (const it of cat.looks || []) { effectKeys(it, it.id); effectKeys(it.preview, it.id + ': preview'); }
   const never = new Set(cat.earnedOnly || []);
   for (const it of cat.looks || []) {
     const priced = it.price && (it.price.coins != null || it.price.credits != null);
@@ -78,6 +85,11 @@ export function checkLooks(cat) {
     for (const [k, v] of Object.entries(it.preview || {})) if ((typeof v === 'number' && !PREVIEW_NUMS.has(k)) || typeof v === 'boolean' && k !== 'upper' && k !== 'paper') errs.push(it.id + ': preview.' + k + ' is not a look');
   }
   for (const v of cat.vault || []) { const d = (Date.parse(v.to) - Date.parse(v.from)) / 864e5; if (!(d > 0 && d <= 7)) errs.push('vault ' + v.id + ': one week at most'); }
+  for (const d of cat.drops || []) if (never.has(d.id)) errs.push('drop ' + d.id + ': earned-only looks are not dropped in the store');
+  return errs;
+}
+export function checkLooks(cat) {
+  const errs = validateCatalog(cat);
   if (errs.length) throw new Error('config catalog invalid: ' + errs.slice(0, 5).join('; '));
 }
 

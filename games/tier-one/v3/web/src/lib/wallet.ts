@@ -348,7 +348,7 @@ export const ringtoneOf = (s: Save = getSave()) => { const c = legacy(equipped('
 // ---------------------------------------------------------------- 3.4 long-tail kinds: what their surfaces read
 export interface HeadlineStyle { face: HeadlineFace; family: string; upper: boolean; ink: string | null }
 const FACE_FAMILY: Record<HeadlineFace, string> = { wood: 'var(--f-display)', serif: 'var(--f-serif, Georgia, serif)', slab: 'var(--f-cond)', stencil: 'var(--f-cond)', mono: 'var(--f-mono)' };
-/** Headline font for the share card and the results front page: font family, case, optional ink. */
+/** Headline font for the results front page and the byline card: font family, case, optional ink. */
 export function headlineStyle(s: Save = getSave()): HeadlineStyle {
   const p = equipped('headline', s).preview; if (p.k !== 'headline') return { face: 'wood', family: FACE_FAMILY.wood, upper: true, ink: null };
   return { face: p.face, family: FACE_FAMILY[p.face], upper: !!p.upper, ink: p.ink || null };

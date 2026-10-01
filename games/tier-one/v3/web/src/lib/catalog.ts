@@ -98,7 +98,7 @@ const NEW: Item[] = [
 
   // ---- 3.4 long tail: kinds that ride on features already built. Each arrives on a Monday (its `drop`), one or two
   // a week through the Rumour Mill '26, so the desk has something new to look at every week (docs/GROWTH.md).
-  // headline fonts: the wood type on the share card and the results front page
+  // headline fonts: the results front page's headline and the byline card's name (App.tsx data-hd)
   { id: 'hd.serif', kind: 'headline', nameKey: 'eco.items.hd.serif', price: { coins: 300, credits: 60 }, source: 'store', rarity: 'rare', set: 'broadsheet', drop: utc(2026, 9, 28), preview: { k: 'headline', face: 'serif' } },
   { id: 'hd.slab', kind: 'headline', nameKey: 'eco.items.hd.slab', price: { coins: 300, credits: 60 }, source: 'store', rarity: 'rare', set: 'redtop', drop: utc(2026, 10, 12), preview: { k: 'headline', face: 'slab', upper: true } },
   { id: 'hd.mono', kind: 'headline', nameKey: 'eco.items.hd.mono', price: { credits: 110 }, source: 'store', rarity: 'epic', set: 'wire', drop: utc(2026, 10, 26), preview: { k: 'headline', face: 'mono', upper: true, ink: '#35C3E6' } },
