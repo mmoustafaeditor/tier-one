@@ -1,7 +1,7 @@
 // 7. Set pieces on the live pitch (plan: "خطة تحسين حركة اللاعيبة", PR C). The engine says a corner, a foul or an
 // offside happened (m.events, m.flow); this only stages it: who stands where while the ball is dead. Depths are from
 // the ATTACKING side's own goal (0-105), `y` across (0-68); the caller turns them into pitch coordinates.
-export type SetKind = 'corner' | 'fk' | 'gk' | 'ti'; // ti: a throw-in (foundation step 3)
+export type SetKind = 'corner' | 'fk' | 'gk' | 'ti' | 'pen'; // ti: a throw-in (foundation step 3); pen: a penalty (phase 4)
 export interface SetPiece { kind: SetKind; side: 0 | 1; at: Pt; until: number; taker: number; rush: number; wall?: number[] }
 // How much faster than a jog the players walk to their spots so that they're set (99%) well before the kick: the time
 // constant of a step (move.ts) is max(120, 0.9 × ms per match minute), and 1 − e^−4.6 = 99%.

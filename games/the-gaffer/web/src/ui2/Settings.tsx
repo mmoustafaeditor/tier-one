@@ -64,7 +64,11 @@ export function SettingsScreen({ prefs, onPrefs, onTitle, slot, onDelete, onImpo
           <div className="setrow"><span className="grow"><b>{S.sim}</b></span></div>
           <Seg label={S.sim} value={prefs.stop ?? 1} onChange={(stop) => onPrefs({ ...prefs, stop })}
             options={[{ v: 0, label: S.stopAll }, { v: 1, label: S.stopImportant }, { v: 2, label: S.stopBig }]} />
-          <div className="setrow"><span className="grow"><b>{S.speed}</b></span></div>
+          <div className="setrow"><span className="grow"><b>{RF[g.ui].hlTitle}</b></span></div>
+          <select className="sel" value={prefs.hl ?? 2} aria-label={RF[g.ui].hlTitle} onChange={(e) => onPrefs({ ...prefs, hl: +e.target.value as 0 | 1 | 2 | 3 | 4 })}>
+            {RF[g.ui].hl.map((l, i) => <option key={l} value={i}>{l}</option>)}
+          </select>
+          <div className="setrow"><span className="grow"><b>{RF[g.ui].hlSpeed}</b></span></div>
           <Seg label={S.speed} value={prefs.pace ?? 1} onChange={(pace) => onPrefs({ ...prefs, pace })}
             options={RF[g.ui].speeds.map((l, i) => ({ v: i as 0 | 1 | 2, label: <span className="ltr">{l}</span> }))} />
           <div className="setrow">

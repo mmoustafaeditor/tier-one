@@ -25,7 +25,7 @@ export const T = {
   MARK_TIGHT: 1.4,   // goal-side gap to his man within 20 m of goal
   MARK_LOOSE: 2.6,   // ... and further out
   SLIDE: 0.35,       // how far the line's centre shifts towards the ball's side
-  LINE_WIDTH: 40,    // the back line is never wider than this
+  LINE_WIDTH: 40,
   GK_OUT: [1.2, 7] as [number, number], // keeper's distance off his line: at least, at most
   GK_OUT_K: 0.12,    // ... growing by this per metre the ball is away
   GK_SHUFFLE: 8,     // the keeper's quick side-steps across his goal: he tracks the angle much faster than a runner closes a gap
@@ -38,7 +38,15 @@ export const T = {
   // Phase 3: attacking off the ball
   FB_PUSH: { fullback: 0, wingback: 0 } as Record<string, number>, // a full-back's push up per metre the ball is past 40 m (0: pushing them up broke the back line on the turnover; phase 4)
   FB_MAX: 26,        // ... at most this many metres
-  FB_AHEAD: 3,       // a full-back reads this many beats ahead: a ball going out wide in the last third starts his run
+  // Phase 4: the director. How far ahead players read the engine's plan, as a share of a match minute's display time.
+  ENGINE_CLOCK: false, // time beats by the engine's own seconds (director.ts). Measured on 10 seeded matches it made
+                     // marking worse (88% against 94%) and nothing better, so beats stay evenly spread for now.
+  LOOK_FB: 0.5,      // a full-back: a ball due out wide in the last third starts his overlap
+  LOOK_RUN: 0.25,    // a runner: the next ball is for him (he times his run to it)
+  ONSIDE: 0.6,       // runners wait this far short of the offside line until the ball is played
+  LOOK_SHOT: 0.45,   // a defender: a shot due from their side puts him in the lane before it's struck
+  BLOCK_BOOST: 2.4,
+  URGENT_GAIN: 4,    // an urgent run (body.ts move, the blocker): how much harder he goes for it than easing in  // ... and he sprints there (the urgency a presser has: without it he strolled to the lane)
   CARRY_SPACE: [4, 10] as [number, number], // the carrier slows inside the first (pressed), drives on beyond the second (space)
   CARRY_BOOST: [0.7, 0.95, 1.3] as [number, number, number], // his pace: pressed, normal, in space
   CARRY_STEP: [2, 6, 12] as [number, number, number],         // how far ahead he aims: pressed, normal, in space (m)

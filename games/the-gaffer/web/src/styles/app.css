@@ -418,10 +418,13 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .g-dot2.carrier circle { stroke: #FFC857; stroke-width: .8; }
 .g-wx { pointer-events: none; }
 .g-wx.rain path { stroke: rgba(220, 235, 255, .55); stroke-width: .25; stroke-linecap: round; animation: wx-rain .9s linear infinite; }
+.g-wx.heat { fill: rgba(255, 170, 60, .07); }
+.g-wx.wind path { stroke: rgba(255, 255, 255, .35); stroke-width: .18; stroke-linecap: round; animation: wx-wind 3.2s linear infinite; }
+@keyframes wx-wind { from { transform: translate(-12px, 0); opacity: 0; } 25% { opacity: 1; } 75% { opacity: 1; } to { transform: translate(14px, 1px); opacity: 0; } }
 .g-wx.snow circle { fill: rgba(255, 255, 255, .85); animation: wx-snow 4s linear infinite; }
 @keyframes wx-rain { from { transform: translate(0, -8px); opacity: 0; } 20% { opacity: 1; } to { transform: translate(-3px, 10px); opacity: 0; } }
 @keyframes wx-snow { from { transform: translate(0, -6px); opacity: 0; } 20% { opacity: 1; } to { transform: translate(2px, 8px); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .g-wx path, .g-wx circle { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .g-wx path, .g-wx circle { animation: none; } .g-wx.wind { display: none; } }
 .g-goal { font: 900 9px var(--f-display); fill: #F4FFFB; transition: opacity .2s; paint-order: stroke; stroke: rgba(0,0,0,.4); stroke-width: .6; }
 .g-zone { transition: opacity .2s; }
 @media (prefers-reduced-motion: reduce) { .g-dot2 { transition: none; } }

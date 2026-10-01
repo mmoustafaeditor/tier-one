@@ -8,6 +8,7 @@ import { FORMATIONS } from '../sim/tactics';
 import type { World } from '../sim/world';
 import { L, W } from './pitch/move';
 import { downIn, newAnim, setPitchDebug, tick, type Anim } from './pitch/sim';
+import type { HlMode } from '../sim/highlights';
 
 const PITCH_DEBUG = typeof location !== 'undefined' && /[?&]pitchdebug\b/.test(location.search);
 setPitchDebug(PITCH_DEBUG);
@@ -24,6 +25,9 @@ export function awayKit(home: string, a: [string, string]): string {
 // Rain or snow falling over the pitch (the match's weather, engine/weather.ts). Fixed drops, moved by CSS.
 const DROPS = Array.from({ length: 46 }, (_, i) => ({ x: ((i * 37) % 109) - 2, y: (i * 53) % 70, d: (i * 7) % 10 }));
 function Weather({ kind, h }: { kind: number; h: number }) {
+  // Heat: a faint warm haze over the pitch. Wind: long thin gusts drifting across it.
+  if (kind === 4) return <rect className="g-wx heat" x="-2" y="0" width={L + 4} height={h} aria-hidden="true" />;
+  if (kind === 3) return <g className="g-wx wind" aria-hidden="true">{DROPS.slice(0, 12).map((p, i) => <path key={i} d={`M${p.x} ${(p.y * h) / 70}h7`} style={{ animationDelay: `${-p.d * 0.35}s` }} />)}</g>;
   const snow = kind === 5, n = kind === 2 ? 46 : snow ? 30 : 26;
   return (
     <g className={`g-wx ${snow ? 'snow' : 'rain'}`} aria-hidden="true">
@@ -74,13 +78,13 @@ function markings(pr: Proj): { pitch: string; stripes: string; lines: string; gr
   return { pitch: rect(-4, -3, L + 8, W + 6), stripes, lines, grid };
 }
 
-export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', camera = 0 }: { m: LiveMatch; world: World; msPerMinute: number; running: boolean; goalWord?: string; camera?: Camera }) {
+export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', camera = 0, mode, scale }: { m: LiveMatch; world: World; msPerMinute: number; running: boolean; goalWord?: string; camera?: Camera; mode?: HlMode; scale?: number }) {
   const mRef = useRef(m);
   mRef.current = m;
   const worldRef = useRef(world);
   worldRef.current = world;
-  const cfg = useRef({ msPerMinute, running, camera });
-  cfg.current = { msPerMinute, running, camera };
+  const cfg = useRef({ msPerMinute, running, camera, mode, scale });
+  cfg.current = { msPerMinute, running, camera, mode, scale };
   const pitchRef = useRef<SVGPathElement | null>(null);
   const stripeRef = useRef<SVGPathElement | null>(null);
   const lineRef = useRef<SVGPathElement | null>(null);
@@ -115,8 +119,8 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       const a = anim.current!;
       const mm = mRef.current;
       if (PITCH_DEBUG) (window as unknown as { __gafferPitch?: unknown }).__gafferPitch = { a, slots: mm.sides.map((sd) => FORMATIONS[sd.tactics.formation].slots.map((x) => x.pos)), pressing: mm.sides.map((sd) => sd.tactics.pressing) };
-      const { msPerMinute: ms, running: go, camera: cam } = cfg.current;
-      tick(a, mm, worldRef.current, dt, ms, go);
+      const { msPerMinute: ms, running: go, camera: cam, mode: md, scale: sc } = cfg.current;
+      tick(a, mm, worldRef.current, dt, ms, go, md, sc ?? ms);
       // Draw. In Arabic the home side sits on the right of the score, so the picture is mirrored (the numbers are not).
       const flip = document.documentElement.dir === 'rtl';
       const fx = (x: number) => (flip ? L - x : x);
@@ -208,7 +212,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         <ellipse ref={shadowRef} rx="1.1" ry=".6" fill="#000" opacity="0" />
         <g ref={ballRef}><circle r="1.05" fill="#fff" stroke="#111" strokeWidth=".3" /></g>
       </g>
-      {(m.wx === 1 || m.wx === 2 || m.wx === 5) && <Weather kind={m.wx} h={vh} />}
+      {!!m.wx && <Weather kind={m.wx} h={vh} />}
       <g ref={hurtRef} className="g-hurt" opacity="0"><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx=".5" fill="#fff" stroke="#c62828" strokeWidth=".25" /><path d="M-.35 -.95h.7v.6h.6v.7h-.6v.6h-.7v-.6h-.6v-.7h.6z" fill="#d32f2f" /></g>
       <g ref={flagRef} className="g-flag" opacity="0"><path d="M0 0V-4.2" stroke="#222" strokeWidth=".35" /><path d="M0 -4.2h2.6l-.5 1 .5 1H0z" fill="#ffd400" stroke="#7a6400" strokeWidth=".15" /></g>
       <text ref={netRef} className="g-goal" x={L / 2} y={vh / 2 + 4} textAnchor="middle" opacity="0">{goalWord}</text>

@@ -3,12 +3,13 @@
 // same measurements as the browser test (ui-tests/pitch-metrics.mjs). The whole thing runs twice: both runs must print
 // the same numbers (the pitch is deterministic for a given match).
 // Usage: node sim-tests/build.mjs pitch [matches=10] [minutes=90]   (env SPEED = ms per match minute, default 2400;
-// MARKING = 0 zonal, 1 mixed, 2 man for both sides)
+// MARKING = 0 zonal, 1 mixed, 2 man for both sides; MODE, see below)
 import { generateWorld, playerOf } from '../src/sim/world';
 import { startMatch, stepMinute, type LiveMatch } from '../src/sim/match';
 import { playOver } from '../src/sim/engine/clock';
 import { FORMATIONS } from '../src/sim/tactics';
 import { newAnim, setPitchDebug, tick, type Anim } from '../src/ui2/pitch/sim';
+import { RATES, minuteMs, shownOf, type HlMode } from '../src/sim/highlights';
 // @ts-expect-error plain JS module shared with the browser test
 import { measure } from '../ui-tests/pitch-metrics.mjs';
 
@@ -17,6 +18,10 @@ const MINS = +(process.argv[3] ?? 90);
 const MS = +(process.env.SPEED ?? 2400);
 const FRAME = 1000 / 60;
 const MARKING = process.env.MARKING ? (+process.env.MARKING as 0 | 1 | 2) : undefined;
+// MODE = 1 key, 2 extended, 3 comprehensive, 4 full match: highlights as on the live screen (sim/highlights.ts), at the
+// normal highlight speed; only the frames of shown passages are measured (what the player sees). Default 2; MODE=old:
+// the whole minute compressed (the old way).
+const MODE = process.env.MODE === 'old' ? undefined : (+(process.env.MODE ?? 2) as HlMode); // default: Extended, as the game
 setPitchDebug(true);
 
 const w = generateWorld(7);
@@ -35,8 +40,11 @@ function play(i: number, out: Frame[], acc: { kinds: Record<string, number>; rea
     const n = clone(m);
     stepMinute(n, get);
     m = n;
-    for (let t = 0; t < MS; t += FRAME) {
-      tick(a, m, w, FRAME, MS, true);
+    const ms = MODE === undefined ? MS : minuteMs(m, MODE, RATES[1]);
+    const seen = MODE === undefined || !!shownOf(m, MODE);
+    for (let t = 0; t < ms; t += FRAME) {
+      tick(a, m, w, FRAME, ms, true, MODE, MODE === undefined ? ms : MS); // highlights: players run at the normal pace's scale
+      if (!seen) continue;
       const x = a as unknown as Record<string, any>;
       out.push({
         m: i, t: t0 + x.time, go: true, min: x.minute, gkT: x.gkT ? { ...x.gkT } : null, mk: x.mk ? [...x.mk] : null, carrier: x.flight ? -1 : x.carrier,
