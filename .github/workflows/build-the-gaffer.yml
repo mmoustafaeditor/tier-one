@@ -139,10 +139,15 @@ jobs:
           git add $FILES
           if git diff --cached --quiet; then echo "Nothing new to publish"; exit 0; fi
           git commit -m "chore(gaffer): publish web build $BUILD$( [ "$APK" = true ] && echo ' and APK' ) [skip ci]"
+          # Two runs can build at once (a push and a manual run): if main moved meanwhile, take its newer state and
+          # keep ours on top. Generated files conflict only with another generated copy, so ours (this run's build) wins.
+          PUSHED=false
           for i in 1 2 3 4; do
-            git pull --rebase origin main && git push origin HEAD:main && break
+            if git pull --rebase -X theirs origin main && git push origin HEAD:main; then PUSHED=true; break; fi
+            git rebase --abort 2>/dev/null || true
             sleep $((i * 5))
           done
+          if [ "$PUSHED" != true ]; then echo "::error::Could not publish build $BUILD to main"; exit 1; fi
           {
             echo "### The Gaffer $VERSION · build $BUILD"
             echo "- Web: https://www.sembagames.app/the-gaffer"
