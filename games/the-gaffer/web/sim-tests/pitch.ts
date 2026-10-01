@@ -2,7 +2,8 @@
 // (stepMinute, as the Live screen does), runs the pitch (ui2/pitch/sim.ts) on a virtual 60 fps clock, and applies the
 // same measurements as the browser test (ui-tests/pitch-metrics.mjs). The whole thing runs twice: both runs must print
 // the same numbers (the pitch is deterministic for a given match).
-// Usage: node sim-tests/build.mjs pitch [matches=10] [minutes=90]   (env SPEED = ms per match minute, default 2400)
+// Usage: node sim-tests/build.mjs pitch [matches=10] [minutes=90]   (env SPEED = ms per match minute, default 2400;
+// MARKING = 0 zonal, 1 mixed, 2 man for both sides)
 import { generateWorld, playerOf } from '../src/sim/world';
 import { startMatch, stepMinute, type LiveMatch } from '../src/sim/match';
 import { playOver } from '../src/sim/engine/clock';
@@ -15,6 +16,7 @@ const N = +(process.argv[2] ?? 10);
 const MINS = +(process.argv[3] ?? 90);
 const MS = +(process.env.SPEED ?? 2400);
 const FRAME = 1000 / 60;
+const MARKING = process.env.MARKING ? (+process.env.MARKING as 0 | 1 | 2) : undefined;
 setPitchDebug(true);
 
 const w = generateWorld(7);
@@ -26,6 +28,7 @@ type Frame = Record<string, unknown>;
 function play(i: number, out: Frame[], acc: { kinds: Record<string, number>; reacts: unknown[]; kin: { turn: number; acc: number } }) {
   const home = top[(i * 7) % top.length], away = top[(i * 13 + 5) % top.length];
   let m: LiveMatch = startMatch(w, null, home.id, away.id, `pitch-${i}`, 1, true);
+  if (MARKING !== undefined) for (const s of m.sides) s.tactics = { ...s.tactics, marking: MARKING, setMark: MARKING }; // env MARKING=0|1|2
   const a: Anim = newAnim(m, w);
   const t0 = i * 1e8; // frames of different matches never share a time
   while (!playOver(m) && m.minute < MINS) {

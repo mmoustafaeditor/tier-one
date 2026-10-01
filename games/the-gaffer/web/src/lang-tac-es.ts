@@ -46,6 +46,8 @@ export const TX_ES: TxStrings = {
     counter: ['Al recuperarla', ['Tenerla', 'Contra al momento']],
     trap: ['Trampa de presión', ['Ninguna', 'Bandas', 'Centro', 'Carriles interiores']],
     routine: ['Córners', ['Variados', 'Los altos arriba', 'En corto']],
+    marking: ['Marcaje', ['Zonal', 'Mixto', 'Individual']],
+    setMark: ['Marcaje a balón parado', ['Zonal', 'Mixto', 'Individual']],
   },
   trade: {
     build: [['Portero y centrales la sacan jugada: más balón.', 'Una buena presión roba cerca de nuestra portería.'], ['Corto cuando se puede, largo cuando no.', 'Ni fu ni fa.'], ['Nos saltamos su presión.', 'Más balones divididos; la devolvemos más.']],
@@ -53,6 +55,8 @@ export const TX_ES: TxStrings = {
     counter: [['La tenemos y volvemos a construir.', 'Menos ocasiones rápidas.'], ['Salimos en cuanto la robamos.', 'Los medios juegan más atrás para lanzarla.']],
     trap: [['Sin trampa.', 'Sin trampa.'], ['Los mandamos a la banda y los encerramos.', 'El centro queda algo más suelto.'], ['Los alejamos del centro.', 'Las bandas quedan algo más sueltas.'], ['Presión un poco en cada carril.', 'Nada queda cerrado del todo.']],
     routine: [['Envíos variados.', 'Nada especial.'], ['Suben los centrales: más cabezazos.', 'Menos gente atrás si sale mal.'], ['En corto para conservarla.', 'Menos tiros del propio córner.']],
+    marking: [['Cada uno guarda su zona: poco espacio entre líneas; menos faltas.', 'Los que llegan desde fuera y al área encuentran hueco.'], ['Zonas, y el más cercano coge al que llega.', 'Nada especial.'], ['Cada uno con su hombre: pegados en las bandas y por arriba.', 'Los marcadores se salen de su sitio: más espacio por dentro; más faltas.']],
+    setMark: [['Zonas en el área: primer contacto en el primer palo.', 'Los que atacan el balón en carrera ganan más cabezazos.'], ['Unos en zona y el resto al hombre.', 'Nada especial.'], ['Cada uno con un hombre en el área: menos cabezazos libres.', 'El rechace en la frontal queda libre.']],
   },
   trapOff: 'Una trampa necesita presión: pon la presión en bloque medio o más.',
   mark: 'Marcaje individual', markNone: 'Nadie', markHint: 'Gana muchos menos duelos; su marcador deja un hueco.',

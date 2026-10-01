@@ -51,6 +51,76 @@ together with your change.
 - **What changed:** The three phase-A foundations now talk to each other. `lib/economy.ts levelUnlocks` is `{ market: 2, live: 3, groups: 4 }` (CONCEPT4 §9: the Market tile is never locked, watching is free, calls open at Level 2; `wire` is accepted as an alias of `market` by `unlockLevelOf` / `isUnlocked` because it is still the Market's id in routes and `Mode4`). `ui/phone.tsx` reads the registry for every gate: `unlockLevel` / `isUnlocked` (tile gates, Live and Groups) and the new `callLevel` / `canCall` (the gate inside an open app; `AppDef.calls`). The Market's call sheet shows "Reach Level 2" with the level bar in place of the YES / NO buttons until then, and its star coins now land through `credit()` (the Gold +10%, the ledger line) via `onWireRight(coins, rid)`. `lib/meta.ts onDriverDone(outcome, driver)` is the one settle for a `Driver4` window (pass it as `makeDriver({ onDone })`): it routes to `onDailyDone` / `onRoomDone` / `onCareerDone` / `onDeadlineDone` / `onPracticeDone` by mode (tutorial and challenge play by Practice's book) and returns the `Gain`. A `Gain` now carries `offers` (the sponsor offers that landed with it) and every Gain fires `onGain()` listeners; App puts a new offer ("Volt wants to talk · Saw your first call. Want to make some money?"), a brand walking and "Market calls are open" at Level 2 into the phone's tray through `ui/juice.tsx notify()`. `npx tsc --noEmit`, `scripts/economy4-test.mjs` (9 checks) and `npm run build:web` pass.
 - **Files:** `games/tier-one/v3/web/src/lib/economy.ts`, `src/lib/meta.ts`, `src/ui/phone.tsx`, `src/screens/Wire.tsx`, `src/App.tsx`, `src/styles/screens.css`, `src/i18n/parts/mergeA4.ts` (new), `scripts/economy4-test.mjs`, `games/tier-one/v3/docs/DESIGN_SYSTEM.md`, `games/tier-one/v3/HANDOFF4.md`, `UPDATES.md`
 - **Heads-up for the team:** Phase B lanes: build on `makeDriver({ mode, onDone: onDriverDone })`; read gates from `ui/phone.tsx` (`isUnlocked` for a tile, `canCall` for an action inside an app), never a local number; put tray events through `notify()` and account events through `onGain()`. Still rough: `App.tsx` builds the v3 driver for the `daily` / `room` / `play` routes (a Practice window started from the new screen opens only once the play lane switches `WindowScreen` to `Driver4`); the Market screen is the 3.x Wire (old words, the hero copy overlaps the cards at 390px); the morning-papers pinboard scene (`lib/scenes.ts`) still plays on Home and goes with the film sweep; `lib/driver3.ts` leaves with the last v3 screen.
+## 2026-10-01 · saifsaber · The Gaffer pitch, phase 3 (first part): the ball carrier, and measurements for attacking off the ball
+- **What changed:** The live 2D pitch only (engine untouched).
+  - **The ball carrier.** He carries it towards where the engine has the play: a short step at a slower pace when a man is on him (shielding it), and a long step at a faster pace into space. On 10 seeded matches, his speed against the room around him went from r = −0.04 (no link) to r = 0.55. This needed a fix: a boost under 1 is now allowed, so a player can be slowed (before, every boost was raised to at least 1).
+  - **Full-backs.** They read up to 3 beats ahead and start their run when the ball is about to go out wide in the last third. Inverted full-backs underlap into the half-space.
+  - **New pitch-test measurements** (`ui-tests/pitch-metrics.mjs`, used by the Node and browser tests):
+    - **Offside:** no one waits offside while the carrier has the ball. 1%, limit 5%.
+    - **Support:** the carrier has two men in open lanes. 90%, limit 70%.
+    - **Carrying:** the carrier's pace follows the space around him. r = 0.55, limit 0.2.
+    - **Overlap:** a full-back next to a wide carrier in the last third. Reported only, at 0–5%. The ball reaches the wing in one pass, faster than a full-back can get there from his line. Pushing the full-backs up all the time was tried: it broke the back line on the turnover (spread 4.9 m, reaction 79%), so it is off (`FB_PUSH` 0). This needs the director (phase 4).
+  - Everything else holds on the 10 seeded matches: marking 94%, keeper 0.5 m, reaction 95 of 118.
+- **Files:** `games/the-gaffer/web/src/ui2/pitch/{sim,move,tuning}.ts`, `ui-tests/pitch-metrics.mjs`
+- **Heads-up for the team:** The back-line spread (4.2 m) and box blocking (28%) are still the phase-4 items. Tier One is untouched.
+
+## 2026-10-01 · saifsaber · The Gaffer: AI managers pick a marking style; an injured man with no sub left is shown going down
+- **What changed:**
+  - **AI marking.** AI managers now choose a marking style by philosophy:
+    - possession, counter and bus hold zones;
+    - gegenpress goes man to man;
+    - balanced, wings and direct stay mixed.
+
+    At set pieces they mark man to man when their centre-backs and strikers are clearly stronger in the air than the opponent's, and hold zones when the opponent's are.
+  - **Injury with no sub left.** When a player is hurt and no substitutes are left, the pitch now shows him going down under the medic's cross before he's helped off. Before, he vanished. The pitch remembers who stood in each slot at the start of the minute, so the injured man's slot is found the same way whether or not a sub came on.
+- **Files:** `games/the-gaffer/web/src/sim/tactics.ts` (`aiTactics`), `src/ui2/pitch/sim.ts` (`ids`, `downIn`), `src/ui2/Pitch2D.tsx`
+- **Heads-up for the team:** AI sides' results shift slightly with their marking style; every style stays within about 1% expected points of mixed. Tier One is untouched.
+
+## 2026-10-01 · saifsaber · The Gaffer: matchday weather
+- **What changed:**
+  - **Weather per match.** Every match now has weather: clear, rain, heavy rain, wind, heat or snow (`engine/weather.ts`). It is picked once from the match key and the home country's climate. England and Germany get rain and some snow; Spain and Italy are mostly clear, with heat; Egypt and Saudi get heat and never snow.
+  - **Same for both sides.** Weather changes how a match is played, never who is favoured:
+    - a wet or snowy pitch makes short combinations and carrying the ball through midfield harder, and the long ball more attractive;
+    - wind spoils long balls, crosses and corners;
+    - heat and heavy pitches tire players;
+    - the wet means more slips into fouls and more knocks.
+  - **Measured on 3,000 seeded matches against the same matches in clear weather** (`node sim-tests/build.mjs weather`):
+    - goals overall −0.1%;
+    - fouls in rain 23.6 against 22.4, heavy rain 24.3 against 22.5;
+    - fewer headed chances in the wind (5.82 against 6.12);
+    - players end hot matches more tired (88.4 against 89.3).
+  - **Where you see it.** The weather shows on the live screen's pitch card in EN/AR/ES/FR. Rain and snow fall over the 2D pitch; the animation stops when the device asks for reduced motion.
+- **Files:** `games/the-gaffer/web/src/sim/engine/weather.ts` (new), `src/sim/engine/model.ts`, `src/sim/match.ts` (`wx`), `src/ui2/Live.tsx`, `src/ui2/Pitch2D.tsx`, `src/styles/app.css`, `src/lang-ref{,-ar,-es,-fr}.ts`, `sim-tests/weather.ts` (new)
+- **Heads-up for the team:** Old saves have no weather and play as clear. Match results differ from before this change, since weather is part of each match now. `data/`, `api/data/` and `design/` are untouched. Tier One is untouched.
+
+## 2026-10-01 · saifsaber · The Gaffer, foundation step 5: marking style, like FM (zonal / mixed / man, and at set pieces)
+- **What changed:** Two new team instructions on the Tactics board and the live tactics sheet, in EN/AR/ES/FR. Both default to Mixed.
+  - **Marking:** Zonal / Mixed / Man.
+  - **Marking at set pieces:** Zonal / Mixed / Man.
+
+  In the engine (`engine/model.ts`), Mixed is the engine exactly as before: the same 200-match fingerprint as step 4. The trade-offs:
+  - **Zonal** holds the shape: less room between the lines and fewer fouls, but runners from wide and into the box find space.
+  - **Man** is tight on the flanks and in the air, but markers get pulled out of shape (more room in midfield and between the lines) and it costs fouls.
+  - **At corners**, zonal gives away more first contacts. Man-marking leaves the second ball at the edge of the box.
+
+  No style is a free win (`node sim-tests/build.mjs marking`): every combination is within −1.0% to +0.9% points of Mixed/Mixed (the limit is +3%). The simulated trade-offs all show up:
+  - fouls: man 12.3, mixed 11.3, zonal 10.4 a match;
+  - wide and headed chances conceded are lowest with man;
+  - box and through chances conceded are lowest with zonal.
+
+  On the pitch, zonal only takes men who come into a player's area and the back line holds until the box. Man reaches further and a defender follows his man anywhere. At corners, zonal holds every zone, mixed holds 3 and the rest pick up a man, and man marks all of them. Measured in 10 seeded matches (Node pitch test), attackers near goal marked: zonal 76%, mixed 85%, man 81%. Man-marking chases from further away, so it isn't tighter on this measure yet; phase 4 (the director) will refine it.
+- **Files:** `games/the-gaffer/web/src/sim/tactics.ts` (`marking`, `setMark`), `src/sim/engine/model.ts`, `src/ui2/pitch/{sim,defend,tuning}.ts`, `src/ui2/Match.tsx`, `src/ui2/Live.tsx`, `src/lang-tac{,-ar,-es,-fr}.ts`, `sim-tests/marking.ts` (new), `sim-tests/pitch.ts` (env `MARKING`)
+- **Heads-up for the team:** Old saves have neither field and play as Mixed. AI managers keep Mixed for now. Tier One is untouched.
+
+## 2026-10-01 · saifsaber · The Gaffer, foundation step 4: injuries come from tackles too, and players have a hidden proneness
+- **What changed:**
+  - **Injuries from tackles.** A fouled player can now be hurt by the tackle: rarely by a careless foul, more often by a reckless one, often by serious foul play (`engine/injury.ts`). The roll happens after the minute, on its own random stream.
+  - **Hidden proneness.** Every player has a hidden injury proneness, taken from his id and his physique; a strong player is a little harder to hurt. It makes him likelier to be hurt both in tackles and in the existing background injuries (tiredness, load, pressing).
+  - **Totals unchanged.** The background chance is scaled down so totals stay as they were. Over 2,000 seeded matches (`node sim-tests/build.mjs injuries 2000 0.281`): 0.275 injuries a match against 0.281 before (−2.3%), about a third of them from fouls. The fouled player is hurt in 0.31% of fouls with no card, 0.98% of booked fouls and 7.4% of fouls that are sent off.
+  - **Shown on the pitch.** The injured player goes down at the whistle of that foul and stays down under a medic's cross; otherwise he pulls up mid-minute. The injury event now carries `how: 'foul'` and the offence in `note` when a tackle did it.
+  - **Checks.** The referee test passes, old saves load, and the season (5,784 league matches, 2.77 goals a match) runs. The Node pitch test shows the same numbers as before this step, apart from the injury itself.
+- **Files:** `games/the-gaffer/web/src/sim/engine/injury.ts` (new), `src/sim/engine/referee.ts` (`FoulOut.off`), `src/sim/match.ts`, `src/ui2/pitch/sim.ts`, `src/ui2/Pitch2D.tsx`, `ui-tests/pitch-metrics.mjs`, `sim-tests/injuries.ts` (new)
+- **Heads-up for the team:** Match results change from this step on (who gets hurt, and when), so the 200-match fingerprint is new. Proneness needs no save field. Tier One is untouched.
 
 ## 2026-10-01 · saifsaber · The Gaffer pitch, foundation step 3: the engine tells the pitch when, what, and when the ball goes out
 - **What changed:** The engine's ball path for the pitch (`m.flow`, FULL matches only) now carries more information:

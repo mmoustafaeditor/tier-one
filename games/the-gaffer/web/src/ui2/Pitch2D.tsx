@@ -7,7 +7,7 @@ import type { LiveMatch } from '../sim/match';
 import { FORMATIONS } from '../sim/tactics';
 import type { World } from '../sim/world';
 import { L, W } from './pitch/move';
-import { newAnim, setPitchDebug, tick, type Anim } from './pitch/sim';
+import { downIn, newAnim, setPitchDebug, tick, type Anim } from './pitch/sim';
 
 const PITCH_DEBUG = typeof location !== 'undefined' && /[?&]pitchdebug\b/.test(location.search);
 setPitchDebug(PITCH_DEBUG);
@@ -20,6 +20,18 @@ const ink = (hex: string) => { const [r, g, b] = rgb(hex); return r * 0.299 + g 
 export function awayKit(home: string, a: [string, string]): string {
   for (const c of [a[0], a[1], '#FFFFFF', '#111111']) if (!near(home, c)) return c;
   return a[1];
+}
+// Rain or snow falling over the pitch (the match's weather, engine/weather.ts). Fixed drops, moved by CSS.
+const DROPS = Array.from({ length: 46 }, (_, i) => ({ x: ((i * 37) % 109) - 2, y: (i * 53) % 70, d: (i * 7) % 10 }));
+function Weather({ kind, h }: { kind: number; h: number }) {
+  const snow = kind === 5, n = kind === 2 ? 46 : snow ? 30 : 26;
+  return (
+    <g className={`g-wx ${snow ? 'snow' : 'rain'}`} aria-hidden="true">
+      {DROPS.slice(0, n).map((p, i) => snow
+        ? <circle key={i} cx={p.x} cy={(p.y * h) / 70} r=".45" style={{ animationDelay: `${-p.d * 0.4}s` }} />
+        : <path key={i} d={`M${p.x} ${(p.y * h) / 70}l-.8 2.4`} style={{ animationDelay: `${-p.d * 0.09}s` }} />)}
+    </g>
+  );
 }
 // ---------- cameras ----------
 // 0 = 2D from above; 1 = 2.5D, a fixed camera high above the near touchline; 2 = 3D, a lower, closer broadcast camera
@@ -82,6 +94,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   const ballRef = useRef<SVGGElement | null>(null);
   const shadowRef = useRef<SVGEllipseElement | null>(null);
   const flagRef = useRef<SVGGElement | null>(null);
+  const hurtRef = useRef<SVGGElement | null>(null);
   const netRef = useRef<SVGTextElement | null>(null);
   const anim = useRef<Anim | null>(null);
 
@@ -137,7 +150,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       for (const side of [0, 1] as const) {
         dots.current[side].forEach((g, k) => {
           if (!g) return;
-          const on = !!mm.sides[side].onPitch[k];
+          const on = !!mm.sides[side].onPitch[k] || downIn(a, side, k);
           g.style.display = on ? '' : 'none';
           const p = a.pos[side][k];
           if (on && p) {
@@ -159,6 +172,12 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       ballRef.current?.setAttribute('transform', `translate(${bx.toFixed(2)} ${(by - a.bh * 0.55 * bs).toFixed(2)}) scale(${(bs * (1 + a.bh * 0.05)).toFixed(3)})`);
       if (ballRef.current && layer.current && cam) { if (shadowRef.current) layer.current.appendChild(shadowRef.current); layer.current.appendChild(ballRef.current); }
       netRef.current?.setAttribute('opacity', a.inNet ? '1' : '0');
+      // A player down injured: the medic's cross over him.
+      if (hurtRef.current) {
+        const hp = a.hurt && a.time < a.hurt.until ? a.pos[a.hurt.side][a.hurt.slot] : null;
+        hurtRef.current.setAttribute('opacity', hp ? '1' : '0');
+        if (hp) { const [hx, hy, hs] = pr(fx(hp.x), hp.y); hurtRef.current.setAttribute('transform', `translate(${hx.toFixed(2)} ${(hy - 3.6 * hs).toFixed(2)}) scale(${hs.toFixed(3)})`); }
+      }
       if (flagRef.current) {
         const up = !!a.flag && a.time < a.flag.until;
         flagRef.current.setAttribute('opacity', up ? '1' : '0');
@@ -189,6 +208,8 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         <ellipse ref={shadowRef} rx="1.1" ry=".6" fill="#000" opacity="0" />
         <g ref={ballRef}><circle r="1.05" fill="#fff" stroke="#111" strokeWidth=".3" /></g>
       </g>
+      {(m.wx === 1 || m.wx === 2 || m.wx === 5) && <Weather kind={m.wx} h={vh} />}
+      <g ref={hurtRef} className="g-hurt" opacity="0"><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx=".5" fill="#fff" stroke="#c62828" strokeWidth=".25" /><path d="M-.35 -.95h.7v.6h.6v.7h-.6v.6h-.7v-.6h-.6v-.7h.6z" fill="#d32f2f" /></g>
       <g ref={flagRef} className="g-flag" opacity="0"><path d="M0 0V-4.2" stroke="#222" strokeWidth=".35" /><path d="M0 -4.2h2.6l-.5 1 .5 1H0z" fill="#ffd400" stroke="#7a6400" strokeWidth=".15" /></g>
       <text ref={netRef} className="g-goal" x={L / 2} y={vh / 2 + 4} textAnchor="middle" opacity="0">{goalWord}</text>
     </svg>

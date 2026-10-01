@@ -8,6 +8,7 @@ export const R_FR: RefStrings = {
   varOn: 'VAR', varOff: 'Sans VAR',
   refLine: (r, s, v) => `Arbitre ${r} · ${s} · ${v ? 'avec VAR' : 'sans VAR'}`,
   speeds: ['Lent', 'Normal', 'Rapide'],
+  wx: ['Dégagé', 'Pluie', 'Forte pluie', 'Vent', 'Chaleur', 'Neige'],
   instant: 'Instantané',
   commentary: 'Commentaire', moments: 'Temps forts',
   windows: (n) => `${n} ${P(n, 'fenêtre', 'fenêtres')} restante${n === 1 ? '' : 's'}`,

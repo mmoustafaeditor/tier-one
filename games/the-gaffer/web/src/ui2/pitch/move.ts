@@ -80,9 +80,12 @@ export function runFor(role: string, c: RunCtx): Run | null {
   const ballSide = sideOf(c.by);
   const sameFlank = c.wide !== 0 && ballSide === c.wide;
   switch (role) {
-    case 'fullback': return sameFlank && c.bd > 45 && c.bd > c.d + 5 ? { d: Math.min(c.bd + 8, 88), y: touch(c.wide), run: true } : null;
-    case 'wingback': return sameFlank && c.bd > 35 && c.bd > c.d ? { d: Math.min(c.bd + 10, 92), y: touch(c.wide), run: true } : null;
-    case 'inverted_fullback': return c.bd > 30 ? { d: Math.max(c.d, c.bd - 18), y: W / 2 + (c.wide || 1) * 10, run: false } : null;
+    // Phase 3: on the ball's flank in their half, the full-back overlaps (outside the winger), the wing-back earlier
+    // and further; the inverted full-back underlaps into the half-space once the ball is in the last third.
+    case 'fullback': return sameFlank && c.bd > 45 && c.bd > c.d - 4 ? { d: Math.min(c.bd + 10, 90), y: touch(c.wide), run: true } : null;
+    case 'wingback': return sameFlank && c.bd > 35 && c.bd > c.d - 6 ? { d: Math.min(c.bd + 12, 92), y: touch(c.wide), run: true } : null;
+    case 'inverted_fullback': return sameFlank && c.bd > 62 ? { d: Math.min(c.bd + 6, 90), y: W / 2 + c.wide * 15, run: true }
+      : c.bd > 30 ? { d: Math.max(c.d, c.bd - 18), y: W / 2 + (c.wide || 1) * 10, run: false } : null;
     case 'winger': return c.wide ? { d: c.bd > 50 ? Math.max(c.d, c.bd + 5) : c.d, y: touch(c.wide), run: false } : null;
     case 'inside_forward': return c.bd > 60 && c.wide ? { d: Math.min(c.bd + 12, 92), y: W / 2 + c.wide * 12, run: true } : null;
     case 'advanced_forward': return c.bd > 50 ? { d: Math.min(c.theirLine + 3, 96), y: c.y, run: true } : null;

@@ -89,6 +89,7 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   const corners = ends.filter((s) => s.sp.kind === 'corner');
   const fks = ends.filter((s) => s.sp.kind === 'fk' && depth(s.sp.side, s.sp.at.x) > 70);
   const wallN = (s) => s.pos[1 - s.sp.side].filter((q) => q && Math.abs(Math.hypot(q.x - s.sp.at.x, q.y - s.sp.at.y) - 9.15) < 1.5).length;
+  console.log(`  injuries shown: ${kinds.injury ?? 0}`);
   console.log(`  set pieces staged: ${corners.length} corners, ${fks.length} free kicks in range, ${ends.filter((s) => s.sp.kind === 'gk').length} goal kicks, ${ends.filter((s) => s.sp.kind === 'ti').length} throw-ins, flag up in ${samples.filter((s) => s.flag).length} frames`);
   ok(ends.length > 0, 'set pieces are staged');
   if (process.env.DBG) for (const c of fks) { const st = samples.find((x) => x.sp && x.sp.until === c.sp.until); console.log('fk', JSON.stringify(c.sp), st.t, c.t, JSON.stringify(c.pos[1 - c.sp.side].map((q) => q && Math.round(Math.hypot(q.x - c.sp.at.x, q.y - c.sp.at.y) * 10) / 10)), JSON.stringify(c.ball)); }
@@ -156,6 +157,52 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   }
   const pc = (x) => (x[1] ? Math.round((100 * x[0]) / x[1]) : 0);
   console.log(`  defence: marked ${pc(P2.mark)}% (${P2.mark[1]}; ${pc(P2.markAll)}% counting counter-attacks), keeper off the angle median ${med(P2.gk).toFixed(1)} m, box lane blocked ${pc(P2.block)}% (${P2.block[1]}), back line width median ${med(P2.width).toFixed(1)} m`);
+  // Phase 3 (attacking off the ball), in settled possession: nobody waits offside while the carrier has it; the carrier
+  // has two men in open lanes; a wide carrier in the last third gets a full-back past or inside him; the carrier
+  // speeds up into space and slows when pressed.
+  const P3 = { off: [0, 0], sup: [0, 0], ovl: [0, 0], sp: [], press: [] };
+  let got = 0; // when the carrier got the ball
+  for (let i = 1; i < samples.length; i++) {
+    const s = samples[i], pr = samples[i - 1];
+    if (pr.m !== s.m || pr.carrier !== s.carrier || pr.poss !== s.poss) got = s.t;
+    if (afterSet[i] || s.sp || s.carrier < 0 || s.flag) continue;
+    const att = s.poss, def = 1 - s.poss, A = s.pos[att], D = s.pos[def], c = A[s.carrier];
+    if (!c) continue;
+    const dep = (q) => depth(att, q.x);
+    // Offside line: the second-last defender (the keeper counts), never behind the ball, never past halfway.
+    const dd = D.filter(Boolean).map(dep).sort((x, y) => y - x);
+    const lineD = Math.max(dd[1] ?? 105, dep(c), 52.5);
+    P3.off[1]++;
+    if (A.some((q, k) => q && k !== s.carrier && dep(q) > lineD + 0.5)) P3.off[0]++;
+    // Support: teammates 6-28 m away with no defender within 2 m of the passing lane.
+    const lane = (q) => D.every((d) => { if (!d) return true; const vx = q.x - c.x, vy = q.y - c.y, l2 = vx * vx + vy * vy; const t = Math.max(0, Math.min(1, ((d.x - c.x) * vx + (d.y - c.y) * vy) / l2)); return Math.hypot(c.x + t * vx - d.x, c.y + t * vy - d.y) > 2; });
+    const open = A.filter((q, k) => q && k !== s.carrier && s.slots[att][k] !== 'GK' && Math.hypot(q.x - c.x, q.y - c.y) > 6 && Math.hypot(q.x - c.x, q.y - c.y) < 28 && lane(q)).length;
+    P3.sup[1]++; if (open >= 2) P3.sup[0]++;
+    // Overlap / underlap: a wide carrier in the last third (short of the byline), his full-back within 14 m and no more
+    // than 6 m behind him: there to go past or inside.
+    if (Math.abs(c.y - 34) > 18 && dep(c) > 68 && dep(c) < 95) {
+      P3.ovl[1]++;
+      if (A.some((q, k) => q && ['LB', 'RB'].includes(s.slots[att][k]) && Math.sign(q.y - 34) === Math.sign(c.y - 34) && dep(q) >= dep(c) - 6 && Math.hypot(q.x - c.x, q.y - c.y) < 14)) P3.ovl[0]++;
+    }
+    // Carrier speed against the nearest defender's distance (same man on the ball in the last frame), once he has had
+    // a quarter of a second on it (before that he is still running on from receiving it).
+    if (pr.m === s.m && pr.poss === att && pr.carrier === s.carrier && !pr.sp && s.t > pr.t && s.t - got >= 250) {
+      const p0 = pr.pos[att][s.carrier];
+      if (p0) { P3.sp.push((Math.hypot(c.x - p0.x, c.y - p0.y) / (s.t - pr.t)) * 1000); P3.press.push(Math.min(...D.filter(Boolean).map((d) => Math.hypot(d.x - c.x, d.y - c.y)))); }
+    }
+  }
+  const corr = (xs, ys) => { const n = xs.length; if (n < 3) return 0; const mx = xs.reduce((a, b) => a + b, 0) / n, my = ys.reduce((a, b) => a + b, 0) / n; let c = 0, vx = 0, vy = 0; for (let i = 0; i < n; i++) { c += (xs[i] - mx) * (ys[i] - my); vx += (xs[i] - mx) ** 2; vy += (ys[i] - my) ** 2; } return c / Math.sqrt(vx * vy || 1); };
+  const spCorr = corr(P3.press, P3.sp);
+  if (process.env.DBG3) for (const [lo, hi] of [[0, 4], [4, 7], [7, 10], [10, 15], [15, 99]]) { const xs = P3.sp.filter((_, i) => P3.press[i] >= lo && P3.press[i] < hi); console.log('carry', lo, hi, xs.length, (xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length)).toFixed(2)); }
+  console.log(`  attack: offside while the carrier has it ${pc(P3.off)}% (${P3.off[1]}), carrier has 2+ open men ${pc(P3.sup)}%, full-back past a wide carrier ${pc(P3.ovl)}% (${P3.ovl[1]}), carrier speed vs space r=${spCorr.toFixed(2)} (${P3.sp.length})`);
+  {
+    ok(pc(P3.off) <= 5, `runners hold the offside line until the pass: ${pc(P3.off)}% of frames with a man offside (≤ 5%)`);
+    ok(pc(P3.sup) >= 70, `the carrier has two men in open lanes: ${pc(P3.sup)}% (≥ 70%)`);
+    // Overlaps need the director (phase 4): the ball reaches the wing in one pass, faster than a full-back can get there
+    // from his line; pushing full-backs up all the time broke the back line when the ball was lost. Reported until then.
+    if (process.env.OVERLAP) ok(P3.ovl[1] < 40 || pc(P3.ovl) >= 40, `a wide carrier in the last third gets his full-back past or inside him: ${pc(P3.ovl)}% (≥ 40%)`);
+    ok(spCorr >= 0.2, `the carrier speeds up into space and slows when pressed: r = ${spCorr.toFixed(2)} (≥ 0.2)`);
+  }
   if (!process.env.BASELINE) {
     ok(P2.mark[1] < 40 || pc(P2.mark) >= 75, `attackers near our goal are marked (5 m in the last 22 m, 8 m to 30 m): ${pc(P2.mark)}%`);
     ok(P2.gk.length < 20 || med(P2.gk) <= 1.0, `the keeper stands on the shooting angle: median ${med(P2.gk).toFixed(1)} m off (${P2.gk.length})`);

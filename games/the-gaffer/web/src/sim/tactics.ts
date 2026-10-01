@@ -28,6 +28,9 @@ export interface Tactics {
   oopRoles?: string[];      // out-of-possession role per slot of `formation` (the player in that slot), for his OOP position
   build?: 0 | 1 | 2;        // build-up: play out from the back, mixed, go long (missing = follows `passing`)
   cpress?: 0 | 1 | 2;       // when we lose it: regroup, balanced, counter-press
+  // Marking (foundation step 5, like FM): missing = mixed, the engine as it was.
+  marking?: 0 | 1 | 2;      // open play: zonal (hold the shape), mixed, man (each takes his man)
+  setMark?: 0 | 1 | 2;      // defending corners and free kicks: zonal, mixed, man
 }
 
 // Every instruction filled in: what the engine reads.
@@ -37,7 +40,7 @@ export const fullTactics = (t: Tactics): FullTactics => ({
   striker: t.striker ?? 0, trap: t.trap ?? 0, philosophy: t.philosophy ?? 'balanced', line: t.line ?? 1, width: t.width ?? 1,
   tempo: t.tempo ?? 1, counter: !!t.counter, waste: !!t.waste, mark: t.mark ?? null, routine: t.routine ?? 0,
   oop: t.oop && t.oop in FORMATIONS ? t.oop : t.formation, roles: t.roles ?? null, oopRoles: t.oopRoles ?? null,
-  build: t.build ?? t.passing ?? 1, cpress: t.cpress ?? 1,
+  build: t.build ?? t.passing ?? 1, cpress: t.cpress ?? 1, marking: t.marking ?? 1, setMark: t.setMark ?? 1,
 });
 
 // A philosophy is a starting set of instructions; mastery of it is the team's cohesion when playing it.
@@ -216,6 +219,13 @@ export function aiTactics(squad: Player[], myLevel: number, theirLevel: number, 
     if (avg(theirBack, 0) + 8 < avg(myFront, 0)) { t.tempo = 2; if (philosophy !== 'possession') { t.passing = 2; t.build = 2; } }
     // A much stronger opponent: drop the line and break.
     if (gap < -7) { t.line = 0; t.counter = true; t.pressing = Math.min(t.pressing, 1) as 0 | 1 | 2; }
+    // Marking at set pieces: tall, strong centre-backs take a man each; facing big men in the air, hold zones.
+    const air = (ps: Player[]) => avg(ps.filter((p) => p.position === 'CB' || p.position === 'ST'), 5);
+    if (air(mine) >= air(top) + 6) t.setMark = 2;
+    else if (air(top) >= air(mine) + 6) t.setMark = 0;
   }
+  // Marking in open play by style (foundation step 5): deep or possession sides hold zones, pressing sides go man to man.
+  t.marking = AI_MARKING[philosophy];
   return t;
 }
+const AI_MARKING: Record<Philosophy, 0 | 1 | 2> = { balanced: 1, possession: 0, counter: 0, gegenpress: 2, bus: 0, wings: 1, direct: 1 };

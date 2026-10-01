@@ -249,7 +249,7 @@ export interface FoulCtx {
 // fk: a free kick (the engine's own route); pen: a penalty; adv: advantage (play goes on with the attack);
 // on: no foul given (play goes on); turn: the defending side restarts (a dive, the ball back to them).
 export type Go = 'fk' | 'pen' | 'adv' | 'on' | 'turn';
-export interface FoulOut { red: boolean; go: Go }
+export interface FoulOut { red: boolean; go: Go; off?: Offence } // off: what the tackle was (engine/injury.ts: the fouled player may be hurt)
 
 export function callFoul(m: LiveMatch, a: Acts, r: Rng, c: FoulCtx): FoulOut {
   const R = m.ref!;
@@ -335,7 +335,7 @@ export function callFoul(m: LiveMatch, a: Acts, r: Rng, c: FoulCtx): FoulOut {
   const incd = record(m, { side: c.side, k: hand ? 'hand' : 'foul', z: c.z, ...(c.box || box ? { box: 1 as const } : {}), by: c.by, vs: c.vs, off, call, rev, fin, rs, fx },
     !!(rev || call.card || fin.card || box || c.box || give === 'adv'));
   if (off === 'dogso' && fin.d === 'adv') R.pend = { side: c.side, id: c.by, at: m.events.length, inc: incd.i };
-  return { red, go };
+  return { red, go, off };
 }
 
 // DOGSO with advantage: a goal from the move → no caution (2026/27); otherwise a caution for stopping the attack.
