@@ -22,6 +22,26 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer pitch: support for the ball carrier, with the marker a moment behind
+- **What changed:**
+  - **Support.** When a team-mate has the ball in his own half or midfield, the three nearest players offer him a pass. One whose lane is shadowed checks away sharply (a sprint) to the nearest open spot at passing range: short, wide, behind or ahead of the carrier, never offside. Near their box, attackers keep their runs and positions instead.
+  - **The marker's delay.** A marker sees his man where he was a moment ago (`T.MARK_LAG`); a good reader of the game closes most of that gap (`T.MARK_READ` × his reading). That half-step is what lets a sharp move open the lane, and it shows the difference between defenders.
+  - **Measurement fix.** A man now blocks a pass only if he is in front of the ball along it. Before, a presser standing beside the carrier counted as closing every pass in every direction: with a presser within 3 m only 22% of frames had two open passes, against 93% without one. The supporting players' own choice used the same wrong rule, so both were fixed.
+  - **Results:**
+
+    | | Full match (4 matches) | Extended (10 matches) |
+    |---|---|---|
+    | Two open passes for the carrier | 91% (was 55–59%) | 86% |
+    | Marking | 78% | 84% |
+    | Overlaps | 53% | 59% |
+    | Box blocking | 97% | 92% |
+    | Offside | 2% | 1% |
+    | Reaction after losing the ball | — | 25 of 25 |
+
+  - **Browser:** 58 fps, no console errors; the nav test passes.
+- **Files:** `games/the-gaffer/web/src/ui2/pitch/{sim,tuning}.ts`, `ui-tests/pitch-metrics.mjs`
+- **Heads-up for the team:** Support movement across the whole pitch was tried first: near their box the sprints pulled attackers away from their markers and marking fell to 73%. That is why support stops at their last third (`T.SUPPORT_UPTO`). Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer: small follow-ups to the highlights
 - **What changed:**
   - **Match bar.** The old "Highlights" fast-forward button on the live match bar is gone; the highlight modes replace it.
