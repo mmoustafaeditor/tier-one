@@ -42,6 +42,13 @@ export const T = {
   ENGINE_CLOCK: false, // time beats by the engine's own seconds (director.ts). Measured on 10 seeded matches it made
                      // marking worse (88% against 94%) and nothing better, so beats stay evenly spread for now.
   LOOK_FB: 0.5,      // a full-back: a ball due out wide in the last third starts his overlap
+  // Support (phase 3, with the marker's delay): the nearest team-mates check away into an open lane, sharply.
+  SUPPORT: 3,        // how many team-mates offer the carrier a pass
+  SUPPORT_D: [8, 22] as [number, number], // at this distance from him (m)
+  SUPPORT_UPTO: 70,  // ... while the ball is short of this depth (their last third is for runs, not coming short)
+  LANE: 2.2,         // a lane is open when no opponent is within this of the line from the ball
+  MARK_LAG: 150,     // a marker sees his man where he was this long ago (display ms at the normal pace) ...
+  MARK_READ: 0.7,    // ... less for a good reader: he closes this share of the gap by his reading of the game
   LOOK_RUN: 0.25,    // a runner: the next ball is for him (he times his run to it)
   ONSIDE: 0.6,       // runners wait this far short of the offside line until the ball is played
   LOOK_SHOT: 0.45,   // a defender: a shot due from their side puts him in the lane before it's struck
