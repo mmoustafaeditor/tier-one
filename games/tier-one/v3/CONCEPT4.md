@@ -295,3 +295,39 @@ for the shell redesign (a dedicated lane after the apps land; it supersedes the 
 **Money.** Lock faces, widgets, icon packs and themes are the four cosmetic lines; every one is previewable on your own phone before
 buying, and the free lane and sponsors keep a free player in new ones every week. Prices follow RULES4 §3 (common 150 / rare 400 /
 epic 900 coins; legendary 300 credits or the Gold track).
+
+## 18. Phones: the device is your gear
+
+The phone is the one object the player always holds, so it is the natural thing to upgrade, collect and show off. One rule first:
+**ranked windows (Daily, Live, Groups) play the same for every phone.** On a ranked board the phone is a look; in Story and
+Practice it is gear with perks. Fairness never bends, and the screen says so once: "Ranked windows: every phone plays the same."
+
+**Your phones.** You own phones like you own looks (Lens › Phones). A phone is a device skin (bezel, frame, corner radius, boot
+animation, boot sound, a default lock face) **plus four parts** that can be upgraded with coins in Story. Equip one phone for the
+Daily (the showpiece) and the story hands you phones as it goes; you can carry a Story phone into the Daily as a look, with its
+perks off.
+
+| Part | What it does in Story / Practice | On ranked boards | Upgrades (coins) |
+|---|---|---|---|
+| **Screen** | widget slots on the home screen (2 → 4 → 6) and pages | same (it's your home screen) | 150 / 400 |
+| **Battery** | how many extras you can carry into a window (0 → 1 → 2 → 3): extra DM, tip-off, second opinion | off | 200 / 450 / 900 |
+| **Camera** | once a window from Chapter 3, a spotter photo on one story a day early ("seen there / elsewhere / not seen") | off | 600 (then 1 photo → 2) |
+| **SIM** | the second line (the burner): whistleblower tips land here; upgrade raises their accuracy 75% → 90% (Priya) | off | given in Chapter 4, upgrade 500 |
+
+**The phones of The Comeback** (each chapter changes your device, so the game literally feels different in your hand):
+
+| Chapter | Phone | The feel |
+|---|---|---|
+| Prologue | the Chronicle's work phone | taken back in the box |
+| 1 · The Blog | **the Brick** (cracked screen, 2 widget slots, no battery for extras, boot takes a beat) | you have nothing; the barber is free for a reason |
+| 2 · The Post | **the Post's hand-me-down** (4 slots, battery 1) | a desk, a nameplate, one extra a window |
+| 3 · The Nationals | **a flagship from Halo** (6 slots, battery 2, camera) | the long lens: Tony's photo mechanic becomes yours |
+| 4 · The War | **+ the burner** (Priya's second SIM) | two phones in your pocket; the tips come on the other line |
+| 5 · The Chronicle | **the Chronicle's new phone, yours** (everything, the Chronicle lock face) | back at the desk with a better phone than Vince |
+
+**Money and looks.** Device skins are the top cosmetic line (epic/legendary: credits or the Gold track; a Halo "model" each season;
+Halo at 3 sponsor stars sends you their flagship skin). Perks are coins only, never credits, and never on ranked boards, so nothing
+paid ever changes a score. Phones show on your Lens profile ("Carries: Halo One · Brick (retired)") and in Groups.
+
+**Keep it simple on screen.** A phone is one card: picture, name, four parts as four bars, one line each. Upgrading is one tap
+with the price on it. No stats sheet.
