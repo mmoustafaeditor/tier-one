@@ -377,6 +377,7 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .pens { font: 700 14px/1 var(--f-text); color: var(--ink-2); }
 .pitchwrap { position: relative; }
 .view-chips { margin-bottom: var(--s-3); }
+.hlsel { width: 100%; margin: 0 0 var(--s-3); }
 .live-tip { display: grid; gap: var(--s-2); }
 .skipbtn { white-space: nowrap; }
 .subcols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
@@ -499,3 +500,30 @@ em.bias { font-style: normal; color: var(--ink-3); }
   .area-tabs .seg { flex-wrap: wrap; overflow: visible; border-radius: 20px; row-gap: 2px; }
   .area-tabs .seg button { flex: 1 1 auto; }
 }
+
+/* Post-match analysis (ui2/Analysis.tsx) */
+.g-ana .chips { margin-bottom: var(--s-3); }
+.an-pitch { width: 100%; height: auto; display: block; background: var(--pitch-a, #1d5a3c); border-radius: 8px; }
+.an-lines rect, .an-lines path, .an-lines circle { stroke: var(--pitch-line, rgba(255,255,255,.55)); stroke-width: .35; }
+.an-heat { fill: var(--dv-us); }
+.an-heat.them { fill: var(--dv-them); }
+.an-shot { fill: none; stroke: var(--dv-us); stroke-width: .6; }
+.an-shot.goal { fill: var(--dv-us); }
+.an-shot.them { stroke: var(--dv-them); }
+.an-shot.them.goal { fill: var(--dv-them); }
+.an-tot { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); margin: var(--s-3) 0; }
+.an-tot > div { display: flex; flex-direction: column; gap: 2px; padding: var(--s-2); border-radius: 8px; border-inline-start: 3px solid var(--dv-us); }
+.an-tot > .them { border-inline-start-color: var(--dv-them); }
+.an-src { margin: var(--s-2) 0 var(--s-3); }
+.an-bar { display: grid; grid-template-columns: 1fr 34% auto; align-items: center; gap: var(--s-2); font-size: .85rem; margin: 4px 0; }
+.an-bar i { display: block; height: 8px; border-radius: 4px; background: var(--dv-us); }
+.an-bar i.them { background: var(--dv-them); }
+.an-stats { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-3); }
+.an-stat .between span { font-size: .85rem; text-align: center; }
+.an-split { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 4px; background: rgba(127,127,127,.15); }
+.an-split i { display: block; background: var(--dv-us); }
+.an-split i.them { background: var(--dv-them); }
+.an-pick { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--s-3); font-size: .85rem; }
+.an-kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); margin: var(--s-3) 0; }
+.an-kv span { display: flex; flex-direction: column; font-size: .8rem; }
+.an-kv b { font-size: 1.05rem; }

@@ -42,6 +42,46 @@ together with your change.
 
 ---
 
+## 2026-10-02 · saifsaber · The Gaffer: post-match analysis (like FM's Analysis screen)
+- **What changed:** The full-time screen has a **Match analysis** button (EN/AR/ES/FR). It opens three tabs, all read from what the engine recorded (`sim/analysis.ts`, added to the aftermath; in memory only, not in the save):
+  - **Chances.** A shot map: each shot in its zone, sized by xG, filled for a goal, us and/or them. Shots, on target, big chances and xG per side. Where the chances came from, by kind (in the box, cut-backs, through balls, counters, won high, from distance, headers / corners, free-kick crosses, free kicks, penalties), with count, xG and goals.
+  - **Territory.** Time on the ball along the pitch (six bands: the engine keeps the length only). Possession, entries into the final third by lane, building out past their press, progression through midfield, balls won high up and counter-attacks, us against them.
+  - **Players.** Any of our players: a heat map of where he was involved (contests, shots, fouls, saves for the keeper), contests won, shots and xG, goals, assists, fouls, saves and rating. It opens on the most involved player.
+- **Checks:** `node sim-tests/build.mjs analysis`: on 100 matches, shots, goals, xG by source and contests agree with the match's own numbers. Browser: no console errors; nav test passes.
+- **Files:** `games/the-gaffer/web/src/sim/analysis.ts` (new), `src/sim/aftermath.ts` (`ana`), `src/ui2/Analysis.tsx` (new), `src/ui2/FullTime.tsx`, `src/lang-ana.ts` (new), `src/styles/app.css`, `sim-tests/analysis.ts` (new)
+- **Heads-up for the team:** There is no pass map: the engine plays contests between players, not single passes (the screen says so). Adding passes would be an engine change, if wanted. Tier One is untouched.
+
+## 2026-10-02 · saifsaber · The Gaffer: ENGINE.md brought up to date
+- **What changed:** `games/the-gaffer/ENGINE.md` now covers everything added since engine v2, with today's measured numbers:
+  - injuries from tackles and hidden proneness;
+  - weather;
+  - the marking instructions, including the AI's choices;
+  - highlights;
+  - the engine → pitch contract (`m.flow`: every entry kind, its second and node, and the rule that the pitch never guesses what the engine knows, guarded by the 200-match fingerprint);
+  - the live pitch layer by layer (`sim`, `body`, `move`, `defend`, `setpieces`, `director`, `tuning`);
+  - every test and how to run it (fingerprint, injuries, marking, weather, the Node and browser pitch tests, `watch.mjs` for phones);
+  - the new optional save fields and the in-match save timing;
+  - the known gaps (the whole-career save during a match, `ENGINE_CLOCK` off, cameras unused).
+- **Files:** `games/the-gaffer/ENGINE.md`
+- **Heads-up for the team:** Read it before touching the match engine or the pitch. Tier One is untouched.
+
+## 2026-10-01 · saifsaber · The Gaffer: watched as a player, and checked on a slow phone
+- **What changed:**
+  - **Watching tool.** New `ui-tests/watch.mjs` plays a match in the built game in one highlight mode. It reports smoothness (frames a second, frames over 50 ms, which minute the slow ones fall in) and can slow the CPU like a cheap phone (`CPU=4|6`). It can also record a video and screenshots of the pitch (kept out of git).
+  - **Pitch no longer hidden.** The highlights list now sits in the pitch card ("Highlights: Extended"). On a 390-px phone it used to wrap onto a third row of the match bar, and that bar covered the pitch.
+  - **Saves during play** happen every 5 match minutes but at most once every 10 real seconds, and only in a minute between highlights (the picture is cutting anyway); in Full match, every 10 s. A save writes the whole career. With the clock running fast between highlights, it froze the pitch on slow phones in the middle of a passage.
+  - **Measured smoothness:**
+
+    | | Normal CPU | CPU 4× slower | CPU 6× slower |
+    |---|---|---|---|
+    | Full match | 59 fps | 55 fps | 55 fps |
+    | Extended, before | 58 fps | 46 fps, freezes up to 0.9 s | 35 fps, up to 1.85 s |
+    | Extended, now | 58 fps | 57 fps, at most 0.45 s | 49 fps |
+
+    At CPU 6× slower the saves still take about a second, but only between highlights.
+- **Files:** `games/the-gaffer/web/ui-tests/watch.mjs` (new), `src/ui2/Live.tsx`, `src/styles/app.css`, `.gitignore` (`review/`)
+- **Heads-up for the team:** A save during play still writes the whole career, about 0.2 s on a normal CPU. Saving only the live match on its own would remove that cost but changes the save format, so it was left for a decision. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer pitch: support for the ball carrier, with the marker a moment behind
 - **What changed:**
   - **Support.** When a team-mate has the ball in his own half or midfield, the three nearest players offer him a pass. One whose lane is shadowed checks away sharply (a sprint) to the nearest open spot at passing range: short, wide, behind or ahead of the carrier, never offside. Near their box, attackers keep their runs and positions instead.

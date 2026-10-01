@@ -5,14 +5,33 @@
 |---|---|---|
 | Decisions | `engine/model.ts` | Two shapes per side (in / out of possession) from formation + instructions → weighted presence in 6×5 zones. Every phase is a contest between the players those shapes put there (top 3 each side, attribute mixes, numerical superiority). Players choose lanes by presence and odds. |
 | Resolution | `engine/play.ts` | Walks a possession graph (build-up → progression by lane → final third by lane → cross / cutback / through ball / combination / long shot, counters, high turnovers, fouls → free kicks & penalties, corners, shots) second by second. FULL (user's match) samples the two players in every contest; FAST (all other matches) samples the contest's average odds: same graph, same odds. |
-| Rules | `match.ts` | Fouls → cards (booked players tackle more carefully) → send-offs, injuries (fatigue-driven), subs, reshape, time-wasting bookings, shoot-outs. Red cards rebuild the model mid-minute. |
+| Rules | `match.ts`, `engine/injury.ts` | Fouls → cards (booked players tackle more carefully) → send-offs, injuries, subs, reshape, time-wasting bookings, shoot-outs. Red cards rebuild the model mid-minute. Injuries: a fouled player can be hurt by the tackle (careless 0.32%, reckless 1.8%, serious foul play 14% × proneness × load, rolled after the minute on the `:inj` stream), plus the background chance (fatigue, load, high press) scaled by `BG` so season totals stay put; every player has a hidden proneness from his id and physique (no save field). Tests: `sim-tests/injuries.ts`. |
+| Conditions | `engine/weather.ts` | Weather per match (clear, rain, heavy rain, wind, heat, snow) from the match key and the home country's climate, the same for both sides: wet/snow make short combinations and progression harder and the long ball more attractive, wind spoils long balls/crosses/corners, heat and heavy pitches tire, the wet means more fouls and knocks. Totals unchanged (goals −0.1% vs the same matches in clear weather). `m.wx`; old saves = clear. Tests: `sim-tests/weather.ts`. |
 | Referee | `engine/referee.ts`, `engine/clock.ts`, `competitions.ts`, `discipline.ts` | A named referee (strictness, advantage) rules on every incident: offence → on-field call → VAR (per competition and season: goals, penalties, direct reds, mistaken identity, wrong second yellows from 2026/27) → final ruling → restart. Only final rulings reach the log. Added time from the period's events; extra time and penalties for knockouts; 5 subs in 3 windows; a sent-off side reorganises with ten; suspensions per competition from its own accumulation and red-card rules. Tests: `sim-tests/referee.ts`. |
 | Projection | `match.ts derive()` | Score, shots, on target, corners, fouls, cards, xG — all counted from `m.events`; possession/territory from the resolver's clock. Ratings (`ratings.ts`) use the same events (shots, duels, blocks, saves). |
 | Closed form | `engine/model.ts solve()/rates()` | Absorbing Markov chain over the same graph → exact expected goals/xG/shots per 90. Used by `predict()` (odds, board's expected points), suggestions and scouting's counter plan. |
 | Story | `engine/story.ts` | "Why" (verdict from goals vs xG, where the danger came from, midfield, press, decisive one-on-one, finishing/keeping, legs, reds, whether a change worked) and suggestions: every one-step change evaluated by the engine itself, with the win chance it buys. The AI manager uses the same search at half-time against a human. |
-| Presentation | `ui/Live.tsx`, `Pitch2D.tsx`, `Momentum.tsx`, `WhyCard.tsx`, `commentary.ts`, `sfx.ts` | Ball follows the engine's zone path; commentary from events (no template reused in a match); momentum; goal flash/slam/sound; HT and FT Why with one-tap changes. Nothing here decides anything. |
+| Highlights | `highlights.ts` | What a watched match shows, like FM: commentary only / key / extended (default) / comprehensive / full match. Each minute's most important passage (`highlightOf`: from 14 s before its moment to 3 s after, by the engine's clock); `minuteMs` = how long the minute takes on screen (a highlight at 1.5 / 2.5 / 4× real time by the pace setting; 260 ms between highlights). Changes nothing in the result. |
+| Presentation | `ui2/Live.tsx`, `ui2/Pitch2D.tsx` (draws), `ui2/pitch/*` (moves), `Momentum.tsx`, `WhyCard.tsx`, `commentary.ts`, `sfx.ts` | The live 2D pitch (below); commentary from events (no template reused in a match); momentum; goal flash/slam/sound; HT and FT Why with one-tap changes. Nothing here decides anything. |
 
-Instructions (all map 1:1 to the Tactics screen, each with a one-line effect + price): mentality, pressing, line, width, tempo, passing, full-backs, striker role, pressing trap, corner routine, counter at once, run the clock, man-mark. Philosophies are presets; mastery = cohesion. Tuning lives in `TUNE` (model.ts).
+Instructions (all map 1:1 to the Tactics screen, each with a one-line effect + price): mentality, pressing, line, width, tempo, passing, full-backs, striker role, pressing trap, corner routine, counter at once, run the clock, man-mark, **marking** (zonal / mixed / man) and **marking at set pieces** (same; missing = mixed = the engine as before: the same fingerprint). Zonal: less room between the lines and fewer fouls, but runners from wide and in the air find space; man: tight wide and in the air, but markers get pulled out (more room in midfield) and more fouls; every combination within −1.0 … +0.9% points of mixed/mixed (`sim-tests/marking.ts`). AI managers pick marking by philosophy (possession/counter/bus zonal, gegenpress man) and set-piece marking by height in the air. Philosophies are presets; mastery = cohesion. Tuning lives in `TUNE` (model.ts).
+
+## Engine → pitch: the flow (`m.flow`, FULL matches only)
+The engine decides a whole minute before the pitch shows it and hands over the ball's path (`engine/play.ts Flow`). Entries: `k` = `w`/`l` a duel won/lost, `f` foul, `g`/`v`/`b`/`m` goal/save/block/miss, `ti`/`gk` throw-in/goal kick (side `s` restarts), `c` corner, `o` offside; `z` zone, `p` player, `t` the second within the minute, `n` the engine node (the kind of action: cross, through ball …). Rule: **anything the pitch needs to know goes into the flow from the engine, never guessed on the pitch.** The flow is presentation only: `sim-tests/fingerprint.ts` hashes every event, score, stat and tally of 200 FULL matches (flow left out) and must not change when only information is added.
+
+## The live pitch (`web/src/ui2/pitch/`)
+React only draws (`Pitch2D.tsx`); everything that moves is plain TypeScript, so it runs in Node too.
+| File | Job |
+|---|---|
+| `sim.ts` | `newAnim` / `tick(a, m, world, dt, ms, go, mode, scale)`: plans each minute's beats from the flow and the event log (passes, turnovers, shots, set pieces, penalties, throw-ins, goal kicks, injuries), moves 22 players and the ball every frame. In highlight mode only the shown passage plays, at the engine's own pace; between highlights the picture cuts (`snap`). `scale` = ms per match minute for movement (fixed for a pace), `ms` = how long the minute lasts on screen. |
+| `body.ts` | Each player's body from his attributes: top speed, acceleration, turning, reading of the game, sprint tank. `move()`: eases into a spot, or flat out until close for an urgent run (a sprint). |
+| `move.ts` | Roles' runs (`runFor`), pass and shot types, build-up chains by philosophy, pressing shape, the line's depth. |
+| `defend.ts` | The defence as a group: marking (`assignMarks`, `markSpot`), the line's slide, the keeper on the angle, the shot blocker. |
+| `setpieces.ts` | Corners, free kicks and walls, goal kicks, throw-ins, penalties; set-piece marking (zones vs men). |
+| `director.ts` | Beats timed by the engine's clock (`timeBeats`) and `upcoming()`: players read the plan a moment ahead (a full-back starts his overlap before the ball goes wide, a defender is in the lane before the shot, the runner the next ball is for times his run). |
+| `tuning.ts` | Every number (`T`): speeds, reactions, sprints, marking reach and the marker's delay, support, look-ahead windows. |
+
+Behaviour, all measured (below): the line moves as one; markers see their man a moment late (`MARK_LAG`, less for good readers); real runs are sprints (overlaps, counter-press, recovery, closing a shot, checking away to support); runners hold the offside line until the ball is played; the carrier slows when pressed and drives into space; the nearest three offer him a pass in an open lane (in build-up and midfield); injured men go down under a medic's cross; weather falls on the pitch. A pass is blocked only by a man in front of the ball along it.
 
 ## Numbers (seeded, `web/sim-tests/`: `node sim-tests/build.mjs <name>`)
 | | result | target |
@@ -26,14 +45,31 @@ Instructions (all map 1:1 to the Tactics screen, each with a one-line effect + p
 | Speed | season 10.9 s (old engine 7.0 s); FAST match ≈1.2 ms; model build 0.08 ms; closed form 0.4 ms | |
 Owner asked for no large suites: these are single quick runs, not 10k-match studies. FAST≡FULL by construction (same graph/odds); not separately measured.
 
+### Engine-adjacent checks
+| Test | What | Now |
+|---|---|---|
+| `fingerprint` | 200 FULL matches hashed (flow excluded): an information-only change must keep it | changes only with a real engine change |
+| `injuries 2000 <baseline>` | injuries a match, share from fouls, hurt rate by card | 0.29 a match, about a third from fouls; booked 0.98%, sent off 7.4%, no card 0.31% |
+| `marking [1200]` | no marking style a free win; the trade-offs show | all within ±1.1% points |
+| `weather [3000]` | goals vs the same matches in clear weather; fouls, fatigue, headers | goals −0.1% |
+
+### The pitch (`node sim-tests/build.mjs pitch [matches] [minutes]`, ~20 s for 10 seeded matches, run twice: identical)
+Measures what the player sees (env `MODE` = 1 key, 2 extended (default), 3 comprehensive, 4 full; `MODE=old` the compressed minute; `MARKING`, `SPEED`). Same checks in the browser: `npm run build && node ui-tests/pitch.mjs` (`ui-tests/pitch-metrics.mjs` holds them). Extended, 10 matches: line spread 1.1 m, team length ≤ 40 m, reaction after a turnover 100%, attackers near goal marked 84% (zonal 82 / mixed 88 / man 88), keeper 0.0 m off the angle, box lane blocked 92%, full-back overlaps 59%, offside while the carrier has it 1%, two open passes for the carrier 86% (full match 91%), carrier pace vs space r 0.67.
+
+### Watching and phones
+`MODE=2 SECONDS=60 CPU=4 VIDEO=dir SHOTS=dir node ui-tests/watch.mjs`: plays a match, reports frames a second and when slow frames happen, can slow the CPU and record. Now: 58–59 fps; Extended 57 fps at 4× slower CPU, 49 at 6×; Full match 55 at both.
+
 ## Aftermath links (match → other systems)
 Existing, now fed by v2 events: fitness (`m.fit`), morale ±6 by result, bans from cards, injuries, league/cup tables, Elo, board & fans vs the engine's own kick-off odds, records, mastery, player stats, ratings/MOTM.
 Added: fatigue now depends on pressing, tempo, running roles and chasing the ball; injury risk rises with fatigue and a high press; ratings include duels, blocks, key passes; the FT card carries the assistant's verdict; scouting's counter plan (and the delegated tactics job) is the engine's best preset against that opponent, not a fixed rock-paper-scissors table.
 
 ## Save
-`SAVE_VERSION` 3: step 2→3 writes the new instructions at their middle setting and carries a match half-played by v1 on under v2 (`ensureV2`: old stats kept as a base, new events add to it). Tested in `sim-tests/oldsave.ts`.
+`SAVE_VERSION` 3: step 2→3 writes the new instructions at their middle setting and carries a match half-played by v1 on under v2 (`ensureV2`: old stats kept as a base, new events add to it). Tested in `sim-tests/oldsave.ts`. New fields since are all optional (missing = as before): `marking`, `setMark` (mixed), `m.wx` (clear), injury `how`/`note`, prefs `hl` (extended). During a watched match the career is saved every 5 match minutes but at most every 10 s and only in a minute between highlights (a save writes the whole career: ~0.2 s on a normal CPU).
 
 ## Known gaps
+- A save during a match writes the whole career (~0.2 s; about 1 s on a 6× slower CPU, now only between highlights). Saving only the live match would remove it; it changes the save format, so it waits for a decision.
+- `T.ENGINE_CLOCK` (beats by the engine's seconds in the old compressed minute) is off: it made marking worse there. Highlights always use the engine's clock.
+- The 2.5D and 3D cameras in `Pitch2D` aren't used by the live screen.
 - Narrow width is slightly favoured on average and overlapping full-backs slightly penalised; wings is the weakest preset without quick wide players.
 - Season sim is ~55% slower than v1 (model rebuilds). FAST builds one model per half plus changes; could cache per line-up.
 - Offsides only from through balls / long balls; no in-match formation licence check beyond the chips.

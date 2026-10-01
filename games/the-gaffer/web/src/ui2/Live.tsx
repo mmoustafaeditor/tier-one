@@ -11,7 +11,7 @@ import { planOf, rolesArrays } from '../sim/engine/phases';
 import { ROLES, roleFit, rolesFor, POOR_FIT } from '../sim/engine/roles';
 import { TX } from '../lang-tac-all';
 import { PERIOD_END, clockOf, isExtraBreak, isHalfTime, playOver } from '../sim/engine/clock';
-import { RATES, minuteMs, type HlMode } from '../sim/highlights';
+import { RATES, minuteMs, shownOf, type HlMode } from '../sim/highlights';
 import { RSN, RS } from '../sim/engine/referee';
 import { Banner, CommentaryFeed, MomentIcon, RefLine, VarBanner, bannerOf, momentText, refOf } from './Officials';
 import { applyTip, explain, suggest, winChance, type Point, type Tip } from '../sim/engine/story';
@@ -43,6 +43,8 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
   // What the match shows (sim/highlights.ts, like FM): a highlight plays at RATES[speed] × real time, the clock runs on
   // quickly between highlights; players run at a fixed scale for that speed.
   const [hl, setHl] = useState<HlMode>(hl0);
+  const savedAt = useRef(Date.now());
+  const saveDue = useRef(false);
   const minMs = minuteMs(m, hl, RATES[speed]);
   const scale = Math.round((2400 * RATES[1]) / RATES[speed]);
   const [view, setView] = useState(0);
@@ -76,7 +78,12 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
         : fresh.some((e) => e.kind === 'yellow') ? 900 : whistle ? 1800 : 0;
       setHold(Math.round(k * HOLD_K[speed]));
       if (whistle) { onSave(n); if (!reduced()) sfx('whistle'); }
-      else if (n.minute % 5 === 0 && !n.plus) onSave(n);
+      // A save in play every 5 match minutes, but never more than once every 10 real seconds: between highlights the
+      // clock runs fast and saving the whole career that often froze slow phones ...
+      else if (n.minute % 5 === 0 && !n.plus) saveDue.current = true;
+      // ... and the save waits for a minute between highlights (the picture is cutting anyway), so the moment it takes
+      // never lands in a passage being watched. In Full match every minute is shown: then it goes after 10 seconds.
+      if (saveDue.current && !whistle && Date.now() - savedAt.current > 10000 && (hl === 4 || !shownOf(n, hl))) { saveDue.current = false; savedAt.current = Date.now(); onSave(n); }
     }, minMs + hold);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,6 +187,10 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
         <Panel className="g-pitch pitch-card" i={2} label={x.live.where}>
           <span className="eyebrow">{x.live.where} · {x.live.whereSub} · {R.wx[m.wx ?? 0]}</span>
           <div className="chips view-chips">{x.live.views.map((v, i) => <button key={v} className="chip" aria-pressed={view === i} onClick={() => setView(i)}>{v}</button>)}</div>
+          {/* What the match shows (highlights, like FM): a viewing choice, so it sits with the pitch, not on the match bar. */}
+          <select className="sel hlsel" value={hl} aria-label={R.hlTitle} title={R.hlTitle} onChange={(e) => { const v = +e.target.value as HlMode; setHl(v); onHl?.(v); }}>
+            {R.hl.map((l, i) => <option key={l} value={i}>{R.hlTitle}: {l}</option>)}
+          </select>
           {view === 0 && hl !== 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={minMs} mode={hl} scale={scale} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} /></div>
             : <ZonePitch m={m} me={me} mode={view || 1} /> /* commentary only: the zone map, no pitch */}
           <div className="mom-h"><b>{x.live.momentum}</b><span>{x.live.momentumKey(cn(us, lang), cn(them, lang))}</span></div>
@@ -239,9 +250,6 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
             <div className="seg" role="group" aria-label={x.live.speed}>
               {R.speeds.map((l, i) => <button key={l} aria-pressed={speed === i} onClick={() => pickSpeed(i as 0 | 1 | 2)}>{l}</button>)}
             </div>
-            <select className="sel hlsel" value={hl} aria-label={R.hlTitle} title={R.hlTitle} onChange={(e) => { const v = +e.target.value as HlMode; setHl(v); onHl?.(v); }}>
-              {R.hl.map((l, i) => <option key={l} value={i}>{l}</option>)}
-            </select>
             <span className="grow" />
             <button className="btn btn--ghost btn--sm skipbtn" title={x.live.skip} onClick={() => { const n = clone(m); n.sides[me].autoSubs = true; simulate(n, get); setBanner(null); onUpdate(n); onSave(n); }}>{R.instant}</button>
             <button className="btn btn--accent" onClick={() => setChanges(true)}><I n="swap" />{x.live.changes}</button>

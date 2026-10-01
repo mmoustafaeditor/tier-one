@@ -1,6 +1,7 @@
 // What one of the user's matches changed: result, table position, board, fans, dressing room, who's out, ratings,
 // the man of the match, new club records and milestones, and why it happened. Shown on the full-time screen.
 // V2.2: everything here is read from the MatchRecord (sim/record.ts) and the career before and after it.
+import { analysisOf, type Analysis } from './analysis';
 import type { Career, LocalizedName, Records } from '../model/types';
 import type { LiveMatch } from './match';
 import { table } from './season';
@@ -33,6 +34,7 @@ export interface Aftermath {
   vars: { side: 0 | 1; min: number; plus?: number; note: string; pn: LocalizedName }[];          // gf-ref
   pensGiven: number;                          // gf-ref: penalties given (both sides)
   added?: number[];                           // gf-ref: added time shown
+  ana?: Analysis;                             // the post-match analysis (sim/analysis.ts); the user's FULL matches
 }
 
 const moraleOf = (w: World, clubId: string) => { const s = squadOf(w, clubId); return Math.round(s.reduce((a, p) => a + p.morale, 0) / Math.max(1, s.length)); };
@@ -74,7 +76,7 @@ export function aftermath(w0: World, c0: Career, w1: World, c1: Career, m: LiveM
     res, mine, theirs, pens: rec.pens ? [rec.pens[k], rec.pens[o]] : undefined, opp: m.sides[o].clubId, home: k === 0, me: k,
     pos, board: [c0.board.confidence, c1.board.confidence], fans: [c0.board.fans, c1.board.fans], room: [moraleOf(w0, c0.clubId), moraleOf(w1, c1.clubId)], dev: 0,
     out, motm: mp ? { pn: mp.name, rating: rec.ratings[rec.motm], mine: rec.sideOf[rec.motm] === k, id: rec.motm } : null, ratings, records, milestones,
-    xg: [rec.xg[k], rec.xg[o]], xgLine: [line(k), line(o)],
+    xg: [rec.xg[k], rec.xg[o]], xgLine: [line(k), line(o)], ana: m.full ? analysisOf(m, k) : undefined,
     scorers: rec.events.filter((e) => e.kind === 'goal').map((e) => ({ side: e.side, pn: get(e.playerId).name, min: e.min })),
     moments: rec.moments, why: rec.why ?? undefined, key: rec.key, cup: rec.cup, round: rec.round,
     coh: [m.sides[k].coh ?? cohesionOfClub(w0.clubs, c0.clubId), cohesionOfClub(w1.clubs, c0.clubId)],
