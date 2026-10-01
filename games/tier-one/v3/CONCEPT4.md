@@ -104,6 +104,16 @@ shown as "Reach Level 5" with the bar, never as a lock icon alone.
   answer card sliding in, the post card lifting off and landing in the timeline, the Drop reveal (card flip, catchphrase typed on,
   one slam), the ratio counter spinning up on a wrong post, number rolls, the night-to-morning as the status bar clock running
   and the timeline refreshing, the Live clock bar. Every one of these is UI motion on real UI, built from `ui/juice.tsx`.
+- **Animations that make sense are wanted.** Posting is a real posting animation: the composer card lifts, the post slides into
+  the timeline, the like/reply counters start. A Drop is an Instagram-style card being made and published. Asking a contact is a
+  **call screen**: the phone's own incoming/outgoing call UI (the contact's typographic avatar, name, "Barber · 00:07", the
+  waveform) with the contact's **ambient sound bed** under it (the clippers and the salon for the barber, the airport for the
+  spotter, the kit room for the kit man, a car on speaker for the agent, the treatment-room monitor for the physio; synth presets
+  in `lib/sfx.ts` / `lib/synth.ts`), and the answer arriving as a voice-note transcript typed on the screen, then saved as a chip.
+  Hang up or tap to skip. What's gone is the illustrated scene with a drawn background playing like a cartoon.
+- **The five contacts stay** (the barber, the kit man, the agent, the spotter, the physio): each has one clear tell, one price,
+  one day he opens, one sound, and that is the whole skill of the game. Their voices get rewritten for the phone era (short lines
+  people actually text or say on a call), but nobody is replaced.
 - Not the classic AI look: one custom icon set, one type system, real microcopy in a human voice, specific brand marks drawn as
   logotypes, no gradient blobs or glass, no identical card grids, no emoji icons. AI tools may be used to make it, as long as
   nothing on screen looks like a stock "AI app".
