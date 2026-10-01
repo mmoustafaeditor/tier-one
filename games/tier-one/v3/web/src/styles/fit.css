@@ -149,3 +149,8 @@ select.tm-chip { appearance: none; -webkit-appearance: none; text-overflow: elli
 .file2 .sg-tabs button[aria-selected="true"] { background: var(--red); color: #fff; }
 .play.fit .pcard { padding-block: 8px; }
 .play.fit .pcard__kit .g-kit { --kit: 64px !important; }
+.tm-tabs { grid-template-columns: 1fr 1fr; }
+.tm-tabs button { font-size: 15px; }
+.tm-tabs button[aria-selected="true"] { background: var(--m-wire); color: #0B2730; box-shadow: 0 3px 0 #1C8FAD; }
+.tm-tabs .g-badge { min-width: 18px; height: 18px; font-size: 11px; padding: 0 4px; }
+.wire3.fit .kpis3 { margin: 0; }
