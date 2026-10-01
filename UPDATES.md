@@ -37,6 +37,15 @@ together with your change.
 
 ---
 
+## 2026-10-02 · saifsaber · The Gaffer: post-match analysis (like FM's Analysis screen)
+- **What changed:** The full-time screen has a **Match analysis** button (EN/AR/ES/FR). It opens three tabs, all read from what the engine recorded (`sim/analysis.ts`, added to the aftermath; in memory only, not in the save):
+  - **Chances.** A shot map: each shot in its zone, sized by xG, filled for a goal, us and/or them. Shots, on target, big chances and xG per side. Where the chances came from, by kind (in the box, cut-backs, through balls, counters, won high, from distance, headers / corners, free-kick crosses, free kicks, penalties), with count, xG and goals.
+  - **Territory.** Time on the ball along the pitch (six bands: the engine keeps the length only). Possession, entries into the final third by lane, building out past their press, progression through midfield, balls won high up and counter-attacks, us against them.
+  - **Players.** Any of our players: a heat map of where he was involved (contests, shots, fouls, saves for the keeper), contests won, shots and xG, goals, assists, fouls, saves and rating. It opens on the most involved player.
+- **Checks:** `node sim-tests/build.mjs analysis`: on 100 matches, shots, goals, xG by source and contests agree with the match's own numbers. Browser: no console errors; nav test passes.
+- **Files:** `games/the-gaffer/web/src/sim/analysis.ts` (new), `src/sim/aftermath.ts` (`ana`), `src/ui2/Analysis.tsx` (new), `src/ui2/FullTime.tsx`, `src/lang-ana.ts` (new), `src/styles/app.css`, `sim-tests/analysis.ts` (new)
+- **Heads-up for the team:** There is no pass map: the engine plays contests between players, not single passes (the screen says so). Adding passes would be an engine change, if wanted. Tier One is untouched.
+
 ## 2026-10-02 · saifsaber · The Gaffer: ENGINE.md brought up to date
 - **What changed:** `games/the-gaffer/ENGINE.md` now covers everything added since engine v2, with today's measured numbers:
   - injuries from tackles and hidden proneness;

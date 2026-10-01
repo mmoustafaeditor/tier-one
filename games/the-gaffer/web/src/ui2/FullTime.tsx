@@ -12,11 +12,14 @@ import { verdictText } from './why';
 import { D } from '../lang-dressing-all';
 import { AI_COH, cohLevel } from '../sim/cohesion';
 import { levelText } from './roomText';
+import { Analysis } from './Analysis';
+import { AN } from '../lang-ana';
 
 export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
   const g = useGame();
   const { w, c, x, lang } = g;
   const [all, setAll] = useState(false);
+  const [ana, setAna] = useState(false); // the post-match analysis (FM's Analysis screen)
   const me = clubOf(w, c.clubId)!, opp = clubOf(w, a.opp)!;
   const home = a.home ? me : opp, away = a.home ? opp : me;
   const hg = a.home ? a.mine : a.theirs, ag = a.home ? a.theirs : a.mine;
@@ -95,8 +98,10 @@ export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
             })}
           </div>
         </Panel>
+        {ana && a.ana && <Analysis a={a} />}
       </div>
       <div className="mbar" role="toolbar">
+        {a.ana && <button className="btn btn--ghost" aria-pressed={ana} onClick={() => { setAna(!ana); if (!ana) requestAnimationFrame(() => document.querySelector('.g-ana')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }}>{AN[g.ui].open}</button>}
         <span className="grow" />
         <button className="btn btn--accent" onClick={onDone}>{F.done}<I n="arrowr" size="sm" /></button>
       </div>
