@@ -193,3 +193,48 @@ export async function renderCpCard(c: CpCard): Promise<Blob | null> {
   ctx.font = `500 24px ${mono}`; ctx.textAlign = ar ? 'left' : 'right'; ctx.fillText(c.foot.toUpperCase(), ar ? P : W - P, H - P - 16, W * 0.45);
   return new Promise((res) => cv.toBlob((b) => res(b), 'image/png'));
 }
+
+// ---------------------------------------------------------------- 4.0 share card (CONCEPT4 §7): the grid ★ ■ □ ·
+// One square per story in board order: ★ a Scoop, ■ right, □ wrong, · not posted (engine4 gridRow). The card is a
+// 1080×1350 PNG drawn on a canvas: the grade, the points, the grid as drawn squares, the handle and the catchphrase.
+export interface Share4 { label: string; tier: string; tierId: string; pts: string; row: string; handle: string; phrase?: string; rtl?: boolean }
+const CELL: Record<string, { fill: string; ink: string }> = { '★': { fill: '#F2B632', ink: '#2A1C00' }, '■': { fill: '#1DB46A', ink: '#04140B' }, '□': { fill: '#FF4D2E', ink: '#200500' }, '·': { fill: '#2A2C33', ink: '#7E7B74' } };
+export function shareText4(v: Share4): string { return `Tier One · ${v.label} · ${v.tier} · ${v.pts}\n${v.row}\n${GAME_URL}`; }
+export async function renderCard4(v: Share4): Promise<Blob | null> {
+  try {
+    const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d'); if (!x) return null;
+    try { await (document as Document & { fonts?: FontFaceSet }).fonts?.ready; } catch { /* */ }
+    x.fillStyle = '#121214'; x.fillRect(0, 0, W, H);
+    // grain: a fixed scatter of faint dots (deterministic, no random per share)
+    x.fillStyle = 'rgba(255,255,255,.035)'; for (let k = 0; k < 2600; k++) { const a = (k * 7919) % W, b = (k * 104729) % H; x.fillRect(a, b, 2, 2); }
+    const accent = v.tierId === 'T1' ? '#F2B632' : v.tierId === 'SPIKED' ? '#FF4D2E' : '#F3F1EC';
+    x.textAlign = v.rtl ? 'right' : 'left'; const L = v.rtl ? W - 96 : 96;
+    x.fillStyle = '#B7B4AC'; x.font = '600 40px "Schibsted Grotesk", Arial, sans-serif'; x.fillText(v.label, L, 170);
+    x.fillStyle = accent; fit(x, v.tier, (px) => `900 ${px}px "Archivo", "Arial Narrow", sans-serif`, W - 192, 200, 80); x.fillText(v.tier, L, 380);
+    x.fillStyle = '#F3F1EC'; x.font = '800 72px "Archivo", "Arial Narrow", sans-serif'; x.fillText(v.pts, L, 480);
+    const cells = [...v.row], n = Math.max(1, cells.length), gap = 24, size = Math.min(150, (W - 192 - gap * (n - 1)) / n);
+    const y0 = 620, x0 = v.rtl ? W - 96 - size : 96;
+    cells.forEach((ch, k) => { const st = CELL[ch] || CELL['·'], cx = v.rtl ? x0 - k * (size + gap) : x0 + k * (size + gap); x.fillStyle = st.fill; x.beginPath(); x.roundRect(cx, y0, size, size, 22); x.fill(); x.fillStyle = st.ink; x.textAlign = 'center'; x.font = `900 ${Math.round(size * 0.5)}px "Archivo", sans-serif`; x.fillText(ch === '·' ? '' : ch, cx + size / 2, y0 + size * 0.68); });
+    x.textAlign = v.rtl ? 'right' : 'left';
+    if (v.phrase) { x.fillStyle = '#F2B632'; fit(x, '“' + v.phrase + '”', (px) => `italic 600 ${px}px "Newsreader", Georgia, serif`, W - 192, 76, 40); x.fillText('“' + v.phrase + '”', L, 960); }
+    x.fillStyle = '#F3F1EC'; x.font = '800 54px "Schibsted Grotesk", Arial, sans-serif'; x.fillText(v.handle, L, 1150);
+    x.fillStyle = '#7E7B74'; x.font = '600 36px "Schibsted Grotesk", Arial, sans-serif'; x.fillText('Tier One · sembagames.app/tier-one', L, 1220);
+    x.fillStyle = '#FF4D2E'; x.fillRect(v.rtl ? W - 96 - 120 : 96, 1262, 120, 10);
+    return await new Promise((res) => c.toBlob((b) => res(b), 'image/png'));
+  } catch { return null; }
+}
+/** Shares the window: the card image where the device can share files, else the text, else the clipboard. */
+export async function shareWindow4(v: Share4): Promise<'shared' | 'copied' | 'failed'> {
+  const text = shareText4(v);
+  const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+  try {
+    if (nav.share) {
+      const blob = await renderCard4(v);
+      const file = blob ? new File([blob], 'tier-one.png', { type: 'image/png' }) : null;
+      if (file && nav.canShare?.({ files: [file] })) { await nav.share({ files: [file], text }); return 'shared'; }
+      await nav.share({ text }); return 'shared';
+    }
+  } catch (e) { if ((e as Error)?.name === 'AbortError') return 'failed'; }
+  try { await navigator.clipboard.writeText(text); return 'copied'; } catch { return 'failed'; }
+}

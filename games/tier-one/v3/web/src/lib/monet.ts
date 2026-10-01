@@ -5,21 +5,22 @@
 import { update, getSave } from './save';
 import { seasonAt, syncSeason, today } from './season';
 import { MISSIONS } from './progress';
+import { CREDIT_PACKS, SERVER } from './catalog';
+import { credit } from './economy';
 
-export interface CoinPack { id: string; price: string; coins: number; bonus: string; url: string }
+/** A pack as the 3.x Pass screen lists it: money → credits (4.0 sells credits, never coins for money). The ONE table is
+ *  api/tier-one/v4/config/catalog.json (lib/catalog.ts CREDIT_PACKS); `url` is the Stripe Payment Link when sales open. */
+export interface CoinPack { id: string; price: string; coins: number; credits: number; bonus: string; url: string }
+const goldEur = SERVER.items.find((x) => x.kind === 'gold')?.price.eur || 499;
 export const MONET = {
   // Master switch for purchases. Stays false until a verified payment flow exists (Stripe link + server check).
   enabled: false,
   // Rewarded ads (one a day, solo only, 2× mission coins). Needs the Android bridge or an AdSense client below.
   ads: false,
-  goldPrice: '€4.99',
+  goldPrice: '€' + (goldEur / 100).toFixed(2),
   // Stripe Payment Link for this season's Gold lane; success URL ?session_id={CHECKOUT_SESSION_ID}.
   goldUrl: '',
-  packs: [
-    { id: 'p100', price: '€0.99', coins: 100, bonus: '', url: '' },
-    { id: 'p550', price: '€4.99', coins: 550, bonus: '+10%', url: '' },
-    { id: 'p1200', price: '€9.99', coins: 1200, bonus: '+20%', url: '' },
-  ] as CoinPack[],
+  packs: CREDIT_PACKS.map((p, k): CoinPack => ({ id: p.id, price: p.price, coins: 0, credits: p.credits, bonus: k ? '+' + Math.max(0, Math.round(((p.credits / p.eur) / (CREDIT_PACKS[0].credits / CREDIT_PACKS[0].eur) - 1) * 100)) + '%' : '', url: '' })),
   adsenseClient: '',
   verifyEndpoint: '/api/tier-one/verify-purchase',
 };
@@ -62,7 +63,7 @@ export async function checkPurchase(): Promise<{ ok: boolean; kind?: 'gold' | 'p
     update((s) => {
       s.stats['pay:' + sid] = Date.now();
       if (j.kind === 'gold') syncSeason(s).gold = true;
-      else if (j.kind === 'pack' && typeof j.coins === 'number') { s.credits += j.coins; s.ledger = [{ at: Date.now(), d: j.coins, why: 'pack:' + j.pack }, ...s.ledger].slice(0, 30); }
+      else if (j.kind === 'pack' && typeof j.coins === 'number') credit(s, j.coins, 'pack:' + j.pack);
     });
     return { ok: true, kind: j.kind, coins: j.coins };
   } catch { return { ok: false }; }
@@ -103,8 +104,7 @@ export async function doubleMissions(mode: Mode): Promise<number> {
   let paid = 0;
   update((s) => {
     if (s.adDay === today() || !n) return;
-    s.adDay = today(); paid = n;
-    s.credits += n; s.ledger = [{ at: Date.now(), d: n, why: 'ad:missions' }, ...s.ledger].slice(0, 30);
+    s.adDay = today(); paid = credit(s, n, 'ad:missions');
   });
   return paid;
 }

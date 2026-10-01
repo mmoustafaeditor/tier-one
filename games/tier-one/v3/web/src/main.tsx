@@ -13,7 +13,7 @@ import './styles/screens.css';
 import '../../../../the-gaffer/web/src/boot/boot.css';
 import { BOOT_MARKUP, playIntro } from '../../../../the-gaffer/web/src/boot/intro';
 import { App } from './App';
-// Smoothness (GOTY.md §8.2): service worker + update/install chips, film prefetch, boot marks. Nothing here blocks the render.
+// Smoothness (GOTY.md §8.2): service worker + update/install chips, boot marks. Nothing here blocks the render.
 import { initPerf, mark } from './lib/perf';
 
 // The sting plays once per browser session, and never on an invite or deep link (?room=, ?tab=, ?challenge=) once this

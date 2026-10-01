@@ -3,7 +3,7 @@
 //   Me       <StyleCard/>
 //   Window   <DailyBriefSheet view={view} go={go}/>  <DDLiveTicker go={go}/>         (already wired, additive)
 // Logic lives in lib/desk.ts, lib/live.ts and lib/style.ts; this file only draws it.
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useSave, getSave, type Save } from '../lib/save';
 import { useT, fmtDate, num, resetAt, type T } from '../lib/i18n';
 import { sfx, buzz } from '../lib/sfx';
@@ -13,9 +13,8 @@ import type { View } from '../lib/driver';
 import { OUTS } from '../lib/engine';
 import { useWire } from '../lib/wireData';
 import { markRead, unreadOf, type FeedItem } from '../lib/byline';
-import { playScene, afterScenes, firstToday } from '../lib/scenes';
-import { assignments, morningPaper, markPaperSeen, touchDesk, streakStake, briefSeenToday, markBriefSeen, leadAssignment, type Assignment, type DeskCtx, type Paper } from '../lib/desk';
-import { ddLiveActive, ddResultsDue, ddCountdown, hms, presence, fetchDDBoard, fetchDDTally, ddMark, markDD, myDDCalls, DD_OUT, type DDBoard, type DDTally } from '../lib/live';
+import { assignments, streakStake, briefSeenToday, markBriefSeen, leadAssignment, type Assignment, type DeskCtx, type Paper } from '../lib/desk';
+import { ddLiveActive, ddResultsDue, ddCountdown, hms, presence, ddMark, myDDRun, STREAM } from '../lib/live';
 import { styleOf, STYLE_MIN } from '../lib/style';
 import { Icon, GBtn, Kit } from './game';
 import { Sheet, useNow, Crest } from './bits';
@@ -83,33 +82,9 @@ export function NextUp({ go, style, max = 3, full }: { go: Go; style?: CSSProper
   </section>;
 }
 
-// ---------- the morning papers (mount once in App.tsx; shows itself on Home, first open of the day)
-export function MorningPapers({ route }: { route: string }) {
-  const t = useT(); const s = useSave(); const ctx = useDeskCtx();
-  const [paper, setPaper] = useState<Paper | null>(null);
-  const armed = useRef('');
-  // The route as of now: the page swap can land a frame after this effect ran (view transitions), and onboarding flips
-  // `onboarded` while Home is still the route, so the paper only opens if the desk is still where the player is.
-  const routeRef = useRef(route); routeRef.current = route;
-  useEffect(() => {
-    if (route !== 'front' || !s.onboarded || paper) return;
-    touchDesk();
-    const p = morningPaper(getSave(), Date.now(), ctx);
-    const day = p?.day || '';
-    if (!p || armed.current === day) return;
-    armed.current = day;
-    // Never stack on another film (the prologue, a moment): wait it out, then check the desk is still on screen.
-    afterScenes(() => {
-      if (routeRef.current !== 'front') { armed.current = ''; return; }
-      const hed = paperHed(t, p, getSave());
-      playScene(firstToday('paper') ? 'paper' : 'paper-short', { hed, what: t('live.paper.k') });
-      afterScenes(() => { if (routeRef.current === 'front') setPaper(p); else armed.current = ''; });
-    });
-  }, [route, s.onboarded]); // eslint-disable-line react-hooks/exhaustive-deps
-  const close = useCallback(() => { markPaperSeen(); setPaper(null); }, []);
-  if (!paper) return null;
-  return <MorningPaperSheet paper={paper} onClose={close} />;
-}
+// ---------- the morning papers: cut with the newspaper frame and the films (CONCEPT4 §6, §11). The export stays so
+// App.tsx keeps compiling until the shell drops the mount; it renders nothing.
+export function MorningPapers(_p: { route: string }) { return null; }
 function paperHed(t: T, p: Paper, s: Save) {
   // The welcome-back note is its own box, so its headline moves on to the news; the slot line waits for a normal day.
   if (p.dd) return t('live.paper.hedDD');
@@ -227,72 +202,39 @@ export function DailyBriefSheet({ view, go }: { view: View; go: Go }) {
   </Sheet>;
 }
 
-// ---------- Deadline Day Live: the banner (Home) and the ticker strip (Window)
-let boardCache: { day: string; b: DDBoard } | null = null;
-export function useDDBoardLite(day?: string) {
-  const [b, setB] = useState<DDBoard | null>(boardCache && boardCache.day === day ? boardCache.b : null);
-  useEffect(() => { if (!day || (boardCache && boardCache.day === day)) return; fetchDDBoard(day).then((r) => { if (r.ok) { boardCache = { day, b: r }; setB(r); } }); }, [day]);
-  return b;
-}
-export function useDDTally(day: string | undefined, ms = 30e3) {
-  const [tl, setTl] = useState<DDTally | null>(null);
-  useEffect(() => {
-    if (!day) return;
-    let on = true;
-    const tick = () => fetchDDTally(day).then((r) => { if (on && r.ok) setTl(r); });
-    tick(); const id = setInterval(tick, ms);
-    return () => { on = false; clearInterval(id); };
-  }, [day, ms]);
-  return tl;
-}
+// ---------- Live (DD Live): the banner (the desk) and the ticker strip (the Daily). The stream itself is the play lane's.
+/** A deadline day: "DD Live is on" with the clock to the board's close and one button into the Live app. */
 export function DDLiveBanner({ go, style }: { go: Go; style?: CSSProperties }) {
   const t = useT(); const s = useSave(); const now = useNow(1000);
   const dd = ddLiveActive(now), res = ddResultsDue(now);
-  const [here, setHere] = useState<number | null>(null);
-  useEffect(() => { if (dd) presence().then((r) => { if (r.ok) setHere(r.now); }); }, [dd?.day]); // eslint-disable-line react-hooks/exhaustive-deps
   if (dd) {
-    const c = ddCountdown(dd, now), n = Object.keys(myDDCalls(s, dd.day)).length;
-    return <section className="lv-ddb" style={style} aria-label={t('live.dd.banner.t')}>
-      <span className="lv-live lv-live--lg"><i />{t('live.dd.live')}</span>
+    const c = ddCountdown(dd, now), played = !!myDDRun(s, dd.day)?.sent;
+    return <section className="lv-ddb" style={style} aria-label={t('md4.live.banner.t')}>
+      <span className="lv-live lv-live--lg"><i />{t('md4.live.onAir')}</span>
       <div className="lv-ddb__b">
-        <b>{t('live.dd.banner.t')}</b>
-        <p>{here && here > 1 ? t('live.dd.banner.s', { n: here }) : t('live.dd.banner.s0')} {t('live.dd.filed', { n, m: 5 })}.</p>
+        <b>{t('md4.live.banner.t')}</b>
+        <p>{played ? t('md4.live.banner.played') : t('md4.live.banner.s', { s: STREAM.seconds })}</p>
       </div>
       <span className="lv-ddb__clock g-num" role="timer">{hms(c.ms)}</span>
-      <GBtn size="sm" sound="open" onClick={() => go({ n: 'ddlive' } as Route)}><Icon n="clock" />{t('live.dd.banner.b')}</GBtn>
+      <GBtn size="sm" sound="open" onClick={() => go({ n: 'ddlive' } as Route)}><Icon n="play" />{t('md4.live.banner.b')}</GBtn>
     </section>;
   }
-  if (res && !ddMark(s, res.day, 'resultsSeen')) return <section className="lv-ddb lv-ddb--res" style={style} aria-label={t('live.dd.banner.rt')}>
+  if (res && !ddMark(s, res.day, 'resultsSeen')) return <section className="lv-ddb lv-ddb--res" style={style} aria-label={t('md4.live.banner.rt')}>
     <span className="lv-ddb__ic"><Icon n="trophy" /></span>
-    <div className="lv-ddb__b"><b>{t('live.dd.banner.rt')}</b><p>{t('live.dd.banner.rs')}</p></div>
-    <GBtn size="sm" kind="gold" sound="open" onClick={() => go({ n: 'ddlive' } as Route)}><Icon n="trophy" />{t('live.dd.banner.rb')}</GBtn>
+    <div className="lv-ddb__b"><b>{t('md4.live.banner.rt')}</b><p>{t('md4.live.banner.rs')}</p></div>
+    <GBtn size="sm" kind="gold" sound="open" onClick={() => go({ n: 'ddlive' } as Route)}><Icon n="trophy" />{t('md4.live.banner.rb')}</GBtn>
   </section>;
   return null;
 }
+/** The Daily's strip on a deadline day: one line, one tap into Live. */
 export function DDLiveTicker({ go }: { go: Go }) {
   const t = useT(); const now = useNow(60e3);
   const dd = ddLiveActive(now);
-  const b = useDDBoardLite(dd?.day);
-  const tl = useDDTally(dd?.day, 30e3);
   if (!dd) return null;
-  const items = (b?.sagas || []).map((sg) => {
-    const c = (tl?.counts || b?.counts || {})[sg.rid] || [0, 0, 0], tot = c[0] + c[1] + c[2];
-    const pct = (k: number) => (tot ? Math.round((100 * c[k]) / tot) : 0);
-    return { key: sg.rid, name: sg.player, to: sg.to.name, tot, parts: DD_OUT.map((o, k) => t('live.dd.outS.' + o) + ' ' + pct(k) + '%') };
-  });
-  return <button className="g-ticker lv-tick" onClick={() => { sfx('ui.tap'); go({ n: 'ddlive' } as Route); }} aria-label={t('live.dd.tickerOpen')}>
-    <span className="g-ticker__l"><i />{t('live.dd.ticker')}</span>
-    <span className="g-ticker__vp"><span className="g-ticker__track">{[0, 1].map((dup) => <span key={dup} aria-hidden={dup === 1 ? 'true' : undefined}>
-      {items.length ? items.map((x) => <span key={x.key}><b>{x.name}</b> → {x.to} · {x.tot ? x.parts.join(' · ') : t('live.dd.roomNone')} {x.tot ? <em>{x.tot}</em> : null}</span>) : <span>{t('live.dd.tickerOpen')} · {tl ? t('live.dd.reporters', { n: tl.players }) : ''}</span>}
-    </span>)}</span></span>
+  return <button className="g-ticker lv-tick" onClick={() => { sfx('ui.tap'); go({ n: 'ddlive' } as Route); }} aria-label={t('md4.live.banner.b')}>
+    <span className="g-ticker__l"><i />{t('md4.live.onAir')}</span>
+    <span className="g-ticker__vp"><span>{t('md4.live.ticker', { s: STREAM.seconds, n: STREAM.stories })}</span></span>
   </button>;
-}
-/** Plays the Deadline Day Live open film once per deadline day (call from the DD screen). */
-export function useDDOpenFilm(day?: string, live?: boolean) {
-  useEffect(() => { if (!day || !live || ddMark(getSave(), day, 'openFilm')) return; markDD(day, 'openFilm'); playScene('ddlive:open', { when: fmtDate(Date.parse(day + 'T12:00:00Z'), getSave().lang, { day: 'numeric', month: 'short', year: 'numeric' }) }); }, [day, live]);
-}
-export function useDDCloseFilm(day?: string, on?: boolean) {
-  useEffect(() => { if (!day || !on || ddMark(getSave(), day, 'closeFilm')) return; markDD(day, 'closeFilm'); playScene('ddlive:close', { when: fmtDate(Date.parse(day + 'T12:00:00Z'), getSave().lang, { day: 'numeric', month: 'short', year: 'numeric' }) }); }, [day, on]);
 }
 
 // ---------- Me: the playstyle card

@@ -12,6 +12,9 @@ import type { Sfx } from './sfx';
 
 /** Where a look shows up. A feature that gets cosmetics registers its surface here and reads the helper in wallet.ts. */
 export type Surface =
+  | 'wallpaper'   // 4.0: the phone's lock and home screen (CONCEPT4 §2)
+  | 'drop'        // 4.0: the Drop card on Blurt and the Lens grid (a right All-in)
+  | 'os'          // 4.0: the whole phone (status bar, app chrome, tray)
   | 'byline'      // the byline card (Me, press box tables, results strip)
   | 'sharecard'   // the scoop card PNG (lib/share.ts) and its previews
   | 'frontpage'   // the results front page headline
@@ -26,11 +29,15 @@ export type Surface =
   | 'feed'        // feed rows (ui/connect.tsx FeedRow via data-feedskin)
   | 'film'        // film overlay style
   | 'newsroom'    // the clan's shared front page
-  | 'paper';      // the paper's name
+  | 'paper'       // the paper's name
+  | 'lock'        // 4.0 shell: the lock screen (a lock face: wallpaper + clock + stamp + tray style)
+  | 'icons'       // 4.0 shell: every app icon (an icon pack)
+  | 'device';     // 4.0 shell: the phone itself (bezel, frame, boot) on the desk and around the lock screen
 
-export type Group = 'byline' | 'desk' | 'newsroom' | 'gold';
+export type Group = 'phone' | 'byline' | 'desk' | 'newsroom' | 'gold';
 /** Which preview component draws the kind on stage (ui/customize.tsx PREVIEWS). */
-export type PreviewKey = 'byline' | 'post' | 'sharecard' | 'presspass' | 'masthead' | 'poster' | 'ring' | 'headline' | 'lamp' | 'ringpack' | 'feed' | 'frontpage' | 'catch';
+export type PreviewKey = 'wallpaper' | 'dropcard' | 'byline' | 'post' | 'sharecard' | 'presspass' | 'masthead' | 'poster' | 'ring' | 'headline' | 'lamp' | 'ringpack' | 'feed' | 'frontpage' | 'catch'
+  | 'lockface' | 'widget' | 'iconpack' | 'device'; // 4.0 shell kinds: ui/widgets.tsx LookPreview draws them
 /** Where the equipped id lives: legacy kinds keep lib/season.ts fields, everything else is save.desk.equip. */
 export type Store = 'legacy' | 'theme' | 'desk' | 'gold';
 
@@ -42,10 +49,29 @@ export type CatchTone = 'loud' | 'cool' | 'dry' | 'gold';
 export const RING_SOURCES: RingSource[] = ['kitman', 'barber', 'agent', 'spotter', 'physio', 'leak'];
 
 /** What a preview needs to draw an item: colours, faces, a cue. Never a number that reaches the engine. */
+/** 4.0 wallpaper motifs and Drop card styles: drawn, never photographic; no gradients blobs, no glass. */
+export type WallpaperMotif = 'grain' | 'halftone' | 'stripe' | 'grid' | 'pitch' | 'plain';
+export type DropStyle = 'bold' | 'ticker' | 'poster' | 'stamp' | 'brand';
+/** 4.0 shell (CONCEPT4 §17/§18): lock face clock styles, the stamp under the clock, tray styles, icon pack styles,
+ *  the OS theme's type face, the device notch. All closed lists; none of them reaches a rule. */
+export type ClockStyle = 'numerals' | 'stacked' | 'ticker' | 'split';
+export type LockStamp = 'handle' | 'catch' | 'followers' | 'streak';
+export type TrayStyle = 'cards' | 'strip' | 'paper';
+export type IconStyle = 'paper' | 'outline' | 'stamp' | 'crest' | 'retro';
+export type OsFace = 'editorial' | 'grotesk' | 'cond';
+export type Notch = 'pill' | 'dot' | 'bar' | 'none';
+export type WidgetId = 'window' | 'followers' | 'market' | 'sponsor' | 'boss' | 'streak' | 'season' | 'files' | 'group' | 'catch';
 export type Preview =
+  | { k: 'wallpaper'; bg: string; ink: string; accent: string; motif: WallpaperMotif }                       // 4.0: lock + home screen
+  | { k: 'dropcard'; bg: string; ink: string; accent: string; style: DropStyle; mark?: string }               // 4.0: the Drop card (mark: a brand logotype word)
   | { k: 'frame'; c: string; c2: string; pat: FramePat }
   | { k: 'ink'; c: string }
-  | { k: 'theme'; desk?: [string, string, string]; paper?: boolean }
+  | { k: 'theme'; desk?: [string, string, string]; paper?: boolean; os?: { bg: string; ink: string; accent: string; bar: string; radius?: number; face?: OsFace } } // 4.0: `os` themes the whole phone (tokens: surface, ink, accent, radius, type)
+  // 4.0 shell (CONCEPT4 §17/§18)
+  | { k: 'lockface'; bg: string; ink: string; accent: string; c2?: string; motif: WallpaperMotif; clock: ClockStyle; stamp: LockStamp; tray: TrayStyle }
+  | { k: 'widget'; w: WidgetId }
+  | { k: 'iconpack'; style: IconStyle; tile: string; ink: string }
+  | { k: 'device'; bezel: string; frame: string; radius: number; notch: Notch; crack?: boolean; boot: 'beat' | 'quick' }
   | { k: 'ringtone'; sfx: Sfx }
   | { k: 'flair'; g: string; c: string }
   | { k: 'byline'; bg: string; ink: string; accent: string; rule: 'single' | 'double' | 'thick' | 'none'; face: 'display' | 'cond'; tex?: 'halftone' | 'foil' }
@@ -85,6 +111,15 @@ export const KIND_DEF_KEYS = ['group', 'surfaces', 'preview', 'std', 'store', 's
 
 const P = '#F4EFE4', INK = '#15130F', RED = '#C9381A';
 export const REGISTRY = {
+  // ---- 4.0 the phone (CONCEPT4 §5 "Looks"): what the Lens › Looks shop sells. KINDS4 below is the v4 shop's tab order.
+  wallpaper: { group: 'phone', order: 0, surfaces: ['wallpaper'], preview: 'wallpaper', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'wallpaper', bg: '#15130F', ink: '#F4EFE4', accent: '#FF5A36', motif: 'grain' } },
+  dropcard:  { group: 'phone', order: 2, surfaces: ['drop', 'sharecard'], preview: 'dropcard', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'dropcard', bg: '#F4EFE4', ink: '#15130F', accent: '#C9381A', style: 'bold' } },
+  // ---- 4.0 the shell (CONCEPT4 §17/§18): the lock face, home widgets, icon packs, the phone. Themes are `theme` below.
+  // Widgets are owned, not equipped: the home layout (lib/widgets.ts) places them; `slot.one` is only the registry's shape.
+  lockface:  { group: 'phone', order: 4, surfaces: ['lock', 'wallpaper'], preview: 'lockface', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'lockface', bg: '#14110D', ink: '#F3ECDD', accent: '#F2B632', motif: 'grain', clock: 'numerals', stamp: 'handle', tray: 'cards' } },
+  widget:    { group: 'phone', order: 5, surfaces: ['home'], preview: 'widget', store: 'desk', slot: { one: true }, showcase: false, std: { k: 'widget', w: 'window' } },
+  iconpack:  { group: 'phone', order: 6, surfaces: ['icons'], preview: 'iconpack', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'iconpack', style: 'paper', tile: '#EDE4D0', ink: '#1A1611' } },
+  device:    { group: 'phone', order: 7, surfaces: ['device', 'lock'], preview: 'device', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'device', bezel: '#1C1A17', frame: '#3A352D', radius: 44, notch: 'pill', boot: 'quick' } },
   // ---- the byline (it is you)
   byline:    { group: 'byline', order: 0, surfaces: ['byline', 'roomtable'], preview: 'byline', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'byline', bg: P, ink: INK, accent: RED, rule: 'thick', face: 'display' } },
   flair:     { group: 'byline', order: 1, surfaces: ['byline', 'roomtable', 'sharecard'], preview: 'byline', store: 'legacy', slot: { one: true }, showcase: true, std: { k: 'flair', g: '', c: INK } },
@@ -94,7 +129,7 @@ export const REGISTRY = {
   // ---- the desk
   frame:     { group: 'desk', order: 0, surfaces: ['sharecard', 'stamp'], preview: 'post', store: 'legacy', slot: { one: true }, showcase: true, std: { k: 'frame', c: INK, c2: P, pat: 'solid' } },
   ink:       { group: 'desk', order: 1, surfaces: ['stamp', 'sharecard', 'byline'], preview: 'post', store: 'legacy', slot: { one: true }, showcase: true, std: { k: 'ink', c: RED } },
-  theme:     { group: 'desk', order: 2, surfaces: ['desk'], preview: 'byline', store: 'theme', slot: { one: true }, showcase: false, std: { k: 'theme', desk: ['#17140F', '#211D17', '#2C271F'] } },
+  theme:     { group: 'desk', order: 2, surfaces: ['os', 'desk'], preview: 'byline', store: 'theme', slot: { one: true }, showcase: false, std: { k: 'theme', desk: ['#17140F', '#211D17', '#2C271F'], os: { bg: '#0F0E0C', ink: '#F4EFE4', accent: '#FF5A36', bar: '#15130F' } } },
   lamp:      { group: 'desk', order: 3, surfaces: ['home', 'film'], preview: 'lamp', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'lamp', glow: '#FFB25C', pool: '#2A1E10', warmth: 'warm' } },
   ringtone:  { group: 'desk', order: 4, surfaces: ['phone'], preview: 'ring', store: 'legacy', slot: { one: true }, showcase: false, std: { k: 'ringtone', sfx: 'phone.ring' } },
   ringpack:  { group: 'desk', order: 5, surfaces: ['phone'], preview: 'ringpack', store: 'desk', slot: { one: true, overrides: 'ringtone' }, showcase: true, std: { k: 'ringpack', rings: {}, fallback: 'phone.ring' } },
@@ -110,8 +145,18 @@ export const REGISTRY = {
 } as const satisfies Record<string, KindDef>;
 
 export type Kind = keyof typeof REGISTRY;
-export const GROUPS: Group[] = ['byline', 'desk', 'newsroom', 'gold'];
+export const GROUPS: Group[] = ['phone', 'byline', 'desk', 'newsroom', 'gold'];
+/** 4.0 looks taxonomy (CONCEPT4 §5): the six kinds Lens › Looks shows, in tab order. Everything else in the registry
+ *  is a 3.x kind kept so owned looks still resolve and equip; the v4 shop never lists them (LEGACY4). */
+export const KINDS4 = ['wallpaper', 'theme', 'dropcard', 'frame', 'ringtone', 'catchphrase'] as const;
+export type Kind4 = typeof KINDS4[number];
+export const isKind4 = (k: string): k is Kind4 => (KINDS4 as readonly string[]).includes(k);
+/** 4.0 shell looks (CONCEPT4 §17/§18): the four cosmetic lines the phone itself sells, plus `theme` (already in KINDS4).
+ *  Lens › Looks can add these as tabs; ui/widgets.tsx LookPreview draws any of them on the player's own phone. */
+export const KINDS_SHELL = ['lockface', 'widget', 'iconpack', 'device'] as const;
+export type KindShell = typeof KINDS_SHELL[number];
 /** Tab order on "Your desk": the byline first (it is you), then the desk, then the newsroom, then Gold. */
+export const LEGACY4: Kind[] = (Object.keys(REGISTRY) as Kind[]).filter((k) => !(KINDS4 as readonly string[]).includes(k));
 export const KINDS: Kind[] = (Object.keys(REGISTRY) as Kind[]).sort((a, b) => GROUPS.indexOf(REGISTRY[a].group) - GROUPS.indexOf(REGISTRY[b].group) || REGISTRY[a].order - REGISTRY[b].order);
 export const kindDef = (k: Kind): KindDef => REGISTRY[k];
 export const kindsOf = (g: Group): Kind[] => KINDS.filter((k) => REGISTRY[k].group === g);
@@ -119,8 +164,8 @@ export const isKind = (x: string): x is Kind => Object.prototype.hasOwnProperty.
 /** The kind whose equipped item silences `k` (a ring pack over a single ringtone), or null. */
 export const overriddenBy = (k: Kind): Kind | null => (KINDS.find((x) => (REGISTRY[x].slot as KindDef['slot']).overrides === k) as Kind | undefined) || null;
 
-const SURFACES: Surface[] = ['byline', 'sharecard', 'frontpage', 'roomtable', 'masthead', 'presspass', 'poster', 'stamp', 'phone', 'desk', 'home', 'feed', 'film', 'newsroom', 'paper'];
-const PREVIEWS: PreviewKey[] = ['byline', 'post', 'sharecard', 'presspass', 'masthead', 'poster', 'ring', 'headline', 'lamp', 'ringpack', 'feed', 'frontpage', 'catch'];
+const SURFACES: Surface[] = ['wallpaper', 'drop', 'os', 'byline', 'sharecard', 'frontpage', 'roomtable', 'masthead', 'presspass', 'poster', 'stamp', 'phone', 'desk', 'home', 'feed', 'film', 'newsroom', 'paper', 'lock', 'icons', 'device'];
+const PREVIEWS: PreviewKey[] = ['wallpaper', 'dropcard', 'byline', 'post', 'sharecard', 'presspass', 'masthead', 'poster', 'ring', 'headline', 'lamp', 'ringpack', 'feed', 'frontpage', 'catch', 'lockface', 'widget', 'iconpack', 'device'];
 const STORES: Store[] = ['legacy', 'theme', 'desk', 'gold'];
 /** The registry is data: check it like data (scripts/longtail-test.mjs). */
 export function validateRegistry(): string[] {

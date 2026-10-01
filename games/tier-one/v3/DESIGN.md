@@ -270,150 +270,23 @@ A rumour "going quiet" never resolves early: NO calls pay at window close. That'
 
 ---
 
-## 6. Career: local blogger → Tier One
+## 6. Career
 
-Solo, offline-capable, unranked. One window ≈ 5–6 minutes. Career exists to teach the game's depth, build a personal contact network and pace unlocks over weeks.
-
-### 6.1 Ranks and what changes
-
-| Rank | Promotion needs | Board | Unlocks |
-|---|---|---|---|
-| **Local Blogger** | start | 3 sagas, lower-division real players, 3 contacts/day. Kitman, Barber, Agent. Tabloid only | — |
-| **Regional Reporter** | 8 windows · Rep ≥ 55 | 4 sagas, 4 contacts. + Spotter, + ITK | Club relations |
-| **National Correspondent** | 20 windows · Rep ≥ 65 | 5 sagas top-flight = **Daily rules exactly**. + Physio, + Insider | Club Leaks |
-| **Chief Correspondent** | 36 windows · Rep ≥ 75 | 5 sagas, 1–2 superstar sagas (followers ×2.5) | Second opinions (Trust L5) |
-| **Tier One** | 56 windows · Rep ≥ 85 | 6 sagas, 5 contacts, Deadline Day 45 s | "Here we go" byline, Tier One desk trophy |
-
-Pacing: an engaged player plays 1–2 Career windows a day, so Tier One takes ≈ **5–7 weeks**. Each rank adds exactly the source or rival the Daily already uses. Career is the tutorial for the full Daily, spread over the first two weeks.
-
-### 6.2 Reputation (0–100, start 50)
-
-Per window, `Rep ← Rep + Δ − 0.05 × (Rep − 50)`, where Δ adds up per call: right Talks +0.5, right Advanced +1, right Confirmed +2, exclusive +2, wrong Talks −0.5, wrong Advanced −1.5, wrong Confirmed −4. The decay means Rep settles at **50 + 20Δ**. A player who sustains Δ = +1.75 per window (≈ 80% accuracy, some Confirmed) sits at 85. Rep measures *sustained* quality, not grind; the window count gates the pacing.
-
-### 6.3 Contact network: Trust (reliability grows with use)
-
-Every Career source is a named person with **Trust points**: +1 per ask, and +2 when their read pointed to the final truth and you published a call that matched it. Levels: L1 6 · L2 15 · L3 28 · L4 45 · L5 70.
-
-| Level | Effect |
-|---|---|
-| each level | 'own' sources: 12% of their remaining error removed (L5 = 60% fewer errors). Barber: +0.05 reliability (0.45 → 0.70) |
-| L3 | Early access: Spotter from day 2, Physio from day 4 |
-| L5 | **Second opinion**: ask again once per era |
-
-An engaged player asks each source ~4 times a window, so L5 takes ≈ 12–15 windows per source. The upgrades are earned by play, never bought (they replace v2's $9,270 source tree).
-
-### 6.4 Clubs leak to you, or burn you
-
-Each real club has a **Relation** from −5 to +5 with you. A published right call about that club's player (from or to) is +1; an exclusive +2. A wrong Confirmed is −2, a wrong Advanced −1. Relation drifts 1 toward 0 every 10 windows without a story.
-
-- **≥ +3: Club Leak.** A sixth source on that club's sagas: cost 2, 'own', 85% right, knows that club's side. A toast says "Arsenal's press office is returning your calls".
-- **≤ −3: Frozen out.** That club's Kitman turns *street* (repeats the spin) until you recover. Badge: "Villa have frozen you out".
-
-### 6.5 Followers
-
-Reach, not score. +100 × (1/2/4 for Talks/Advanced/Confirmed) × star (1 / 1.5 / 2.5) per right call. +500 × star per exclusive. −300 × star per wrong Confirmed. Followers are used by:
-- **Star power on the board:** ≥ 10k → one superstar saga per window; ≥ 50k → two.
-- **Account milestones pay Semba Credits** (10k: 50 · 50k: 100 · 100k: 200 · 250k: 300). They pay once per *account*, not per slot, so extra slots can't be farmed.
-- **Share cards** (byline + follower count).
-
-### 6.6 Favours (the only consumables)
-
-Earned: 1 per exclusive, +1 per Tier 1 window. Stock cap 5. Also sold for **15 Semba Credits** each, at most 3 bought per day. Use at most 2 per window. Flat prices, no doubling.
-
-| Favour | Effect | Payback logic |
-|---|---|---|
-| **Burner** | +1 contact today | ≈ 0.1 bits per point late in the week. Worth it on Deadline Day |
-| **Tip-off** | Tells you whether one saga is **Fake** or real | Splits Off/Fake, the agent's job, a day early |
-| **Stakeout** | Spotter available one day early on one saga | Buys the day-2 Done/Hijack split: early bonus +4 and an exclusive chance |
-
-Rewarded ad (Career and Practice only): **+2 contacts**, once per window, max 3 a day. Press Pass holders get it without the ad.
-
-### 6.7 Cut from Career (with reasons in §12)
-
-Cash/$ and pay formula, gear (8 items), XP/levels (replaced by Rank), boosts with doubling, Legend prestige (replaced by a new career slot after Tier One: "Start again at a rival paper"), per-room careers.
+The 4.0 Career is *The Comeback* (CONCEPT4.md §2 "Story"), played by `engine4.mjs` `rulesFor('career', { rank, trust })`.
+Its ranks are the Rep ranks (Nobody · Rising · ITK · Insider · Tier One), its contacts sharpen with the Contacts Book
+(`trustFor()`), and its extras (an extra DM 40, a tip-off 60, two a window) are coins. Every number: **RULES4.md §3**,
+implemented in `web/src/lib/economy.ts`. The 3.x tables that stood here (rep decay, trust points, club relations,
+favours, star power) are gone.
 
 ---
 
-## 7. Economy and monetization: Semba Credits
+## 7. Economy and monetization
 
-### 7.1 Hard rules
-
-1. Nothing bought, earned in Career, or granted by the Pass or ads changes a Daily, Friends room or Wire score, or a league position.
-2. No loot boxes, no paid random rewards. Every purchase shows exactly what you get.
-3. No energy, no fake timers, no "offer ends in" clocks. Season end dates are real.
-4. Every price is shown in credits *and* the credit pack price for reference.
-
-### 7.2 Credit packs (shared wallet with The Gaffer, one Semba ID)
-
-| Price (USD) | Credits | Bonus | ¢ per credit |
-|---|---|---|---|
-| $0.99 | 100 | — | 0.99 |
-| $4.99 | 550 | +10% | 0.91 |
-| $9.99 | 1,200 | +20% | 0.83 |
-| $19.99 | 2,600 | +30% | 0.77 |
-
-### 7.3 Press Pass: $4.99/month or $39.99/year (33% off)
-
-Includes: **no ads** · season-track **pass lane** · **3 Career slots** (free: 1) · Practice **full Daily archive** (free: last 7 days) · **one scenario pack a month** kept forever · rewarded-ad perks without watching · Wire **personal calibration report** (your own stats only; no crowd data beyond what's free) · a monthly **150 credits** stipend. It never touches ranked scores.
-
-### 7.4 Catalog (all fixed-price, all previewable)
-
-| Item | Type | Price (credits) |
-|---|---|---|
-| Newsroom theme (e.g. Broadsheet, Tabloid Red, Deadline Neon, Stadium) | cosmetic | 400 |
-| Desk trophy (shown on share cards and the profile) | cosmetic | 150–300 |
-| Byline style (font/colour/stamp) | cosmetic | 200 |
-| Scenario pack (8 hand-authored windows: "Summer 2019 madness", "Deadline Day classics") | Practice content | 250 |
-| Extra Career slot (permanent) | convenience | 400 |
-| Favour | Career consumable | 15 (max 3 bought per day) |
-| Practice contact top-up (+2) | Practice convenience | 10 |
-| The Gaffer items (Supporter looks) | cross-game | per Gaffer catalog |
-
-### 7.5 Earn rates (free player, no spend)
-
-| Source | Credits |
-|---|---|
-| Daily played | 5 (+5 on a Tier 1) |
-| Weekly league | promote 30 · stay 15 · relegate 5 |
-| 7-day streak | 20 |
-| Season track, free lane | 20 at every 4th tier (10 × 20 = 200/season) + 4 cosmetics |
-| Achievements (30, one-off) | 10–50 each, ≈ 650 total, ≈ 250 in the first month |
-| Follower milestones | 50–300 (account-wide) |
-
-**Sinks** by player type: free players spend on cosmetics and Favours. Spenders spend on themes, slots and scenario packs. Credits never expire.
-
-### 7.6 Season track
-
-Four seasons a year, aligned to the football calendar: **Summer Window** (Jun–Aug), **Autumn** (Sep–Nov), **Winter Window** (Dec–Feb), **Spring** (Mar–May). Each has **40 tiers × 100 Press Points (PP)**.
-
-PP per day for an engaged player: Daily 20 (+15 T1 / +10 T2 / +5 T3), Wire 5 per call filed (max 25) + 10 per right resolution, streak day +5, league result 50–100 per week, achievements 25–100. Engaged ≈ **60 PP/day**, so the track finishes around **week 10 of 13**. A 4-days-a-week player reaches ≈ tier 15.
-
-Free lane: credits every 4th tier, cosmetics at 10/20/30/40. Pass lane: a reward on every tier (8 cosmetics, 6 × 30 credits, 6 Favour bundles, 1 scenario pack, the season's desk trophy).
-
-Payments are verified server-side (`api/verify-purchase.js` pattern from The Gaffer's `monet.ts`: Stripe session → server check → grant once per session). No grant from a redirect parameter.
-
-### 7.7 A 30-day player economy (hand-calculated)
-
-Assumptions: engaged play 6 of 7 days, 2–3 Wire calls a day, 10% T1, 2 league promotions + 2 stays in the month, 3 streak-7s (grace days used), first-month achievements.
-
-| | Free | Light spender ($4.99 pack, day 10) | Press Pass ($4.99) |
-|---|---|---|---|
-| Daily (26 × 5 + 3 T1 × 5) | 145 | 145 | 145 |
-| League (2 × 30 + 2 × 15) | 90 | 90 | 90 |
-| Streaks (3 × 20) | 60 | 60 | 60 |
-| Track credits (tier ≈ 18: 4 free + pass drops) | 80 | 80 | 80 + 90 |
-| Achievements + 10k follower milestone | 250 + 50 | 300 | 300 |
-| Purchases / stipend | — | 550 | 150 |
-| **Credits earned** | **675** | **1,225** | **915** |
-| Non-credit value | — | — | 18 pass-lane rewards (4 cosmetics ≈ 1,200 credits of value, 3 Favour bundles), no ads, 3 slots, archive, 1 scenario pack (250) |
-| Typical spend | 1 theme (400) + 10 Favours (150) | 2 themes + trophy + Favours | theme + scenario pack + Favours |
-| Feels like | first theme around **day 14–18** without paying | gets exactly what they bought | ≈ **2,200 credits of value for $4.99** (150 + 90 credits, ≈1,200 in cosmetics, 400 slot, 250 pack, ≈135 in Favours) vs 550 from a $4.99 pack |
-
-The free player gets a meaningful unlock every 2–3 weeks and plays every ranked mode in full. The Pass is ≈ 4× the value of the same money spent on credits, and it's the only way to get no ads, extra slots and the archive together.
-
-### 7.8 Ads
-
-Rewarded only, always opt-in, never in Daily/Wire/Friends. One **Sponsored** card below Results and on Home for non-Pass players, never over controls. No interstitials. `monet.ts` switches (empty id = off) are reused, extended with a `TierAds` Android bridge identical to `GafferAds`.
+One source of truth: **RULES4.md §3** (XP, Level, Season track, Reputation, Followers, Coins, prices, Secret files) and
+**CONCEPT4.md §4–5** (brand deals, Credits, Gold, Looks, coin packs, the starter bundle, the rules that keep money out
+of every ranked score). Code: `web/src/lib/economy.ts` (every number), `lib/deals.ts` (brands), `lib/catalog.ts` +
+`api/tier-one/v4/config/catalog.json` (the one credit-pack table the client imports). The 3.x credit packs, Press
+Pass, 40-tier track and earn rates that stood here no longer apply.
 
 ---
 

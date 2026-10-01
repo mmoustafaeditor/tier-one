@@ -1,7 +1,7 @@
 {
   "name": "Tier One",
   "short_name": "Tier One",
-  "description": "The transfer-journalist game. Five sagas, seven days, one window.",
+  "description": "The transfer-insider game. Your whole career on one phone: the timeline, your DMs, your calls, the Scoop.",
   "id": "/tier-one/",
   "start_url": "./?source=pwa",
   "scope": "./",
@@ -9,8 +9,8 @@
   "orientation": "any",
   "lang": "en",
   "dir": "auto",
-  "background_color": "#F2EEE5",
-  "theme_color": "#F2EEE5",
+  "background_color": "#0B0C0F",
+  "theme_color": "#0B0C0F",
   "categories": ["games", "sports", "news"],
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
@@ -19,8 +19,9 @@
     { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
   ],
   "shortcuts": [
-    { "name": "Today's Daily", "url": "./?tab=daily&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "The Wire", "url": "./?tab=wire&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Story", "url": "./?tab=story&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Blurt", "url": "./?app=blurt&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "DMs", "url": "./?app=dms&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Market", "url": "./?app=market&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Story", "url": "./?app=story&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

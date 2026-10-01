@@ -1,0 +1,1 @@
+import{j as o}from"./vendor-CgP-wcIU.js";import{StoryScreen as r}from"./Story-COHIsh5s.js";import"./index-BYSFSgn3.js";import"./boot-LIbiBAMB.js";import"./i18n-C4vYp05E.js";import"./world-lZPKPapH.js";import"./banter-C7DJ-nmP.js";import"./story-C4m6AXEk.js";function t(t){return o.jsx(r,{...t})}export{t as EditorDeskScreen};

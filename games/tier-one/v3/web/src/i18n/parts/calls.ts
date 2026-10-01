@@ -5,7 +5,7 @@ export default {
     calls: {
       hwg: { word: 'DONE DEAL!', stamp: 'Done deal!', card: 'DONE DEAL! · {p}', burst: 'DONE DEAL!' },
       hold: { hint: 'Hold to publish', aria: '{l}. Hold, tap or press Enter to publish.' },
-      stake: { right: 'Right +{n}', wrong: 'Wrong {n}', open: 'Exclusive open: +{n}', beaten: 'Beaten by {r}', repost: 'No exclusive on a repost', loud: 'Only Confirmed can be exclusive', two: 'Two circles needed for an exclusive' },
+      stake: { right: 'Right +{n}', wrong: 'Wrong {n}', open: 'Scoop open: +{n}', beaten: 'Beaten by {r}', repost: 'No Scoop on a repost', loud: 'Only a Drop can be a Scoop', two: 'Be first and right for a Scoop' },
       repost: {
         open: 'Delete & repost', btn: 'Delete & repost · {o}', deleted: 'Deleted', ratio: 'Ratio',
         replies: [
@@ -33,7 +33,7 @@ export default {
     calls: {
       hwg: { word: 'DONE DEAL!', stamp: 'خلصت!', card: 'DONE DEAL! · {p}', burst: 'DONE DEAL!' },
       hold: { hint: 'دوس كتير عشان تنشر', aria: '{l}. دوس كتير أو دوسة أو Enter عشان تنشر.' },
-      stake: { right: 'صح +{n}', wrong: 'غلط {n}', open: 'الانفراد لسه متاح: +{n}', beaten: 'سبقك {r}', repost: 'مفيش انفراد في إعادة النشر', loud: '«مؤكد» بس اللي ينفع يبقى انفراد', two: 'محتاج دايرتين مختلفتين عشان الانفراد' },
+      stake: { right: 'صح +{n}', wrong: 'غلط {n}', open: 'السكووب لسه متاح: +{n}', beaten: 'سبقك {r}', repost: 'مفيش سكووب في إعادة النشر', loud: 'الدروب بس اللي ينفع يبقى سكووب', two: 'اسبق واطلع صح عشان السكووب' },
       repost: {
         open: 'امسح وانشر تاني', btn: 'امسح وانشر تاني · {o}', deleted: 'اتمسح', ratio: 'ريشيو',
         replies: [
@@ -61,7 +61,7 @@ export default {
     calls: {
       hwg: { word: '¡CERRADO!', stamp: '¡Cerrado!', card: '¡CERRADO! · {p}', burst: '¡CERRADO!' },
       hold: { hint: 'Mantén para publicar', aria: '{l}. Mantén, toca o pulsa Enter para publicar.' },
-      stake: { right: 'Acierto +{n}', wrong: 'Fallo {n}', open: 'Exclusiva abierta: +{n}', beaten: 'Se adelantó {r}', repost: 'Sin exclusiva al republicar', loud: 'Solo Confirmado puede ser exclusiva', two: 'Hacen falta dos círculos para la exclusiva' },
+      stake: { right: 'Acierto +{n}', wrong: 'Fallo {n}', open: 'Scoop abierto: +{n}', beaten: 'Se adelantó {r}', repost: 'Sin Scoop al republicar', loud: 'Solo un Drop puede ser Scoop', two: 'Llega primero y acierta para el Scoop' },
       repost: {
         open: 'Borrar y republicar', btn: 'Borrar y republicar · {o}', deleted: 'Borrado', ratio: 'Ratio',
         replies: [

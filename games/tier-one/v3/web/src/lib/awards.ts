@@ -6,14 +6,15 @@ import { credit, toast, ymdUTC } from './meta';
 import { v3 } from './api';
 import { t } from './i18n';
 import { RIVALS, rivalOf } from './byline';
+import { COINS } from './economy';
 
 export type Period = 'daily' | 'weekly' | 'wire';
 export type PrizePeriod = 'daily' | 'weekly';
 export interface Placing { period: PrizePeriod; label: string; rank: number; players: number; coins: number; at: number; paid?: number }
 
 // Coins for 1st, 2nd, 3rd, then 4th–10th. A board needs a few reporters on it before it pays.
-export const PRIZE: Record<PrizePeriod, number[]> = { daily: [60, 40, 25, 10], weekly: [200, 120, 80, 30] };
-export const PRIZE_MIN_PLAYERS = 3;
+export const PRIZE: Record<PrizePeriod, readonly number[]> = { daily: COINS.prizeDaily, weekly: COINS.prizeWeekly };
+export const PRIZE_MIN_PLAYERS = COINS.prizeMinPlayers;
 export function prizeFor(period: PrizePeriod, rank: number, players: number): number {
   if (!rank || rank < 1 || players < PRIZE_MIN_PLAYERS) return 0;
   const p = PRIZE[period];
@@ -72,5 +73,5 @@ export function claimPrize(key: string): number {
   return paid;
 }
 
-// Trophy icons (the Me shelf and the byline badges).
-export const ACH_IC: Record<string, string> = { first: 'news', t1: 'crown', t1x3: 'crown', excl: 'bolt', excl3: 'bolt', clean: 'check', uturn: 'uturn', twist: 'uturn', dd: 'clock', silent: 'eye', fake: 'eye', hijack: 'arrow', agent: 'briefcase', echo: 'friends', physio: 'pulse', streak7: 'flame', streak30: 'flame', practice5: 'target', coach: 'target', career1: 'story', rank2: 'story', rank3: 'story', rank5: 'crown', trust5: 'phone', leak: 'fax', wire1: 'wire', wireRight: 'wire', room: 'friends', share: 'share', rich: 'gift' };
+// Secret file icons (the Lens shelf and the byline badges), one per file (lib/economy.ts SECRET_FILES). Sealed = 'lock'.
+export const ACH_IC: Record<string, string> = { stays3: 'eye', cleanSheet: 'check', scoop2: 'bolt', physioNo: 'pulse', dayOne: 'clock', noBarber: 'phone', quiet: 'eye', ratioed: 'arrow', hot10: 'flame', rivalBeat: 'friends', liveT1: 'crown', deal3: 'gift' };

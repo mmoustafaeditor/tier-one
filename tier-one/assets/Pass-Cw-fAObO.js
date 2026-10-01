@@ -1,0 +1,1 @@
+import{j as o}from"./vendor-CgP-wcIU.js";import{L as r}from"./Lens-rWBFzRR2.js";import"./index-BYSFSgn3.js";import"./boot-LIbiBAMB.js";import"./i18n-C4vYp05E.js";import"./world-lZPKPapH.js";import"./share-myNqW5aP.js";function s(s){return o.jsx(r,{...s,tab:"season"})}export{s as PassScreen};

@@ -5,9 +5,9 @@
 // Every pool is the concatenation of three layers: bn.* (3.2), bnx.* (parts/banterx.ts) and bn3.* (parts/banter3*.ts),
 // so each outcome has 40-odd fan lines per language. A Confirmed Done call also draws a reaction to your catchphrase
 // (cp.react.* + cp3.react.*, rivals from rv.<id>.cp.*) and every call gets one fan line quoting it (fan.call.*).
-import type { CastSaga, ResultSaga, Rules, Tier } from './engine';
+import type { CastSaga, ResultSaga, Rules, Tier, ResultStory4, Rules4 } from './engine';
 import { trList, tr, fill } from './i18n';
-import { outWord, strWord } from './story';
+import { outWord, strWord, outWord4, backWord4 } from './story';
 
 export type Voice = 'fan' | 'rival' | 'source';
 export interface Reply { who: Voice; id: string; name: string; handle: string; text: string; likes: number }
@@ -131,9 +131,83 @@ export class Banter {
     return { i, verdict, text, was, day: call ? call.day : 0, loud, likes: base, reposts: Math.round(base * (verdict === 'wrong' ? 0.9 : 0.2)), reps, replies: out, ratio: verdict === 'wrong' && reps > base, hot: verdict === 'excl' || (verdict === 'right' && base > 9000) };
   }
 
+  /** 4.0 (CONCEPT4 §7, §10): the thread under one post of a v4 window. Same pools, read through the 4.0 words: a Scoop
+   *  is the old top verdict, the three accounts are the rivals of the pools, a Drop on SIGNS draws the catchphrase
+   *  reactions. Lines that carry an old word (BANNED4) or an emoji are skipped, so the thread never says what 4.0 cut. */
+  thread4(p: ResultStory4, c: CastSaga, R: Rules4): Thread {
+    const i = p.i, call = p.call;
+    this.clubs = [c.to.s, c.from.s, ...(p.truth === 1 && c.alt ? [c.alt.s] : [])];
+    const V = { p: c.player.s, d: c.to.s, c: c.from.s, h: c.alt ? c.alt.s : c.to.s, n: 0, call: call ? backWord4(this.lang, call.s) + ' ' + outWord4(this.lang, call.o) : '', day: call ? call.day : 0, phrase: this.phrase, to: c.to.s, name: this.name };
+    const verdict: Verdict = !call ? 'none' : p.scoop ? 'excl' : p.right ? 'right' : 'wrong';
+    const dOk = call ? (p.right ? p.truth === 0 : call.o === 0) : p.truth === 0;
+    const hOk = p.truth === 1 && !!c.alt;
+    const fits = (s: string) => !BANNED4.test(s) && (dOk || !s.includes('{d}')) && (hOk || !s.includes('{h}')) && (!!this.name || !s.includes('{name}')) && (!!this.phrase || !s.includes('{phrase}'));
+    const out: Reply[] = [];
+    const fanLine = (pool: string, salt = '') => { const s = this.pick('fan.' + pool, i + salt, fits); if (s) { const f = this.fan(i + pool + salt); out.push({ who: 'fan', id: pool, ...f, text: fill(s, V), likes: this.num(i + pool + salt, 4, 900) }); } };
+    const acct = (id: string) => ({ name: tr(this.lang, 'rival4.' + id), handle: tr(this.lang, 'rival4.' + id) });
+    const rivalLine = (kind: string, id: string, day = 0) => {
+      const s = this.pick('rival.' + kind + '.' + id, String(i), fits); if (!s) return;
+      out.push({ who: 'rival', id, ...acct(id), text: fill(s, { ...V, n: day }), likes: this.num(i + kind, 180, 2400) });
+    };
+    const ids = R.RIVALS.map((r) => r.id);
+    const anyRival = (salt: string) => ids[this.h('rv|' + i + salt) % Math.max(1, ids.length)] || 'tabloid';
+    if (call && call.o === 0 && call.s === 2 && this.phrase) {
+      const k = p.right ? 'right' : 'wrong';
+      const f = this.pick('cp.react.fan.' + k, String(i), fits);
+      if (f) out.push({ who: 'fan', id: 'cp', ...this.fan(i + 'cp'), text: fill(f, V), likes: this.num(i + 'cp', 40, 3200) });
+    }
+    const srcLine = (src: string, mood: string) => { const s = this.pick('src.' + src + '.' + mood, String(i), fits); if (s) out.push({ who: 'source', id: src, name: tr(this.lang, 'src4.name.' + src), handle: '', text: fill(s, V), likes: 0 }); };
+    const wrongPost = p.rivals.find((x) => !x.right);
+    const read = (right: boolean) => p.reads.find((x) => x.right === right);
+    if (verdict === 'none') {
+      fanLine('silence'); if (p.firstRight) rivalLine('gloat', p.firstRight.id, p.firstRight.day);
+    } else if (p.right) {
+      const beaten = p.why === 'beaten' && p.firstRight;
+      if (verdict === 'excl') { fanLine('excl'); rivalLine('concede', (p.rivals[0] && p.rivals[0].id) || anyRival('c')); }
+      else if (beaten) rivalLine('smug', p.firstRight!.id, p.firstRight!.day);
+      else if (call!.s === 0) fanLine('softRight');
+      else fanLine('praise');
+      if (!beaten && verdict !== 'excl' && wrongPost) rivalLine('concede', wrongPost.id);
+      const r = read(true); if (r) srcLine(r.src, 'toldYou');
+      fanLine('call.right'); fanLine('praise', 'b');
+    } else {
+      if (call!.s === 2) fanLine('loudWrong'); else if (call!.s === 0) fanLine('softWrong'); else fanLine('roast');
+      if (p.firstRight) rivalLine('gloat', p.firstRight.id, p.firstRight.day); else if (wrongPost) rivalLine('alsoWrong', wrongPost.id);
+      const w = read(false); if (w) srcLine(w.src, 'lied');
+      fanLine('roast', 'b');
+      if (call!.s === 2) { fanLine('roast', 'd'); fanLine('pity'); }
+    }
+    const loud = !!call && call.s === 2;
+    const base = verdict === 'excl' ? this.num(i + 'l', 9000, 42000) : verdict === 'right' ? (call!.s === 0 ? this.num(i + 'l', 300, 2200) : this.num(i + 'l', 1800, 12000)) : verdict === 'wrong' ? this.num(i + 'l', 20, loud ? 480 : 160) : 0;
+    const reps = verdict === 'wrong' ? base * (loud ? 4 : 2) + this.num(i + 'r', 40, 900) : Math.round(base * 0.07) + out.length;
+    const text = call ? fill((trList(this.lang, 'pl4.say') as string[][] | undefined)?.[call.s]?.[call.o] || '', { p: c.player.s, to: c.to.s }) : '';
+    return { i, verdict, text, was: '', day: call ? call.day : 0, loud, likes: base, reposts: Math.round(base * (verdict === 'wrong' ? 0.9 : 0.2)), reps, replies: out, ratio: verdict === 'wrong' && reps > base, hot: verdict === 'excl' || (verdict === 'right' && base > 9000) };
+  }
+
   verdict(tier: Tier): { quip: string; idiom: string } {
     return { quip: this.pick('tierQuip.' + tier, 'v') || '', idiom: this.pick('idiom.' + (tier === 'T1' || tier === 'T2' ? 'up' : 'down'), 'v') || '' };
   }
+}
+
+/** Old words 4.0 cut (CONCEPT4 §3) and emoji: a pool line carrying any of them is skipped by the 4.0 pickers. */
+export const BANNED4 = /tweet|exclusiv|u-?turn|twist|here we go|confirmed|\btalks\b|advanced|hijack|tally|front page|newspaper|editor|press points|[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/iu;
+/** A seeded line from a list, skipping lines that carry a cut word. '' when nothing fits. */
+export function pickClean(list: unknown, seed: string): string {
+  if (!Array.isArray(list) || !list.length) return '';
+  const st = hash(seed) % list.length;
+  for (let k = 0; k < list.length; k++) { const x = list[(st + k) % list.length]; if (typeof x === 'string' && !BANNED4.test(x)) return x; }
+  return '';
+}
+/** An account's overnight post on the timeline (CONCEPT4 §10: just an account on your feed): "Understand Kane stays put." */
+export function accountPost4(lang: string, id: string, claim: number, c: CastSaga, seed: string): string {
+  const out = tr(lang, 'pl4.outPh.' + (['signs', 'elsewhere', 'stays'][claim] || 'signs'), { to: c.to.s });
+  return fill(pickClean(trList(lang, 'pl4.acct.' + id), seed + '|' + id + '|' + c.player.id), { p: c.player.s, out });
+}
+/** The fan reply under a wrong Drop (the ratio line), seeded. */
+export function ratioLine4(lang: string, c: CastSaga, seed: string): { name: string; handle: string; text: string } {
+  const b = new Banter(lang, seed);
+  const s = b.pick('fan.loudWrong', '0', (x) => !BANNED4.test(x) && !/\{(d|h|c|n|call|day|phrase|to|name)\}/.test(x)) || '';
+  return { ...b.fan('r'), text: fill(s, { p: c.player.s }) };
 }
 
 /** One line under a settled Wire call: a fan, in your language, reacting to the real-world outcome. */
