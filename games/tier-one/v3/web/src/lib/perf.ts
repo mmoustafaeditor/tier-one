@@ -3,13 +3,9 @@
 //   initPerf()          main.tsx calls it once: marks boot, registers sw.js once the page has settled, wires the update
 //                       toast ("New edition ready → Reload"), the install chip (never on a first visit), and keeps the
 //                       theme-color meta in step with the edition.
-//   prefetchFilm(stem)  poster first, then the clip, one step ahead of the player (film players call it with the
-//                       stem they'll most likely need next). Through the service worker the clip is cached whole, so
-//                       the next <video> starts from the cache (< 200 ms measured, scripts/perf.mjs).
 //   idle(fn), afterBoot(fn), mark(name)
 import { getSave } from './save';
 import { t } from './i18n';
-import { filmUrl, type Aspect } from '../film/clips';
 import { initPushBridge } from './push';
 
 const PERF_KEY = 'tierone_perf';
@@ -36,30 +32,6 @@ export function afterBoot(fn: () => void, maxWait = 8000): void {
 }
 /** A User Timing mark, so traces and scripts/perf.mjs can read boot timings. */
 export function mark(name: string): void { try { performance.mark('t1:' + name); } catch { /* */ } }
-
-// ---------- films: one step ahead
-const filmsWanted = new Map<string, Promise<void>>();
-const aspect = (): Aspect => (matchMedia('(orientation: landscape)').matches ? 'l' : 'p');
-async function pull(url: string, priority: 'low' | 'high' = 'low'): Promise<void> {
-  // Through the service worker the whole file lands in the films cache; without one, an immutable response still
-  // fills the HTTP cache. Body discarded either way.
-  try { const r = await fetch(url, { priority, cache: 'force-cache' } as RequestInit); await r.arrayBuffer(); } catch { /* offline or missing: the player falls back */ }
-}
-/** Poster first (the reduced-motion still and the frame under the loading clip), then the clip. Deduplicated per stem. */
-export function prefetchFilm(stem: string, a: Aspect = aspect()): Promise<void> {
-  const k = stem + '-' + a;
-  let p = filmsWanted.get(k);
-  if (p) return p;
-  p = (async () => {
-    await pull(filmUrl(stem, a, 'jpg'));
-    if (getSave().reduced || (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) return;
-    await pull(filmUrl(stem, a, 'mp4'));
-  })();
-  filmsWanted.set(k, p);
-  return p;
-}
-/** Several stems in order (the likely next moment first). */
-export function prefetchFilms(stems: string[]): Promise<void> { return stems.reduce((p, s) => p.then(() => prefetchFilm(s)), Promise.resolve()); }
 
 // ---------- service worker
 let reg: ServiceWorkerRegistration | null = null;
