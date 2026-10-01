@@ -1,0 +1,47 @@
+// Diagnosis of what a viewer sees in highlights (Extended): per passage, how many touches before the shot, pass lengths,
+// balls that land with nobody there, ball jumps without a pass, possession changing hands without a contest.
+import { generateWorld, playerOf } from '../src/sim/world';
+import { startMatch, stepMinute } from '../src/sim/match';
+import { playOver } from '../src/sim/engine/clock';
+import { newAnim, setPitchDebug, tick } from '../src/ui2/pitch/sim';
+import { RATES, minuteMs, shownOf, highlightOf } from '../src/sim/highlights';
+setPitchDebug(true);
+const w = generateWorld(7); const get = (id: string) => playerOf(w, id)!;
+const top = w.clubs.filter((c) => ['eng1', 'esp1', 'ita1', 'ger1', 'fra1'].includes(c.leagueId));
+const N = +(process.argv[2] ?? 6), SHOW = +(process.argv[3] ?? 4);
+const FRAME = 1000 / 60;
+const agg = { passages: 0, flights: 0, len: [] as number[], landNoOne: 0, jumps: 0, swapNoFlight: 0, beatsPer: [] as number[], passesBeforeShot: [] as number[], shotsFromNowhere: 0, shots: 0, secs: [] as number[] };
+let shown = 0;
+for (let i = 0; i < N; i++) {
+  let m = startMatch(w, null, top[(i * 7) % top.length].id, top[(i * 13 + 5) % top.length].id, `diag-${i}`, 1, true);
+  const a: any = newAnim(m, w);
+  while (!playOver(m)) {
+    const n = JSON.parse(JSON.stringify(m)); stepMinute(n, get); m = n;
+    const ms = minuteMs(m, 2, RATES[1]); const sh = shownOf(m, 2);
+    let lastFlight: any = null, prevBall = { ...a.ball }, prevCarrier = a.carrier, prevPoss = a.poss, passes = 0;
+    const log: string[] = [];
+    for (let t = 0; t < ms; t += FRAME) {
+      const beat0 = a.beat;
+      tick(a, m, w, FRAME, ms, true, 2, 2400);
+      if (!sh) { prevBall = { ...a.ball }; prevCarrier = a.carrier; prevPoss = a.poss; continue; }
+      if (a.beat !== beat0) for (let b = beat0; b < a.beat; b++) { const B = a.beats[b]; log.push(`${(t / 1000).toFixed(1)}s ${B.kind}${B.type ? '/' + B.type : ''}${B.how ? '/' + B.how : ''} s${B.side}`); if (B.kind === 'pass') passes++; if (B.kind === 'turnover') passes = 0; if (B.kind === 'shot') { agg.shots++; agg.passesBeforeShot.push(passes); if (passes <= 1) agg.shotsFromNowhere++; passes = 0; } }
+      if (a.flight && a.flight !== lastFlight) { lastFlight = a.flight; agg.flights++; const d = Math.hypot(a.flight.to.x - a.flight.from.x, a.flight.to.y - a.flight.from.y); agg.len.push(d); log.push(`      ball ${d.toFixed(0)} m`); }
+      if (!a.flight && lastFlight && a.carrier >= 0 && a.pos[a.poss][a.carrier]) { const q = a.pos[a.poss][a.carrier]; const dd = Math.hypot(q.x - lastFlight.to.x, q.y - lastFlight.to.y); if (dd > 4) { agg.landNoOne++; log.push(`      landed ${dd.toFixed(0)} m from the man who gets it`); } lastFlight = null; }
+      const jump = Math.hypot(a.ball.x - prevBall.x, a.ball.y - prevBall.y);
+      if (!a.flight && jump > 3 && t > 0) { agg.jumps++; log.push(`      ball jumped ${jump.toFixed(0)} m (no pass)`); }
+      if (a.poss !== prevPoss && !a.flight && !lastFlight) { agg.swapNoFlight++; }
+      prevBall = { ...a.ball }; prevCarrier = a.carrier; prevPoss = a.poss;
+    }
+    if (sh) {
+      agg.passages++; agg.beatsPer.push(a.beats.length); agg.secs.push(ms / 1000);
+      if (shown < SHOW) { shown++; const h = highlightOf(m); console.log(`\n=== match ${i}, minute ${m.minute}: level ${h.level}, engine seconds ${h.from}-${h.to}, ${(ms / 1000).toFixed(1)} s on screen, ${a.beats.length} beats`); console.log('flow:', (m.flow ?? []).map((f: any) => `${f.t}s:${f.k}${f.n !== undefined ? '@' + f.n : ''}`).join(' ')); for (const l of log) console.log('  ' + l); }
+    }
+  }
+}
+const med = (xs: number[]) => { const s = [...xs].sort((p, q) => p - q); return s[Math.floor(s.length / 2)] ?? 0; };
+const pct = (x: number, y: number) => Math.round((100 * x) / Math.max(1, y));
+console.log(`\n${agg.passages} passages; median ${med(agg.beatsPer)} beats in ${med(agg.secs).toFixed(1)} s on screen`);
+console.log(`ball moves: ${agg.flights}; median length ${med(agg.len).toFixed(0)} m; over 30 m: ${pct(agg.len.filter((x) => x > 30).length, agg.len.length)}%`);
+console.log(`ball landed 4+ m from the man who then has it: ${pct(agg.landNoOne, agg.flights)}% of moves`);
+console.log(`ball jumped 3+ m in a frame without a pass: ${agg.jumps} times`);
+console.log(`shots: ${agg.shots}; passes in the move before a shot: median ${med(agg.passesBeforeShot)}; 0-1 passes: ${pct(agg.shotsFromNowhere, agg.shots)}%`);
