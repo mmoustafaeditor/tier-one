@@ -527,12 +527,15 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           const busy = (k: number) => k === a.carrier || (a.run?.side === side && a.run.slot === k) || (a.shooter?.side === side && a.shooter.slot === k);
           let runs = 0;
           a.runsN = 0;
+          // Reading the play (phase 3): a ball about to go out wide in the last third starts the full-back's run now.
+          const soon = a.beats.slice(a.beat, a.beat + T.FB_AHEAD).find((b) => (b.kind === 'pass' || b.kind === 'turnover') && b.side === side && b.pt && depthOf(side, b.pt.x) > 65 && Math.abs(b.pt.y - W / 2) > 15) as { pt: Pt } | undefined;
+          const fbRole = (r: string) => r === 'fullback' || r === 'wingback' || r === 'inverted_fullback';
           for (const k of [...ks].sort((p, q) => Math.abs((a.pos[side][p]?.y ?? 0) - a.ball.y) - Math.abs((a.pos[side][q]?.y ?? 0) - a.ball.y))) {
             if (busy(k) || LINE[slots[k].pos] === 'gk') continue;
             const d = depthOf(side, tg[k].x);
-            const r = runFor(sps[k]?.ip ?? '', { bd, by: a.ball.y, theirLine, d, y: tg[k].y, wide: wideOf(tg[k].y) });
+            const ip = sps[k]?.ip ?? '', look = soon && fbRole(ip) && depthOf(side, soon.pt.x) > bd;
+            const r = runFor(ip, { bd: look ? depthOf(side, soon!.pt.x) : bd, by: look ? soon!.pt.y : a.ball.y, theirLine, d, y: tg[k].y, wide: wideOf(tg[k].y) });
             if (!r) continue;
-            if (PITCH_DEBUG) ((a as unknown as { rd?: unknown[] }).rd ??= []).push([side, k, sps[k]?.ip, Math.round(d), Math.round(r.d), r.run, runs]);
             if (r.run) { if (runs >= 3) continue; runs++; a.runsN = runs; boost[k] = 1.25; }
             tg[k] = { x: toX(side, clamp(r.d, 2, 103)), y: clamp(r.y, 2, W - 2) };
           }

@@ -36,9 +36,10 @@ export const T = {
   ZONE_BOX: 16,      // zonal: a defender leaves the line for his man only inside this distance of goal
   SET_ZONAL: [11, 3, 0] as [number, number, number],       // corners: how many defenders hold zones (the rest mark men)
   // Phase 3: attacking off the ball
-  FB_PUSH: { fullback: 0.4, wingback: 0.6 } as Record<string, number>, // a full-back's push up per metre the ball is past 40 m
+  FB_PUSH: { fullback: 0, wingback: 0 } as Record<string, number>, // a full-back's push up per metre the ball is past 40 m (0: pushing them up broke the back line on the turnover; phase 4)
   FB_MAX: 26,        // ... at most this many metres
+  FB_AHEAD: 3,       // a full-back reads this many beats ahead: a ball going out wide in the last third starts his run
   CARRY_SPACE: [4, 10] as [number, number], // the carrier slows inside the first (pressed), drives on beyond the second (space)
-  CARRY_BOOST: [0.55, 0.95, 1.3] as [number, number, number], // his pace: pressed, normal, in space
+  CARRY_BOOST: [0.7, 0.95, 1.3] as [number, number, number], // his pace: pressed, normal, in space
   CARRY_STEP: [2, 6, 12] as [number, number, number],         // how far ahead he aims: pressed, normal, in space (m)
 };

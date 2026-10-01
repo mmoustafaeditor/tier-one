@@ -17,6 +17,19 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer pitch, phase 3 (first part): the ball carrier, and measurements for attacking off the ball
+- **What changed:** The live 2D pitch only (engine untouched).
+  - **The ball carrier.** He carries it towards where the engine has the play: a short step at a slower pace when a man is on him (shielding it), and a long step at a faster pace into space. On 10 seeded matches, his speed against the room around him went from r = −0.04 (no link) to r = 0.55. This needed a fix: a boost under 1 is now allowed, so a player can be slowed (before, every boost was raised to at least 1).
+  - **Full-backs.** They read up to 3 beats ahead and start their run when the ball is about to go out wide in the last third. Inverted full-backs underlap into the half-space.
+  - **New pitch-test measurements** (`ui-tests/pitch-metrics.mjs`, used by the Node and browser tests):
+    - **Offside:** no one waits offside while the carrier has the ball. 1%, limit 5%.
+    - **Support:** the carrier has two men in open lanes. 90%, limit 70%.
+    - **Carrying:** the carrier's pace follows the space around him. r = 0.55, limit 0.2.
+    - **Overlap:** a full-back next to a wide carrier in the last third. Reported only, at 0–5%. The ball reaches the wing in one pass, faster than a full-back can get there from his line. Pushing the full-backs up all the time was tried: it broke the back line on the turnover (spread 4.9 m, reaction 79%), so it is off (`FB_PUSH` 0). This needs the director (phase 4).
+  - Everything else holds on the 10 seeded matches: marking 94%, keeper 0.5 m, reaction 95 of 118.
+- **Files:** `games/the-gaffer/web/src/ui2/pitch/{sim,move,tuning}.ts`, `ui-tests/pitch-metrics.mjs`
+- **Heads-up for the team:** The back-line spread (4.2 m) and box blocking (28%) are still the phase-4 items. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer: AI managers pick a marking style; an injured man with no sub left is shown going down
 - **What changed:**
   - **AI marking.** AI managers now choose a marking style by philosophy:
