@@ -1,5 +1,5 @@
-// { n: 'editor' } (3.x "the editor's desk"). 4.0 has no editor's desk (CONCEPT4 §3, §11): the route is an alias of the
-// Story app (ui/phone.tsx aliases), so old links, tray items and feed lines land in the Story thread.
+// { n: 'editor' } (3.x "the editor's desk"). 4.1 has no editor's desk: the route is an alias of Career (screens/Story.tsx),
+// so old links land on the Career menu (Continue / New career).
 import type { Chrome } from '../App';
 import { StoryScreen } from './Story';
 
