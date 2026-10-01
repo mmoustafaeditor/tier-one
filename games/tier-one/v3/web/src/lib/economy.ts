@@ -120,6 +120,22 @@ export type Rarity4 = 'common' | 'rare' | 'epic' | 'legendary';
 /** The coin price of a look by rarity; legendary is credits (or the Gold lane), never coins. */
 export const lookPrice = (r: Rarity4): { coins?: number; credits?: number } => (r === 'legendary' ? { credits: PRICES.legendaryCredits } : { coins: PRICES.look[r] });
 
+// ---------------------------------------------------------------- Sponsors (CONCEPT4 §4): paid per right call, by loudness
+export type SponsorTier = 'local' | 'national' | 'global';
+export interface SponsorTierDef { rate: readonly [number, number, number]; bonus: number; strikes: number; term: 'window' | 'week'; warnFirst: boolean; rank: RankId; followers: number }
+export const SPONSOR = {
+  tiers: {
+    local: { rate: [4, 8, 16], bonus: 60, strikes: 3, term: 'window', warnFirst: false, rank: 'nobody', followers: 0 },
+    national: { rate: [8, 16, 32], bonus: 150, strikes: 2, term: 'window', warnFirst: false, rank: 'rising', followers: 2000 },
+    global: { rate: [15, 30, 60], bonus: 400, strikes: 1, term: 'week', warnFirst: true, rank: 'itk', followers: 10000 },
+  } as Record<SponsorTier, SponsorTierDef>,
+  scoopMult: 2,            // a Scoop pays double the Drop rate
+  starRate: 0.25, maxStars: 3, // standing 0–3 stars: +25% on the rate card per star; a branded look and a long-term deal at 3
+  offersMax: 3, slots: { free: 1, gold: 2 },
+  cool: { clean: 1, walked: 7, declined: 2 }, // days before a brand offers again
+} as const;
+export const sponsorRate = (tier: SponsorTier, stars: number): [number, number, number] => SPONSOR.tiers[tier].rate.map((r) => Math.round(r * (1 + SPONSOR.starRate * Math.max(0, Math.min(SPONSOR.maxStars, stars))))) as [number, number, number];
+
 // ---------------------------------------------------------------- Contacts Book (trust by use)
 export const BOOK = { xpAsk: 10, xpMatch: 25, xpIgnore: 5, xpCoffee: 20, coffee: PRICES.coffee, levels: [0, 60, 160, 320, 560] as const } as const;
 export const bookLevel = (xp: number) => BOOK.levels.filter((x) => xp >= x).length; // 1–5
@@ -143,9 +159,14 @@ export interface Gain {
   followers: number; followersDelta: number;
   rank: RankId; rankUp: boolean; review: boolean;
   unlocked: Unlock[];
+  /** The sponsor's lines this window (CONCEPT4 §4): per call, the clean-finish bonus, a walk, a star. */
+  sponsor?: SponsorGain;
+  /** Summary of `sponsor` in the shape the results thread's one line reads: paid = coins this window, pulled = the brand walked. */
   deal?: { brand: string; status: 'paid' | 'pulled'; coins: number };
   files?: SecretFile[]; // secret files opened by this window
 }
+export interface SponsorLine { i?: number; kind: 'right' | 'scoop' | 'miss' | 'warn' | 'strike' | 'walked' | 'bonus' | 'done' | 'star' | 'look'; paid: number; key: string; v: Record<string, string | number> }
+export interface SponsorGain { brand: string; tier: SponsorTier; paid: number; lines: SponsorLine[]; bonus?: number; walked?: boolean; star?: number; look?: string }
 export const emptyGain = (level: number, rep: number, followers: number, rank: RankId): Gain => ({ xp: 0, level, levelUp: false, coins: 0, rep, repDelta: 0, followers, followersDelta: 0, rank, rankUp: false, review: false, unlocked: [] });
 
 // ---------------------------------------------------------------- a regular day, for the balance note in RULES4

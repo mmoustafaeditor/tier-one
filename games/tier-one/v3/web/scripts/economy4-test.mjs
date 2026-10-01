@@ -1,12 +1,12 @@
-// Tier One 4 economy test: `node scripts/economy4-test.mjs`. Bundles lib/economy.ts + lib/deals.ts + lib/meta.ts (save on an in-memory localStorage, i18n/react stubbed) and
-// drives one Daily through onDailyDone with a v4 Result4 from engine4: the Gain, a brand deal, a Secret file.
+// Tier One 4 economy test: `node scripts/economy4-test.mjs`. Bundles lib/economy.ts + lib/deals.ts + lib/meta.ts (the
+// save on an in-memory localStorage, i18n/react stubbed) and drives a Daily, a Practice board and room rounds through the
+// real on*Done with v4 Result4 boards from engine4: the Gain, the Sponsors (CONCEPT4 §4), Secret files, the season track,
+// the one coin ledger and the one pack table.
 import { build } from 'esbuild';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { tmpdir } from 'node:os';
 import { mkdtempSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { dirname, join, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 
 const SRC = resolve(dirname(fileURLToPath(import.meta.url)), '../src');
@@ -59,35 +59,57 @@ ok('the one pack table comes from catalog.json; Gold is the 350 pack', () => {
 });
 // a Daily through onDailyDone with a v4 board
 save.update((s) => { s.byline = { followers: 400, rep: 40, hot: 0, best: 0, rank: 1 }; s.credits = 0; s.xp = 0; s.pp = 0; });
-const offers = deals.offersFor(save.getSave());
-ok('Volt slides into the DMs once followers 300 and Rep 32 are crossed; one slot without Gold', () => {
-  assert.equal(offers.length, 1); assert.equal(offers[0].brand, 'volt'); assert.ok(offers[0].payout >= 150);
+ok('sponsors: a Local offer lands right after the first window; one slot without Gold; the offer line has the rate card', () => {
+  assert.deepEqual(deals.offersFor(save.getSave()), []);
+  save.update((s) => { deals.refreshOffers(s); });
+  const offers = deals.offersFor(save.getSave());
+  assert.equal(offers.length, 1); assert.equal(offers[0].tier, 'local'); assert.equal(offers[0].first, true); assert.deepEqual(offers[0].rate, [4, 8, 16]); assert.equal(offers[0].bonus, 60); assert.equal(offers[0].strikes, 3);
+  assert.equal(deals.offerLine(offers[0]).v.h, 4); assert.equal(deals.offerDm(offers[0]).key, 'e4.sp.offer.first');
   assert.equal(deals.slotsFor(save.getSave()), 1); assert.ok(deals.accept(offers[0].id)); assert.equal(deals.active().length, 1); assert.deepEqual(deals.offersFor(save.getSave()), []);
+  assert.equal(deals.tierOpen('national', save.getSave()), false); assert.equal(deals.nextTier(save.getSave()).tier, 'national');
 });
 const g = E4.newGame(E4.buildBoard('smoke-1'));
 for (let i = 0; i < 5; i++) { E4.ask(g, i, 'barber'); E4.call(g, i, g.board.stories[i].truth, 2); } // all in, all right, day 1 (a test board: the truth is known)
 E4.finish(g);
 const r = { ...E4.resolve(g), rank: 3, players: 40 };
 const gain = meta.onDailyDone('2026-10-06', 36, r);
-ok('onDailyDone returns the Gain: XP 100 (Daily 60 + T1 40), level up to 2 with coins, rep +, followers +, files', () => {
+ok('onDailyDone returns the Gain: XP 100 (Daily 60 + T1 40), level up to 2 with coins, rep +, followers +, files, sponsor lines per call', () => {
   assert.equal(r.tier, 'T1'); assert.ok(gain.xp >= 100, 'xp ' + gain.xp); assert.equal(gain.levelUp, true); assert.ok(gain.level >= 2);
-  assert.ok(gain.coins >= 30 + 20, 'coins ' + gain.coins); assert.ok(gain.repDelta >= 15, 'rep ' + gain.repDelta); assert.ok(gain.followersDelta > 1000, 'followers ' + gain.followersDelta);
+  assert.ok(gain.repDelta >= 15, 'rep ' + gain.repDelta); assert.ok(gain.followersDelta > 1000, 'followers ' + gain.followersDelta);
   assert.equal(gain.rank, 'itk'); assert.equal(gain.rankUp, true); assert.ok(gain.files.includes('cleanSheet') && gain.files.includes('dayOne'), 'files ' + gain.files);
-  const s = save.getSave(); assert.equal(s.daily['2026-10-06'].v, 4); assert.equal(s.ach.cleanSheet > 0, true); assert.equal(s.ledger.some((l) => l.why === 'daily:36'), true);
+  const sp = gain.sponsor; assert.ok(sp, 'sponsor block'); assert.equal(sp.brand, deals.history()[0].brand);
+  const perCall = sp.lines.filter((l) => l.i != null); assert.equal(perCall.length, 5); assert.ok(perCall.every((l) => l.kind === 'scoop' || l.kind === 'right'));
+  const scoops = r.scoops, expectPaid = scoops * 32 + (5 - scoops) * 16 + 60;
+  assert.equal(sp.paid, expectPaid, 'paid ' + sp.paid); assert.equal(sp.bonus, 60); assert.equal(sp.star, 1); assert.equal(gain.deal.status, 'paid'); assert.equal(gain.deal.coins, expectPaid);
+  assert.ok(gain.coins >= expectPaid + 30 + 20, 'coins ' + gain.coins);
+  const s = save.getSave(); assert.equal(s.daily['2026-10-06'].v, 4); assert.equal(s.ledger.some((l) => l.why.startsWith('sponsor:')), true);
+  assert.equal(deals.standing(s, sp.brand).stars, 1); assert.equal(deals.active().length, 0); assert.equal(deals.history()[0].status, 'clean');
   assert.equal(byline.rankOf(s), 'itk'); assert.equal(s.season.xp, s.xp);
 });
-ok('a window-term deal resolves with the window (paid or missed), a wrong Drop pulls it, the ledger says deal:volt', () => {
-  const s = save.getSave(); const done = deals.history(s);
-  assert.equal(done.length, 1); assert.equal(done[0].brand, 'volt'); assert.ok(['paid', 'missed'].includes(done[0].status));
-  if (done[0].status === 'paid') { assert.ok(gain.deal && gain.deal.status === 'paid'); assert.ok(s.ledger.some((l) => l.why === 'deal:volt')); }
-  assert.ok(s.deals.cool.volt > Date.now());
-  // a wrong Drop during a deal
-  save.update((x) => { x.deals.cool = {}; x.byline.followers = 20000; x.byline.rep = 60; });
-  const o2 = deals.offersFor(save.getSave()); assert.ok(o2.length >= 2); assert.ok(deals.accept(o2.find((o) => o.brand === 'tempo').id));
-  const g2 = E4.newGame(E4.buildBoard('smoke-2')); E4.ask(g2, 0, 'barber'); E4.call(g2, 0, (g2.board.stories[0].truth + 1) % 3, 2); E4.finish(g2);
-  const gain2 = meta.onPracticeDone(E4.resolve(g2), false, 'p1'); assert.equal(gain2.deal, undefined, 'practice never touches a deal');
-  const gain3 = meta.onRoomDone(E4.resolve(g2), { code: 'ROOM1', round: 1 });
-  assert.equal(gain3.deal && gain3.deal.status, 'pulled'); assert.equal(deals.active().length, 0);
+ok('wrong calls never cost coins: a wrong Hint is ignored, a wrong Post warns, a wrong Drop strikes; a window deal ends with the window; Practice never counts', () => {
+  save.update((x) => { x.deals.cool = {}; x.deals.lastOffer = undefined; x.byline.followers = 20000; x.byline.rep = 60; deals.refreshOffers(x); });
+  const o = deals.offersFor(save.getSave()); assert.ok(o.length >= 1 && o.length <= 3, 'offers ' + o.length);
+  const nat = o.find((x) => x.tier === 'national') || o[0]; assert.ok(deals.accept(nat.id));
+  const c0 = save.getSave().credits;
+  const g2 = E4.newGame(E4.buildBoard('smoke-2')); for (let i = 0; i < 3; i++) { E4.ask(g2, i, 'barber'); E4.call(g2, i, (g2.board.stories[i].truth + 1) % 3, i); } E4.finish(g2);
+  const gp = meta.onPracticeDone(E4.resolve(g2), false, 'p1'); assert.equal(gp.sponsor, undefined, 'practice never touches a sponsor'); assert.equal(deals.active().length, 1);
+  const gr = meta.onRoomDone(E4.resolve(g2), { code: 'ROOM1', round: 1 });
+  assert.ok(save.getSave().credits >= c0, 'wrong calls never cost coins'); assert.ok(!save.getSave().ledger.some((l) => l.why.startsWith('sponsor:') && l.d < 0));
+  const kinds = gr.sponsor.lines.map((l) => l.kind); assert.deepEqual(kinds.slice(0, 3), ['miss', 'warn', 'strike']);
+  if (nat.term === 'window') { assert.equal(deals.active().length, 0, 'a window deal ends with the window'); assert.equal(deals.history()[0].status, 'done'); assert.equal(deals.history()[0].bonus, 0, 'no bonus after a strike'); assert.equal(kinds[3], 'done'); }
+  assert.deepEqual(eco.sponsorRate('local', 2), [6, 12, 24]); assert.deepEqual(eco.sponsorRate('global', 3), [26, 53, 105]);
+});
+ok('a Global week deal: ITK rank + 10,000 followers, warned first, walks on the second wrong Drop; you keep what was paid; standing drops a star', () => {
+  save.update((x) => { x.deals.active = []; x.deals.offers = []; x.deals.lastOffer = undefined; const far = Date.now() + 30 * 864e5; x.deals.cool = { volt: far, oasis: far, kickoff: far, tempo: far }; x.byline.followers = 20000; x.byline.rep = 60; x.byline.rank = 2; deals.refreshOffers(x); });
+  const gl = deals.offersFor(save.getSave()).find((x) => x.tier === 'global'); assert.ok(gl, 'a global offer'); assert.equal(gl.term, 'week'); assert.deepEqual(gl.rate, [15, 30, 60]); assert.equal(gl.strikes, 1); assert.equal(gl.warnFirst, true);
+  assert.ok(deals.accept(gl.id));
+  const g3 = E4.newGame(E4.buildBoard('smoke-3')); E4.ask(g3, 0, 'barber'); E4.call(g3, 0, g3.board.stories[0].truth, 2); E4.ask(g3, 1, 'barber'); E4.call(g3, 1, (g3.board.stories[1].truth + 1) % 3, 2); E4.finish(g3);
+  const g1 = meta.onRoomDone(E4.resolve(g3), { code: 'ROOM1', round: 2 });
+  const k1 = g1.sponsor.lines.map((l) => l.kind); assert.ok(k1.includes('warn'), 'warned first: ' + k1); assert.ok(!k1.includes('walked')); assert.equal(deals.active().length, 1, 'a week deal survives the window');
+  const paidSoFar = deals.active()[0].p.paid; assert.ok(paidSoFar >= 60, 'a right Drop paid 60 or a Scoop 120: ' + paidSoFar);
+  const g4 = E4.newGame(E4.buildBoard('smoke-4')); E4.ask(g4, 0, 'barber'); E4.call(g4, 0, (g4.board.stories[0].truth + 1) % 3, 2); E4.finish(g4);
+  const g2r = meta.onRoomDone(E4.resolve(g4), { code: 'ROOM1', round: 3 });
+  assert.equal(g2r.sponsor.walked, true); assert.equal(g2r.deal.status, 'pulled'); assert.equal(deals.active().length, 0); assert.equal(deals.standing(save.getSave(), gl.brand).walks, 1); assert.equal(deals.history()[0].paid, paidSoFar);
 });
 ok('season track: 30 tiers, free look every 5, Gold look every 3, Legendary at 30; claims pay through the one ledger', () => {
   const tv = season.trackView(save.getSave()); assert.equal(tv.rows.length, 30); assert.equal(tv.rows[4].free.cos, 'rumour-2026.f1'); assert.equal(tv.rows[2].gold.cos, 'rumour-2026.g1'); assert.equal(tv.rows[29].gold.cos, 'rumour-2026.g10'); assert.equal(tv.rows[0].free.coins, 20);

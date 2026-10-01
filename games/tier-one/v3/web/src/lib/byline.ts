@@ -18,6 +18,7 @@ import {
 import type { Route } from '../App';
 import { moment } from './moments';
 import { earnHook } from './earnhook';
+import { onCall as sponsorCall, type CallOutcome } from './deals';
 
 // ---------------------------------------------------------------- types (stored in the save; all optional there)
 export type BMode = 'daily' | 'career' | 'room' | 'wire' | 'practice';
@@ -345,7 +346,7 @@ function missionFeed(s: Save) {
 }
 
 // ---------------------------------------------------------------- the Wire (§1.6): resolved real-football calls
-export interface WireResolved { rid: string; right?: boolean | null; done?: boolean; s: number; at: number; player?: string; pts?: number }
+export interface WireResolved { rid: string; right?: boolean | null; done?: boolean; s: number; at: number; player?: string; pts?: number; sponsor?: CallOutcome | null }
 /** Call with the player's Wire calls whenever they refresh; each resolved call is recorded once. */
 export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: string) => string | undefined) {
   const b0 = getSave().byline;
@@ -366,6 +367,7 @@ export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: strin
       else b.hot = 0;
       if (!shielded) b.rep = clampRep(b.rep + repDelta4('wire', st, !!c.right, false)); // Wire moves Rep at half (RULES4 §3)
       b.followers = Math.max(0, b.followers + d);
+      c.sponsor = sponsorCall(s, { mode: 'wire', right: !!c.right, s: st }); // the Market keeps paying the sponsor (CONCEPT4 §4)
       if (keepRank(b)) pushFeed(s, { kind: 'level', key: 'cn.feed.tierUp', v: { rt: rankOf(s) }, to: { n: 'me' }, tone: 'gold' });
       payMilestones(s);
       // Old backlog lands quietly; the newest few make the feed.
