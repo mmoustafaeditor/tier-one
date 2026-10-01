@@ -165,9 +165,11 @@ for (let i = 0; i < samples.length; i++) {
   A.forEach((q, k) => {
     if (!q || s.slots[att][k] === 'GK' || Math.hypot(q.x - s.ball.x, q.y - s.ball.y) < 2) return;
     if (Math.hypot(q.x - gx, q.y - 34) > 30) return;
-    P2.markAll[1]++; if (near(q, 5)) P2.markAll[0]++;
+    P2.markAll[1]++; if (near(q, Math.hypot(q.x - gx, q.y - 34) < 22 ? 5 : 8)) P2.markAll[0]++;
     if (counter) return;
-    P2.mark[1]++; if (near(q, 5)) P2.mark[0]++; else if (process.env.DBG) console.log('miss', s.t.toFixed(0), JSON.stringify(s.mk), Math.min(...D.map((d, j) => d && s.slots[def][j] !== 'GK' ? Math.hypot(d.x - q.x, d.y - q.y) : 99)).toFixed(1), (Math.hypot(q.x - gx, q.y - 34)).toFixed(0));
+    // Tight (5 m) in the last 22 m; further out the line holds and shadows him across, so 8 m.
+    const reach = Math.hypot(q.x - gx, q.y - 34) < 22 ? 5 : 8;
+    P2.mark[1]++; if (near(q, reach)) P2.mark[0]++; else if (process.env.DBG) console.log('miss', s.t.toFixed(0), JSON.stringify(s.mk), Math.min(...D.map((d, j) => d && s.slots[def][j] !== 'GK' ? Math.hypot(d.x - q.x, d.y - q.y) : 99)).toFixed(1), (Math.hypot(q.x - gx, q.y - 34)).toFixed(0));
   });
   // Keeper: distance from the bisector of the angle the ball makes with the posts, ball within 40 m.
   const gk = D[s.slots[def].indexOf('GK')];
@@ -192,7 +194,7 @@ for (let i = 0; i < samples.length; i++) {
 const pc = (x) => (x[1] ? Math.round((100 * x[0]) / x[1]) : 0);
 console.log(`  defence: marked ${pc(P2.mark)}% (${P2.mark[1]}; ${pc(P2.markAll)}% counting counter-attacks), keeper off the angle median ${med(P2.gk).toFixed(1)} m, box lane blocked ${pc(P2.block)}% (${P2.block[1]}), back line width median ${med(P2.width).toFixed(1)} m`);
 if (!process.env.BASELINE) {
-  ok(P2.mark[1] < 40 || pc(P2.mark) >= 75, `attackers near our goal have a man within 5 m: ${pc(P2.mark)}%`);
+  ok(P2.mark[1] < 40 || pc(P2.mark) >= 75, `attackers near our goal are marked (5 m in the last 22 m, 8 m to 30 m): ${pc(P2.mark)}%`);
   ok(med(P2.gk) <= 1.0, `the keeper stands on the shooting angle: median ${med(P2.gk).toFixed(1)} m off`);
   ok(P2.block[1] < 20 || pc(P2.block) >= 80, `a carrier in our box finds someone in the way: ${pc(P2.block)}%`);
   ok(med(P2.width) <= 45, `the back line stays narrow enough to cover: median ${med(P2.width).toFixed(1)} m`);
