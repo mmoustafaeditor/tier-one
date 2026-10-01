@@ -3,13 +3,13 @@
 // zone each contest happened in, who won it, who shot. The zone the ball is in glows in the colour of the side on it.
 // Presentation only: nothing here decides anything (the score and stats come from the event log).
 import { useEffect, useRef } from 'react';
-import type { LiveMatch } from '../sim/match';
+import type { LiveMatch, MatchEvent } from '../sim/match';
 import { rngFor } from '../sim/match';
 import { FORMATIONS, fullTactics } from '../sim/tactics';
 import { planOf, spotOf, type Spot } from '../sim/engine/phases';
 import type { Position } from '../model/types';
 import type { World } from '../sim/world';
-import { TRANSITION_MS, lineDepth, pressShape, pressSpot, runFor, speedsOf, step, wideOf, type LineState, type PressPlan, type Transition } from './pitch/move';
+import { ARC, THROUGH_LEAD, TRANSITION_MS, arcHeight, deliveryOf, lineDepth, passKind, pressShape, pressSpot, runFor, shooterSpot, shotTarget, speedsOf, step, wideOf, type LineState, type PassKind, type PressPlan, type Transition } from './pitch/move';
 
 type Pt = { x: number; y: number };
 
@@ -23,9 +23,9 @@ export function awayKit(home: string, a: [string, string]): string {
   return a[1];
 }
 type Beat =
-  | { kind: 'pass'; side: 0 | 1; to: number; pt?: Pt; z?: number }
+  | { kind: 'pass'; side: 0 | 1; to: number; pt?: Pt; z?: number; type?: PassKind }
   | { kind: 'turnover'; side: 0 | 1; to?: number; pt?: Pt; z?: number }
-  | { kind: 'shot'; side: 0 | 1; shooter: number; result: 'goal' | 'save' | 'miss' | 'block'; z?: number }
+  | { kind: 'shot'; side: 0 | 1; shooter: number; result: 'goal' | 'save' | 'miss' | 'block'; z?: number; how?: string }
   | { kind: 'kickoff'; side: 0 | 1 }
   | { kind: 'hold' };
 
@@ -34,22 +34,24 @@ interface Anim {
   ball: Pt;
   poss: 0 | 1;
   carrier: number;        // slot of the ball carrier in the possessing side (-1 = loose)
-  flight: { from: Pt; to: Pt; t: number; dur: number; then: () => void } | null;
+  flight: { from: Pt; to: Pt; t: number; dur: number; then: () => void; h: number; end: number } | null;
+  bh: number;             // the ball's height in metres (lofted passes, crosses, shots over the bar)
   beats: Beat[];
   beat: number;
   clock: number;
   beatLen: number;
   inNet: boolean;
-  shooter: { side: 0 | 1; slot: number } | null; // runs into the box before a shot
+  shooter: { side: 0 | 1; slot: number; how?: string } | null; // runs into the box (or to the edge of it) before a shot
   run: { side: 0 | 1; slot: number; pt: Pt } | null; // the carrier heads for the zone the engine says the play is in
   zone: number;           // zone of the ball (absolute), -1 none
-  minute: number;
+  minute: string;         // the minute last planned ("min+plus": added time plays out too)
   time: number;
   spd: number[][];        // speed ratio per [side][slot] (pace and match fitness), refreshed every minute
   line: (LineState | undefined)[]; // each side's back-line depth out of possession
   back: [number, number]; // when each side last played the ball backwards (a time, for the back line's step-up)
   trans: Transition | null; // the last turnover: who lost it and when (counter-press, recovery runs, breaks)
   runsN: number;          // real runs off the ball this frame (for the measurement test)
+  kinds: Record<string, number>; // passes and shots shown, by type (for the measurement test)
 }
 
 const L = 105, W = 68;
@@ -102,7 +104,7 @@ function target(m: LiveMatch, a: Anim, side: 0 | 1, k: number): Pt {
     if (sp.oop === 'press_forward') y += (a.ball.y - y) * 0.5;
   }
   // The player about to shoot makes his run into the box; the carrier heads for the engine's zone.
-  if (a.shooter && a.shooter.side === side && a.shooter.slot === k) { d = 88; y = W / 2 + (sy - 50) * 0.12; }
+  if (a.shooter && a.shooter.side === side && a.shooter.slot === k) ({ d, y } = shooterSpot(a.shooter.how, sy));
   else if (a.run && a.run.side === side && a.run.slot === k) return a.run.pt;
   return { x: toX(side, clamp(d, 2, 103)), y: clamp(y, 2, W - 2) };
 }
@@ -153,6 +155,28 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
     const ks = onPitch(m, side);
     all.push({ kind: 'pass', side, to: ks[Math.floor(r() * ks.length)] ?? 0 });
   }
+  // The engine's shot types (this minute's shot events, in the same order as the flow's shots): a header or a set
+  // piece is set up by a cross from out wide, a cutback by a ball pulled back from the byline, a through shot by a
+  // through ball; a long shot is hit from the edge of the box.
+  const now = (e: MatchEvent) => e.min === m.minute && (e.plus ?? 0) === (m.plus ?? 0) && SHOT_EV.has(e.kind);
+  const shotEv = m.events.filter(now);
+  const shotIx = all.map((b, i) => (b.kind === 'shot' ? i : -1)).filter((i) => i >= 0);
+  if (shotEv.length === shotIx.length) {
+    for (let j = shotIx.length - 1; j >= 0; j--) {
+      const i = shotIx[j], b = all[i] as Extract<Beat, { kind: 'shot' }>;
+      b.how = shotEv[j].how;
+      const pre = all[i - 1], dl = deliveryOf(b.how);
+      if (!dl || pre?.kind !== 'pass' || pre.side !== b.side) continue;
+      pre.type = dl;
+      if (dl === 'through') continue;
+      // The ball goes out wide first, to the flank the nearest wide player is on.
+      const ks = onPitch(m, b.side).filter((k) => k !== b.shooter && FORMATIONS[m.sides[b.side].tactics.formation].slots[k].pos !== 'GK' && a.pos[b.side][k]);
+      const wk = ks.sort((p, q) => Math.abs(a.pos[b.side][q].y - W / 2) - Math.abs(a.pos[b.side][p].y - W / 2))[0];
+      if (wk === undefined) continue;
+      const top = a.pos[b.side][wk].y < W / 2;
+      all.splice(i - 1, 0, { kind: 'pass', side: b.side, to: wk, pt: { x: toX(b.side, dl === 'cutback' ? 99 : 82), y: top ? 6 : W - 6 } });
+    }
+  }
   // As many beats as the speed allows; a shot and the move before it always make the cut.
   const n = Math.max(2, Math.round(msPerMinute / 130));
   let beats = all;
@@ -162,17 +186,20 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
     beats = [...(all[0].kind === 'kickoff' ? [all[0]] : []), ...all.slice(Math.max(all[0].kind === 'kickoff' ? 1 : 0, end - n), end)];
   }
   const shot = beats.find((b) => b.kind === 'shot') as Extract<Beat, { kind: 'shot' }> | undefined;
-  a.shooter = shot ? { side: shot.side, slot: shot.shooter } : null;
+  a.shooter = shot ? { side: shot.side, slot: shot.shooter, how: shot.how } : null;
   a.beats = beats;
   a.beat = 0;
   a.clock = 0;
   a.beatLen = msPerMinute / Math.max(1, beats.length);
-  a.minute = m.minute;
+  a.minute = minuteKey(m);
 }
+const SHOT_EV = new Set(['goal', 'nogoal', 'save', 'block', 'miss']);
+const minuteKey = (m: LiveMatch) => `${m.minute}+${m.plus ?? 0}`;
 
-function fly(a: Anim, to: Pt, dur: number, then: () => void) {
-  a.flight = { from: { ...a.ball }, to, t: 0, dur: Math.max(60, dur), then };
+function fly(a: Anim, to: Pt, dur: number, then: () => void, h = 0, end = 0) {
+  a.flight = { from: { ...a.ball }, to, t: 0, dur: Math.max(60, dur), then, h, end };
 }
+const nearestOf = (m: LiveMatch, a: Anim, side: 0 | 1, pt: Pt) => onPitch(m, side).filter((k) => a.pos[side][k]).sort((x, y) => dist(a.pos[side][x], pt) - dist(a.pos[side][y], pt))[0];
 
 function runBeat(a: Anim, m: LiveMatch, b: Beat) {
   const travel = Math.min(420, a.beatLen * 0.7);
@@ -200,32 +227,58 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     if (b.side !== a.poss || !a.pos[b.side][b.to]) return;
     if (b.z !== undefined) a.zone = b.z;
     if (b.pt) a.run = { side: b.side, slot: b.to, pt: b.pt };
-    if (b.to === a.carrier) return;
-    const to = b.pt ?? a.pos[b.side][b.to];
-    if (depthOf(b.side, to.x) < depthOf(b.side, a.ball.x) - 3) a.back[b.side] = a.time; // a backward pass: the other side's line steps up
+    if (b.to === a.carrier) return; // he carries it on himself (the run above)
+    // To the shooter: where he's running to (his spot in or at the edge of the box).
+    const toShooter = a.shooter?.side === b.side && a.shooter.slot === b.to;
+    let to = toShooter ? target(m, a, b.side, b.to) : b.pt ?? a.pos[b.side][b.to];
+    const df = depthOf(b.side, a.ball.x), dt0 = depthOf(b.side, to.x);
+    const type = b.type ?? passKind(df, a.ball.y, dt0, to.y, dist(a.ball, to));
+    // A through ball goes into space ahead of the runner.
+    if (type === 'through') to = { x: toX(b.side, Math.min(dt0 + THROUGH_LEAD, 100)), y: to.y };
+    if (dt0 < df - 3) a.back[b.side] = a.time; // a backward pass: the other side's line steps up
+    a.kinds[type] = (a.kinds[type] ?? 0) + 1;
     a.carrier = -1;
-    fly(a, { x: to.x + (b.side === 0 ? 1 : -1), y: to.y }, travel, () => { a.carrier = b.to; });
+    const arc = ARC[type];
+    fly(a, { x: to.x + (b.side === 0 ? 1 : -1), y: to.y }, travel * arc.t, () => { a.carrier = b.to; }, arc.h);
     return;
   }
-  // Shot.
+  // Shot: spread across the goal (or wide, or over the bar); a save can be parried out, a block deflects.
   const goalX = b.side === 0 ? L + 0.8 : -0.8;
   const r = rngFor(`${m.key}:shot`, m.minute);
   a.carrier = -1; a.run = null;
   if (b.z !== undefined) a.zone = b.z;
+  a.kinds[`shot:${b.how ?? 'box'}`] = (a.kinds[`shot:${b.how ?? 'box'}`] ?? 0) + 1;
+  const other = (1 - b.side) as 0 | 1;
+  const lift = b.how === 'long' || b.how === 'fk' ? 1.6 : 0.5;
+  const fwd = b.side === 0 ? 1 : -1;
   if (b.result === 'block') {
-    const other = (1 - b.side) as 0 | 1;
-    const k = onPitch(m, other).sort((x, y) => dist(a.pos[other][x], a.ball) - dist(a.pos[other][y], a.ball))[0];
-    fly(a, k !== undefined ? a.pos[other][k] : a.ball, travel * 0.5, () => { a.shooter = null; a.poss = other; a.carrier = k ?? -1; });
+    const k = nearestOf(m, a, other, a.ball);
+    const at = k !== undefined ? a.pos[other][k] : a.ball;
+    // Off the blocker and a few metres away; the nearest defender picks it up.
+    fly(a, at, travel * 0.35, () => {
+      const loose = { x: clamp(at.x - fwd * (2 + r() * 4), 1, L - 1), y: clamp(at.y + (r() - 0.5) * 10, 1, W - 1) };
+      fly(a, loose, travel * 0.4, () => { const n = nearestOf(m, a, other, loose); a.shooter = null; a.poss = other; a.carrier = n ?? -1; });
+    });
     return;
   }
-  if (b.result === 'goal') fly(a, { x: goalX, y: W / 2 + (r() - 0.5) * 5 }, travel * 0.8, () => { a.inNet = true; a.shooter = null; });
-  else if (b.result === 'miss') fly(a, { x: goalX + (b.side === 0 ? 2 : -2), y: W / 2 + (r() < 0.5 ? -1 : 1) * (5 + r() * 6) }, travel * 0.8, () => {
-    const other = (1 - b.side) as 0 | 1; a.shooter = null; a.poss = other; a.carrier = gkSlot(m, other);
-  });
+  const t = shotTarget(b.result, r);
+  if (b.result === 'goal') fly(a, { x: goalX, y: t.y }, travel * 0.8, () => { a.inNet = true; a.shooter = null; }, lift, t.h);
+  else if (b.result === 'miss') fly(a, { x: goalX + fwd * 2, y: t.y }, travel * 0.8, () => {
+    a.shooter = null; a.poss = other; a.carrier = gkSlot(m, other);
+  }, lift, t.h);
   else {
-    const other = (1 - b.side) as 0 | 1;
     const gk = gkSlot(m, other);
-    fly(a, a.pos[other][gk] ?? { x: goalX, y: W / 2 }, travel * 0.8, () => { a.shooter = null; a.poss = other; a.carrier = gk; });
+    const keeper = a.pos[other][gk] ?? { x: goalX, y: W / 2 };
+    const save = { x: goalX - fwd * 1.2, y: clamp(t.y, keeper.y - 3.5, keeper.y + 3.5) };
+    fly(a, save, travel * 0.7, () => {
+      a.shooter = null;
+      // Parried out (a third of saves) to the side of the box, where the nearest defender clears it; otherwise held.
+      if (r() < 0.35) {
+        const out = { x: goalX - fwd * (6 + r() * 6), y: clamp(save.y + (save.y < W / 2 ? -1 : 1) * (6 + r() * 8), 3, W - 3) };
+        fly(a, out, travel * 0.45, () => { a.poss = other; a.carrier = nearestOf(m, a, other, out) ?? gk; });
+        a.kinds.parry = (a.kinds.parry ?? 0) + 1;
+      } else { a.poss = other; a.carrier = gk; }
+    }, lift, t.h);
   }
 }
 
@@ -288,6 +341,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   const lastMarks = useRef('');
   const dots = useRef<(SVGGElement | null)[][]>([[], []]);
   const ballRef = useRef<SVGGElement | null>(null);
+  const shadowRef = useRef<SVGEllipseElement | null>(null);
   const netRef = useRef<SVGTextElement | null>(null);
   const anim = useRef<Anim | null>(null);
 
@@ -301,8 +355,8 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   if (!anim.current) {
     const a: Anim = {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], beat: 0, clock: 0,
-      beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: -1, time: 0,
-      spd: speedsOf(m, world), line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0,
+      beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
+      spd: speedsOf(m, world), line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {},
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -322,7 +376,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       if (PITCH_DEBUG) (window as unknown as { __gafferPitch?: unknown }).__gafferPitch = { a, slots: mm.sides.map((sd) => FORMATIONS[sd.tactics.formation].slots.map((x) => x.pos)), pressing: mm.sides.map((sd) => sd.tactics.pressing) };
       const { msPerMinute: ms, running: go, camera: cam } = cfg.current;
       a.time += dt;
-      if (a.minute !== mm.minute) plan(a, mm, ms, worldRef.current);
+      if (a.minute !== minuteKey(mm)) plan(a, mm, ms, worldRef.current);
       if (go) {
         a.clock += dt;
         while (a.beat < a.beats.length && a.clock >= a.beat * a.beatLen) runBeat(a, mm, a.beats[a.beat++]);
@@ -333,9 +387,11 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         f.t = Math.min(1, f.t + dt / f.dur);
         const e = f.t < 0.5 ? 2 * f.t * f.t : 1 - (-2 * f.t + 2) ** 2 / 2;
         a.ball = { x: f.from.x + (f.to.x - f.from.x) * e, y: f.from.y + (f.to.y - f.from.y) * e };
-        if (f.t >= 1) { a.flight = null; f.then(); }
+        a.bh = arcHeight(f.h, f.t, f.end);
+        if (f.t >= 1) { a.flight = null; if (!f.end) a.bh = 0; f.then(); }
       } else if (a.carrier >= 0 && a.pos[a.poss][a.carrier] && !a.inNet) {
         const p = a.pos[a.poss][a.carrier];
+        a.bh = 0;
         a.ball = { x: p.x + (a.poss === 0 ? 1.1 : -1.1), y: p.y + 0.6 };
       }
       // Players move towards where they want to be at their own speed (pace, stamina); out of possession the back line
@@ -470,9 +526,12 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       if (cam && layer.current && Math.floor(a.time / 150) !== Math.floor((a.time - dt) / 150)) {
         order.sort((x, y) => x[0] - y[0]).forEach(([, g]) => layer.current!.appendChild(g));
       }
+      // The ball rises off its shadow when it's in the air (lofted passes, crosses, shots over the bar).
       const [bx, by, bs] = pr(fx(a.ball.x), a.ball.y);
-      ballRef.current?.setAttribute('transform', `translate(${bx.toFixed(2)} ${by.toFixed(2)}) scale(${bs.toFixed(3)})`);
-      if (ballRef.current && layer.current && cam) layer.current.appendChild(ballRef.current);
+      shadowRef.current?.setAttribute('transform', `translate(${bx.toFixed(2)} ${by.toFixed(2)}) scale(${bs.toFixed(3)})`);
+      shadowRef.current?.setAttribute('opacity', a.bh > 0.2 ? '.35' : '0');
+      ballRef.current?.setAttribute('transform', `translate(${bx.toFixed(2)} ${(by - a.bh * 0.55 * bs).toFixed(2)}) scale(${(bs * (1 + a.bh * 0.05)).toFixed(3)})`);
+      if (ballRef.current && layer.current && cam) { if (shadowRef.current) layer.current.appendChild(shadowRef.current); layer.current.appendChild(ballRef.current); }
       netRef.current?.setAttribute('opacity', a.inNet ? '1' : '0');
       raf = requestAnimationFrame(loop);
     };
@@ -496,6 +555,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
             <text className="g-dot-n" y=".85" textAnchor="middle" fill={ink(kit[side])}>{numbers[side][k]}</text>
           </g>
         )))}
+        <ellipse ref={shadowRef} rx="1.1" ry=".6" fill="#000" opacity="0" />
         <g ref={ballRef}><circle r="1.05" fill="#fff" stroke="#111" strokeWidth=".3" /></g>
       </g>
       <text ref={netRef} className="g-goal" x={L / 2} y={vh / 2 + 4} textAnchor="middle" opacity="0">{goalWord}</text>

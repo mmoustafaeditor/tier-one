@@ -26,15 +26,16 @@ await tap('Continue'); if (await p.evaluate(() => /Take the staff calls/.test(do
 await tap('Walk out'); await p.waitForTimeout(3000);
 // Sample for SECONDS of real time.
 const SECONDS = Number(process.env.SECONDS ?? 40);
-const samples = await p.evaluate(async (secs) => {
+let samples = await p.evaluate(async (secs) => {
   const out = []; const t0 = performance.now();
   while (performance.now() - t0 < secs * 1000) {
     await new Promise((r) => requestAnimationFrame(r));
     const d = window.__gafferPitch; if (!d) continue;
-    const a = d.a; out.push({ t: a.time, runs: a.runsN, trans: a.trans ? { ...a.trans } : null, beatLen: a.beatLen, poss: a.poss, ball: { ...a.ball }, pos: a.pos.map((s) => s.map((q) => q ? { x: q.x, y: q.y } : null)), spd: a.spd, slots: d.slots, pressing: d.pressing });
+    const a = d.a; out.push({ t: a.time, bh: a.bh, runs: a.runsN, trans: a.trans ? { ...a.trans } : null, beatLen: a.beatLen, poss: a.poss, ball: { ...a.ball }, pos: a.pos.map((s) => s.map((q) => q ? { x: q.x, y: q.y } : null)), spd: a.spd, slots: d.slots, pressing: d.pressing });
   }
-  return out;
+  return { out, kinds: { ...window.__gafferPitch?.a.kinds } };
 }, SECONDS);
+const kinds = samples.kinds; samples = samples.out;
 const L = 105, LINE = { GK: 'gk', CB: 'def', LB: 'def', RB: 'def', CDM: 'mid', CM: 'mid', CAM: 'mid', LW: 'fwd', RW: 'fwd', ST: 'fwd' };
 const depth = (side, x) => (side === 0 ? x : L - x);
 const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : NaN; };
@@ -86,6 +87,13 @@ ok(med(length) <= 40, `team length out of possession: median ${med(length).toFix
 ok(pressNear[0] + pressNear[1] > 0, `someone presses the ball (${pressNear[0]} / ${pressNear[1]} frames within 3 m)`);
 ok(runFrames > samples.length * 0.1 && maxRuns <= 3, `runs off the ball in ${Math.round((100 * runFrames) / samples.length)}% of frames, at most ${maxRuns} at once (≤ 3)`);
 ok(turnovers > 0 && reacted >= turnovers * 0.8, `after a turnover the side that lost it reacts: ${reacted} of ${turnovers}`);
+// Pass and shot types (PR C): several kinds of pass shown, lofted balls really leave the ground, shots typed.
+const passKinds = ['short', 'long', 'through', 'cross', 'cutback'].filter((k) => kinds[k] > 0);
+console.log(`  kinds: ${JSON.stringify(kinds)}`);
+ok(passKinds.length >= 3, `pass types shown: ${passKinds.join(', ')} (3+)`);
+const maxH = Math.max(0, ...samples.map((s) => s.bh ?? 0));
+ok(!kinds.long && !kinds.cross || maxH > 3, `lofted balls leave the ground (highest ${maxH.toFixed(1)} m)`);
+ok(samples.every((s) => Number.isFinite(s.ball.x) && Number.isFinite(s.ball.y) && Number.isFinite(s.bh ?? 0)), 'the ball never leaves the numbers (no NaN)');
 ok(!errs.length, `no console errors${errs.length ? ': ' + errs[0] : ''}`);
 await browser.close(); server.close();
 console.log(fails ? `\n${fails} FAILED` : '\nall passed');
