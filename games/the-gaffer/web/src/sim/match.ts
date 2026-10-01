@@ -27,6 +27,7 @@ import { EV } from './engine/model';
 import { RS, RSN, TUNE_REF, callFoul, callGoal, callOffside, ensureRef, foulFactor, initRef, misconduct, refereeFor, restartOnTurnover, settle, wasteBooking, type Acts, type RefState } from './engine/referee';
 import { PERIOD_END, afterTick, isExtraBreak, isHalfTime, knockout, needsExtra, periodOver, playOver, tick } from './engine/clock';
 import { SUBS } from './competitions';
+import { BG, HURT, proneness } from './engine/injury';
 import { AI_COH, cohLevel, cohesionOfClub } from './cohesion';
 import { staffEdge } from './norms';
 
@@ -305,6 +306,15 @@ function sub(m: LiveMatch, i: 0 | 1, outId: string, inId: string, get?: Lookup) 
   return true;
 }
 
+// A player goes off hurt: the event (how 'foul' and the offence when a tackle did it), then the best sub in his slot.
+function injure(m: LiveMatch, i: 0 | 1, id: string, out: number, get: Lookup, off?: string) {
+  const s = m.sides[i];
+  m.events.push({ ...stamp(m), side: i, kind: 'injury', playerId: id, out, ...(off ? { how: 'foul', note: off } : {}) });
+  const k = s.onPitch.indexOf(id);
+  const pos = FORMATIONS[s.tactics.formation].slots[k]?.pos ?? 'CM';
+  const inId = canSub(m, i) ? bestIn(m, i, pos, get) : null;
+  if (inId) sub(m, i, id, inId, get); else { s.onPitch[k] = ''; changed(m); }
+}
 // Best bench player for a slot.
 function bestIn(m: LiveMatch, i: 0 | 1, slotPos: Position, get: Lookup): string | null {
   const s = m.sides[i];
@@ -415,7 +425,9 @@ function pushEvent(m: LiveMatch, e: MatchEvent) {
 function actsOf(m: LiveMatch, get: Lookup): Acts {
   return { push: (e) => pushEvent(m, e), sendOff: (side, id, how) => sendOff(m, side, id, how, get), get };
 }
-function rulesOf(m: LiveMatch, get: Lookup, rr: () => number): Rules {
+// The fouled player who may be hurt: rolled after the minute (stepMinute), on a stream of its own.
+interface Hurt { side: 0 | 1; id: string; off: string }
+function rulesOf(m: LiveMatch, get: Lookup, rr: () => number, hurt: Hurt[]): Rules {
   const acts = actsOf(m, get);
   return {
     event: (e) => {
@@ -426,7 +438,9 @@ function rulesOf(m: LiveMatch, get: Lookup, rr: () => number): Rules {
     foul: (i, id, victim, kind, _r, at) => {
       if (!m.sides[i].onPitch.includes(id)) return { red: false, go: kind === 'pen' ? 'pen' : 'fk' };
       const phase = at?.phase ?? 1;
-      return callFoul(m, acts, rr, { side: i, by: id, vs: victim, kind: kind === 'tfoul' ? 'tfoul' : 'foul', box: at?.box ?? kind === 'pen', z: at?.z ?? 12, phase });
+      const out = callFoul(m, acts, rr, { side: i, by: id, vs: victim, kind: kind === 'tfoul' ? 'tfoul' : 'foul', box: at?.box ?? kind === 'pen', z: at?.z ?? 12, phase });
+      if (victim && out.off && HURT[out.off]) hurt.push({ side: (1 - i) as 0 | 1, id: victim, off: out.off });
+      return out;
     },
     turnover: (s, node, start, ev) => restartOnTurnover(m, rr, s, node, start, ev === EV.MISS),
   };
@@ -499,9 +513,20 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
   let model: Model | null = null;
   const current = () => { if (!model || m.dirty) { model = modelNow(m, get); m.dirty = false; } return model; };
   const acts = actsOf(m, get);
-  playMinute(m, r, current, rulesOf(m, get, rr), !!m.full);
+  const hurt: Hurt[] = [];
+  playMinute(m, r, current, rulesOf(m, get, rr, hurt), !!m.full);
   settle(m, acts);       // DOGSO with advantage: a card, or none if the move ended in a goal
   misconduct(m, acts, rr); // dissent, violent conduct
+  // Hurt in a tackle (engine/injury.ts): the offence, the player's proneness and his load.
+  if (hurt.length) {
+    const ri = rngFor(`${m.key}:inj`, t);
+    for (const h of hurt) {
+      if (!m.sides[h.side].onPitch.includes(h.id) || m.events.some((e) => e.kind === 'injury' && e.playerId === h.id)) continue;
+      if (ri() >= HURT[h.off] * proneness(get(h.id)) * (m.injuries ?? 1) * (m.risk?.[h.id] ?? 1)) continue;
+      const out = ri() < (h.off === 'sfp' ? 0.45 : 0.15) ? 6 + Math.floor(ri() * 7) : 1 + Math.floor(ri() * 5);
+      injure(m, h.side, h.id, out, get, h.off);
+    }
+  }
   // Time wasting: a booking now and then for the side running the clock.
   for (const i of [0, 1] as const) {
     const s = m.sides[i];
@@ -540,16 +565,13 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
     const on = s.onPitch.filter(Boolean);
     const rk = on.map((id) => m.risk?.[id] ?? 1);
     const rsum = rk.reduce((a, v) => a + v, 0);
-    if (r() < 0.0014 * (m.injuries ?? 1) * (1 + Math.max(0, 75 - sum / n) / 40) * (t.pressing === 2 ? 1.12 : 1) * (rsum / Math.max(1, on.length))) {
-      let pickAt = r() * rsum, hi = 0;
-      while (hi < on.length - 1 && pickAt >= rk[hi]) pickAt -= rk[hi++];
-      const hurt = on[hi];
+    if (r() < BG * 0.0014 * (m.injuries ?? 1) * (1 + Math.max(0, 75 - sum / n) / 40) * (t.pressing === 2 ? 1.12 : 1) * (rsum / Math.max(1, on.length))) {
+      // Who: his load and his hidden proneness (engine/injury.ts).
+      const wk = on.map((id, j) => rk[j] * proneness(P(id)));
+      let pickAt = r() * wk.reduce((a, v) => a + v, 0), hi = 0;
+      while (hi < on.length - 1 && pickAt >= wk[hi]) pickAt -= wk[hi++];
       const out = r() < 0.12 ? 6 + Math.floor(r() * 7) : 1 + Math.floor(r() * 5);
-      m.events.push({ ...stamp(m), side: i, kind: 'injury', playerId: hurt, out });
-      const k = s.onPitch.indexOf(hurt);
-      const pos = slots[k]?.pos ?? 'CM';
-      const inId = canSub(m, i) ? bestIn(m, i, pos, get) : null;
-      if (inId) sub(m, i, hurt, inId, get); else { s.onPitch[k] = ''; changed(m); }
+      injure(m, i, on[hi], out, get);
     }
     if (m.full && m.minute % 15 === 0 && !m.plus) m.tl!.fit[i].push(Math.round(outSum / Math.max(1, outN)));
   }

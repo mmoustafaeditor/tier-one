@@ -89,6 +89,7 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   const corners = ends.filter((s) => s.sp.kind === 'corner');
   const fks = ends.filter((s) => s.sp.kind === 'fk' && depth(s.sp.side, s.sp.at.x) > 70);
   const wallN = (s) => s.pos[1 - s.sp.side].filter((q) => q && Math.abs(Math.hypot(q.x - s.sp.at.x, q.y - s.sp.at.y) - 9.15) < 1.5).length;
+  console.log(`  injuries shown: ${kinds.injury ?? 0}`);
   console.log(`  set pieces staged: ${corners.length} corners, ${fks.length} free kicks in range, ${ends.filter((s) => s.sp.kind === 'gk').length} goal kicks, ${ends.filter((s) => s.sp.kind === 'ti').length} throw-ins, flag up in ${samples.filter((s) => s.flag).length} frames`);
   ok(ends.length > 0, 'set pieces are staged');
   if (process.env.DBG) for (const c of fks) { const st = samples.find((x) => x.sp && x.sp.until === c.sp.until); console.log('fk', JSON.stringify(c.sp), st.t, c.t, JSON.stringify(c.pos[1 - c.sp.side].map((q) => q && Math.round(Math.hypot(q.x - c.sp.at.x, q.y - c.sp.at.y) * 10) / 10)), JSON.stringify(c.ball)); }

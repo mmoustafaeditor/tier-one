@@ -61,6 +61,8 @@ export interface Anim {
   kinds: Record<string, number>; // passes, shots and set pieces shown, by type (for the measurement test)
   sp: SetPiece | null;    // a set piece being staged (corner, free kick, goal kick)
   flag: { x: number; until: number } | null; // the assistant's flag is up (offside), at this x on the near touchline
+  hurt: { side: 0 | 1; slot: number; until: number } | null; // a player down injured (foundation step 4): he stays down, the medic's cross shows
+  hurtAt: { side: 0 | 1; slot: number; at: number }[]; // this minute's injuries, when they happen (ms into the minute)
 }
 
 interface Agent { vx: number; vy: number; tx: number; ty: number; at: number; tank: number; pend: boolean; spr: boolean }
@@ -247,6 +249,17 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
   const wt = beats.map((b) => weightOf(b));
   a.beatLen = msPerMinute / Math.max(1, wt.reduce((t, x) => t + x, 0));
   a.starts = wt.map((_, i) => wt.slice(0, i).reduce((t, x) => t + x, 0) * a.beatLen);
+  // Injuries this minute: hurt in a tackle goes down at that foul's whistle, otherwise he pulls up mid-minute. The
+  // engine has already made the substitution, so the slot is the one his replacement now fills.
+  a.hurtAt = [];
+  for (const e of m.events) {
+    if (e.kind !== 'injury' || !live(e)) continue;
+    const sb = m.events.find((x) => x.kind === 'sub' && x.playerId === e.playerId && live(x));
+    const slot = sb?.inId ? m.sides[e.side].onPitch.indexOf(sb.inId) : -1;
+    if (slot < 0) continue;
+    const fi = e.how === 'foul' ? beats.findIndex((b) => b.kind === 'foul' && b.side === e.side) : -1;
+    a.hurtAt.push({ side: e.side, slot, at: fi >= 0 ? a.starts[fi] : msPerMinute * 0.5 });
+  }
   a.minute = minuteKey(m);
 }
 const weightOf = (b: Beat) => (b.kind === 'corner' ? 4 : b.kind === 'foul' ? (wallSize(depthOf(b.side, b.pt.x)) ? 4 : 1.5) : b.kind === 'offside' || b.kind === 'out' ? 1.5 : 1);
@@ -430,7 +443,7 @@ export function newAnim(m: LiveMatch, world: World): Anim {
     const a: Anim = {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], starts: [], msPM: 1000, beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
-      spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null,
+      spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null, hurt: null, hurtAt: [],
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -447,6 +460,13 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
       if (go) {
         a.clock += dt;
         while (a.beat < a.beats.length && a.clock >= (a.starts[a.beat] ?? a.beat * a.beatLen)) runBeat(a, mm, a.beats[a.beat++]);
+        const h = a.hurtAt.findIndex((x) => a.clock >= x.at);
+        if (h >= 0) {
+          const x = a.hurtAt.splice(h, 1)[0];
+          a.hurt = { side: x.side, slot: x.slot, until: a.time + Math.max(1500, a.beatLen * 2.5) };
+          a.kinds.injury = (a.kinds.injury ?? 0) + 1;
+          if (a.poss === x.side && a.carrier === x.slot && !a.flight) a.carrier = -1; // the ball runs loose
+        }
       }
       // Ball: in flight, or at the carrier's feet.
       if (a.flight) {
@@ -590,14 +610,16 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
         const staging = !!a.sp && a.time < a.sp.until;
         const tau = Math.max(120, ms * 0.9);
         // The back line moves as one: out of possession its defenders react on their best reader's call.
-        const isDef = (k: number) => !has && LINE[sps[k]?.opos ?? slots[k].pos] === 'def' && !pp.press.includes(k) && k !== pp.cover;
+        const down = (k: number) => !!a.hurt && a.time < a.hurt.until && a.hurt.side === side && a.hurt.slot === k; // injured: stays where he fell
+        const isDef = (k: number) => !has && LINE[sps[k]?.opos ?? slots[k].pos] === 'def' && !pp.press.includes(k) && k !== pp.cover && !down(k);
         const lineReads = Math.max(0, ...ks.filter(isDef).map((k) => a.body[side]?.[k]?.reads ?? 0.5));
         // ... and holds its shape at its slowest defender's pace, so it doesn't break up while it steps or drops.
         const lineBodies = ks.filter(isDef).map((k) => a.body[side]?.[k]).filter(Boolean) as Body[];
         const lineTop = Math.min(...lineBodies.map((b) => b.top), 9), lineAcc = Math.min(...lineBodies.map((b) => b.acc), 9);
         for (const k of ks) {
           let t = tg[k];
-          if (has && k === a.carrier && !staging) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
+          if (down(k)) t = a.pos[side][k] ?? t;
+          else if (has && k === a.carrier && !staging) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
           // A little life in everyone's feet, except a keeper set on the shooting angle (he stays on it).
           const wob = !has && LINE[slots[k].pos] === 'gk' ? 0 : Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
           const p = a.pos[side][k] ?? t;
@@ -610,7 +632,8 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           // a new target at his decision ticks, and after a new ball only once he has reacted.
           // The keeper never takes his eyes off the ball: he follows it without a reaction delay.
           const onIt = (has && k === a.carrier) || (!has && (k === blockK || LINE[slots[k].pos] === 'gk')) || (a.run?.side === side && a.run.slot === k) || (a.shooter?.side === side && a.shooter.slot === k);
-          if (onIt || staging) { g.tx = t.x; g.ty = t.y + wob; g.pend = false; }
+          if (down(k)) { g.tx = t.x; g.ty = t.y; g.pend = false; }
+          else if (onIt || staging) { g.tx = t.x; g.ty = t.y + wob; g.pend = false; }
           else if (a.time >= g.at) {
             const since = a.time - a.eventAt;
             if (!g.pend || since >= reactMs(isDef(k) ? lineReads : B.reads, a.beatLen)) {
