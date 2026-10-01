@@ -6,8 +6,8 @@
 // EXPORTS other lanes use:
 //   AppId, APPS, appById(id), appOf(route) → AppId | null, routeOf(app) → Route
 //   <AppIcon id size/>                       the app's tile icon (one icon system, no emoji)
-//   levelInfo(save) → { n, into, need, pct }  the player's level (lib/economy.ts levelOf once the economy lane lands)
-//   unlockLevel(app), isUnlocked(app, save)   "Reach Level N" gates (lib/economy.ts levelUnlocks once it lands)
+//   levelInfo(save) → LevelView { n, into, need, pct, total }  the player's level (lib/economy.ts levelOf on save.xp)
+//   unlockLevel(app), isUnlocked(app, save)   "Reach Level N" gates (lib/economy.ts levelUnlocks)
 //   batteryMode('idle' | 'window' | 'charge') the status-bar battery, driven by the route
 //   bumpUse(app), dockApps(save)              the dock
 //   <StatusBar/>, <Phone/>, <HomeBar/>, <DeskPanel/>
@@ -20,6 +20,7 @@ import { prefersReducedMotion } from '../lib/motion';
 import { ymdUTC } from '../lib/meta';
 import { unreadOf, bylineOf, nextUp } from '../lib/byline';
 import { missionsView } from '../lib/progress';
+import { levelOfSave, levelUnlocks, type LevelView } from '../lib/economy';
 import { ddLiveDates } from '../lib/flags';
 import { v3 } from '../lib/api';
 import type { CastSaga } from '../lib/engine';
@@ -37,9 +38,9 @@ export const APPS: AppDef[] = [
   { id: 'dms', accent: '#1DB46A', unlock: 1, route: { n: 'contacts' }, aliases: ['contacts', 'calls'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'contact' || f.kind === 'editor').length },
   { id: 'lens', accent: '#F2B632', ink: '#2A1C00', unlock: 1, route: { n: 'me' }, aliases: ['me', 'profile', 'pass', 'looks', 'customize'], badge: (s) => (missionsView(s) || []).filter((m) => m.done && !m.claimed).length + Object.values(s.prizes || {}).filter((p) => !p.paid).length + unreadOf(s).filter((f) => f.kind === 'level' || f.kind === 'season' || f.kind === 'mission').length },
   { id: 'story', accent: '#D9486F', unlock: 1, route: { n: 'story' }, aliases: ['career', 'desk', 'editor'], badge: (s) => (s.career?.live ? 'dot' : (s.story?.inbox || []).filter((x) => !x.read).length) },
-  { id: 'live', accent: '#B51B2C', unlock: 3, route: { n: 'ddlive' }, aliases: ['ddlive', 'deadline'], badge: () => (ddLiveDates().some((d) => d.day === today() && d.live) ? 'dot' : 0) },
-  { id: 'market', accent: '#1FA7D9', unlock: 1, route: { n: 'wire' }, aliases: ['wire', 'rumours'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'wire').length },
-  { id: 'groups', accent: '#7C5CFF', unlock: 4, route: { n: 'rooms' }, aliases: ['rooms', 'newsroom', 'friends', 'room'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'room' || f.kind === 'challenge' || f.kind === 'friend' || f.kind === 'newsroom').length },
+  { id: 'live', accent: '#B51B2C', unlock: levelUnlocks.live, route: { n: 'ddlive' }, aliases: ['ddlive', 'deadline'], badge: () => (ddLiveDates().some((d) => d.day === today() && d.live) ? 'dot' : 0) },
+  { id: 'market', accent: '#1FA7D9', unlock: 1, route: { n: 'wire' }, aliases: ['wire', 'rumours'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'wire').length }, // watching is free; calls at levelUnlocks.wire
+  { id: 'groups', accent: '#7C5CFF', unlock: levelUnlocks.groups, route: { n: 'rooms' }, aliases: ['rooms', 'newsroom', 'friends', 'room'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'room' || f.kind === 'challenge' || f.kind === 'friend' || f.kind === 'newsroom').length },
   { id: 'boards', accent: '#3B82F6', unlock: 1, route: { n: 'boards' }, aliases: ['leaderboards', 'lb'], badge: () => 0 },
   { id: 'settings', accent: '#6B7280', unlock: 1, route: { n: 'settings' }, aliases: ['howto', 'options'], badge: () => 0 },
 ];
@@ -71,14 +72,12 @@ export function badgeOf(app: AppDef, s: Save): Badge {
   return own + tray;
 }
 
-// ---------------------------------------------------------------- level and unlocks
-// FALLBACK until lib/economy.ts (lane22/economy) lands: RULES4 §3, XP for the next level = 100 + 30 × (level − 1), read
-// off lifetime XP (save.pp). The merge swaps these two for economy.levelOf / economy.levelUnlocks.
-export function levelInfo(s: Save = getSave()): { n: number; into: number; need: number; pct: number } {
-  let xp = Math.max(0, s.pp || 0), n = 1;
-  for (;;) { const need = 100 + 30 * (n - 1); if (xp < need) return { n, into: xp, need, pct: Math.round((100 * xp) / need) }; xp -= need; n++; if (n > 999) return { n, into: 0, need: 1, pct: 0 }; }
-}
-export const UNLOCKS: Partial<Record<AppId, number>> = { live: 3, groups: 4 }; // Market: watching is free, calls open at Level 2 inside the app
+// ---------------------------------------------------------------- level and unlocks (lib/economy.ts is the source)
+/** The player's account level off lifetime XP (`save.xp`; `pp` mirrors it): RULES4 §3, 100 + 30 × (level − 1) a level. */
+export const levelInfo = (s: Save = getSave()): LevelView => levelOfSave(s);
+/** The level an app's tile opens at. Market (`wire`) is open from Level 1 to watch; calling inside it opens at
+ *  `levelUnlocks.wire` (Level 2), which the Market screen gates itself. */
+export const UNLOCKS: Partial<Record<AppId, number>> = { live: levelUnlocks.live, groups: levelUnlocks.groups };
 export const unlockLevel = (app: AppId) => UNLOCKS[app] || 1;
 export const isUnlocked = (app: AppId, s: Save = getSave()) => levelInfo(s).n >= unlockLevel(app);
 

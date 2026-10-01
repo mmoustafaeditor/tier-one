@@ -39,10 +39,12 @@ export function levelOf(xp: number): LevelView {
 }
 /** Lifetime XP at which level L begins. */
 export function xpAtLevel(L: number): number { let x = 0; for (let k = 1; k < L; k++) x += xpForLevel(k); return x; }
-/** The apps a level opens (CONCEPT4 §5): shown as "Reach Level 5" with the bar, never as a lock alone. */
-export const levelUnlocks = { live: 3, groups: 4, wire: 5 } as const;
+/** What a level opens (RULES4 §3, CONCEPT4 §5/§9): `wire` = Market calls (watching the Market is free from the start),
+ *  Live at 3, Groups at 4. Shown as "Reach Level N" with the bar, never as a lock alone. The phone's app registry
+ *  (ui/phone.tsx APPS) reads these. */
+export const levelUnlocks = { wire: 2, live: 3, groups: 4 } as const;
 export type Unlock = keyof typeof levelUnlocks;
-export const UNLOCKS: Unlock[] = ['live', 'groups', 'wire'];
+export const UNLOCKS: Unlock[] = ['wire', 'live', 'groups'];
 export const unlockedAt = (level: number): Unlock[] => UNLOCKS.filter((k) => level >= levelUnlocks[k]);
 export const isUnlocked = (k: Unlock, level: number) => level >= levelUnlocks[k];
 /** Unlocks crossed between two levels (for the results thread's "Live is open" line). */

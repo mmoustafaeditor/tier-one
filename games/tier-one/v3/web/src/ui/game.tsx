@@ -7,7 +7,7 @@ import { prefersReducedMotion } from '../lib/motion';
 export { prefersReducedMotion } from '../lib/motion';
 import { useSave } from '../lib/save';
 import { useT } from '../lib/i18n';
-import { levelOf } from '../lib/progress';
+import { levelOfSave } from '../lib/progress';
 import { Bell } from './connect';
 
 // ---------- icons (24px line icons, currentColor)
@@ -217,7 +217,7 @@ export function useTyped(text: string, cps = 38, on = true) {
 // ---------- top bar
 export function TopBar({ back, title, onHelp, onMenu, children }: { back?: { label: string; onClick: () => void }; title?: ReactNode; onHelp?: () => void; onMenu?: () => void; children?: ReactNode }) {
   const s = useSave(); const t = useT();
-  const lv = levelOf(s.pp);
+  const lv = levelOfSave(s); // the account level (lib/economy.ts), the same number the home screen shows
   return <header className="g-top">
     {back ? <button className="g-top__back" onClick={() => { sfx('ui.tap'); back.onClick(); }}><Icon n={t.rtl ? 'arrow' : 'back'} size={20} />{back.label}</button>
       : <span className="g-top__logo">Tier One</span>}

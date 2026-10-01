@@ -75,7 +75,7 @@ function initialRoute(): { route: Route; locked: boolean } {
 
 export function App() {
   // Only the fields the shell reads: a save update elsewhere (a call, coins, a mission) doesn't re-render the whole App.
-  const s = useSaveSel((x) => ({ lang: x.lang, edition: x.edition, theme: x.theme, reduced: x.reduced, onboarded: x.onboarded, pp: x.pp, played: !!x.daily[ymdUTC()], total: x.daily[ymdUTC()]?.total, tier: x.daily[ymdUTC()]?.tier }), shallowEq);
+  const s = useSaveSel((x) => ({ lang: x.lang, edition: x.edition, theme: x.theme, reduced: x.reduced, onboarded: x.onboarded, xp: x.xp, played: !!x.daily[ymdUTC()], total: x.daily[ymdUTC()]?.total, tier: x.daily[ymdUTC()]?.tier }), shallowEq);
   const t = useT();
   const [init] = useState(initialRoute);
   const [route, setRoute] = useState<Route>(init.route);
@@ -203,7 +203,7 @@ export function App() {
       sfx('level.up');
     }
     lastLv.current = lv;
-  }, [s.played, s.pp, s.lang]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [s.played, s.xp, s.lang]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const edition = () => update((x) => { const cur = x.edition || (matchMedia('(prefers-color-scheme: dark)').matches ? 'late' : 'morning'); x.edition = cur === 'late' ? 'morning' : 'late'; });
   const app = appOf(route);

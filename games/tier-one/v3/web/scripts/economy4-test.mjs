@@ -38,7 +38,9 @@ ok('level maths: 100 + 30 × (L − 1); level 2 in a session, 10 in ~11 days, 25
   assert.equal(eco.xpForLevel(1), 100); assert.equal(eco.xpForLevel(5), 220);
   assert.equal(eco.levelOf(125).n, 2); assert.equal(eco.levelOf(1980).n, 10); assert.equal(eco.levelOf(10680).n, 25); assert.equal(eco.levelOf(40180).n, 50);
   assert.equal(eco.levelCoins(3), 30); assert.equal(eco.levelCoins(30), 200);
-  assert.deepEqual(eco.newUnlocks(2, 5), ['live', 'groups', 'wire']);
+  assert.deepEqual(eco.newUnlocks(1, 5), ['wire', 'live', 'groups']);
+  assert.deepEqual(eco.newUnlocks(2, 5), ['live', 'groups']);
+  assert.equal(eco.levelUnlocks.wire, 2); // Market calls at Level 2 (watching is free), RULES4 §3
   assert.ok(eco.regularDayXp() >= 170 && eco.regularDayXp() <= 190);
 });
 ok('rep and followers by backing, mode factor, hot streak, ranks kept and under review', () => {
