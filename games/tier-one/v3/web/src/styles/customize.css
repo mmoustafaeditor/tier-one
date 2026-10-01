@@ -575,3 +575,5 @@
 .lk-call__hear { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px; border-radius: 99px; border: 1px solid var(--os-line); background: var(--os-bg-3); color: var(--os-ink); font: 600 14px var(--f-text); cursor: pointer; }
 @keyframes lk-ring { 0%, 100% { transform: none; } 10% { transform: rotate(-6deg); } 20% { transform: rotate(6deg); } 30% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .lk-call__av { animation: none; } }
+/* the byline card (ui/connect.tsx) wears the frame ring instead of the old initials tile */
+.cn-byline__av.cn-byline__av--fr { width: auto; height: auto; background: none; box-shadow: none; border-radius: 50%; }

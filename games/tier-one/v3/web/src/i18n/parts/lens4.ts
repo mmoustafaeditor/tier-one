@@ -17,7 +17,7 @@ export default {
         trophies: 'Trophies', noTrophies: 'Trophies are Secret files you’ve opened. None yet.',
         records: 'Records', best: 'Best Daily', bestN: '{n} points', t1: 'Tier One windows', streak: 'Best streak', streakN: '{n} days', scoops: 'Scoops', windows: 'Windows played',
         drops: 'Your Drops', dropsN: '{n} right Drops', dropsNone: 'No Drops yet. Go All in and be right: the card lands here with your line on it.',
-        crown: 'Tier One rank', toBlurt: 'Open Blurt', gold: 'Insider mark (Gold)',
+        crown: 'Tier One rank', toBlurt: 'Open Blurt', market: 'Market: {c} Cred this season · {p}% right', gold: 'Insider mark (Gold)',
       },
       drop: { scoop: 'Scoop', day: 'Day {n}', pts: '+{n}', mode: { daily: 'Daily', career: 'Story', deadline: 'Live', room: 'Groups', practice: 'First window', wire: 'Market' } },
       sp: {
@@ -68,7 +68,7 @@ export default {
         trophies: 'الكؤوس', noTrophies: 'الكؤوس هي الملفات السرية اللي فتحتها. لسه مفيش.',
         records: 'الأرقام', best: 'أحسن يومي', bestN: '{n} نقطة', t1: 'شبابيك تير وان', streak: 'أطول سلسلة', streakN: '{n} يوم', scoops: 'سكوبات', windows: 'شبابيك لعبتها',
         drops: 'الدروبات بتاعتك', dropsN: '{n} دروب صح', dropsNone: 'لسه مفيش دروبات. روح أول إن وطلع صح: الكارت هيوصل هنا وعليه جملتك.',
-        crown: 'رتبة تير وان', toBlurt: 'افتح بلرت', gold: 'علامة إنسايدر (جولد)',
+        crown: 'رتبة تير وان', toBlurt: 'افتح بلرت', market: 'الماركت: {c} كريد الموسم ده · {p}% صح', gold: 'علامة إنسايدر (جولد)',
       },
       drop: { scoop: 'سكوب', day: 'يوم {n}', pts: '+{n}', mode: { daily: 'اليومي', career: 'الستوري', deadline: 'لايف', room: 'الجروبات', practice: 'أول شباك', wire: 'الماركت' } },
       sp: {
@@ -119,7 +119,7 @@ export default {
         trophies: 'Trofeos', noTrophies: 'Los trofeos son los archivos secretos que has abierto. Aún ninguno.',
         records: 'Récords', best: 'Mejor Diario', bestN: '{n} puntos', t1: 'Ventanas Tier One', streak: 'Mejor racha', streakN: '{n} días', scoops: 'Scoops', windows: 'Ventanas jugadas',
         drops: 'Tus Drops', dropsN: '{n} Drops acertados', dropsNone: 'Aún no hay Drops. Ve All in y acierta: la tarjeta llega aquí con tu frase.',
-        crown: 'Rango Tier One', toBlurt: 'Abrir Blurt', gold: 'Marca Insider (Gold)',
+        crown: 'Rango Tier One', toBlurt: 'Abrir Blurt', market: 'Mercado: {c} Cred esta temporada · {p}% de aciertos', gold: 'Marca Insider (Gold)',
       },
       drop: { scoop: 'Scoop', day: 'Día {n}', pts: '+{n}', mode: { daily: 'Diario', career: 'Historia', deadline: 'Live', room: 'Grupos', practice: 'Primera ventana', wire: 'Mercado' } },
       sp: {

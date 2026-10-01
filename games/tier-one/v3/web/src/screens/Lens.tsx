@@ -28,6 +28,7 @@ import { syncEarned } from '../lib/earned';
 import { catchphraseOf, catchphraseColor, catchDef, setCustomCatchphrase, customUnlocked, customLine, cleanLine, CUSTOM_MAX, TONE_SFX } from '../lib/catchphrase';
 import { renderCpCard, postToX, X_TAGS } from '../lib/share';
 import { prefersReducedMotion } from '../lib/motion';
+import { useWire } from '../lib/wireData';
 import { Icon, GBtn, confetti } from '../ui/game';
 import { Pop, Count, Stamp, Sheet } from '../ui/juice';
 import { RivalMark } from '../ui/connect';
@@ -120,6 +121,7 @@ function Profile({ s, onPlay }: { s: Save; onPlay: () => void }) {
           {gold && <span className="ln-gold" title={t('l4.p.gold')}><Icon n="star" size={12} />{t('l4.se.gold')}</span>}
         </p>
         <CatchLine s={s} className="ln-id__cp" />
+        <MarketLine />
       </div>
     </section>
     <GBtn kind="gold" size="sm" className="ln-share" label={t('l4.p.shareAria')} onClick={share}><Icon n="share" size={18} />{t('l4.p.share')}</GBtn>
@@ -145,6 +147,13 @@ function Profile({ s, onPlay }: { s: Save; onPlay: () => void }) {
   </div>;
 }
 
+/** Market season Cred and hit rate next to the rank (CONCEPT4 §9), once a Market call has resolved. */
+function MarketLine() {
+  const t = useT(); const m = useWire().mine;
+  if (!m || !(m.resolved > 0)) return null;
+  const hit = m.hitRate <= 1 ? Math.round(m.hitRate * 100) : Math.round(m.hitRate);
+  return <p className="ln-quiet ln-id__mk">{t('l4.p.market', { c: fmt(m.cred), p: hit })}</p>;
+}
 function Followers({ s }: { s: Save }) {
   const t = useT();
   const series = useMemo(() => followerSeries(s, 30), [s]);
