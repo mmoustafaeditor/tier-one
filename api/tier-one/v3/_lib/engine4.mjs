@@ -43,23 +43,52 @@ export const RULES = {
 };
 export const SRC = ['barber', 'kitman', 'agent', 'spotter', 'physio'];
 export const RIVAL_IDS = ['tabloid', 'itk', 'insider'];
+// Daily boards from this UTC date play by 4.0 (client and server); older Dailies keep v3 so the archive still replays.
+export const V4_FROM = '2026-10-05';
+export const isV4Day = (ymd) => String(ymd) >= V4_FROM;
+// The first window (tutorial): one fixed seed, Career rank 0 rules (3 stories), Coach on.
+export const TUTORIAL_SEED = 'tutorial-1';
+// Deadline Day's clock, in seconds (RULES4.md §2).
+export const DEADLINE_SECONDS = 90;
+// Every mode a driver can run. 'daily', 'room', 'practice' and 'challenge' play RULES exactly.
+export const MODES = ['daily', 'practice', 'career', 'deadline', 'room', 'challenge', 'tutorial'];
 
 // Mode rule sets. Every mode is the same game; only these knobs move.
 export function rulesFor(mode, opts = {}) {
   const R = structuredClone(RULES);
   if (mode === 'deadline') {        // Deadline Day: one day, six stories, a clock, the physio from the start
-    R.STORIES = 6; R.DAYS = 1; R.CALLS = [6]; R.EARLY = [0, 0, 0];
+    R.STORIES = 6; R.DAYS = 1; R.CALLS = [6]; R.EARLY = [0, 0, 0]; R.CLOCK_S = DEADLINE_SECONDS;
     for (const k of SRC) R.SOURCES[k].from = 1;
     R.RIVALS = [{ id: 'tabloid', days: [0, 0], p: 0.6, kind: 'street', rel: 0.4 }, { id: 'itk', days: [0, 0], p: 0.5, kind: 'street', rel: 0.6 }];
     R.TIERS = { T1: 42, T2: 30, T3: 15, T4: 0 };      // no early bonus, but the physio is in from the start
   }
-  if (mode === 'career') {          // Career: rank sets the board size and how good your contacts are
-    const rank = opts.rank || 0;    // 0 Blogger … 4 Tier One
+  if (mode === 'career' || mode === 'tutorial') {     // Career: rank sets the board size and how good your contacts are
+    const rank = mode === 'tutorial' ? 0 : Math.min(4, Math.max(0, opts.rank | 0));    // 0 Nobody … 4 Tier One
     R.STORIES = [3, 4, 5, 5, 6][rank];
     R.CALLS = [[3, 3, 3, 3, 2], [3, 3, 3, 3, 2], [3, 3, 3, 3, 2], [4, 3, 3, 3, 2], [4, 4, 3, 3, 2]][rank];
-    if (opts.trust) for (const [k, t] of Object.entries(opts.trust)) sharpen(R.SOURCES[k], t);
+    if (mode === 'career' && opts.trust) for (const [k, t] of Object.entries(opts.trust)) sharpen(R.SOURCES[k], Math.min(1, Math.max(0, Number(t) || 0)));
   }
   return R;
+}
+// A rule spec that can travel (a challenge, a saved window): the mode and the knobs, nothing else. Unknown modes play RULES.
+export function specOf(mode, opts = {}) {
+  const m = MODES.includes(mode) ? mode : 'daily';
+  const out = { mode: m };
+  if (m === 'career') {
+    out.opts = { rank: Math.min(4, Math.max(0, opts.rank | 0)) };
+    if (opts.trust && typeof opts.trust === 'object') {
+      const trust = {};
+      for (const k of SRC) if (typeof opts.trust[k] === 'number' && opts.trust[k] > 0) trust[k] = Math.min(1, Math.round(opts.trust[k] * 100) / 100);
+      if (Object.keys(trust).length) out.opts.trust = trust;
+    }
+  }
+  return out;
+}
+export const rulesOf = (spec) => rulesFor(spec && spec.mode, (spec && spec.opts) || {});
+// What a finished window can score at most and at least (the server rejects a replay outside these).
+export function bounds(R = RULES) {
+  const max = (R.WIN[2] + R.EARLY[2] * Math.max(0, R.DAYS - 1) + R.SCOOP[2]) * R.STORIES;
+  return { min: -Math.max(...R.LOSS) * R.STORIES, max };
 }
 // Trust: a contact you use gets a little more accurate (t = 0…1 → up to +8 points on the diagonal).
 function sharpen(so, t) {

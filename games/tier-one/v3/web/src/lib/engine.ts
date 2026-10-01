@@ -86,7 +86,13 @@ export interface Rules4 {
   WIN: number[]; LOSS: number[]; EARLY: number[]; SCOOP: number[];
   SOURCES: Record<string, Source4>; RIVALS: { id: string; days: number[]; p: number; kind: string; rel: number }[];
   TIERS: { T1: number; T2: number; T3: number; T4: number };
+  /** Deadline Day only: the clock, in seconds. */
+  CLOCK_S?: number;
 }
+/** Every mode a driver can run (lib/driver.ts makeDriver). daily, room, practice and challenge play RULES4 exactly. */
+export type Mode4 = 'daily' | 'practice' | 'career' | 'deadline' | 'room' | 'challenge' | 'tutorial';
+/** A rule set that can travel (a saved window, a challenge): the mode and its knobs. E4.rulesOf(spec) rebuilds the rules. */
+export interface RuleSpec4 { mode: Mode4; opts?: { rank?: number; trust?: Record<string, number> } }
 export interface Story4 { i: number; truth: number; spin: number; rivals: { id: string; day: number; claim: number }[] }
 export interface Board4 { v: 4; seed: string; stories: Story4[] }
 export interface Pub4 { v: 4; day: number; left: number; over: boolean; clues: Clue4[][]; calls: (Call4 | null)[]; feed: Post4[] }
@@ -99,8 +105,11 @@ export interface ResultStory4 {
 }
 export interface Result4 { v: 4; total: number; right: number; wrong: number; scoops: number; called: number; per: ResultStory4[]; tier: Tier }
 type Engine4API = {
-  V: 4; OUT: string[]; RULES: Rules4; SRC: string[]; RIVAL_IDS: string[];
-  rulesFor(mode: 'daily' | 'deadline' | 'career', opts?: { rank?: number; trust?: Record<string, number> }): Rules4;
+  V: 4; OUT: string[]; RULES: Rules4; SRC: string[]; RIVAL_IDS: string[]; MODES: Mode4[];
+  V4_FROM: string; isV4Day(ymd: string): boolean; TUTORIAL_SEED: string; DEADLINE_SECONDS: number;
+  rulesFor(mode: Mode4, opts?: { rank?: number; trust?: Record<string, number> }): Rules4;
+  specOf(mode: Mode4, opts?: { rank?: number; trust?: Record<string, number> }): RuleSpec4; rulesOf(spec: RuleSpec4 | null | undefined): Rules4;
+  bounds(R?: Rules4): { min: number; max: number };
   buildBoard(seed: string, R?: Rules4): Board4; newGame(b: Board4, R?: Rules4): Game4; apply(g: Game4, a: Act4): boolean;
   replay(b: Board4, log: Act4[], R?: Rules4): Game4 | null; pub(g: Game4): Pub4; resolve(g: Game4): Result4; finish(g: Game4): Game4; isOver(g: Game4 | Pub4): boolean;
   ask(g: Game4, i: number, src: string): Clue4 | null; call(g: Game4, i: number, o: number, s: number): boolean; endDay(g: Game4): boolean;
@@ -114,6 +123,38 @@ export const E4 = E40 as unknown as Engine4API;
 export const RULES4 = E4.RULES;
 export const OUTS4 = ['signs', 'elsewhere', 'stays'] as const;
 export const BACKING = ['x1', 'x2', 'allin'] as const;
-// Daily boards from this UTC date play by 4.0; older Dailies keep v3 so the archive still replays.
-export const V4_FROM = '2026-10-05';
+// Daily boards from this UTC date play by 4.0; older Dailies keep v3 so the archive still replays. One value, shared
+// with the server (engine4.mjs V4_FROM).
+export const V4_FROM: string = E4.V4_FROM;
 export const isV4Day = (ymd: string) => ymd >= V4_FROM;
+export const TUTORIAL_SEED: string = E4.TUTORIAL_SEED;
+
+/** A local 4.0 window in the save (`save.v4.live[mode]`, lib/driver.ts): the seed, the rules it was started with and
+ *  the action log, which is all a window is. Replaying the log through E4 on the same seed and rules gives the game back. */
+export interface Window4 {
+  seed: string; mode: Mode4; rules: RuleSpec4; log: Act4[]; started: number;
+  label?: string; coach?: boolean;
+  /** Deadline Day: when the clock started (first action); the window ends CLOCK_S after it. */
+  clockAt?: number;
+  /** A challenge being played: its code, so the finished log goes back to the server. */
+  code?: string;
+}
+/** A finished local window, kept for Results, the share card and challenge minting (the last one per mode). */
+export interface Last4 { mode: Mode4; seed: string; rules: RuleSpec4; log: Act4[]; total: number; tier: Tier; row: string; scoops: number; at: number; label?: string; code?: string }
+/** Everything 4.0 keeps in the save, under one key. All optional: a 3.x save loads unchanged. */
+export interface V4Save {
+  live?: Partial<Record<Mode4, Window4 | null>>;
+  last?: Partial<Record<Mode4, Last4>>;
+  practice?: { coach?: boolean; played?: number; day?: string; today?: number };
+  tutorial?: { done?: boolean };
+  /** Daily results by UTC day for v4 days (`v: 4`); the archive of older days stays in `save.daily`. */
+  daily?: Record<string, { no: number; total: number; tier: Tier; row: string; scoops: number; rank?: number | null; players?: number; par?: number | null }>;
+}
+
+/** A player-visible stand-in for a v4 board: the public state plus the rules, with no truth in it. Every read-only
+ *  engine call that doesn't need the truth (askState, callState, preview, scoopOpen, posterior) works on it, so the
+ *  Daily's remote state can answer "what happens if I post this now" without a round trip. */
+export function shadow4(p: Pub4, R: Rules4 = RULES4): Game4 {
+  const stories: Story4[] = p.calls.map((_, i) => ({ i, truth: 0, spin: 0, rivals: [] }));
+  return { day: p.day, left: p.left, clues: p.clues, calls: p.calls, feed: p.feed, R, board: { v: 4, seed: '', stories }, log: [] };
+}

@@ -7,8 +7,11 @@
 // repo. Yesterday's seed is published by `daily.seed` so any board can be replayed and audited the day after.
 //
 // The Daily is scored here: the client never holds the truth. Every request replays the stored action log through the
-// rules engine (_lib/engine.mjs), applies one new action and stores the log again.
+// rules engine, applies one new action and stores the log again. 4.0 (RULES4.md): Daily boards from V4_FROM, room rounds
+// opening from that day and every new challenge play _lib/engine4.mjs and store `v: 4`; older days keep _lib/engine.mjs
+// so the archive still replays. The two engines never mix inside one window.
 import { RULES, buildBoard, newGame, apply, replay, pub, resolve, isOver, finish, gridRow, OUT, truthAt } from './_lib/engine.mjs';
+import * as E4 from './_lib/engine4.mjs';
 import { compactWorld, buildCast } from './_lib/world.mjs';
 import { hashStr } from './_lib/rng.mjs';
 import { WIRE, marketOf, rumourState, wirePoints, hitRate, ghostRumour } from './_lib/wire.mjs';
@@ -74,10 +77,20 @@ function scoreLog(seed, log) {
   if (!g || !isOver(g)) return null;
   const r = resolve(g);
   if (r.total < RULES.SCORE_MIN || r.total > RULES.SCORE_MAX) return null;
-  return { score: r.total, tier: r.tier, row: gridRow(r), ex: r.ex, hwg: hwgOf(r) };
+  return { score: r.total, tier: r.tier, row: gridRow(r), ex: r.ex, hwg: dropsOf(r) };
 }
-// HERE WE GO cards (GOTY.md §2): right Done calls at Confirmed, by saga index.
-const hwgOf = (r) => r.per.filter((p) => p.right && p.call && p.call.o === 0 && p.call.s === 2).map((p) => p.i);
+// 4.0: the same, under the rules the player played (a rule spec: { mode, opts }). Bounds come from the rules.
+function scoreLog4(seed, log, spec) {
+  const R = E4.rulesOf(spec), g = E4.replay(E4.buildBoard(seed, R), log, R);
+  if (!g || !E4.isOver(g)) return null;
+  const r = E4.resolve(g), b = E4.bounds(R);
+  if (r.total < b.min || r.total > b.max) return null;
+  return { v: 4, score: r.total, tier: r.tier, row: E4.gridRow(r), scoops: r.scoops, ex: r.scoops, drops: dropsOf(r) };
+}
+// A rule spec from the client, shape-checked: the mode and its knobs, nothing else (E4.specOf drops the rest).
+const specOf = (b) => E4.specOf(clean(b && b.mode, 10), b && b.opts && typeof b.opts === 'object' ? b.opts : {});
+// Right Drops (v3: right Done calls at Confirmed), by story index: the big cards on a feed.
+const dropsOf = (r) => r.per.filter((p) => p.right && p.call && p.call.s === 2 && (r.v === 4 || p.call.o === 0)).map((p) => p.i);
 const mondayOf = (day) => { const t = Date.parse(day + 'T00:00:00Z'); const dow = (new Date(t).getUTCDay() + 6) % 7; return t - dow * DAY_MS; };
 const roomStep = (room) => (room.cadence === 'weekly' ? 7 * DAY_MS : DAY_MS);
 const roomOpenH = (room) => (room.cadence === 'weekly' ? WEEK_OPEN_H : ROUND_OPEN_H);
@@ -86,6 +99,7 @@ function code(n) { let s = ''; const b = new Uint8Array(n); crypto.getRandomValu
 function secret() { const b = new Uint8Array(18); crypto.getRandomValues(b); return Buffer.from(b).toString('base64url'); }
 const ymd = (ms) => new Date(ms).toISOString().slice(0, 10);
 const today = () => ymd(Date.now());
+const V4_FROM_MS = Date.parse(E4.V4_FROM + 'T00:00:00Z');
 const dailyNo = (day) => Math.floor((Date.parse(day + 'T00:00:00Z') - DAILY_EPOCH) / DAY_MS) + 1;
 function isoWeek(day) {
   const d = new Date(day + 'T00:00:00Z'); const dow = d.getUTCDay() || 7;
@@ -104,7 +118,7 @@ async function rateOk(ip) {
 }
 // One action from the client: shape-checked before the engine sees it.
 function parseAct(a) {
-  if (!Array.isArray(a) || a.length > 4) return null;
+  if (!Array.isArray(a) || a.length > 4) return null;   // v3 and v4 share the shapes; engine4 rejects 'u' on its own
   const k = a[0];
   if (k === 'e') return ['e'];
   if (k === 'a' && Number.isInteger(a[1]) && typeof a[2] === 'string' && /^[a-z]{3,8}$/.test(a[2])) return ['a', a[1], a[2]];
@@ -129,28 +143,38 @@ function publicCast(cast, withAlt) {
 // scope: { kind:'d', day } or { kind:'r', code, round }. The key is per device (Daily) or per room member.
 const scopeBase = (sc) => (sc.kind === 'd' ? 'daily-' + sc.day : 'room-' + sc.code + '-r' + (sc.round + 1));
 const sessKey = (sc, who) => 't1v3:s:' + (sc.kind === 'd' ? 'd:' + sc.day : 'r:' + sc.code + ':' + sc.round) + ':' + who;
+// Which rules a ranked scope plays. 4.0 from V4_FROM (a Daily by its day, a room round by the day it opens); the rest v3.
+const ENGINES = {
+  3: { v: 3, R: RULES, n: RULES.SAGAS, days: RULES.DAYS, buildBoard, replay, apply, pub, resolve, isOver, finish, gridRow, bounds: { min: RULES.SCORE_MIN, max: RULES.SCORE_MAX } },
+  4: { v: 4, R: E4.RULES, n: E4.RULES.STORIES, days: E4.RULES.DAYS, buildBoard: E4.buildBoard, replay: E4.replay, apply: E4.apply, pub: E4.pub, resolve: E4.resolve, isOver: E4.isOver, finish: E4.finish, gridRow: E4.gridRow, bounds: E4.bounds(E4.RULES) },
+};
+const engineOf = (sc) => ENGINES[sc.v4 ? 4 : 3];
 function boardFor(sc) {
-  const seed = saltedSeed(scopeBase(sc));
-  return { seed, board: buildBoard(seed, RULES), cast: buildCast(seed, world(), { n: RULES.SAGAS }) };
+  const seed = saltedSeed(scopeBase(sc)), e = engineOf(sc);
+  return { seed, v: e.v, board: e.buildBoard(seed, e.R), cast: buildCast(seed, world(), { n: e.n }) };
 }
+// The 3.x Deadline Day clock (day 7, DD_SECONDS). A 4.0 Daily has no clock: Deadline Day is its own mode.
 function ddLeft(sess, g) {
-  if (g.day !== RULES.DAYS || !sess.ddAt) return null;
-  return sess.ddAt + RULES.DD_SECONDS * 1000 - Date.now();
+  if (!g.R.DD_SECONDS || g.day !== g.R.DAYS || !sess.ddAt) return null;
+  return sess.ddAt + g.R.DD_SECONDS * 1000 - Date.now();
 }
 function view(sc, sess, g, cast, extra) {
-  const out = { scope: sc, no: sc.kind === 'd' ? dailyNo(sc.day) : sc.round + 1, cast: publicCast(cast, !!sess.res), state: pub(g), done: !!sess.res, ...extra };
+  const e = engineOf(sc);
+  const out = { v: e.v, scope: sc, no: sc.kind === 'd' ? dailyNo(sc.day) : sc.round + 1, cast: publicCast(cast, !!sess.res), state: e.pub(g), done: !!sess.res, ...extra };
   const left = ddLeft(sess, g); if (left != null) out.ddLeftMs = Math.max(0, left);
   if (sess.res) out.result = sess.res;
   return out;
 }
-// Score the finished window, store it, rank it.
+// Score the finished window, store it, rank it. League points by tier are the same under both rule sets.
 async function settle(sc, who, sess, g, cast, nick) {
-  const r = resolve(g);
-  if (r.total < RULES.SCORE_MIN || r.total > RULES.SCORE_MAX) throw new Error('bounds');
-  const res = { total: r.total, tier: r.tier, right: r.right, wrong: r.wrong, ex: r.ex, called: r.called, uturns: r.uturns, row: gridRow(r), per: r.per, cast: publicCast(cast, true), at: Date.now() };
+  const e = engineOf(sc), r = e.resolve(g);
+  if (r.total < e.bounds.min || r.total > e.bounds.max) throw new Error('bounds');
+  const res = e.v === 4
+    ? { v: 4, total: r.total, tier: r.tier, right: r.right, wrong: r.wrong, scoops: r.scoops, ex: r.scoops, called: r.called, row: e.gridRow(r), per: r.per, cast: publicCast(cast, true), at: Date.now() }
+    : { total: r.total, tier: r.tier, right: r.right, wrong: r.wrong, ex: r.ex, called: r.called, uturns: r.uturns, row: e.gridRow(r), per: r.per, cast: publicCast(cast, true), at: Date.now() };
   if (sc.kind === 'd') {
     const dk = 't1v3:lb:d:' + sc.day, week = isoWeek(sc.day), wk = 't1v3:lb:w:' + week;
-    const doc = { nick, score: r.total, tier: r.tier, row: res.row, ex: r.ex };
+    const doc = { nick, score: r.total, tier: r.tier, row: res.row, ex: res.ex, ...(e.v === 4 ? { v: 4, scoops: r.scoops } : {}) };
     const cmds = [['ZADD', dk, 'NX', r.total, who], ['EXPIRE', dk, LB_DAY_TTL], ['SET', dk + ':e:' + who, JSON.stringify(doc), 'EX', LB_DAY_TTL, 'NX']];
     const first = await one('SET', 't1v3:lb:once:' + sc.day + ':' + who, '1', 'EX', LB_DAY_TTL, 'NX');
     if (first) cmds.push(['ZINCRBY', wk, r.total, who], ['EXPIRE', wk, LB_WEEK_TTL], ['SET', wk + ':e:' + who, JSON.stringify({ nick, row: res.row, tier: r.tier }), 'EX', LB_WEEK_TTL]);
@@ -162,10 +186,10 @@ async function settle(sc, who, sess, g, cast, nick) {
     if (brk && brk.dev === who) { const p = r.per[brk.i]; if (!(p && p.right && p.call && p.call.s === 2)) await one('DEL', fk); }
   } else {
     const key = 'room:v3:' + sc.code + ':p:' + who, p = await getJ(key);
-    if (p) { p.results[sc.round] = { score: r.total, tier: r.tier, ex: r.ex, row: res.row, at: Date.now() }; await setJ(key, p, ROOM_TTL); }
-    // The room feed: the call lands, and every HERE WE GO gets its own gold card.
-    const hwg = hwgOf(r).map((i) => cast.sagas[i] && cast.sagas[i].player ? cast.sagas[i].player.s || cast.sagas[i].player.n : '').filter(Boolean);
-    await roomFeed(sc.code, { t: 'filed', pid: who, nick, round: sc.round, score: r.total, tier: r.tier, ex: r.ex, row: res.row, hwg });
+    if (p) { p.results[sc.round] = { score: r.total, tier: r.tier, ex: res.ex, row: res.row, at: Date.now(), ...(e.v === 4 ? { v: 4, scoops: r.scoops } : {}) }; await setJ(key, p, ROOM_TTL); }
+    // The room feed: the call lands, and every right Drop gets its own big card (`hwg` is the 3.x field name the feed reads).
+    const hwg = dropsOf(r).map((i) => cast.sagas[i] && cast.sagas[i].player ? cast.sagas[i].player.s || cast.sagas[i].player.n : '').filter(Boolean);
+    await roomFeed(sc.code, { t: 'filed', pid: who, nick, round: sc.round, score: r.total, tier: r.tier, ex: res.ex, row: res.row, hwg, ...(e.v === 4 ? { v: 4, scoops: r.scoops, drops: hwg } : {}) });
   }
   sess.res = res;
   return res;
@@ -199,26 +223,27 @@ async function scopeOf(b) {
     const opens = roundOpens(room, round);
     if (Date.now() < opens) return { error: 'not open' };
     if (Date.now() > opens + roomOpenH(room) * 3600e3 && !(p.results && p.results[round])) return { error: 'closed' };
-    return { sc: { kind: 'r', code: c, round }, who: pid, nick: p.nick };
+    return { sc: { kind: 'r', code: c, round, v4: opens >= V4_FROM_MS }, who: pid, nick: p.nick };
   }
   const dev = devId(b.dev);
   if (!dev) return { error: 'dev' };
-  return { sc: { kind: 'd', day: today() }, who: dev, nick: nickOf(b.nick, dev) };
+  const day = today();
+  return { sc: { kind: 'd', day, v4: E4.isV4Day(day) }, who: dev, nick: nickOf(b.nick, dev) };
 }
 async function loadSession(b) {
   const s = await scopeOf(b); if (s.error) return s;
-  const { board, cast } = boardFor(s.sc);
+  const { board, cast } = boardFor(s.sc), e = engineOf(s.sc);
   const key = sessKey(s.sc, s.who);
   const sess = (await getJ(key)) || { log: [], t0: Date.now(), nick: s.nick };
-  const g = replay(board, sess.log, RULES);
+  const g = e.replay(board, sess.log, e.R);
   if (!g) return { error: 'log' };
-  return { ...s, key, sess, g, cast, ttl: s.sc.kind === 'd' ? SESSION_TTL : ROOM_TTL };
+  return { ...s, key, sess, g, cast, e, ttl: s.sc.kind === 'd' ? SESSION_TTL : ROOM_TTL };
 }
 // Deadline Day: once the clock (plus grace) has run out, the window ends whatever the client says.
 async function expireIfLate(x) {
   const left = ddLeft(x.sess, x.g);
   if (!x.sess.res && left != null && left < -DD_GRACE_MS) {
-    finish(x.g); x.sess.log = x.g.log.slice();
+    x.e.finish(x.g); x.sess.log = x.g.log.slice();
     await settle(x.sc, x.who, x.sess, x.g, x.cast, x.sess.nick || x.nick);
     await setJ(x.key, x.sess, x.ttl);
     return true;
@@ -242,25 +267,26 @@ const actions = {
     if (await expireIfLate(x)) return { error: 'clock', ...view(x.sc, x.sess, x.g, x.cast, {}) };
     const a = parseAct(b.act);
     if (!a) return { error: 'act' };
-    // The Deadline Day clock starts with the first thing done on day 7 (or daily.dd), not at the end of day 6.
-    if (x.g.day === RULES.DAYS && !x.sess.ddAt) x.sess.ddAt = Date.now();
-    if (!apply(x.g, a)) return { error: 'rule', ...view(x.sc, x.sess, x.g, x.cast, {}) };
+    // 3.x: the Deadline Day clock starts with the first thing done on day 7 (or daily.dd), not at the end of day 6.
+    if (x.e.v === 3 && x.g.day === RULES.DAYS && !x.sess.ddAt) x.sess.ddAt = Date.now();
+    if (!x.e.apply(x.g, a)) return { error: 'rule', ...view(x.sc, x.sess, x.g, x.cast, {}) };
     x.sess.log = x.g.log.slice();
     const extra = {};
     if (a[0] === 'a') extra.answer = x.g.clues[a[1]][x.g.clues[a[1]].length - 1];
-    // Live presence: a Confirmed call that is right as of today's truth is the day's "first to break it" candidate.
+    // Live presence: a Drop (3.x: a Confirmed call) that is right is the day's "first to break it" candidate.
     if (x.sc.kind === 'd' && a[0] === 'c' && a[3] === 2) {
-      const sg = x.g.board.sagas[a[1]];
-      if (sg && a[2] === truthAt(sg, x.g.day)) await one('SET', 't1v3:live:first:' + x.sc.day, JSON.stringify({ dev: x.who, nick: x.sess.nick || x.nick, i: a[1], at: Date.now() }), 'EX', LIVE_TTL, 'NX');
+      const sg = x.e.v === 4 ? x.g.board.stories[a[1]] : x.g.board.sagas[a[1]];
+      const truth = sg ? (x.e.v === 4 ? sg.truth : truthAt(sg, x.g.day)) : -1;
+      if (sg && a[2] === truth) await one('SET', 't1v3:live:first:' + x.sc.day, JSON.stringify({ dev: x.who, nick: x.sess.nick || x.nick, i: a[1], at: Date.now() }), 'EX', LIVE_TTL, 'NX');
     }
-    if (isOver(x.g)) await settle(x.sc, x.who, x.sess, x.g, x.cast, x.sess.nick || x.nick);
+    if (x.e.isOver(x.g)) await settle(x.sc, x.who, x.sess, x.g, x.cast, x.sess.nick || x.nick);
     await setJ(x.key, x.sess, x.ttl);
     return view(x.sc, x.sess, x.g, x.cast, extra);
   },
-  // Turn the page onto Deadline Day: the 60-second clock starts now.
+  // 3.x only: turn the page onto Deadline Day, the 60-second clock starts now. A 4.0 window answers with its view.
   async 'daily.dd'(b) {
     const x = await loadSession(b); if (x.error) return x;
-    if (!x.sess.res && x.g.day === RULES.DAYS && !x.sess.ddAt) { x.sess.ddAt = Date.now(); await setJ(x.key, x.sess, x.ttl); }
+    if (x.e.v === 3 && !x.sess.res && x.g.day === RULES.DAYS && !x.sess.ddAt) { x.sess.ddAt = Date.now(); await setJ(x.key, x.sess, x.ttl); }
     await expireIfLate(x);
     return view(x.sc, x.sess, x.g, x.cast, {});
   },
@@ -269,7 +295,7 @@ const actions = {
     const x = await loadSession(b); if (x.error) return x;
     if (!x.sess.res) {
       // Before Deadline Day the window can't be skipped: the remaining days are ended one by one like End day.
-      finish(x.g); x.sess.log = x.g.log.slice();
+      x.e.finish(x.g); x.sess.log = x.g.log.slice();
       await settle(x.sc, x.who, x.sess, x.g, x.cast, x.sess.nick || x.nick);
       await setJ(x.key, x.sess, x.ttl);
     }
@@ -279,8 +305,8 @@ const actions = {
   async 'daily.seed'(b) {
     const day = clean(b.day, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || day >= today() || day < '2026-09-01') return { error: 'day' };
-    const seed = saltedSeed('daily-' + day);
-    return { day, no: dailyNo(day), seed, cast: publicCast(buildCast(seed, world(), { n: RULES.SAGAS }), true) };
+    const seed = saltedSeed('daily-' + day), e = engineOf({ kind: 'd', day, v4: E4.isV4Day(day) });
+    return { day, no: dailyNo(day), seed, v: e.v, cast: publicCast(buildCast(seed, world(), { n: e.n }), true) };
   },
 
   // ---- leaderboards ----
@@ -553,14 +579,16 @@ const actions = {
     const closed = Date.now() > roundOpens(room, round) + roomOpenH(room) * 3600e3;
     if (!closed && players.some((p) => !(p.results && p.results[round]))) return { error: 'not yet', waiting: players.filter((p) => !(p.results && p.results[round])).length };
     const sess = await one('MGET', ...players.map((p) => sessKey({ kind: 'r', code: c, round }, p.pid)));
+    const e = engineOf({ kind: 'r', code: c, round, v4: roundOpens(room, round) >= V4_FROM_MS });
     let cast = null;
     const rows = players.map((p, k) => {
       let s = null; try { s = JSON.parse(sess[k]); } catch { s = null; }
       const res = s && s.res; if (!res) return null;
       if (!cast) cast = res.cast;
-      return { pid: p.pid, nick: p.nick, pub: p.pub || p.pid, flair: p.flair || '', tier: p.tier || '', score: res.total, tier2: res.tier, ex: res.ex, row: res.row, per: res.per.map((x) => ({ i: x.i, call: x.call ? { day: x.call.day, o: x.call.o, s: x.call.s, ut: !!x.call.ut } : null, right: x.right, excl: x.excl, pts: x.pts, truth: x.truth })) };
+      return { pid: p.pid, nick: p.nick, pub: p.pub || p.pid, flair: p.flair || '', tier: p.tier || '', score: res.total, tier2: res.tier, ex: res.ex, row: res.row, ...(res.v === 4 ? { v: 4, scoops: res.scoops } : {}),
+        per: res.per.map((x) => ({ i: x.i, call: x.call ? { day: x.call.day, o: x.call.o, s: x.call.s, ut: !!x.call.ut } : null, right: x.right, excl: !!(x.excl || x.scoop), scoop: !!x.scoop, pts: x.pts, truth: x.truth })) };
     }).filter(Boolean);
-    return { code: c, round, cast, players: rows, days: RULES.DAYS };
+    return { code: c, round, v: e.v, cast, players: rows, days: e.days };
   },
 
   // ---- Beat my board (§7.3): a finished window becomes a 24 h challenge link. The seed of a live Daily never leaves
@@ -568,12 +596,19 @@ const actions = {
   async 'challenge.create'(b) {
     const dev = devId(b.dev); if (!dev) return { error: 'dev' };
     const nick = nickOf(b.nick, dev), by = { pub: pubId(dev), nick, flair: flairOf(b.flair), tier: tierOf(b.tier) };
-    const mode = b.mode === 'daily' || b.mode === 'career' ? b.mode : 'practice';
+    const mode = ['daily', 'career', 'deadline', 'tutorial'].includes(b.mode) ? b.mode : 'practice';
     let doc;
     if (mode === 'daily') {
       const day = dayOf(b.day); if (!day) return { error: 'day' };
       const mine = await getJ('t1v3:lb:d:' + day + ':e:' + dev); if (!mine) return { error: 'played' };
-      doc = { kind: 'daily', day, no: dailyNo(day), target: { score: mine.score, tier: mine.tier, row: mine.row || '', ex: mine.ex || 0 } };
+      doc = { kind: 'daily', day, no: dailyNo(day), target: { score: mine.score, tier: mine.tier, row: mine.row || '', ex: mine.ex || 0 }, ...(E4.isV4Day(day) ? { v: 4 } : {}) };
+    } else if (b.v === 4 || b.rules) {
+      // 4.0: every local mode travels with its rule spec; the maker's log is replayed here under those exact rules.
+      const seed = seedOf(b.seed); if (!seed) return { error: 'seed' };
+      const spec = specOf(b.rules || { mode });
+      const log = parseLog(b.log); if (!log) return { error: 'log' };
+      const sc = scoreLog4(seed, log, spec); if (!sc) return { error: 'log' };
+      doc = { kind: spec.mode === 'daily' || spec.mode === 'room' ? 'practice' : spec.mode, v: 4, seed, rules: spec, target: { score: sc.score, tier: sc.tier, row: sc.row, ex: sc.scoops, scoops: sc.scoops } };
     } else {
       const seed = seedOf(b.seed); if (!seed) return { error: 'seed' };
       if (mode === 'practice') {
@@ -602,6 +637,7 @@ const actions = {
     const out = { challenge: chView(ch, dev) };
     if (ch.kind === 'daily' && ch.day < today()) out.seed = saltedSeed('daily-' + ch.day);
     if (ch.kind !== 'daily') out.seed = ch.seed;
+    if (ch.v === 4) { out.v = 4; out.rules = ch.rules || E4.specOf('daily'); }
     if (ch.kind === 'daily' && dev) { const mine = await getJ('t1v3:lb:d:' + ch.day + ':e:' + dev); if (mine) out.played = { score: mine.score, tier: mine.tier }; }
     return out;
   },
@@ -618,10 +654,11 @@ const actions = {
       const mine = await getJ('t1v3:lb:d:' + ch.day + ':e:' + dev);
       if (mine) sc = { score: mine.score, tier: mine.tier, row: mine.row || '', ex: mine.ex || 0 };
       else if (ch.day === today()) return { error: 'play' };
-      else { const log = parseLog(b.log); if (!log) return { error: 'log' }; sc = scoreLog(saltedSeed('daily-' + ch.day), log); if (!sc) return { error: 'log' }; }
+      else { const log = parseLog(b.log); if (!log) return { error: 'log' }; sc = ch.v === 4 ? scoreLog4(saltedSeed('daily-' + ch.day), log, E4.specOf('daily')) : scoreLog(saltedSeed('daily-' + ch.day), log); if (!sc) return { error: 'log' }; }
     } else {
+      // The taker plays the rules the maker played (stored with the challenge), never the taker's own.
       const log = parseLog(b.log); if (!log) return { error: 'log' };
-      sc = scoreLog(ch.seed, log); if (!sc) return { error: 'log' };
+      sc = ch.v === 4 ? scoreLog4(ch.seed, log, ch.rules || E4.specOf('daily')) : scoreLog(ch.seed, log); if (!sc) return { error: 'log' };
     }
     const r = { pub, nick: nickOf(b.nick, dev), flair: flairOf(b.flair), tier: tierOf(b.tier), score: sc.score, rtier: sc.tier, row: sc.row, ex: sc.ex, at: Date.now(), r: sc.score > ch.target.score ? 'w' : sc.score < ch.target.score ? 'l' : 'd' };
     ch.res.push(r);
@@ -873,7 +910,7 @@ async function leagueAdd(dev, nick, day, pts, kind) {
   await redis([['ZINCRBY', groupKey(s.week, s.div, s.grp), add, dev], ['SET', 't1v3:lg:seat:' + s.week + ':' + dev, JSON.stringify(s), 'EX', LG_TTL]]);
 }
 
-export { actions, parseAct, saltedSeed, isoWeek, dailyNo, OUT, pubId };
+export { actions, parseAct, saltedSeed, isoWeek, dailyNo, OUT, pubId, scoreLog4, dropsOf };
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

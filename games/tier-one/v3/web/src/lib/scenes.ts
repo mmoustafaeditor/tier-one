@@ -70,7 +70,9 @@ export function flushDeferredScenes(): void {
   if (ids.length) { queue = [...queue, ...ids.filter((id) => !queue.includes(id))]; emit(); }
   flushMoments();
 }
-const inWindow = () => { const r = document.documentElement.dataset.route; return r === 'daily' || r === 'room' || r === 'play'; };
+// On the play surface: the 3.x window routes and 4.0's apps where a window runs (Blurt for every window, Live for Deadline Day).
+export const PLAY_ROUTES = ['daily', 'room', 'play', 'blurt', 'live', 'tutorial'];
+const inWindow = () => { const r = document.documentElement.dataset.route || ''; return PLAY_ROUTES.includes(r) || r.startsWith('play'); };
 /** Queue held moments (skipping once-only ones already seen). */
 function flushMoments() {
   for (const m of takeMoments()) {
