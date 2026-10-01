@@ -14,6 +14,7 @@ import { riskBand } from '../sim/youth';
 import { Y } from '../lang-youth-all';
 import { Chips, Panel, PanelHead } from './shell';
 import { I, Portrait, Ring } from './kit';
+import { SquadTabs } from './SquadTabs';
 import { useGame, money, sn } from './game';
 import { ageOf, moodOf } from './util';
 import { D } from '../lang-dressing-all';
@@ -31,10 +32,20 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
   const inXI = new Set(xi.map((p) => p.id));
   const tac = c.tactics ?? DEFAULT_TACTICS;
   const slots = FORMATIONS[tac.formation].slots;
-  // Depth: the XI player in each slot, and the best cover for that slot from outside the XI.
+  // Depth: the XI player in each slot, and a cover for that slot from outside the XI. A bench player covers one slot
+  // only (GF-009): the slots with the fewest good options pick first, so one utility man can't make three spots look safe.
+  const bench = squad.filter((p) => !inXI.has(p.id) && available(p));
+  const options = (i: number) => bench.filter((p) => (xi[i] ? slotValue(xi[i], slots[i].pos) : 0) - slotValue(p, slots[i].pos) <= 12).length;
+  const order = slots.map((_, i) => i).sort((a, b) => options(a) - options(b));
+  const used = new Set<string>();
+  const covers: (typeof bench)[number][] = [];
+  for (const i of order) {
+    const cover = bench.filter((p) => !used.has(p.id)).sort((a, b) => slotValue(b, slots[i].pos) - slotValue(a, slots[i].pos))[0];
+    if (cover) { used.add(cover.id); covers[i] = cover; }
+  }
   const depth = slots.map((sl, i) => {
     const first = xi[i];
-    const cover = squad.filter((p) => !inXI.has(p.id) && available(p)).sort((a, b) => slotValue(b, sl.pos) - slotValue(a, sl.pos))[0];
+    const cover = covers[i];
     const gap = first && cover ? slotValue(first, sl.pos) - slotValue(cover, sl.pos) : 99;
     const state = !cover || gap > 12 ? 'hole' : gap > 6 ? 'thin' : 'ok';
     return { sl, first, cover, state };
@@ -65,6 +76,7 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
   };
   return (
     <div className="sc-squad">
+      <SquadTabs at="squad" />
       <section className="s-head on-ground">
         <h1 className="h-hero">{x.squad.title}</h1>
         <div className="facts">

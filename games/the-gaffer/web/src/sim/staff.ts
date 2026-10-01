@@ -12,8 +12,8 @@ import { predict } from './match';
 import { makeReport } from './scouting';
 import { treatmentCost } from './training';
 import { academyLoanSpots, academyOf, canRush, capOf, matchRisk, readyBar, riskBand, rushRisk } from './youth';
-import { SLOTS, attendance, refPrice, staffQ } from './economy';
-import { canSell, judgeRenewal, renewDemand, SQUAD_MAX } from './transfers';
+import { CAP_MONTHS_UP, SLOTS, attendance, refPrice, staffQ } from './economy';
+import { canSell, judgeRenewal, renewDemand, wageBillOf, SQUAD_COMFORT, SQUAD_MAX } from './transfers';
 import { balanceOf } from './balance';
 import { windowOf } from './windows';
 import { canLoanOut, loanClubs, loanOf, loansOut } from './loans';
@@ -50,7 +50,7 @@ function act(x: Ctx, cmd: Command, key: string, ref: Ref = {}): boolean {
   const dept: Dept = DEPT_OF_DUTY[x.duty];
   if (levelOf(x.career, dept) === 'ask') {
     const k = cmd as { playerId?: string; id?: string; dealId?: string; offerId?: string };
-    const target = k.playerId ?? k.id ?? k.dealId ?? k.offerId ?? '';
+    const target = k.playerId ?? k.id ?? k.dealId ?? k.offerId ?? ref.pn?.en ?? '';
     const id = `pd:${x.duty}:${key}:${target}:${x.career.season}`;
     const pend = x.career.pending ?? [];
     if (pend.some((p) => p.id === id) || x.career.done?.[id] !== undefined) return false;
@@ -247,7 +247,9 @@ function selling(x: Ctx) {
       const p = playerOf(x.world, o.playerId);
       if (!p) continue;
       const want = p.marketValue * (core.has(p.id) ? greed + 0.35 : p.listed ? 0.85 : greed);
-      if (o.fee >= want && canSell(x.world, x.career, o).ok) act(x, { type: 'offer.accept', offerId: o.id }, 'sold', { pn: p.name, n: o.fee, s: o.clubId });
+      const senior = squadOf(x.world, x.career.clubId).filter((y) => !loanOf(x.career, y.id)).length;
+      const thin = !p.listed && senior <= SQUAD_COMFORT; // GF-005: a thin squad keeps its unlisted players
+      if (o.fee >= want && !thin && canSell(x.world, x.career, o).ok) act(x, { type: 'offer.accept', offerId: o.id }, 'sold', { pn: p.name, n: o.fee, s: o.clubId });
       else if (x.career.round - o.round >= 1) act(x, { type: 'offer.reject', offerId: o.id }, 'rejected', { pn: p.name, n: o.fee });
     }
   }
@@ -257,20 +259,44 @@ function selling(x: Ctx) {
   for (const p of sq.slice(keep)) if (!p.listed) act(x, { type: 'player.list', playerId: p.id, listed: true }, 'listed', { pn: p.name });
 }
 
+// A cap rise already waiting on the manager: one at a time, so the desk isn't flooded with them.
+const pendingCap = (c: Career) => (c.pending ?? []).some((pd) => pd.cmd.type === 'wagecap.move');
+
 // Sporting director: renews the players worth keeping from matchday 5, lets the rest run down.
 function contracts(x: Ctx) {
   if (x.career.round < 5) return;
   const b = bias(x.career, 'contracts');
   const squad = squadOf(x.world, x.career.clubId).filter((p) => !loanOf(x.career, p.id));
   const keepBar = squad.map((p) => p.rating).sort((a, z) => z - a)[Math.min(b === 'loyal' ? 23 : 19, squad.length - 1)] ?? 0;
-  for (const p of squad.filter((y) => y.contractUntil <= x.career.season + 1)) {
+  const ending = squad.filter((y) => y.contractUntil <= x.career.season + 1).sort((a, z) => z.rating - a.rating);
+  // GF-005: enough of the best expiring players are kept for the squad to stay at SQUAD_COMFORT, even below the bar;
+  // letting everyone under it walk emptied squads to the 16-man floor every summer.
+  let staying = squad.length - ending.length;
+  const blocked: { p: (typeof squad)[number]; wage: number; years: number }[] = [];
+  const renew = (p: (typeof squad)[number], wage: number, years: number) =>
+    judgeRenewal(x.world, x.career, p, wage, years).ok && act(x, { type: 'contract.renew', playerId: p.id, wage, years }, 'renewed', { pn: p.name, n: years, s: String(wage) });
+  for (const p of ending) {
     const age = x.career.season - p.birthYear;
-    const worth = p.rating >= keepBar || (age <= 22 && p.potential >= keepBar + 3);
+    const worth = p.rating >= keepBar || (age <= 22 && p.potential >= keepBar + 3) || staying < SQUAD_COMFORT;
     const tooOld = b === 'loyal' ? age >= 35 : b === 'money' ? age >= 30 : age >= 33;
     if (!worth || tooOld) continue;
     const d = renewDemand(p, x.career.season, balanceOf(x.career).wages);
     const years = Math.min(d.maxYears, b === 'cautious' ? 2 : b === 'bold' ? 5 : age <= 26 ? 4 : 2);
-    if (judgeRenewal(x.world, x.career, p, d.wage, years).ok) act(x, { type: 'contract.renew', playerId: p.id, wage: d.wage, years }, 'renewed', { pn: p.name, n: years, s: String(d.wage) });
+    const j = judgeRenewal(x.world, x.career, p, d.wage, years);
+    if (j.ok) { if (renew(p, d.wage, years)) staying++; }
+    else if (j.reason === 'wageCap') { blocked.push({ p, wage: d.wage, years }); staying++; }
+  }
+  // GF-005: players worth keeping that only the wage cap stops (it resets to the bill + 5% every summer): one proposal to
+  // raise the cap by what all of their new deals need, paid from the budget (12 months of the rise), while the club can
+  // easily afford it. Once it's approved the weekly check renews them one by one; a delegated director does it now.
+  if (blocked.length && !pendingCap(x.career)) {
+    const club = x.world.clubs.find((y) => y.id === x.career.clubId)!;
+    const rise = blocked.reduce((sum, k) => sum + Math.max(0, k.wage - k.p.wage), 0);
+    const need = roundFee(Math.max(1000, wageBillOf(x.world, x.career.clubId) + rise - club.wageCap));
+    if (need * CAP_MONTHS_UP * 2 <= spendingRoom(x.world, x.career)
+      && act(x, { type: 'wagecap.move', perMonth: need }, 'capRaise', { pn: blocked[0].p.name, n: need, s: String(blocked.length) })) {
+      for (const k of blocked) renew(k.p, k.wage, k.years);
+    }
   }
 }
 

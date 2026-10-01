@@ -1,0 +1,18 @@
+eng_lvr v eng_lbl balanced 1.60 possession 1.71 counter 1.71 gegenpress 1.61 bus 1.67 wings 1.60 direct 1.56
+eng_lbl v eng_mcr balanced 1.57 possession 1.68 counter 1.53 gegenpress 1.80 bus 1.54 wings 1.52 direct 1.50
+eng_mcr v eng_nls balanced 1.45 possession 1.56 counter 1.28 gegenpress 1.63 bus 1.26 wings 1.35 direct 1.37
+eng_nls v eng_ncm balanced 2.17 possession 2.21 counter 2.13 gegenpress 2.23 bus 2.06 wings 2.12 direct 2.16
+eng_ncm v eng_avl balanced 1.17 possession 1.29 counter 1.08 gegenpress 1.35 bus 1.09 wings 1.14 direct 1.08
+eng_avl v eng_bri balanced 2.15 possession 2.19 counter 1.99 gegenpress 2.38 bus 1.92 wings 2.07 direct 2.16
+eng_bri v eng_nfo balanced 1.71 possession 1.81 counter 1.69 gegenpress 1.88 bus 1.63 wings 1.66 direct 1.67
+eng_nfo v eng_cpe balanced 1.49 possession 1.61 counter 1.50 gegenpress 1.64 bus 1.46 wings 1.51 direct 1.45
+eng_cpe v eng_elh balanced 1.30 possession 1.43 counter 1.32 gegenpress 1.40 bus 1.28 wings 1.33 direct 1.25
+eng_elh v eng_bou balanced 1.54 possession 1.65 counter 1.57 gegenpress 1.70 bus 1.52 wings 1.58 direct 1.50
+eng_bou v eng_bre balanced 1.52 possession 1.64 counter 1.54 gegenpress 1.69 bus 1.49 wings 1.56 direct 1.48
+eng_bre v eng_wlc balanced 1.58 possession 1.69 counter 1.61 gegenpress 1.74 bus 1.55 wings 1.61 direct 1.54
+eng_wlc v eng_mtf balanced 1.55 possession 1.67 counter 1.57 gegenpress 1.71 bus 1.53 wings 1.58 direct 1.51
+eng_mtf v eng_wol balanced 1.62 possession 1.73 counter 1.63 gegenpress 1.78 bus 1.57 wings 1.66 direct 1.57
+eng_wol v eng_lds balanced 1.61 possession 1.74 counter 1.71 gegenpress 1.60 bus 1.69 wings 1.58 direct 1.53
+eng_lds v eng_bur balanced 2.01 possession 2.08 counter 2.02 gegenpress 2.18 bus 1.97 wings 2.01 direct 1.97
+mean balanced 1.63 possession 1.73 counter 1.62 gegenpress 1.77 bus 1.58 wings 1.62 direct 1.58
+best−worst preset, mean 0.24 max 0.46

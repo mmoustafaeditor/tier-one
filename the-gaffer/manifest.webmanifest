@@ -1,0 +1,19 @@
+{
+  "name": "The Gaffer",
+  "short_name": "The Gaffer",
+  "description": "Semba Studios' football manager: Europe's big five leagues and the Arab leagues, 2026/27.",
+  "id": "/the-gaffer/",
+  "start_url": "/the-gaffer/?source=pwa",
+  "scope": "/the-gaffer/",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "en",
+  "dir": "auto",
+  "background_color": "#062421",
+  "theme_color": "#062421",
+  "categories": ["games", "sports"],
+  "icons": [
+    { "src": "/the-gaffer/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/the-gaffer/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

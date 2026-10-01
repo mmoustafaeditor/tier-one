@@ -5,11 +5,14 @@ import { Fragment, useEffect, useRef, type ReactNode } from 'react';
 import type { Club } from '../model/types';
 import { Crest, I } from './kit';
 
-export type Tab = 'today' | 'squad' | 'match' | 'transfers' | 'club' | 'career' | 'pass';
+export type Tab = 'today' | 'squad' | 'match' | 'transfers' | 'club' | 'career' | 'pass' | 'news' | 'settings';
 const TABS: { id: Tab; icon: string; extra?: boolean }[] = [
   { id: 'today', icon: 'today' }, { id: 'squad', icon: 'squad' }, { id: 'match', icon: 'whistle' }, { id: 'transfers', icon: 'market' }, { id: 'club', icon: 'club' },
   { id: 'career', icon: 'history', extra: true }, { id: 'pass', icon: 'store', extra: true },
+  { id: 'news', icon: 'news', extra: true }, { id: 'settings', icon: 'gear', extra: true },
 ];
+// On phones the extra items aren't in the bar: the area that holds them is marked current instead (UI/UX pass).
+const PARENT: Partial<Record<Tab, Tab>> = { career: 'club', pass: 'club', settings: 'club', news: 'today' };
 
 export function Shell({ tab, club, labels, onTab, solo, children, badge }: {
   tab: Tab | null; club?: Club; labels: Record<Tab, string>; onTab: (t: Tab) => void; solo?: boolean; children: ReactNode; badge?: Partial<Record<Tab, number>>;
@@ -22,7 +25,7 @@ export function Shell({ tab, club, labels, onTab, solo, children, badge }: {
           {TABS.map((x, i) => (
             <Fragment key={x.id}>
               {i === 5 && <span className="nav-sep" />}
-              <a href={`#${x.id}`} className={x.extra ? 'nav-extra' : undefined} aria-current={tab === x.id ? 'page' : undefined}
+              <a href={`#${x.id}`} className={x.extra ? 'nav-extra' : tab && PARENT[tab] === x.id ? 'nav-parent' : undefined} aria-current={tab === x.id ? 'page' : undefined}
                 onClick={(e) => { e.preventDefault(); onTab(x.id); }}>
                 <I n={x.icon} />
                 <span>{labels[x.id]}</span>
@@ -74,12 +77,24 @@ export function Sheet({ label, onClose, children, wide }: { label: string; onClo
   );
 }
 
-export function Seg<T extends string | number>({ value, options, onChange, label, onGround }: { value: T; options: { v: T; label: ReactNode }[]; onChange: (v: T) => void; label: string; onGround?: boolean }) {
+export function Seg<T extends string | number>({ value, options, onChange, label, onGround, className = '' }: { value: T; options: { v: T; label: ReactNode }[]; onChange: (v: T) => void; label: string; onGround?: boolean; className?: string }) {
+  // A row wider than the screen keeps its chosen segment in view (UX-05).
+  const row = useRef<HTMLDivElement>(null);
+  useEffect(() => { inView(row.current); }, [value]);
   return (
-    <div className={`seg${onGround ? ' on-ground-seg' : ''}`} role="group" aria-label={label}>
+    <div ref={row} className={`seg${onGround ? ' on-ground-seg' : ''} ${className}`} role="group" aria-label={label}>
       {options.map((o) => <button key={String(o.v)} aria-pressed={o.v === value} onClick={() => onChange(o.v)}>{o.label}</button>)}
     </div>
   );
+}
+
+// Scrolls a horizontal row (segments, chips) so its pressed item is visible, without moving the page.
+export function inView(rowEl: HTMLElement | null) {
+  const b = rowEl?.querySelector<HTMLElement>('[aria-pressed="true"]');
+  if (!rowEl || !b || rowEl.scrollWidth <= rowEl.clientWidth) return;
+  const r = rowEl.getBoundingClientRect(), q = b.getBoundingClientRect();
+  if (q.left < r.left) rowEl.scrollLeft -= r.left - q.left + 16;
+  else if (q.right > r.right) rowEl.scrollLeft += q.right - r.right + 16;
 }
 
 export function Steps<T extends number>({ value, options, onChange, was, label }: { value: T; options: string[]; onChange: (v: T) => void; was?: T; label: string }) {

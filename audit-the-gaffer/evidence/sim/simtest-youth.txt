@@ -1,0 +1,13 @@
+academy kids 1654 world issues 0
+19yo growth per matchday: 900 min 10.56 vs 90 min 7.60 (×1.39)
+risk multiplier at load 40/60/75/90: 1 / 1.8 / 3 / 3
+start by age 15-19: 65.5 | 20-23: 64.0 | 24-27: 63.2 | 28-30: 63.5 | 31-33: 66.3 | 34-40: 70.9 top100 85.9
+season 2026: intake day 32, intakes 1, my academy 8, high-load now 0, user-match injuries 6/18
+  season end: promoted to my squad 0, world 0 issues, career 0
+Arsenal academy kid ya2026s-eng-arsenal-0: 61 → 64 (eng-arsenal)
+Chelsea youngster Estêvão: 83 → 88, minutes 0, history 83,88
+end by age   15-19: 61.8 | 20-23: 65.6 | 24-27: 63.5 | 28-30: 63.3 | 31-33: 64.8 | 34-40: 66.6 top100 86.1
+mean rating now 63.82 players 8179 19.8 s
+my academy: CB 19y 62/78, CAM 19y 61/76, GK 17y 58/74, LW 17y 57/73, LW 17y 57/77, RB 16y 54/75, RW 17y 53/75, CB 16y 51/70, CB 16y 50/71, CM 16y 40/60
+staff log: medical:y_rush medical:rehab medical:y_rest medical:y_rest medical:y_rest medical:y_rush
+loans out: 

@@ -14,6 +14,11 @@ import { spendingRoom, wageRoom } from './recruit/money';
 
 export const SQUAD_MAX = 32;
 export const SQUAD_SELL_MIN = 16;
+// Staff advice and delegated selling keep a workable squad: at or under SQUAD_COMFORT senior players (not out on loan)
+// they no longer recommend selling anyone we haven't listed, and at or under SQUAD_THIN they turn such bids down.
+// Following their picks used to take squads down to the 16-man floor while the cash piled up (audit GF-005).
+export const SQUAD_COMFORT = 22;
+export const SQUAD_THIN = 18;
 
 export type Role = 'star' | 'regular' | 'rotation' | 'prospect';
 const ROLE_WAGE: Record<Role, number> = { star: 1, regular: 1.05, rotation: 1.15, prospect: 1.1 };

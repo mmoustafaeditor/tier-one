@@ -7,7 +7,7 @@ import { cupRun, cupWinner, groupTable, playCupDay, tiesOn, userCupMatch, userTi
 import { addNews, newsRound, rumoursRound } from './news';
 import { addMsg, afterMatch, coachSeasonEnd, newBoard, newCoach, sackCheck, salaryOf } from './coach';
 import { available } from './tactics';
-import { aiEconomyWeek, economyWeek, newOps, sponsorBonus, staffQ } from './economy';
+import { aiEconomyWeek, economyWeek, newOps, sponsorBonus } from './economy';
 import { applyElo } from './rankings';
 import { FOCUS_TACTICAL, earnDev, resetExams } from './training';
 import { academySeasonEnd, addMinutes, developDay, enc, pathwayDay, returnAcademyLoans, seasonDev } from './youth';
@@ -20,6 +20,21 @@ import { isDeadlineDay, windowOf } from './windows';
 import { staffWeek } from './staff';
 import { SQUAD_SELL_MIN } from './transfers';
 import { roomPull } from './room';
+import { facilityNorm, staffEdge } from './norms';
+import { userObjective } from './vision';
+import { awardLeagues, awardWinners, leagueAwards, type AwardSet } from './awards';
+import { tallySeason } from './legends';
+import { aiCheckpoint, aiSeasonEnd, type Change } from './managers';
+
+// V2.8: AI manager changes in the papers (sacked, then who takes over).
+function managerNews(c: Career, changes: Change[]): Career {
+  let out = c;
+  for (const ch of changes) {
+    out = addNews(out, 'managers', 'sacked', { club: ch.clubId, pn: ch.out, s: ch.out.en });
+    out = addNews(out, 'managers', 'appointed', { club: ch.clubId, pn: ch.in, s: ch.in.en });
+  }
+  return out;
+}
 import { applyCards, serveCupBans } from './discipline';
 
 // ---------- fixtures ----------
@@ -96,6 +111,30 @@ export function userMatch(w: World, c: Career): LiveMatch | null {
   return startMatch(w, c, f[0], f[1], matchKey(c, lid, i), c.round);
 }
 
+// Between matchdays morale settles a share of the way back to its normal level (at least one point), the same rule
+// for every squad. A fixed ±1 a matchday could not keep up with ±6 a result, so a side losing more than a third of its
+// games sank to the floor and lost ~2.5 on every attribute (audit GF-003). With a 20% pull a poor side settles in the
+// mid-40s and a dominant one in the high 70s.
+export const MORALE_SETTLE = 0.2;
+export function settleMorale(morale: number, target: number): number {
+  const gap = target - morale;
+  if (!gap) return morale;
+  return morale + Math.sign(gap) * Math.max(1, Math.round(Math.abs(gap) * MORALE_SETTLE));
+}
+
+// The leaders' pull for every club but the user's: 0.25 × (mean morale of its three best players − 60), rounded.
+export function aiRoomPulls(w: World, userClub: string): Map<string, number> {
+  const best = new Map<string, Player[]>();
+  for (const p of w.players) {
+    if (p.clubId === userClub || p.clubId === FREE_AGENT) continue;
+    const top = best.get(p.clubId) ?? best.set(p.clubId, []).get(p.clubId)!;
+    top.push(p); top.sort((a, b) => b.rating - a.rating); if (top.length > 3) top.pop();
+  }
+  const out = new Map<string, number>();
+  for (const [id, top] of best) out.set(id, Math.round(0.25 * (top.reduce((s, p) => s + p.morale, 0) / top.length - 60)));
+  return out;
+}
+
 // Applies one finished match to the players: condition, morale, cards, injuries, and (league games only) season stats.
 // `care`: the user's club, where the doctor and medical centre shorten injuries.
 type Rate = (id: string, v: number, motm: boolean) => void;
@@ -133,7 +172,12 @@ function applyMatch(rec: MatchRecord, get: (id: string) => Player, byClub: Map<s
 const recordFor = (m: LiveMatch, get: (id: string) => Player, userClub: string | null) =>
   toRecord(m, get, userClub === m.sides[0].clubId ? 0 : userClub === m.sides[1].clubId ? 1 : -1);
 
-const careOf = (c: Career) => (c.ops ? { clubId: c.clubId, cut: Math.min(0.5, staffQ(c.ops, 'doctor') / 300 + (c.ops.facilities.medical - 1) * 0.05) } : null);
+// The doctor and medical centre shorten (or, below the club's norm, lengthen) the user's injuries against what a club
+// this size normally has; AI clubs heal at that norm (norms.ts, audit GF-002).
+const careOf = (w: World, c: Career) => {
+  const club = w.clubs.find((x) => x.id === c.clubId);
+  return c.ops && club ? { clubId: c.clubId, cut: clamp(staffEdge(c.ops, club, 'doctor') / 300 + (c.ops.facilities.medical - facilityNorm(club)) * 0.05, -0.3, 0.5) } : null;
+};
 
 const mutable = (w: World) => {
   const players = w.players.map((p) => ({ ...p }));
@@ -162,7 +206,11 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
   const calm = c.coach?.courses.includes('psychology') ? c.clubId : null;
   // The user's squad settles at a higher morale with the psychology course and a good psychologist.
   // v2.4: the leaders pull the room's settle point with their own mood (sim/room.ts roomPull).
-  const moraleTarget = 60 + (calm ? 5 : 0) + Math.round(staffQ(c.ops, 'psychologist') / 20) + Math.round(roomPull(w, c));
+  const moraleTarget = 60 + (calm ? 5 : 0) + Math.round(staffEdge(c.ops, w.clubs.find((x) => x.id === c.clubId), 'psychologist') / 20) + Math.round(roomPull(w, c));
+  // Every other club's room is pulled by its leaders too, the same 0.25 × (their morale − 60) as roomPull, with its three
+  // best players standing in for the leaders (AI clubs keep no dressing-room state). Without it only the user's squad had
+  // this lift, and user-managed clubs ran hotter than the same club under the AI (audit GF-002).
+  const aiPull = aiRoomPulls(w, c.clubId);
   let mine: LiveMatch | null = null;
 
   for (const [lid, rounds] of Object.entries(c.fixtures)) {
@@ -177,7 +225,7 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
         simulate(m, get);
       }
       if (isMine) mine = m;
-      applyMatch(recordFor(m, get, null), get, byClub, stat, r, calm, careOf(c), rate);
+      applyMatch(recordFor(m, get, null), get, byClub, stat, r, calm, careOf(w, c), rate);
       return [f[0], f[1], m.goals[0], m.goals[1]];
     });
     next.fixtures[lid] = rounds.map((g, i) => (i === c.round ? results : g));
@@ -190,7 +238,7 @@ export function playRound(w: World, c: Career, played?: LiveMatch): { world: Wor
       if (p.banned > 0) p.banned--;
     }
     p.fitness = Math.min(100, p.fitness + 12);
-    p.morale += Math.sign((p.clubId === c.clubId ? moraleTarget : 60) - p.morale);
+    p.morale = settleMorale(p.morale, p.clubId === c.clubId ? moraleTarget : 60 + (aiPull.get(p.clubId) ?? 0));
   }
 
   const world: World = { ...w, players, clubs: applyElo(w.clubs, Object.values(next.fixtures).map((rs) => rs[c.round] ?? []).flat()) };
@@ -260,7 +308,7 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
     const calm = c.coach?.courses.includes('psychology') ? c.clubId : null;
     const ratings = { ...(cd.career.ratings ?? {}) };
     const rate: Rate = (id, v, motm) => { const o = ratings[id] ?? [0, 0, 0]; ratings[id] = [Math.round((o[0] + v) * 10) / 10, o[1] + 1, o[2] + (motm ? 1 : 0)]; };
-    for (const m of cd.matches) applyMatch(recordFor(m, get, null), get, byClub, null, r, calm, careOf(c), rate);
+    for (const m of cd.matches) applyMatch(recordFor(m, get, null), get, byClub, null, r, calm, careOf(w, c), rate);
     const clubs = w.clubs.map((x) => (cd.prizes.has(x.id) ? { ...x, budget: x.budget + cd.prizes.get(x.id)! } : x));
     const cupResults = cd.matches.map((m): [string, string, number, number] => [m.sides[0].clubId, m.sides[1].clubId, m.goals[0], m.goals[1]]);
     world = { ...w, players, clubs: applyElo(clubs, cupResults) };
@@ -315,6 +363,8 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
   if (res.mine) ({ world, career } = userAfter(pre, world, career, res.mine));
   if (res.mine) career = recordMatch(career, res.mine);
   if (res.mine) career = practise(career);
+  // V2.8 AI boards: at a third and two thirds of the league, a club far below its standing may change its manager.
+  { const ai = aiCheckpoint(world, career, career.round, (lid) => table(world, career, lid)); world = ai.world; career = managerNews(career, ai.changes); }
   // Every other club pays its wages and upkeep too, so treasuries don't just pile up.
   world = aiEconomyWeek(world, career);
   // The club's week: money, training, academy; development points from the result.
@@ -348,7 +398,7 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
     const delta = tableMood(world, career, club);
     career = { ...career, board: { ...career.board, confidence: clamp(Math.round((career.board.confidence + delta) * 10) / 10, 0, 100) } };
   }
-  career = sackCheck(world, career);
+  career = sackCheck(world, career, onCourse(world, career, club));
   return { world, career, mine: res.mine };
 }
 
@@ -357,7 +407,7 @@ export const MOOD_PER_POINT = 0.05;
 export function tableMood(w: World, c: Career, club: Club): number {
   const rows = table(w, c, club.leagueId);
   const pos = rows.findIndex((x) => x.clubId === c.clubId) + 1;
-  const obj = objectiveOf(w, club);
+  const obj = userObjective(w, c); // V2.7: one step higher after an ambitious board meeting
   const mine = rows[pos - 1].pts;
   if (objectiveMet(obj, pos, rows.length)) {
     // On course: the first place that misses the objective is the line to stay clear of.
@@ -369,7 +419,20 @@ export function tableMood(w: World, c: Career, club: Club): number {
   let target = pos;
   while (target > 1 && !objectiveMet(obj, target, rows.length)) target--;
   const short = rows[target - 1].pts - mine;
-  return short <= 3 ? 0 : clamp(-MOOD_PER_POINT * (short - 3), -1, 0);
+  // A title race is close for longer: 2nd a few points off the top is not failing the objective yet (GF-004).
+  const grace = obj === 'title' ? 6 : 3;
+  return short <= grace ? 0 : clamp(-MOOD_PER_POINT * (short - grace), -1, 0);
+}
+
+// On course for the objective: meeting it now, or within 3 points of the place that would (6 in a title race).
+export function onCourse(w: World, c: Career, club: Club): boolean {
+  const rows = table(w, c, club.leagueId);
+  const pos = rows.findIndex((x) => x.clubId === c.clubId) + 1;
+  const obj = userObjective(w, c); // V2.7: one step higher after an ambitious board meeting
+  if (objectiveMet(obj, pos, rows.length)) return true;
+  let target = pos;
+  while (target > 1 && !objectiveMet(obj, target, rows.length)) target--;
+  return rows[target - 1].pts - rows[pos - 1].pts <= (obj === 'title' ? 6 : 3);
 }
 
 // Offers for the user's players: often for listed ones, now and then for a star. Offers last 3 matchdays.
@@ -469,6 +532,7 @@ export interface SeasonSummary {
   left: Player[];      // the user's players whose contracts ran out
   academy: Player[];   // kids promoted into the user's squad
   cups: { id: string; name: LocalizedName; round: number; rounds: number; won: boolean }[]; // the user's cup runs, from the real brackets (E2E #3)
+  awards: AwardSet[];  // V2.8 awards night: the user's league first, then every top flight with real squads
 }
 
 // Clubs promote academy kids up to SQUAD_SELL_MIN (the same floor selling stops at). Read inside functions only: season
@@ -479,6 +543,7 @@ const AI_SQUAD = 22;               // AI clubs sign free agents up to this
 // and a small club's cheque is measured against its own wages (a mid-table finish is worth about half a month's cap,
 // a title about two), not against the giants' budgets.
 export const PRIZE_POT = 1.0;
+export const PARACHUTE_MONTHS = 6;
 export const PRIZE_STEEPNESS = 1.5;
 
 // Closes the season: records the result, moves clubs up and down, ages and develops players, retires veterans,
@@ -492,8 +557,9 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
   const myLeague = leagueOf(w, c.clubId);
   const tables = new Map(w.leagues.map((l) => [l.id, table(w, c, l.id)]));
   const myTable = tables.get(myLeague)!;
-  const myClub = w.clubs.find((x) => x.id === c.clubId)!;
-  const objective = objectiveOf(w, myClub);
+  // V2.8 AI boards at the season's end: a club that missed its objective by 4+ places changes its manager.
+  const aiEnd = aiSeasonEnd(w, c, (lid) => tables.get(lid)!, objectiveMet);
+  const objective = userObjective(w, c);
   const position = myTable.findIndex((x) => x.clubId === c.clubId) + 1;
   const record: SeasonRecord = {
     season: c.season, clubId: c.clubId, leagueId: myLeague, position, objective,
@@ -511,6 +577,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
   const clubs: Club[] = w.clubs.map((x) => ({ ...x }));
   const byId = new Map(clubs.map((x) => [x.id, x]));
   const promoted: string[] = [], relegated: string[] = [];
+  let parachute = 0;
   for (const lg of w.leagues) {
     const t = tables.get(lg.id)!;
     const pot = PRIZE_POT * clubs.filter((x) => x.leagueId === lg.id).reduce((s, x) => s + x.wageCap, 0);
@@ -527,7 +594,8 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     if (lower) {
       const down = t.slice(-MOVERS).map((x) => x.clubId);
       const up = tables.get(lower.id)!.slice(0, MOVERS).map((x) => x.clubId);
-      for (const id of down) { byId.get(id)!.leagueId = lower.id; relegated.push(id); }
+      // V2.7 parachute: a relegated club gets PARACHUTE_MONTHS of its wage cap to soften the drop.
+      for (const id of down) { const x = byId.get(id)!; x.leagueId = lower.id; relegated.push(id); x.budget += roundFee(x.wageCap * PARACHUTE_MONTHS); if (id === c.clubId) parachute = roundFee(x.wageCap * PARACHUTE_MONTHS); }
       for (const id of up) { byId.get(id)!.leagueId = lg.id; promoted.push(id); }
     }
   }
@@ -536,6 +604,12 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     const A = byId.get(a), B = byId.get(b);
     if (A && B && A.leagueId !== B.leagueId) [A.leagueId, B.leagueId] = [B.leagueId, A.leagueId];
   }
+
+  // V2.8 awards night, read from the season just played (before anyone ages or moves).
+  const awards = awardLeagues(w, c).map((lid) => leagueAwards(w, c, lid, tables.get(lid)![0].clubId, (c.fixtures[lid] ?? []).length));
+  const winners = awardWinners(awards);
+  // V2.8 club legends: the season's league apps and goals (and trophies) join each player's tally at the club.
+  const tallied = tallySeason(w, coachEnd?.career ?? c, (coachEnd?.career.coach.trophies.length ?? 0) - (c.coach?.trophies.length ?? 0));
 
   // Players: a year older, develop or decline, veterans retire, contracts end or get renewed.
   const season = c.season + 1;
@@ -554,9 +628,10 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     // season end only settles the ceiling, writes the season's line in his history and gives the legs a summer off.
     const rating = p.rating;
     const { potential } = seasonDev(p, c.season, r);
-    const value = valueOf(rating, age, potential);
+    const value = Math.round(valueOf(rating, age, potential) * (winners.has(p.id) ? 1.1 : 1)); // award winners +10%
     const q: Player = {
-      ...p, rating, potential, marketValue: value, wage: Math.max(p.wage, wageOf(value, lid)), attrs: shiftAttrs(p.attrs, 0),
+      // GF-015: a contract's wage holds until the player renews or moves (no summer ratchet); AI renewals below re-price it.
+      ...p, rating, potential, marketValue: value, wage: p.wage, attrs: shiftAttrs(p.attrs, 0),
       fitness: 100, morale: 65, injured: 0, banned: p.banned, yc: undefined, listed: undefined, // gf-ref: bans carry over, yellow counts start again
       rh: [...(p.rh ?? []), enc(c.season, 99, rating)].slice(-60), ms: undefined, run: undefined, load: undefined, m5: p.m5 ? Math.round(p.m5 * 0.3) : undefined, inj0: undefined, rr: undefined,
     };
@@ -571,6 +646,7 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
         continue;
       }
       q.contractUntil = season + int(r, 2, 4);
+      q.wage = wageOf(value, lid); // an AI club's new deal is priced at today's value
     }
     players.push(q);
   }
@@ -640,13 +716,15 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
     club.wageCap = roundFee(bill * 1.05);
   }
 
+  // Award winners at the user's club gain trust (+3).
+  for (const p of players) if (winners.has(p.id) && p.clubId === c.clubId) p.trust = Math.min(100, (p.trust ?? 50) + 3);
   if (coachEnd?.cash) { const mc = clubs.find((x) => x.id === c.clubId)!; mc.budget += coachEnd.cash; }
   // League prize money and milestone cash go in the user's ledger; the ledger then starts over.
   let ops = c.ops;
   if (ops) {
     const mine = clubs.find((x) => x.id === c.clubId)!;
-    const prize = mine.budget - (coachEnd?.cash ?? 0) - w.clubs.find((x) => x.id === c.clubId)!.budget;
-    const ledger = { ...ops.ledger, prizes: (ops.ledger.prizes ?? 0) + prize, milestones: (ops.ledger.milestones ?? 0) + (coachEnd?.cash ?? 0) };
+    const prize = mine.budget - (coachEnd?.cash ?? 0) - parachute - w.clubs.find((x) => x.id === c.clubId)!.budget;
+    const ledger = { ...ops.ledger, prizes: (ops.ledger.prizes ?? 0) + prize, milestones: (ops.ledger.milestones ?? 0) + (coachEnd?.cash ?? 0), ...(parachute ? { parachute } : {}) };
     const titles = (coachEnd?.career.coach.trophies.length ?? 0) - (c.coach?.trophies.length ?? 0);
     ops = resetExams({ ...ops, lastLedger: ledger, ledger: {}, devPoints: 0 });
     void titles;
@@ -656,23 +734,23 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
       ops = { ...ops, lastLedger: { ...ops.lastLedger, bonusSponsor: (ops.lastLedger?.bonusSponsor ?? 0) + bonus } };
     }
   }
-  const world: World = { ...w, clubs, players, academy: acEnd.academy };
+  const world: World = { ...w, clubs, players, academy: acEnd.academy, managers: aiEnd.world.managers };
   const fixtures = seasonFixtures(world, c.seed, season);
   // Continental places come from this season's final tables.
   const finals = new Map([...tables.entries()].map(([lid, t]) => [lid, t.map((x) => x.clubId)]));
   const myRow = myTable[position - 1];
   const clubGoals = Object.entries(c.stats).map(([id, st]) => ({ p: w.players.find((x) => x.id === id), g: st[1] }))
     .filter((x) => x.p && x.p.clubId === c.clubId).sort((a, b) => b.g - a.g)[0];
-  const base = recordSeason(coachEnd?.career ?? c, myRow, position, myLeague, w.leagues.find((l) => l.id === myLeague)!.tier,
+  const base = recordSeason({ ...(coachEnd?.career ?? c), clubTally: tallied.clubTally, legends: tallied.legends }, myRow, position, myLeague, w.leagues.find((l) => l.id === myLeague)!.tier,
     clubGoals ? { pn: clubGoals.p!.name, goals: clubGoals.g } : null);
   // Rumours waiting for next summer's deadline day carry over, counted from the new season's first matchday.
   const rounds = roundsIn(c);
   const rumours = (c.rumours ?? []).filter((ru) => ru.until >= rounds).map((ru) => ({ ...ru, until: ru.until - rounds }));
-  const career: Career = {
+  const career: Career = managerNews({
     ...base, season, round: 0, stats: {}, ratings: {}, loans: [], offers: [], deals: [...deals, ...c.deals], ops: ops!, rumours,
-    fixtures, history: [...c.history, record], cups: makeCups(world, { seed: c.seed, season, fixtures }, finals), cupDay: -1, live: null, pendingSwaps: undefined,
-  };
+    fixtures, history: [...c.history, record], awards: [...awards, ...(c.awards ?? [])].slice(0, 30), cups: makeCups(world, { seed: c.seed, season, fixtures }, finals), cupDay: -1, live: null, pendingSwaps: undefined,
+  }, aiEnd.changes);
   const cupRuns = Object.values(c.cups ?? {}).map((cup) => ({ cup, run: cupRun(cup, c.clubId) })).filter((x) => x.run)
     .map(({ cup, run }) => ({ id: cup.id, name: cup.name, round: run!.round, rounds: cup.days.length, won: run!.won }));
-  return { world, career, summary: { record, promoted, relegated, retired, topScorer, left, academy, cups: cupRuns } };
+  return { world, career, summary: { record, promoted, relegated, retired, topScorer, left, academy, cups: cupRuns, awards } };
 }

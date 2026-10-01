@@ -1,7 +1,7 @@
 // Transfers (V2.5 Recruitment): what the plan lacks (needs), where the scouts are, who fits (scout picks and the
 // shortlist, drawn as ranges the scouts actually know), the market, the talks in progress (the negotiation room), the
 // deals and money we owe, and loans with their clauses. Every button builds a command; the simulation decides.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FREE_AGENT, type Player, type Position } from '../model/types';
 import { countryOf, playerOf, strengthOf } from '../sim/world';
 import { estimate, estimateAll, shortlisted } from '../sim/estimate';
@@ -22,7 +22,7 @@ import { CLAUSE_NEED } from '../sim/recruit/tick';
 import { isUnhappy } from '../sim/recruit/ai';
 import { R } from '../lang-recruit-all';
 import { Crest, I, Kpi, Portrait, initialsOf } from './kit';
-import { Panel, PanelHead } from './shell';
+import { Panel, PanelHead, inView } from './shell';
 import { useGame, clubOf, cn, money, sn, type Game } from './game';
 import { ageOf } from './util';
 import { Talks, LoanSheet } from './Talks';
@@ -38,6 +38,8 @@ export function TransfersScreen({ tab, onTab, neg, pid }: { tab: number; onTab: 
   const Rs = R[g.ui];
   const T = x.tr;
   const list = useMemo(() => needs(w, c), [w, c]);
+  const chipRow = useRef<HTMLDivElement>(null);
+  useEffect(() => { inView(chipRow.current); }, [tab]); // UX-05: the chosen chip is never off-screen
   if (neg || pid) return <Talks negId={neg} pid={pid} onBack={() => onTab(2)} />;
   const open = !!windowOf(c);
   const top = list[0];
@@ -59,7 +61,7 @@ export function TransfersScreen({ tab, onTab, neg, pid }: { tab: number; onTab: 
           <Kpi v={<span className="ltr">{money(committed(c))}</span>} l={Rs.kpi.committed} />
         </div>
       </div>
-      <div className="rc-tabs chips chips--scroll on-ground" role="group" aria-label={T.title}>
+      <div ref={chipRow} className="rc-tabs chips chips--scroll on-ground" role="group" aria-label={T.title}>
         {ORDER.map((i) => (
           <button key={i} className="chip" aria-pressed={tab === i} onClick={() => onTab(i)}>
             {Rs.tabs[i]}{i === 2 && live.length ? <em className="count">{live.length}</em> : i === 5 && reds ? <em className="count warn">{reds}</em> : null}

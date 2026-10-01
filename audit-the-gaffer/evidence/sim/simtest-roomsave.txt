@@ -1,0 +1,21 @@
+v4 save loads: version 8, room true, cohesion 55, roles 29
+round 10 star Amadou Onana req 10 trust 18 fringe pledge {
+  id: 'pl2026.6.p-lamare-bogarde.role',
+  playerId: 'p-lamare-bogarde',
+  pn: { en: 'Lamare Bogarde', ar: 'Lamare Bogarde' },
+  type: 'role',
+  role: 'starter',
+  group: undefined,
+  made: 6,
+  season: 2026,
+  due: 10,
+  n: 4,
+  st: 0,
+  el: 4,
+  apps: 1,
+  cu0: undefined,
+  d0: undefined,
+  status: 'open'
+}
+decisions: request:dr.request | promise:dr.due.role.starter | loanee:y_loanee
+wrote /tmp/room-save.txt

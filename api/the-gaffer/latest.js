@@ -1,11 +1,11 @@
 // Written by games/the-gaffer/scripts/publish-apk.mjs when CI publishes an APK. Don't edit by hand.
 // Installed apps compare versionCode with their own and offer the download when this one is higher.
 const LATEST = {
-  "version": "2.1.0",
-  "versionCode": 29846333,
+  "version": "2.2.0",
+  "versionCode": 29847298,
   "downloadUrl": "https://www.sembagames.app/downloads/TheGaffer.apk",
   "webUrl": "https://www.sembagames.app/the-gaffer",
-  "changelog": "Merge remote-tracking branch 'origin/main' into lane8/t1-hybrid"
+  "changelog": "The Gaffer 2.2.0"
 };
 
 export default function handler(req, res) {

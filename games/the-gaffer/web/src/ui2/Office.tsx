@@ -2,7 +2,9 @@
 // room (who does what, and how much you let them), and the commercial side.
 import { useState } from 'react';
 import type { Dept, DeptLevel, Facility, StaffRole } from '../model/types';
-import { monthly, upgradeCost, FACILITIES, attendance, capacityOf, refPrice } from '../sim/economy';
+import { monthly, upgradeCost, FACILITIES, attendance, capacityOf, refPrice, BUILD_DAYS, buildLeft } from '../sim/economy';
+import { CL } from '../lang-club-all';
+import { visionOf, userObjective } from '../sim/vision';
 import { objectivesOf, youthApps, cupAimMet } from '../sim/coach';
 import { objectiveMet, roundsIn, leagueOf } from '../sim/season';
 import { wageBill } from '../sim/world';
@@ -52,7 +54,13 @@ function Money() {
   // The runway: cash month by month to the end of the season on the current monthly picture.
   const last = roundsIn(c);
   const months: Date[] = [];
-  for (let r = c.round; r <= last; r += 4) months.push(dateOf(c.season, r));
+  // One point per calendar month (the first matchday in it), not every four matchdays: 28-day steps gave 13 points a
+  // season and a month label twice (GF-010).
+  for (let r = c.round; r <= last; r++) {
+    const d = dateOf(c.season, r);
+    const prev = months[months.length - 1];
+    if (!prev || prev.getUTCMonth() !== d.getUTCMonth() || prev.getUTCFullYear() !== d.getUTCFullYear()) months.push(d);
+  }
   const cash = months.map((_, i) => Math.round((club.budget + mo.net * i) / 1e5) / 10);
   const low = Math.min(...cash);
   const lowI = cash.indexOf(low);
@@ -73,7 +81,7 @@ function Money() {
           <Kpi v={<span className="ltr">{money(committed(c))}</span>} l={R[g.ui].kpi.committed} />
         </div>
         {months.length > 1 && (
-          <LineChart h={170} rtl={g.rtl} x={months.map((d) => monthName(d, g.ui))} fmt={(v) => `${v}M`} yMin={Math.min(0, Math.floor(low))}
+          <LineChart h={170} rtl={g.rtl} x={months.map((d, i) => (g.ui === 'ar' && months.length > 6 && i % 2 ? '' : monthName(d, g.ui)))} /* UX-06: Arabic month names collide; every other one */ fmt={(v) => `${v}M`} yMin={Math.min(0, Math.floor(low))}
             series={[{ data: cash, label: O.projected }]} tipX={(i) => monthName(months[i], g.ui)} />
         )}
         <div className="legend"><span><i />{O.projected}</span></div>
@@ -96,7 +104,7 @@ function Money() {
       <Panel i={3} label={O.ledger}>
         <PanelHead title={O.ledger} />
         <div className="rows">
-          {ledger.map(([k, v]) => <div key={k} className="row ledger"><span className="grow">{g.t.ledgerKeys[k] ?? R[g.ui].ledger[k] ?? k}</span><b className={`ltr ${v < 0 ? 'down' : 'up'}`}>{v < 0 ? '−' : '+'}{money(Math.abs(v))}</b></div>)}
+          {ledger.map(([k, v]) => <div key={k} className="row ledger"><span className="grow">{g.t.ledgerKeys[k] ?? R[g.ui].ledger[k] ?? CL[g.ui].ledger[k] ?? k}</span><b className={`ltr ${v < 0 ? 'down' : 'up'}`}>{v < 0 ? '−' : '+'}{money(Math.abs(v))}</b></div>)}
           {!ledger.length && <p className="muted small">{x.office.logEmpty}</p>}
         </div>
       </Panel>
@@ -121,6 +129,9 @@ function Board() {
   const conf = Math.round(c.board.confidence);
   const played = rows[pos - 1]?.p ?? 0;
   const tot = (c.fixtures[leagueOf(w, c.clubId)] ?? []).length;
+  // V2.7 the season plan from the board meeting
+  const v = visionOf(c), C = CL[g.ui], t0 = g.t.objective[userObjective(w, c)], tgt = g.ui === 'ar' ? t0 : t0.charAt(0).toLowerCase() + t0.slice(1);
+  const visionLine = !v ? C.board.none : v.level === 'ambitious' ? C.board.ambitious(tgt, money(v.kitty ?? 0)) : C.board.expected(tgt);
   const items: [string, string, string, 'good' | 'warn' | 'bad', number][] = [
     [O.obj.league, g.t.objective[aims.league], `${x.place(pos)} · ${x.today.after(played)}`, met ? 'good' : pos - line <= 2 ? 'warn' : 'bad', Math.round((played / Math.max(1, tot)) * 100)],
     [O.obj.cup, g.t.cupAim[aims.cup], '', cup === true ? 'good' : cup === false ? 'bad' : 'warn', cup === true ? 100 : 40],
@@ -138,6 +149,7 @@ function Board() {
             {sub && <p>{sub}</p>}
           </div>
         ))}
+        <p className="small muted vision-line">{visionLine}</p>
         <div className="trust"><span className="big">{conf}</span><div><b>{O.trust} · {x.today.mood(conf)}</b><p className="small muted">{O.trustWhy(conf)}</p></div></div>
       </Panel>
       <Panel i={2} label={x.today.pulse}>
@@ -154,6 +166,8 @@ function Facilities() {
   const g = useGame();
   const { c, x } = g;
   const O = x.office;
+  const C = CL[g.ui];
+  const build = c.ops.build; // V2.7: one project at a time, open once built
   return (
     <div className="grid">
       <Panel i={1} label={O.facilities}>
@@ -164,10 +178,11 @@ function Facilities() {
           return (
             <div key={f} className="fac">
               <span className="ic"><I n={FAC_ICON[f]} /></span>
-              <div><b>{O.fac[f]} · {O.level(lvl)}</b><span className="s">{O.facFx[f]}{f === 'stadium' ? ` · ${capacityOf(c.ops).toLocaleString()}` : ''}</span></div>
+              <div><b>{O.fac[f]} · {O.level(lvl)}</b><span className="s">{O.facFx[f]}{f === 'stadium' ? ` · ${capacityOf(c.ops).toLocaleString()}` : ''}{lvl < 5 && build?.f !== f ? ` · ${C.build.takes(BUILD_DAYS[lvl + 1])}` : ''}</span></div>
               <div className="fac-r">
                 <span className="lv" aria-label={O.level(lvl)}>{[1, 2, 3, 4, 5].map((k) => <i key={k} className={k <= lvl ? 'on' : ''} />)}</span>
-                {lvl < 5 ? <button className="btn btn--ghost btn--sm" disabled={g.club.budget < cost} onClick={() => void g.run({ type: 'facility.upgrade', facility: f }, { toast: x.saved })}>{O.upgrade(money(cost))}</button> : <span className="small muted">{O.maxed}</span>}
+                {build?.f === f ? <span className="tag tag--warn"><I n="clock" size="sm" />{C.build.busy(build.level, buildLeft(c))}</span>
+                  : lvl < 5 ? <button className="btn btn--ghost btn--sm" disabled={g.club.budget < cost || !!build} title={build ? C.build.oneAtATime : C.build.takes(BUILD_DAYS[lvl + 1])} onClick={() => void g.run({ type: 'facility.upgrade', facility: f }, { toast: x.saved })}>{O.upgrade(money(cost))}</button> : <span className="small muted">{O.maxed}</span>}
               </div>
             </div>
           );
