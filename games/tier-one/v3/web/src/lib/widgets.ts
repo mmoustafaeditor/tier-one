@@ -18,6 +18,9 @@ import { slotsFor, pagesFor } from './phones';
 import type { WidgetId } from './kinds';
 export type { WidgetId };
 
+/** Today's Daily number (No. 1 was 1 September 2026, UTC). screens/Front.tsx re-exports it as dailyNoToday. */
+export const dailyNo = (day = ymdUTC()) => Math.floor((Date.parse(day + 'T00:00:00Z') - Date.parse('2026-09-01T00:00:00Z')) / 864e5) + 1;
+
 export type WSize = '2x2' | '4x2';
 export interface WidgetDef {
   id: WidgetId;
@@ -119,6 +122,13 @@ export function resizeWidget(page: number, i: number): boolean {
   return true;
 }
 export function resetLayout() { update((x) => { x.home = { ...(x.home || {}), layout: undefined }; }); }
+
+// ---------------------------------------------------------------- the Market watch list (the Market lane plugs in)
+// CONCEPT4 §9: any rumour can be Watched. Until the Market app registers its watch list here, the widget shows the
+// rumours you have open calls on. `setWatchSource(() => ids)` is the one adapter point.
+let watchSource: (() => string[]) | null = null;
+export function setWatchSource(f: (() => string[]) | null) { watchSource = f; }
+export const watchIds = (): string[] | null => { try { return watchSource ? watchSource() : null; } catch { return null; } };
 
 // ---------------------------------------------------------------- the followers line (30 days)
 /** Notes today's follower count once (the Followers widget's sparkline). Safe to call on every Home render. */
