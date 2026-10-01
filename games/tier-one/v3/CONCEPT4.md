@@ -254,3 +254,44 @@ Vince's play is a per-story planted contact revealed on the results thread; the 
 45 seconds. Story progress (chapter, windows, head-to-head, reveals seen) lives in the save and is shown as the pinned goal at the
 top of the Story thread. Levels, sponsors and looks come from the same account as everywhere else; Story only adds its own
 unlocks on top.
+
+## 17. The lock screen and home screen are the player's, and they are products
+
+The first shell (phase A) is a generic dark mobile UI: a navy field with faint pitch lines, five flat colour tiles, one orange
+gradient button and two-thirds of the screen empty. That is exactly the stock look the owner does not want. The phone has to look
+like it belongs to *this* player, and the way it looks has to be something they build, earn and buy. This section is the brief
+for the shell redesign (a dedicated lane after the apps land; it supersedes the phase A home/lock design).
+
+**Lock screen = your face to the world (changeable, sold).**
+- A **Lock face** is a bundle: wallpaper + clock style + the stamp under the clock (your handle and rank, your catchphrase, your
+  follower count, your streak) + the tray style. Six house faces at launch (two free), new ones each season; coins for common/rare,
+  credits for epic/legendary, the Gold lane has its own. Lock faces are the most-seen look, so they are the flagship cosmetic.
+- Clock styles: big numerals (default), stacked editorial, ticker (a one-line ticker of your last result under the time), club-colour
+  split. Wallpapers: generative club-colour fields, grain, big type, light leaks, the chapter wallpapers from Story, sponsor
+  wallpapers at 3 stars, and `public/art/` bitmaps when the owner supplies them.
+- The tray stays: real events only.
+
+**Home screen = your desk (widgets, arranged by you).**
+- The home screen is a grid of **widgets** and app icons that the player arranges (long-press to move, in an "Edit home" mode; two
+  pages). Widgets, 2×2 or 4×2: *Today's window* (the five kits and the countdown, or Resume / Results), *Followers* (the rolling number
+  and a 30-day sparkline), *Market watch* (three watched rumours and their market %), *Sponsor* (the active deal and its running
+  total), *Boss* (the chapter boss head-to-head), *Streak*, *Season track* (tier and progress), *Secret files* (the next sealed one),
+  *Group* (your room's standings), *Catchphrase* (the stamp, big). Four come free; the rest unlock by level or come with looks.
+- **Icon packs** change every app icon's style together (default, outline, editorial stamp, club crest, retro) and are looks.
+- **Themes** restyle the whole OS (tokens: surface, ink, accent, radius, type) and are the epic/legendary tier; the Gold season
+  Legendary is always a theme.
+- The default layout for a new player is full, not empty: the window widget, followers, streak and the eight apps fill the first
+  page; nothing below the fold is blank.
+
+**The look itself (the art direction, so it stops being generic).**
+- One editorial type system (a strong display face for numbers and stamps, a humanist text face), big numbers, tight leading;
+  the player's handle and rank are the biggest thing on the home screen after the window.
+- Colour comes from the player's club colours and the equipped look, not from a fixed navy; the default face is a warm dark
+  (near-black with paper highlights and one accent), not blue-purple.
+- Icons are one drawn family with a consistent weight and a small amount of depth, never flat emoji-like glyphs in saturated squares.
+- Surfaces have grain and edges, not glass; motion on the home screen is the widgets ticking (followers rolling, the countdown,
+  the market %), so the screen is alive without decoration.
+
+**Money.** Lock faces, widgets, icon packs and themes are the four cosmetic lines; every one is previewable on your own phone before
+buying, and the free lane and sponsors keep a free player in new ones every week. Prices follow RULES4 §3 (common 150 / rare 400 /
+epic 900 coins; legendary 300 credits or the Gold track).
