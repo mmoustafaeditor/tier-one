@@ -17,6 +17,35 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer, foundation step 5: marking style, like FM (zonal / mixed / man, and at set pieces)
+- **What changed:** Two new team instructions on the Tactics board and the live tactics sheet, in EN/AR/ES/FR. Both default to Mixed.
+  - **Marking:** Zonal / Mixed / Man.
+  - **Marking at set pieces:** Zonal / Mixed / Man.
+
+  In the engine (`engine/model.ts`), Mixed is the engine exactly as before: the same 200-match fingerprint as step 4. The trade-offs:
+  - **Zonal** holds the shape: less room between the lines and fewer fouls, but runners from wide and into the box find space.
+  - **Man** is tight on the flanks and in the air, but markers get pulled out of shape (more room in midfield and between the lines) and it costs fouls.
+  - **At corners**, zonal gives away more first contacts. Man-marking leaves the second ball at the edge of the box.
+
+  No style is a free win (`node sim-tests/build.mjs marking`): every combination is within −1.0% to +0.9% points of Mixed/Mixed (the limit is +3%). The simulated trade-offs all show up:
+  - fouls: man 12.3, mixed 11.3, zonal 10.4 a match;
+  - wide and headed chances conceded are lowest with man;
+  - box and through chances conceded are lowest with zonal.
+
+  On the pitch, zonal only takes men who come into a player's area and the back line holds until the box. Man reaches further and a defender follows his man anywhere. At corners, zonal holds every zone, mixed holds 3 and the rest pick up a man, and man marks all of them. Measured in 10 seeded matches (Node pitch test), attackers near goal marked: zonal 76%, mixed 85%, man 81%. Man-marking chases from further away, so it isn't tighter on this measure yet; phase 4 (the director) will refine it.
+- **Files:** `games/the-gaffer/web/src/sim/tactics.ts` (`marking`, `setMark`), `src/sim/engine/model.ts`, `src/ui2/pitch/{sim,defend,tuning}.ts`, `src/ui2/Match.tsx`, `src/ui2/Live.tsx`, `src/lang-tac{,-ar,-es,-fr}.ts`, `sim-tests/marking.ts` (new), `sim-tests/pitch.ts` (env `MARKING`)
+- **Heads-up for the team:** Old saves have neither field and play as Mixed. AI managers keep Mixed for now. Tier One is untouched.
+
+## 2026-10-01 · saifsaber · The Gaffer, foundation step 4: injuries come from tackles too, and players have a hidden proneness
+- **What changed:**
+  - **Injuries from tackles.** A fouled player can now be hurt by the tackle: rarely by a careless foul, more often by a reckless one, often by serious foul play (`engine/injury.ts`). The roll happens after the minute, on its own random stream.
+  - **Hidden proneness.** Every player has a hidden injury proneness, taken from his id and his physique; a strong player is a little harder to hurt. It makes him likelier to be hurt both in tackles and in the existing background injuries (tiredness, load, pressing).
+  - **Totals unchanged.** The background chance is scaled down so totals stay as they were. Over 2,000 seeded matches (`node sim-tests/build.mjs injuries 2000 0.281`): 0.275 injuries a match against 0.281 before (−2.3%), about a third of them from fouls. The fouled player is hurt in 0.31% of fouls with no card, 0.98% of booked fouls and 7.4% of fouls that are sent off.
+  - **Shown on the pitch.** The injured player goes down at the whistle of that foul and stays down under a medic's cross; otherwise he pulls up mid-minute. The injury event now carries `how: 'foul'` and the offence in `note` when a tackle did it.
+  - **Checks.** The referee test passes, old saves load, and the season (5,784 league matches, 2.77 goals a match) runs. The Node pitch test shows the same numbers as before this step, apart from the injury itself.
+- **Files:** `games/the-gaffer/web/src/sim/engine/injury.ts` (new), `src/sim/engine/referee.ts` (`FoulOut.off`), `src/sim/match.ts`, `src/ui2/pitch/sim.ts`, `src/ui2/Pitch2D.tsx`, `ui-tests/pitch-metrics.mjs`, `sim-tests/injuries.ts` (new)
+- **Heads-up for the team:** Match results change from this step on (who gets hurt, and when), so the 200-match fingerprint is new. Proneness needs no save field. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer pitch, foundation step 3: the engine tells the pitch when, what, and when the ball goes out
 - **What changed:** The engine's ball path for the pitch (`m.flow`, FULL matches only) now carries more information:
   - each entry has the second within the minute it happens (`t`) and the engine node it happened at (`n`: a cross, a through ball…);

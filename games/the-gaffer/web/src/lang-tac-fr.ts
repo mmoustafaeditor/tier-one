@@ -46,6 +46,8 @@ export const TX_FR: TxStrings = {
     counter: ['À la récupération', ['Garder', 'Contre immédiate']],
     trap: ['Piège de pressing', ['Aucun', 'Côtés', 'Axe', 'Demi-espaces']],
     routine: ['Corners', ['Variés', 'Les grands montent', 'À deux']],
+    marking: ['Marquage', ['Zone', 'Mixte', 'Individuel']],
+    setMark: ['Marquage sur coups de pied arrêtés', ['Zone', 'Mixte', 'Individuel']],
   },
   trade: {
     build: [['Gardien et centraux relancent au sol : plus de ballon.', 'Un bon pressing récupère près de notre but.'], ['Court quand c’est possible, long sinon.', 'Ni chaud ni froid.'], ['On saute leur pressing.', 'Plus de ballons disputés ; on le rend plus souvent.']],
@@ -53,6 +55,8 @@ export const TX_FR: TxStrings = {
     counter: [['On le garde et on reconstruit.', 'Moins d’occasions rapides.'], ['On part dès qu’on le récupère.', 'Les milieux jouent plus bas pour lancer.']],
     trap: [['Pas de piège.', 'Pas de piège.'], ['On les pousse sur le côté et on les enferme.', 'L’axe est un peu plus ouvert.'], ['On les éloigne de l’axe.', 'Les côtés sont un peu plus ouverts.'], ['Un peu de pression partout.', 'Rien n’est vraiment fermé.']],
     routine: [['Des centres variés.', 'Rien de spécial.'], ['Les centraux montent : plus de têtes.', 'Moins de monde derrière si ça tourne mal.'], ['À deux pour garder le ballon.', 'Moins de tirs sur le corner lui-même.']],
+    marking: [['Chacun tient sa zone : peu d’espace entre les lignes ; moins de fautes.', 'Les appels venus du côté et dans la surface trouvent de l’espace.'], ['Des zones, et le plus proche prend l’appel.', 'Rien de spécial.'], ['Chacun son joueur : serré sur les côtés et dans les airs.', 'Les marqueurs sont aspirés : plus d’espace au milieu ; plus de fautes.']],
+    setMark: [['Des zones dans la surface : premier contact au premier poteau.', 'Ceux qui attaquent le ballon lancés gagnent plus de têtes.'], ['Quelques-uns en zone, les autres à l’homme.', 'Rien de spécial.'], ['Chacun un joueur dans la surface : moins de têtes libres.', 'Le second ballon à l’entrée de la surface reste libre.']],
   },
   trapOff: 'Un piège a besoin de pressing : réglez le pressing sur bloc médian ou plus.',
   mark: 'Marquage individuel', markNone: 'Personne', markHint: 'Il gagne beaucoup moins de duels ; son marqueur laisse un trou.',

@@ -61,6 +61,8 @@ export interface Anim {
   kinds: Record<string, number>; // passes, shots and set pieces shown, by type (for the measurement test)
   sp: SetPiece | null;    // a set piece being staged (corner, free kick, goal kick)
   flag: { x: number; until: number } | null; // the assistant's flag is up (offside), at this x on the near touchline
+  hurt: { side: 0 | 1; slot: number; until: number } | null; // a player down injured (foundation step 4): he stays down, the medic's cross shows
+  hurtAt: { side: 0 | 1; slot: number; at: number }[]; // this minute's injuries, when they happen (ms into the minute)
 }
 
 interface Agent { vx: number; vy: number; tx: number; ty: number; at: number; tank: number; pend: boolean; spr: boolean }
@@ -247,6 +249,17 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
   const wt = beats.map((b) => weightOf(b));
   a.beatLen = msPerMinute / Math.max(1, wt.reduce((t, x) => t + x, 0));
   a.starts = wt.map((_, i) => wt.slice(0, i).reduce((t, x) => t + x, 0) * a.beatLen);
+  // Injuries this minute: hurt in a tackle goes down at that foul's whistle, otherwise he pulls up mid-minute. The
+  // engine has already made the substitution, so the slot is the one his replacement now fills.
+  a.hurtAt = [];
+  for (const e of m.events) {
+    if (e.kind !== 'injury' || !live(e)) continue;
+    const sb = m.events.find((x) => x.kind === 'sub' && x.playerId === e.playerId && live(x));
+    const slot = sb?.inId ? m.sides[e.side].onPitch.indexOf(sb.inId) : -1;
+    if (slot < 0) continue;
+    const fi = e.how === 'foul' ? beats.findIndex((b) => b.kind === 'foul' && b.side === e.side) : -1;
+    a.hurtAt.push({ side: e.side, slot, at: fi >= 0 ? a.starts[fi] : msPerMinute * 0.5 });
+  }
   a.minute = minuteKey(m);
 }
 const weightOf = (b: Beat) => (b.kind === 'corner' ? 4 : b.kind === 'foul' ? (wallSize(depthOf(b.side, b.pt.x)) ? 4 : 1.5) : b.kind === 'offside' || b.kind === 'out' ? 1.5 : 1);
@@ -418,11 +431,26 @@ function stage(a: Anim, m: LiveMatch, side: 0 | 1, ks: number[], tg: Pt[], boost
     // The wall is picked once (the nearest men when the whistle goes), so nobody swaps in and out of it.
     const near = sp.wall ??= [...field].sort((p, q) => dist(a.pos[side][p], sp.at) - dist(a.pos[side][q], sp.at)).slice(0, n);
     wallSpots(sp.at, goal, n).forEach((q, i) => { tg[near[i]] = q; boost[near[i]] = sp.rush; });
-    const rest = field.filter((k) => !near.includes(k));
-    defendSpots(rest.length + 1, flank).slice(1).forEach((q, i) => { tg[rest[i]] = { x: toX(side, q.d), y: q.y }; boost[rest[i]] = sp.rush; });
+    setMarks(a, m, side, field.filter((k) => !near.includes(k)), tg, boost, flank, 1);
     return;
   }
-  defendSpots(field.length, flank).forEach((q, i) => { tg[field[i]] = { x: toX(side, q.d), y: q.y }; boost[field[i]] = sp.rush; });
+  setMarks(a, m, side, field, tg, boost, flank, 0);
+}
+// Defending a corner or a free kick: the set-piece marking instruction (step 5). The first men (best in the air) hold
+// zones (zonal all of them, mixed three, man none); the rest each take an attacker in the box, goal-side, nearest goal first.
+function setMarks(a: Anim, m: LiveMatch, side: 0 | 1, field: number[], tg: Pt[], boost: number[], flank: -1 | 1, skip: number) {
+  const sp = a.sp!, att = (1 - side) as 0 | 1, ownGoal = { x: toX(side, 0), y: W / 2 };
+  const nz = Math.min(field.length, T.SET_ZONAL[fullTactics(m.sides[side].tactics).setMark]);
+  const zones = defendSpots(nz + skip, flank).slice(skip);
+  field.slice(0, nz).forEach((k, i) => { tg[k] = { x: toX(side, zones[i].d), y: zones[i].y }; boost[k] = sp.rush; });
+  const men = onPitch(m, att).filter((j) => j !== sp.taker && a.pos[att][j] && dist(a.pos[att][j], ownGoal) < 30)
+    .sort((p, q) => dist(a.pos[att][p], ownGoal) - dist(a.pos[att][q], ownGoal));
+  const rest = field.slice(nz);
+  rest.forEach((k, i) => {
+    const t = men[i] !== undefined ? a.pos[att][men[i]] : null;
+    const q = t ? markSpot(t, ownGoal, sp.at) : (() => { const z = defendSpots(nz + skip + i + 1, flank)[nz + skip + i]; return { x: toX(side, z.d), y: z.y }; })();
+    tg[k] = q; boost[k] = sp.rush;
+  });
 }
 
 // A match's pitch at kick-off: everyone in position, the home side on the ball.
@@ -430,7 +458,7 @@ export function newAnim(m: LiveMatch, world: World): Anim {
     const a: Anim = {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], starts: [], msPM: 1000, beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
-      spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null,
+      spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null, hurt: null, hurtAt: [],
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -447,6 +475,13 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
       if (go) {
         a.clock += dt;
         while (a.beat < a.beats.length && a.clock >= (a.starts[a.beat] ?? a.beat * a.beatLen)) runBeat(a, mm, a.beats[a.beat++]);
+        const h = a.hurtAt.findIndex((x) => a.clock >= x.at);
+        if (h >= 0) {
+          const x = a.hurtAt.splice(h, 1)[0];
+          a.hurt = { side: x.side, slot: x.slot, until: a.time + Math.max(1500, a.beatLen * 2.5) };
+          a.kinds.injury = (a.kinds.injury ?? 0) + 1;
+          if (a.poss === x.side && a.carrier === x.slot && !a.flight) a.carrier = -1; // the ball runs loose
+        }
       }
       // Ball: in flight, or at the carrier's feet.
       if (a.flight) {
@@ -536,12 +571,14 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
             blockK = [...field].sort((p, q) => dist(a.pos[side][p], spot) - dist(a.pos[side][q], spot))[0] ?? -1;
             if (blockK >= 0) tg[blockK] = spot;
           }
-          // Marking: every attacker near our goal gets a man, goal-side (zonal by default; the man-marking
-          // instruction pairs its target first). Defenders keep the line unless their man is near goal or beyond it.
+          // Marking: every attacker near our goal gets a man, goal-side; the man-marking instruction pairs its target
+          // first. Defenders keep the line unless their man is near goal or beyond it. The marking style (step 5):
+          // zonal takes only men who come into a player's area and the line holds until the box; man-marking reaches
+          // further, from further out, and a defender follows his man wherever he goes.
           const oSlots = FORMATIONS[mm.sides[other].tactics.formation].slots;
           const onBall = a.poss === other ? a.carrier : -1;
           const threats = onPitch(mm, other)
-            .filter((j) => oSlots[j].pos !== 'GK' && a.pos[other][j] && j !== onBall && dist(a.pos[other][j], ownGoal) < T.THREAT)
+            .filter((j) => oSlots[j].pos !== 'GK' && a.pos[other][j] && j !== onBall && dist(a.pos[other][j], ownGoal) < T.THREAT * T.THREAT_K[ft.marking])
             .map((j) => ({ k: j, p: a.pos[other][j] }))
             .sort((p, q) => dist(p.p, ownGoal) - dist(q.p, ownGoal));
           const markers = ks.filter((k) => free(k) && k !== blockK && !pp.press.includes(k) && (line(k) === 'def' || line(k) === 'mid') && a.pos[side][k]).map((k) => ({ k, p: a.pos[side][k] }));
@@ -549,14 +586,17 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           const manK = manId ? mm.sides[other].onPitch.indexOf(manId) : -1;
           // A man in front of our line is a midfielder's job; one near goal or beyond the line, a defender's.
           const ahead = (t: { p: Pt }) => dist(t.p, ownGoal) >= 22 && depthOf(side, t.p.x) > ln.depth + 3;
+          // Zonal: the cost is from where the player should stand (his zone), not where he is.
+          const home = (m: { k: number; p: Pt }) => (ft.marking === 0 ? tg[m.k] ?? m.p : m.p);
           const marks = assignMarks(markers, threats, manK >= 0 ? { threat: manK, prefer: markers.map((x) => x.k) } : undefined,
-            (m, t) => dist(m.p, t.p) + (ahead(t) ? (line(m.k) === 'def' ? T.MARK_ROLE : 0) : line(m.k) === 'mid' ? T.MARK_ROLE : 0));
+            (m, t) => dist(home(m), t.p) + (ahead(t) ? (line(m.k) === 'def' ? T.MARK_ROLE : 0) : line(m.k) === 'mid' ? T.MARK_ROLE : 0), T.MARK_REACH * T.MARK_REACH_K[ft.marking]);
           if (PITCH_DEBUG) (a as unknown as { mk?: number[] }).mk = [threats.length, marks.size, markers.length];
           for (const [mk, tk] of marks) {
             const t = a.pos[other][tk];
             const spot = markSpot(t, ownGoal, a.ball);
             // A defender keeps the line (and only shadows his man across) unless his man is near goal or beyond it.
-            if (line(mk) === 'def' && dist(t, ownGoal) >= 22 && depthOf(side, t.x) >= ln.depth - 2) tg[mk] = { x: tg[mk].x, y: tg[mk].y * 0.4 + t.y * 0.6 };
+            const holds = ft.marking === 0 ? dist(t, ownGoal) >= T.ZONE_BOX : ft.marking === 1 && dist(t, ownGoal) >= 22 && depthOf(side, t.x) >= ln.depth - 2;
+            if (line(mk) === 'def' && holds) tg[mk] = { x: tg[mk].x, y: tg[mk].y * 0.4 + t.y * 0.6 };
             else tg[mk] = spot;
           }
           // The keeper: on the shooting angle.
@@ -590,14 +630,16 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
         const staging = !!a.sp && a.time < a.sp.until;
         const tau = Math.max(120, ms * 0.9);
         // The back line moves as one: out of possession its defenders react on their best reader's call.
-        const isDef = (k: number) => !has && LINE[sps[k]?.opos ?? slots[k].pos] === 'def' && !pp.press.includes(k) && k !== pp.cover;
+        const down = (k: number) => !!a.hurt && a.time < a.hurt.until && a.hurt.side === side && a.hurt.slot === k; // injured: stays where he fell
+        const isDef = (k: number) => !has && LINE[sps[k]?.opos ?? slots[k].pos] === 'def' && !pp.press.includes(k) && k !== pp.cover && !down(k);
         const lineReads = Math.max(0, ...ks.filter(isDef).map((k) => a.body[side]?.[k]?.reads ?? 0.5));
         // ... and holds its shape at its slowest defender's pace, so it doesn't break up while it steps or drops.
         const lineBodies = ks.filter(isDef).map((k) => a.body[side]?.[k]).filter(Boolean) as Body[];
         const lineTop = Math.min(...lineBodies.map((b) => b.top), 9), lineAcc = Math.min(...lineBodies.map((b) => b.acc), 9);
         for (const k of ks) {
           let t = tg[k];
-          if (has && k === a.carrier && !staging) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
+          if (down(k)) t = a.pos[side][k] ?? t;
+          else if (has && k === a.carrier && !staging) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
           // A little life in everyone's feet, except a keeper set on the shooting angle (he stays on it).
           const wob = !has && LINE[slots[k].pos] === 'gk' ? 0 : Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
           const p = a.pos[side][k] ?? t;
@@ -610,7 +652,8 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           // a new target at his decision ticks, and after a new ball only once he has reacted.
           // The keeper never takes his eyes off the ball: he follows it without a reaction delay.
           const onIt = (has && k === a.carrier) || (!has && (k === blockK || LINE[slots[k].pos] === 'gk')) || (a.run?.side === side && a.run.slot === k) || (a.shooter?.side === side && a.shooter.slot === k);
-          if (onIt || staging) { g.tx = t.x; g.ty = t.y + wob; g.pend = false; }
+          if (down(k)) { g.tx = t.x; g.ty = t.y; g.pend = false; }
+          else if (onIt || staging) { g.tx = t.x; g.ty = t.y + wob; g.pend = false; }
           else if (a.time >= g.at) {
             const since = a.time - a.eventAt;
             if (!g.pend || since >= reactMs(isDef(k) ? lineReads : B.reads, a.beatLen)) {

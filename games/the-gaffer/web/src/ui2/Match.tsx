@@ -40,8 +40,8 @@ export function MatchScreen({ tab, onTab }: { tab: number; onTab: (n: number) =>
 type Ins = 'pressing' | 'line' | 'width' | 'tempo' | 'passing';
 const INS: [Ins, string][] = [['pressing', 'press'], ['line', 'line'], ['width', 'width'], ['tempo', 'tempo'], ['passing', 'passing']];
 // Tactics v3 instructions (copy in lang-tac*.ts): build-up, both transitions, the trap and corners.
-type Ins3 = 'build' | 'cpress' | 'trap' | 'routine';
-const CHANGE_KEYS = ['formation', 'oop', 'philosophy', 'mentality', 'pressing', 'line', 'width', 'tempo', 'passing', 'build', 'cpress', 'counter', 'trap', 'routine', 'mark', 'roles', 'oopRoles'] as const;
+type Ins3 = 'build' | 'cpress' | 'trap' | 'routine' | 'marking' | 'setMark';
+const CHANGE_KEYS = ['formation', 'oop', 'philosophy', 'mentality', 'pressing', 'line', 'width', 'tempo', 'passing', 'build', 'cpress', 'counter', 'trap', 'routine', 'marking', 'setMark', 'mark', 'roles', 'oopRoles'] as const;
 type Phase = 'ip' | 'oop';
 
 function TacticsBoard() {
@@ -246,6 +246,8 @@ function TacticsBoard() {
             {insRow('cpress', f.cpress, fs.cpress)}
             {insRow('trap', trapOn ? f.trap : 0, fs.trap, !trapOn)}
             {insRow('routine', f.routine, fs.routine)}
+            {insRow('marking', f.marking, fs.marking)}
+            {insRow('setMark', f.setMark, fs.setMark)}
             {markList.length > 0 && (
               <div className="ins">
                 <div className="between"><b>{X.mark}</b>{(f.mark ?? null) !== (fs.mark ?? null) && <span className="tag tag--club">{T.changed}</span>}</div>

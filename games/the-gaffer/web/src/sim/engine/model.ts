@@ -292,6 +292,10 @@ function table(ids: string[], w: number[], conv: number[]): ShotTable {
 function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTactics, ia: SideInput, id: SideInput, pieces: Pieces): Attack {
   const bonusA = ia.cohesion - id.cohesion + (ia.talk === 1 ? 0.1 : ia.talk === 3 ? -0.05 : ia.talk === 2 ? -0.03 : 0) - (id.talk === 3 ? 0.1 : 0);
   const mark = id.mark;
+  // Marking style (tactics.ts marking / setMark; 0 = mixed, the engine as before). Zonal holds the shape: little room
+  // between the lines, but runners from wide and into the box find space. Man-marking: tight on the flanks and in the
+  // air, but markers get pulled out of shape (more room in midfield and between the lines) and it costs fouls.
+  const mk = td.marking - 1, sm = td.setMark - 1;
   const tm = [1.25, 1, 0.8][ta.tempo] * (ta.waste ? 1.15 : 1);
   const pm = [1.12, 1, 0.86][ta.passing];
   // Defenders in the attacker's frame (mirrored): their OOP shape; their IP shape for transitions.
@@ -312,7 +316,7 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   const bLong = clamp([0.08, 0.2, 0.45][ta.build] + 0.35 * (1 - bShort.mean), 0, 0.8);
   const bLoss = [0.2, 0.3, 0.42][td.pressing];
   // [tactics v3] + [gf-ref]: fouls: the defending side's instructions × the aggression of the roles in that contest × referee foul factor
-  const foulTeam = teamFoulFactor(td) * (id.talk === 2 ? 0.7 : id.talk === 1 ? 1.25 : 1);
+  const foulTeam = teamFoulFactor(td) * (id.talk === 2 ? 0.7 : id.talk === 1 ? 1.25 : 1) * (1 + 0.08 * mk);
   const aggr = (d: Duel) => d.wf.reduce((s, v) => s + v, 0) / (d.wd.reduce((s, v) => s + v, 0) || 1);
   const fouls = (f: number, d?: Duel) => f * foulTeam * (d ? aggr(d) : 1) * (id.foulK ?? 1); // gf-ref: foulK
   // Long ball: our target against their centre-backs; a high line invites the ball in behind.
@@ -325,7 +329,7 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   // Man-marking pulls the marker out of the defensive shape: a little more room in midfield and between the lines.
   const markHole = mark && A.some((x) => x.id === mark) ? 1 : 0;
   const P = [0, 1, 2].map((l) => duel(A, za[Z.P0 + l], S.prog, D, zd[Z.P0 + l], S.screen,
-    b.P + bonusA + eP + 0.12 * markHole + 0.5 * holes - 0.4 * trapped(l) + (td.line === 0 ? 0.3 : td.line === 2 ? -0.15 : 0) + (td.pressing === 2 ? 0.12 : 0), mark));
+    b.P + bonusA + eP + 0.12 * markHole + 0.5 * holes - 0.4 * trapped(l) + (td.line === 0 ? 0.3 : td.line === 2 ? -0.15 : 0) + (td.pressing === 2 ? 0.12 : 0) + 0.05 * mk, mark));
   const presP = P.map((d) => d.na);
   const widthPref = [[0.6, 1.7, 0.6], [0.85, 1.3, 0.85], [1.2, 0.9, 1.2]][ta.width];
   const lanePick = (pres: number[], ds: Duel[]) => {
@@ -338,9 +342,9 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
 
   // Final third: flanks are a one-on-one (plus overlaps), the middle is a crowd.
   const flank = [Z.FL, Z.FR].map((z) => duel(A, za[z], S.wingA, D, zd[z], S.wingD,
-    b.FLANK + bonusA + (ta.mentality * 0.1) + [-0.1, 0, 0.12][ta.width], mark));
+    b.FLANK + bonusA + (ta.mentality * 0.1) + [-0.1, 0, 0.12][ta.width] - 0.07 * mk, mark));
   const combo = duel(A, za[Z.COMBO], S.create, D, zd[Z.COMBO], S.block,
-    b.COMBO + bonusA + eC + 0.08 * markHole + holes + 0.1 * ta.mentality + (ta.tempo === 2 ? 0.08 : 0) + [-0.4, 0, 0.15][ta.width], mark);
+    b.COMBO + bonusA + eC + 0.08 * markHole + holes + 0.1 * ta.mentality + (ta.tempo === 2 ? 0.08 : 0) + [-0.4, 0, 0.15][ta.width] + 0.07 * mk, mark);
   const presF = [flank[0].na, combo.na, flank[1].na];
   const qF = lanePick(presF, [flank[0], combo, flank[1]]);
   // Through balls: runners against the back line, with space behind a high line (and the offside trap).
@@ -355,11 +359,11 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   const oL = clamp(0.11 * (1 + 0.28 * ta.mentality) * (0.7 + 0.3 * midShoot / 70) + (td.line === 0 ? 0.04 : 0) + lob, 0.03, 0.3);
   const offside = [0.2, 0.35, 0.55][td.line];
   // Crosses: our box presence in the air against theirs.
-  const header = duel(A, za[Z.BOX], S.airA, D, zd[Z.BOX], S.airD, b.HEAD + bonusA, mark);
+  const header = duel(A, za[Z.BOX], S.airA, D, zd[Z.BOX], S.airD, b.HEAD + bonusA - 0.05 * mk, mark);
   const cross = clamp([0.84, 0.88, 0.9][ta.width] + (aerial ? 0.08 : 0) - (header.mean < 0.25 ? 0.08 : 0), 0.3, 0.85);
   // Corners and free-kick deliveries: the big men.
   const corner = duel(A, za[Z.SET], S.airA, D, zd[Z.SET], S.airD,
-    b.CRN + bonusA + [0, 0.22, -0.45][ta.routine], mark, 0.3);
+    b.CRN + bonusA + [0, 0.22, -0.45][ta.routine] - 0.08 * sm, mark, 0.3);
   const cShort = ta.routine === 2 ? 0.45 : 0.08;
   // Transitions: the other side's exposure when we win the ball, our runners against their rest defence.
   const restD = D.reduce((s, d) => s + (out(d) ? sig((42 - d.y) / 5) : 0), 0);
@@ -407,7 +411,7 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   nodes[N.SETH] = { t: T.SETH, alt: [], duel: corner, win: [{ p: 1, to: N.SHOT + 8 }], lose: [{ p: 0.35, to: END + 1 }, { p: 0.45, to: END }, { p: 0.2, to: N.FCH }] };
   const cExp = clamp(0.22 + (ta.routine === 1 ? 0.12 : ta.routine === 2 ? -0.1 : 0), 0.05, 0.5);
   nodes[N.CRN] = { t: T.CRN, alt: [{ p: cShort, to: N.F1 }], duel: corner, win: [{ p: 1, to: N.SHOT + 7 }],
-    lose: [{ p: cExp, to: END + 1 }, { p: 0.85 - cExp, to: END }, { p: 0.15, to: N.FCH }] };
+    lose: [{ p: cExp, to: END + 1 }, { p: 0.85 - cExp - 0.07 * sm, to: END }, { p: 0.15 + 0.07 * sm, to: N.FCH }] }; // man-marking leaves the second ball, zonal holds the edge of the box
   const fC = fouls(0.1, counter);
   nodes[N.CTR] = { t: T.CTR * (ta.tempo === 2 ? 0.85 : 1), alt: [{ p: fC, to: N.FK, ev: EV.TFOUL, dt: dd.FOUL }], duel: counter,
     win: [{ p: 1, to: N.SHOT + 4 }], lose: [{ p: 0.55, to: END }, { p: 0.45, to: END + 1 }] };

@@ -359,6 +359,8 @@ function Changes({ m, me, onChange, onClose }: { m: LiveMatch; me: 0 | 1; onChan
       <div className="ins"><b>{X.ins.build[0]}</b><Steps label={X.ins.build[0]} value={ft.build} options={X.ins.build[1]} onChange={(v) => setT({ build: v as 0 | 1 | 2 })} /></div>
       <div className="ins"><b>{X.ins.counter[0]}</b><Steps label={X.ins.counter[0]} value={ft.counter ? 1 : 0} options={X.ins.counter[1]} onChange={(v) => setT({ counter: v === 1 })} /></div>
       <div className="ins"><b>{X.ins.cpress[0]}</b><Steps label={X.ins.cpress[0]} value={ft.cpress} options={X.ins.cpress[1]} onChange={(v) => setT({ cpress: v as 0 | 1 | 2 })} /></div>
+      <div className="ins"><b>{X.ins.marking[0]}</b><Steps label={X.ins.marking[0]} value={ft.marking} options={X.ins.marking[1]} onChange={(v) => setT({ marking: v as 0 | 1 | 2 })} /></div>
+      <div className="ins"><b>{X.ins.setMark[0]}</b><Steps label={X.ins.setMark[0]} value={ft.setMark} options={X.ins.setMark[1]} onChange={(v) => setT({ setMark: v as 0 | 1 | 2 })} /></div>
       <div className="section-h"><span className="eyebrow">{X.live.roles}</span><small className="muted">{X.live.rolesSub}</small></div>
       <div className="liveroles">
         {s.onPitch.map((id, k) => {
