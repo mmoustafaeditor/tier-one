@@ -1,80 +1,21 @@
-/* Tier One 4.0: the phone on the desk (CONCEPT4.md §2). Below 1024px the phone IS the screen (phone.css). From 1024px
-   the phone sits centred on an ambient dark desk, and a second panel to its right shows the current app's context
-   (today's board, your grid, the tray). Inside the phone every screen is a phone screen: the old tablet/desktop
-   layouts of the screens are folded back to one column here, because the phone is 400px wide whatever the window.
-   Loaded last (App.tsx), CSS only. */
-
-/* ================= tablet: the phone is still the screen, a little roomier ================= */
-@media (min-width: 700px) and (max-width: 1023.98px) {
-  .ph .g-screen { max-width: 640px; }
-  .ph-home__in, .ph-lock { max-width: 560px; width: 100%; margin-inline: auto; }
-  .ph-dock { max-width: 520px; margin-inline: auto; }
-}
-
-/* ================= desktop: the desk, the phone, the side panel ================= */
-@media (min-width: 1024px) {
-  :root { --ph-w: 400px; --ph-h: min(860px, calc(100dvh - 48px)); }
+/* Tier One 4.1: the phone on the desk (UI41.md law 5). From 700px the phone is one phone, centred, at a fixed phone
+   size; nothing stretches and there is no side panel. The device look (lib/phones.ts) draws the bezel, frame and notch.
+   `transform` on .ph keeps every fixed overlay (sheets, toasts, films) inside the phone. Loaded last (App.tsx). */
+@media (min-width: 700px) {
+  :root { --ph-w: 390px; --ph-h: min(844px, calc(100dvh - 48px)); }
   html.os, html.os body { background: var(--os-desk); }
-  html.os body::before { display: block; background-image: var(--grain); background-size: 180px; opacity: .18; mix-blend-mode: overlay; }
-  .ph-desk { background: var(--os-desk); }
-  .ph-desk { display: grid; grid-template-columns: var(--ph-w) minmax(300px, 420px); justify-content: center; align-items: center; gap: 36px; min-height: 100dvh; padding: 24px; }
-  /* the phone: a frame, and `transform` so every fixed overlay (sheets, films, toasts, the dock, the home bar) is contained inside it */
-  /* the device (lib/phones.ts, the equipped `device` look): bezel, frame and corner radius come from the look */
-  .ph { width: var(--ph-w); height: var(--ph-h); min-height: 0; border-radius: var(--os-r-phone); overflow: hidden; transform: translateZ(0); contain: layout paint;
-    box-shadow: 0 0 0 11px var(--dv-bezel), 0 0 0 13px var(--dv-frame), 0 0 0 14px color-mix(in srgb, var(--dv-frame) 50%, #000), 0 3px 0 14px rgba(0, 0, 0, .5), 0 40px 80px -30px rgba(0, 0, 0, .9), 0 0 60px -24px color-mix(in srgb, var(--app-c, transparent) 45%, transparent); transition: box-shadow var(--d-reveal) var(--ease-out), border-radius var(--d-reveal) var(--ease-out); }
-  .ph::before { content: ""; position: absolute; z-index: 61; top: 9px; left: 50%; width: 92px; height: 24px; margin-left: -46px; border-radius: 12px; background: var(--dv-bezel); pointer-events: none; }
+  .ph-desk { display: grid; place-items: center; height: 100dvh; padding: 24px; background: var(--os-desk); background-image: radial-gradient(120% 80% at 50% 40%, var(--os-desk-2), var(--os-desk) 70%); }
+  .ph { width: var(--ph-w); height: var(--ph-h); border-radius: var(--os-r-phone); transform: translateZ(0); contain: layout paint;
+    box-shadow: 0 0 0 11px var(--dv-bezel), 0 0 0 13px var(--dv-frame), 0 0 0 14px color-mix(in srgb, var(--dv-frame) 50%, #000), 0 40px 80px -30px rgba(0, 0, 0, .9); }
+  .ph__screen { padding-top: 30px; }
+  .ph::before { content: ""; position: absolute; z-index: 61; top: 9px; left: 50%; width: 92px; height: 22px; margin-left: -46px; border-radius: 12px; background: var(--dv-bezel); pointer-events: none; }
   [data-notch="dot"] .ph::before { width: 12px; height: 12px; margin-left: -6px; top: 10px; border-radius: 50%; }
   [data-notch="bar"] .ph::before { top: 0; width: 100%; left: 0; margin-left: 0; height: 22px; border-radius: 0; }
-  [data-notch="bar"] .ph-status { padding-top: 14px; height: calc(var(--os-status-h) + 14px); }
   [data-notch="none"] .ph::before { display: none; }
   [data-crack] .ph::after { content: ""; position: absolute; z-index: 62; top: 30px; right: 10px; width: 150px; height: 110px; pointer-events: none; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70'><path d='M100 2 L72 20 L80 27 L55 44 L62 49 L34 68 M72 20 L58 14 M55 44 L44 38' fill='none' stroke='white' stroke-opacity='.45' stroke-width='.8'/></svg>") no-repeat 100% 0 / contain; }
   .lf-bezel { display: none; }
-  .ph-status { padding-top: 0; }
-  .ph-status__time { padding-inline-start: 6px; }
-  .ph__screen { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
-  .ph__screen::-webkit-scrollbar { display: none; }
-  .ph-lock, .ph-home { min-height: calc(var(--ph-h) - var(--os-status-h)); }
-  .ph .g-screen { padding-inline: 18px; max-width: none; }
-  .ph .g-top { margin-inline: -18px; padding-inline: 18px; }
-  .ph .toasts, .ph .t1-chip { inset-inline-start: 12px; }
+  .ph-lock { margin-top: -30px; padding-top: 96px; }
   .ph .scrim { align-items: flex-end; }
-  .ph .sheet--float { border-radius: 22px 22px 0 0; max-height: 86%; }
-  .ph .jc-banners { inset-inline: 10px; }
-  /* inside the phone, every screen is a phone screen: the screens' own wide layouts fold back to one column */
-  .ph .play__cols, .ph .results2.res4.g-screen, .ph .wire3 .g-stack:has(> .live), .ph .sm-cols, .ph .pass3__cols, .ph .rooms3__two, .ph .lv-sagas, .ph .lv-paper__cols, .ph .lv-editor__cols, .ph .fullrules__cols, .ph .cn-rgrid, .ph .cn-cgrid, .ph .wall, .ph .cn-hub, .ph .pastgrid, .ph .me .me__links, .ph .me .shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ph .play__cols, .ph .results2.res4.g-screen, .ph .wire3 .g-stack:has(> .live), .ph .sm-cols, .ph .pass3__cols, .ph .rooms3__two, .ph .lv-sagas, .ph .lv-paper__cols, .ph .lv-editor__cols, .ph .fullrules__cols, .ph .wall, .ph .cn-rgrid { grid-template-columns: minmax(0, 1fr); display: block; }
-  .ph .play__file { position: static; max-height: none; overflow: visible; margin: 0; padding: 0; }
-  .ph .results2.res4 > * { grid-column: auto; }
-
-  /* the side panel: the current app's context */
-  .ph-side { align-self: center; max-height: var(--ph-h); overflow-y: auto; scrollbar-width: thin; color: var(--os-ink); }
-  .ph-side__in { display: grid; gap: 22px; padding: 6px 4px; animation: ph-fade var(--d-reveal) var(--ease-out) both; }
-  .ph-side__me { display: grid; gap: 6px; }
-  .ph-side__name { font-family: var(--f-display); font-weight: 800; font-size: 30px; letter-spacing: -.025em; line-height: 1; }
-  .ph-side__stats { color: var(--os-ink-3); }
-  .ph-side__lv { --bar: var(--app-lens); max-width: 240px; }
-  .ph-side__sec { display: grid; gap: 10px; padding-top: 16px; border-top: 1px solid var(--os-line); }
-  .ph-side__sec h3 { margin: 0; display: flex; align-items: center; gap: 8px; color: var(--os-ink-3); }
-  .ph-side__app { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; }
-  .ph-side__app b { font-family: var(--f-display); font-size: 18px; }
-  .ph-side__app p { margin: 2px 0 0; color: var(--os-ink-2); font-size: 14px; line-height: 1.4; }
-  .ph-side__board { display: flex; gap: 8px; }
-  .ph-side__kit { display: grid; justify-items: center; gap: 4px; flex: 1; min-width: 0; padding: 8px 2px; border-radius: 14px; background: var(--os-desk-2); box-shadow: inset 0 0 0 1px var(--os-line); }
-  .ph-side__kit small { max-width: 100%; font-size: 10px; font-weight: 700; color: var(--os-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ph-side__go { display: inline-flex; align-items: center; gap: 8px; justify-self: start; min-height: 40px; padding: 0 14px; border-radius: var(--os-r-pill); background: var(--os-bg-2); color: var(--os-ink); font-weight: 800; font-size: 14px; box-shadow: inset 0 0 0 1px var(--os-line); transition: transform var(--tr-tap); }
-  .ph-side__go:active { transform: scale(.97); }
-  .ph-side__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-  .ph-side__cell { display: grid; place-items: center; gap: 2px; aspect-ratio: 1; border-radius: 12px; background: var(--os-desk-2); box-shadow: inset 0 0 0 1px var(--os-line); font-size: 11px; font-weight: 800; color: var(--os-ink-2); }
-  .ph-side__cell small { font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 18px; color: var(--os-ink); }
-  .ph-side__cell.is-t1 { background: color-mix(in srgb, var(--app-lens) 22%, var(--os-desk-2)); color: var(--app-lens); }
-  .ph-side__cell.is-spiked { color: var(--app-blurt); }
-  .ph-side__quiet { margin: 0; color: var(--os-ink-3); font-size: 14px; }
-  .ph-side__tray { display: grid; gap: 6px; }
-  .ph-side__row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; min-height: 48px; padding: 6px 8px; border-radius: 14px; text-align: start; color: var(--os-ink); background: var(--os-desk-2); box-shadow: inset 0 0 0 1px var(--os-line); }
-  .ph-side__row.is-read { opacity: .55; }
-  .ph-side__row span { display: grid; min-width: 0; }
-  .ph-side__row b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ph-side__row small { font-size: 12px; color: var(--os-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ph-side__keys { color: var(--os-ink-3); }
+  .ph .jc-banners { inset-inline: 10px; top: 36px; }
+  .ph .toasts { inset-inline-start: 12px; }
 }
-@media (min-width: 1440px) { :root { --ph-w: 420px; } .ph-desk { gap: 48px; } }
