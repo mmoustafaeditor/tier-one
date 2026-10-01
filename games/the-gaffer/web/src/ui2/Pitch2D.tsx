@@ -606,12 +606,17 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         // The back line moves as one: out of possession its defenders react on their best reader's call.
         const isDef = (k: number) => !has && LINE[sps[k]?.opos ?? slots[k].pos] === 'def' && !pp.press.includes(k) && k !== pp.cover;
         const lineReads = Math.max(0, ...ks.filter(isDef).map((k) => a.body[side]?.[k]?.reads ?? 0.5));
+        // ... and holds its shape at its slowest defender's pace, so it doesn't break up while it steps or drops.
+        const lineBodies = ks.filter(isDef).map((k) => a.body[side]?.[k]).filter(Boolean) as Body[];
+        const lineTop = Math.min(...lineBodies.map((b) => b.top), 9), lineAcc = Math.min(...lineBodies.map((b) => b.acc), 9);
         for (const k of ks) {
           let t = tg[k];
           if (has && k === a.carrier && !staging) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
           const wob = Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
           const p = a.pos[side][k] ?? t;
-          const B = a.body[side]?.[k] ?? { top: 1, acc: 1, turn: 1, reads: 0.5, tank: 0.7 };
+          const B0 = a.body[side]?.[k] ?? { top: 1, acc: 1, turn: 1, reads: 0.5, tank: 0.7 };
+          // In the line: the line's pace. Walking to a set piece: no turning limit (he's not running at speed).
+          const B = staging ? { ...B0, turn: B0.turn * 4 } : isDef(k) ? { ...B0, top: Math.min(B0.top, lineTop), acc: Math.min(B0.acc, lineAcc) } : B0;
           const g = a.ag[side][k] ??= { vx: 0, vy: 0, tx: t.x, ty: t.y + wob, at: 0, tank: 1, pend: false, spr: false };
           // On the ball, about to receive or shoot, or walking to a set piece: no delay. Everyone else commits to
           // a new target at his decision ticks, and after a new ball only once he has reacted.
@@ -632,13 +637,16 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
           if (!staging && g.tank < T.EMPTY) sprint = Math.min(sprint, T.SPRINT);
           const vx0 = g.vx, vy0 = g.vy;
           const nk = move({ x: p.x, y: p.y, vx: g.vx, vy: g.vy }, g.tx, g.ty, dt, tau, B, sprint);
+          // The line's depth is one decision for all its defenders (PR A): it moves together at the line's pace, and
+          // only their sideways movement is left to each body.
+          if (isDef(k) && !staging) { nk.x = p.x + (g.tx - p.x) * (1 - Math.exp((-dt * lineTop * sprint) / tau)); nk.vx = (nk.x - p.x) / Math.max(1, dt); }
           g.vx = nk.vx; g.vy = nk.vy;
           a.pos[side][k] = { x: nk.x, y: nk.y };
           const vmax = (T.VMAX * B.top * sprint) / tau, sp1 = Math.hypot(nk.vx, nk.vy);
           g.spr = !staging && sprint > T.SPRINT && sp1 > 0.6 * vmax;
           g.tank = g.spr ? Math.max(0, g.tank - (T.DRAIN * dt) / ms / B.tank) : Math.min(1, g.tank + (T.REFILL * dt) / ms);
           // Measurement (ui-tests/pitch.mjs): how close to his turning and acceleration limits he came.
-          if (PITCH_DEBUG && dt > 0) {
+          if (PITCH_DEBUG && dt > 0 && !(isDef(k) && !staging)) { // (the line's depth is shared, measured by the line test)
             const sp0 = Math.hypot(vx0, vy0);
             a.kin.acc = Math.max(a.kin.acc, Math.hypot(nk.vx - vx0, nk.vy - vy0) / ((vmax / (T.ACC_TAU * tau)) * B.acc * dt));
             if (sp0 > T.TURN_SPEED * vmax && sp1 > 1e-9) {

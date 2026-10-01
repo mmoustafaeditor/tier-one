@@ -15,7 +15,7 @@ export const T = {
   REACT_MS: [30, 420] as [number, number],
   // Sprint tank (0-1): sprinting drains it, jogging refills it
   SPRINT: 1.12,      // a speed boost above this is a sprint
-  DRAIN: 1.1,        // a full tank of an average player lasts 1 / DRAIN match minutes of flat-out sprinting
-  REFILL: 0.35,      // tank refilled per match minute when not sprinting
+  DRAIN: 0.8,        // a full tank of an average player lasts 1 / DRAIN match minutes of flat-out sprinting
+  REFILL: 0.6,      // tank refilled per match minute when not sprinting
   EMPTY: 0.15,       // below this the player can't sprint (his boost is capped at SPRINT)
 };

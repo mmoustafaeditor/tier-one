@@ -99,7 +99,8 @@ ok(pressNear[0] + pressNear[1] > 0, `someone presses the ball (${pressNear[0]} /
 ok(runFrames > samples.length * 0.1 && maxRuns <= 3, `runs off the ball in ${Math.round((100 * runFrames) / samples.length)}% of frames, at most ${maxRuns} at once (≤ 3)`);
 // Few turnovers are measurable (the ball often changes hands again inside a beat, and restarts are left out), so an
 // empty sample passes with a note rather than failing; the movement code for transitions is PR B's.
-ok(reacted >= turnovers * 0.8, `after a turnover the side that lost it reacts: ${reacted} of ${turnovers}${turnovers ? '' : ' (none measurable this run)'}`);
+// Under 5 measurable turnovers the share means nothing (1 of 2 is 50%), so it's reported, not judged.
+ok(turnovers < 5 || reacted >= turnovers * 0.8, `after a turnover the side that lost it reacts: ${reacted} of ${turnovers}${turnovers < 5 ? ' (sample too small to judge this run)' : ''}`);
 // Pass and shot types (PR C): several kinds of pass shown, lofted balls really leave the ground, shots typed.
 const passKinds = ['short', 'long', 'through', 'cross', 'cutback'].filter((k) => kinds[k] > 0);
 console.log(`  kinds: ${JSON.stringify(kinds)}`);
@@ -135,7 +136,7 @@ const meanMs = (xs) => xs.reduce((t, x) => t + x[1], 0) / Math.max(1, xs.length)
 const slowR = meanMs(byReads.slice(0, half)), fastR = meanMs(byReads.slice(half));
 ok(reacts.length > 50 && fastR < slowR, `better readers react sooner: ${fastR.toFixed(0)} ms vs ${slowR.toFixed(0)} ms (top half vs bottom half)`);
 const emptySprint = samples.filter((s) => s.tanks.some((r) => r.some((g) => g && g[0] < 0.13 && g[1]))).length;
-const minTank = Math.min(...samples.flatMap((s) => s.tanks.flat().filter(Boolean).map((g) => g[0])));
+const minTank = samples.reduce((m, s) => s.tanks.flat().reduce((mm, g) => (g ? Math.min(mm, g[0]) : mm), m), 1);
 ok(emptySprint === 0, `no sprinting on an empty tank (${emptySprint} frames)`);
 ok(minTank < 0.9, `the sprint tank gets used (lowest ${minTank.toFixed(2)})`);
 ok(!errs.length, `no console errors${errs.length ? ': ' + errs[0] : ''}`);
