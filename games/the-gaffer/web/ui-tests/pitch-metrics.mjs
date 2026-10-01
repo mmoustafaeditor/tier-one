@@ -16,7 +16,7 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   const spread = [], length = [], pressNear = [0, 0];
   const dist = [[], []];
   // Frames during a corner or free kick, and for 1.5 s after it (the box empties and the line steps back out).
-  const afterSet = []; { let last = -1e9; for (let i = 0; i < samples.length; i++) { const x = samples[i]; if (x.sp && x.sp.kind !== 'gk') last = x.t; afterSet[i] = x.t - last < 1500; } }
+  const afterSet = []; { let last = -1e9; for (let i = 0; i < samples.length; i++) { const x = samples[i]; if (x.sp && (x.sp.kind === 'corner' || x.sp.kind === 'fk')) last = x.t; afterSet[i] = x.t - last < 1500; } }
   for (let i = 0; i < samples.length; i++) {
     const s = samples[i];
     for (const side of [0, 1]) {
@@ -89,7 +89,7 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   const corners = ends.filter((s) => s.sp.kind === 'corner');
   const fks = ends.filter((s) => s.sp.kind === 'fk' && depth(s.sp.side, s.sp.at.x) > 70);
   const wallN = (s) => s.pos[1 - s.sp.side].filter((q) => q && Math.abs(Math.hypot(q.x - s.sp.at.x, q.y - s.sp.at.y) - 9.15) < 1.5).length;
-  console.log(`  set pieces staged: ${corners.length} corners, ${fks.length} free kicks in range, ${ends.filter((s) => s.sp.kind === 'gk').length} goal kicks, flag up in ${samples.filter((s) => s.flag).length} frames`);
+  console.log(`  set pieces staged: ${corners.length} corners, ${fks.length} free kicks in range, ${ends.filter((s) => s.sp.kind === 'gk').length} goal kicks, ${ends.filter((s) => s.sp.kind === 'ti').length} throw-ins, flag up in ${samples.filter((s) => s.flag).length} frames`);
   ok(ends.length > 0, 'set pieces are staged');
   if (process.env.DBG) for (const c of fks) { const st = samples.find((x) => x.sp && x.sp.until === c.sp.until); console.log('fk', JSON.stringify(c.sp), st.t, c.t, JSON.stringify(c.pos[1 - c.sp.side].map((q) => q && Math.round(Math.hypot(q.x - c.sp.at.x, q.y - c.sp.at.y) * 10) / 10)), JSON.stringify(c.ball)); }
   if (process.env.DBG) for (const c of corners) { const st = samples.find((x) => x.sp && x.sp.until === c.sp.until); console.log('start', st.t, JSON.stringify(st.pos[c.sp.side].map((q) => q && Math.round(depth(c.sp.side, q.x))))); }

@@ -26,6 +26,7 @@ type Beat =
   | { kind: 'corner'; side: 0 | 1; taker?: number }
   | { kind: 'offside'; side: 0 | 1 }
   | { kind: 'foul'; side: 0 | 1; to: number; pt: Pt }
+  | { kind: 'out'; side: 0 | 1; how: 'ti' | 'gk'; pt: Pt } // the ball went out of play: `side` restarts (engine flow ti / gk)
   | { kind: 'hold' };
 
 export interface Anim {
@@ -144,6 +145,12 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
     const found = f.p ? slotOf(m, f.p) : null;
     const slot = found && found.side === f.s ? found.slot : slotNear(m, a, f.s, pt);
     if (f.k === 'f') { all.push({ kind: 'foul', side: f.s, to: slot, pt }); poss = f.s; continue; }
+    if (f.k === 'ti' || f.k === 'gk') {
+      const prev = all[all.length - 1];
+      if (f.k === 'gk' && prev?.kind === 'shot' && prev.result === 'miss') continue; // the missed shot already stages its goal kick
+      all.push({ kind: 'out', side: f.s, how: f.k, pt }); poss = f.s;
+      continue;
+    }
     if (f.k === 'w' || f.k === 'l') {
       if (f.s !== poss) { all.push({ kind: 'turnover', side: f.s, to: slot, pt, z: f.z }); poss = f.s; }
       else all.push({ kind: 'pass', side: f.s, to: slot, pt, z: f.z });
@@ -216,7 +223,7 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
   let has: 0 | 1 = a.poss;
   for (let i = 0; i < all.length; i++) {
     const b = all[i];
-    if (b.kind === 'kickoff' || b.kind === 'corner' || b.kind === 'foul') has = b.side;
+    if (b.kind === 'kickoff' || b.kind === 'corner' || b.kind === 'foul' || b.kind === 'out') has = b.side;
     else if (b.kind === 'offside') has = (1 - b.side) as 0 | 1;
     else if (b.kind === 'shot') has = (1 - b.side) as 0 | 1;
     else if (b.kind === 'pass' && b.side !== has) { all[i] = { kind: 'turnover', side: b.side, to: b.to, pt: b.pt, z: b.z }; has = b.side; }
@@ -242,7 +249,7 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
   a.starts = wt.map((_, i) => wt.slice(0, i).reduce((t, x) => t + x, 0) * a.beatLen);
   a.minute = minuteKey(m);
 }
-const weightOf = (b: Beat) => (b.kind === 'corner' ? 4 : b.kind === 'foul' ? (wallSize(depthOf(b.side, b.pt.x)) ? 4 : 1.5) : b.kind === 'offside' ? 1.5 : 1);
+const weightOf = (b: Beat) => (b.kind === 'corner' ? 4 : b.kind === 'foul' ? (wallSize(depthOf(b.side, b.pt.x)) ? 4 : 1.5) : b.kind === 'offside' || b.kind === 'out' ? 1.5 : 1);
 const SHOT_EV = new Set(['goal', 'nogoal', 'save', 'block', 'miss']);
 const minuteKey = (m: LiveMatch) => `${m.minute}+${m.plus ?? 0}`;
 
@@ -274,6 +281,27 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     a.sp = { kind: 'corner', side: b.side, at: flag, until: a.time + a.beatLen * weightOf(b), taker: k, rush: rushFor(a.msPM, a.beatLen * weightOf(b)) };
     a.kinds.corner = (a.kinds.corner ?? 0) + 1;
     fly(a, flag, travel * 0.3, () => { a.poss = b.side; a.carrier = k; });
+    return;
+  }
+  if (b.kind === 'out') {
+    // Out of play: the ball runs over the line, then the restart. A throw-in is taken where it went out by the nearest
+    // outfield man; a goal kick by the keeper from the six-yard box.
+    a.run = null; a.carrier = -1; a.zone = -1; a.shooter = null;
+    const dur = a.beatLen * weightOf(b), top = b.pt.y < W / 2;
+    if (b.how === 'ti') {
+      const at = { x: clamp(b.pt.x, 4, L - 4), y: top ? 0.3 : W - 0.3 };
+      const slots = FORMATIONS[m.sides[b.side].tactics.formation].slots;
+      const k = onPitch(m, b.side).filter((j) => slots[j].pos !== 'GK' && a.pos[b.side][j]).sort((p, q) => dist(a.pos[b.side][p], at) - dist(a.pos[b.side][q], at))[0];
+      if (k === undefined) return;
+      a.sp = { kind: 'ti', side: b.side, at, until: a.time + dur, taker: k, rush: rushFor(a.msPM, dur) };
+      a.kinds.throwin = (a.kinds.throwin ?? 0) + 1;
+      fly(a, { x: at.x, y: top ? -1.5 : W + 1.5 }, travel * 0.5, () => { a.poss = b.side; a.carrier = k; });
+    } else {
+      const gk = gkSlot(m, b.side);
+      a.sp = { kind: 'gk', side: b.side, at: { x: toX(b.side, 5.5), y: W / 2 + (top ? -9 : 9) }, until: a.time + dur, taker: gk, rush: 1 };
+      a.kinds.goalkick = (a.kinds.goalkick ?? 0) + 1;
+      fly(a, { x: toX(b.side, -1.5), y: clamp(b.pt.y, 10, W - 10) }, travel * 0.6, () => { a.poss = b.side; a.carrier = gk; });
+    }
     return;
   }
   if (b.kind === 'offside') {
@@ -373,7 +401,7 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
 const AIR: Record<string, number> = { CB: 0, ST: 1, CDM: 2, CM: 3, LB: 4, RB: 4, CAM: 5, LW: 6, RW: 6, GK: 9 };
 function stage(a: Anim, m: LiveMatch, side: 0 | 1, ks: number[], tg: Pt[], boost: number[]) {
   const sp = a.sp!, slots = FORMATIONS[m.sides[side].tactics.formation].slots;
-  if (sp.kind === 'gk') { if (side === sp.side && a.carrier >= 0) tg[a.carrier] = sp.at; return; }
+  if (sp.kind === 'gk' || sp.kind === 'ti') { if (side === sp.side && sp.taker >= 0) { tg[sp.taker] = sp.at; boost[sp.taker] = Math.max(boost[sp.taker] ?? 1, sp.rush); } return; }
   const att = sp.side, flank: -1 | 1 = sp.at.y < W / 2 ? -1 : 1;
   const field = ks.filter((k) => slots[k].pos !== 'GK' && !(side === att && k === sp.taker)).sort((p, q) => AIR[slots[p].pos] - AIR[slots[q].pos]);
   const ballD = depthOf(att, sp.at.x);
