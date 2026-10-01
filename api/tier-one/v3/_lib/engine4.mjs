@@ -91,7 +91,7 @@ export const BOSSES = {
   kev:   { id: 'itk',     kind: 'street', t: [[0.90, 0.55, 2, 3], [0.90, 0.60, 2, 3], [0.90, 0.65, 1, 3], [0.95, 0.70, 1, 2], [0.95, 0.75, 1, 2]] },
   pete:  { id: 'insider', kind: 'own',    t: [[0.85, 0.85, 3, 4], [0.85, 0.87, 3, 4], [0.90, 0.90, 3, 4], [0.90, 0.92, 2, 4], [0.95, 0.94, 2, 3]] },
   roar:  { id: 'roar',    kind: 'street', t: [[0.90, 0.55, 1, 3], [0.90, 0.60, 1, 3], [0.95, 0.65, 1, 3], [0.95, 0.70, 1, 2], [1, 0.75, 1, 2]] },
-  vince: { id: 'vince',   kind: 'own',    t: [[1, 0.60, 1, 2], [1, 0.65, 1, 2], [1, 0.70, 1, 2], [1, 0.75, 1, 2], [1, 0.80, 1, 1]] },
+  vince: { id: 'vince',   kind: 'street', t: [[0.95, 0.45, 1, 2], [0.95, 0.50, 1, 2], [0.95, 0.55, 1, 2], [1, 0.60, 1, 2], [1, 0.65, 1, 1]] },   // the same "Done deal": he repeats the mill
 };
 // The agent on a Vince's-client story: talks the deal up (says SIGNS far more often when it isn't true).
 export const TALK = [[0.85, 0.08, 0.07], [0.45, 0.45, 0.10], [0.40, 0.05, 0.55]];
