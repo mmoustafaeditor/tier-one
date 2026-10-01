@@ -22,6 +22,20 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer: small follow-ups to the highlights
+- **What changed:**
+  - **Match bar.** The old "Highlights" fast-forward button on the live match bar is gone; the highlight modes replace it.
+  - **Weather on the pitch.** Wind shows as gusts drifting across the pitch and heat as a faint warm haze, like rain and snow already did.
+  - **Measured at real pace in Extended mode** (10 seeded matches, both sides on each style), attackers near goal marked within reach:
+    - zonal: 82%;
+    - mixed: 88%;
+    - man: 88%.
+
+    Man-marking is no longer looser than mixed, as it was in the compressed minute.
+  - **Measured in Full match mode** (4 matches): line, blocking (97%), overlaps (57%), offside (2%) and keeper (0.0 m) all hold. The carrier has two open men only 59% of the time; in build-up from the back a centre-back on the ball finds two in only about half his frames.
+- **Files:** `games/the-gaffer/web/src/ui2/Live.tsx`, `src/ui2/Pitch2D.tsx`, `src/styles/app.css`
+- **Heads-up for the team:** Support movement was tried: team-mates moving to open lanes near the carrier. It made it worse (53%), because their markers follow them, so it was backed out. The 2.5D and 3D cameras aren't used on the live screen, so highlights don't affect them. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer: match highlights like FM, and the pitch at real pace
 - **What changed:**
   - **Highlight modes.** A watched match now shows highlights like Football Manager (`sim/highlights.ts`). Pick the mode on the live screen's bar or in Settings › Match; it's in EN/AR/ES/FR. Average match length at Normal speed:

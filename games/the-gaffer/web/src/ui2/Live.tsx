@@ -43,9 +43,8 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
   // What the match shows (sim/highlights.ts, like FM): a highlight plays at RATES[speed] × real time, the clock runs on
   // quickly between highlights; players run at a fixed scale for that speed.
   const [hl, setHl] = useState<HlMode>(hl0);
-  const [key, setKey] = useState(false);
-  const minMs = key ? 45 : minuteMs(m, hl, RATES[speed]);
-  const scale = key ? 45 : Math.round((2400 * RATES[1]) / RATES[speed]);
+  const minMs = minuteMs(m, hl, RATES[speed]);
+  const scale = Math.round((2400 * RATES[1]) / RATES[speed]);
   const [view, setView] = useState(0);
   const [changes, setChanges] = useState(false);
   const [htSeen, setHtSeen] = useState(m.minute > 45);
@@ -81,7 +80,7 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
     }, minMs + hold);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [m, paused, done, changes, ht, locked, speed, key, banner]);
+  }, [m, paused, done, changes, ht, locked, speed, hl, banner]);
   // The banner steps through its phases, then play resumes.
   useEffect(() => {
     if (!banner) return;
@@ -99,7 +98,6 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
       if (ev) {
         setFlash({ side: ev.side, id: ev.playerId, n: Date.now() });
         sfx('goal');
-        if (key) setKey(false);
         try { navigator.vibrate?.(ev.side === me ? [60, 40, 140] : 40); } catch { /* not supported */ }
       }
     }
@@ -109,7 +107,7 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
   useEffect(() => { if (!flash) return; const id = setTimeout(() => setFlash(null), reduced() ? 1200 : 2200); return () => clearTimeout(id); }, [flash]);
 
   const change = (f: (n: LiveMatch) => void) => { const n = clone(m); f(n); onUpdate(n); onSave(n); };
-  const pickSpeed = (i: 0 | 1 | 2) => { setKey(false); setSpeed(i); onSpeed?.(i); };
+  const pickSpeed = (i: 0 | 1 | 2) => { setSpeed(i); onSpeed?.(i); };
   const [feed, setFeed] = useState(0);
   // While the banner is up the scoreboard shows the goal as the crowd saw it, then the ruling.
   const shown: [number, number] = banner?.adj && banner.i < banner.ph.length - 1 ? [m.goals[0] + banner.adj[0], m.goals[1] + banner.adj[1]] : m.goals;
@@ -182,7 +180,7 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
         <Panel className="g-pitch pitch-card" i={2} label={x.live.where}>
           <span className="eyebrow">{x.live.where} · {x.live.whereSub} · {R.wx[m.wx ?? 0]}</span>
           <div className="chips view-chips">{x.live.views.map((v, i) => <button key={v} className="chip" aria-pressed={view === i} onClick={() => setView(i)}>{v}</button>)}</div>
-          {view === 0 && hl !== 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={minMs} mode={key ? undefined : hl} scale={scale} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} /></div>
+          {view === 0 && hl !== 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={minMs} mode={hl} scale={scale} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} /></div>
             : <ZonePitch m={m} me={me} mode={view || 1} /> /* commentary only: the zone map, no pitch */}
           <div className="mom-h"><b>{x.live.momentum}</b><span>{x.live.momentumKey(cn(us, lang), cn(them, lang))}</span></div>
           <Momentum data={mom} rtl={g.rtl} label={x.live.momentum} />
@@ -239,8 +237,7 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
           <>
             <button className="icon-btn" aria-label={paused ? x.live.play : x.live.pause} onClick={() => setPaused(!paused)}><I n={paused ? 'play' : 'pause'} /></button>
             <div className="seg" role="group" aria-label={x.live.speed}>
-              {R.speeds.map((l, i) => <button key={l} aria-pressed={!key && speed === i} onClick={() => pickSpeed(i as 0 | 1 | 2)}>{l}</button>)}
-              <button aria-pressed={key} onClick={() => setKey(!key)}>{x.live.key}</button>
+              {R.speeds.map((l, i) => <button key={l} aria-pressed={speed === i} onClick={() => pickSpeed(i as 0 | 1 | 2)}>{l}</button>)}
             </div>
             <select className="sel hlsel" value={hl} aria-label={R.hlTitle} title={R.hlTitle} onChange={(e) => { const v = +e.target.value as HlMode; setHl(v); onHl?.(v); }}>
               {R.hl.map((l, i) => <option key={l} value={i}>{l}</option>)}
