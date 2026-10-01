@@ -657,7 +657,8 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         for (const k of ks) {
           let t = tg[k];
           if (has && k === a.carrier && !staging) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
-          const wob = Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
+          // A little life in everyone's feet, except a keeper set on the shooting angle (he stays on it).
+          const wob = !has && LINE[slots[k].pos] === 'gk' ? 0 : Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
           const p = a.pos[side][k] ?? t;
           const B0 = a.body[side]?.[k] ?? { top: 1, acc: 1, turn: 1, reads: 0.5, tank: 0.7 };
           // In the line: the line's pace. Walking to a set piece: no turning limit (he's not running at speed).
