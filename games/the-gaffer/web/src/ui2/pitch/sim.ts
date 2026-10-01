@@ -63,6 +63,7 @@ export interface Anim {
   flag: { x: number; until: number } | null; // the assistant's flag is up (offside), at this x on the near touchline
   hurt: { side: 0 | 1; slot: number; until: number } | null; // a player down injured (foundation step 4): he stays down, the medic's cross shows
   hurtAt: { side: 0 | 1; slot: number; at: number }[]; // this minute's injuries, when they happen (ms into the minute)
+  ids: string[][];        // who was in each slot when the minute was planned (an injured man's slot after he's gone)
 }
 
 interface Agent { vx: number; vy: number; tx: number; ty: number; at: number; tank: number; pend: boolean; spr: boolean }
@@ -250,16 +251,17 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
   a.beatLen = msPerMinute / Math.max(1, wt.reduce((t, x) => t + x, 0));
   a.starts = wt.map((_, i) => wt.slice(0, i).reduce((t, x) => t + x, 0) * a.beatLen);
   // Injuries this minute: hurt in a tackle goes down at that foul's whistle, otherwise he pulls up mid-minute. The
-  // engine has already made the substitution, so the slot is the one his replacement now fills.
+  // engine has already made the change: the slot is his replacement's now, or empty when no sub was left (he is shown
+  // until he's helped off).
   a.hurtAt = [];
   for (const e of m.events) {
     if (e.kind !== 'injury' || !live(e)) continue;
-    const sb = m.events.find((x) => x.kind === 'sub' && x.playerId === e.playerId && live(x));
-    const slot = sb?.inId ? m.sides[e.side].onPitch.indexOf(sb.inId) : -1;
-    if (slot < 0) continue;
+    const slot = a.ids[e.side]?.indexOf(e.playerId) ?? -1;
+    if (slot < 0 || !a.pos[e.side][slot]) continue;
     const fi = e.how === 'foul' ? beats.findIndex((b) => b.kind === 'foul' && b.side === e.side) : -1;
     a.hurtAt.push({ side: e.side, slot, at: fi >= 0 ? a.starts[fi] : msPerMinute * 0.5 });
   }
+  a.ids = [[...m.sides[0].onPitch], [...m.sides[1].onPitch]];
   a.minute = minuteKey(m);
 }
 const weightOf = (b: Beat) => (b.kind === 'corner' ? 4 : b.kind === 'foul' ? (wallSize(depthOf(b.side, b.pt.x)) ? 4 : 1.5) : b.kind === 'offside' || b.kind === 'out' ? 1.5 : 1);
@@ -454,11 +456,14 @@ function setMarks(a: Anim, m: LiveMatch, side: 0 | 1, field: number[], tg: Pt[],
 }
 
 // A match's pitch at kick-off: everyone in position, the home side on the ball.
+// The injured man in a slot left empty (no subs left) is drawn until he's helped off: from the start of the minute
+// until his time down is over.
+export const downIn = (a: Anim, side: 0 | 1, k: number) => (!!a.hurt && a.time < a.hurt.until && a.hurt.side === side && a.hurt.slot === k) || a.hurtAt.some((x) => x.side === side && x.slot === k);
 export function newAnim(m: LiveMatch, world: World): Anim {
     const a: Anim = {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], starts: [], msPM: 1000, beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
-      spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null, hurt: null, hurtAt: [],
+      spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null, hurt: null, hurtAt: [], ids: [[...m.sides[0].onPitch], [...m.sides[1].onPitch]],
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;

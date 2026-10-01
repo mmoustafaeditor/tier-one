@@ -17,6 +17,18 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer: AI managers pick a marking style; an injured man with no sub left is shown going down
+- **What changed:**
+  - **AI marking.** AI managers now choose a marking style by philosophy:
+    - possession, counter and bus hold zones;
+    - gegenpress goes man to man;
+    - balanced, wings and direct stay mixed.
+
+    At set pieces they mark man to man when their centre-backs and strikers are clearly stronger in the air than the opponent's, and hold zones when the opponent's are.
+  - **Injury with no sub left.** When a player is hurt and no substitutes are left, the pitch now shows him going down under the medic's cross before he's helped off. Before, he vanished. The pitch remembers who stood in each slot at the start of the minute, so the injured man's slot is found the same way whether or not a sub came on.
+- **Files:** `games/the-gaffer/web/src/sim/tactics.ts` (`aiTactics`), `src/ui2/pitch/sim.ts` (`ids`, `downIn`), `src/ui2/Pitch2D.tsx`
+- **Heads-up for the team:** AI sides' results shift slightly with their marking style; every style stays within about 1% expected points of mixed. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer: matchday weather
 - **What changed:**
   - **Weather per match.** Every match now has weather: clear, rain, heavy rain, wind, heat or snow (`engine/weather.ts`). It is picked once from the match key and the home country's climate. England and Germany get rain and some snow; Spain and Italy are mostly clear, with heat; Egypt and Saudi get heat and never snow.

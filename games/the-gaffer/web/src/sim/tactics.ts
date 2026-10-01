@@ -219,6 +219,13 @@ export function aiTactics(squad: Player[], myLevel: number, theirLevel: number, 
     if (avg(theirBack, 0) + 8 < avg(myFront, 0)) { t.tempo = 2; if (philosophy !== 'possession') { t.passing = 2; t.build = 2; } }
     // A much stronger opponent: drop the line and break.
     if (gap < -7) { t.line = 0; t.counter = true; t.pressing = Math.min(t.pressing, 1) as 0 | 1 | 2; }
+    // Marking at set pieces: tall, strong centre-backs take a man each; facing big men in the air, hold zones.
+    const air = (ps: Player[]) => avg(ps.filter((p) => p.position === 'CB' || p.position === 'ST'), 5);
+    if (air(mine) >= air(top) + 6) t.setMark = 2;
+    else if (air(top) >= air(mine) + 6) t.setMark = 0;
   }
+  // Marking in open play by style (foundation step 5): deep or possession sides hold zones, pressing sides go man to man.
+  t.marking = AI_MARKING[philosophy];
   return t;
 }
+const AI_MARKING: Record<Philosophy, 0 | 1 | 2> = { balanced: 1, possession: 0, counter: 0, gegenpress: 2, bus: 0, wings: 1, direct: 1 };
