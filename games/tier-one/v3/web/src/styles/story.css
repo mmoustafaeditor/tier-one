@@ -72,8 +72,9 @@
 
 /* ---------- the boss: the one printed object in the app */
 .st-cardwrap { margin: 4px 0; }
-.st-boss { display: block; text-align: start; padding: 14px 16px; border-radius: 6px 6px 16px 16px; background: var(--st-paper); color: var(--st-paper-ink); box-shadow: 0 1px 0 rgba(0, 0, 0, .35), 0 10px 24px -14px rgba(0, 0, 0, .7); border-top: 4px solid var(--st-ac); width: 100%; cursor: pointer; }
-.st-boss--full { border-radius: 10px; margin: 4px 0 8px; cursor: default; }
+.st-boss { display: block; text-align: start; padding: 14px 16px; border-radius: 6px 6px 16px 16px; background: var(--st-paper); color: var(--st-paper-ink); box-shadow: 0 1px 0 rgba(0, 0, 0, .35), 0 10px 24px -14px rgba(0, 0, 0, .7); border-top: 4px solid var(--st-ac); width: 100%; }
+.st-boss--full { border-radius: 10px; margin: 4px 0 8px; }
+.st-boss__more { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; margin-top: 8px; padding: 0 14px; border-radius: 999px; background: var(--st-paper-ink); color: var(--st-paper); font-weight: 700; font-size: 13.5px; }
 .st-boss__top { display: flex; align-items: center; gap: 10px; }
 .st-boss__h { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
 .st-boss__h b { font-family: var(--f-display); font-weight: 800; font-size: 19px; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; text-align: start; }

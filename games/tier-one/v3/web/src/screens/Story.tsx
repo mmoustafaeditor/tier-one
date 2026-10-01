@@ -106,7 +106,7 @@ function Prologue({ replay, onDone }: { replay?: boolean; onDone: () => void }) 
           <li style={dl(2)}><b>@PressBoxPete</b> {t('st4.pro.r3')}</li>
         </ul>}
       </div>}
-      {step >= 6 && <div className="st-fall"><Ticker n={followers} label={t('st4.pro.lost')} tone="bad" /></div>}
+      {step >= 5 && <div className="st-fall"><Ticker n={followers} label={t('st4.pro.lost')} tone="bad" /></div>}
       {step >= 7 && <Bubble who="mags" text={t('st4.pro.mags2', v)} />}
       {step >= 8 && <p className="st-sys">{t('st4.pro.box')}</p>}
       {step >= 9 && <Bubble who="unknown" text={t('st4.pro.unknown')} name={t('st4.who.unknown')} />}
@@ -196,7 +196,7 @@ function Pinned({ goal, boss, onBoss }: { goal: Goal4; boss: BossView; onBoss: (
   const t = useT();
   const h = t('rival.' + BOSS[boss.id].handle);
   const line = goal.epilogue ? t('st4.goal.epi') : goal.finale ? t('st4.goal.finale') : goal.t1 ? t('st4.goal.t1', goal.t1)
-    : t('st4.goal.line', { n: goal.ch, w: Math.min(goal.windows.have, goal.windows.need), need: goal.windows.need, from: goal.rep.from, bar: goal.rep.need });
+    : t('st4.goal.line', { n: goal.ch, w: Math.min(goal.windows.have, goal.windows.need), need: goal.windows.need, from: goal.rep.have, bar: goal.rep.need });
   const parts = goal.epilogue || goal.t1 ? null : [
     { k: 'w', p: goal.windows.have / goal.windows.need, ok: goal.windows.have >= goal.windows.need },
     { k: 'r', p: Math.max(0, (goal.rep.have - goal.rep.from) / Math.max(1, goal.rep.need - goal.rep.from)), ok: goal.rep.have >= goal.rep.need },
@@ -307,8 +307,10 @@ function BossCard({ b, full, onOpen }: { b: BossView; full?: boolean; onOpen?: (
     <p className="st-boss__beat"><small>{t('st4.boss.beat')}</small>{t('st4.boss.' + b.id + '.beat')}</p>
     {full && <p className="st-boss__note">{t('st4.boss.score')}</p>}
   </>;
-  if (full || !onOpen) return <div className={'st-boss' + (full ? ' st-boss--full' : '')}>{body}</div>;
-  return <Pop as="div" role="button" tabIndex={0} className="st-boss" onTap={onOpen} label={t('st4.boss.open')}>{body}</Pop>;
+  return <div className={'st-boss' + (full ? ' st-boss--full' : '')}>
+    {body}
+    {!full && onOpen && <Pop className="st-boss__more" onTap={onOpen}>{t('st4.boss.open')}<Icon n="arrow" size={14} className="st-flip" /></Pop>}
+  </div>;
 }
 
 // ---------------------------------------------------------------- the next window, before you open it

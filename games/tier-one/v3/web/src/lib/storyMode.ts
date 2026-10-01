@@ -205,7 +205,8 @@ export function finishPrologue() {
 export function ensureStory4() {
   const s = getSave();
   if (!s.career || !s.story?.prologue || storyOf(s).c4) return;
-  update((x) => { const c4 = draft4(x); if (c4.ch < EPILOGUE_CH) openChapter(x, c4, c4.ch); else mirror(x, c4); });
+  // The 3.x inbox spoke the old words (front pages, the editor's desk): the thread starts clean at the current chapter.
+  update((x) => { const c4 = draft4(x); x.story!.inbox = []; if (c4.ch < EPILOGUE_CH) openChapter(x, c4, c4.ch); else mirror(x, c4); });
 }
 /** The epilogue's last tap: you send Vince the text. */
 export function sendEpilogue() { update((x) => { const c4 = draft4(x); once(c4, 'epiSent'); }); }
