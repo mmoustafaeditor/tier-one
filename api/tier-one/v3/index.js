@@ -28,7 +28,7 @@ const SALT = process.env.T1V3_SALT || (TOKEN ? createHash('sha256').update('t1v3
 const DEV_SALT = 'dev-only-salt-set-T1V3_SALT';
 
 const DAY = 86400, DAY_MS = DAY * 1000;
-const SESSION_TTL = 3 * DAY, ROOM_TTL = 90 * DAY, LB_DAY_TTL = 40 * DAY, LB_WEEK_TTL = 60 * DAY, LG_TTL = 70 * DAY;
+const SESSION_TTL = 3 * DAY, ROOM_TTL = 21 * DAY, /* a room nobody opens for 21 days closes itself (4.1) */ LB_DAY_TTL = 40 * DAY, LB_WEEK_TTL = 60 * DAY, LG_TTL = 70 * DAY;
 const DAILY_EPOCH = Date.parse('2026-09-01T00:00:00Z'); // Daily No. 1
 const DD_GRACE_MS = 4000;            // network grace on the Deadline Day clock
 const LB_TOP = 25, MAX_ROOM = 24, ROUND_OPEN_H = 48;
@@ -525,7 +525,22 @@ const actions = {
       }
     }
     const room = await readRoom(c);
+    if (room) await redis([['EXPIRE', 'room:v3:' + c, ROOM_TTL], ['EXPIRE', 'room:v3:' + c + ':players', ROOM_TTL], ['EXPIRE', 'room:v3:' + c + ':feed', ROOM_TTL]]); // still in use: the 21-day idle clock restarts
     return room ? { room } : { error: 'not found' };
+  },
+  // Leave a room (4.1). Your card and results go; if you hosted, the next reporter hosts; the last one out closes the room.
+  async 'room.leave'(b) {
+    const c = roomCode(b.code), pid = clean(b.pid, 12);
+    const [meta, doc] = await redis([['GET', 'room:v3:' + c], ['GET', 'room:v3:' + c + ':p:' + pid]]);
+    if (!meta || !doc) return { ok: true };
+    const p = JSON.parse(doc); if (!b.sec || b.sec !== p.sec) return { error: 'forbidden' };
+    await redis([['SREM', 'room:v3:' + c + ':players', pid], ['DEL', 'room:v3:' + c + ':p:' + pid]]);
+    const left = await one('SMEMBERS', 'room:v3:' + c + ':players');
+    if (!left || !left.length) { await redis([['DEL', 'room:v3:' + c], ['DEL', 'room:v3:' + c + ':players'], ['DEL', 'room:v3:' + c + ':feed']]); return { ok: true, closed: true }; }
+    const room = JSON.parse(meta);
+    if (room.host === pid) { room.host = left[0]; await one('SET', 'room:v3:' + c, JSON.stringify(room), 'KEEPTTL'); }
+    await roomFeed(c, { t: 'leave', pid, nick: p.nick });
+    return { ok: true };
   },
   // The room feed: a taunt from the pool (i18n `so.taunts[k]`), aimed at one reporter or the room. One per 45 s.
   async 'room.post'(b) {
