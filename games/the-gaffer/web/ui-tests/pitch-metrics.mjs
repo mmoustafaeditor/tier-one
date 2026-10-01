@@ -31,7 +31,7 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
     }
   }
   // Runs: how often a side on the ball has a run going, and never more than 3 at once.
-  const runFrames = samples.filter((s) => s.runs > 0).length, maxRuns = Math.max(0, ...samples.map((s) => s.runs));
+  const runFrames = samples.filter((s) => s.runs > 0).length, maxRuns = samples.reduce((m, s) => Math.max(m, s.runs), 0);
   // Transitions: in the window after each turnover, the side that lost the ball either counter-presses (2+ players within
   // 5 m of the ball) or drops (its average depth goes back).
   const avgDepth = (s, side) => { const xs = s.pos[side].filter(Boolean).map((q) => depth(side, q.x)); return xs.reduce((a, b) => a + b, 0) / xs.length; };
@@ -75,7 +75,7 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   const passKinds = ['short', 'long', 'through', 'cross', 'cutback'].filter((k) => kinds[k] > 0);
   console.log(`  kinds: ${JSON.stringify(kinds)}`);
   ok(passKinds.length >= 3, `pass types shown: ${passKinds.join(', ')} (3+)`);
-  const maxH = Math.max(0, ...samples.map((s) => s.bh ?? 0));
+  const maxH = samples.reduce((m, s) => Math.max(m, s.bh ?? 0), 0);
   ok(!kinds.long && !kinds.cross || maxH > 3, `lofted balls leave the ground (highest ${maxH.toFixed(1)} m)`);
   ok(samples.every((s) => Number.isFinite(s.ball.x) && Number.isFinite(s.ball.y) && Number.isFinite(s.bh ?? 0)), 'the ball never leaves the numbers (no NaN)');
   // Build-up chains (PR C): quiet minutes are passing chains as long as the side's philosophy says.
