@@ -17,6 +17,20 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer, phase 4 (first part): the engine hands corners and offsides to the pitch; penalties staged; blocking shots
+- **What changed:**
+  - **Engine** (results unchanged, same 200-match fingerprint): corners and offsides are now entries in the ball path the engine gives the pitch (`m.flow`, `k: 'c' | 'o'`), each at its own second. The pitch used to guess where they went by counting shots in the event log.
+  - **Penalties** are staged on the pitch: the foul is given as a penalty, the ball goes to the spot, the taker stands behind it, everyone else waits on the edge of the box and the keeper stays on his line. Before, a penalty was shown as a free kick with a wall inside the box.
+  - **The director** (`ui2/pitch/director.ts`): players can read the engine's plan a moment ahead. A defender sees a shot coming and gets into the shooting lane before it's struck, then blocks the lane from the ball once it reaches the shooter in the box. He sprints flat out to the lane (an "urgent run", `body.ts move`) instead of easing in like every other move. Without that, a defender 9 m away took about a second to arrive.
+  - **Box blocking** went from 28% to 52% of frames on 10 seeded matches.
+  - **Beat timing:** timing beats by the engine's own seconds is built (`T.ENGINE_CLOCK`) but off. Measured, it made marking worse (88% against 94%) and nothing better.
+- **Files:** `games/the-gaffer/web/src/sim/engine/play.ts`, `src/ui2/pitch/{director (new),sim,body,setpieces,tuning}.ts`, `ui-tests/pitch-metrics.mjs`
+- **Heads-up for the team:**
+  - Still open: back-line spread (4.4 m against 3 m) and full-back overlaps (0–2%).
+  - The turnover-reaction check reads 94 of 125. The same 95 or so turnovers still get a reaction, but corners and offsides now land where the engine had them, which brings about 5 more turnovers into the measured window. Those are being looked at next.
+  - Urgent runs were tried for counter-pressers, recovery runs and overlaps too. They broke walls and the offside line, so only the blocker uses one.
+  - Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer pitch, phase 3 (first part): the ball carrier, and measurements for attacking off the ball
 - **What changed:** The live 2D pitch only (engine untouched).
   - **The ball carrier.** He carries it towards where the engine has the play: a short step at a slower pace when a man is on him (shielding it), and a long step at a faster pace into space. On 10 seeded matches, his speed against the room around him went from r = −0.04 (no link) to r = 0.55. This needed a fix: a boost under 1 is now allowed, so a player can be slowed (before, every boost was raised to at least 1).

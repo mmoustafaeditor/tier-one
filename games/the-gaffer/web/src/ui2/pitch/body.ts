@@ -51,9 +51,12 @@ export const decideMs = (beatLen: number) => clamp(T.DECIDE * beatLen, T.DECIDE_
 // One frame of movement: the player wants to go at the speed that closes the gap (as before, so the picture keeps its
 // pace) but can't beat his top speed, his acceleration or his turning. `v` is his velocity (metres per ms), updated.
 export interface Kin { x: number; y: number; vx: number; vy: number }
-export function move(k: Kin, tx: number, ty: number, dt: number, tau: number, b: Body, boost: number): Kin {
+export function move(k: Kin, tx: number, ty: number, dt: number, tau: number, b: Body, boost: number, urgent = false): Kin {
   const vmax = (T.VMAX * b.top * boost) / tau;
-  let dx = ((tx - k.x) * b.top * boost) / tau, dy = ((ty - k.y) * b.top * boost) / tau;
+  // An urgent run (blocking a shot) is flat out until close, then a stop; otherwise a player eases into his spot (his
+  // speed falls with the distance left).
+  const gain = urgent ? T.URGENT_GAIN : 1;
+  let dx = ((tx - k.x) * b.top * boost * gain) / tau, dy = ((ty - k.y) * b.top * boost * gain) / tau;
   const want = Math.hypot(dx, dy);
   if (want > vmax) { dx *= vmax / want; dy *= vmax / want; }
   // Turning: at speed, the direction can only swing so far this frame.
