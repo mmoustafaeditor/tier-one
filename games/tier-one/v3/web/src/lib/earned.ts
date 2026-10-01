@@ -11,9 +11,10 @@ import type { Save } from './save';
 import { update } from './save';
 import { REP_TIERS, repTier, bylineOf } from './byline';
 import { earnedItems, type Earn, type Item } from './catalog';
+import { setEarnHook } from './earnhook';
 
-const TIER_IDS = REP_TIERS.map(([id]) => id as string);
-const tierIx = (id: string) => TIER_IDS.indexOf(id);
+// Lazy: byline.ts, meta.ts and Story reach this module through lib/earnhook.ts, so nothing here runs at import time.
+const tierIx = (id: string) => REP_TIERS.findIndex(([x]) => x === id);
 /** The highest rep tier this save has reached (current, or the high-water mark kept in desk.peak). */
 export function peakTier(s: Save): string {
   const now = repTier(bylineOf(s).rep);
@@ -41,21 +42,29 @@ export function earnProgress(e: Earn, s: Save): [number, number] {
   }
 }
 export const isEarnedBy = (it: Item, s: Save) => it.source === 'earned' && !!it.earn && (s.owned.includes(it.id) || earnMet(it.earn, s));
-/** Copies every met rule into save.owned and keeps the rank high-water mark. Idempotent; call on "Your desk" open. */
-export function syncEarned(): string[] {
+/** The mutator: keeps the rank high-water mark and copies every met rule into save.owned. New ones are also queued in
+ *  desk.fresh so "Your desk" can announce them. Idempotent. The game events call it through lib/earnhook.ts:
+ *  a Daily finishing (streaks), a window recorded or a Wire call settling (rank, rivalry trophies), a story chapter. */
+export function grantMet(s: Save): string[] {
   const out: string[] = [];
-  update((s) => {
-    const peak = peakTier(s);
-    s.desk = s.desk || { equip: {} };
-    if (s.desk.peak !== peak) s.desk.peak = peak;
-    for (const it of earnedItems()) if (it.earn && !s.owned.includes(it.id) && earnMet(it.earn, s)) { s.owned.push(it.id); out.push(it.id); }
-  });
+  const peak = peakTier(s);
+  s.desk = s.desk || { equip: {} };
+  if (s.desk.peak !== peak) s.desk.peak = peak;
+  for (const it of earnedItems()) if (it.earn && !s.owned.includes(it.id) && earnMet(it.earn, s)) { s.owned.push(it.id); out.push(it.id); }
+  if (out.length) s.desk.fresh = [...(s.desk.fresh || []), ...out].slice(-12);
+  return out;
+}
+setEarnHook(grantMet);
+/** Runs grantMet and hands back what is new since the desk last looked (and clears that list). Call on "Your desk" open. */
+export function syncEarned(): string[] {
+  let out: string[] = [];
+  update((s) => { grantMet(s); out = s.desk?.fresh || []; if (s.desk) s.desk.fresh = undefined; });
   return out;
 }
 /** For the lanes that run the other rules (Deadline Day Live, events): grant one earned-only look. Idempotent. */
 export function grantEarned(id: string): boolean {
   if (!earnedItems().some((x) => x.id === id)) return false;
   let ok = false;
-  update((s) => { if (!s.owned.includes(id)) { s.owned.push(id); ok = true; } });
+  update((s) => { if (!s.owned.includes(id)) { s.owned.push(id); ok = true; s.desk = s.desk || { equip: {} }; s.desk.fresh = [...(s.desk.fresh || []), id].slice(-12); } });
   return ok;
 }

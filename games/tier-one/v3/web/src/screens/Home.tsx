@@ -25,6 +25,7 @@ import { bylineOf, dailyFeed, nextUp, unreadOf, markRead, toRoute, repTier, BOOK
 import { FeedRow, RivalStrip, feedText, kindIcon, kindColor, ago } from '../ui/connect';
 import { DDLiveBanner } from '../ui/live';
 import { HomeFilm } from '../ui/film';
+import { lampStyle } from '../lib/wallet';
 
 // ---------------------------------------------------------------- integration slots
 /** SLOT (live lane, ui/live.tsx): `<NextUp/>`. When it lands, import it and assign it here; Home renders it as the hero
@@ -88,8 +89,9 @@ export function Home(chrome: Chrome) {
       <span className="g-ticker__vp"><span className="g-ticker__track">{[0, 1].map((dup) => <span key={dup} aria-hidden={dup === 1 ? 'true' : undefined}>{rs.map((r) => <span key={r.id}><b>{r.playerName}</b> {t('g.home.tick.' + stageOf(r), { c: r.linked[0]?.name || '' })} <em>▲{r.heat}</em></span>)}</span>)}</span></span>
     </button> : null;
 
-  return <div className="g-screen home desk">
-    <HomeFilm />
+  const lamp = lampStyle(s); // the desk lamp (Your desk): a pool of light over Home's film stage
+  return <div className="g-screen home desk" data-lamp={lamp.on ? lamp.warmth : undefined} style={lamp.on ? (lamp.vars as CSSProperties) : undefined}>
+    <HomeFilm tone={lamp.on ? 'night' : undefined} />
     <TopBar onMenu={chrome.openSettings} />
     <div className="desk__grid">
       <DeskByline s={s} go={chrome.go} />

@@ -19,6 +19,7 @@ import { sfx } from '../lib/sfx';
 import { Icon, GBtn, TopBar, SrcIcon, Rel, confetti } from '../ui/game';
 import { Crest } from '../ui/bits';
 import type { Chrome } from '../App';
+import { earnHook } from '../lib/earnhook';
 
 const SRC = ['kitman', 'barber', 'agent', 'spotter', 'physio'] as const;
 const SRC_SENDERS = ['kitman', 'barber', 'agent', 'spotter', 'physio'];
@@ -61,7 +62,7 @@ export function StoryScreen(chrome: Chrome) {
   return <>
     {c && ch ? <ChapterScreen chrome={chrome} ch={ch} onPrologue={() => film('replay')} /> : <Cover chrome={chrome} onStart={start} onPrologue={s.story?.prologue ? () => film('replay') : undefined} />}
     {pro && <PrologueCard replay={pro === 'replay'} onAgain={() => { setPro(null); film(pro); }} onDone={() => { if (pro === 'start') create(); else if (!s.story?.prologue) update((x) => { x.story = { ...(x.story || {}), prologue: true }; }); setPro(null); }} />}
-    {intro && ch && <ChapterIntro ch={ch} onGo={() => update((x) => { x.story = x.story || {}; x.story.chapterSeen = ch.i; })} />}
+    {intro && ch && <ChapterIntro ch={ch} onGo={() => update((x) => { x.story = x.story || {}; x.story.chapterSeen = ch.i; earnHook(x); })} />}
   </>;
 }
 

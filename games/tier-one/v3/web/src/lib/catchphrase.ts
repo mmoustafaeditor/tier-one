@@ -97,14 +97,23 @@ export function setCustomCatchphrase(text: string): CustomResult {
     if (!x.owned.includes(CUSTOM_ID)) x.owned.push(CUSTOM_ID);
     const d = desk(x); d.cp = { text: clean, at: Date.now() }; d.equip = { ...d.equip, catchphrase: CUSTOM_ID };
   });
-  const at = getSave().desk?.cp?.at;
-  v4<{ text: string }>('catchphrase.set', { text: clean }).then((r) => {
-    update((x) => {
-      const cp = x.desk?.cp; if (!cp || cp.at !== at) return;
-      if (r.ok) { cp.ok = true; cp.text = r.text || cp.text; }
-      else if (r.code === 'CATCHPHRASE_BLOCKED' || r.code === 'CATCHPHRASE_RANK') cp.ok = false; // offline: stays pending, shown locally
-    });
-  }).catch(() => { /* offline: the line stays local until the next set */ });
+  sendCustom();
   return { ok: true, text: clean };
 }
+/** The server check. Offline (or the api is down): the line stays on, shown locally and marked `net`, and goes out
+ *  again the next time "Your desk" opens (retryCustomCatchphrase). Refused: back to the house line. */
+function sendCustom() {
+  const cp0 = getSave().desk?.cp; if (!cp0) return;
+  const at = cp0.at;
+  v4<{ text: string }>('catchphrase.set', { text: cp0.text }).then((r) => {
+    update((x) => {
+      const cp = x.desk?.cp; if (!cp || cp.at !== at) return;
+      if (r.ok) { cp.ok = true; cp.net = undefined; cp.text = r.text || cp.text; }
+      else if (r.code === 'CATCHPHRASE_BLOCKED' || r.code === 'CATCHPHRASE_LONG' || r.code === 'CATCHPHRASE_EMPTY') { cp.ok = false; cp.net = undefined; }
+      else cp.net = true; // offline, rate-limited or signed out: stays local, pending
+    });
+  }).catch(() => { update((x) => { const cp = x.desk?.cp; if (cp && cp.at === at) cp.net = true; }); });
+}
+/** Re-send a line that never reached the server (offline when it was written). */
+export function retryCustomCatchphrase() { const cp = getSave().desk?.cp; if (cp && cp.ok == null) sendCustom(); }
 export const customLine = (s: Save = getSave()) => s.desk?.cp || null;

@@ -56,7 +56,7 @@ export type Preview =
   | { k: 'paper' }
   | { k: 'gold'; season: string }
   // 3.4 long tail: kinds that ride on features already built
-  | { k: 'headline'; face: HeadlineFace; ink?: string; upper?: boolean }                 // share card + results front page
+  | { k: 'headline'; face: HeadlineFace; ink?: string; upper?: boolean }                 // results front page + byline card name
   | { k: 'lamp'; glow: string; pool: string; warmth: 'warm' | 'cool' | 'neon' }         // Home's film stage tone
   | { k: 'ringpack'; rings: Partial<Record<RingSource, Sfx>>; fallback: Sfx }           // one ring per source
   | { k: 'feedskin'; style: FeedSkinStyle; rule: string; bg: string; ink: string }      // feed row style
@@ -89,7 +89,7 @@ export const REGISTRY = {
   byline:    { group: 'byline', order: 0, surfaces: ['byline', 'roomtable'], preview: 'byline', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'byline', bg: P, ink: INK, accent: RED, rule: 'thick', face: 'display' } },
   flair:     { group: 'byline', order: 1, surfaces: ['byline', 'roomtable', 'sharecard'], preview: 'byline', store: 'legacy', slot: { one: true }, showcase: true, std: { k: 'flair', g: '', c: INK } },
   presspass: { group: 'byline', order: 2, surfaces: ['presspass', 'byline'], preview: 'presspass', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'presspass', c1: '#FF7A52', c2: RED, ink: '#FFFFFF' } },
-  headline:  { group: 'byline', order: 3, surfaces: ['sharecard', 'frontpage'], preview: 'headline', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'headline', face: 'wood', upper: true } },
+  headline:  { group: 'byline', order: 3, surfaces: ['frontpage', 'byline'], preview: 'headline', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'headline', face: 'wood', upper: true } },
   catchphrase: { group: 'byline', order: 4, surfaces: ['byline', 'sharecard', 'stamp', 'film'], preview: 'catch', store: 'desk', slot: { one: true }, showcase: true, std: { k: 'catchphrase', key: 'cp.house.default', tone: 'loud', c: '#F7B928' } },
   // ---- the desk
   frame:     { group: 'desk', order: 0, surfaces: ['sharecard', 'stamp'], preview: 'post', store: 'legacy', slot: { one: true }, showcase: true, std: { k: 'frame', c: INK, c2: P, pat: 'solid' } },

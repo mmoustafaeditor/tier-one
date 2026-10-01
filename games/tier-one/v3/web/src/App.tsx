@@ -35,7 +35,8 @@ const DDLiveScreen = lazy(() => import('./screens/DDLive').then((m) => ({ defaul
 const EditorDeskScreen = lazy(() => import('./screens/Editor').then((m) => ({ default: m.EditorDeskScreen })));
 import { setNav } from './screens/Connect';
 import { SocialWatch } from './ui/social';
-import { captureReferral } from './lib/wallet';
+import { captureReferral, headlineVars, headlineStyle } from './lib/wallet';
+import './lib/earned'; // registers the earned-looks hook (lib/earnhook.ts) the game events call
 import { MorningPapers } from './ui/live';
 // Shell layer (GOTY.md §4): motion tokens + view transitions, then the tablet/desktop layouts. Loaded after the screen styles.
 import './styles/motion.css';
@@ -105,6 +106,15 @@ export function App() {
     swap();
   }, []);
   useEffect(() => { document.documentElement.classList.toggle('has-vt', 'startViewTransition' in document); }, []);
+  // Your desk: the equipped headline font rides on <html> (data-hd + --hd-*), so the results front page and the byline
+  // card pick it up from CSS (styles/customize.css) without those screens knowing. The standard wood type sets nothing.
+  const hdId = useSaveSel((x) => x.desk?.equip?.headline || '');
+  useEffect(() => {
+    const h = document.documentElement; const on = !!hdId && !hdId.startsWith('std.');
+    const v = headlineVars(); const face = headlineStyle().face;
+    for (const k of ['--hd-face', '--hd-case', '--hd-ink']) { if (on && v[k]) h.style.setProperty(k, v[k]); else h.style.removeProperty(k); }
+    if (on) h.setAttribute('data-hd', face); else h.removeAttribute('data-hd');
+  }, [hdId]);
 
   // Android Back: the WebView calls window.__tierBack(); true when handled.
   useEffect(() => {

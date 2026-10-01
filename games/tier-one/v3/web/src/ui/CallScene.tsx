@@ -14,7 +14,7 @@ import { sfx, buzz, filmCue, type Sfx } from '../lib/sfx';
 import { prefersReducedMotion } from '../lib/motion';
 import { GRADE } from '../lib/story';
 import { Rel } from './game';
-import { ringtoneSfx } from '../lib/season';
+import { ringFor } from '../lib/wallet';
 import { CallFilm, accentOf, cutLen, timeline, PICK_FULL, PICK_SHORT } from '../film/calls/CallFilm';
 import { placeOf, monthsOf, HOUSE } from '../film/calls/places';
 import type { Words } from '../film/calls/places/spec';
@@ -53,7 +53,7 @@ export function CallScene({ src, clue, c, R, onDone }: { src: string; clue: Clue
   useEffect(() => {
     update((s) => { s.scenes = { ...(s.scenes || {}), [src]: Date.now() }; });
     if (reduced) { const id = setTimeout(finish, STILL_MS); return () => clearTimeout(id); }
-    if (full) sfx(('scene.' + src) as Sfx); else sfx(ringtoneSfx());
+    if (full) sfx(('scene.' + src) as Sfx); else sfx(ringFor(src) as Sfx); // a ring pack: one ring per source (Your desk)
     buzz(src === 'agent' && full ? [60, 120, 60] : 20);
     // The drawn film's clock: frames from real time; foley on the scene frames it passes. A safety net brings the
     // call page back however the tab behaves.
