@@ -19,8 +19,9 @@ export { onGain } from './economy';
 import type { Driver4, Outcome4 } from './driver';
 /** A result as a screen hands it over: the engine's Result (v3) or Result4, plus what the server adds (rank, par…). */
 export type AnyResult = (Result | Result4) & { rank?: number | null; players?: number; par?: number | null; row?: string; cast?: CastSaga[] };
+import { noteWindow } from './lens';
 import { recordInto, liteOf, bylineOf, rankOf, windowKey, type CallLite } from './byline';
-import { onCall as sponsorCall, onTermEnd as sponsorTermEnd, refreshOffers, sponsorGain, type CallOutcome, type TermOutcome, type DealMode, type Offer } from './deals';
+import { onCallAll as sponsorCalls, onTermEnd as sponsorTermEnd, refreshOffers, sponsorGain, type CallOutcome, type TermOutcome, type DealMode, type Offer } from './deals';
 type Sponsor = { calls: CallOutcome[]; ends: TermOutcome[]; offers: Offer[] };
 const noSponsor = (): Sponsor => ({ calls: [], ends: [], offers: [] });
 
@@ -120,7 +121,7 @@ function settleWindow(s: Save, r: AnyResult, mode: Mode4, key: string, opts: { x
   const lite = r.per.map(liteOf);
   // Sponsors (CONCEPT4 §4): every resolved call, in the order they were posted, then the term; then new offers land.
   const sp = noSponsor();
-  for (const p of lite.filter((x) => x.called).sort((a, c) => a.day - c.day || a.i - c.i)) { const o = sponsorCall(s, { mode: mode as DealMode, right: p.right, s: p.s, scoop: p.scoop, i: p.i }); if (o) sp.calls.push(o); }
+  for (const p of lite.filter((x) => x.called).sort((a, c) => a.day - c.day || a.i - c.i)) sp.calls.push(...sponsorCalls(s, { mode: mode as DealMode, right: p.right, s: p.s, scoop: p.scoop, i: p.i }));
   s.stats.windows = (s.stats.windows || 0) + 1;
   if (mode !== 'practice') sp.ends.push(...sponsorTermEnd(s, { afterWindow: true }));
   sp.offers.push(...refreshOffers(s));
@@ -129,6 +130,7 @@ function settleWindow(s: Save, r: AnyResult, mode: Mode4, key: string, opts: { x
   trackWindow(s, r, (mode === 'career' ? 'story' : mode === 'wire' ? 'practice' : mode) as TrackMode);
   windowFiles(s, r, mode, got);
   if (!s.stats.firstWindow) { s.stats.firstWindow = Date.now(); creditHooks.firstWindow?.(s); } // a referred friend's first window pays (lib/wallet.ts)
+  noteWindow(s, r, mode, key, opts.cast); // Lens: the follower graph's day and the grid of right Drops (lib/lens.ts)
   earnHook(s);
   return { sp, files: got, lite };
 }
