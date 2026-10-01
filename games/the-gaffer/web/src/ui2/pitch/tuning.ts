@@ -4,8 +4,8 @@
 // (`tau` = max(120, 0.9 × ms per match minute), the time an average player takes to cover most of a gap).
 export const T = {
   // Body
-  VMAX: 34,          // top speed of an average player, metres per tau
-  ACC_TAU: 0.22,     // an average player reaches top speed in this share of tau
+  VMAX: 44,          // top speed of an average player, metres per tau
+  ACC_TAU: 0.18,     // an average player reaches top speed in this share of tau
   TURN: 2.6 * Math.PI, // how far an average player at speed can turn, radians per tau (a full about-turn in ~0.4 tau)
   TURN_SPEED: 0.35,  // the turn limit applies above this share of top speed (a standing player turns freely)
   // Perception and decisions

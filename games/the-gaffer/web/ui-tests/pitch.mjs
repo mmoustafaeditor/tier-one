@@ -31,11 +31,12 @@ let samples = await p.evaluate(async (secs) => {
   while (performance.now() - t0 < secs * 1000) {
     await new Promise((r) => requestAnimationFrame(r));
     const d = window.__gafferPitch; if (!d) continue;
-    const a = d.a; out.push({ t: a.time, bh: a.bh, sp: a.sp && a.time < a.sp.until ? { ...a.sp } : null, flag: !!a.flag && a.time < a.flag.until, runs: a.runsN, trans: a.trans ? { ...a.trans } : null, beatLen: a.beatLen, poss: a.poss, ball: { ...a.ball }, pos: a.pos.map((s) => s.map((q) => q ? { x: q.x, y: q.y } : null)), spd: a.spd, slots: d.slots, pressing: d.pressing });
+    const a = d.a; out.push({ t: a.time, tanks: a.ag.map((r) => r.map((g) => g ? [Math.round(g.tank * 1000) / 1000, g.spr ? 1 : 0] : null)), bh: a.bh, sp: a.sp && a.time < a.sp.until ? { ...a.sp } : null, flag: !!a.flag && a.time < a.flag.until, runs: a.runsN, trans: a.trans ? { ...a.trans } : null, beatLen: a.beatLen, poss: a.poss, ball: { ...a.ball }, pos: a.pos.map((s) => s.map((q) => q ? { x: q.x, y: q.y } : null)), spd: a.spd, slots: d.slots, pressing: d.pressing });
   }
-  return { out, kinds: { ...window.__gafferPitch?.a.kinds } };
+  const A = window.__gafferPitch?.a;
+  return { out, kinds: { ...A?.kinds }, reacts: A?.reacts ?? [], kin: { ...A?.kin } };
 }, SECONDS);
-const kinds = samples.kinds; samples = samples.out;
+const kinds = samples.kinds, reacts = samples.reacts, kin = samples.kin; samples = samples.out;
 const L = 105, LINE = { GK: 'gk', CB: 'def', LB: 'def', RB: 'def', CDM: 'mid', CM: 'mid', CAM: 'mid', LW: 'fwd', RW: 'fwd', ST: 'fwd' };
 const depth = (side, x) => (side === 0 ? x : L - x);
 const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : NaN; };
@@ -124,6 +125,19 @@ if (process.env.DBG) for (const c of corners) { const st = samples.find((x) => x
 if (process.env.DBG) for (const c of corners) console.log(JSON.stringify({ sp: c.sp, t: c.t, beatLen: c.beatLen, att: c.pos[c.sp.side].map((q) => q && [Math.round(depth(c.sp.side, q.x)), Math.round(q.y)]) }));
 ok(corners.every((s) => boxN(s, s.sp.side) >= 4), `corners: 4+ attackers in the box (${corners.map((s) => boxN(s, s.sp.side)).join(', ') || 'none this run'})`);
 ok(fks.every((s) => wallN(s) >= 3), `free kicks in range: a wall of 3+ at 9.15 m (${fks.map(wallN).join(', ') || 'none this run'})`);
+// Phase 1 (body): turning and acceleration stay within each player's limits; better readers react sooner; nobody
+// sprints on an empty tank, and the tank does get used.
+console.log(`  body: max turn ${(kin.turn ?? 0).toFixed(2)} and max acceleration ${(kin.acc ?? 0).toFixed(2)} of the limit; ${reacts.length} reactions logged`);
+ok((kin.turn ?? 0) <= 1.02 && (kin.acc ?? 0) <= 1.02, 'players never turn or accelerate beyond their limits');
+const byReads = [...reacts].sort((p, q) => p[0] - q[0]);
+const half = Math.floor(byReads.length / 2);
+const meanMs = (xs) => xs.reduce((t, x) => t + x[1], 0) / Math.max(1, xs.length);
+const slowR = meanMs(byReads.slice(0, half)), fastR = meanMs(byReads.slice(half));
+ok(reacts.length > 50 && fastR < slowR, `better readers react sooner: ${fastR.toFixed(0)} ms vs ${slowR.toFixed(0)} ms (top half vs bottom half)`);
+const emptySprint = samples.filter((s) => s.tanks.some((r) => r.some((g) => g && g[0] < 0.13 && g[1]))).length;
+const minTank = Math.min(...samples.flatMap((s) => s.tanks.flat().filter(Boolean).map((g) => g[0])));
+ok(emptySprint === 0, `no sprinting on an empty tank (${emptySprint} frames)`);
+ok(minTank < 0.9, `the sprint tank gets used (lowest ${minTank.toFixed(2)})`);
 ok(!errs.length, `no console errors${errs.length ? ': ' + errs[0] : ''}`);
 await browser.close(); server.close();
 console.log(fails ? `\n${fails} FAILED` : '\nall passed');
