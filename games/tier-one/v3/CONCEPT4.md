@@ -162,3 +162,33 @@ same account, and it is the reason a football fan opens the phone on a day with 
 - **Why it is separate.** Ranked Dailies must be identical for everyone and fair; real-world calls resolve on real time and
   reward knowledge of the actual market. Keeping them apart keeps both honest. Connecting them through XP, Rep, followers, coins
   and Tips keeps them one account.
+
+## 10. Rivals are bosses; the Daily is you against real people; the banter stays
+
+**Daily, Live, Groups: your rivals are real players.** The competition in a ranked window is the people playing the same board:
+today's players (rank, par), your friends and your groups. Results say "You beat 71% of today's 12,400 players" and "2nd of 6
+in your group", never "you beat @ITK_Kev". The three accounts (@BackPageBants, @ITK_Kev, @PressBoxPete) still post on the timeline in
+every window because the rules need them (their posts are evidence and the Scoop clock), but on a ranked board they are just
+accounts on your feed, with their accuracy printed, not "your rivals".
+
+**Story: rivals are bosses, one per chapter, and they get harder.** Each boss has a **stats card** (handle, accuracy, which days they
+post, their tell, followers, your head-to-head record, what beating them unlocks) and a chapter-long **head-to-head**: every Career
+window scores you against the boss (stories right, Scoops), and you clear the chapter by winning the head-to-head enough times
+(Chapter 1: win 3 of 8 windows; later chapters more). The boss's accuracy and speed scale with your rank through
+`E4.rulesFor('career', { rank, boss })` (RIVALS p/rel/days per boss and rank), so a boss you met as a Nobody posts earlier and is
+right more often when you meet them again.
+
+| Chapter | Boss | Their tell | Beating them |
+|---|---|---|---|
+| 1 The Blog | **@BackPageBants** (the Daily Roar) | loud, early, repeats the rumour mill, wrong 60% | Rising |
+| 2 The Post | **@ITK_Kev** | a day early, but only on Vince's clients | ITK |
+| 3 The Nationals | **@PressBoxPete** | slow, almost never wrong; you have to be first | Insider |
+| 4 The War | **The Daily Roar** (Carl Stubbs' account) + Vince's plays | planted contacts; one story a window is poisoned | Tier One |
+| 5 The Chronicle | **Vince Marlow** | the same "Done deal" pitch that burned you, word for word | the finale |
+
+Rivals from the Creator Rivals program (opt-in real creators, flag off) and friends in Groups are real people and stay as they are.
+
+**The banter stays, everywhere.** `lib/banter.ts` keeps its three-layer pools (EN / AR Egyptian / ES, club fans): replies under
+your posts, the ratio lines on a wrong Drop, the accounts' lines on the timeline, the boss's lines after a window (a win, a loss, a
+Scoop against them), a DM from the boss after you take a Scoop off them, sponsor lines, Mags's lines in Story. Short, specific,
+human, funny; never cruel about real people; never the old words.
