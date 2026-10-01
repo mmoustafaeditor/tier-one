@@ -1,0 +1,26 @@
+built in 132 ms: 328 clubs, 8422 players
+checkWorld: []
+eng1 20 Manchester City 85 (30) · Arsenal 87 (23) · Liverpool 86 (30) · Chelsea 84 (30) · Manchester United 83 (30) · Tottenham Hotspur 83 (30) … Ipswich Town 73 · Sunderland 73 · Hull City 72
+eng2 24 West Ham United 77 (24) · Wolverhampton Wanderers 75 (24) · Burnley 73 (24) · Birmingham Town 71 (24) · Portsmouth United 71 (24) · Derby Albion 70 (24) … Leicester United 65 · Blackburn United 64 · Luton Athletic 63
+esp1 20 Real Madrid 87 (26) · Barcelona 86 (27) · Atlético Madrid 83 (24) · Athletic Club 78 (26) · Villarreal 78 (24) · Real Sociedad 77 (24) … Deportivo A Coruña 71 · Málaga 71 · Racing de Santander 70
+ger1 18 Bayern Munich 86 (24) · Bayer Leverkusen 81 (27) · Borussia Dortmund 82 (30) · Leipzig 79 (30) · Eintracht Frankfurt 78 (26) · VfB Stuttgart 77 (29) … Hamburger SV 72 · SC Paderborn 69 · Elversberg 69
+egy1 18 Al Ahly 74 (30) · Zamalek 70 (30) · Pyramids 70 (30) · Al-Masry 64 (30) · Ismaily 64 (24) · Ittihad Alexandria 64 (24) … Pharco 61 · El Entag El Harby 60 · Haras El Hodoud 59
+ksa1 18 Al Hilal 79 (30) · Al-Nassr 77 (30) · Al-Ittihad 76 (30) · Al-Ahli 75 (30) · Al Qadsiah FC 72 (30) · Al-Shabab SFC 69 (30) … Al Orobah 64 · Al Kholood 64 · Al Hazem 63
+eng-aston-villa → Kamara CDM 83/83, Pau Torres CB 82/82, Amadou Onana CDM 82/84, John McGinn CM 81/81, Jackson ST 81/81, Garnacho LW 81/85, Leon Goretzka CM 81/81, João Gomes CDM 81/83, Matty Cash RB 80/80, Buendía CAM 80/80, Zion Suzuki GK 79/81, Tammy Abraham ST 79/79, Ian Maatsen LB 79/81, Lindelöf LB 77/77
+eng-arsenal → Bukayo Saka RW 89/89, William Saliba CB 88/90, Declan Rice CM 88/88, David Raya GK 87/87, Magalhães CB 87/87, Ødegaard CAM 87/87, Gyökeres ST 86/86, Zubimendi CDM 86/86, Guimarães CM 86/86, Eberechi Eze CAM 84/84, Jurriën Timber RB 84/85, Piero Hincapié CB 83/83, Mikel Merino CM 83/83, Kai Havertz ST 83/83
+esp-barcelona → Lamine Yamal RW 91/97, Pedri CM 89/91, Rodri CDM 88/88, Raphinha LW 87/87, de Jong CM 85/85, Jules Koundé RB 85/85, Joan Garcia GK 84/86, Pau Cubarsí CB 84/90, Anthony Gordon LW 84/86, Dani Olmo CAM 84/84, Fermín López CAM 83/85, Balde LB 82/84, Gavi CM 82/84, João Cancelo RB 81/81
+egy-al-ahly → Emam Ashour CM 78/78, Zizo RW 77/78, Achraf Dari CB 76/76, El Shenawy GK 75/75, Afsha CAM 75/75, Shobeir GK 74/76, Taher Mohamed LW 73/73, Yasser Ibrahim CB 73/73, El Shahat RW 72/72, Ahmed Reda CDM 69/70, Yassin Marei RB 68/69, Ahmed Eid LB 68/69, Karim El Debes CB 67/68, Benjdida ST 66/67
+eng-coventry → Sakamoto RW 75/75, Haji Wright LW 75/75, Matt Grimes CDM 74/74, Ellis Simms ST 74/75, Mason-Clark ST 74/74, Oliver Dovin GK 73/75, Jay Dasilva LB 73/73, Bobby Thomas CB 73/73, Jack Rudoni CDM 73/75, Frank Onyeka CDM 72/72, Kesler-Hayden CB 72/74, Latibeaudiere RB 72/73, Ethan Pinnock RB 71/71, Caleb Yirenkyi CM 71/75
+villa positions {
+  GK: 3,
+  RB: 2,
+  LB: 3,
+  CB: 4,
+  CDM: 4,
+  CM: 5,
+  CAM: 2,
+  ST: 4,
+  LW: 1,
+  RW: 1
+}
+fictional: { en: 'London Gunners', ar: 'مدفعجية لندن' } { en: 'J. Allerton', ar: 'ج. أليرتون' } 0

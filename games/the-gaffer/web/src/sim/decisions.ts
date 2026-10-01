@@ -6,9 +6,12 @@
 import type { Career, Dept, LocalizedName, Pending, Player, PrepFocus, StaffRole } from '../model/types';
 import type { Command } from './commands';
 import { available, formOf, slotValue, xiFor, FORMATIONS, DEFAULT_TACTICS } from './tactics';
-import { playerOf, squadOf, strengthOf, type World } from './world';
-import { renewDemand, wageBillOf } from './transfers';
+import { objectiveOf, playerOf, squadOf, strengthOf, type World } from './world';
+import { pressDecisions } from './pressDecisions';
+import { VISION_DEADLINE, kittyFor, needsMeeting, raiseObjective } from './vision';
+import { renewDemand, wageBillOf, SQUAD_COMFORT, SQUAD_THIN } from './transfers';
 import { balanceOf } from './balance';
+import { CAP_MONTHS_UP } from './economy';
 import { nextUserMatch } from './season';
 import { levelOf, biasOf, DEPT_ROLE, staffOf } from './delegation';
 import { loanOf } from './loans';
@@ -22,7 +25,7 @@ import { anyPlayer } from './youth';
 import { recruitDecisions } from './recruit/decide';
 import { rcOf } from './recruit/state';
 
-export type DecKind = 'welcome' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline'
+export type DecKind = 'welcome' | 'vision' | 'presser' | 'offer' | 'condition' | 'contract' | 'staff' | 'job' | 'tape' | 'focus' | 'deadline'
   | 'talk' | 'request' | 'promise' | 'armband' | 'clause' // v2.4 dressing room (sim/room-decisions.ts)
   | 'bidAnswer' | 'agent' | 'rival' | 'loanClause' | 'recall' // v2.5 recruitment (sim/recruit/decide.ts)
   | 'risk' | 'rush' | 'intake' | 'ready' | 'loanee' | 'benched' | 'full' | 'ageout'; // v2.6 (sim/youthDecisions.ts)
@@ -64,6 +67,30 @@ export function decisions(w: World, c: Career): Decision[] {
     });
   }
 
+  // 0b. V2.7 the pre-season board meeting: the board's league target, or one step higher with the owner's money and a
+  // stricter board (sim/vision.ts). Unanswered by matchday 3 it lapses to the board's target.
+  if (needsMeeting(c)) {
+    const base = objectiveOf(w, w.clubs.find((x) => x.id === c.clubId)!);
+    const high = raiseObjective(base);
+    const kitty = kittyFor(w, c);
+    add({
+      id: `vision:${c.season}`, kind: 'vision', dept: null, role: 'director', icon: 'club',
+      title: { key: 'cl.vision', n: c.season }, advice: { key: 'cl.vision', s: base }, due: days(VISION_DEADLINE - c.round),
+      choices: [
+        { id: 'expected', key: 'cl.expected', cmds: [{ type: 'vision.set', level: 'expected' }], pick: true, fx: [{ tone: 'good', icon: 'check', key: 'cl.goodwill' }] },
+        { id: 'ambitious', key: 'cl.ambitious', s: high, cmds: [{ type: 'vision.set', level: 'ambitious' }], fx: [
+          ...(high !== base ? [{ tone: 'warn' as const, icon: 'star', key: 'cl.target', s: high }] : []),
+          ...(kitty > 0 ? [{ tone: 'good' as const, icon: 'pound', key: 'cl.kitty', n: kitty }] : []),
+          { tone: 'bad', icon: 'alert', key: 'cl.strict' },
+        ] },
+      ],
+      score: 80, open: { to: 'office' },
+    });
+  }
+
+  // 0c. V2.9 a press conference, when there's a reason for one (sim/pressDecisions.ts): up to three question cards.
+  for (const d of pressDecisions(w, c)) add(d);
+
   // 1. Bids for your players (unless the director answers them on his own).
   if (levelOf(c, 'contracts') !== 'staff') {
     const b = biasOf(staffOf(c, 'director'));
@@ -71,15 +98,21 @@ export function decisions(w: World, c: Career): Decision[] {
     for (const o of c.offers) {
       const p = playerOf(w, o.playerId);
       if (!p) continue;
-      const want = p.marketValue * (core.has(p.id) ? 1.4 : p.listed ? 0.85 : 1.1) * (b === 'money' ? 0.87 : b === 'loyal' ? 1.2 : 1);
+      // A player we listed is for sale: the director's bias (a loyalist holding on, a money man cashing in) doesn't
+      // apply to him, in the price or the advice, or the staff would contradict their own listing (GF-016).
+      const lean = p.listed ? null : b === 'money' || b === 'loyal' ? b : null;
+      const want = p.marketValue * (core.has(p.id) ? 1.4 : p.listed ? 0.85 : 1.1) * (lean === 'money' ? 0.87 : lean === 'loyal' ? 1.2 : 1);
       const counter = roundFee(o.fee * 1.15);
-      const call = o.fee >= want ? 'accept' : o.fee >= want * 0.8 ? 'counter' : 'reject';
+      const senior = squad.filter((x) => !loanOf(c, x.id)).length;
+      const price = o.fee >= want ? 'accept' : o.fee >= want * 0.8 ? 'counter' : 'reject';
+      // A thin squad keeps its players unless we listed them (GF-005).
+      const call = p.listed || senior > SQUAD_COMFORT ? price : senior <= SQUAD_THIN ? 'reject' : price === 'accept' ? 'counter' : price;
       // v2.5: a club that bid because it NEEDS him (and he's unhappy or running down his deal) is a rival bid.
       const why = rcOf(c).aiWhy[o.id];
       add({
         id: `offer:${o.id}`, kind: 'offer', dept: 'contracts', role: 'director', icon: 'market', ev: undefined,
         title: { key: why ? 'rc.rivalBid' : 'offer', pn: P(p), n: o.fee, club: o.clubId, p: p.id, s: why },
-        advice: { key: `offer_${call}${b === 'money' || b === 'loyal' ? `_${b}` : ''}`, pn: P(p), n: p.marketValue },
+        advice: { key: `offer_${call}${lean ? `_${lean}` : ''}`, pn: P(p), n: p.marketValue },
         due: days(o.round + 3 - c.round),
         choices: [
           { id: 'accept', key: 'accept', n: o.fee, cmds: [{ type: 'offer.accept', offerId: o.id }], pick: call === 'accept' && pledgeOf(c, p.id)?.type !== 'keep', fx: [{ tone: 'good', icon: 'pound', key: 'cash', n: o.fee }, { tone: core.has(p.id) ? 'bad' : 'plain', icon: 'squad', key: core.has(p.id) ? 'loseStarter' : 'loseSquad' }, ...(pledgeOf(c, p.id)?.type === 'keep' ? [{ tone: 'bad' as const, icon: 'alert', key: 'dr.fx.keepWord' }] : [])] },
@@ -247,6 +280,7 @@ function pendingCard(w: World, c: Career, pd: Pending): Decision {
   if (cmd.type === 'contract.renew') fx.push({ tone: 'plain', icon: 'pound', key: 'wagesYear', n: cmd.wage * 12 }, { tone: 'good', icon: 'heart', key: 'moraleUp' });
   if (cmd.type === 'player.list') fx.push({ tone: 'warn', icon: 'market', key: 'listed' });
   if (cmd.type === 'loan.out') fx.push({ tone: 'good', icon: 'grow', key: 'minutes' });
+  if (cmd.type === 'wagecap.move') fx.push({ tone: 'warn', icon: 'pound', key: 'fee', n: (pd.n ?? 0) * CAP_MONTHS_UP });
   if (cmd.type === 'sponsor.sign') fx.push({ tone: 'good', icon: 'pound', key: 'monthly', n: pd.n ?? 0 });
   if (cmd.type === 'medical.treat') fx.push({ tone: 'good', icon: 'medic', key: 'backSooner' });
   if (cmd.type === 'squad.talk') fx.push({ tone: 'good', icon: 'heart', key: 'moraleUp' });

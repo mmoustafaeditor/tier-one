@@ -4,17 +4,18 @@ import { useState } from 'react';
 import type { Prefs } from '../sim/prefs';
 import { rewardedAvailable, showRewarded } from '../monet';
 import { AD_REWARD, ADS_PER_DAY, addCredits, adsWatchedToday, countAd, credits } from '../meta/wallet';
+import { LOOK_PRICE, LOOK_SWATCH, buyLook, canUseLook } from '../meta/looks';
+import { CL } from '../lang-club-all';
 import { I } from './kit';
 import { Panel, PanelHead } from './shell';
 import { useGame } from './game';
 
-export function PassScreen({ prefs }: { prefs: Prefs; onPrefs: (p: Prefs) => void }) {
+export function PassScreen({ prefs, onPrefs }: { prefs: Prefs; onPrefs: (p: Prefs) => void }) {
   const g = useGame();
-  const P = g.x.pass;
+  const P = g.x.pass, S = CL[g.ui].store;
   const [bal, setBal] = useState(credits);
   const [ads, setAds] = useState(adsWatchedToday);
   const canAd = rewardedAvailable(prefs.supporter) && ads < ADS_PER_DAY;
-  const looks = [['#7A263A', '#95BFE5'], ['#0B3B5C', '#7DEBCB'], ['#A87612', '#0B2A26']];
   return (
     <div className="sc-pass">
       <div className="p-head on-ground">
@@ -43,8 +44,24 @@ export function PassScreen({ prefs }: { prefs: Prefs; onPrefs: (p: Prefs) => voi
           <div className="never">{P.nevers.map((n) => <div key={n}><I n="x" /><span>{n}</span></div>)}</div>
         </Panel>
         <Panel i={3} label={P.looks}>
-          <PanelHead title={P.looks} right={<span className="eyebrow">{P.lookPrice}</span>} />
-          <div className="looks">{looks.map(([a, b], i) => <div key={i} className="look"><span className="sw" style={{ background: `linear-gradient(160deg, ${a}, #021311)`, ['--c' as string]: b }} /><b>{P.lookNames[i]}</b><span>{P.lookPrice}</span></div>)}</div>
+          <PanelHead title={P.looks} right={<span className="eyebrow">{P.balance(bal)}</span>} />
+          <p className="small muted">{S.seasonEarn}</p>
+          <div className="looks looks4">{LOOK_SWATCH.map(([a, b], i) => {
+            const mine = canUseLook(i, prefs.supporter), on = prefs.look === i;
+            return (
+              <div key={i} className={`look${on ? ' on' : ''}`}>
+                <span className="sw" style={{ background: `linear-gradient(160deg, ${a}, #021311)`, ['--c' as string]: b }} />
+                <b>{i === 0 ? S.base : P.lookNames[i - 1]}</b>
+                <span>{i === 0 ? S.free : P.balance(LOOK_PRICE)}</span>
+                {on ? <span className="tag tag--good"><I n="check" size="sm" />{S.inUse}</span>
+                  : mine ? <button className="btn btn--ghost btn--sm" onClick={() => onPrefs({ ...prefs, look: i as Prefs['look'] })}>{S.use}</button>
+                  : <button className="btn btn--ghost btn--sm" disabled={bal < LOOK_PRICE} onClick={() => {
+                    if (!buyLook(i)) return;
+                    setBal(credits()); onPrefs({ ...prefs, look: i as Prefs['look'] }); g.toast(S.bought);
+                  }}>{bal < LOOK_PRICE ? S.short(LOOK_PRICE - bal) : S.buy(P.balance(LOOK_PRICE))}</button>}
+              </div>
+            );
+          })}</div>
         </Panel>
         <Panel i={4} label={P.items}>
           <PanelHead title={P.items} />

@@ -13,6 +13,7 @@ import { windowOf } from '../sim/windows';
 import { D } from '../lang-dressing-all';
 import { I, Meter, Portrait } from './kit';
 import { Panel, PanelHead, Sheet } from './shell';
+import { SquadTabs } from './SquadTabs';
 import { useGame, sn, nm } from './game';
 import { causeText, levelText, pledgeKeyOf, pledgeWhat } from './roomText';
 
@@ -47,6 +48,7 @@ export function RoomScreen() {
   ];
   return (
     <div className="sc-room">
+      <SquadTabs at="room" />
       <section className="h-head on-ground">
         <span className="eyebrow">{d.eyebrow(g.club.name[lang])}</span>
         <h1 className="h-hero">{head[0]}<em>{head[1]}</em>{head[2]}</h1>

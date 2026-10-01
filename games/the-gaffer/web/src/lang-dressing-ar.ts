@@ -61,6 +61,7 @@ export const D_AR: DStrings = {
   },
   trust: 'الثقة', morale: 'المعنويات',
   cause2: {
+    press: 'كلامك في المؤتمر الصحفي',
     'kept.role': 'وعد اتنفّذ', 'kept.contract': 'وعد اتنفّذ', 'kept.keep': 'وعد اتنفّذ', 'kept.sign': 'وعد اتنفّذ',
     'broken.role': 'وعد اتكسر', 'broken.contract': 'وعد اتكسر', 'broken.keep': 'وعد اتكسر', 'broken.sign': 'وعد اتكسر',
     minutes: 'مش بيلعب كفاية', ignored: 'استناك ومجيتش', 'talk.reassure': 'طبطبتك عليه', 'talk.challenge': 'تحدّيك ليه',

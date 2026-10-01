@@ -25,7 +25,7 @@ export function newsText(t: Strings, lang: Lang, w: World, c: Career, n: NewsIte
     debut: [player, club(n.club)], promoted: [player, club(n.club)], cupFinal: [club(n.club), club(n.club2), s],
     rumour: [player, club(n.club), club(n.club2), String(n.n)], aiTransfer: [player, club(n.club), club(n.club2), s],
     userSign: [player, club(n.club), club(n.club2), s], userSell: [player, club(n.club), club(n.club2), s],
-    appointed: [club(n.club), s], sacked: [club(n.club), s],
+    appointed: [club(n.club), n.pn ? n.pn[lang] || n.pn.en : s], sacked: [club(n.club), n.pn ? n.pn[lang] || n.pn.en : s], // V2.8 AI managers carry pn
   };
   const [a, b] = f(...(args[n.key] ?? []));
   return [a, b];

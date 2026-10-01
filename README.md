@@ -41,7 +41,7 @@ Free in your browser at **[sembagames.app](https://sembagames.app)**, with an An
 | Game | Genre | Status | Play |
 |---|---|---|---|
 | **[Tier One](games/tier-one)** | Football transfer-journalist strategy game | Web `v3.4.0` · Android `3.4.0` | [🌐 Play](https://sembagames.app/tier-one) · [⬇️ Download APK](https://www.sembagames.app/downloads/TierOne.apk) |
-| **[The Gaffer](games/the-gaffer)** | Football manager: Europe's big five leagues + Arab leagues | Web `v2.1.0` · Android `2.1.0` (updates itself to the latest web build) | [🌐 Play](https://sembagames.app/the-gaffer) · [⬇️ Download APK](https://www.sembagames.app/downloads/TheGaffer.apk) |
+| **[The Gaffer](games/the-gaffer)** | Football manager: Europe's big five leagues + Arab leagues | Web `v2.2.0` · Android `2.2.0` (updates itself to the latest web build) | [🌐 Play](https://sembagames.app/the-gaffer) · [⬇️ Download APK](https://www.sembagames.app/downloads/TheGaffer.apk) |
 
 ---
 
@@ -62,7 +62,7 @@ Free in your browser at **[sembagames.app](https://sembagames.app)**, with an An
 ├── index.html             ← Semba Games studio home page (served at sembagames.app)
 ├── assets/                ← web-sized Semba logos used by the home page
 ├── tier-one/              ← Tier One v3 web build (served at sembagames.app/tier-one; built from games/tier-one/v3/web)
-├── tier-one-classic/      ← Tier One classic v2 game (sembagames.app/tier-one-classic; bundled in the Android app)
+├── tier-one-classic/      ← Tier One classic v2 game (sembagames.app/tier-one-classic)
 ├── the-gaffer/            ← The Gaffer: published web build (served at sembagames.app/the-gaffer)
 ├── api/tier-one/          ← Tier One Android update feed (latest.js) and v3 game API (v3/)
 ├── api/the-gaffer/        ← The Gaffer Android update feed, health check and purchase check
@@ -82,8 +82,8 @@ Free in your browser at **[sembagames.app](https://sembagames.app)**, with an An
 
 The web files stay where the site serves them: the home page at `/`, the games at `/tier-one` and `/the-gaffer`,
 and the update feeds and APKs that installed apps poll (`/api/tier-one/latest`, `/api/the-gaffer/latest`,
-`/downloads/TierOne.apk`, `/downloads/TheGaffer.apk`). The Tier One Android app bundles the classic game
-(`tier-one-classic/`); The Gaffer's app downloads new web builds by itself.
+`/downloads/TierOne.apk`, `/downloads/TheGaffer.apk`). The Tier One Android app (3.4.0) bundles the v3 game
+(`tier-one/apk/index.html`) and needs internet; The Gaffer's app (2.2.0) downloads new web builds by itself.
 
 ## 🤝 Working on this repo
 

@@ -190,6 +190,7 @@ export function economyWeek(w: World, c: Career, home: boolean): { world: World;
   let world = w, career = c;
   const step = (key: string, amount: number) => ({ world, career } = spend(world, career, key, Math.round(amount)));
   const inc = balanceOf(c).income;
+  career = finishBuild(career);
   if (home) {
     const att = attendance(world, career, career.ops.ticket);
     const revenue = gateMoney(world, career, att) * inc;
@@ -240,14 +241,27 @@ export function sponsorBonus(w: World, c: Career, kind: 'league' | 'cup'): { wor
 
 export const upgradeCost = (club: Club, level: number) => roundFee(club.wageCap * [0, 1.5, 3, 5, 8][level]);
 
-export function upgradeFacility(w: World, c: Career, f: Facility): { world: World; career: Career; ok: boolean } {
+// V2.7: a facility takes time to build (V2_DESIGN §3.6): paid when work starts, the new level applies when it opens.
+// One project at a time. Build times in matchdays for levels 2-5.
+export const BUILD_DAYS = [0, 0, 6, 10, 16, 24];
+export const tickOf = (c: Career) => c.season * 100 + c.round;
+export const buildLeft = (c: Career) => (c.ops.build ? Math.max(0, c.ops.build.readyAt - tickOf(c)) : 0);
+export function upgradeFacility(w: World, c: Career, f: Facility): { world: World; career: Career; ok: boolean; reason?: 'max' | 'budget' | 'busy' } {
   const club = w.clubs.find((x) => x.id === c.clubId)!;
   const lvl = c.ops.facilities[f];
-  if (lvl >= 5) return { world: w, career: c, ok: false };
+  if (lvl >= 5) return { world: w, career: c, ok: false, reason: 'max' };
+  if (c.ops.build) return { world: w, career: c, ok: false, reason: 'busy' };
   const cost = upgradeCost(club, lvl);
-  if (club.budget < cost) return { world: w, career: c, ok: false };
+  if (club.budget < cost) return { world: w, career: c, ok: false, reason: 'budget' };
   const r = spend(w, c, 'facilities', -cost);
-  return { world: r.world, career: { ...r.career, ops: { ...r.career.ops, facilities: { ...r.career.ops.facilities, [f]: lvl + 1 } } }, ok: true };
+  return { world: r.world, career: { ...r.career, ops: { ...r.career.ops, build: { f, level: lvl + 1, readyAt: tickOf(c) + BUILD_DAYS[lvl + 1] } } }, ok: true };
+}
+
+// A finished build opens: its level applies from today (called every matchday by economyWeek).
+export function finishBuild(c: Career): Career {
+  const b = c.ops.build;
+  if (!b || tickOf(c) < b.readyAt) return c;
+  return { ...c, ops: { ...c.ops, build: undefined, facilities: { ...c.ops.facilities, [b.f]: Math.max(c.ops.facilities[b.f], b.level) } } };
 }
 
 // ---------- bonuses, donations, wage cap ----------

@@ -10,6 +10,7 @@ import { FOCUS_ICON } from '../sim/decisions';
 import { PLANS_MAX, congested, matchRisk, plansOf, riskBand, riskMult, anyPlayer } from '../sim/youth';
 import { I, Meter, Portrait } from './kit';
 import { Panel, PanelHead, Seg, Sheet, Steps } from './shell';
+import { SquadTabs } from './SquadTabs';
 import { useGame, nm, sn } from './game';
 import { ageOf } from './util';
 import { Y } from '../lang-youth-all';
@@ -39,11 +40,10 @@ export function TrainingScreen() {
   const high = squad.filter((p) => riskBand(p) === 2);
   return (
     <div className="sc-train sc-youth">
+      <SquadTabs at="train" />
       <div className="h-head on-ground">
-        <button className="link on-ground" onClick={() => g.go({ s: 'squad' })}><I n="back" size="sm" flip={g.rtl} />{x.player.back}</button>
         <h1 className="h-hero">{T.title}</h1>
         <p className="lead">{T.head(ops.training.load, focusName, plans.length)}</p>
-        <YouthDoors here="train" />
       </div>
       <div className="grid2">
         <Panel i={0} label={T.intensity}>

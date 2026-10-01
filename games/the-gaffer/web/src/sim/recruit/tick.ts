@@ -217,9 +217,9 @@ export function directorCall(w: World, c: Career, n: Negotiation): 'pay' | 'meet
     const d = demandFor(w, c, n);
     if (!d) return 'walk';
     const cost = dealCost(w, c, n, d);
-    const fits = cost.total <= spendingRoom(w, c) && d.wage <= wageRoom(w, c);
+    const fits = cost.total <= spendingRoom(w, c, n.id) && d.wage <= wageRoom(w, c);
     const counter = lastCounter(n);
-    if (counter) { const cc = dealCost(w, c, n, counter); if (cc.total <= spendingRoom(w, c) && counter.wage <= wageRoom(w, c)) return 'counter'; }
+    if (counter) { const cc = dealCost(w, c, n, counter); if (cc.total <= spendingRoom(w, c, n.id) && counter.wage <= wageRoom(w, c)) return 'counter'; }
     if (!fits) return 'walk';
     return b === 'cautious' && d.wage > p.wage * 1.5 ? 'walk' : 'meet';
   }
