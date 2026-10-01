@@ -19,8 +19,9 @@ const MS = +(process.env.SPEED ?? 2400);
 const FRAME = 1000 / 60;
 const MARKING = process.env.MARKING ? (+process.env.MARKING as 0 | 1 | 2) : undefined;
 // MODE = 1 key, 2 extended, 3 comprehensive, 4 full match: highlights as on the live screen (sim/highlights.ts), at the
-// normal highlight speed; only the frames of shown passages are measured (what the player sees). Unset: the old way.
-const MODE = process.env.MODE ? (+process.env.MODE as HlMode) : undefined;
+// normal highlight speed; only the frames of shown passages are measured (what the player sees). Default 2; MODE=old:
+// the whole minute compressed (the old way).
+const MODE = process.env.MODE === 'old' ? undefined : (+(process.env.MODE ?? 2) as HlMode); // default: Extended, as the game
 setPitchDebug(true);
 
 const w = generateWorld(7);

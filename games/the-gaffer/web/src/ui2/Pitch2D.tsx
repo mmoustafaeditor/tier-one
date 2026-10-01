@@ -8,6 +8,7 @@ import { FORMATIONS } from '../sim/tactics';
 import type { World } from '../sim/world';
 import { L, W } from './pitch/move';
 import { downIn, newAnim, setPitchDebug, tick, type Anim } from './pitch/sim';
+import type { HlMode } from '../sim/highlights';
 
 const PITCH_DEBUG = typeof location !== 'undefined' && /[?&]pitchdebug\b/.test(location.search);
 setPitchDebug(PITCH_DEBUG);
@@ -74,13 +75,13 @@ function markings(pr: Proj): { pitch: string; stripes: string; lines: string; gr
   return { pitch: rect(-4, -3, L + 8, W + 6), stripes, lines, grid };
 }
 
-export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', camera = 0 }: { m: LiveMatch; world: World; msPerMinute: number; running: boolean; goalWord?: string; camera?: Camera }) {
+export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', camera = 0, mode, scale }: { m: LiveMatch; world: World; msPerMinute: number; running: boolean; goalWord?: string; camera?: Camera; mode?: HlMode; scale?: number }) {
   const mRef = useRef(m);
   mRef.current = m;
   const worldRef = useRef(world);
   worldRef.current = world;
-  const cfg = useRef({ msPerMinute, running, camera });
-  cfg.current = { msPerMinute, running, camera };
+  const cfg = useRef({ msPerMinute, running, camera, mode, scale });
+  cfg.current = { msPerMinute, running, camera, mode, scale };
   const pitchRef = useRef<SVGPathElement | null>(null);
   const stripeRef = useRef<SVGPathElement | null>(null);
   const lineRef = useRef<SVGPathElement | null>(null);
@@ -115,8 +116,8 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       const a = anim.current!;
       const mm = mRef.current;
       if (PITCH_DEBUG) (window as unknown as { __gafferPitch?: unknown }).__gafferPitch = { a, slots: mm.sides.map((sd) => FORMATIONS[sd.tactics.formation].slots.map((x) => x.pos)), pressing: mm.sides.map((sd) => sd.tactics.pressing) };
-      const { msPerMinute: ms, running: go, camera: cam } = cfg.current;
-      tick(a, mm, worldRef.current, dt, ms, go);
+      const { msPerMinute: ms, running: go, camera: cam, mode: md, scale: sc } = cfg.current;
+      tick(a, mm, worldRef.current, dt, ms, go, md, sc ?? ms);
       // Draw. In Arabic the home side sits on the right of the score, so the picture is mirrored (the numbers are not).
       const flip = document.documentElement.dir === 'rtl';
       const fx = (x: number) => (flip ? L - x : x);

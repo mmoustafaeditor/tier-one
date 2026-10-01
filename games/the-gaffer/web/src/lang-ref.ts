@@ -9,6 +9,9 @@ export const R_EN = {
   varOn: 'VAR', varOff: 'No VAR',
   refLine: (r: string, s: string, v: boolean): string => `Referee ${r} · ${s} · ${v ? 'VAR in use' : 'no VAR'}`,
   speeds: ['Slow', 'Normal', 'Fast'] as [string, string, string],
+  hlTitle: 'Highlights',
+  hl: ['Commentary only', 'Key', 'Extended', 'Comprehensive', 'Full match'] as string[], // sim/highlights.ts
+  hlSpeed: 'Match speed during highlights',
   wx: ['Clear', 'Rain', 'Heavy rain', 'Windy', 'Hot', 'Snow'] as string[], // matchday weather (engine/weather.ts)
   instant: 'Instant',
   commentary: 'Commentary', moments: 'Key moments',
