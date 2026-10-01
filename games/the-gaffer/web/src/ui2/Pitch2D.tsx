@@ -4,13 +4,15 @@
 // Presentation only: nothing here decides anything (the score and stats come from the event log).
 import { useEffect, useRef } from 'react';
 import type { LiveMatch, MatchEvent } from '../sim/match';
+import { T } from './pitch/tuning';
+import { bodiesOf, decideMs, move, reactMs, type Body } from './pitch/body';
 import { attackSpots, defendSpots, rushFor, wallSize, wallSpots, type SetPiece } from './pitch/setpieces';
 import { rngFor } from '../sim/match';
 import { FORMATIONS, fullTactics } from '../sim/tactics';
 import { planOf, spotOf, type Spot } from '../sim/engine/phases';
 import type { Position } from '../model/types';
 import type { World } from '../sim/world';
-import { ARC, THROUGH_LEAD, TRANSITION_MS, arcHeight, buildUp, deliveryOf, lineDepth, passKind, pressShape, pressSpot, runFor, shooterSpot, shotTarget, speedsOf, step, wideOf, type LineState, type PassKind, type PressPlan, type Transition } from './pitch/move';
+import { ARC, THROUGH_LEAD, TRANSITION_MS, arcHeight, buildUp, deliveryOf, lineDepth, passKind, pressShape, pressSpot, runFor, shooterSpot, shotTarget, speedsOf, wideOf, type LineState, type PassKind, type PressPlan, type Transition } from './pitch/move';
 
 type Pt = { x: number; y: number };
 
@@ -53,6 +55,11 @@ interface Anim {
   minute: string;         // the minute last planned ("min+plus": added time plays out too)
   time: number;
   spd: number[][];        // speed ratio per [side][slot] (pace and match fitness), refreshed every minute
+  body: Body[][];         // phase 1: each player's body and reading of the game (ui2/pitch/body.ts), refreshed every minute
+  ag: Agent[][];          // phase 1: each player's velocity, the target he has committed to, and his sprint tank
+  eventAt: number;        // when the ball last changed (a pass, a turnover, a shot, a set piece): players react after it
+  reacts: [number, number][]; // (reads, measured reaction in ms) for the measurement test, the last 400
+  kin: { turn: number; acc: number }; // the largest turn and acceleration seen, as a share of the player's limit
   line: (LineState | undefined)[]; // each side's back-line depth out of possession
   back: [number, number]; // when each side last played the ball backwards (a time, for the back line's step-up)
   trans: Transition | null; // the last turnover: who lost it and when (counter-press, recovery runs, breaks)
@@ -62,6 +69,7 @@ interface Anim {
   flag: { x: number; until: number } | null; // the assistant's flag is up (offside), at this x on the near touchline
 }
 
+interface Agent { vx: number; vy: number; tx: number; ty: number; at: number; tank: number; pend: boolean; spr: boolean }
 const L = 105, W = 68;
 // Measurement hook for ui-tests/pitch.mjs: only with ?pitchdebug in the address.
 const PITCH_DEBUG = typeof location !== 'undefined' && /[?&]pitchdebug\b/.test(location.search);
@@ -137,6 +145,7 @@ const slotNear = (m: LiveMatch, a: Anim, side: 0 | 1, pt: Pt) => onPitch(m, side
 function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
   const r = rngFor(`${m.key}:anim`, m.minute);
   a.spd = speedsOf(m, world);
+  a.body = bodiesOf(m, world);
   const all: Beat[] = [];
   let poss = a.poss;
   if (a.inNet) { const side = (1 - a.poss) as 0 | 1; all.push({ kind: 'kickoff', side }); poss = side; }
@@ -255,6 +264,9 @@ const nearestOf = (m: LiveMatch, a: Anim, side: 0 | 1, pt: Pt) => onPitch(m, sid
 function runBeat(a: Anim, m: LiveMatch, b: Beat) {
   const travel = Math.min(420, a.beatLen * 0.7);
   if (b.kind === 'hold') return;
+  // The ball changes: everyone not on it reacts after his own reaction time (phase 1).
+  a.eventAt = a.time;
+  for (const row of a.ag) for (const g of row) if (g) g.pend = true;
   if (b.kind === 'pass' || b.kind === 'turnover' || b.kind === 'shot' || b.kind === 'kickoff') a.sp = null; // the ball is live again
   if (b.kind === 'kickoff') {
     a.inNet = false; a.zone = -1; a.run = null;
@@ -470,7 +482,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
     const a: Anim = {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], starts: [], msPM: 1000, beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
-      spd: speedsOf(m, world), line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null,
+      spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null,
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -587,13 +599,63 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         } else a.line[side] = undefined;
         // A set piece being staged: everyone takes his spot (ui2/pitch/setpieces.ts).
         if (a.sp && a.time < a.sp.until) stage(a, mm, side, ks, tg, boost);
+        // Phase 1: each player moves with his own body (top speed, acceleration, turning), re-reads the play every
+        // decision tick, reacts to a new ball after his own reaction time, and sprints only while his tank lasts.
+        const staging = !!a.sp && a.time < a.sp.until;
+        const tau = Math.max(120, ms * 0.9);
+        // The back line moves as one: out of possession its defenders react on their best reader's call.
+        const isDef = (k: number) => !has && LINE[sps[k]?.opos ?? slots[k].pos] === 'def' && !pp.press.includes(k) && k !== pp.cover;
+        const lineReads = Math.max(0, ...ks.filter(isDef).map((k) => a.body[side]?.[k]?.reads ?? 0.5));
+        // ... and holds its shape at its slowest defender's pace, so it doesn't break up while it steps or drops.
+        const lineBodies = ks.filter(isDef).map((k) => a.body[side]?.[k]).filter(Boolean) as Body[];
+        const lineTop = Math.min(...lineBodies.map((b) => b.top), 9), lineAcc = Math.min(...lineBodies.map((b) => b.acc), 9);
         for (const k of ks) {
           let t = tg[k];
-          if (has && k === a.carrier && !(a.sp && a.time < a.sp.until)) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
+          if (has && k === a.carrier && !staging) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
           const wob = Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
           const p = a.pos[side][k] ?? t;
-          const sprint = Math.max(pp.press.includes(k) ? (pp.trigger ? 1.6 : 1.3) : 1, boost[k] ?? 1);
-          a.pos[side][k] = step(p, { x: t.x, y: t.y + wob }, dt, ms, (a.spd[side]?.[k] ?? 1) * sprint);
+          const B0 = a.body[side]?.[k] ?? { top: 1, acc: 1, turn: 1, reads: 0.5, tank: 0.7 };
+          // In the line: the line's pace. Walking to a set piece: no turning limit (he's not running at speed).
+          const B = staging ? { ...B0, turn: B0.turn * 4 } : isDef(k) ? { ...B0, top: Math.min(B0.top, lineTop), acc: Math.min(B0.acc, lineAcc) } : B0;
+          const g = a.ag[side][k] ??= { vx: 0, vy: 0, tx: t.x, ty: t.y + wob, at: 0, tank: 1, pend: false, spr: false };
+          // On the ball, about to receive or shoot, or walking to a set piece: no delay. Everyone else commits to
+          // a new target at his decision ticks, and after a new ball only once he has reacted.
+          const onIt = (has && k === a.carrier) || (a.run?.side === side && a.run.slot === k) || (a.shooter?.side === side && a.shooter.slot === k);
+          if (onIt || staging) { g.tx = t.x; g.ty = t.y + wob; g.pend = false; }
+          else if (a.time >= g.at) {
+            const since = a.time - a.eventAt;
+            if (!g.pend || since >= reactMs(isDef(k) ? lineReads : B.reads, a.beatLen)) {
+              if (g.pend && !isDef(k)) { a.reacts.push([B.reads, since]); if (a.reacts.length > 400) a.reacts.shift(); g.pend = false; }
+              g.pend = false;
+              g.tx = t.x; g.ty = t.y + wob;
+              // The line looks again together (same tick for all its defenders).
+              g.at = isDef(k) ? a.time + decideMs(a.beatLen) - ((a.time + side * 37) % decideMs(a.beatLen)) : a.time + decideMs(a.beatLen);
+            }
+          }
+          let sprint = Math.max(pp.press.includes(k) ? (pp.trigger ? 1.6 : 1.3) : 1, boost[k] ?? 1);
+          // The sprint tank: an empty tank caps the boost; sprinting drains it (faster for a small tank), jogging refills.
+          if (!staging && g.tank < T.EMPTY) sprint = Math.min(sprint, T.SPRINT);
+          const vx0 = g.vx, vy0 = g.vy;
+          const nk = move({ x: p.x, y: p.y, vx: g.vx, vy: g.vy }, g.tx, g.ty, dt, tau, B, sprint);
+          // The line's depth is one decision for all its defenders (PR A): it moves together at the line's pace, and
+          // only their sideways movement is left to each body.
+          if (isDef(k) && !staging) { nk.x = p.x + (g.tx - p.x) * (1 - Math.exp((-dt * lineTop * sprint) / tau)); nk.vx = (nk.x - p.x) / Math.max(1, dt); }
+          g.vx = nk.vx; g.vy = nk.vy;
+          a.pos[side][k] = { x: nk.x, y: nk.y };
+          const vmax = (T.VMAX * B.top * sprint) / tau, sp1 = Math.hypot(nk.vx, nk.vy);
+          g.spr = !staging && sprint > T.SPRINT && sp1 > 0.6 * vmax;
+          g.tank = g.spr ? Math.max(0, g.tank - (T.DRAIN * dt) / ms / B.tank) : Math.min(1, g.tank + (T.REFILL * dt) / ms);
+          // Measurement (ui-tests/pitch.mjs): how close to his turning and acceleration limits he came.
+          if (PITCH_DEBUG && dt > 0 && !(isDef(k) && !staging)) { // (the line's depth is shared, measured by the line test)
+            const sp0 = Math.hypot(vx0, vy0);
+            a.kin.acc = Math.max(a.kin.acc, Math.hypot(nk.vx - vx0, nk.vy - vy0) / ((vmax / (T.ACC_TAU * tau)) * B.acc * dt));
+            if (sp0 > T.TURN_SPEED * vmax && sp1 > 1e-9) {
+              let da = Math.atan2(nk.vy, nk.vx) - Math.atan2(vy0, vx0);
+              while (da > Math.PI) da -= 2 * Math.PI;
+              while (da < -Math.PI) da += 2 * Math.PI;
+              a.kin.turn = Math.max(a.kin.turn, Math.abs(da) / ((T.TURN * B.turn * dt) / tau));
+            }
+          }
         }
       }
       // Draw. In Arabic the home side sits on the right of the score, so the picture is mirrored (the numbers are not).
