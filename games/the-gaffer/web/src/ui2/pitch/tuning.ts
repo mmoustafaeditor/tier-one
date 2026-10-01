@@ -42,6 +42,8 @@ export const T = {
   ENGINE_CLOCK: false, // time beats by the engine's own seconds (director.ts). Measured on 10 seeded matches it made
                      // marking worse (88% against 94%) and nothing better, so beats stay evenly spread for now.
   LOOK_FB: 0.5,      // a full-back: a ball due out wide in the last third starts his overlap
+  LOOK_RUN: 0.25,    // a runner: the next ball is for him (he times his run to it)
+  ONSIDE: 0.6,       // runners wait this far short of the offside line until the ball is played
   LOOK_SHOT: 0.45,   // a defender: a shot due from their side puts him in the lane before it's struck
   BLOCK_BOOST: 2.4,
   URGENT_GAIN: 4,    // an urgent run (body.ts move, the blocker): how much harder he goes for it than easing in  // ... and he sprints there (the urgency a presser has: without it he strolled to the lane)

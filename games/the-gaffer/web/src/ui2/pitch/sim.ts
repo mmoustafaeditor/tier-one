@@ -587,8 +587,20 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
             if (r.run) { if (runs >= 3) continue; runs++; a.runsN = runs; boost[k] = 1.25; if (fbRole(ip)) rush.add(k); }
             tg[k] = { x: toX(side, clamp(r.d, 2, 103)), y: clamp(r.y, 2, W - 2) };
           }
+          // Timing runs against the offside line (phase 3): nobody goes beyond their second-last man before the pass. The
+          // man the next ball is for (the director reads it a moment ahead) times his run to be onside when it's played
+          // and goes as it is. Everyone else holds the line, level with it.
+          const oDeps = onPitch(mm, other).map((j) => a.pos[other][j]).filter(Boolean).map((q) => depthOf(side, q.x)).sort((p, q) => q - p);
+          const offLine = Math.max(oDeps[1] ?? L, bd, L / 2);
+          const nextTo = upcoming(a.beats, a.starts, a.beat, a.clock, a.msPM * T.LOOK_RUN).map((u) => u.b).find((b) => (b.kind === 'pass' || b.kind === 'turnover') && b.side === side);
+          const receiver = nextTo && 'to' in nextTo ? nextTo.to : -1;
+          const goes = !!a.flight && a.poss === side; // the ball is on its way: the runner may be past the line now
+          for (const k of ks) {
+            if (k === a.carrier || !tg[k] || (goes && k === receiver)) continue;
+            if (depthOf(side, tg[k].x) > offLine - T.ONSIDE) tg[k] = { x: toX(side, offLine - T.ONSIDE), y: tg[k].y };
+          }
           // The carrier's pace: he drives on into space and slows, shielding it, when a man is on him.
-          if (a.carrier >= 0 && a.pos[side][a.carrier]) {
+          if (a.carrier >= 0 && a.pos[side][a.carrier] && tg[a.carrier]) { // (a carrier sent off or subbed has no target)
             const cp = a.pos[side][a.carrier];
             const dn = Math.min(99, ...onPitch(mm, other).map((j) => (a.pos[other][j] ? dist(a.pos[other][j], cp) : 99)));
             boost[a.carrier] = dn < T.CARRY_SPACE[0] ? T.CARRY_BOOST[0] : dn > T.CARRY_SPACE[1] ? T.CARRY_BOOST[2] : T.CARRY_BOOST[1];
