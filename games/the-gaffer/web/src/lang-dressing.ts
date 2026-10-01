@@ -65,6 +65,7 @@ export const D_EN = {
   } as Record<Archetype, string>,
   trust: 'Trust', morale: 'Morale',
   cause2: {
+    press: 'what you said to the press',
     'kept.role': 'promise kept', 'kept.contract': 'promise kept', 'kept.keep': 'promise kept', 'kept.sign': 'promise kept',
     'broken.role': 'promise broken', 'broken.contract': 'promise broken', 'broken.keep': 'promise broken', 'broken.sign': 'promise broken',
     minutes: 'not playing enough', ignored: 'you never gave him that word', 'talk.reassure': 'your arm round him', 'talk.challenge': 'your challenge',

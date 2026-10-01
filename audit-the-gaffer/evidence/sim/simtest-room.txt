@@ -1,0 +1,9 @@
+room after md1: 29 players, cohesion 55 leaders John McGinn, Buendía, Ross Barkley, Leon Goretzka
+promised Lamare Bogarde Starter; trust 52 pledge open
+→ broken after 10 league md (0/10 starts), warned at md 5, trust now 34
+Pau Torres: request at md 16, rival bid at md 23 (eng-newcastle), events room.request 1, unhappyPlayers Pau Torres
+room decisions now: request:dr.request
+kick-off cohesion 65.4 mods.level 1.71 causes drift-1.2 win+1 settled+1 drift-1
+events: room.ask 7, promise.kept 0, promise.broken 1, room.request 1, room.interest 1, room.clause 0, room.core 1, room.leader 0
+asks: 7:Lamare Bogarde:minutes 10:Ian Maatsen:role 13:Pau Torres:unhappy 16:Ian Maatsen:role 18:Lindelöf:minutes 20:Lamare Bogarde:minutes 22:Garnacho:role
+checks: world 0 career 0

@@ -319,6 +319,16 @@ html[lang="ar"] .eyebrow { letter-spacing: 0; text-transform: none; font-size: v
 .mbar .seg button[aria-pressed="true"] { background: var(--ink); color: var(--teal-950); }
 .mbar .grow { flex: 1; }
 .mbar .icon-btn { width: 48px; height: 48px; }
+/* Phones: the bar takes two rows (pause + speeds, then Instant + Changes) so every control stays on screen. */
+@media (max-width: 560px) {
+  .mbar { flex-wrap: wrap; row-gap: 8px; }
+  .mbar .seg { flex: 1 1 calc(100% - 56px); min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .mbar .seg::-webkit-scrollbar { display: none; }
+  .mbar .seg button { flex: 1 0 auto; }
+  .mbar .grow { display: none; }
+  .mbar > .btn { flex: 1 1 0; justify-content: center; }
+  .shell.solo .main { padding-bottom: calc(170px + env(safe-area-inset-bottom)); }
+}
 
 /* Horizontal zone pitch */
 .zpitch { position: relative; aspect-ratio: 105 / 68; border-radius: var(--r-md); overflow: hidden; background: repeating-linear-gradient(90deg, var(--pitch-a) 0 8.33%, var(--pitch-b) 8.33% 16.66%); box-shadow: inset 0 0 0 1px var(--line), inset 0 0 60px rgba(0,0,0,.35); }

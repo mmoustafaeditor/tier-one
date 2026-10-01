@@ -1,6 +1,8 @@
 // The tunnel: the one moment before kick-off where the screen breathes. Team sheets, the last word in the dressing
 // room, the odds, and three ways in: walk out, just the result, or sim on to the next decision.
 import { RefLine } from './Officials';
+import { isDerby } from '../sim/rivalry';
+import { CL } from '../lang-club-all';
 import { RF } from '../lang-ref-all';
 import { squadOf } from '../sim/world';
 import { useMemo, useState } from 'react';
@@ -72,6 +74,7 @@ export function PreMatch() {
           <span className="mouth" />
           <div className="walkers" aria-hidden="true"><Portrait p={cap0(0)} club={home} bare /><Portrait p={cap0(1)} club={away} bare /></div>
           <div className="over">
+            {isDerby(home.id, away.id) && <span className="tag tag--warn"><I n="fans" size="sm" />{CL[g.ui].derby}</span>}
             <span className="crowd">{me === 0 ? x.pre.crowd(crowd.toLocaleString(g.ui === 'ar' ? 'ar-EG' : g.ui), cn(home, lang)) : x.pre.crowdAway(crowd.toLocaleString(g.ui === 'ar' ? 'ar-EG' : g.ui))}</span>
             <h1 className="h-hero">{home.shortName && lang === 'en' ? home.shortName : cn(home, lang)} v {away.shortName && lang === 'en' ? away.shortName : cn(away, lang)}.</h1>
             <p className="stakes">{stakes}</p>

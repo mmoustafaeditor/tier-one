@@ -61,6 +61,7 @@ export const D_FR: DStrings = {
   },
   trust: 'Confiance', morale: 'Moral',
   cause2: {
+    press: 'vos mots en conférence de presse',
     'kept.role': 'promesse tenue', 'kept.contract': 'promesse tenue', 'kept.keep': 'promesse tenue', 'kept.sign': 'promesse tenue',
     'broken.role': 'promesse rompue', 'broken.contract': 'promesse rompue', 'broken.keep': 'promesse rompue', 'broken.sign': 'promesse rompue',
     minutes: 'ne joue pas assez', ignored: 'vous l’avez laissé attendre', 'talk.reassure': 'votre soutien', 'talk.challenge': 'votre défi',

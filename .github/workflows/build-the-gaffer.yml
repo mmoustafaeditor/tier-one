@@ -118,20 +118,23 @@ jobs:
         env:
           BEFORE: ${{ github.event.before }}
           WANT_APK: ${{ inputs.apk }}
-          MESSAGE: ${{ github.event.head_commit.message }}
+          EVENT: ${{ github.event_name }}
         run: |
           set -e
           # A new APK only when the Android app itself changed, when asked, or when there is none yet.
           APK=false
           if [ "$WANT_APK" = "true" ] || [ ! -f downloads/TheGaffer.apk ]; then APK=true
+          # A manual run has no "before" commit: it publishes an APK only when asked (the box above), never by default.
+          elif [ "$EVENT" = "workflow_dispatch" ]; then APK=false
           elif [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then APK=true
           elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -q '^games/the-gaffer/android/'; then APK=true
           fi
           VERSION=$(node -p "require('./games/the-gaffer/build/version.json').version")
           BUILD=$(node -p "require('./games/the-gaffer/build/version.json').build")
-          FILES="the-gaffer/index.html the-gaffer/version.json games/the-gaffer/build/index.html games/the-gaffer/build/version.json"
+          FILES="the-gaffer games/the-gaffer/build"
           if [ "$APK" = "true" ]; then
-            node games/the-gaffer/scripts/publish-apk.mjs games/the-gaffer/android/app/build/outputs/apk/debug/app-debug.apk "$BUILD" "$VERSION" "$(printf '%s' "$MESSAGE" | head -n 1)"
+            # No commit subject as the changelog: main mixes both games, so it could name Tier One work (GF-014).
+            node games/the-gaffer/scripts/publish-apk.mjs games/the-gaffer/android/app/build/outputs/apk/debug/app-debug.apk "$BUILD" "$VERSION"
             FILES="$FILES downloads/TheGaffer.apk api/the-gaffer/latest.js"
           fi
           git config user.name "github-actions[bot]"
@@ -139,10 +142,15 @@ jobs:
           git add $FILES
           if git diff --cached --quiet; then echo "Nothing new to publish"; exit 0; fi
           git commit -m "chore(gaffer): publish web build $BUILD$( [ "$APK" = true ] && echo ' and APK' ) [skip ci]"
+          # Two runs can build at once (a push and a manual run): if main moved meanwhile, take its newer state and
+          # keep ours on top. Generated files conflict only with another generated copy, so ours (this run's build) wins.
+          PUSHED=false
           for i in 1 2 3 4; do
-            git pull --rebase origin main && git push origin HEAD:main && break
+            if git pull --rebase -X theirs origin main && git push origin HEAD:main; then PUSHED=true; break; fi
+            git rebase --abort 2>/dev/null || true
             sleep $((i * 5))
           done
+          if [ "$PUSHED" != true ]; then echo "::error::Could not publish build $BUILD to main"; exit 1; fi
           {
             echo "### The Gaffer $VERSION · build $BUILD"
             echo "- Web: https://www.sembagames.app/the-gaffer"

@@ -21,6 +21,8 @@ import { ArmbandSheet, TalkSheet } from './Room';
 import { releaseFor, renewFactor, roleOf } from '../sim/room';
 import { D } from '../lang-dressing-all';
 import type { SquadRole } from '../model/types';
+import { CL } from '../lang-club-all';
+import type { AwardPick, AwardSet } from '../sim/awards';
 
 export function Sheets({ req, onClose, summary, onSummaryDone, onTakeCalls, onLeave }: {
   req: import('./game').SheetReq | null; onClose: () => void; summary: SeasonSummary | null; onSummaryDone: () => void;
@@ -275,7 +277,37 @@ function SummarySheet({ s, onDone }: { s: SeasonSummary; onDone: () => void }) {
       {s.left.length > 0 && <p className="small"><b>{S.left}:</b> {s.left.map((p) => sn(p, lang)).join(', ')}</p>}
       {s.academy.length > 0 && <p className="small"><b>{S.kids}:</b> {s.academy.map((p) => sn(p, lang)).join(', ')}</p>}
       <p className="small muted">{S.retired(s.retired)}</p>
+      {s.awards?.length > 0 && <Awards sets={s.awards} />}
       <div className="sheet-actions"><button className="btn btn--accent" onClick={onDone}>{S.next(x.seasonLabel(c.season))}<I n="arrowr" size="sm" flip={g.rtl} /></button></div>
     </Sheet>
+  );
+}
+
+// V2.8 awards night: the user's league in full, one line per other league.
+function Awards({ sets }: { sets: AwardSet[] }) {
+  const g = useGame();
+  const { w, c, lang } = g;
+  const A = CL[g.ui].awards;
+  const [mine, ...rest] = sets;
+  const who = (a?: AwardPick) => (a ? `${a.pn[lang] || a.pn.en} · ${cn(clubOf(w, a.clubId), lang)}` : '—');
+  const ours = mine.team.filter((a) => a.clubId === c.clubId).length;
+  const rows: [string, AwardPick | undefined, string][] = [
+    [A.poty, mine.poty, mine.poty ? A.rating(mine.poty.v) : ''],
+    [A.young, mine.young, mine.young ? A.rating(mine.young.v) : ''],
+    [A.boot, mine.boot, mine.boot ? A.goals(mine.boot.v) : ''],
+    [A.keeper, mine.keeper, mine.keeper ? A.rating(mine.keeper.v) : ''],
+  ];
+  const lgName = (id: string) => w.leagues.find((l) => l.id === id)?.name[lang] ?? id;
+  return (
+    <div className="awards">
+      <h3 className="h3"><I n="star" size="sm" /> {A.title} · {lgName(mine.leagueId)}</h3>
+      {rows.map(([t, a, v]) => (
+        <div key={t} className={`row award${a?.clubId === c.clubId ? ' mine' : ''}`}><span className="grow"><b>{t}</b><br /><span className="small">{who(a)}</span></span><span className="small muted">{v}</span></div>
+      ))}
+      {mine.manager && <div className={`row award${mine.manager.user ? ' mine' : ''}`}><span className="grow"><b>{A.manager}</b><br /><span className="small">{mine.manager.user ? `${mine.manager.name[lang] || mine.manager.name.en} (${A.you})` : `${mine.manager.name[lang] || mine.manager.name.en} · ${cn(clubOf(w, mine.manager.clubId), lang)}`}</span></span></div>}
+      <p className="small"><b>{A.team}:</b> {mine.team.map((a) => (a.pn[lang] || a.pn.en)).join(', ')}</p>
+      {ours > 0 && <p className="small good">{A.ours(ours)}</p>}
+      {rest.length > 0 && <details><summary className="small">{A.elsewhere}</summary>{rest.map((s2) => <p key={s2.leagueId} className="small">{lgName(s2.leagueId)}: <b>{s2.poty ? (s2.poty.pn[lang] || s2.poty.pn.en) : '—'}</b>{s2.boot ? ` · ${A.boot}: ${s2.boot.pn[lang] || s2.boot.pn.en} (${s2.boot.v})` : ''}</p>)}</details>}
+    </div>
   );
 }

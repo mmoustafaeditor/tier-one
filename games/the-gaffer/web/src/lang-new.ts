@@ -204,6 +204,7 @@ export const NEW_EN = {
     'selling:rejected': (a) => `Turned down ${a.money(a.n)} for ${a.pn}.`,
     'selling:listed': (a) => `Put ${a.pn} on the transfer list.`,
     'contracts:renewed': (a) => `Renewed ${a.pn} for ${a.n} more ${P(a.n, 'season', 'seasons')}.`,
+    'contracts:capRaise': (a) => `Raised the wage cap by ${a.money(a.n)} a month to keep ${a.pn}.`,
     'signing:signed': (a) => `Signed ${a.pn} from ${a.club || 'free agency'} for ${a.n ? a.money(a.n) : 'free'}.`,
     'loans:out': (a) => `Loaned ${a.pn} to ${a.club}.`,
     'sponsors:signed': (a) => `Signed ${a.pn} as a sponsor: ${a.money(a.n)} a month.`,

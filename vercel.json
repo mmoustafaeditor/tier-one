@@ -76,7 +76,7 @@
       ]
     },
     {
-      "source": "/the-gaffer/(index.html|version.json)?",
+      "source": "/the-gaffer/(index.html|version.json|sw.js|manifest.webmanifest)?",
       "headers": [
         {
           "key": "Cache-Control",

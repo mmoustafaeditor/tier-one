@@ -11,8 +11,39 @@ import { isRoom, roomAdvice, roomChoice, roomFx, roomTag, roomTitle } from './ro
 import { Y } from '../lang-youth-all';
 import { R } from '../lang-recruit-all';
 import { rcAdvice, rcChoice, rcFx, rcTitle } from './recruitText';
+import { CL } from '../lang-club-all';
+import type { Objective } from '../model/types';
 
-const TONE: Record<string, string> = { offer: 'tag--club', condition: 'tag--bad', contract: 'tag--club', staff: '', job: 'tag--good', tape: '', focus: '', deadline: 'tag--warn',
+// V2.7 the board meeting ('cl.' keys): the objective in a sentence ("finish in the top half"), the season, the money.
+const target = (g: Game, o?: string) => { const t = (g.t.objective as Record<string, string>)[o ?? ''] ?? o ?? ''; return g.ui === 'ar' ? t : t.charAt(0).toLowerCase() + t.slice(1); };
+const clTitle = (g: Game, r: Ref) => CL[g.ui].title(g.x.seasonLabel(r.n ?? g.c.season));
+const clAdvice = (g: Game, r: Ref) => CL[g.ui].advice(target(g, r.s as Objective));
+const clChoice = (g: Game, ch: Choice) => (ch.key === 'cl.ambitious' ? CL[g.ui].choices.ambitious(target(g, ch.s)) : CL[g.ui].choices.expected());
+function clFx(g: Game, f: Fx): string {
+  const F = CL[g.ui].fx;
+  if (f.key === 'cl.kitty') return F.kitty(money(f.n ?? 0));
+  if (f.key === 'cl.target') return F.target((g.t.objective as Record<string, string>)[f.s ?? ''] ?? f.s ?? '');
+  return f.key === 'cl.strict' ? F.strict() : F.goodwill();
+}
+
+// V2.9 press conferences ('pr.' keys, sim/pressDecisions.ts): the question, the assistant's note, the answers, their cost.
+const sgn = (n: number) => (n > 0 ? `+${n}` : `−${-n}`);
+function prTitle(g: Game, r: Ref): string {
+  const Q = CL[g.ui].press.q, q = r.key.slice(5) as keyof typeof Q;
+  return q === 'star' ? Q.star(pnOf(g, r)) : Q[q](clubName(g, r.club));
+}
+function prChoice(g: Game, ch: Choice): string {
+  const [, q, tone] = ch.key.split('.');
+  const a = (CL[g.ui].press.a as Record<string, Record<string, string | ((pn: string) => string)>>)[q]?.[tone];
+  return typeof a === 'function' ? a(pnOf(g, ch)) : a ?? '';
+}
+function prFx(g: Game, f: Fx): string {
+  const F = CL[g.ui].press.fx, k = f.key.slice(3);
+  if (k === 'claim' || k === 'safe') return F[k];
+  return (F as unknown as Record<string, (n: string) => string>)[k]?.(sgn(f.n ?? 0)) ?? '';
+}
+
+const TONE: Record<string, string> = { presser: 'tag--warn', offer: 'tag--club', condition: 'tag--bad', contract: 'tag--club', staff: '', job: 'tag--good', tape: '', focus: '', deadline: 'tag--warn',
   talk: '', request: 'tag--bad', promise: 'tag--warn', armband: 'tag--club', clause: 'tag--bad',
   bidAnswer: 'tag--club', agent: 'tag--club', rival: 'tag--warn', loanClause: 'tag--warn', recall: '',
   risk: 'tag--bad', rush: 'tag--bad', intake: 'tag--good', ready: 'tag--good', loanee: '', benched: 'tag--warn', full: 'tag--warn', ageout: '' };
@@ -44,6 +75,8 @@ function youthAdvice(g: Game, r: Ref): string {
 
 export function titleText(g: Game, d: Decision): string {
   const r = d.title, T = g.x.dec.titles;
+  if (r.key.startsWith('cl.')) return clTitle(g, r);
+  if (r.key.startsWith('pr.')) return prTitle(g, r);
   if (isRoom(r.key)) return roomTitle(g, r);
   if (r.key.startsWith('rc.') || r.key.startsWith('ask_rc')) return rcTitle(g, r); // v2.5 recruitment
   const pn = pnOf(g, r);
@@ -58,6 +91,7 @@ export function titleText(g: Game, d: Decision): string {
     case 'deadline': return call(T.deadline, g.x.dec.groups[r.n ?? 1]);
     case 'ask_signed': return call(T.ask_signed, pn, money(r.n ?? 0));
     case 'ask_renewed': return call(T.ask_renewed, pn, r.n ?? 1);
+    case 'ask_capRaise': return call(T.ask_capRaise, pn, money(r.n ?? 0), Number(r.s ?? 1));
     case 'ask_out': return call(T.ask_out, pn, clubName(g, r.club ?? r.s));
     case 'ask_load': return call(T.ask_load, g.x.train.loads[r.n ?? 1].toLowerCase());
     case 'ask_focus': return call(T.ask_focus, (g.x.train.focusNames as Record<string, string>)[r.s ?? ''] ?? r.s);
@@ -70,6 +104,8 @@ export function titleText(g: Game, d: Decision): string {
 
 function adviceText(g: Game, r: Ref): string {
   const A = g.x.dec.advice;
+  if (r.key.startsWith('cl.')) return clAdvice(g, r);
+  if (r.key === 'pr.adv') return CL[g.ui].press.adv[r.s ?? ''] ?? '';
   if (isRoom(r.key)) return roomAdvice(g, r);
   if (r.key.startsWith('rc.') || r.key.startsWith('why_rc')) return rcAdvice(g, r);
   const pn = pnOf(g, r);
@@ -88,6 +124,8 @@ function adviceText(g: Game, r: Ref): string {
 
 export function choiceText(g: Game, ch: Choice): string {
   const C = g.x.dec.choices;
+  if (ch.key.startsWith('cl.')) return clChoice(g, ch);
+  if (ch.key.startsWith('pr.')) return prChoice(g, ch);
   if (ch.key.startsWith('rc.')) return rcChoice(g, ch);
   if (isRoom(ch.key)) return roomChoice(g, ch);
   if (ch.key.startsWith('y_')) {
@@ -105,6 +143,8 @@ export function choiceText(g: Game, ch: Choice): string {
 
 function fxText(g: Game, f: Fx): string {
   const F = g.x.dec.fx;
+  if (f.key.startsWith('cl.')) return clFx(g, f);
+  if (f.key.startsWith('pr.')) return prFx(g, f);
   if (f.key.startsWith('rc.')) return rcFx(g, f);
   if (isRoom(f.key)) return roomFx(g, f);
   if (f.key.startsWith('y_')) return call(Y[g.ui].fx[f.key], f.n ?? 0, f.s ?? '');
@@ -133,7 +173,7 @@ export function DecisionCard({ d, i, onResolve }: { d: Decision; i: number; onRe
       onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} aria-label={titleText(g, d)}>
       <div className="head">
         <div className="grow">
-          <span className={`tag ${TONE[d.kind] ?? ''}`}><I n={KIND_ICON[d.kind] ?? d.icon} size="sm" />{(g.x.dec.tag as Record<string, string>)[d.kind] ?? (R[g.ui].tag as Record<string, string>)[d.kind] ?? (Y[g.ui].tag as Record<string, string>)[d.kind] ?? roomTag(g, d.kind)}</span>
+          <span className={`tag ${TONE[d.kind] ?? ''}`}><I n={KIND_ICON[d.kind] ?? d.icon} size="sm" />{(g.x.dec.tag as Record<string, string>)[d.kind] ?? (R[g.ui].tag as Record<string, string>)[d.kind] ?? (Y[g.ui].tag as Record<string, string>)[d.kind] ?? (d.kind === 'vision' ? CL[g.ui].tag : d.kind === 'presser' ? CL[g.ui].press.tag : roomTag(g, d.kind))}</span>
           <h3>{titleText(g, d)}</h3>
         </div>
         <span className="due"><I n="clock" size="sm" />{typeof due === 'function' ? due(d.due.n ?? 1) : due}</span>

@@ -48,6 +48,16 @@ const POOLS: Record<string, Pool> = {
   },
 };
 
+// Egypt draws from the same Arabic list minus its Gulf names (Al-/Bin/Bu surnames and typically Khaleeji first names), so
+// a generated Egyptian club no longer fields an "Al Kuwari" or an "Al Thubaiti" (audit GF-011). ARAB itself is left as
+// it is: the save renamer points at its indices.
+const GULF_FIRST = new Set(['Nawaf', 'Saud', 'Fahad', 'Salman', 'Majed', 'Turki', 'Faisal', 'Sultan', 'Rashid', 'Bader', 'Hamad', 'Mubarak',
+  'Abdulaziz', 'Abdulrahman', 'Nayef', 'Rakan', 'Meshal', 'Talal', 'Yazeed', 'Mohannad']);
+POOLS.EGY = {
+  first: POOLS.ARAB.first.filter(([en]) => !GULF_FIRST.has(en)),
+  last: POOLS.ARAB.last.filter(([en]) => !/^(Al |Bin |Bu )/.test(en)),
+};
+
 // For the name checker and the save renamer only.
 export const _POOLS = POOLS;
 
@@ -55,7 +65,7 @@ export const _POOLS = POOLS;
 export const POOL_OF: Record<string, string> = {
   ENG: 'ENG', ESP: 'ESP', ARG: 'ESP', ITA: 'ITA', GER: 'GER', AUT: 'GER', FRA: 'FRA', BEL: 'FRA',
   POR: 'POR', BRA: 'POR', SEN: 'AFR', NGA: 'AFR', CIV: 'AFR', GHA: 'AFR', CMR: 'AFR',
-  EGY: 'ARAB', KSA: 'ARAB', UAE: 'ARAB', QAT: 'ARAB', MAR: 'MAGHREB', TUN: 'MAGHREB', ALG: 'MAGHREB',
+  EGY: 'EGY', KSA: 'ARAB', UAE: 'ARAB', QAT: 'ARAB', MAR: 'MAGHREB', TUN: 'MAGHREB', ALG: 'MAGHREB',
 };
 
 export function playerName(nationality: string, rand: () => number): LocalizedName {

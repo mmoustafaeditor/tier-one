@@ -1,6 +1,6 @@
 import { defineConfig, type Plugin } from 'vite';
 import { createHash } from 'node:crypto';
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
@@ -37,7 +37,8 @@ const BUILD = Number(process.env.GAFFER_BUILD) || Math.floor(Date.now() / 60000)
 // from MainActivity; older apps are then asked to install the new APK instead of taking the web update.
 const MIN_SHELL = 2;
 
-// Release build only: write build/version.json and publish both files to /the-gaffer/, the folder sembagames.app serves.
+// Release build only: write build/version.json and publish the page, version.json and the app files (pwa/) to
+// /the-gaffer/, the folder sembagames.app serves.
 const publish = (): Plugin => ({
   name: 'gaffer-publish',
   apply: 'build',
@@ -50,6 +51,9 @@ const publish = (): Plugin => ({
     mkdirSync(site, { recursive: true });
     copyFileSync(resolve(out, 'index.html'), resolve(site, 'index.html'));
     copyFileSync(resolve(out, 'version.json'), resolve(site, 'version.json'));
+    // The installable-app files (manifest, service worker, icons) from pwa/, next to the page on the site.
+    cpSync(resolve(HERE, 'pwa'), out, { recursive: true });
+    cpSync(resolve(HERE, 'pwa'), site, { recursive: true });
   },
 });
 

@@ -1,0 +1,142 @@
+{"matches":1000,"msPerMatch":3.25}
+{"goals":2.993,"fouls":23.024,"advantage":3.686,"yellows":4.128,"reds":0.131,"secondYellows":0.073,"penalties":0.274,"offsides":3.839,"corners":10.69,"freeKicks":19.138,"indirectFKs":4.151,"throwIns":37.893,"goalKicks":21.478,"varChecksShown":0.993,"onFieldReviews":0.123,"overturned":0.28,"goalsDisallowed":0.223,"addedTime":10.612}
+ok   fouls per match 23.024 in 20–25
+ok   yellows per match 4.128 in 3.4–4.6
+ok   reds per match 0.131 in 0.08–0.17
+ok   penalties per match 0.274 in 0.20–0.34
+ok   offsides per match 3.839 in 3–5
+ok   score and log reconcile in every match
+ok   eng_bri: Premier Division 2026/27 has VAR
+ok   stands: found a match (7:2026:0:eng1:0#20)
+ok   stands: the goal (52′) is on the timeline, then the check
+ok   stands: side 0 score 0 = goal events
+ok   stands: side 1 score 3 = goal events
+ok   stands: stats are the log's
+ok   stands: side 0 cards in stats = events
+ok   stands: side 0 shots exclude disallowed goals (14)
+ok   stands: side 1 cards in stats = events
+ok   stands: side 1 shots exclude disallowed goals (14)
+ok   stands: nobody acts after his red card
+ok   stands: ratings ignore disallowed goals and reviews
+ok   stands: commentary has one line per goal
+ok   stands: commentary reads the VAR goal:check:stands:goal
+ok   stands: commentary reads each disallowed goal
+ok   stands: L. Cabrejas (red 45′) is off for good
+ok   stands: his minutes stop at 45′ (45)
+ok   stands: mid-match save at 46′ loads
+ok   stands: the saved match keeps its events and incidents
+ok   stands: resumed after reload, the match plays out the same (0-3)
+ok   stands: saved match record score 0-3
+ok   stands: saved record has the 6 cards
+ok   stands: saved record has the VAR reviews
+ok   stands: saved record has the disallowed goals
+ok   stands: the report agrees (score, cards)
+ok   stands: career save after the match loads
+ok   stands: L. Cabrejas (red, violent) is banned for 3 league match(es)
+ok   stands: and is left out of his club's next match
+ok   overturned (goal): found a match (7:2026:0:eng1:0#9)
+ok   overturned (goal): the ball in the net is logged as no goal (45′, offside), then the review
+ok   overturned (goal): the incident reads goal → VAR check → no goal
+ok   overturned (goal): no goal event for it
+ok   overturned (goal): side 0 score 1 = goal events
+ok   overturned (goal): side 1 score 2 = goal events
+ok   overturned (goal): stats are the log's
+ok   overturned (goal): side 0 cards in stats = events
+ok   overturned (goal): side 0 shots exclude disallowed goals (19)
+ok   overturned (goal): side 1 cards in stats = events
+ok   overturned (goal): side 1 shots exclude disallowed goals (16)
+ok   overturned (goal): nobody acts after his red card
+ok   overturned (goal): ratings ignore disallowed goals and reviews
+ok   overturned (goal): commentary has one line per goal
+ok   overturned (goal): commentary reads the VAR goal:check:over:offside
+ok   overturned (goal): commentary reads the VAR pen:check:stands
+ok   overturned (goal): commentary reads the VAR goal:check:stands:goal
+ok   overturned (goal): commentary reads each disallowed goal
+ok   overturned (goal): mid-match save at 46′ loads
+ok   overturned (goal): the saved match keeps its events and incidents
+ok   overturned (goal): resumed after reload, the match plays out the same (1-2)
+ok   overturned (goal): saved match record score 1-2
+ok   overturned (goal): saved record has the 7 cards
+ok   overturned (goal): saved record has the VAR reviews
+ok   overturned (goal): saved record has the disallowed goals
+ok   overturned (goal): the report agrees (score, cards)
+ok   overturned (goal): career save after the match loads
+ok   overturned (red): found a match (7:2026:0:eng1:0#5)
+ok   overturned (red): incident R on the field → Y after review
+ok   overturned (red): no red card for J. Cotacachi at 39′
+ok   overturned (red): he plays on (on the pitch at the end)
+ok   overturned (red): side 0 score 0 = goal events
+ok   overturned (red): side 1 score 2 = goal events
+ok   overturned (red): stats are the log's
+ok   overturned (red): side 0 cards in stats = events
+ok   overturned (red): side 0 shots exclude disallowed goals (10)
+ok   overturned (red): side 1 cards in stats = events
+ok   overturned (red): side 1 shots exclude disallowed goals (14)
+ok   overturned (red): nobody acts after his red card
+ok   overturned (red): ratings ignore disallowed goals and reviews
+ok   overturned (red): commentary has one line per goal
+ok   overturned (red): commentary reads the VAR redDown:ofr:over
+ok   overturned (red): commentary reads the VAR pen:check:stands
+ok   overturned (red): commentary reads the VAR goal:check:stands:goal
+ok   overturned (red): commentary reads each disallowed goal
+ok   overturned (red): mid-match save at 40′ loads
+ok   overturned (red): the saved match keeps its events and incidents
+ok   overturned (red): resumed after reload, the match plays out the same (0-2)
+ok   overturned (red): saved match record score 0-2
+ok   overturned (red): saved record has the 5 cards
+ok   overturned (red): saved record has the VAR reviews
+ok   overturned (red): saved record has the disallowed goals
+ok   overturned (red): the report agrees (score, cards)
+ok   overturned (red): career save after the match loads
+ok   overturned (red): J. Cotacachi is not suspended (banned 0)
+ok   overturned (red): and is available for the next match
+ok   ten men: found a match (7:2026:0:eng1:0#8)
+ok   ten men: 10 on the pitch after the red at 48′
+ok   ten men: the empty place can't be filled
+ok   ten men: he can't come back on
+ok   ten men: the engine's goal difference per 90 for the ten: 0.11 → -0.49
+ok   ten men: the match plays out the same when stepped in parts
+ok   ten men: no events for him after the red
+ok   ten men: still ten (or fewer) at the whistle
+ok   ten men: side 0 score 1 = goal events
+ok   ten men: side 1 score 0 = goal events
+ok   ten men: stats are the log's
+ok   ten men: side 0 cards in stats = events
+ok   ten men: side 0 shots exclude disallowed goals (15)
+ok   ten men: side 1 cards in stats = events
+ok   ten men: side 1 shots exclude disallowed goals (11)
+ok   ten men: nobody acts after his red card
+ok   ten men: ratings ignore disallowed goals and reviews
+ok   ten men: commentary has one line per goal
+ok   ten men: commentary reads the VAR goal:check:stands:goal
+ok   ten men: commentary reads the VAR goal:check:stands:apf
+ok   ten men: commentary reads each disallowed goal
+ok   ten men: J. Albergaria (red 48′) is off for good
+ok   ten men: his minutes stop at 48′ (48)
+ok   cup knockout: found a tie that went to penalties (cup:2)
+ok   cup knockout: English Cup round of 16 uses VAR
+ok   cup knockout: 120 minutes played (+3/+6/+1/+1)
+ok   cup knockout: added time at 45, 90, 105 and 120
+ok   cup knockout: events in extra time
+ok   cup knockout: at most six changes each (3/5; 0 in extra time)
+ok   cup knockout: 2-2 after 120, penalties 4-2
+ok   cup knockout: side 0 score 2 = goal events
+ok   cup knockout: side 1 score 2 = goal events
+ok   cup knockout: stats are the log's
+ok   cup knockout: side 0 cards in stats = events
+ok   cup knockout: side 0 shots exclude disallowed goals (40)
+ok   cup knockout: side 1 cards in stats = events
+ok   cup knockout: side 1 shots exclude disallowed goals (16)
+ok   cup knockout: nobody acts after his red card
+ok   cup knockout: ratings ignore disallowed goals and reviews
+ok   cup knockout: commentary has one line per goal
+ok   cup knockout: commentary reads the VAR outside:check:over
+ok   cup knockout: commentary reads each disallowed goal
+ok   cup knockout: commentary calls extra time and the shoot-out
+ok   league match ends at 90+9 with no penalties
+ok   per competition: a cup ban: out of the cup, available in the league
+ok   per competition: a league ban: out of the league, available in the cup
+ok   per competition: the AI leaves him out of the cup tie
+ok   per competition: and picks him in the league
+
+all passed

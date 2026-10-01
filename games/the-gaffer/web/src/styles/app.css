@@ -455,3 +455,38 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .sc-today .fixture .acts { grid-template-columns: 1fr 1fr; }
 .sc-today .fixture .acts .btn { white-space: normal; text-align: center; line-height: 1.15; padding-inline: var(--s-3); min-width: 0; }
 .sc-today .tbl tr.opp .cl::after, html[lang="ar"] .sc-today .tbl tr.opp .cl::after { content: none; }
+
+/* V2.8 awards night (season review sheet) */
+.awards { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--line); }
+.awards h3 { display: flex; align-items: center; gap: 6px; margin-bottom: var(--s-2); }
+.awards .award.mine { background: var(--good-wash); border-radius: 12px; padding-inline: var(--s-2); }
+.awards details { margin-top: var(--s-2); }
+.awards summary { cursor: pointer; color: var(--ink-2); }
+
+/* V2.10 club looks (meta/looks.ts): the office ground in the look's colours; matchday floodlights stay as they are. */
+:root[data-look="1"]:not([data-light="flood"]) { --ground: #2A0D16; --ground-2: #3A1320; --ground-3: #4E1B2B; --glow-a: rgba(149,191,229,.14); --glow-b: rgba(122,38,58,.4); }
+:root[data-look="2"]:not([data-light="flood"]) { --ground: #06192A; --ground-2: #0A2438; --ground-3: #0E3150; --glow-a: rgba(125,235,203,.12); --glow-b: rgba(11,59,92,.45); }
+:root[data-look="3"]:not([data-light="flood"]) { --ground: #231904; --ground-2: #342507; --ground-3: #4A350B; --glow-a: rgba(232,190,90,.14); --glow-b: rgba(168,118,18,.35); }
+.looks .look .btn { margin-top: var(--s-2); }
+.looks .look.on { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+.sc-pass .looks.looks4 { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
+.sc-pass .looks.looks4 .look .sw { width: 100%; height: auto; aspect-ratio: 16 / 10; border-radius: 12px; }
+.sc-pass .looks.looks4 .look .sw::before { content: none; }
+
+/* UI/UX pass: on phones the area holding an off-bar screen (Career, Club Pass, Settings, Inbox) stays marked. */
+@media (max-width: 1099.98px) { .nav a.nav-parent { color: var(--accent-ink); background: var(--accent); } }
+@media (min-width: 1100px) { .nav { overflow-y: auto; scrollbar-width: none; } .nav a { min-height: 58px; } }
+/* Squad areas row (Players · Dressing room · Training · Medical · Academy) at the top of all five screens. */
+.area-tabs { margin: 0 0 var(--s-3); }
+.area-tabs .seg { overflow-x: auto; scrollbar-width: none; max-width: 760px; }
+.area-tabs .seg::-webkit-scrollbar, .o-tabs .seg::-webkit-scrollbar, .rc-tabs::-webkit-scrollbar { display: none; }
+.area-tabs .seg button { white-space: nowrap; flex: none; }
+/* Today: the inbox line under the headline. */
+.inbox-line { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 var(--s-4); min-height: 44px; padding: 0 var(--s-4); border-radius: var(--r-pill);
+  background: var(--ground-panel); border: 1px solid var(--ground-line); color: var(--on-ground); font: 600 var(--t-small)/1.2 var(--f-text); }
+.inbox-line.new { border-color: var(--accent); }
+.inbox-line em { font-style: normal; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); display: inline-grid; place-items: center; font-size: 12px; }
+@media (max-width: 560px) {
+  .area-tabs .seg { flex-wrap: wrap; overflow: visible; border-radius: 20px; row-gap: 2px; }
+  .area-tabs .seg button { flex: 1 1 auto; }
+}
