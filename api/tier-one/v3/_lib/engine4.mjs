@@ -56,20 +56,71 @@ export const MODES = ['daily', 'practice', 'career', 'deadline', 'room', 'challe
 // Mode rule sets. Every mode is the same game; only these knobs move.
 export function rulesFor(mode, opts = {}) {
   const R = structuredClone(RULES);
-  if (mode === 'deadline') {        // Deadline Day: one day, six stories, a clock, the physio from the start
+  if (mode === 'deadline' || (mode === 'career' && opts.live)) {   // Deadline Day: one day, six stories, a clock, the physio from the start
     R.STORIES = 6; R.DAYS = 1; R.CALLS = [6]; R.EARLY = [0, 0, 0]; R.CLOCK_S = DEADLINE_SECONDS;
     for (const k of SRC) R.SOURCES[k].from = 1;
     R.RIVALS = [{ id: 'tabloid', days: [0, 0], p: 0.6, kind: 'street', rel: 0.4 }, { id: 'itk', days: [0, 0], p: 0.5, kind: 'street', rel: 0.6 }];
     R.TIERS = { T1: 42, T2: 30, T3: 15, T4: 0 };      // no early bonus, but the physio is in from the start
+    if (mode === 'deadline') return R;
+    R.CLOCK_S = Math.max(15, Math.min(DEADLINE_SECONDS, opts.live | 0));   // Story's finale: a shorter Live (45 s)
   }
   if (mode === 'career' || mode === 'tutorial') {     // Career: rank sets the board size and how good your contacts are
     const rank = mode === 'tutorial' ? 0 : Math.min(4, Math.max(0, opts.rank | 0));    // 0 Nobody … 4 Tier One
-    R.STORIES = [3, 4, 5, 5, 6][rank];
-    R.CALLS = [[3, 3, 3, 3, 2], [3, 3, 3, 3, 2], [3, 3, 3, 3, 2], [4, 3, 3, 3, 2], [4, 4, 3, 3, 2]][rank];
-    if (mode === 'career' && opts.trust) for (const [k, t] of Object.entries(opts.trust)) sharpen(R.SOURCES[k], Math.min(1, Math.max(0, Number(t) || 0)));
+    if (!opts.live || mode === 'tutorial') {
+      R.STORIES = [3, 4, 5, 5, 6][rank];
+      R.CALLS = [[3, 3, 3, 3, 2], [3, 3, 3, 3, 2], [3, 3, 3, 3, 2], [4, 3, 3, 3, 2], [4, 4, 3, 3, 2]][rank];
+    }
+    if (mode === 'career') story(R, rank, opts);
   }
   return R;
 }
+// ---------- Story mode (CONCEPT4 §10, §16): bosses, contacts by chapter, extras, Vince's clients, Vince's play.
+// Every option is optional; without them Career plays exactly as before. All of it is plain data on R, so a window's
+// rules rebuild from its spec (rulesOf) and a resumed window is the same window.
+//   boss       'bants' | 'kev' | 'pete' | 'roar' | 'vince': the chapter's boss posts on (almost) every story; their
+//              accuracy (rel), posting chance (p) and days come from BOSSES[boss][bossRank] (bossRank defaults to rank),
+//              so a boss met again at a higher rank posts earlier and is right more often.
+//   rivals     which ordinary rival accounts post (ids from RIVAL_IDS); the boss is added on top.
+//   contacts   which contacts exist this window (others answer 'none'); missing = all five.
+//   extraDm    1–2 more DMs on day 1 (a bought Career extra).
+//   tagged     story indexes that are Vince's clients: the agent talks the deal up (TALK) and @ITK_Kev posts a day early.
+//   planted    { i, src }: Vince's play; that contact repeats the rumour mill on story i whatever the truth.
+//   live       seconds: the finale, a Deadline Day window on a shorter clock.
+export const BOSSES = {
+  bants: { id: 'tabloid', kind: 'street', t: [[0.95, 0.40, 1, 2], [0.95, 0.45, 1, 2], [0.95, 0.50, 1, 1], [1, 0.55, 1, 1], [1, 0.60, 1, 1]] },
+  kev:   { id: 'itk',     kind: 'street', t: [[0.90, 0.55, 2, 3], [0.90, 0.60, 2, 3], [0.90, 0.65, 1, 3], [0.95, 0.70, 1, 2], [0.95, 0.75, 1, 2]] },
+  pete:  { id: 'insider', kind: 'own',    t: [[0.85, 0.85, 3, 4], [0.85, 0.87, 3, 4], [0.90, 0.90, 3, 4], [0.90, 0.92, 2, 4], [0.95, 0.94, 2, 3]] },
+  roar:  { id: 'roar',    kind: 'street', t: [[0.90, 0.55, 1, 3], [0.90, 0.60, 1, 3], [0.95, 0.65, 1, 3], [0.95, 0.70, 1, 2], [1, 0.75, 1, 2]] },
+  vince: { id: 'vince',   kind: 'street', t: [[0.95, 0.45, 1, 2], [0.95, 0.50, 1, 2], [0.95, 0.55, 1, 2], [1, 0.60, 1, 2], [1, 0.65, 1, 1]] },   // the same "Done deal": he repeats the mill
+};
+// The agent on a Vince's-client story: talks the deal up (says SIGNS far more often when it isn't true).
+export const TALK = [[0.85, 0.08, 0.07], [0.45, 0.45, 0.10], [0.40, 0.05, 0.55]];
+const clampI = (x, lo, hi) => Math.min(hi, Math.max(lo, x | 0));
+function story(R, rank, o) {
+  if (o.trust) for (const [k, t] of Object.entries(o.trust)) sharpen(R.SOURCES[k], Math.min(1, Math.max(0, Number(t) || 0)));
+  if (Array.isArray(o.contacts) && o.contacts.length) for (const k of SRC) if (!o.contacts.includes(k)) delete R.SOURCES[k];
+  if (Array.isArray(o.rivals)) R.RIVALS = R.RIVALS.filter((r) => o.rivals.includes(r.id));
+  const b = o.boss && BOSSES[o.boss];
+  if (b) {
+    const [p, rel, d0, d1] = b.t[clampI(o.bossRank ?? rank, 0, 4)];
+    const days = R.DAYS === 1 ? [0, 0] : [Math.min(d0, R.DAYS - 1), Math.min(d1, R.DAYS - 1)];
+    R.RIVALS = R.RIVALS.filter((r) => r.id !== b.id).concat([{ id: b.id, days, p, kind: b.kind, rel, boss: o.boss }]);
+  }
+  if (o.extraDm) R.CALLS[0] += clampI(o.extraDm, 0, 2);
+  const per = {};
+  if (Array.isArray(o.tagged) && o.tagged.length) {
+    R.TAGGED = o.tagged.filter((i) => Number.isInteger(i) && i >= 0 && i < R.STORIES);
+    if (R.SOURCES.agent) for (const i of R.TAGGED) per[i] = { agent: { ...R.SOURCES.agent, M: TALK.map((r) => r.slice()) } };
+  }
+  const pl = o.planted;
+  if (pl && Number.isInteger(pl.i) && pl.i >= 0 && pl.i < R.STORIES && R.SOURCES[pl.src] && !(R.SOURCES[pl.src].says && R.SOURCES[pl.src].says.length === 2)) {
+    const so = R.SOURCES[pl.src];   // a three-way contact (barber, agent, spotter, physio) whose words line up with the endings
+    per[pl.i] = { ...(per[pl.i] || {}), [pl.src]: { cost: so.cost, from: so.from, ...(so.says ? { says: so.says } : {}), kind: 'street', rel: 0, planted: true } };
+  }
+  if (Object.keys(per).length) R.PER = per;
+}
+/** The source that answers on story i (a per-story override from Story mode, else the contact's own card). */
+export const srcOf = (R, i, src) => (R.PER && R.PER[i] && R.PER[i][src]) || R.SOURCES[src];
 // A rule spec that can travel (a challenge, a saved window): the mode and the knobs, nothing else. Unknown modes play RULES.
 export function specOf(mode, opts = {}) {
   const m = MODES.includes(mode) ? mode : 'daily';
@@ -81,6 +132,14 @@ export function specOf(mode, opts = {}) {
       for (const k of SRC) if (typeof opts.trust[k] === 'number' && opts.trust[k] > 0) trust[k] = Math.min(1, Math.round(opts.trust[k] * 100) / 100);
       if (Object.keys(trust).length) out.opts.trust = trust;
     }
+    const o = out.opts, ids = (a, ok) => (Array.isArray(a) ? a.filter((x) => ok.includes(x)) : null);
+    if (opts.boss && BOSSES[opts.boss]) { o.boss = opts.boss; if (opts.bossRank != null) o.bossRank = clampI(opts.bossRank, 0, 4); }
+    const c = ids(opts.contacts, SRC); if (c && c.length) o.contacts = c;
+    const r = ids(opts.rivals, RIVAL_IDS); if (r) o.rivals = r;
+    if (opts.extraDm) o.extraDm = clampI(opts.extraDm, 0, 2);
+    if (Array.isArray(opts.tagged) && opts.tagged.length) o.tagged = opts.tagged.filter((i) => Number.isInteger(i) && i >= 0 && i < 6);
+    if (opts.planted && Number.isInteger(opts.planted.i) && SRC.includes(opts.planted.src)) o.planted = { i: opts.planted.i, src: opts.planted.src };
+    if (opts.live) o.live = clampI(opts.live, 15, DEADLINE_SECONDS);
   }
   return out;
 }
@@ -116,7 +175,8 @@ export function buildBoard(seed, R = RULES) {
     const truth = rng.w(R.PRIOR), spin = rng.w(R.SPIN[truth]), rivals = [];
     for (const rv of R.RIVALS) {
       if (!rng.chance(rv.p)) continue;
-      const day = rv.days[0] + rng.int(rv.days[1] - rv.days[0] + 1);
+      let day = rv.days[0] + rng.int(rv.days[1] - rv.days[0] + 1);
+      if (rv.id === 'itk' && R.TAGGED && R.TAGGED.includes(i)) day = Math.max(Math.min(1, day), day - 1);   // Vince's client: Kev hears first
       rivals.push({ id: rv.id, day, claim: rng.w(dist(rv, truth, spin)) });
     }
     stories.push({ i, truth, spin, rivals });
@@ -126,7 +186,7 @@ export function buildBoard(seed, R = RULES) {
 // Same question, same answer, for everyone, in any order: one seed is one fair ranked board.
 export function answer(board, i, src, R = RULES) {
   const s = board.stories[i];
-  return new RNG(hashStr(`${board.seed}|${i}|${src}`)).w(dist(R.SOURCES[src], s.truth, s.spin));
+  return new RNG(hashStr(`${board.seed}|${i}|${src}`)).w(dist(srcOf(R, i, src), s.truth, s.spin));
 }
 
 export function newGame(board, R = RULES) {
@@ -228,7 +288,7 @@ export function posterior(g, i) {
   const R = g.R, L = [0, 0, 0];
   for (const t of O3) for (const sp of O3) {
     let l = R.PRIOR[t] * R.SPIN[t][sp]; if (!l) continue;
-    for (const c of g.clues[i]) l *= lik(R.SOURCES[c.src], t, sp, c.r);
+    for (const c of g.clues[i]) l *= lik(srcOf(R, i, c.src), t, sp, c.r);
     for (const f of g.feed) if (f.i === i) l *= lik(R.RIVALS.find((x) => x.id === f.id), t, sp, f.claim);
     L[t] += l;
   }
