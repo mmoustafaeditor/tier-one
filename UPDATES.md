@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer 2.2.0: version name, READMEs and a new APK
+- **What changed:** The release that merged in PR #6 (audit fixes, V2.7–V2.10, navigation redesign) is now called 2.2.0 (`web/package.json`), and the root and game READMEs show 2.2.0 with what's new. After this lands, the build workflow is run with "Also publish a new APK", so `downloads/TheGaffer.apk` bundles 2.2.0 and the update feed `api/the-gaffer/latest.js` (written by CI) announces it.
+- **Files:** `games/the-gaffer/web/package.json`, `README.md`, `games/the-gaffer/README.md`, `UPDATES.md`; then by CI: `the-gaffer/*`, `games/the-gaffer/build/*`, `downloads/TheGaffer.apk`, `api/the-gaffer/latest.js`
+- **Heads-up for the team:** Installed Gaffer apps will offer the 2.2.0 APK download (they already run the 2.2 game through live updates). Nothing changes for Tier One.
+
 ## 2026-10-01 · saifsaber · The Gaffer: navigation redesign (UI/UX pass, branch only)
 - **What changed:** Inventory, expert usability review (18 measured tasks, phone and desktop, no real users), new information architecture and its implementation. Squad gets a labelled row at the top of all five areas (Players · Dressing room · Training · Medical · Academy): on phones these were ~2,600 px below the fold. The inbox gets a line on Today with the unread count (3 taps → 1), and the desktop rail gains labelled Inbox & news and Settings items. The Match tab "Next match" is renamed "Tactics". Segment and chip rows keep the chosen item in view, and Arabic chart months no longer overlap. Same look, same routes, no save change.
 - **Files:** `games/the-gaffer/web/src/ui2/{shell,SquadTabs (new),Squad,Room,Training,Pathway,Today,Transfers,Office}.tsx`, `App.tsx`, `styles/app.css`, `lang-nav*.ts` (new), `lang-v2*.ts`, `ui-tests/nav.mjs` (new, `npm run test:nav`), `package.json`; docs in `audit-the-gaffer/THE_GAFFER_{FEATURE_NAVIGATION_INVENTORY,UI_UX_AUDIT,INFORMATION_ARCHITECTURE,UI_UX_VERIFICATION}.md` with before/after screenshots in `audit-the-gaffer/evidence/ux/`

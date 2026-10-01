@@ -12,6 +12,8 @@
 
 **Canonical product name:** The Gaffer.
 
+**Current release: web and Android `2.2.0`.** New in 2.2: the design-audit fixes, club vision (board meeting, facility builds), awards night, club legends, AI managers sacked by their boards, derbies, press conferences, Semba Credits per season with unlockable club looks, and the new navigation (Squad areas row, inbox on Today). Audit and UX docs: [`audit-the-gaffer/`](../../audit-the-gaffer).
+
 **v2.0: the 2026/27 rebuild (V2.0–V2.3).** Spec: [`V2_DESIGN.md`](V2_DESIGN.md); look: [`v2/look/`](v2/look/).
 
 - **Real 2026/27 world:** the Premier League, LaLiga, Serie A, Bundesliga, Ligue 1 and the big clubs of Egypt and Saudi
@@ -52,7 +54,7 @@ Push a change to The Gaffer on `main` and it reaches everyone without anyone reb
    "Also publish a new APK"). Installed apps then show "App update x.y is out · Download".
 
 Every build has a number (minutes since 1970). It's the web build number, the APK versionCode and what the apps compare,
-so nobody bumps versions by hand; `web/package.json` holds the name shown to players (2.0.0).
+so nobody bumps versions by hand; `web/package.json` holds the name shown to players (2.2.0).
 
 **One-time setup (mmoustafaeditor):** Vercel only deploys commits made by members of the Vercel team, so the bot's
 publish commit needs a deploy hook. Vercel › tier-one › Settings › Git › Deploy Hooks › create one for `main`, then
