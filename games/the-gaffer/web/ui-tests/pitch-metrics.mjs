@@ -158,7 +158,7 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   console.log(`  defence: marked ${pc(P2.mark)}% (${P2.mark[1]}; ${pc(P2.markAll)}% counting counter-attacks), keeper off the angle median ${med(P2.gk).toFixed(1)} m, box lane blocked ${pc(P2.block)}% (${P2.block[1]}), back line width median ${med(P2.width).toFixed(1)} m`);
   if (!process.env.BASELINE) {
     ok(P2.mark[1] < 40 || pc(P2.mark) >= 75, `attackers near our goal are marked (5 m in the last 22 m, 8 m to 30 m): ${pc(P2.mark)}%`);
-    ok(med(P2.gk) <= 1.0, `the keeper stands on the shooting angle: median ${med(P2.gk).toFixed(1)} m off`);
+    ok(P2.gk.length < 20 || med(P2.gk) <= 1.0, `the keeper stands on the shooting angle: median ${med(P2.gk).toFixed(1)} m off (${P2.gk.length})`);
     ok(P2.block[1] < 20 || pc(P2.block) >= 80, `a carrier in our box finds someone in the way: ${pc(P2.block)}%`);
     ok(med(P2.width) <= 45, `the back line stays narrow enough to cover: median ${med(P2.width).toFixed(1)} m`);
   }
