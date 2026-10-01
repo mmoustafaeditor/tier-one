@@ -1,0 +1,1 @@
+import{ay as a,az as s,O as o,a0 as t,aB as n,aC as r}from"./index-BYSFSgn3.js";const c=(a,o)=>s(a,"out."+r[o]),u=(a,o)=>s(a,"str."+n[o]),e=(a,t)=>s(a,"out4."+o[t]),i=(a,o)=>s(a,"back4."+t[o]);function b(s,o,t){const n=a(s,`src4.says.${o}`);return n&&null!=n[t]?n[t]:e(s,t)}export{c as a,i as b,b as c,e as o,u as s};

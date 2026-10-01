@@ -7,6 +7,11 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-01 · mmoustafaeditor (Claude Code session) · Tier One 4.0.0 "Insider" live (web)
+- **What changed:** The game is now a phone: lock screen, home screen and apps (Blurt, DMs, Lens, Story, Live, Market, Groups, Boards, Settings). New rules (5 stories × 5 days, SIGNS / ELSEWHERE / STAYS, Hint / Post / Drop, Scoops; v4 Dailies from 5 Oct), XP and an endless Level, Season track, Rep ranks Nobody → Tier One, Sponsors that pay per right call, the Market for real transfers (watch free, call at Level 2), Story mode with chapter bosses and phones, lock faces, widgets, icon packs, themes, phone skins, one shop. Films removed. Web only; no APK.
+- **Files:** `games/tier-one/v3/**` (CONCEPT4.md, RULES4.md), `api/tier-one/v3/_lib/engine4.mjs`, `api/tier-one/v3/index.js`, `api/tier-one/v4/config/catalog.json`, `tier-one/` build.
+- **Heads-up for the team:** Android feed (`api/tier-one/latest.js`, 3.4.0 vc19) untouched. Not browser-tested before release (owner testing).
+
 ## YYYY-MM-DD · <who> · <short title>
 - **What changed:** …
 - **Files:** …
