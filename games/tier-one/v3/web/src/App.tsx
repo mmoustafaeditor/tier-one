@@ -13,8 +13,9 @@ import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driv
 import { Home } from './screens/Home';
 import { LockScreen } from './screens/Front';
 import { installTilt, prefersReducedMotion } from './ui/game';
-import { Phone, DeskPanel, AppIcon, appOf, appById, routeOf, isUnlocked, bumpUse, batteryMode, levelInfo, unlockLevel, APPS, type AppId } from './ui/phone';
+import { Phone, DeskPanel, AppIcon, appOf, appById, routeOf, isUnlocked, bumpUse, batteryMode, levelInfo, unlockLevel, callLevel, APPS, type AppId } from './ui/phone';
 import { NotifyHost, notify, setTrayNav } from './ui/juice';
+import { onGain } from './lib/meta';
 // Code-split web build (GOTY.md §8.2): the home screen and the lock screen ship with the shell; every app is its own
 // chunk, fetched on first open (the service worker keeps the play loop's chunks cached after its install).
 const MeScreen = lazy(() => import('./screens/Me').then((m) => ({ default: m.MeScreen })));
@@ -199,11 +200,18 @@ export function App() {
       for (let n = lastLv.current + 1; n <= lv; n++) {
         notify({ id: 'lvl:' + n, app: 'lens', title: t('os.tray.level', { n }), body: t('os.tray.levelB'), action: { app: 'lens' }, tone: 'gold' });
         for (const a of APPS) if (unlockLevel(a.id) === n) notify({ id: 'unl:' + a.id, app: a.id, title: t('os.tray.unlock', { app: t('os.app.' + a.id) }), body: t('os.tray.unlockB', { n }), action: { app: a.id }, tone: 'gold' });
+        for (const a of APPS) if (a.calls && callLevel(a.id) === n) notify({ id: 'unl:' + a.id + ':calls', app: a.id, title: t('ma4.callsOpen', { app: t('os.app.' + a.id) }), body: t('os.tray.unlockB', { n }), action: { app: a.id }, tone: 'gold' });
       }
       sfx('level.up');
     }
     lastLv.current = lv;
   }, [s.played, s.xp, s.lang]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Sponsors into the tray (CONCEPT4 §4): an offer lands in the DMs; a brand that walked says so once. lib/meta.ts fires
+  // every Gain it returns; the tray is idempotent per id, so a Results screen re-reading a window never repeats it.
+  useEffect(() => onGain((g) => {
+    for (const o of g.offers || []) notify({ id: 'deal:' + o.id, app: 'dms', title: t('os.tray.deal', { brand: t('e4.sp.brand.' + o.brand + '.n') }), body: t(o.first ? 'ma4.dealFirstB' : 'os.tray.dealB'), action: { app: 'dms' }, tone: 'gold' });
+    if (g.deal?.status === 'pulled') notify({ id: 'walked:' + g.deal.brand + ':' + ymdUTC(), app: 'dms', title: t('ma4.walked', { brand: t('e4.sp.brand.' + g.deal.brand + '.n') }), body: t('ma4.walkedB', { n: num(g.deal.coins) }), action: { app: 'lens' }, tone: 'bad' });
+  }), [t]);
 
   const edition = () => update((x) => { const cur = x.edition || (matchMedia('(prefers-color-scheme: dark)').matches ? 'late' : 'morning'); x.edition = cur === 'late' ? 'morning' : 'late'; });
   const app = appOf(route);

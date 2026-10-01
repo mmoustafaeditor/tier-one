@@ -13,14 +13,16 @@ import { addSeasonXP, seasonAt } from './season';
 import { earnHook } from './earnhook';
 import {
   XP, COINS, SECRET_FILES, SECRET_FILE_XP, credit as credit0, debit, levelOf, levelCoins, newUnlocks, xpOf, xpForWindow, coinsForWindow,
-  emptyGain, rankIndex, underReview, creditHooks, type Gain, type SecretFile, type Mode4,
+  emptyGain, rankIndex, underReview, creditHooks, fireGain, type Gain, type SecretFile, type Mode4,
 } from './economy';
+export { onGain } from './economy';
+import type { Driver4, Outcome4 } from './driver';
 /** A result as a screen hands it over: the engine's Result (v3) or Result4, plus what the server adds (rank, par…). */
 export type AnyResult = (Result | Result4) & { rank?: number | null; players?: number; par?: number | null; row?: string; cast?: CastSaga[] };
 import { recordInto, liteOf, bylineOf, rankOf, windowKey, type CallLite } from './byline';
-import { onCall as sponsorCall, onTermEnd as sponsorTermEnd, refreshOffers, sponsorGain, type CallOutcome, type TermOutcome, type DealMode } from './deals';
-type Sponsor = { calls: CallOutcome[]; ends: TermOutcome[] };
-const noSponsor = (): Sponsor => ({ calls: [], ends: [] });
+import { onCall as sponsorCall, onTermEnd as sponsorTermEnd, refreshOffers, sponsorGain, type CallOutcome, type TermOutcome, type DealMode, type Offer } from './deals';
+type Sponsor = { calls: CallOutcome[]; ends: TermOutcome[]; offers: Offer[] };
+const noSponsor = (): Sponsor => ({ calls: [], ends: [], offers: [] });
 
 type Toast = { id: number; kind: 'ach' | 'info' | 'warn'; title: string; body?: string };
 const listeners = new Set<(t: Toast[]) => void>();
@@ -94,7 +96,7 @@ function windowFiles(s: Save, r: AnyResult, mode: Mode4, got: SecretFile[]) {
 // ---------------------------------------------------------------- the Gain (what the results thread reads)
 interface Snap { level: number; xp: number; rep: number; followers: number; rank: Gain['rank']; credits: number }
 const snapOf = (s: Save): Snap => { const b = bylineOf(s); return { level: levelOf(xpOf(s)).n, xp: xpOf(s), rep: b.rep, followers: b.followers, rank: rankOf(s), credits: s.credits }; };
-function gainOf(before: Snap, s: Save, sp: Sponsor, files: SecretFile[]): Gain {
+function gainOf(before: Snap, s: Save, sp: Sponsor, files: SecretFile[], mode: Parameters<typeof fireGain>[1]): Gain {
   const a = snapOf(s), g = emptyGain(a.level, a.rep, a.followers, a.rank);
   g.xp = a.xp - before.xp; g.levelUp = a.level > before.level; g.unlocked = newUnlocks(before.level, a.level);
   g.coins = a.credits - before.credits;
@@ -103,7 +105,9 @@ function gainOf(before: Snap, s: Save, sp: Sponsor, files: SecretFile[]): Gain {
   g.review = underReview(a.rep, bylineOf(s).rank || 0);
   const sg = sponsorGain(sp.calls, sp.ends);
   if (sg) { g.sponsor = sg; g.deal = { brand: sg.brand, status: sg.walked ? 'pulled' : 'paid', coins: sg.paid }; }
+  if (sp.offers.length) g.offers = sp.offers.map((o) => ({ id: o.id, brand: o.brand, first: o.first }));
   if (files.length) g.files = files;
+  fireGain(g, mode);
   return g;
 }
 const modeKey = (mode: Mode4, extra: { no?: number; seed?: string; room?: { code: string; round: number } }) => windowKey({ mode, ...extra });
@@ -119,7 +123,7 @@ function settleWindow(s: Save, r: AnyResult, mode: Mode4, key: string, opts: { x
   for (const p of lite.filter((x) => x.called).sort((a, c) => a.day - c.day || a.i - c.i)) { const o = sponsorCall(s, { mode: mode as DealMode, right: p.right, s: p.s, scoop: p.scoop, i: p.i }); if (o) sp.calls.push(o); }
   s.stats.windows = (s.stats.windows || 0) + 1;
   if (mode !== 'practice') sp.ends.push(...sponsorTermEnd(s, { afterWindow: true }));
-  refreshOffers(s);
+  sp.offers.push(...refreshOffers(s));
   if (opts.coins) credit(s, opts.coins, mode + ':' + (opts.no || key));
   addXP(s, opts.xp ?? xpForWindow(mode, r.tier));
   trackWindow(s, r, (mode === 'career' ? 'story' : mode === 'wire' ? 'practice' : mode) as TrackMode);
@@ -156,7 +160,7 @@ export function onDailyDone(dayKey: string, no: number, r: AnyResult, extra: { d
     out.files.push(...files);
     wireCredit?.(s, r.tier); // §7.1: a Tier One Daily earns a Wire credit (lib/desk.ts registers the hook)
   });
-  return gainOf(before, getSave(), out.sp, out.files);
+  return gainOf(before, getSave(), out.sp, out.files, 'daily');
 }
 export function onPracticeDone(r: AnyResult, coach: boolean, seed = ''): Gain {
   const before = snapOf(getSave());
@@ -168,7 +172,7 @@ export function onPracticeDone(r: AnyResult, coach: boolean, seed = ''): Gain {
     if (coach) s.stats.coach = (s.stats.coach || 0) + 1;
     out = settleWindow(s, r, 'practice', modeKey('practice', { seed: seed || 'p' + s.practice.played }), { xp: s.practice.today <= XP.practiceFreePerDay ? XP.practice : 0 });
   });
-  return gainOf(before, getSave(), out.sp, out.files);
+  return gainOf(before, getSave(), out.sp, out.files, 'practice');
 }
 /** A Career window. lib/career.ts applyWindow has already moved the byline (recordInto under the pre-key) in the same
  *  Results settle; this adds the XP, the coins, deals and files. `milestoneCredits` is the 3.x argument, unused. */
@@ -180,7 +184,7 @@ export function onCareerDone(r: AnyResult, _milestoneCredits?: number): Gain {
     const c = s.career; if (!c) return;
     out = settleWindow(s, r, 'career', 'career:' + c.windows, { coins: coinsForWindow('career') });
   });
-  const g = gainOf(before, getSave(), out.sp, out.files);
+  const g = gainOf(before, getSave(), out.sp, out.files, 'career');
   // The byline moved before this call: read the window's own followers/rep from the recorded summary.
   if (last && /^pre:career:/.test(last.key)) { g.followersDelta = last.followers; g.repDelta = last.rep; g.rankUp = !!last.rankUp; }
   return g;
@@ -189,28 +193,46 @@ export function onRoomDone(r: AnyResult, room?: { code: string; round: number })
   const before = snapOf(getSave());
   let out: { sp: Sponsor; files: SecretFile[] } = { sp: noSponsor(), files: [] };
   update((s) => { s.stats.rooms = (s.stats.rooms || 0) + 1; out = settleWindow(s, r, 'room', modeKey('room', { room }), { room }); });
-  return gainOf(before, getSave(), out.sp, out.files);
+  return gainOf(before, getSave(), out.sp, out.files, 'room');
 }
 /** Deadline Day (Live or Practice). `ranked` is a DD Live day; practice runs still pay XP, never a ranked score. */
 export function onDeadlineDone(r: AnyResult, seed: string, ranked = false): Gain {
   const before = snapOf(getSave());
   let out: { sp: Sponsor; files: SecretFile[] } = { sp: noSponsor(), files: [] };
   update((s) => { s.stats.deadline = (s.stats.deadline || 0) + 1; if (ranked) s.stats.ddLive = (s.stats.ddLive || 0) + 1; out = settleWindow(s, r, 'deadline', 'deadline:' + seed); });
-  return gainOf(before, getSave(), out.sp, out.files);
+  return gainOf(before, getSave(), out.sp, out.files, 'deadline');
 }
 /** A Wire call posted: 10 XP. The call's result (followers, Rep at half) lands through lib/byline.ts recordWireResolution. */
 export function onWireFiled(): Gain {
   const before = snapOf(getSave());
   update((s) => { s.stats.wire = (s.stats.wire || 0) + 1; s.stats.m_wire = (s.stats.m_wire || 0) + 1; addXP(s, XP.wire); earnHook(s); });
-  return gainOf(before, getSave(), noSponsor(), []);
+  return gainOf(before, getSave(), noSponsor(), [], 'wire');
 }
 /** A Wire call settled right: +15 XP (and the coins the Wire screen pays are routed through credit()). The sponsor's
  *  per-call pay for Market calls lands in lib/byline.ts recordWireResolution, where the call resolves. */
 export function onWireRight(coins = 0, rid = ''): Gain {
   const before = snapOf(getSave());
   const sp = noSponsor();
-  update((s) => { addXP(s, XP.wireRight); if (coins) credit(s, coins, 'wire:' + rid); sp.ends.push(...sponsorTermEnd(s)); refreshOffers(s); const got: SecretFile[] = []; if ((s.byline?.hot || 0) >= 10) grant(s, 'hot10', got); earnHook(s); });
-  return gainOf(before, getSave(), sp, []);
+  update((s) => { addXP(s, XP.wireRight); if (coins) credit(s, coins, 'wire:' + rid); sp.ends.push(...sponsorTermEnd(s)); sp.offers.push(...refreshOffers(s)); const got: SecretFile[] = []; if ((s.byline?.hot || 0) >= 10) grant(s, 'hot10', got); earnHook(s); });
+  return gainOf(before, getSave(), sp, [], 'wire');
+}
+
+// ---------------------------------------------------------------- the one place a Driver4 window settles
+/** Pass as `onDone` to lib/driver.ts makeDriver (or call with `d.result()` once `d.isOver()`): routes the window's
+ *  Outcome4 to the right settle by the driver's mode and returns the Gain the results thread reads. Local modes
+ *  settle at once; the Daily and a room round settle when the server's scored result lands. The tutorial and a
+ *  challenge play by Practice's book (XP 20, the free-per-day cap, no coins, no sponsor); a challenge's log still
+ *  goes to the server through the play screen. Idempotent per window key, like every on*Done. */
+export function onDriverDone(r: Outcome4, d: Pick<Driver4, 'mode' | 'seed' | 'no' | 'room' | 'coach' | 'code'>): Gain {
+  switch (d.mode) {
+    case 'daily': return onDailyDone(ymdUTC(), d.no || r.no || 0, r);
+    case 'room': return onRoomDone(r, d.room ? { code: d.room.code, round: d.room.round } : undefined);
+    case 'career': return onCareerDone(r);
+    case 'deadline': return onDeadlineDone(r, d.seed, false);
+    case 'tutorial': return onPracticeDone(r, true, d.seed);
+    case 'challenge': return onPracticeDone(r, !!d.coach, d.code || d.seed);
+    default: return onPracticeDone(r, !!d.coach, d.seed);
+  }
 }
 export function onShared() { update((s) => { s.stats.shared = (s.stats.shared || 0) + 1; }); }
 /** 3.x hook kept for lib/desk.ts: a Tier One Daily earns one Wire credit. */

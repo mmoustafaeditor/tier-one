@@ -39,14 +39,20 @@ export function levelOf(xp: number): LevelView {
 }
 /** Lifetime XP at which level L begins. */
 export function xpAtLevel(L: number): number { let x = 0; for (let k = 1; k < L; k++) x += xpForLevel(k); return x; }
-/** What a level opens (RULES4 §3, CONCEPT4 §5/§9): `wire` = Market calls (watching the Market is free from the start),
- *  Live at 3, Groups at 4. Shown as "Reach Level N" with the bar, never as a lock alone. The phone's app registry
- *  (ui/phone.tsx APPS) reads these. */
-export const levelUnlocks = { wire: 2, live: 3, groups: 4 } as const;
+/** What a level opens (RULES4 §3, CONCEPT4 §5/§9): `market` = Market calls at 2 (watching the Market is free from the
+ *  start, so the app's tile is never locked), Live at 3, Groups at 4. Shown as "Reach Level N" with the bar, never as
+ *  a lock alone. The phone's app registry (ui/phone.tsx APPS) reads these. The keys are the apps' ids; `wire` is the
+ *  Market's id in old code and routes (`{ n: 'wire' }`, Mode4 'wire') and is accepted as an alias everywhere here. */
+export const levelUnlocks = { market: 2, live: 3, groups: 4 } as const;
 export type Unlock = keyof typeof levelUnlocks;
-export const UNLOCKS: Unlock[] = ['wire', 'live', 'groups'];
+/** An unlock key as old code spells it: `wire` means `market`. */
+export type UnlockKey = Unlock | 'wire';
+export const unlockKey = (k: UnlockKey): Unlock => (k === 'wire' ? 'market' : k);
+export const UNLOCKS: Unlock[] = ['market', 'live', 'groups'];
+/** The level an unlock opens at (`wire` reads as `market`). */
+export const unlockLevelOf = (k: UnlockKey): number => levelUnlocks[unlockKey(k)];
 export const unlockedAt = (level: number): Unlock[] => UNLOCKS.filter((k) => level >= levelUnlocks[k]);
-export const isUnlocked = (k: Unlock, level: number) => level >= levelUnlocks[k];
+export const isUnlocked = (k: UnlockKey, level: number) => level >= unlockLevelOf(k);
 /** Unlocks crossed between two levels (for the results thread's "Live is open" line). */
 export const newUnlocks = (from: number, to: number): Unlock[] => UNLOCKS.filter((k) => from < levelUnlocks[k] && to >= levelUnlocks[k]);
 
@@ -165,11 +171,21 @@ export interface Gain {
   sponsor?: SponsorGain;
   /** Summary of `sponsor` in the shape the results thread's one line reads: paid = coins this window, pulled = the brand walked. */
   deal?: { brand: string; status: 'paid' | 'pulled'; coins: number };
+  /** New sponsor offers that landed in the DMs with this result (lib/deals.ts refreshOffers): the tray announces them. */
+  offers?: { id: string; brand: string; first?: boolean }[];
   files?: SecretFile[]; // secret files opened by this window
 }
 export interface SponsorLine { i?: number; kind: 'right' | 'scoop' | 'miss' | 'warn' | 'strike' | 'walked' | 'bonus' | 'done' | 'star' | 'look'; paid: number; key: string; v: Record<string, string | number> }
 export interface SponsorGain { brand: string; tier: SponsorTier; paid: number; lines: SponsorLine[]; bonus?: number; walked?: boolean; star?: number; look?: string }
 export const emptyGain = (level: number, rep: number, followers: number, rank: RankId): Gain => ({ xp: 0, level, levelUp: false, coins: 0, rep, repDelta: 0, followers, followersDelta: 0, rank, rankUp: false, review: false, unlocked: [] });
+
+// ---------------------------------------------------------------- who hears about a Gain (the shell's tray, a results thread)
+// lib/meta.ts fires every Gain it returns through here; App registers the tray (ui/juice.tsx notify) so a deal
+// offer, a brand walking, an unlock or a level-up become real notifications without lib → ui imports.
+export type GainHook = (g: Gain, mode: Mode4 | 'tutorial' | 'challenge') => void;
+const gainHooks = new Set<GainHook>();
+export const onGain = (f: GainHook) => { gainHooks.add(f); return () => { gainHooks.delete(f); }; };
+export const fireGain = (g: Gain, mode: Mode4 | 'tutorial' | 'challenge') => { gainHooks.forEach((f) => { try { f(g, mode); } catch { /* a listener must never break a settle */ } }); };
 
 // ---------------------------------------------------------------- a regular day, for the balance note in RULES4
 /** XP a regular player earns a day (Daily + a Career window + a minute of Wire): about 180. */

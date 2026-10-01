@@ -7,7 +7,8 @@
 //   AppId, APPS, appById(id), appOf(route) → AppId | null, routeOf(app) → Route
 //   <AppIcon id size/>                       the app's tile icon (one icon system, no emoji)
 //   levelInfo(save) → LevelView { n, into, need, pct, total }  the player's level (lib/economy.ts levelOf on save.xp)
-//   unlockLevel(app), isUnlocked(app, save)   "Reach Level N" gates (lib/economy.ts levelUnlocks)
+//   unlockLevel(app), isUnlocked(app, save)   "Reach Level N" tile gates (lib/economy.ts levelUnlocks: Live 3, Groups 4)
+//   callLevel(app), canCall(app, save)        the gate INSIDE an open app (Market: watching free, calls at Level 2)
 //   batteryMode('idle' | 'window' | 'charge') the status-bar battery, driven by the route
 //   bumpUse(app), dockApps(save)              the dock
 //   <StatusBar/>, <Phone/>, <HomeBar/>, <DeskPanel/>
@@ -31,7 +32,9 @@ import type { Route } from '../App';
 // ---------------------------------------------------------------- the apps
 export type AppId = 'blurt' | 'dms' | 'lens' | 'story' | 'live' | 'market' | 'groups' | 'boards' | 'settings';
 export type Badge = number | 'dot' | 0;
-export interface AppDef { id: AppId; accent: string; ink?: string; unlock: number; route: Route; aliases: string[]; badge: (s: Save) => Badge }
+/** `unlock`: the level the tile opens at (lib/economy.ts levelUnlocks). `calls`: the level the app's own call / post
+ *  action opens at while the rest of the app is free to use from the start (the Market, CONCEPT4 §9). */
+export interface AppDef { id: AppId; accent: string; ink?: string; unlock: number; calls?: number; route: Route; aliases: string[]; badge: (s: Save) => Badge }
 const today = () => ymdUTC();
 export const APPS: AppDef[] = [
   { id: 'blurt', accent: '#FF4D2E', unlock: 1, route: { n: 'daily' }, aliases: ['daily', 'window', 'feed'], badge: (s) => (!s.daily[today()] ? 'dot' : unreadOf(s).filter((f) => f.kind === 'window' || f.kind === 'rival' || f.kind === 'hot').length) },
@@ -39,7 +42,7 @@ export const APPS: AppDef[] = [
   { id: 'lens', accent: '#F2B632', ink: '#2A1C00', unlock: 1, route: { n: 'me' }, aliases: ['me', 'profile', 'pass', 'looks', 'customize'], badge: (s) => (missionsView(s) || []).filter((m) => m.done && !m.claimed).length + Object.values(s.prizes || {}).filter((p) => !p.paid).length + unreadOf(s).filter((f) => f.kind === 'level' || f.kind === 'season' || f.kind === 'mission').length },
   { id: 'story', accent: '#D9486F', unlock: 1, route: { n: 'story' }, aliases: ['career', 'desk', 'editor'], badge: (s) => (s.career?.live ? 'dot' : (s.story?.inbox || []).filter((x) => !x.read).length) },
   { id: 'live', accent: '#B51B2C', unlock: levelUnlocks.live, route: { n: 'ddlive' }, aliases: ['ddlive', 'deadline'], badge: () => (ddLiveDates().some((d) => d.day === today() && d.live) ? 'dot' : 0) },
-  { id: 'market', accent: '#1FA7D9', unlock: 1, route: { n: 'wire' }, aliases: ['wire', 'rumours'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'wire').length }, // watching is free; calls at levelUnlocks.wire
+  { id: 'market', accent: '#1FA7D9', unlock: 1, calls: levelUnlocks.market, route: { n: 'wire' }, aliases: ['wire', 'rumours'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'wire').length }, // watching is free; calls at Level 2
   { id: 'groups', accent: '#7C5CFF', unlock: levelUnlocks.groups, route: { n: 'rooms' }, aliases: ['rooms', 'newsroom', 'friends', 'room'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'room' || f.kind === 'challenge' || f.kind === 'friend' || f.kind === 'newsroom').length },
   { id: 'boards', accent: '#3B82F6', unlock: 1, route: { n: 'boards' }, aliases: ['leaderboards', 'lb'], badge: () => 0 },
   { id: 'settings', accent: '#6B7280', unlock: 1, route: { n: 'settings' }, aliases: ['howto', 'options'], badge: () => 0 },
@@ -75,11 +78,14 @@ export function badgeOf(app: AppDef, s: Save): Badge {
 // ---------------------------------------------------------------- level and unlocks (lib/economy.ts is the source)
 /** The player's account level off lifetime XP (`save.xp`; `pp` mirrors it): RULES4 §3, 100 + 30 × (level − 1) a level. */
 export const levelInfo = (s: Save = getSave()): LevelView => levelOfSave(s);
-/** The level an app's tile opens at. Market (`wire`) is open from Level 1 to watch; calling inside it opens at
- *  `levelUnlocks.wire` (Level 2), which the Market screen gates itself. */
-export const UNLOCKS: Partial<Record<AppId, number>> = { live: levelUnlocks.live, groups: levelUnlocks.groups };
-export const unlockLevel = (app: AppId) => UNLOCKS[app] || 1;
+/** The level an app's tile opens at, straight from the registry (lib/economy.ts levelUnlocks). The Market is open from
+ *  Level 1 to watch; calling inside it opens at `levelUnlocks.market` (Level 2), see callLevel / canCall. */
+export const UNLOCKS: Partial<Record<AppId, number>> = Object.fromEntries(APPS.filter((a) => a.unlock > 1).map((a) => [a.id, a.unlock]));
+export const unlockLevel = (app: AppId) => appById(app)?.unlock || 1;
 export const isUnlocked = (app: AppId, s: Save = getSave()) => levelInfo(s).n >= unlockLevel(app);
+/** The level an app's own call action opens at (1 when the app has no inner gate). */
+export const callLevel = (app: AppId) => appById(app)?.calls || 1;
+export const canCall = (app: AppId, s: Save = getSave()) => levelInfo(s).n >= callLevel(app);
 
 // ---------------------------------------------------------------- the dock: your four most-used apps
 const USE_KEY = 't1.phone.use';

@@ -43,7 +43,7 @@ screen already reads the phone's theme.
 |---|---|
 | `APPS`, `AppId`, `appById(id)`, `appOf(route)`, `routeOf(app)` | the registry: id, accent, unlock level, home route, aliases, `badge(save)` (a count, `'dot'` for "open", or 0). `badgeOf(app, save)` adds unread tray items. |
 | `<AppIcon id size locked/>` | the tile icon. `<AppGlyph id/>` is the bare line glyph for inline use. |
-| `levelInfo(save)` → `{ n, into, need, pct }` · `unlockLevel(app)` · `isUnlocked(app, save)` | the level and the "Reach Level N" gates. Fallback until `lib/economy.ts` lands; the merge swaps it for `levelOf` / `levelUnlocks`. |
+| `levelInfo(save)` → `{ n, into, need, pct, total }` · `unlockLevel(app)` · `isUnlocked(app, save)` · `callLevel(app)` · `canCall(app, save)` | the level and the "Reach Level N" gates, read from `lib/economy.ts` (`levelOf` on `save.xp`; `levelUnlocks = { market: 2, live: 3, groups: 4 }`). A tile gate (Live, Groups) locks the tile; the Market's gate is inside the app (`calls`): watching is free, calls open at Level 2. |
 | `<StatusBar/>` · `batteryMode('idle' \| 'window' \| 'charge')` · `useBattery()` · `useClock()` | the status bar; App drives the battery from the route. |
 | `<Phone app anim locked onHome onBack canBack side>` · `<HomeBar/>` | the frame: status bar, screen (with the edge back gesture), home bar; `side` is the desk panel at ≥1024px. |
 | `bumpUse(app)` · `dockApps(save)` | the dock: the four most-used unlocked apps (localStorage `t1.phone.use`). |

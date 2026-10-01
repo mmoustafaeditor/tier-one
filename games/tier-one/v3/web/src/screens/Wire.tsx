@@ -10,6 +10,7 @@ import { v3 } from '../lib/api';
 import { useWire, refreshWire, gradeOf, bestTier, stageOf, windowParts, type Rumour, type WireCall, type WireWindow } from '../lib/wireData';
 import { clubById, WORLD, WR } from '../lib/engine';
 import { onWireFiled, onWireRight, toast } from '../lib/meta';
+import { levelInfo, callLevel } from '../ui/phone';
 import { sfx } from '../lib/sfx';
 import { Crest, Sheet } from '../ui/bits';
 import { Icon, Kit, GBtn, TopBar, useCountUp, confetti } from '../ui/game';
@@ -64,9 +65,9 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
     if (!w.mine || !w.rumours) return;
     const fresh = w.mine.calls.filter((c) => c.done && c.right && !getSave().stats['wr:' + c.rid]);
     if (!fresh.length) return;
-    const coins = fresh.reduce((a, c) => a + STAR_COINS[starOf(rs.find((r) => r.id === c.rid))], 0);
-    update((s) => { for (const c of fresh) s.stats['wr:' + c.rid] = 1; s.credits += coins; s.ledger = [{ at: Date.now(), d: coins, why: 'wire' }, ...s.ledger].slice(0, 30); });
-    fresh.forEach(() => onWireRight());
+    // Coins land through lib/economy.ts credit() (the Gold +10%, the ledger line), one Gain per right call.
+    update((s) => { for (const c of fresh) s.stats['wr:' + c.rid] = 1; });
+    const coins = fresh.reduce((a, c) => a + onWireRight(STAR_COINS[starOf(rs.find((r) => r.id === c.rid))], c.rid).coins, 0);
     toast('info', t('m.wire.paid', { n: coins }));
   }, [w.mine, w.rumours]); // eslint-disable-line react-hooks/exhaustive-deps
   const [now, setNow] = useState(Date.now());
@@ -282,6 +283,8 @@ function RumourSheet({ r, pre, onClose }: { r: Rumour; pre?: boolean; onClose: (
   const correctable = mine && !mine.corrected && !mine.done && Date.now() - mine.at < WR.WIRE.CORRECT_MIN * 60e3;
   const open = !b || b.state === 'open';
   const st8 = stageOf(r);
+  // CONCEPT4 §9: watching is free from the start; calling opens at Level 2 (lib/economy.ts levelUnlocks.market).
+  const lv = levelInfo(s), needLv = callLevel('market'), mayCall = lv.n >= needLv;
   const file = async (correct: boolean) => {
     setBusy(true);
     const res = await v3<{ call: WireCall }>(correct ? 'wire.correct' : 'wire.file', { dev: s.dev, nick: s.nick, rid: r.id, yes, s: st, club: yes ? club : null, fee: yes ? fee : null });
@@ -327,7 +330,12 @@ function RumourSheet({ r, pre, onClose }: { r: Rumour; pre?: boolean; onClose: (
       <section className="wsheet__file">
         <div className="wsheet__fileh"><h3 className="g-h2">{mine ? t('g.wire.yourCall') : t('wire.file')}</h3><span className="g-mono">{t('g.wire.left', { n: Math.max(0, WR.WIRE.DAILY_CALLS - w.callsToday), m: WR.WIRE.DAILY_CALLS })}</span></div>
         {mine && !correctable ? <FiledCard c={mine} />
-          : !open ? <p className="wsheet__note"><Icon n="lock" size={16} /> {t('wire.frozen')}</p> : <>
+          : !open ? <p className="wsheet__note"><Icon n="lock" size={16} /> {t('wire.frozen')}</p>
+          : !mayCall ? <div className="wsheet__reach" role="status">
+              <b>{t('e4.level.reach', { n: needLv })}</b>
+              <span className="g-bar g-bar--sm" aria-hidden="true"><i style={{ width: Math.round((100 * (lv.n - 1 + lv.pct / 100)) / (needLv - 1)) + '%' }} /></span>
+              <small>{t('ma4.callsAt', { n: needLv })} · {t('ma4.watchFree')}</small>
+            </div> : <>
             {correctable && mine && <FiledCard c={mine} />}
             <div className="step"><span className="step__n">1</span><b>{t('g.wire.step1')}</b></div>
             <div className="ynbig">

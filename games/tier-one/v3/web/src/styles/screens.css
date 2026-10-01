@@ -237,6 +237,11 @@
 .split span { display: flex; align-items: center; padding: 0 10px; white-space: nowrap; overflow: hidden; min-width: 0; }
 .split__y { background: var(--c-done); color: #04200F; } .split__n { background: var(--red); color: #fff; justify-content: flex-end; }
 .wsheet__note { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--card-ink-2); }
+/* Market calls before Level 2 (CONCEPT4 §9): "Reach Level 2" with the level bar, never a bare lock. */
+.wsheet__reach { display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px; background: rgba(0,0,0,.05); margin-bottom: 12px; }
+.wsheet__reach b { font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 22px; letter-spacing: .01em; line-height: 1; }
+.wsheet__reach small { font-size: 13px; color: var(--card-ink-2); }
+.wsheet__reach .g-bar i { background: var(--m-wire); }
 .wsheet__file { margin: 20px -18px 0; padding: 16px 18px 4px; border-top: 2px dashed rgba(0,0,0,.15); }
 .wsheet__fileh { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 10px; flex-wrap: wrap; }
 .wsheet__fileh .g-mono { font-size: 9.5px; color: var(--card-ink-3); }

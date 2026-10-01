@@ -65,6 +65,7 @@ GOTY.md §12. You are the lead designer and the boss: the owner has said they ar
   with the last v3 screen (play lane).
 - `lib/synth.ts` has a synth voice named `herewego` (unused) and `i18n/parts/scenes.ts` still has `hwg: 'DONE DEAL!'` strings (the word
   sweep removes them with the films).
-- `levelUnlocks` in `lib/economy.ts` is `{ wire: 2, live: 3, groups: 4 }` (`wire` is the Market app's id in code; the player-facing name is Market).
+- `levelUnlocks` in `lib/economy.ts` is `{ market: 2, live: 3, groups: 4 }`; `wire` (the Market's old id in routes and `Mode4`) is accepted as an alias by `unlockLevelOf` / `isUnlocked`. The Market tile is never locked; the call sheet gates at Level 2 (`ui/phone.tsx canCall('market')`).
+- `lib/meta.ts onDriverDone(outcome, driver)` is the one settle for a `Driver4` window (pass it as `makeDriver({ onDone })`); `onGain()` is how the shell hears about a Gain (App puts sponsor offers and a brand walking in the tray).
 - Press box (`lib/social.ts`) must send `v: 4, rules` on `challenge.create` (server accepts both).
 - Deadline Day practice is startable via `makeDriver({ mode: 'deadline' })` but has no route until the modes lane adds the Live app.
