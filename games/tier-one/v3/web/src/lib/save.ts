@@ -8,7 +8,7 @@
 //   pp      lifetime Press Points; the season Pass is the one visible level (lib/progress.ts levelOf)
 // A Career slot keeps only what is its own story: rank/chapter, windows, favours, club relations, counters, history.
 import { useRef, useSyncExternalStore } from 'react';
-import type { Pub, Tier, Act } from './engine';
+import type { Pub, Tier, Act, V4Save } from './engine';
 import type { MissionState } from './progress';
 import type { SeasonSave, SeasonRecap, WeekEvState, CosKind } from './season';
 import type { Byline, BookEntry, RivalRec, FeedItem } from './byline';
@@ -56,6 +56,8 @@ export interface Save {
   social?: SocialSave;
   // SAIF-03 (lib/awards.ts): finished-board placings by 'd:<day>' / 'w:<week>', and whether their coin prize was claimed.
   prizes?: Record<string, { period: 'daily' | 'weekly'; label: string; rank: number; players: number; coins: number; at: number; paid?: number }>;
+  // 4.0 (lib/driver.ts makeDriver): live and last local windows per mode, Practice's Coach, v4 Daily results. Optional.
+  v4?: V4Save;
 }
 
 const rid = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; let s = ''; const b = new Uint8Array(16); crypto.getRandomValues(b); for (const x of b) s += a[x % a.length]; return s; };

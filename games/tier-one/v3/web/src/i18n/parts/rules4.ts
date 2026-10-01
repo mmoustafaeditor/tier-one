@@ -1,0 +1,70 @@
+// 4.0 rules lane (RULES4.md, CONCEPT4.md §3): the endings, the backing, what each contact can tell you, the Coach's
+// odds in words, Practice, and the driver's error lines. One set of words, everywhere, EN / AR (Egyptian) / ES.
+export default {
+  en: {
+    out4: { signs: 'SIGNS', elsewhere: 'ELSEWHERE', stays: 'STAYS', signsD: 'joins {to}', elsewhereD: 'joins another club', staysD: 'doesn’t move' },
+    back4: { x1: 'Hint', x2: 'Post', allin: 'Drop', x1D: '×1', x2D: '×2', allinD: '×3 · All in', deal: 'Win {w} if {out}. Lose {l} if not.', scoopOn: '+{n} Scoop if no rival has it', early: '+{n} for being early', final: 'Posts are final.' },
+    src4: {
+      name: { barber: 'The barber', kitman: 'The kit man', agent: 'The agent', spotter: 'The spotter', physio: 'The physio' },
+      tells: { barber: 'an ending', kitman: 'LEAVING or STAYING', agent: 'an ending', spotter: 'seen there · seen elsewhere · not seen', physio: 'medical there · elsewhere · none' },
+      right: { barber: 'Right 1 in 2. Wrong, he repeats the rumour mill.', kitman: 'Right about 4 in 5.', agent: 'Right 3 to 4 in 5. Wrong, he says SIGNS.', spotter: 'Right 4 in 5 and more. From day 3.', physio: 'Right 19 in 20. Deadline Day only.' },
+      says: { kitman: ['LEAVING', 'STAYING'], spotter: ['SEEN THERE', 'SEEN ELSEWHERE', 'NOT SEEN'], physio: ['MEDICAL THERE', 'MEDICAL ELSEWHERE', 'NO MEDICAL'] },
+      cost: { free: 'Free', dm: '1 DM' }, from: 'From day {d}', dms: '{n} DMs left', dmsOne: '1 DM left', dmsNone: 'No DMs left today',
+    },
+    rival4: { tabloid: '@BackPageBants', itk: '@ITK_Kev', insider: '@PressBoxPete', posted: '{who} posted {out}', right: { tabloid: 'Right 2 in 5', itk: 'Right 3 in 5', insider: 'Right 17 in 20' } },
+    coach4: { name: 'Coach', about: 'about {n} in 10', low: 'under 1 in 20', high: 'over 19 in 20', line: '{out} · {odds}', on: 'On · the odds on every story', off: 'Off · play it blind', d: 'The exact odds on every story, worked out from what you can see. Practice only; never on a ranked board.', ex: 'Reads like “SIGNS · about 7 in 10”.' },
+    tier4: { T1: 'Tier One', T2: 'Tier Two', T3: 'Tier Three', T4: 'Tier Four', SPIKED: 'Spiked' },
+    day4: { n: 'Day {d}', deadline: 'Deadline Day', left: '{n} days to go', last: 'Last day', clock: '{s}s', end: 'End the day', night: 'Rivals post overnight.' },
+    prac4: {
+      title: 'Practice', k: 'Off the record', hed: 'Nothing counts. Everything teaches.', sub: 'A fresh window, no pressure, nothing on your profile.',
+      random: 'New window', resume: 'Resume · day {d}', played: '{n} played', codeT: 'A friend’s code', codeD: 'Same code, same window. Send yours.', code: 'Window code', go: 'Play',
+      pastT: 'Replay a past Daily', pastD: 'Yesterday’s window and the days before it, exactly as everyone played them. Off the record.', ago: '{n}d ago', net: 'Past Dailies need a connection.', old: 'Dailies before {d} played by the old rules and stay in the archive.',
+      share: 'Your code', first: 'Your first window', tutorial: 'The first window', deadline: 'Deadline Day practice', deadlineD: '6 stories, 90 seconds, every contact awake.',
+    },
+    drv4: { err: { net: 'No connection. Try again.', offline: 'The window is offline right now.', rule: 'Not that. Not now.', clock: 'Time. The window closed.', done: 'This window is over.', version: 'Update the app to play today’s window.', dev: 'Sign in again.', log: 'That replay didn’t add up.' } },
+  },
+  ar: {
+    out4: { signs: 'بيمضي', elsewhere: 'مكان تاني', stays: 'قاعد', signsD: 'بيروح {to}', elsewhereD: 'بيروح نادي تاني', staysD: 'مش بيتحرك' },
+    back4: { x1: 'تلميح', x2: 'بوست', allin: 'دروب', x1D: '×١', x2D: '×٢', allinD: '×٣ · كله', deal: 'تكسب {w} لو {out}. تخسر {l} لو لأ.', scoopOn: '+{n} سكووب لو مفيش منافس قالها', early: '+{n} علشان بدري', final: 'البوست نهائي.' },
+    src4: {
+      name: { barber: 'الحلاق', kitman: 'راجل الأدوات', agent: 'الوكيل', spotter: 'الراصد', physio: 'الفيزيو' },
+      tells: { barber: 'نهاية', kitman: 'ماشي ولا قاعد', agent: 'نهاية', spotter: 'اتشاف هناك · اتشاف مكان تاني · مش متشاف', physio: 'كشف هناك · كشف مكان تاني · مفيش' },
+      right: { barber: 'صح ١ من ٢. لما يغلط بيكرر كلام الشارع.', kitman: 'صح حوالي ٤ من ٥.', agent: 'صح ٣ لـ ٤ من ٥. لما يغلط بيقول بيمضي.', spotter: 'صح ٤ من ٥ وأكتر. من يوم ٣.', physio: 'صح ١٩ من ٢٠. يوم الديدلاين بس.' },
+      says: { kitman: ['ماشي', 'قاعد'], spotter: ['اتشاف هناك', 'اتشاف مكان تاني', 'مش متشاف'], physio: ['كشف هناك', 'كشف مكان تاني', 'مفيش كشف'] },
+      cost: { free: 'ببلاش', dm: 'رسالة واحدة' }, from: 'من يوم {d}', dms: 'فاضل {n} رسايل', dmsOne: 'فاضل رسالة واحدة', dmsNone: 'خلصت رسايل النهارده',
+    },
+    rival4: { tabloid: '@BackPageBants', itk: '@ITK_Kev', insider: '@PressBoxPete', posted: '{who} نزّل {out}', right: { tabloid: 'صح ٢ من ٥', itk: 'صح ٣ من ٥', insider: 'صح ١٧ من ٢٠' } },
+    coach4: { name: 'الكوتش', about: 'حوالي {n} من ١٠', low: 'أقل من ١ من ٢٠', high: 'أكتر من ١٩ من ٢٠', line: '{out} · {odds}', on: 'شغال · الاحتمالات على كل قصة', off: 'مقفول · العب على عماك', d: 'الاحتمالات بالظبط على كل قصة، محسوبة من اللي انت شايفه. في التمرين بس؛ عمره ما يظهر في لوحة متصنفة.', ex: 'بيتقري كده: «بيمضي · حوالي ٧ من ١٠».' },
+    tier4: { T1: 'تير وان', T2: 'تير تو', T3: 'تير ثري', T4: 'تير فور', SPIKED: 'اتشطب' },
+    day4: { n: 'يوم {d}', deadline: 'يوم الديدلاين', left: 'فاضل {n} أيام', last: 'آخر يوم', clock: '{s} ث', end: 'خلّص اليوم', night: 'المنافسين بينزّلوا بالليل.' },
+    prac4: {
+      title: 'تمرين', k: 'بعيد عن الريكورد', hed: 'مفيش حاجة بتتحسب. كل حاجة بتعلّم.', sub: 'نافذة جديدة، من غير ضغط، ومش هتظهر على بروفايلك.',
+      random: 'نافذة جديدة', resume: 'كمّل · يوم {d}', played: 'لعبت {n}', codeT: 'كود صاحبك', codeD: 'نفس الكود، نفس النافذة. ابعت بتاعك.', code: 'كود النافذة', go: 'العب',
+      pastT: 'العب يومي قديم تاني', pastD: 'نافذة امبارح والأيام اللي قبلها، زي ما الكل لعبها بالظبط. بعيد عن الريكورد.', ago: 'من {n} يوم', net: 'اليومي القديم محتاج نت.', old: 'اليومي قبل {d} اتلعب بالقواعد القديمة وقاعد في الأرشيف.',
+      share: 'الكود بتاعك', first: 'أول نافذة ليك', tutorial: 'أول نافذة', deadline: 'تمرين يوم الديدلاين', deadlineD: '٦ قصص، ٩٠ ثانية، كل الناس صاحية.',
+    },
+    drv4: { err: { net: 'مفيش نت. جرب تاني.', offline: 'النافذة مش شغالة دلوقتي.', rule: 'مش دي. مش دلوقتي.', clock: 'الوقت خلص. النافذة اتقفلت.', done: 'النافذة دي خلصت.', version: 'حدّث التطبيق علشان تلعب نافذة النهارده.', dev: 'سجّل دخول تاني.', log: 'الإعادة دي مش مظبوطة.' } },
+  },
+  es: {
+    out4: { signs: 'FICHA', elsewhere: 'OTRO CLUB', stays: 'SE QUEDA', signsD: 'ficha por el {to}', elsewhereD: 'ficha por otro club', staysD: 'no se mueve' },
+    back4: { x1: 'Pista', x2: 'Post', allin: 'Drop', x1D: '×1', x2D: '×2', allinD: '×3 · Todo', deal: 'Ganas {w} si {out}. Pierdes {l} si no.', scoopOn: '+{n} Scoop si ningún rival lo tiene', early: '+{n} por ir pronto', final: 'Los posts son definitivos.' },
+    src4: {
+      name: { barber: 'El barbero', kitman: 'El utillero', agent: 'El agente', spotter: 'El vigía', physio: 'El fisio' },
+      tells: { barber: 'un final', kitman: 'SE VA o SE QUEDA', agent: 'un final', spotter: 'visto allí · visto en otro sitio · no visto', physio: 'revisión allí · en otro sitio · ninguna' },
+      right: { barber: 'Acierta 1 de 2. Si falla, repite el rumor de la calle.', kitman: 'Acierta unas 4 de 5.', agent: 'Acierta 3 o 4 de 5. Si falla, dice FICHA.', spotter: 'Acierta 4 de 5 o más. Desde el día 3.', physio: 'Acierta 19 de 20. Solo el día del cierre.' },
+      says: { kitman: ['SE VA', 'SE QUEDA'], spotter: ['VISTO ALLÍ', 'VISTO EN OTRO SITIO', 'NO VISTO'], physio: ['REVISIÓN ALLÍ', 'REVISIÓN EN OTRO SITIO', 'SIN REVISIÓN'] },
+      cost: { free: 'Gratis', dm: '1 DM' }, from: 'Desde el día {d}', dms: 'Quedan {n} DM', dmsOne: 'Queda 1 DM', dmsNone: 'Sin DM por hoy',
+    },
+    rival4: { tabloid: '@BackPageBants', itk: '@ITK_Kev', insider: '@PressBoxPete', posted: '{who} publicó {out}', right: { tabloid: 'Acierta 2 de 5', itk: 'Acierta 3 de 5', insider: 'Acierta 17 de 20' } },
+    coach4: { name: 'Coach', about: 'unas {n} de 10', low: 'menos de 1 de 20', high: 'más de 19 de 20', line: '{out} · {odds}', on: 'Activado · las probabilidades en cada historia', off: 'Desactivado · a ciegas', d: 'Las probabilidades exactas de cada historia, calculadas con lo que ves. Solo en Práctica; nunca en un tablero clasificado.', ex: 'Se lee así: «FICHA · unas 7 de 10».' },
+    tier4: { T1: 'Tier One', T2: 'Tier Two', T3: 'Tier Three', T4: 'Tier Four', SPIKED: 'Descartado' },
+    day4: { n: 'Día {d}', deadline: 'Día del cierre', left: 'Quedan {n} días', last: 'Último día', clock: '{s} s', end: 'Terminar el día', night: 'Los rivales publican de noche.' },
+    prac4: {
+      title: 'Práctica', k: 'Extraoficial', hed: 'Nada cuenta. Todo enseña.', sub: 'Una ventana nueva, sin presión y sin que salga en tu perfil.',
+      random: 'Ventana nueva', resume: 'Seguir · día {d}', played: '{n} jugadas', codeT: 'El código de un amigo', codeD: 'Mismo código, misma ventana. Manda el tuyo.', code: 'Código de ventana', go: 'Jugar',
+      pastT: 'Repite un Diario pasado', pastD: 'La ventana de ayer y las de antes, tal como las jugó todo el mundo. Extraoficial.', ago: 'hace {n} d', net: 'Los Diarios pasados necesitan conexión.', old: 'Los Diarios anteriores al {d} se jugaron con las reglas antiguas y quedan en el archivo.',
+      share: 'Tu código', first: 'Tu primera ventana', tutorial: 'La primera ventana', deadline: 'Práctica del día del cierre', deadlineD: '6 historias, 90 segundos, todos los contactos despiertos.',
+    },
+    drv4: { err: { net: 'Sin conexión. Prueba otra vez.', offline: 'La ventana no está disponible ahora.', rule: 'Eso no. Ahora no.', clock: 'Tiempo. La ventana se cerró.', done: 'Esta ventana ha terminado.', version: 'Actualiza la app para jugar la ventana de hoy.', dev: 'Vuelve a iniciar sesión.', log: 'Esa repetición no cuadra.' } },
+  },
+};

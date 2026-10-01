@@ -62,6 +62,46 @@ export function nextMove(g: Game, i: number): { kind: 'ask'; src: string } | { k
   if (!called && !ln.none) return { kind: 'file', o: ln.o };
   return { kind: 'leave' };
 }
+// ---------- 4.0 (RULES4.md, CONCEPT4.md §3): the same reading of a v4 window. Words come from i18n/parts/rules4.ts.
+import { E4, OUTS4, BACKING, type Game4, type Clue4, type Post4 } from './engine';
+export const outWord4 = (lang: string, o: number) => tr(lang, 'out4.' + OUTS4[o]);
+export const backWord4 = (lang: string, s: number) => tr(lang, 'back4.' + BACKING[s]);
+/** What a contact's answer says, in words: LEAVING / SEEN THERE / the ending itself for the barber and the agent. */
+export function saysWord4(lang: string, src: string, r: number) {
+  const arr = trList(lang, `src4.says.${src}`) as string[] | undefined;
+  return arr && arr[r] != null ? arr[r] : outWord4(lang, r);
+}
+/** The post screen's sentence (RULES4.md §4): "Win 46 if he signs. Lose 60 if he doesn't." */
+export function dealLine4(lang: string, g: Game4, i: number, o: number, s: number, c?: CastSaga): string {
+  const pv = E4.preview(g, i, o, s);
+  const out = tr(lang, 'out4.' + OUTS4[o] + 'D', c ? vars(c) : { to: '' });
+  return tr(lang, 'back4.deal', { w: pv.win, l: Math.abs(pv.lose), out });
+}
+export const rivalName4 = (lang: string, id: string) => tr(lang, 'rival4.' + id);
+export const postLine4 = (lang: string, p: Post4) => tr(lang, 'rival4.posted', { who: rivalName4(lang, p.id), out: outWord4(lang, p.claim) });
+/** A contact card's three lines: what they tell you, how often they're right, what they cost (RULES4.md §4: no hidden weights). */
+export function contactCard4(lang: string, R: Game4['R'], src: string): { name: string; tells: string; right: string; cost: string; from: number } {
+  const so = R.SOURCES[src];
+  return { name: tr(lang, 'src4.name.' + src), tells: tr(lang, 'src4.tells.' + src), right: tr(lang, 'src4.right.' + src), cost: tr(lang, so && so.cost ? 'src4.cost.dm' : 'src4.cost.free'), from: so ? so.from : 1 };
+}
+/** The best next move on a story, for the Coach and the first window's hand-holding. Reads only what the player can
+ *  see (E4.posterior), never the truth. */
+export function nextMove4(g: Game4, i: number): { kind: 'ask'; src: string } | { kind: 'wait'; src: string; day: number } | { kind: 'post'; o: number; s: number } | { kind: 'leave' } {
+  if (g.calls[i] || E4.isOver(g)) return { kind: 'leave' };
+  const can = (s: string) => E4.askState(g, i, s) === 'ok';
+  if (!g.clues[i].length) { for (const s of ['barber', 'kitman', 'agent']) if (can(s)) return { kind: 'ask', src: s }; }
+  const p = E4.posterior(g, i), o = p.indexOf(Math.max(...p)), sure = p[o];
+  // Post when the odds clear the bar for a backing (RULES4.md §1: ×1 above 1 in 3, ×2 above 3 in 5, All in above 4 in 5).
+  const s = sure > 0.8 ? 2 : sure > 0.6 ? 1 : sure > 0.34 && g.day === g.R.DAYS ? 0 : -1;
+  if (s >= 0 && (s === 2 || g.day === g.R.DAYS || g.left === 0)) return { kind: 'post', o, s };
+  for (const src of ['physio', 'spotter', 'agent', 'kitman', 'barber']) if (can(src)) return { kind: 'ask', src };
+  for (const src of ['physio', 'spotter']) { const so = g.R.SOURCES[src]; if (so && E4.askState(g, i, src) === 'closed') return { kind: 'wait', src, day: so.from }; }
+  if (s >= 0) return { kind: 'post', o, s };
+  return { kind: 'leave' };
+}
+/** The reads on a story, newest last, as words: "The kit man · LEAVING". */
+export const readsText4 = (lang: string, clues: Clue4[]) => clues.map((c) => `${tr(lang, 'src4.name.' + c.src)} · ${saysWord4(lang, c.src, c.r)}`);
+
 // How many items in the current era come from the street circle (the echo warning).
 export function streetCount(g: Game, i: number) {
   return E.curReads(g, i).filter((c) => g.R.CIRCLE[c.src] === 'street').length + E.livePosts(g, i).filter((f) => g.R.CIRCLE[f.id] === 'street').length;
