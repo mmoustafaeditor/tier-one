@@ -97,7 +97,7 @@ export function CallScreen({ src, clue, c, onDone }: { src: string; clue: Clue4 
     return () => clearTimeout(id);
   }, [phase, src]);
   useEffect(() => { if (phase === 'note' && typed.length >= line.length && line) { const id = setTimeout(() => setPhase('done'), 250); return () => clearTimeout(id); } }, [phase, typed, line]);
-  useEffect(() => { if (phase !== 'done') return; sfx('ui.pop'); const id = setTimeout(() => close.current(), reduce ? 2600 : 1900); return () => clearTimeout(id); }, [phase, reduce]);
+  useEffect(() => { if (phase !== 'done') return; sfx('ui.pop'); const id = setTimeout(() => close.current(), reduce ? 2800 : 2300); return () => clearTimeout(id); }, [phase, reduce]);
   // the bed: the contact's room under the call, looping while the line is open
   useEffect(() => {
     if (reduce || (phase !== 'live' && phase !== 'note')) return;
@@ -222,7 +222,7 @@ function Thread({ src, msgs, onBack, chrome }: { src: string; msgs: Msg[]; onBac
     <section className="dm-card">
       <p className="dm-card__tells" dir="auto">{t('pl4.dms.tells', { x: t('src4.tells.' + src) })}</p>
       <p className="dm-card__right" dir="auto">{accWords(t.lang, R, src)}</p>
-      <p className="dm-card__meta">{so && so.cost ? t('src4.cost.dm') : t('src4.cost.free')}{so && so.from > 1 ? ' · ' + (so.from >= R.DAYS ? t('pl4.story.lockDD') : t('src4.from', { d: so.from })) : ''}</p>
+      <p className="dm-card__meta">{so && so.cost ? t('src4.cost.dm') : t('src4.cost.free')}{so && so.from > 1 ? ' · ' + lockLine(t.lang, src, so.from, R) : ''}</p>
       <span className="dm-warm" aria-label={t('pl4.dms.warmL', { w: w.word })}>{[1, 2, 3, 4, 5].map((k) => <i key={k} className={k <= w.lv ? 'on' : ''} />)}</span>
       <Pop className="dm-coffee" onTap={buy} disabled={coffee} sound="ui.tap">{coffee ? t('pl4.dms.coffeeDone') : t('pl4.dms.coffee', { n: COFFEE_COST })}</Pop>
       <small className="dm-card__note">{t('pl4.dms.coffeeD')}</small>

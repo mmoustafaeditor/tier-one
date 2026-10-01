@@ -10,7 +10,7 @@ export default {
       story: {
         back: 'Blurt', ask: 'DM a contact', know: 'What you have', nothing: 'Nothing yet. One DM and you have a lead.', feed: 'On the timeline',
         post: 'Post your call', needDm: 'DM someone first. No contact, no call.', done: 'Posted. Posts are final.', over: 'The window is closed.',
-        lock: 'Opens day {d}', lockDD: 'Deadline Day', asked: 'Answered', broke: 'No DMs left', free: 'Free', dm: '1 DM',
+        lock: 'Opens day {d}', lockDD: 'Deadline Day', asked: 'Answered', broke: 'No DMs left', free: 'Free', dm: '1 DM', acc: '{n} in 10', acc20: '19 in 20',
       },
       lock: { spotter: 'The spotter is at the airport from day {d}.', physio: 'The physio is in from Deadline Day.', other: '{name} opens on day {d}.' },
       out: { signs: 'SIGNS', elsewhere: 'ELSEWHERE', stays: 'STAYS', signsC: 'for {to}', elsewhereC: 'not {to}', staysC: 'at {from}' },
@@ -77,7 +77,7 @@ export default {
       story: {
         back: 'بلرت', ask: 'ابعت لحد من مصادرك', know: 'اللي معاك', nothing: 'لسه مفيش حاجة. رسالة واحدة وتبقى معاك خيط.', feed: 'على التايملاين',
         post: 'نزّل توقعك', needDm: 'ابعت لحد الأول. من غير مصدر، مفيش توقع.', done: 'نزل. البوست نهائي.', over: 'النافذة اتقفلت.',
-        lock: 'يفتح يوم {d}', lockDD: 'يوم الديدلاين', asked: 'رد', broke: 'خلصت الرسايل', free: 'ببلاش', dm: 'رسالة',
+        lock: 'يفتح يوم {d}', lockDD: 'يوم الديدلاين', asked: 'رد', broke: 'خلصت الرسايل', free: 'ببلاش', dm: 'رسالة', acc: '{n} من 10', acc20: '19 من 20',
       },
       lock: { spotter: 'الراصد في المطار من يوم {d}.', physio: 'الفيزيو موجود يوم الديدلاين بس.', other: '{name} يفتح يوم {d}.' },
       out: { signs: 'بيمضي', elsewhere: 'مكان تاني', stays: 'قاعد', signsC: 'لـ {to}', elsewhereC: 'مش {to}', staysC: 'في {from}' },
@@ -144,7 +144,7 @@ export default {
       story: {
         back: 'Blurt', ask: 'Escribe a un contacto', know: 'Lo que tienes', nothing: 'Nada aún. Un DM y ya tienes una pista.', feed: 'En el timeline',
         post: 'Publica tu llamada', needDm: 'Primero escribe a alguien. Sin contacto no hay llamada.', done: 'Publicado. Los posts son definitivos.', over: 'La ventana está cerrada.',
-        lock: 'Abre el día {d}', lockDD: 'Día del cierre', asked: 'Respondió', broke: 'Sin DM', free: 'Gratis', dm: '1 DM',
+        lock: 'Abre el día {d}', lockDD: 'Día del cierre', asked: 'Respondió', broke: 'Sin DM', free: 'Gratis', dm: '1 DM', acc: '{n} de 10', acc20: '19 de 20',
       },
       lock: { spotter: 'El vigía está en el aeropuerto desde el día {d}.', physio: 'El fisio solo está el día del cierre.', other: '{name} abre el día {d}.' },
       out: { signs: 'FICHA', elsewhere: 'OTRO CLUB', stays: 'SE QUEDA', signsC: 'por el {to}', elsewhereC: 'no el {to}', staysC: 'en el {from}' },

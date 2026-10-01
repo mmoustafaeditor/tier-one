@@ -131,6 +131,7 @@
 .bl-ask { display: grid; justify-items: center; gap: 4px; min-height: 104px; padding: 10px 2px 8px; border-radius: 14px; background: var(--bl-card); color: inherit; text-align: center; }
 .bl-ask b { font: 800 13px/1.1 var(--f-text); text-transform: capitalize; }
 .bl-ask small { font: 600 11px/1.15 var(--f-text); color: var(--os-ink-3); }
+.bl-ask__acc { font: 900 13px/1 var(--f-cond); color: var(--os-ink-2); }
 .bl-ask.is-ok small { color: var(--app-dms); }
 .bl-ask.is-asked { opacity: .55; } .bl-ask.is-asked .dm-av::after { content: "✓"; position: absolute; inset-block-end: -2px; inset-inline-end: -2px; width: 18px; height: 18px; border-radius: 50%; background: var(--app-dms); color: #fff; font: 900 11px/18px var(--f-text); text-align: center; }
 .bl-ask.is-closed .dm-av, .bl-ask.is-broke .dm-av { filter: grayscale(1); opacity: .5; }

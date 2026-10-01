@@ -25,7 +25,7 @@ import { Icon, Kit, useTyped } from '../ui/game';
 import { Crest } from '../ui/bits';
 import { Pop, Count, Stamp, Sheet, SheetHead } from '../ui/juice';
 import { TutorialLayer } from '../ui/tutorial';
-import { CallScreen, ContactAvatar, AnswerChip, CONTACTS, CONTACT_TINT, lockLine, accWords } from './DMs';
+import { CallScreen, ContactAvatar, AnswerChip, CONTACTS, CONTACT_TINT, lockLine, accWords, accTenths } from './DMs';
 import { ResultsThread } from './Results';
 import type { Chrome } from '../App';
 import '../styles/blurt.css';
@@ -59,7 +59,7 @@ const errKey = (e: string | null) => 'drv4.err.' + (e && ['net', 'offline', 'rul
 
 // ---------------------------------------------------------------- the screen
 type Fly = { i: number; o: number; s: number; k: number };
-type Morning = { k: number; day: number; posts: number; dms: number; dd: boolean };
+type Morning = { k: number; day: number; posts: number; dms: number; dd: boolean; ended: number };
 export function BlurtScreen({ driver, ...chrome }: { driver: Driver4 } & Chrome) {
   const t = useT();
   useSyncExternalStore(driver.subscribe, driver.version, driver.version);
@@ -123,9 +123,9 @@ export function BlurtScreen({ driver, ...chrome }: { driver: Driver4 } & Chrome)
     const p = driver.pub();
     if (p.over || driver.isOver()) return;
     const n = p.feed.length - feedN;
-    setFresh(before);
-    if (prefersReducedMotion()) return;
-    setMorning({ k: Date.now(), day: p.day, posts: n, dms: p.left, dd: p.day >= R.DAYS });
+    if (prefersReducedMotion()) { setFresh(before); return; }
+    setFresh(-1);
+    setMorning({ k: Date.now(), day: p.day, posts: n, dms: p.left, dd: p.day >= R.DAYS, ended: before });
   };
   const closeNow = async () => { setConfirmEnd(false); setBusy(true); await driver.finish(); setBusy(false); };
 
@@ -178,7 +178,7 @@ export function BlurtScreen({ driver, ...chrome }: { driver: Driver4 } & Chrome)
 
     {calling && createPortal(<CallScreen key={calling.k} src={calling.src} clue={calling.clue} c={cast[calling.i]} R={R} onDone={() => setCalling(null)} />, document.body)}
     {fly && createPortal(<PostFly key={fly.k} fly={fly} c={cast[fly.i]} onLand={() => { const i = fly.i; setFly(null); setLanded((l) => ({ ...l, [i]: Date.now() })); }} />, document.body)}
-    {morning && createPortal(<MorningRun key={morning.k} m={morning} onDone={() => setMorning(null)} />, document.body)}
+    {morning && createPortal(<MorningRun key={morning.k} m={morning} onDone={() => { setFresh(morning.ended); setMorning(null); }} />, document.body)}
     {driver.mode === 'tutorial' && <TutorialLayer driver={driver} story={sel} />}
   </div>;
 }
@@ -384,13 +384,14 @@ function StoryView({ driver, pub, i, c, onBack, onAsk, onPost }: { driver: Drive
     </section>
 
     <h2 className="bl-sec">{t('pl4.story.ask')}</h2>
-    <div className="bl-asks" role="list">
+    <div className="bl-asks" role="group" aria-label={t('pl4.story.ask')}>
       {CONTACTS.map((src) => {
         const st = driver.askState(i, src), so = R.SOURCES[src];
         const sub = st === 'asked' ? t('pl4.story.asked') : st === 'closed' ? (so && so.from >= R.DAYS && R.DAYS > 1 ? t('pl4.story.lockDD') : t('pl4.story.lock', { d: so ? so.from : 1 })) : st === 'broke' ? t('pl4.story.broke') : so && so.cost ? t('pl4.story.dm') : t('pl4.story.free');
-        return <Pop key={src} as="button" role="listitem" className={'bl-ask is-' + st} onTap={() => onAsk(src)} disabled={st === 'asked' || st === 'over' || st === 'none'} sound={st === 'ok' ? 'ui.tap' : null} data-tut={'dm-' + src} label={t('src4.name.' + src) + ' · ' + sub} title={accWords(t.lang, R, src)}>
+        const acc = accTenths(R, src);
+        return <Pop key={src} className={'bl-ask is-' + st} onTap={() => onAsk(src)} disabled={st === 'asked' || st === 'over' || st === 'none'} sound={st === 'ok' ? 'ui.tap' : null} data-tut={'dm-' + src} label={t('src4.name.' + src) + ' · ' + sub} title={accWords(t.lang, R, src)}>
           <ContactAvatar src={src} size={46} />
-          <b dir="auto">{t('src4.name.' + src).replace(/^(The|El|La)\s+/i, '')}</b><small>{sub}</small>
+          <b dir="auto">{t('src4.name.' + src).replace(/^(The|El|La)\s+/i, '')}</b><span className="bl-ask__acc g-num">{acc >= 9.3 ? t('pl4.story.acc20') : t('pl4.story.acc', { n: Math.round(acc) })}</span><small>{sub}</small>
         </Pop>;
       })}
     </div>
@@ -424,7 +425,7 @@ function PostSheet({ open, driver, i, c, onClose, onPost }: { open: boolean; dri
   const go = () => { if (o == null) return; haptic('publish'); onPost(o, s); };
   useEffect(() => {
     if (!open) return;
-    const k = (e: KeyboardEvent) => { if (e.key === 'Enter' && o != null) { e.preventDefault(); go(); } };
+    const k = (e: KeyboardEvent) => { const el = e.target as HTMLElement | null; if (e.key !== 'Enter' || o == null || (el && el.tagName === 'BUTTON')) return; e.preventDefault(); go(); };
     window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
   }); // re-bound each render so it sees the current pick
   const sub = (k: number) => k === 0 ? t('pl4.out.signsC', { to: c.to.s }) : k === 1 ? t('pl4.out.elsewhereC', { to: c.to.s }) : t('pl4.out.staysC', { from: c.from.s });
