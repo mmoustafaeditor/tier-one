@@ -84,15 +84,39 @@ export interface Source4 { cost: number; from: number; kind: 'own' | 'street'; s
 export interface Rules4 {
   STORIES: number; DAYS: number; CALLS: number[]; PRIOR: number[]; SPIN: number[][];
   WIN: number[]; LOSS: number[]; EARLY: number[]; SCOOP: number[];
-  SOURCES: Record<string, Source4>; RIVALS: { id: string; days: number[]; p: number; kind: string; rel: number }[];
+  SOURCES: Record<string, Source4>; RIVALS: { id: string; days: number[]; p: number; kind: string; rel: number; boss?: Boss4 }[];
   TIERS: { T1: number; T2: number; T3: number; T4: number };
+  /** Story mode: per-story contact overrides (Vince's clients' agent, Vince's planted contact). E4.srcOf reads them. */
+  PER?: Record<number, Record<string, Source4 & { planted?: boolean }>>;
+  /** Story mode: stories that are Vince's clients (the agent talks it up, @ITK_Kev posts a day early). */
+  TAGGED?: number[];
   /** Deadline Day only: the clock, in seconds. */
   CLOCK_S?: number;
 }
 /** Every mode a driver can run (lib/driver.ts makeDriver). daily, room, practice and challenge play RULES4 exactly. */
 export type Mode4 = 'daily' | 'practice' | 'career' | 'deadline' | 'room' | 'challenge' | 'tutorial';
 /** A rule set that can travel (a saved window, a challenge): the mode and its knobs. E4.rulesOf(spec) rebuilds the rules. */
-export interface RuleSpec4 { mode: Mode4; opts?: { rank?: number; trust?: Record<string, number> } }
+export interface RuleSpec4 { mode: Mode4; opts?: CareerOpts4 }
+/** Story mode's bosses (engine4.mjs BOSSES): who they post as, and their p / rel / days by rank. */
+export type Boss4 = 'bants' | 'kev' | 'pete' | 'roar' | 'vince';
+/** Career rule knobs (engine4.mjs rulesFor 'career'). Everything past rank/trust is Story mode (CONCEPT4 §10, §16). */
+export interface CareerOpts4 {
+  rank?: number; trust?: Record<string, number>;
+  /** The chapter's boss, and the rank their accuracy and speed scale with (defaults to rank). */
+  boss?: Boss4; bossRank?: number;
+  /** Contacts that exist this window (others answer 'none'). */
+  contacts?: string[];
+  /** Ordinary rival accounts that post (the boss is added on top). */
+  rivals?: string[];
+  /** Bought extra DMs on day 1 (0–2). */
+  extraDm?: number;
+  /** Vince's clients: story indexes where the agent talks the deal up and @ITK_Kev posts a day early. */
+  tagged?: number[];
+  /** Vince's play: the contact planted on story i (repeats the rumour mill whatever the truth). */
+  planted?: { i: number; src: string };
+  /** The finale: a Deadline Day window on this clock (seconds). */
+  live?: number;
+}
 export interface Story4 { i: number; truth: number; spin: number; rivals: { id: string; day: number; claim: number }[] }
 export interface Board4 { v: 4; seed: string; stories: Story4[] }
 export interface Pub4 { v: 4; day: number; left: number; over: boolean; clues: Clue4[][]; calls: (Call4 | null)[]; feed: Post4[] }
@@ -107,8 +131,10 @@ export interface Result4 { v: 4; total: number; right: number; wrong: number; sc
 type Engine4API = {
   V: 4; OUT: string[]; RULES: Rules4; SRC: string[]; RIVAL_IDS: string[]; MODES: Mode4[];
   V4_FROM: string; isV4Day(ymd: string): boolean; TUTORIAL_SEED: string; DEADLINE_SECONDS: number;
-  rulesFor(mode: Mode4, opts?: { rank?: number; trust?: Record<string, number> }): Rules4;
-  specOf(mode: Mode4, opts?: { rank?: number; trust?: Record<string, number> }): RuleSpec4; rulesOf(spec: RuleSpec4 | null | undefined): Rules4;
+  rulesFor(mode: Mode4, opts?: CareerOpts4): Rules4;
+  specOf(mode: Mode4, opts?: CareerOpts4): RuleSpec4;
+  BOSSES: Record<Boss4, { id: string; kind: 'own' | 'street'; t: [number, number, number, number][] }>;
+  srcOf(R: Rules4, i: number, src: string): Source4 | undefined; rulesOf(spec: RuleSpec4 | null | undefined): Rules4;
   bounds(R?: Rules4): { min: number; max: number };
   buildBoard(seed: string, R?: Rules4): Board4; newGame(b: Board4, R?: Rules4): Game4; apply(g: Game4, a: Act4): boolean;
   replay(b: Board4, log: Act4[], R?: Rules4): Game4 | null; pub(g: Game4): Pub4; resolve(g: Game4): Result4; finish(g: Game4): Game4; isOver(g: Game4 | Pub4): boolean;
@@ -149,6 +175,8 @@ export interface V4Save {
   tutorial?: { done?: boolean };
   /** Daily results by UTC day for v4 days (`v: 4`); the archive of older days stays in `save.daily`. */
   daily?: Record<string, { no: number; total: number; tier: Tier; row: string; scoops: number; rank?: number | null; players?: number; par?: number | null }>;
+  /** Market Tips (CONCEPT4 §9): tokens a right Market call pays (hold up to 3), spent in Story as a free extra. */
+  tips?: number;
 }
 
 /** A player-visible stand-in for a v4 board: the public state plus the rules, with no truth in it. Every read-only
