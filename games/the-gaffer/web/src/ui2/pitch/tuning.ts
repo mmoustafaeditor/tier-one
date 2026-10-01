@@ -25,7 +25,7 @@ export const T = {
   MARK_TIGHT: 1.4,   // goal-side gap to his man within 20 m of goal
   MARK_LOOSE: 2.6,   // ... and further out
   SLIDE: 0.35,       // how far the line's centre shifts towards the ball's side
-  LINE_WIDTH: 40,    // the back line is never wider than this
+  LINE_WIDTH: 40,
   GK_OUT: [1.2, 7] as [number, number], // keeper's distance off his line: at least, at most
   GK_OUT_K: 0.12,    // ... growing by this per metre the ball is away
   GK_SHUFFLE: 8,     // the keeper's quick side-steps across his goal: he tracks the angle much faster than a runner closes a gap

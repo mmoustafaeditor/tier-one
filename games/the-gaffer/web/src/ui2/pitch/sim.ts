@@ -540,6 +540,9 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
         const ft = fullTactics(mm.sides[side].tactics);
         const tr = a.trans && a.time - a.trans.at < TRANSITION_MS(a.beatLen) ? a.trans : null;
         const boost: number[] = [];
+        // Sprints (body.ts move, urgent): flat out until close, as a real sprint is — an overlap, a counter-press, a
+        // recovery run, closing a shot. Everything else (holding shape, walking to a set piece) eases in.
+        const rush = new Set<number>();
         if (has) {
           // Runs off the ball by role (at most 3 real runs at once), then the break after winning the ball.
           const other = (1 - side) as 0 | 1;
@@ -560,7 +563,7 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
             const ip = sps[k]?.ip ?? '', ctx = { bd, by: a.ball.y, theirLine, d, y: tg[k].y, wide: wideOf(tg[k].y) };
             const r = runFor(ip, ctx) ?? (soon && fbRole(ip) && depthOf(side, soon.pt.x) > bd ? runFor(ip, { ...ctx, bd: depthOf(side, soon.pt.x), by: soon.pt.y }) : null);
             if (!r) continue;
-            if (r.run) { if (runs >= 3) continue; runs++; a.runsN = runs; boost[k] = 1.25; }
+            if (r.run) { if (runs >= 3) continue; runs++; a.runsN = runs; boost[k] = 1.25; if (fbRole(ip)) rush.add(k); }
             tg[k] = { x: toX(side, clamp(r.d, 2, 103)), y: clamp(r.y, 2, W - 2) };
           }
           // The carrier's pace: he drives on into space and slows, shielding it, when a man is on him.
@@ -660,7 +663,7 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
             const field = ks.filter((k) => LINE[slots[k].pos] !== 'gk' && a.pos[side][k]);
             if (ft.cpress === 2 || (ft.cpress !== 0 && ft.pressing === 2)) {
               for (const k of [...field].sort((p, q) => Math.hypot(a.pos[side][p].x - a.ball.x, a.pos[side][p].y - a.ball.y) - Math.hypot(a.pos[side][q].x - a.ball.x, a.pos[side][q].y - a.ball.y)).slice(0, 3)) {
-                tg[k] = { ...a.ball }; boost[k] = 1.6;
+                tg[k] = { ...a.ball }; boost[k] = 1.6; rush.add(k);
               }
             } else {
               const bdep = depthOf(side, a.ball.x);
@@ -668,7 +671,7 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
               const lineTo = Math.min(ln.depth, bdep - 5);
               for (const k of field) {
                 if (line(k) === 'def' && free(k)) { tg[k] = { x: toX(side, lineTo), y: tg[k].y }; if (depthOf(side, a.pos[side][k].x) > lineTo) boost[k] = 1.4; }
-                else if (depthOf(side, a.pos[side][k].x) > bdep) { tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), bdep - 5)), y: tg[k].y }; boost[k] = 1.4; }
+                else if (depthOf(side, a.pos[side][k].x) > bdep) { tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), bdep - 5)), y: tg[k].y }; boost[k] = 1.4; rush.add(k); }
                 // Everyone stays tied to the dropped line: midfield within 16 m of it, forwards within 38 m.
                 if (free(k) && line(k) !== 'def') tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), lineTo + (line(k) === 'mid' ? 16 : 38))), y: tg[k].y };
               }
@@ -722,7 +725,7 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           const keeperOut = !has && LINE[slots[k].pos] === 'gk'; // the keeper's side-steps aren't sprints
           if (!staging && !keeperOut && g.tank < T.EMPTY) sprint = Math.min(sprint, T.SPRINT);
           const vx0 = g.vx, vy0 = g.vy;
-          const nk = move({ x: p.x, y: p.y, vx: g.vx, vy: g.vy }, g.tx, g.ty, dt, tau, B, sprint, !has && k === blockK && !staging); // the blocker's run is flat out
+          const nk = move({ x: p.x, y: p.y, vx: g.vx, vy: g.vy }, g.tx, g.ty, dt, tau, B, sprint, !staging && ((!has && k === blockK) || rush.has(k))); // sprints are flat out
           // The line's depth is one decision for all its defenders (PR A): it moves together at the line's pace, and
           // only their sideways movement is left to each body.
           if (isDef(k) && !staging) { nk.x = p.x + (g.tx - p.x) * (1 - Math.exp((-dt * lineTop * sprint) / tau)); nk.vx = (nk.x - p.x) / Math.max(1, dt); }
