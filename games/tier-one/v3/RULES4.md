@@ -107,8 +107,8 @@ Every mode runs `engine4.mjs`. A mode is a rule set from `rulesFor(mode, opts)` 
 | **Career: The Comeback** | local, per window | `rulesFor('career', { rank, trust })`: 3 → 6 stories, more calls at the top, contacts sharpen with Trust | no | after the first window |
 | **Deadline Day** | 6 stories, one day, a 90-second clock, rivals already posted, every contact open | `rulesFor('deadline')` | yes on the real deadline days (DD Live), otherwise Practice | level 3 |
 | **Practice** | random seed, a past Daily, or a friend's code; Coach shows the exact odds | `RULES` | no | after the first window |
-| **The Wire** | real rumours | own market rule (DESIGN §4), same words: HE MOVES / HE STAYS, backed ×1 / ×2 / ×3 All in | yes: Wire season | level 5 |
-| **Press box** (rooms, challenges, newsrooms) | shared seed | Daily rules exactly | inside the room | level 4 |
+| **Market** (real transfers) | real rumours | own market rule (DESIGN §4), HE MOVES / HE STAYS, Hint / Post / Drop; CONCEPT4 §9 | yes: Market season | watch free, call at level 2 |
+| **Groups** (rooms, challenges, newsrooms) | shared seed | Daily rules exactly | inside the room | level 4 |
 
 Deadline Day mode replaces the old 60-second last day: the Daily's day 5 is now just a normal day with 2 calls and the physio.
 

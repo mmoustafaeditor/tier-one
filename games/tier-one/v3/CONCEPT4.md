@@ -98,3 +98,27 @@ socials). Every end state links to the next thing.
 Phase A (frame-independent, parallel): rules + server · economy + deals model · the phone shell (OS, apps, juice, design tokens).
 Phase B (on the shell, parallel): Blurt + DMs (play) · Story · Lens (profile, deals, looks, shop) · onboarding + clarity · Live + Wire +
 Groups + Boards. Phase C: integrate, cohesion, build, ship.
+
+## 9. The Market (real transfers) — this section supersedes every other mention of "the Wire", including lane briefs
+
+The best feature of 3.x was the Wire: real rumours, real outcomes, scored by a market rule. It stays, and it becomes a headline app
+called **Market**. It is its own mode (nothing in it changes a Daily, a Career window or any ranked board), but it feeds the
+same account, and it is the reason a football fan opens the phone on a day with no window to play.
+
+- **Name and words.** App: **Market**. Tagline: "Real rumours. Real outcomes. Your calls." A card is a real rumour (player, clubs,
+  the window it targets, status). The market % is printed on every card with its label ("Market says 62% he moves").
+- **Track.** Any rumour can be **Watched** without a stake: it goes on your watchlist, and a real event on it (status change,
+  the market moving 15 points, resolution) lands in the phone's tray as a notification. This is the "follow real transfers"
+  feature: free, no level gate, the first thing a new player can do in the app.
+- **Call.** HE MOVES / HE STAYS, backed Hint / Post / Drop, scored exactly by the existing market rule (`wire.mjs` wirePoints:
+  back it when the market is cheap and you're right, you win big; follow a 90% market and you win little). Five new calls a day,
+  40 open, one correction within 15 minutes, news freeze and late-call rule unchanged. The post sheet states the deal in one
+  sentence, like Blurt.
+- **What it pays into the rest of the game.** A right Market call pays XP (10 filed, +15 right), Rep at half weight, followers at
+  ×1.5, coins by the player's star (15 / 25 / 40 / 70), and a **Tip**: a token (hold up to 3) that you can spend in Career as a free
+  extra (an extra DM or a tip-off) and in Practice as a free second opinion. A Scoop-grade Market call (a right Drop against a
+  market under 35%) also pays a Secret file. Market season Cred and hit rate show on your Lens profile next to your rank.
+- **Unlock.** Level 2 (the first result), not 5: watching is free from the start, calling opens at Level 2. Live stays 3, Groups 4.
+- **Why it is separate.** Ranked Dailies must be identical for everyone and fair; real-world calls resolve on real time and
+  reward knowledge of the actual market. Keeping them apart keeps both honest. Connecting them through XP, Rep, followers, coins
+  and Tips keeps them one account.
