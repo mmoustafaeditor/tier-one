@@ -18,4 +18,16 @@ export const T = {
   DRAIN: 0.8,        // a full tank of an average player lasts 1 / DRAIN match minutes of flat-out sprinting
   REFILL: 0.6,      // tank refilled per match minute when not sprinting
   EMPTY: 0.15,       // below this the player can't sprint (his boost is capped at SPRINT)
+  // Phase 2: the defence as a group
+  THREAT: 32,        // attackers within this many metres of our goal are marked
+  MARK_REACH: 20,    // a marker takes a man within this many metres of him
+  MARK_ROLE: 10,     // metres added to a marker's cost when the man isn't his kind of job (see Pitch2D)
+  MARK_TIGHT: 1.4,   // goal-side gap to his man within 20 m of goal
+  MARK_LOOSE: 2.6,   // ... and further out
+  SLIDE: 0.35,       // how far the line's centre shifts towards the ball's side
+  LINE_WIDTH: 40,    // the back line is never wider than this
+  GK_OUT: [1.2, 7] as [number, number], // keeper's distance off his line: at least, at most
+  GK_OUT_K: 0.12,    // ... growing by this per metre the ball is away
+  GK_SHUFFLE: 8,     // the keeper's quick side-steps across his goal: he tracks the angle much faster than a runner closes a gap
+  BLOCK_GAP: 1.6,    // a blocker stands this far from the ball in the shooting lane
 };

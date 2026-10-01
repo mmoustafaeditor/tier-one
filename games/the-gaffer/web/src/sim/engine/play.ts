@@ -6,7 +6,10 @@ import type { Rng } from '../rng';
 import { END, EV, N, QUAL, QUAL_W, SHOTS, START, TUNE, shotEdges, type Duel, type Edge, type Model } from './model';
 import type { LiveMatch, MatchEvent } from '../match';
 
-export interface Flow { s: 0 | 1; z: number; k: string; p?: string }
+// The ball's path for the pitch (FULL only; nothing reads it back). k: w won / l lost a duel, f foul, g goal, v save,
+// b block, m miss, ti throw-in, gk goal kick (the side `s` restarts). t: seconds into the minute when it happens;
+// n: the engine node it happened at (model.ts N: the kind of action, e.g. a cross or a through ball).
+export interface Flow { s: 0 | 1; z: number; k: string; p?: string; t?: number; n?: number }
 export interface Tally {
   poss: [number, number];   // in-play seconds on the ball
   zone: number[];           // [side*30 + zone]: seconds on the ball per zone (absolute: col from the home goal × 5 + row)
@@ -33,7 +36,7 @@ export interface FoulAt { box: boolean; z: number; phase: 0 | 1 | 2 }
 export interface Rules {
   foul(side: 0 | 1, id: string, victim: string | undefined, kind: 'foul' | 'tfoul' | 'pen', r: Rng, at?: FoulAt): { red: boolean; go: FoulGo }; // red = the model is stale
   event(e: MatchEvent): void;
-  turnover?(s: 0 | 1, node: number, start: number, ev: number | undefined): void;
+  turnover?(s: 0 | 1, node: number, start: number, ev: number | undefined): 'ti' | 'gk' | void; // how the other side restarts
 }
 
 const pickW = (r: Rng, w: number[]) => { let u = r(); for (let i = 0; i < w.length; i++) { u -= w[i]; if (u <= 0) return i; } return w.length - 1; };
@@ -53,6 +56,9 @@ export const absZone = (s: 0 | 1, col: number, row: number) => (s === 0 ? col * 
 // match (about 90 + 9 minutes) still plays the engine's calibrated 5,400 s.
 export const TICK_SECS = 55;
 
+// Seconds into the minute when an action that takes `t` seconds ends (`left` is the budget before it), within the minute.
+const clockAt = (secs: number, left: number, t: number) => Math.max(0, Math.min(60, Math.round(secs - left + t)));
+
 // Plays one minute (60 s of the match clock, carrying over what the last action overran).
 export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rules, full: boolean) {
   const b = m.ball!;
@@ -60,6 +66,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
   let budget = (m.ref ? TICK_SECS : 60) + b.c; // gf-ref: a little less per minute, the added time makes it up
   const threat = [0, 0];
   const flow: Flow[] = [];
+  const secs = budget;
   let guard = 0;
   while (budget > 0 && guard++ < 400) {
     const M = model();
@@ -98,7 +105,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       } else if (edge.ev === EV.SAVE) rules.event({ min: m.minute, side: o, kind: 'save', playerId: at.keeper, by: shooter, assistId: assist, how, xg, z });
       else if (edge.ev === EV.BLOCK) rules.event({ min: m.minute, side: s, kind: 'block', playerId: shooter, how, xg, z, vs: full ? b.d : undefined });
       else rules.event({ min: m.minute, side: s, kind: 'miss', playerId: shooter, assistId: assist, how, xg, z });
-      if (full) flow.push({ s, z, k: edge.ev === EV.GOAL ? 'g' : edge.ev === EV.SAVE ? 'v' : edge.ev === EV.BLOCK ? 'b' : 'm', p: shooter });
+      if (full) flow.push({ s, z, k: edge.ev === EV.GOAL ? 'g' : edge.ev === EV.SAVE ? 'v' : edge.ev === EV.BLOCK ? 'b' : 'm', p: shooter, t: clockAt(secs, budget, node.t), n: nodeIx });
       if (edge.to === N.CRN) {
         const taker = m.sides[s].pieces.corners;
         rules.event({ min: m.minute, side: s, kind: 'corner', playerId: m.sides[s].onPitch.includes(taker) ? taker : '' });
@@ -141,7 +148,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         else if (go === 'adv') { to = nodeIx; dt = 0; }
         else if (go === 'on') { to = N.FCH; dt = 0; }
         else { to = END; dt = TUNE.dead.FOUL; }
-        if (full) flow.push({ s, z: fz, k: 'f', p: victim });
+        if (full) flow.push({ s, z: fz, k: 'f', p: victim, t: clockAt(secs, budget, node.t), n: nodeIx });
       }
       if (edge.ev === EV.CORNER || (edge.to === N.CRN && edge.ev === undefined)) {
         const taker = m.sides[s].pieces.corners;
@@ -163,7 +170,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         if (nodeIx === N.B) { tl.bu[s * 2 + 1]++; if (won) tl.bu[s * 2]++; }
         if (nodeIx >= N.P0 && nodeIx <= N.P2) { tl.mid[s * 2 + 1]++; if (won) { tl.mid[s * 2]++; tl.ent[s * 3 + lane]++; threat[s] += 0.03; } }
         if (won) { b.a = aId; b.d = dId; } else b.d = dId;
-        flow.push({ s: won ? s : o, z, k: won ? 'w' : 'l', p: won ? aId : dId });
+        flow.push({ s: won ? s : o, z, k: won ? 'w' : 'l', p: won ? aId : dId, t: clockAt(secs, budget, node.t), n: nodeIx });
       }
       if (full && edge.to === N.CTR) tl.ctr[s]++;
       if (full) {
@@ -177,7 +184,9 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
     // Hand-over: the other side starts a possession (settled, won in midfield, or won high up after a press).
     if (to >= END) {
       const st = to - END;
-      rules.turnover?.(s, nodeIx, st, edge.ev); // gf-ref: throw-ins and goal kicks
+      const out = rules.turnover?.(s, nodeIx, st, edge.ev); // gf-ref: throw-ins and goal kicks
+      // The pitch shows the restart: a throw-in on the touchline level with the action, a goal kick from the other side's box.
+      if (full && out) flow.push({ s: o, z: out === 'gk' ? absZone(o, 0, 2) : absZone(s, COL[nodeIx] ?? 3, (flow.length & 1) * 4), k: out, t: clockAt(secs, budget, 0), n: nodeIx });
       if (full && st === 2) { tl.hi[o]++; threat[o] += 0.05; }
       b.s = o; b.n = START[st]; b.a = undefined; b.d = undefined;
     } else b.n = to;

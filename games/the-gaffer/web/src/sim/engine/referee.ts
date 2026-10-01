@@ -446,17 +446,17 @@ export function wasteBooking(m: LiveMatch, a: Acts, side: 0 | 1, id: string) {
 // Node ids from model.ts N: B 0, LONG 1, P0-2 3-5, F0-2 7-9, THR 10, CRS 11, SETH 13, CRN 14, CTR 15, RHIGH 17.
 const OUT: Record<number, [number, number]> = { 0: [0.12, 0], 1: [0.36, 0.06], 3: [0.3, 0], 4: [0.16, 0], 5: [0.3, 0], 7: [0.56, 0.04], 8: [0.18, 0.06], 9: [0.56, 0.04], 10: [0.12, 0.1], 11: [0.16, 0.14], 13: [0.1, 0.12], 14: [0.12, 0.1], 15: [0.3, 0.04], 17: [0.3, 0.02] };
 // The ball changed hands at `node` (the side on the ball was `s`); `start` is how the other side begins (0 settled).
-export function restartOnTurnover(m: LiveMatch, r: Rng, s: 0 | 1, node: number, start: number, miss: boolean) {
+export function restartOnTurnover(m: LiveMatch, r: Rng, s: 0 | 1, node: number, start: number, miss: boolean): 'ti' | 'gk' | undefined {
   const R = m.ref;
   if (!R) return;
   const o = 1 - s;
-  if (miss) { R.rs[o * RSN + RS.gk]++; return; }
+  if (miss) { R.rs[o * RSN + RS.gk]++; return 'gk'; }
   const out = OUT[node];
   if (!out) return;
   const k = start === 0 ? 1 : 0.35; // a ball won in play is rarely out of play first
   const u = r();
-  if (u < out[0] * k) R.rs[o * RSN + RS.ti]++;
-  else if (u < (out[0] + out[1]) * k) R.rs[o * RSN + RS.gk]++;
+  if (u < out[0] * k) { R.rs[o * RSN + RS.ti]++; return 'ti'; }
+  if (u < (out[0] + out[1]) * k) { R.rs[o * RSN + RS.gk]++; return 'gk'; }
 }
 
 // ---------- the referee's numbers (match report) ----------

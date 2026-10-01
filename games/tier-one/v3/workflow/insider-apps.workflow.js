@@ -8,8 +8,8 @@ export const meta = {
     { title: 'Polish', detail: 'per-app pixel pass (fix) and an independent verifier (refute), then a final cohesion pass' },
   ],
 }
-const REPO = '/tmp/claude-0/lanes8/t1-hybrid'
-const SIG = `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+const REPO = '/home/user/tier-one'
+const SIG = `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01TQDXY7Eb3VLzk7nZQnQLEN`
 const COMMON = (lane, base) => `You are a senior game developer on Tier One, a football transfer-insider game (React 19 + Vite 7 + TypeScript in games/tier-one/v3/web; shared rules + server in api/tier-one/v3 and api/tier-one/v4). We are shipping 4.0 "Insider": a complete overhaul where THE GAME IS YOUR PHONE. The owner wants a game-of-the-year, multi-million-player game: it must FEEL like a game (big tap targets, juice on every tap and result, one obvious action per screen, easy to look at), be instantly understood by a brand-new player, captivating and a bit mysterious, hard to fully master, connected across every app on the phone, make money without ever walling the player, and must not look AI-built (no gradient blobs, glassmorphism, emoji icons, identical card grids, purple gradients; specific, human, editorial-grade craft). No "HERE WE GO" anywhere (legal); the player's catchphrase (lib/catchphrase.ts catchphraseOf().text) is the stamp on a right Drop. No real people, brands or platforms (everything fictional: Blurt, Lens, Volt, Nine…). THE OWNER CUT THE DRAWN MOTION FILMS (CONCEPT4 §6): no illustrated scenes, no film loops, no film playback anywhere; motion is the phone's own UI motion built from ui/juice.tsx. The Market (real transfers) is CONCEPT4 §9 and unlocks at Level 2; Live 3; Groups 4. Never touch The Gaffer (games/the-gaffer, the-gaffer/, api/the-gaffer).
 
@@ -46,7 +46,7 @@ const REPORT = ` Return a concise report: branch, commits, what you built, expor
 phase('Merge A')
 const mergeA = await agent(`${COMMON('mergeA', 'lane8/t1-hybrid')}
 Phase A (rules, economy, shell) is ALREADY MERGED on lane8/t1-hybrid (merge commits 9f69311, dd32242, 76b9fac). Work directly in ${REPO} on lane8/t1-hybrid (already checked out; no worktree). Finish the integration of the three foundations: (1) swap every remaining local fallback for the real APIs: ui/phone.tsx levelInfo/UNLOCKS → lib/economy.ts levelOf/levelUnlocks; set levelUnlocks = { market: 2, live: 3, groups: 4 } in lib/economy.ts (CONCEPT4 §9: Market calls at Level 2, watching free; 'wire' is an alias of market) and make ui/phone.tsx APPS use it; (2) make lib/driver.ts (makeDriver), the lib/meta.ts Gain summaries, lib/deals.ts (Sponsors) and ui/juice.tsx compile and work together; (3) every existing screen still mounts under its app so the app runs; (4) npx tsc --noEmit passes and npm run build:web succeeds (then git checkout -- tier-one/ && git clean -fdq tier-one/ from the repo root). Commit; do not push. Return the final exported APIs phase B must use (driver, economy, deals, juice, phone, app registry) with signatures, read from the code, and anything rough.`,
-  { label: 'merge:A', phase: 'Merge A', model: 'fable', effort: 'high' })
+  { label: 'merge:A', phase: 'Merge A', model: 'opus', effort: 'medium' })
 log('phase A finished; building apps')
 
 phase('Apps')
