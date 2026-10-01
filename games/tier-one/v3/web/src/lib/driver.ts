@@ -96,8 +96,7 @@ export function trustFor(s: Save = getSave()): Record<string, number> {
 /** The rule spec a mode plays by default. */
 export function specFor(mode: Mode4, s: Save = getSave()): RuleSpec4 {
   if (mode === 'career') return E4.specOf('career', { rank: s.career ? s.career.rank : 0, trust: trustFor(s) });
-  if (mode === 'deadline' || mode === 'tutorial') return E4.specOf(mode);
-  return E4.specOf('daily');
+  return E4.specOf(mode);
 }
 /** The cast a local window gets when none is passed: the Daily's pool, Career's pool by rank, small names for the first window. */
 export function castForSpec(seed: string, spec: RuleSpec4, R: Rules4 = E4.rulesOf(spec)): CastSaga[] {
