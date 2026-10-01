@@ -41,7 +41,7 @@ Free in your browser at **[sembagames.app](https://sembagames.app)**, with an An
 | Game | Genre | Status | Play |
 |---|---|---|---|
 | **[Tier One](games/tier-one)** | Football transfer-journalist strategy game | Web `v3.4.0` · Android `3.4.0` | [🌐 Play](https://sembagames.app/tier-one) · [⬇️ Download APK](https://www.sembagames.app/downloads/TierOne.apk) |
-| **[The Gaffer](games/the-gaffer)** | Football manager: Europe's big five leagues + Arab leagues | Web `v2.1.0` · Android `2.1.0` (updates itself to the latest web build) | [🌐 Play](https://sembagames.app/the-gaffer) · [⬇️ Download APK](https://www.sembagames.app/downloads/TheGaffer.apk) |
+| **[The Gaffer](games/the-gaffer)** | Football manager: Europe's big five leagues + Arab leagues | Web `v2.2.0` · Android `2.2.0` (updates itself to the latest web build) | [🌐 Play](https://sembagames.app/the-gaffer) · [⬇️ Download APK](https://www.sembagames.app/downloads/TheGaffer.apk) |
 
 ---
 
