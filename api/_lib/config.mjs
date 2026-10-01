@@ -49,6 +49,21 @@ export const SCHEMAS = {
       ddlive: { type: 'array', uniqueBy: 'id', items: { type: 'object', required: ['id', 'day', 'title'], additionalProperties: false, properties: { id: { type: 'string', pattern: ID_RE }, day: { type: 'string', pattern: DAY_RE }, title: { type: 'string', maxLength: 80 }, closesLocal: { type: 'string', pattern: '^\\d{2}:\\d{2}$' }, window: { type: 'string', maxLength: 40 } } } },
     },
   },
+  // Creator Rivals (docs/CREATORS.md): real creators who signed up to be a rival, speaking with a house voice pack.
+  // Optional file; nothing is served unless flags.creatorRivals is true, and consent never leaves the server.
+  rivals: {
+    type: 'object', required: ['rivals'], additionalProperties: false,
+    properties: {
+      note: { type: 'string', maxLength: 400 },
+      rivals: { type: 'array', maxItems: 50, uniqueBy: 'id', items: { type: 'object', required: ['id', 'handle', 'name', 'voice', 'consent'], additionalProperties: false, properties: {
+        id: { type: 'string', pattern: '^[a-z0-9][a-z0-9_-]{1,30}$' }, handle: { type: 'string', pattern: '^@[A-Za-z0-9_]{1,15}$' }, name: { type: 'string', minLength: 1, maxLength: 40 },
+        initials: { type: 'string', maxLength: 3 }, avatar: { type: 'string', pattern: '^https://[^\\s"<>]{4,300}$' }, voice: { type: 'string', enum: ['tabloid', 'itk', 'insider'] },
+        code: { type: 'string', pattern: '^[A-Z0-9]{3,12}$' }, from: { type: 'string', pattern: DAY_RE }, until: { type: 'string', pattern: DAY_RE }, active: { type: 'boolean' },
+        lang: { type: 'array', maxItems: 3, items: { type: 'string', enum: ['en', 'ar', 'es'] } },
+        consent: { type: 'object', required: ['signed', 'ref'], additionalProperties: false, properties: { signed: { type: 'string', pattern: DAY_RE }, ref: { type: 'string', minLength: 3, maxLength: 80 }, revoked: { type: 'string', pattern: DAY_RE } } },
+      } } },
+    },
+  },
   flags: {
     type: 'object', required: ['flags', 'ab', 'client', 'telemetry'], additionalProperties: false,
     properties: {
@@ -81,9 +96,29 @@ export function checkLooks(cat) {
   if (errs.length) throw new Error('config catalog invalid: ' + errs.slice(0, 5).join('; '));
 }
 
+// Creator Rivals rules the schema can't say: a creator never takes a house handle or id, codes are unique, the window
+// runs forwards, and consent is signed before the first day live.
+const HOUSE_HANDLES = ['@backpagebants', '@itk_kev', '@pressboxpete'], HOUSE_IDS = ['tabloid', 'itk', 'insider'];
+export function checkRivals(r) {
+  const errs = [], codes = new Set();
+  for (const x of r.rivals) {
+    if (HOUSE_IDS.includes(x.id) || HOUSE_HANDLES.includes(x.handle.toLowerCase())) errs.push(x.id + ': house rival id or handle');
+    if (x.code) { if (codes.has(x.code)) errs.push(x.id + ': duplicate code ' + x.code); codes.add(x.code); }
+    if (x.from && x.until && x.from > x.until) errs.push(x.id + ': from after until');
+    if (x.from && x.consent.signed > x.from) errs.push(x.id + ': consent signed after going live');
+  }
+  if (errs.length) throw new Error('config rivals invalid: ' + errs.slice(0, 5).join('; '));
+  return r;
+}
+/** Active creator rivals for a day, consent stripped (what config.get sends when flags.creatorRivals is on). */
+export function activeRivals(r, day) {
+  return ((r && r.rivals) || []).filter((x) => x.active !== false && !x.consent.revoked && x.consent.signed <= day && (!x.from || x.from <= day) && (!x.until || x.until >= day))
+    .map(({ consent, ...pub }) => pub);
+}
+
 export function loadConfig(dir = DEFAULT_DIR) {
   const read = (name) => { const file = path.join(dir, name + '.json'); return assertValid(SCHEMAS[name], JSON.parse(fs.readFileSync(file, 'utf8')), name); };
-  const cfg = { catalog: read('catalog'), events: read('events'), flags: read('flags'), dir, loadedAt: Date.now() };
+  const cfg = { catalog: read('catalog'), events: read('events'), flags: read('flags'), rivals: fs.existsSync(path.join(dir, 'rivals.json')) ? checkRivals(read('rivals')) : { rivals: [] }, dir, loadedAt: Date.now() };
   checkFlagValues(cfg.flags);
   for (const e of cfg.flags.ab.experiments) if (e.weights && e.weights.length !== e.buckets.length) throw new Error('config flags invalid: experiment ' + e.id + ' weights/buckets mismatch');
   for (const it of cfg.catalog.items) if (it.kind !== 'credits' && !it.price.credits && !it.price.eur && !it.price.usd) throw new Error('config catalog invalid: item ' + it.id + ' has no price');
@@ -122,6 +157,7 @@ export function createConfig({ dir = DEFAULT_DIR, ttlMs = 60_000 } = {}) {
         ddlive: c.events.ddlive.filter((e) => isDay(e.day) && e.day >= day).slice(0, 4).map((e) => ({ ...e, live: e.day === day })),
       },
       flags: c.flags.flags, ab, minClientVersion: c.flags.client.minClientVersion, latest: c.flags.client.latest, message: c.flags.client.message || '',
+      rivals: c.flags.flags.creatorRivals === true ? activeRivals(c.rivals, day) : [],
       telemetry: c.flags.telemetry, season: seasonOf(Date.now()), week, now: Date.now(),
     };
   }

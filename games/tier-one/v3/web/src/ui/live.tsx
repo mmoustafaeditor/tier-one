@@ -57,7 +57,8 @@ function assignSub(t: T, a: Assignment) {
   if (a.kind === 'room' && v.n) return t('live.desk.s.roomOpen', v);
   return t('live.desk.s.' + a.kind, v);
 }
-const voiceOf = (t: T, a: Assignment) => { const l = t.list('live.desk.voice.' + a.kind) as string[] | undefined; return l && l.length ? l[a.voice % l.length] : ''; };
+// Mags Doyle's line for an assignment: the 3.4 pool plus her 3.5 lines (parts/banter3*.ts live.desk.voice3).
+const voiceOf = (t: T, a: Assignment) => { const l = [...((t.list('live.desk.voice.' + a.kind) as string[] | undefined) || []), ...((t.list('live.desk.voice3.' + a.kind) as string[] | undefined) || [])]; return l.length ? l[a.voice % l.length] : ''; };
 
 // ---------- Home: the queue
 export function NextUp({ go, style, max = 3, full }: { go: Go; style?: CSSProperties; max?: number; full?: boolean }) {

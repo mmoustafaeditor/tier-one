@@ -10,7 +10,7 @@ import { update, getSave, type Save } from './save';
 import type { ResultSaga, CastSaga, Tier } from './engine';
 import { credit, toast, ymdUTC } from './meta';
 import { levelOf, missionsView } from './progress';
-import { t } from './i18n';
+import { t, trList } from './i18n';
 import type { Route } from '../App';
 import { moment } from './moments';
 
@@ -105,7 +105,10 @@ export const rivalRecord = (id: string): { w: number; l: number; d: number } => 
 export const netOf = (r: RivalRec) => r.w - r.l;
 export type RivalState = 'winning' | 'losing' | 'level';
 export const rivalState = (r: RivalRec): RivalState => (netOf(r) > 0 ? 'winning' : netOf(r) < 0 ? 'losing' : 'level');
-export const TAUNTS = 8;
+export const TAUNTS = 8; // the legacy floor: friend pools (so.taunt) and old feed items index into the first 8
+/** How many feed taunts a house rival has for a state. English sizes the pool (every language keeps the same length),
+ *  so the whole 32-line voice pack in i18n/parts/rivals.ts is reachable, not just the first 8. */
+export const tauntCount = (id: string, st: string): number => { const l = trList('en', 'cn.taunt.' + id + '.' + st); return Math.max(TAUNTS, Array.isArray(l) ? l.length : 0); };
 /** Head-to-head on one saga (§1.3): null when the rival didn't post or nobody was right. */
 export function duel(p: ResultSaga, rival: string): RivalResult | null {
   const posts = p.posts.filter((x) => x.id === rival);
@@ -262,7 +265,8 @@ export function recordInto(s: Save, w: WindowIn, toasts: [string, string][] = []
     if (netOf(rec) >= TROPHY_NET && !rec.trophy) { rec.trophy = Date.now(); credit(s, TROPHY_COINS, 'rivalry:' + id); pushFeed(s, { kind: 'rival', from: id, key: 'cn.feed.trophy', v: { rival: id, n: TROPHY_COINS }, to: { n: 'rivals' }, tone: 'gold' }); moment('trophy:' + id, undefined, true); }
     const st = rivalState(rec);
     const prevIdx = rec.taunt && rec.taunt.startsWith(st + '.') ? Number(rec.taunt.split('.')[1]) : -1;
-    let idx = hash(w.key + id) % TAUNTS; if (idx === prevIdx) idx = (idx + 1) % TAUNTS;
+    const nT = tauntCount(id, st);
+    let idx = hash(w.key + id) % nT; if (idx === prevIdx) idx = (idx + 1) % nT;
     rec.taunt = st + '.' + idx; rec.tp = x.p || '';
     pushFeed(s, { kind: 'rival', from: id, key: 'cn.taunt.' + id + '.' + st + '.' + idx, v: { rec: rec.w + '–' + rec.l + (rec.d ? '–' + rec.d : ''), p: x.p || '?' }, to: { n: 'rivals' }, tone: x.r === 'l' ? 'bad' : x.r === 'w' ? 'good' : undefined });
   }

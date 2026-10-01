@@ -24,7 +24,7 @@ export type AssignKind = 'ddlive' | 'ddresults' | 'daily' | 'resume' | 'wire' | 
 export interface Assignment { kind: AssignKind; to: Route; v?: Record<string, string | number>; voice: number; feedId?: string; hot?: boolean; dd?: DeadlineDay }
 /** What the desk knows from elsewhere: the Wire cache (open calls) and how many rooms have a round open. Optional. */
 export interface DeskCtx { wire?: { calls: WireCall[]; board: Record<string, BoardItem> } | null; roomsOpen?: number; roomCode?: string }
-const VOICES = 4; // lines per kind in i18n live.desk.voice.<kind>
+const VOICES = 5040; // a wide seed: ui/live.tsx takes it modulo the editor's pool (live.desk.voice + live.desk.voice3)
 
 /** The assignments in the order the editor hands them out. Each carries a `voice` index into the editor's lines. */
 export function assignments(s: Save, now = Date.now(), ctx: DeskCtx = {}): Assignment[] {

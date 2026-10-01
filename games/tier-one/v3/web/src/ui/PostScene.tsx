@@ -12,6 +12,7 @@ import { getSave } from '../lib/save';
 import { sfx, buzz } from '../lib/sfx';
 import { hash } from '../lib/kit';
 import { hereWeGo } from '../lib/share';
+import { catchphraseOf } from '../lib/catchphrase';
 import { outWord, strWord, vars } from '../lib/story';
 import { Icon, Kit, confetti } from './game';
 import { PostFilm, type PostFilmKind } from '../film/calls/PostFilm';
@@ -25,11 +26,13 @@ const slug = (s: string) => s.toLowerCase().normalize('NFD').replace(/[^a-z0-9]/
 const kfmt = (n: number) => (n >= 10000 ? Math.round(n / 1000) + 'K' : n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K' : String(n));
 const ease = (k: number) => 1 - Math.pow(1 - Math.max(0, Math.min(1, k)), 3);
 
-/** The player's catchphrase (it replaces the old stock line on screen), else the house line. */
+/** The player's equipped catchphrase (lib/catchphrase.ts), else the house line. */
 export function catchphraseText(t: (k: string) => string): string {
-  const cp = (getSave() as unknown as { catchphrase?: { text?: string } }).catchphrase;
-  return (cp && typeof cp.text === 'string' && cp.text.trim()) || t('cp.house.default');
+  try { const x = catchphraseOf().text; if (x && x.trim()) return x; } catch { /* catalog not ready */ }
+  return t('cp.house.default');
 }
+// Club-flavoured fan handles: templates from bn3.post.handles ({club} = the club's short name as a slug).
+const clubHandle = (tpl: string | undefined, club: string, fb: string) => '@' + (tpl ? tpl.replace('{club}', club) : fb).slice(0, 15);
 
 export interface PostSceneProps { c: CastSaga; o: number; s: number; ut: boolean; prev?: { o: number; s: number } | null; onDone: () => void }
 
@@ -49,14 +52,17 @@ export function PostScene({ c, o, s, ut, prev, onDone }: PostSceneProps) {
   const base = [18, 64, 220][s] * (1 + c.player.star * .45) * (hwg ? 1.6 : 1);
   const goal = { r: Math.round(base * (0.8 + (seed % 40) / 100)), p: Math.round(base * 2.3 * (0.8 + (seed % 23) / 60)), l: Math.round(base * 7.5 * (0.8 + (seed % 31) / 80)) };
   const reacts = useMemo(() => {
-    const l = (t.list('d2.post.react.' + OUTS[o]) as string[] | undefined) || [];
+    // The 3.4 lines per outcome, the 3.5 lines per outcome and loudness (bn3.post.react.<out>.<s>).
+    const l = [...((t.list('d2.post.react.' + OUTS[o]) as string[] | undefined) || []), ...((t.list('bn3.post.react.' + OUTS[o] + '.' + s) as string[] | undefined) || [])];
     const a = seed % Math.max(1, l.length), b = (a + 1 + (seed >> 3) % Math.max(1, l.length - 1)) % Math.max(1, l.length);
-    return [{ h: '@' + slug(c.to.s) + '_ultra', club: c.to, line: fill(l[a] || '', vars(c)) }, { h: '@' + slug(c.from.s) + 'tilidie', club: c.from, line: fill(l[b] || '', vars(c)) }];
+    const H = (t.list('bn3.post.handles') as string[] | undefined) || [];
+    const h1 = clubHandle(H[(seed >> 2) % Math.max(1, H.length)], slug(c.to.s), slug(c.to.s) + '_ultra'), h2 = clubHandle(H[(seed >> 5) % Math.max(1, H.length)], slug(c.from.s), slug(c.from.s) + 'tilidie');
+    return [{ h: h1, club: c.to, line: fill(l[a] || '', vars(c)) }, { h: h2 === h1 ? '@' + slug(c.from.s) + 'tilidie' : h2, club: c.from, line: fill(l[b] || '', vars(c)) }];
   }, [o, c]);
   // The ratio pile-on under the deleted post: 3–4 cheeky replies, seeded so a replay reads the same.
   const ratio = useMemo(() => {
     if (!pre) return [];
-    const l = (t.list('calls.repost.replies') as string[] | undefined) || [];
+    const l = [...((t.list('calls.repost.replies') as string[] | undefined) || []), ...((t.list('bn3.post.ratio') as string[] | undefined) || [])];
     if (!l.length) return [];
     const n = 3 + (seed % 2), st = seed % l.length, hs = ['@' + slug(c.to.s) + '_ultra', '@ratio_fc', '@' + slug(c.from.s) + 'tilidie', '@receipts_hq'];
     return Array.from({ length: n }, (_, k) => ({ h: hs[k % hs.length], club: k % 2 ? c.from : c.to, line: fill(l[(st + k * 3) % l.length], vars(c)) }));

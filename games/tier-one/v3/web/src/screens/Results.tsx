@@ -59,7 +59,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   // One seed per window: the same result always draws the same replies, in every language's own pools.
   const seed = view.seed || (view.no ? 'daily-' + view.no : view.room ? 'room-' + view.room.code + '-' + view.room.round : r.row || 'w');
   const { threads, verdict } = useMemo(() => {
-    const b = new Banter(t.lang, seed);
+    const b = new Banter(t.lang, seed, catchphraseOf().text, s.nick.trim());
     const th = r.per.map((p) => b.thread(p, cast[p.i], view.R));
     return { threads: th, verdict: b.verdict(r.tier) };
   }, [t.lang, seed, r]);

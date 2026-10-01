@@ -48,6 +48,7 @@ export function feedText(t: T, f: FeedItem): string {
   if ('tier' in v) v.tier = v.tier ? ', ' + t('tier.' + v.tier) : '';
   if (v.perk) v.perk = t(String(v.perk)).toLowerCase();
   if (v.m) v.m = t(String(v.m), { n: v.mn ?? '' });
+  if (v.name == null) v.name = FSI(getSave().nick.trim() || t('d2.post.you')); // rival taunts aim at your byline
   return t(f.key, v);
 }
 const KIND_IC: Record<string, string> = { editor: 'story', rival: 'reply', wire: 'wire', room: 'friends', contact: 'phone', mission: 'target', level: 'crown', season: 'gift', streak: 'flame', window: 'news', hot: 'flame' };

@@ -2,7 +2,7 @@
 // Each screen has one moment: the feed prints its new copy, the rivals' scalp stamps slam, a contact's card fills.
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useT, num } from '../lib/i18n';
-import { useSave } from '../lib/save';
+import { useSave, getSave } from '../lib/save';
 import { spend } from '../lib/meta';
 import { sfx, buzz } from '../lib/sfx';
 import {
@@ -77,7 +77,7 @@ function RivalCard({ id, i }: { id: string; i: number }) {
   const goal = r.scalp ? TROPHY_NET : SCALP_NET;
   const pct = Math.max(0, Math.min(100, (100 * Math.max(0, n)) / goal));
   const st = rivalState(r);
-  const taunt = r.taunt ? t('cn.taunt.' + id + '.' + r.taunt, { rec: '\u2066' + r.w + '–' + r.l + (r.d ? '–' + r.d : '') + '\u2069', p: r.tp ? '\u2068' + r.tp + '\u2069' : '' }) : '';
+  const taunt = r.taunt ? t('cn.taunt.' + id + '.' + r.taunt, { rec: '\u2066' + r.w + '–' + r.l + (r.d ? '–' + r.d : '') + '\u2069', p: r.tp ? '\u2068' + r.tp + '\u2069' : '', name: '\u2068' + (getSave().nick.trim() || t('d2.post.you')) + '\u2069' }) : '';
   useEffect(() => { if (r.scalp && !s.reduced) { const id2 = setTimeout(() => { sfx('stamp.done'); buzz(25); }, 380 + i * 160); return () => clearTimeout(id2); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return <article className={'cn-rival cn-rival--' + id + ' is-' + st} style={{ ['--i' as string]: i }}>
     <header className="cn-rival__h">
