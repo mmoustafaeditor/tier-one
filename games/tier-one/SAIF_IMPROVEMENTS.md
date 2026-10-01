@@ -16,8 +16,8 @@ When a status changes, update it in the table **and** add a dated line to that p
 |---|---|---|
 | TIERONE-SAIF-01 | Restore and improve deal-related comments and reactions | In Progress |
 | TIERONE-SAIF-02 | Restore and upgrade the game's humor and personality | In Progress |
-| TIERONE-SAIF-03 | Restore and upgrade leaderboards, prizes, achievements and badges | Proposed |
-| TIERONE-SAIF-04 | Fix overlapping UI elements, especially around publishing controls | Proposed |
+| TIERONE-SAIF-03 | Restore and upgrade leaderboards, prizes, achievements and badges | Completed |
+| TIERONE-SAIF-04 | Fix overlapping UI elements, especially around publishing controls | Completed |
 
 ## Guidelines for investigating and implementing (once approved)
 
@@ -74,7 +74,7 @@ and made the world feel alive.
 
 ## TIERONE-SAIF-03 — Restore and upgrade leaderboards, prizes, achievements and badges
 
-**Status:** Proposed — pending verification and owner review.
+**Status:** Completed.
 
 **Saif's observation:** The previous version had a leaderboard, prizes or rewards, achievements, and badges that
 appeared when the player reached certain milestones. These added personality and a sense of progression.
@@ -88,10 +88,11 @@ appeared when the player reached certain milestones. These added personality and
 
 **Log:**
 - 2026-09-30 · Recorded from Saif. Not yet verified.
+- 2026-10-01 · Completed (mmoustafaeditor): new Leaderboards screen (today / this week / Wire season, your rank, top 25) from Me and the Results board; top-10 Daily and weekly finishes pay coins once, collected on a prize card (coins only, no score changes); medals, rival wins and latest trophies show as badges on the byline. Built on the existing `lb.top`, achievements and rival ledger; the classic version's rules were not inspected.
 
 ## TIERONE-SAIF-04 — Fix overlapping UI elements, especially around publishing controls
 
-**Status:** Proposed — pending verification and owner review.
+**Status:** Completed.
 
 **Saif's observation:** Some screens have overlapping elements, particularly near the lower publishing section and the
 controls Saif describes as "Advanced" and "Confirmed" / "مؤكد". These labels are Saif's description, not verified
@@ -106,3 +107,4 @@ component names.
 
 **Log:**
 - 2026-09-30 · Recorded from Saif. Not yet verified.
+- 2026-10-01 · Completed (mmoustafaeditor): reproduced at 390 px; the filed "Confirmed · …" stamp ran over the route row on the saga card and over the send button on the post card, and the Wire sheet's band (with its close button) slid under the sheet handle. Fixed in `play.css` / `system.css`; checked at 390x664, 390x844 and 1280x800, EN and AR.

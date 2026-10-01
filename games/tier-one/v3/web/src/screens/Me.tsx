@@ -5,6 +5,7 @@
 import { useT, num } from '../lib/i18n';
 import { useSave } from '../lib/save';
 import { ACH, ACH_IDS } from '../lib/meta';
+import { ACH_IC, unpaid } from '../lib/awards';
 import { levelOf } from '../lib/progress';
 import { unreadOf, rivalOf, RIVALS, BOOK_SRC, bookOf } from '../lib/byline';
 import { chapterOf } from '../lib/storyMode';
@@ -17,7 +18,6 @@ import { ScenesGallery } from '../film/ScenesGallery';
 import { StyleCard } from '../ui/live';
 
 
-const TROPHY_IC: Record<string, string> = { first: 'news', t1: 'crown', t1x3: 'crown', excl: 'bolt', excl3: 'bolt', clean: 'check', uturn: 'uturn', twist: 'uturn', dd: 'clock', silent: 'eye', fake: 'eye', hijack: 'arrow', agent: 'briefcase', echo: 'friends', physio: 'pulse', streak7: 'flame', streak30: 'flame', practice5: 'target', coach: 'target', career1: 'story', rank2: 'story', rank3: 'story', rank5: 'crown', trust5: 'phone', leak: 'fax', wire1: 'wire', wireRight: 'wire', room: 'friends', share: 'share', rich: 'gift' };
 
 export function MeScreen(chrome: Chrome) {
   const t = useT();
@@ -32,7 +32,9 @@ export function MeScreen(chrome: Chrome) {
   const lv = levelOf(s.pp); // the season Pass level: the one level number (lib/progress.ts)
   const ch = chapterOf(s);
   const toReels = () => document.getElementById('reels-h')?.scrollIntoView({ behavior: s.reduced ? 'auto' : 'smooth', block: 'start' });
+  const due = unpaid(s).length;
   const tiles: { k: string; ic: string; t: string; sub: string; go: () => void; badge?: number; tone?: string }[] = [
+    { k: 'boards', ic: 'trophy', t: t('aw.title'), sub: due ? t('aw.hubDue', { n: due }) : t('aw.hubSub'), badge: due, go: () => chrome.go({ n: 'boards' }) },
     { k: 'feed', ic: 'news', t: t('cn.me.feed'), sub: tn(t, 'cn.me.feedSub', un), badge: un, go: () => chrome.go({ n: 'feed' }) },
     { k: 'rivals', ic: 'reply', t: t('cn.me.rivals'), sub: rec.w + rec.l + rec.d ? t('cn.me.rivalsSub', { w: rec.w, l: rec.l }) : t('cn.me.rivalsNone'), go: () => chrome.go({ n: 'rivals' }), tone: rec.w > rec.l ? 'up' : rec.l > rec.w ? 'down' : '' },
     { k: 'contacts', ic: 'phone', t: t('cn.me.contacts'), sub: t('cn.me.contactsSub', { s: t('src.' + top.src), n: top.e.lv }), go: () => chrome.go({ n: 'contacts' }) },
@@ -67,7 +69,7 @@ export function MeScreen(chrome: Chrome) {
       <div className="g-sec me__h" style={{ ['--i' as string]: 3 }}><h2>{t('ach.title')}</h2><span className="g-mono">{t('ach.aside', { n: got.length, m: ACH_IDS.length })}</span></div>
       <section className="shelf" style={{ ['--i' as string]: 3 }}>
         {ACH_IDS.map((id) => { const on = !!s.ach[id]; const L = t.list('ach.list.' + id) as string[]; return <div key={id} className={'trophy' + (on ? ' is-on' : '')} title={L ? L[1] : id}>
-          <span className="trophy__ic"><Icon n={on ? TROPHY_IC[id] || 'trophy' : 'lock'} /></span>
+          <span className="trophy__ic"><Icon n={on ? ACH_IC[id] || 'trophy' : 'lock'} /></span>
           <span className="trophy__n">{L ? L[0] : id}</span>
           <span className="trophy__r"><span className="g-coin" />{ACH[id]}</span>
         </div>; })}

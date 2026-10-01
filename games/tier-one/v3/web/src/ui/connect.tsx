@@ -13,6 +13,7 @@ import type { Beat } from '../lib/storyMode';
 import type { Route, Go } from '../App';
 import { Icon, GBtn, CountUp, useCountUp } from './game';
 import '../styles/connect.css';
+import { BadgeRow } from './awards';
 
 // ---------- navigation for components that don't get chrome (the bell lives in every TopBar)
 let navGo: Go | null = null;
@@ -164,6 +165,7 @@ export function BylineCard({ s, style }: { s: Save; style?: CSSProperties }) {
       <div><dt>{t('cn.me.rep')}</dt><dd className="g-num">{b.rep}<small>/100</small></dd></div>
       <div className={'cn-hot' + (b.hot ? ' is-lit' : '')}><dt>{t('cn.me.hot')}</dt><dd className="g-num"><Icon n="flame" size={22} />{b.hot}</dd><small>{b.hot ? t('cn.me.best', { n: b.best }) : t('cn.me.cold')}</small></div>
     </dl>
+    <BadgeRow s={s} />
   </section>;
 }
 

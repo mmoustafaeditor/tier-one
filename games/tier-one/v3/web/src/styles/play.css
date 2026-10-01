@@ -59,7 +59,8 @@
 .pcard__route { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
 .pcard__arrow { color: var(--red); display: grid; }
 .pcard__to { font-family: var(--f-display); font-size: 18px; margin-inline-start: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pcard__stamp { position: absolute; top: 78px; inset-inline-start: 10px; font-size: 14px; --rot: -10deg; background: rgba(244, 239, 228, .9); z-index: 2; }
+/* The filed stamp stays over the kit (SAIF-04): it wraps inside the kit's width instead of running over the route. */
+.pcard__stamp { position: absolute; top: 74px; inset-inline-start: 14px; max-width: 104px; font-size: 13px; line-height: 1.05; white-space: normal; text-align: center; --rot: -8deg; background: rgba(244, 239, 228, .9); z-index: 2; }
 .stoppress { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--red); color: #fff; animation: g-pop .5s var(--ease-slam) both; }
 .stoppress b { font-family: var(--f-cond); font-stretch: 72%; font-weight: 900; font-size: 22px; letter-spacing: .05em; border: 3px solid #fff; padding: 2px 8px; transform: rotate(-4deg); white-space: nowrap; }
 .stoppress span { font-size: 13px; font-weight: 600; line-height: 1.35; }
@@ -422,7 +423,7 @@ body:has(.tutor) .play { padding-bottom: 320px; }
 .is-sent .ps__send, .is-out .ps__send { background: var(--c-done); color: #fff; padding: 0 8px; }
 .ps__txt { margin-top: 10px; min-height: 3.9em; font-size: 18px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
 .ps__caret { display: inline-block; width: 2px; height: 1.05em; margin-inline-start: 2px; vertical-align: -.15em; background: var(--red); animation: ps-blink .7s steps(2) infinite; }
-.ps__stamp { position: absolute; top: -22px; font-size: 17px; inset-inline-end: 14px; background: var(--card); mix-blend-mode: normal; display: inline-flex; align-items: center; gap: 4px; max-width: calc(100% - 28px); overflow: hidden; }
+.ps__stamp { position: absolute; top: -36px; font-size: 17px; inset-inline-end: 14px; background: var(--card); mix-blend-mode: normal; display: inline-flex; align-items: center; gap: 4px; max-width: calc(100% - 28px); overflow: hidden; }
 .ps__foot { display: flex; gap: 18px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,.08); color: var(--card-ink-3); font-family: var(--f-cond); font-stretch: 85%; font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; }
 .ps__foot span { display: inline-flex; align-items: center; gap: 5px; min-width: 52px; }
 .is-sent .ps__foot .rp, .is-out .ps__foot .rp { color: var(--c-done-deep); }
