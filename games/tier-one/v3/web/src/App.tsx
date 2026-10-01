@@ -244,7 +244,7 @@ export function App() {
     <NotifyHost icon={(a) => <AppIcon id={a} size={28} />} />
     <Toasts />
     <Suspense fallback={null}>
-      {!s.onboarded && !locked && <Onboarding go={go} />}
+      <Onboarding go={go} route={locked ? 'lock' : route.n} />
       <MorningPapers route={route.n} />
       <SceneHost />
       <SocialWatch />

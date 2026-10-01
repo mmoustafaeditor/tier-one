@@ -23,7 +23,7 @@ export default {
       season: {
         kicker: 'New season',
         names: { rumour: 'The Rumour Mill', winter: 'Winter Window', spring: 'Spring Whispers', summer: 'Summer Window' },
-        clips: ['Striker spotted at the airport', 'Agent flies in for talks', 'Medical booked for Monday', 'Barber says the fee is agreed', 'New shirt number printed', 'Club denies everything'],
+        clips: ['Striker spotted at the airport', 'Agent flies in for a meeting', 'Medical booked for Monday', 'Barber says the fee is agreed', 'New shirt number printed', 'Club denies everything'],
       },
       hwg: { hwg: 'DONE DEAL!', called: 'Called it first', post: '{p} to {c}. Contracts signed, medical done.' },
     },

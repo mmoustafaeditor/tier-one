@@ -13,7 +13,7 @@ import { addSeasonXP, seasonAt } from './season';
 import { earnHook } from './earnhook';
 import {
   XP, COINS, SECRET_FILES, SECRET_FILE_XP, credit as credit0, debit, levelOf, levelCoins, newUnlocks, xpOf, xpForWindow, coinsForWindow,
-  emptyGain, rankIndex, underReview, creditHooks, fireGain, type Gain, type SecretFile, type Mode4,
+  emptyGain, rankIndex, underReview, creditHooks, fireGain, followerDelta, xpAtLevel, type Gain, type SecretFile, type Mode4,
 } from './economy';
 export { onGain } from './economy';
 import type { Driver4, Outcome4 } from './driver';
@@ -174,6 +174,25 @@ export function onPracticeDone(r: AnyResult, coach: boolean, seed = ''): Gain {
   });
   return gainOf(before, getSave(), out.sp, out.files, 'practice');
 }
+/** The First window (CONCEPT4 §12, RULES4 §2): settles like Practice (no Rep, no ranked board, no sponsor pay) but the
+ *  first time it lands the account's first followers at full weight and Level 2 (the Market's calls open), so the
+ *  results thread can roll 200 → about 500 and show the unlock. A replay from Lens is a plain Practice window. The Gain
+ *  fires under 'practice' (Blurt listens for the tutorial there). Owned by the onboarding lane. */
+export function onTutorialDone(r: AnyResult, seed = ''): Gain {
+  if (getSave().stats.tutorial) return onPracticeDone(r, true, seed);
+  const before = snapOf(getSave());
+  let out: { sp: Sponsor; files: SecretFile[] } = { sp: noSponsor(), files: [] };
+  update((s) => {
+    s.stats.tutorial = Date.now();
+    const f0 = bylineOf(s).followers, hot0 = bylineOf(s).hot;
+    out = settleWindow(s, r, 'practice', 'tutorial:' + (seed || 'tutorial-1'), { xp: Math.max(XP.career, xpAtLevel(2) - xpOf(s)) });
+    // Followers at full weight (Practice's quarter weight would land a handful): the calls in the order they were posted.
+    let hot = hot0, full = 0;
+    for (const p of r.per.map(liteOf).filter((x) => x.called).sort((a, c) => a.day - c.day || a.i - c.i)) { full += followerDelta('career', p.s, p.right, p.scoop, hot); hot = p.right ? hot + 1 : 0; }
+    const b = (s.byline = bylineOf(s)); b.followers = Math.max(0, f0 + full);
+  });
+  return gainOf(before, getSave(), out.sp, out.files, 'practice');
+}
 /** A Career window. lib/career.ts applyWindow has already moved the byline (recordInto under the pre-key) in the same
  *  Results settle; this adds the XP, the coins, deals and files. `milestoneCredits` is the 3.x argument, unused. */
 export function onCareerDone(r: AnyResult, _milestoneCredits?: number): Gain {
@@ -229,7 +248,7 @@ export function onDriverDone(r: Outcome4, d: Pick<Driver4, 'mode' | 'seed' | 'no
     case 'room': return onRoomDone(r, d.room ? { code: d.room.code, round: d.room.round } : undefined);
     case 'career': return onCareerDone(r);
     case 'deadline': return onDeadlineDone(r, d.seed, false);
-    case 'tutorial': return onPracticeDone(r, true, d.seed);
+    case 'tutorial': return onTutorialDone(r, d.seed);
     case 'challenge': return onPracticeDone(r, !!d.coach, d.code || d.seed);
     default: return onPracticeDone(r, !!d.coach, d.seed);
   }

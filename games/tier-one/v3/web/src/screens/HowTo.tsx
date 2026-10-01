@@ -1,91 +1,88 @@
-// How to play (HYBRID.md): "Tier One in 60 seconds" as five swipeable step cards, each an icon composition, one
-// sentence and one example. The exact rules stay below, generated from RULES so the numbers can't drift (DESIGN §13).
-import { useRef, useState, type ReactNode } from 'react';
+// How to play (RULES4.md §0, §1, §4; CONCEPT4.md §2 Settings): one card. The six ideas, each with a picture made of the
+// game's own pieces, then what a call pays and what each contact can tell you. Every number is read from the engine's
+// rules (E4.RULES), so this card can't drift from the game. Opened from Settings, Blurt's "?" and the "?" key.
+import type { CSSProperties, ReactNode } from 'react';
 import { useT } from '../lib/i18n';
-import { RULES, STRENGTHS } from '../lib/engine';
-import { sfx } from '../lib/sfx';
-import { Icon, GBtn, TopBar, SrcIcon } from '../ui/game';
-import { Avatar } from '../ui/screenbits';
+import { E4, RULES4, OUTS4, BACKING } from '../lib/engine';
+import { TopBar, SrcIcon } from '../ui/game';
+import { Pop, Stamp } from '../ui/juice';
+import { startTutorial } from '../ui/tutorial';
 import type { Chrome } from '../App';
+
+const SRCS = ['barber', 'kitman', 'agent', 'spotter', 'physio'] as const;
+const sign = (n: number) => (n > 0 ? '+' + n : n < 0 ? '−' + Math.abs(n) : '0');
 
 export function HowTo(chrome: Chrome) {
   const t = useT();
-  const R = RULES;
-  // What a right call pays if you file it on day 1 (base + the early bonus for every day left): the numbers the call panel shows.
-  const day1 = [0, 1, 2].map((k) => R.BASE[k] + R.EARLY[k] * (R.DAYS - 1));
-  const v = { c: R.CONTACTS, dd: R.DD_CONTACTS, x: R.EXCL[2], t1: R.TIERS.T1, t2: R.TIERS.T2, t3: R.TIERS.T3, b: R.BASE[2], e: R.EARLY[2], l: R.LOSS[2], b0: day1[0], b1: day1[1], b2: day1[2] };
-  const fillV = (s: string) => s.replace(/\{(\w+)\}/g, (m, x) => String((v as Record<string, number>)[x] ?? m));
-  const steps = t.list('g.howto.steps') as string[][];
-  const [cur, setCur] = useState(0);
-  const rail = useRef<HTMLDivElement>(null);
-  const goTo = (k: number) => {
-    const c = rail.current, el = c?.children[k] as HTMLElement | undefined;
-    if (!c || !el) return;
-    sfx('ui.tap');
-    c.scrollBy({ left: el.getBoundingClientRect().left - c.getBoundingClientRect().left - (c.clientWidth - el.clientWidth) / 2, behavior: 'smooth' });
-  };
-  const onScroll = () => {
-    const c = rail.current; if (!c) return;
-    const mid = c.getBoundingClientRect().left + c.clientWidth / 2;
-    let best = 0, d = 1e9;
-    Array.from(c.children).forEach((el, k) => { const r = (el as HTMLElement).getBoundingClientRect(); const dd = Math.abs(r.left + r.width / 2 - mid); if (dd < d) { d = dd; best = k; } });
-    if (best !== cur) setCur(best);
-  };
-  const sec = (k: string) => { const [h, b] = t.list('howto.' + k) as string[]; return <section key={k} className="rule3"><h3>{h}</h3><p>{fillV(b)}</p></section>; };
-  const head = t.list('howto.table') as string[], sh = t.list('howto.srcTable') as string[];
-  const ART: ReactNode[] = [
-    <div className="hart hart--ring" key={0}><SrcIcon k="barber" size={54} /><span className="hart__phone"><Icon n="phone" /></span><SrcIcon k="physio" size={54} /><SrcIcon k="agent" size={54} /></div>,
-    <div className="hart hart--ev" key={1}>{['done', 'hijack', 'off', 'fake'].map((o, i) => <span key={o} className={'hchip hchip--' + o}><b>{t('out.' + o)}</b><span>{[2, 1, 0, 0][i] ? Array.from({ length: [2, 1, 0, 0][i] }, (_, j) => <Icon key={j} n="check" size={14} />) : '–'}</span></span>)}</div>,
-    <div className="hart hart--pick" key={2}>{['done', 'hijack', 'off', 'fake'].map((o, i) => <span key={o} className={'hpick hpick--' + o + (i === 0 ? ' is-on' : '')}>{t('out.' + o)}</span>)}</div>,
-    <div className="hart hart--loud" key={3}>{[0, 1, 2].map((k) => <span key={k} className={'hloud' + (k === 2 ? ' is-on' : '')}><span className="loud__bars">{[0, 1, 2].map((i) => <i key={i} className={i <= k ? 'on' : ''} />)}</span><b>{t('str.' + STRENGTHS[k])}</b><em className="g-num">+{day1[k]}</em><small className="g-num">−{R.LOSS[k]}</small></span>)}</div>,
-    <div className="hart hart--race" key={4}><span className="hrivals">{['tabloid', 'itk', 'insider'].map((r) => <Avatar key={r} name={t('rival.' + r).replace(/^@/, '').replace(/([a-z])([A-Z])/g, '$1 $2')} size={40} />)}</span><span className="hclock"><Icon n="clock" /><b className="g-num">0:{String(R.DD_SECONDS).padStart(2, '0')}</b></span></div>,
+  const R = RULES4;
+  const dd = R.CALLS[R.DAYS - 1], dms = R.CALLS[0], scoop = R.SCOOP[2];
+  const ideas = (t.list('ob4.how.ideas') as string[][]) || [];
+  const fill = (x: string) => x.replace('{dms}', String(dms)).replace('{dd}', String(dd)).replace('{scoop}', String(scoop));
+  const bars = E4.tierBars(R);
+  const day = (d: number) => (d >= R.DAYS ? t('ob4.how.src.dd') : t('day4.n', { d }));
+
+  // The pictures: the real pieces, small. Each says the idea's one number out loud.
+  const art: ReactNode[] = [
+    <span className="how4-outs" key="o">{OUTS4.map((o) => <b key={o} className={'how4-out how4-out--' + o}>{t('out4.' + o)}</b>)}</span>,
+    <span className="how4-days" key="d" aria-hidden="true">{R.CALLS.map((n, k) => <span key={k} className={k === R.DAYS - 1 ? 'is-dd' : ''}><span className="how4-dots">{Array.from({ length: n }, (_, j) => <i key={j} />)}</span><small>{k === R.DAYS - 1 ? t('ob4.how.src.dd') : k + 1}</small></span>)}</span>,
+    <span className="how4-srcs" key="s">{SRCS.map((k) => <span key={k}><SrcIcon k={k} size={34} /><small dir="auto">{t('src4.name.' + k).replace(/^(The|El|La)\s+/i, '')}</small></span>)}</span>,
+    <span className="how4-backs" key="b">{BACKING.map((b, s) => <span key={b} className={'how4-back' + (s === 2 ? ' is-drop' : '')}><b>{t('back4.' + b)}</b><small>{t('back4.' + b + 'D')}</small></span>)}</span>,
+    <span className="how4-early" key="e" aria-hidden="true">{Array.from({ length: R.DAYS }, (_, k) => { const v = R.EARLY[2] * (R.DAYS - 1 - k); return <span key={k} style={{ ['--h' as string]: v / Math.max(1, R.EARLY[2] * (R.DAYS - 1)) } as CSSProperties}><i /><b>{v ? '+' + v : '0'}</b><small>{k === R.DAYS - 1 ? t('ob4.how.src.dd') : k + 1}</small></span>; })}</span>,
+    <span className="how4-scoop" key="x"><Stamp text={'Scoop +' + scoop} tone="scoop" size="sm" slam={false} sound={false} /></span>,
   ];
-  return <div className="g-screen howto3">
-    <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('nav.howto')} onMenu={chrome.openSettings} />
-    <div className="stagger g-stack">
-      <header className="howto3__head" style={{ ['--i' as string]: 0 }}>
-        <span className="g-mono">{t('g.howto.k')}</span>
-        <h1 className="g-h1">{t('g.howto.hed')}</h1>
+
+  return <div className="g-screen how4">
+    <TopBar back={{ label: t('ob4.how.close'), onClick: () => chrome.go({ n: 'settings' }) }} title={t('ob4.how.title')} />
+    <article className="how4-card">
+      <header className="how4-head">
+        <h1>{t('ob4.how.hed')}</h1>
+        <p>{t('ob4.how.sub')}</p>
       </header>
 
-      <div className="steps" ref={rail} onScroll={onScroll} style={{ ['--i' as string]: 1 }} role="list">
-        {steps.map(([h, s, ex], k) => <article key={k} role="listitem" className={'stepc stepc--' + k + (k === cur ? ' is-cur' : '')} aria-label={t('g.howto.step', { n: k + 1, m: steps.length })}>
-          <span className="stepc__n g-num">{k + 1}</span>
-          <div className="stepc__art">{ART[k]}</div>
-          <h2 className="stepc__h">{h}</h2>
-          <p className="stepc__s">{fillV(s)}</p>
-          <p className="stepc__ex"><Icon n="bolt" size={14} />{fillV(ex)}</p>
-          {k === 3 && <p className="stepc__early"><Icon n="clock" size={14} />{t('g.howto.early')}</p>}
-        </article>)}
-      </div>
-      <div className="stepnav" style={{ ['--i' as string]: 2 }}>
-        <button className="g-icbtn" onClick={() => goTo(Math.max(0, cur - 1))} disabled={cur === 0} aria-label={t('g.howto.prev')}><Icon n={t.rtl ? 'arrow' : 'back'} /></button>
-        <span className="stepdots">{steps.map((_, k) => <button key={k} className={k === cur ? 'is-on' : ''} onClick={() => goTo(k)} aria-label={t('g.howto.step', { n: k + 1, m: steps.length })} />)}</span>
-        <button className="g-icbtn" onClick={() => goTo(Math.min(steps.length - 1, cur + 1))} disabled={cur === steps.length - 1} aria-label={t('g.howto.next')}><Icon n={t.rtl ? 'back' : 'arrow'} /></button>
-      </div>
-      <GBtn kind="green" size="lg" sound="open" onClick={() => chrome.go({ n: 'practice' })} style={{ ['--i' as string]: 3 }}><Icon n="target" size={24} />{t('g.howto.go')}</GBtn>
-
-      <details className="fullrules g-card" style={{ ['--i' as string]: 4 }}>
-        <summary><span><b className="g-h2">{t('g.howto.full')}</b><small className="g-sub">{t('g.howto.fullSub')}</small></span><Icon n="arrow" size={20} /></summary>
-        <div className="fullrules__body">
-          <div className="fullrules__cols">
-            <div>{['s1', 's2', 's3', 's4', 's5'].map(sec)}</div>
-            <div>{['s6', 's7', 's8', 's9', 's10'].map(sec)}
-              {/* Story mode only (lib/career.ts vincePick): the one Career rule that changes what a source says. */}
-              <section className="rule3 rule3--story"><h3>{(t.list('g.story.vince.howto') as string[])[0]}</h3><p>{(t.list('g.story.vince.howto') as string[])[1]}</p></section></div>
+      <ol className="how4-ideas">
+        {ideas.map(([h, b], k) => <li key={k} className="how4-idea">
+          <span className="how4-n" aria-hidden="true">{k + 1}</span>
+          <div className="how4-idea__b">
+            <h2>{h}</h2>
+            <p>{fill(b)}</p>
+            <div className="how4-art">{art[k]}</div>
           </div>
-          <h3 className="fullrules__t">{head[0]}</h3>
-          <div className="tscroll"><table className="gtable"><thead><tr>{head.map((h, k) => <th key={k}>{h}</th>)}</tr></thead>
-            <tbody>{[0, 1, 2].map((s) => <tr key={s}><td><b>{t('str.' + STRENGTHS[s])}</b></td><td>+{R.BASE[s]}</td><td>+{R.EARLY[s]}</td><td>{R.EXCL[s] ? '+' + R.EXCL[s] : '—'}</td><td>−{R.LOSS[s]}</td><td>−{R.UT_PEN[s]}</td></tr>)}</tbody></table></div>
-          <p className="fullrules__thumb">{t('g.howto.early')} {t('howto.thumb')}</p>
-          <h3 className="fullrules__t">{sh[0]}</h3>
-          <div className="srcl">{Object.entries(R.SOURCES).map(([k, so]) => <div key={k} className="srcl__r">
-            <SrcIcon k={k} size={36} />
-            <div className="srcl__m"><div className="srcl__h"><b>{t('src.' + k)}</b><span className="srcl__chip"><Icon n="phone" size={12} />{sh[1]} {so.cost}</span><span className="srcl__chip"><Icon n="clock" size={12} />{sh[2]} {so.from}</span></div>
-              <p>{t('src.' + k + 'Rule')}</p></div>
-          </div>)}</div>
-        </div>
-      </details>
+        </li>)}
+      </ol>
+
+      <section className="how4-sec" aria-labelledby="how4-score">
+        <h2 id="how4-score">{t('ob4.how.score.h')}</h2>
+        <div className="how4-scroll"><table className="how4-table">
+          <thead><tr><th scope="col">{t('ob4.how.score.back')}</th><th scope="col">{t('ob4.how.score.right')}</th><th scope="col">{t('ob4.how.score.wrong')}</th><th scope="col">{t('ob4.how.score.early')}</th><th scope="col">{t('ob4.how.score.scoop')}</th><th scope="col">{t('ob4.how.score.day1')}</th></tr></thead>
+          <tbody>{BACKING.map((b, s) => <tr key={b} className={s === 2 ? 'is-drop' : ''}>
+            <th scope="row"><b>{t('back4.' + b)}</b> <small>{t('back4.' + b + 'D')}</small></th>
+            <td className="is-good">{sign(R.WIN[s])}</td><td className="is-bad">{sign(-R.LOSS[s])}</td><td>{sign(R.EARLY[s])}</td><td>{R.SCOOP[s] ? sign(R.SCOOP[s]) : '—'}</td>
+            <td className="is-good"><b>{sign(R.WIN[s] + R.EARLY[s] * (R.DAYS - 1))}</b></td>
+          </tr>)}</tbody>
+        </table></div>
+        <p className="how4-final">{t('back4.final')}</p>
+      </section>
+
+      <section className="how4-sec" aria-labelledby="how4-src">
+        <h2 id="how4-src">{t('ob4.how.src.h')}</h2>
+        <ul className="how4-contacts">{SRCS.map((k) => { const so = R.SOURCES[k]; return <li key={k}>
+          <SrcIcon k={k} size={40} />
+          <div>
+            <div className="how4-contacts__h"><b dir="auto">{t('src4.name.' + k)}</b><span>{so.cost ? t('ob4.how.src.dm') : t('ob4.how.src.free')}</span><span>{so.from > 1 ? (so.from >= R.DAYS ? day(so.from) : t('ob4.how.src.from', { d: so.from })) : t('ob4.how.src.from', { d: 1 })}</span></div>
+            <p dir="auto"><b>{t('src4.tells.' + k)}</b>. {t('src4.right.' + k)}</p>
+          </div>
+        </li>; })}</ul>
+      </section>
+
+      <section className="how4-sec" aria-labelledby="how4-gr">
+        <h2 id="how4-gr">{t('ob4.how.grades.h')}</h2>
+        <p className="how4-grades">{t('ob4.how.grades.line', { t1: R.TIERS.T1, t2: R.TIERS.T2, t3: R.TIERS.T3, a: bars.T1, b: bars.T2, c: bars.T3 })}</p>
+      </section>
+    </article>
+
+    <div className="how4-acts">
+      <Pop className="ob4-go" sound="os.open" onTap={() => startTutorial(chrome.go)}>{t('ob4.how.again')}</Pop>
+      <Pop className="ob4-quiet" onTap={() => chrome.go({ n: 'practice' })}>{t('ob4.how.practice')}</Pop>
     </div>
   </div>;
 }

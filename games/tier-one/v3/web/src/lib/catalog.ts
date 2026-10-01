@@ -223,6 +223,10 @@ const EARNED: Item[] = [
   { id: 'cp.shirt', kind: 'catchphrase', nameKey: 'cp.house.shirt', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'story', n: 1 }, preview: { k: 'catchphrase', key: 'cp.house.shirt', tone: 'loud', c: '#2657C9' } },
   { id: 'cp.inkdry', kind: 'catchphrase', nameKey: 'cp.house.inkdry', price: {}, source: 'earned', rarity: 'rare', set: 'lines', earn: { via: 'story', n: 3 }, preview: { k: 'catchphrase', key: 'cp.house.inkdry', tone: 'dry', c: '#1B1A17' } },
   { id: 'cp.wheels', kind: 'catchphrase', nameKey: 'cp.house.wheels', price: {}, source: 'earned', rarity: 'epic', set: 'lines', earn: { via: 'story', n: 5 }, preview: { k: 'catchphrase', key: 'cp.house.wheels', tone: 'cool', c: '#35C3E6' } },
+  // The three house lines a new account picks from (CONCEPT4 §12): 'Book it.' is the standard one; these two are granted
+  // by the onboarding lane (screens/Onboarding.tsx grantEarned) when picked at "Your line".
+  { id: 'cp.lockin', kind: 'catchphrase', nameKey: 'cp.house.lockin', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'event', ref: 'start' }, preview: { k: 'catchphrase', key: 'cp.house.lockin', tone: 'cool', c: '#1FA7D9' } },
+  { id: 'cp.gates', kind: 'catchphrase', nameKey: 'cp.house.gates', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'event', ref: 'start' }, preview: { k: 'catchphrase', key: 'cp.house.gates', tone: 'dry', c: '#1DB46A' } },
   { id: 'cp.custom', kind: 'catchphrase', nameKey: 'cp.custom.name', descKey: 'cp.custom.desc', price: {}, source: 'earned', rarity: 'legendary', set: 'lines', earn: { via: 'rank', ref: 'insider' }, preview: { k: 'catchphrase', key: 'cp.custom.name', tone: 'gold', c: '#F7B928' } },
 ];
 

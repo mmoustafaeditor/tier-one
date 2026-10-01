@@ -6,7 +6,7 @@ export default {
     film: {
       name: { paper: 'The paper’s out', tier: 'Promoted', contact: 'Inner circle', scalp: 'Scalp', deadline: 'Deadline Day', official: 'Official' },
       m: {
-        paper: { stamp: 'Out now', news: 'NEWS', edition: 'First edition', demo: 'Your name on the front page', kicker: 'Exclusive' },
+        paper: { stamp: 'Out now', news: 'NEWS', edition: 'First post', demo: 'Your name at the top of the timeline', kicker: 'Scoop' },
         tier: { door: 'EDITOR', press: 'PRESS', stamp: 'Promoted', kicker: 'Accredited as' },
         contact: { kicker: 'Inner circle', lv: 'Level 5', perk: 'A free second opinion every window in Story and Practice.', stamp: 'Gold' },
         scalp: { viral: 'VIRAL', post: 'Called it first. Receipts below.', theirs: 'Trust me, that one’s dead.', record: 'You {w}–{l} {r}', stamp: 'Scalp', trophy: 'Rivalry won' },
@@ -19,7 +19,7 @@ export default {
     film: {
       name: { paper: 'الجورنال نزل', tier: 'ترقية', contact: 'الدايرة المقرّبة', scalp: 'غلبته', deadline: 'يوم الحسم', official: 'رسمي' },
       m: {
-        paper: { stamp: 'نزل', news: 'جرايد', edition: 'الطبعة الأولى', demo: 'اسمك في الصفحة الأولى', kicker: 'انفراد' },
+        paper: { stamp: 'نزل', news: 'أخبار', edition: 'أول بوست', demo: 'اسمك فوق التايملاين', kicker: 'سكووب' },
         tier: { door: 'رئيس التحرير', press: 'صحافة', stamp: 'ترقية', kicker: 'معتمد بصفة' },
         contact: { kicker: 'الدايرة المقرّبة', lv: 'المستوى ٥', perk: 'رأي تاني ببلاش كل فترة في القصة والتدريب.', stamp: 'دهب' },
         scalp: { viral: 'تريند', post: 'قلتها الأول. الدليل تحت.', theirs: 'صدّقني، الصفقة دي ماتت.', record: 'إنت {w}–{l} {r}', stamp: 'غلبته', trophy: 'كسبت المنافسة' },
@@ -32,7 +32,7 @@ export default {
     film: {
       name: { paper: 'Ya está en la calle', tier: 'Ascenso', contact: 'Círculo íntimo', scalp: 'Cabellera', deadline: 'Último día', official: 'Oficial' },
       m: {
-        paper: { stamp: 'En la calle', news: 'PRENSA', edition: 'Primera edición', demo: 'Tu nombre en portada', kicker: 'Exclusiva' },
+        paper: { stamp: 'Publicado', news: 'NOTICIA', edition: 'Primer post', demo: 'Tu nombre arriba del timeline', kicker: 'Scoop' },
         tier: { door: 'DIRECTOR', press: 'PRENSA', stamp: 'Ascendido', kicker: 'Acreditado como' },
         contact: { kicker: 'Círculo íntimo', lv: 'Nivel 5', perk: 'Una segunda opinión gratis cada ventana en Historia y Práctica.', stamp: 'Oro' },
         scalp: { viral: 'VIRAL', post: 'Lo dije primero. Pruebas abajo.', theirs: 'Hacedme caso: eso está muerto.', record: 'Tú {w}–{l} {r}', stamp: 'Cabellera', trophy: 'Rivalidad ganada' },
