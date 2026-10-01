@@ -7,7 +7,7 @@ import { END, EV, N, QUAL, QUAL_W, SHOTS, START, TUNE, shotEdges, type Duel, typ
 import type { LiveMatch, MatchEvent } from '../match';
 
 // The ball's path for the pitch (FULL only; nothing reads it back). k: w won / l lost a duel, f foul, g goal, v save,
-// b block, m miss, ti throw-in, gk goal kick (the side `s` restarts). t: seconds into the minute when it happens;
+// b block, m miss, ti throw-in, gk goal kick (the side `s` restarts), c a corner to `s`, o `s` caught offside. t: seconds into the minute when it happens;
 // n: the engine node it happened at (model.ts N: the kind of action, e.g. a cross or a through ball).
 export interface Flow { s: 0 | 1; z: number; k: string; p?: string; t?: number; n?: number }
 export interface Tally {
@@ -67,6 +67,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
   const threat = [0, 0];
   const flow: Flow[] = [];
   const secs = budget;
+  let cornerAfter: Flow | null = null;
   let guard = 0;
   while (budget > 0 && guard++ < 400) {
     const M = model();
@@ -109,6 +110,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       if (edge.to === N.CRN) {
         const taker = m.sides[s].pieces.corners;
         rules.event({ min: m.minute, side: s, kind: 'corner', playerId: m.sides[s].onPitch.includes(taker) ? taker : '' });
+        if (full) flow.push({ s, z: absZone(s, 5, z % 5 < 2 ? 0 : 4), k: 'c', p: m.sides[s].onPitch.includes(taker) ? taker : undefined, t: clockAt(secs, budget, node.t), n: nodeIx });
       }
     } else {
       let u = r();
@@ -153,10 +155,13 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       if (edge.ev === EV.CORNER || (edge.to === N.CRN && edge.ev === undefined)) {
         const taker = m.sides[s].pieces.corners;
         rules.event({ min: m.minute, side: s, kind: 'corner', playerId: m.sides[s].onPitch.includes(taker) ? taker : '' });
+        if (full) cornerAfter = { s, z: absZone(s, 5, ax !== undefined && rowOf(ax) >= 2 ? 4 : 0), k: 'c', p: m.sides[s].onPitch.includes(taker) ? taker : undefined, t: clockAt(secs, budget, node.t), n: nodeIx }; // after the contest that put it out
       }
       if (edge.ev === EV.OFFSIDE) {
         const d = node.duel!;
-        rules.event({ min: m.minute, side: s, kind: 'offside', playerId: aId ?? d.a[pickW(r, d.wa)].id });
+        const who = aId ?? d.a[pickW(r, d.wa)].id;
+        rules.event({ min: m.minute, side: s, kind: 'offside', playerId: who });
+        if (full) flow.push({ s, z: absZone(s, COL[nodeIx] ?? 4, 2), k: 'o', p: who, t: clockAt(secs, budget, node.t), n: nodeIx });
       }
       // Recording (FULL): duels that decide the story, zones, the ball's path.
       if (full && won !== undefined) {
@@ -172,6 +177,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         if (won) { b.a = aId; b.d = dId; } else b.d = dId;
         flow.push({ s: won ? s : o, z, k: won ? 'w' : 'l', p: won ? aId : dId, t: clockAt(secs, budget, node.t), n: nodeIx });
       }
+      if (cornerAfter) { flow.push(cornerAfter); cornerAfter = null; }
       if (full && edge.to === N.CTR) tl.ctr[s]++;
       if (full) {
         const col = COL[nodeIx] ?? 3;

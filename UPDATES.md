@@ -22,6 +22,51 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer: match highlights like FM, and the pitch at real pace
+- **What changed:**
+  - **Highlight modes.** A watched match now shows highlights like Football Manager (`sim/highlights.ts`). Pick the mode on the live screen's bar or in Settings › Match; it's in EN/AR/ES/FR. Average match length at Normal speed:
+    - **Commentary only** (the zone map, no pitch): about 0.5 min.
+    - **Key** (goals, penalties, red cards, big chances; about 5 a match): about 1 min.
+    - **Extended**, the default (plus every shot, corner and free kick in range; about 41 a match): about 4 min.
+    - **Comprehensive** (plus balls in behind, crosses and counters; about 58): about 6 min.
+    - **Full match**: about 40 min.
+  - **How a highlight plays.** It runs at the engine's own pace (Slow 1.5×, Normal 2.5×, Fast 4× real time; the old pace setting is now the highlight speed). Between highlights the clock runs on quickly and the picture cuts.
+  - **Why.** Showing a whole engine minute in 2.4 s gave players no time: the ball changed hands every 0.13 s, faster than anyone reacts. The pitch's open problems (back line, overlaps, blocking, reacting after losing the ball) were all that.
+  - **Measured in Extended mode on 10 seeded matches** (`node sim-tests/build.mjs pitch`, which now measures what the player sees), every check passes:
+    - back-line spread 1.1 m (it was 4.4);
+    - reaction after a turnover 33 of 33;
+    - box blocking 90% (it was 52);
+    - full-back overlaps 63% (it was 0–8);
+    - offside 1%;
+    - two open men for the carrier 72%;
+    - marking 85%;
+    - keeper 0.0 m.
+  - **Also on the pitch:**
+    - real runs are sprints (overlaps, counter-press, recovery runs, closing a shot), never while a set piece is staged;
+    - runners hold the offside line and go when the ball is played (the director reads who the next ball is for);
+    - players run at a fixed scale for the chosen speed;
+    - a carrier with no target no longer crashes the pitch.
+  - **Checks.** Results are unchanged (same 200-match fingerprint). Browser: 59 fps, no console errors, nav test passes.
+- **Files:** `games/the-gaffer/web/src/sim/highlights.ts` (new), `src/sim/prefs.ts` (`hl`), `src/ui2/Live.tsx`, `src/ui2/Pitch2D.tsx`, `src/ui2/Settings.tsx`, `src/App.tsx`, `src/ui2/QuickMatch.tsx`, `src/ui2/pitch/{sim,move,body,tuning,director}.ts`, `src/lang-ref{,-ar,-es,-fr}.ts`, `sim-tests/pitch.ts`, `ui-tests/pitch-metrics.mjs`
+- **Heads-up for the team:**
+  - A watched match is shorter by default now: Extended takes about 4 min at Normal.
+  - The old "Key" button on the match bar (45 ms a minute) is still there and overlaps the Key mode; it gets tidied next.
+  - Tier One is untouched.
+
+## 2026-10-01 · saifsaber · The Gaffer, phase 4 (first part): the engine hands corners and offsides to the pitch; penalties staged; blocking shots
+- **What changed:**
+  - **Engine** (results unchanged, same 200-match fingerprint): corners and offsides are now entries in the ball path the engine gives the pitch (`m.flow`, `k: 'c' | 'o'`), each at its own second. The pitch used to guess where they went by counting shots in the event log.
+  - **Penalties** are staged on the pitch: the foul is given as a penalty, the ball goes to the spot, the taker stands behind it, everyone else waits on the edge of the box and the keeper stays on his line. Before, a penalty was shown as a free kick with a wall inside the box.
+  - **The director** (`ui2/pitch/director.ts`): players can read the engine's plan a moment ahead. A defender sees a shot coming and gets into the shooting lane before it's struck, then blocks the lane from the ball once it reaches the shooter in the box. He sprints flat out to the lane (an "urgent run", `body.ts move`) instead of easing in like every other move. Without that, a defender 9 m away took about a second to arrive.
+  - **Box blocking** went from 28% to 52% of frames on 10 seeded matches.
+  - **Beat timing:** timing beats by the engine's own seconds is built (`T.ENGINE_CLOCK`) but off. Measured, it made marking worse (88% against 94%) and nothing better.
+- **Files:** `games/the-gaffer/web/src/sim/engine/play.ts`, `src/ui2/pitch/{director (new),sim,body,setpieces,tuning}.ts`, `ui-tests/pitch-metrics.mjs`
+- **Heads-up for the team:**
+  - Still open: back-line spread (4.4 m against 3 m) and full-back overlaps (0–2%).
+  - The turnover-reaction check reads 94 of 125. The same 95 or so turnovers still get a reaction, but corners and offsides now land where the engine had them, which brings about 5 more turnovers into the measured window. Those are being looked at next.
+  - Urgent runs were tried for counter-pressers, recovery runs and overlaps too. They broke walls and the offside line, so only the blocker uses one.
+  - Tier One is untouched.
+
 ## 2026-10-01 · mmoustafaeditor · Tier One 4.0 phase B, play lane: Blurt, DMs and the results thread on the 4.0 driver (lane22/play)
 - **What changed:** Every window now plays in **Blurt** on `makeDriver` (`App.tsx` builds `makeDriver({ mode, onDone: onDriverDone })` for daily / room / play; `play` also takes `tutorial`, `deadline`, `challenge`). Blurt: today's window pinned at the top ("Day 2 of 5 · 2 DMs left"), stories as big cards in club colours with their state (no DM yet / the contacts' answers as chips / your post stamped), the three accounts' overnight posts on the timeline with handle and accuracy, your posts with live counters, Drops as square cards, pull to refresh, the Story boss strip (registry), the Live clock bar (`rulesFor('deadline')`, time out ends the window). Post sheet: SIGNS / ELSEWHERE / STAYS with the clubs named, Hint / Post / Drop, the deal in one sentence from `preview` and whether the Scoop is still on; posting is a real flight into the timeline, a Drop is composed, published, flipped (catchphrase typed on, one slam). End day runs the clock to morning and refreshes the feed. **DMs** app: contacts as threads (what they tell you, how often they are right from the E4 tables, when locked ones open, warmth = Trust, coffee), brand offers (accept / decline), and the **call screen** (typographic avatar, "Barber · 00:07", live waveform, the contact's synth sound bed, the answer typed as a voice note, hang up / tap to skip). **Results** are a thread: posts resolve one by one (ending card, Scoop stamp / catchphrase / ratio, points in one line, banter replies), then grade, "You beat N% of today's players" / group / boss head-to-head, follower and Rep rolls, XP and the level bar, coins and the sponsor's per-call lines, the share card (grid), next action. The drawn films are gone (CONCEPT4 §6).
 - **Files:** new `src/screens/Blurt.tsx`, `src/screens/DMs.tsx`, `src/styles/blurt.css`, `src/i18n/parts/play4.ts`, `src/ui/tutorial.tsx` (stub); rewritten `src/screens/Results.tsx`, `src/screens/Window.tsx`, `src/lib/scenes.ts` (no-op API); `src/lib/banter.ts` (`thread4`, `accountPost4`, `ratioLine4`, `BANNED4`), `src/lib/rivals.ts` (`setBoss`, `bossNow`, `bossResult`, `bossLine`), `src/lib/share.ts` (`shareWindow4`, `renderCard4`, `shareText4`), `src/screens/Connect.tsx` (`ContactsScreen` = DMs). Deleted: `src/film/**`, `src/ui/film.tsx`, `src/lib/filmgate.ts`, `src/ui/CallScene.tsx`, `src/ui/PostScene.tsx`, `src/screens/Saga.tsx`. Outside the lane (smallest edits): `src/App.tsx`, `src/screens/{Me,Newsroom,Rooms,Settings,Wire}.tsx` (film imports removed), `src/lib/perf.ts` (`prefetchFilm` removed).

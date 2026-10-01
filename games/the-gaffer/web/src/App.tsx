@@ -355,7 +355,7 @@ export function App() {
         {route.s === 'academy' && <AcademyScreen focus={route.focus} />}
         {route.s === 'match' && <MatchScreen tab={route.tab ?? 0} onTab={(n) => setRoute({ s: 'match', tab: n })} />}
         {route.s === 'pre' && <PreMatch />}
-        {route.s === 'live' && live && <LiveScreen m={live} locked={locked} speed0={prefs.pace ?? 1} onSpeed={(pace) => setPrefs({ ...prefs, pace })} onUpdate={setLive} onSave={(m) => void saveLive(m)} onFinish={(m) => void finishLive(m)} />}
+        {route.s === 'live' && live && <LiveScreen m={live} locked={locked} speed0={prefs.pace ?? 1} hl0={prefs.hl ?? 2} onSpeed={(pace) => setPrefs({ ...prefs, pace })} onHl={(hl) => setPrefs({ ...prefs, hl })} onUpdate={setLive} onSave={(m) => void saveLive(m)} onFinish={(m) => void finishLive(m)} />}
         {route.s === 'ft' && after && <FullTime a={after} onDone={() => { setAfter(null); setRoute({ s: 'today' }); }} />}
         {route.s === 'digest' && <Digest onDone={() => setRoute({ s: 'today' })} />}
         {route.s === 'transfers' && <TransfersScreen tab={route.tab ?? 0} neg={route.neg} pid={route.p} onTab={(n) => setRoute({ s: 'transfers', tab: n })} />}

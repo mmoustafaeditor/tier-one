@@ -11,6 +11,7 @@ import { planOf, rolesArrays } from '../sim/engine/phases';
 import { ROLES, roleFit, rolesFor, POOR_FIT } from '../sim/engine/roles';
 import { TX } from '../lang-tac-all';
 import { PERIOD_END, clockOf, isExtraBreak, isHalfTime, playOver } from '../sim/engine/clock';
+import { RATES, minuteMs, type HlMode } from '../sim/highlights';
 import { RSN, RS } from '../sim/engine/referee';
 import { Banner, CommentaryFeed, MomentIcon, RefLine, VarBanner, bannerOf, momentText, refOf } from './Officials';
 import { applyTip, explain, suggest, winChance, type Point, type Tip } from '../sim/engine/story';
@@ -23,16 +24,15 @@ import { pointText, tipWhat, tipWhy } from './why';
 import { sfx, soundOn, setSound } from './sfx';
 
 const clone = (m: LiveMatch): LiveMatch => JSON.parse(JSON.stringify(m));
-// gf-ref: a watched match reads at a human pace: Slow ≈ 6, Normal ≈ 4, Fast ≈ 1.5 real minutes for the ninety (plus
-// the pauses on big moments). Instant plays to the whistle at once.
-const SPEEDS = [3600, 2400, 900];
+// A watched match shows highlights like FM (sim/highlights.ts): the pace sets the highlight speed (× real time).
+// Instant plays to the whistle at once.
 const HOLD_K = [1.25, 1, 0.55];
 const PHASE_MS = 1500;
 const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish, onSpeed }: {
-  m: LiveMatch; locked: boolean; speed0: 0 | 1 | 2; onUpdate: (m: LiveMatch) => void; onSave: (m: LiveMatch) => void; onFinish: (m: LiveMatch) => void;
-  onSpeed?: (s: 0 | 1 | 2) => void;
+export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFinish, onSpeed, onHl }: {
+  m: LiveMatch; locked: boolean; speed0: 0 | 1 | 2; hl0?: HlMode; onUpdate: (m: LiveMatch) => void; onSave: (m: LiveMatch) => void; onFinish: (m: LiveMatch) => void;
+  onSpeed?: (s: 0 | 1 | 2) => void; onHl?: (h: HlMode) => void;
 }) {
   const g = useGame();
   const { w, c, x, lang } = g;
@@ -40,7 +40,12 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish, onSp
   const me = Math.max(0, isUserSide(m, c)) as 0 | 1;
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState<number>(speed0);
+  // What the match shows (sim/highlights.ts, like FM): a highlight plays at RATES[speed] × real time, the clock runs on
+  // quickly between highlights; players run at a fixed scale for that speed.
+  const [hl, setHl] = useState<HlMode>(hl0);
   const [key, setKey] = useState(false);
+  const minMs = key ? 45 : minuteMs(m, hl, RATES[speed]);
+  const scale = key ? 45 : Math.round((2400 * RATES[1]) / RATES[speed]);
   const [view, setView] = useState(0);
   const [changes, setChanges] = useState(false);
   const [htSeen, setHtSeen] = useState(m.minute > 45);
@@ -73,7 +78,7 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish, onSp
       setHold(Math.round(k * HOLD_K[speed]));
       if (whistle) { onSave(n); if (!reduced()) sfx('whistle'); }
       else if (n.minute % 5 === 0 && !n.plus) onSave(n);
-    }, (key ? 45 : SPEEDS[speed]) + hold);
+    }, minMs + hold);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [m, paused, done, changes, ht, locked, speed, key, banner]);
@@ -177,8 +182,8 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish, onSp
         <Panel className="g-pitch pitch-card" i={2} label={x.live.where}>
           <span className="eyebrow">{x.live.where} · {x.live.whereSub} · {R.wx[m.wx ?? 0]}</span>
           <div className="chips view-chips">{x.live.views.map((v, i) => <button key={v} className="chip" aria-pressed={view === i} onClick={() => setView(i)}>{v}</button>)}</div>
-          {view === 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={key ? 45 : SPEEDS[speed]} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} /></div>
-            : <ZonePitch m={m} me={me} mode={view} />}
+          {view === 0 && hl !== 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={minMs} mode={key ? undefined : hl} scale={scale} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} /></div>
+            : <ZonePitch m={m} me={me} mode={view || 1} /> /* commentary only: the zone map, no pitch */}
           <div className="mom-h"><b>{x.live.momentum}</b><span>{x.live.momentumKey(cn(us, lang), cn(them, lang))}</span></div>
           <Momentum data={mom} rtl={g.rtl} label={x.live.momentum} />
         </Panel>
@@ -237,6 +242,9 @@ export function LiveScreen({ m, locked, speed0, onUpdate, onSave, onFinish, onSp
               {R.speeds.map((l, i) => <button key={l} aria-pressed={!key && speed === i} onClick={() => pickSpeed(i as 0 | 1 | 2)}>{l}</button>)}
               <button aria-pressed={key} onClick={() => setKey(!key)}>{x.live.key}</button>
             </div>
+            <select className="sel hlsel" value={hl} aria-label={R.hlTitle} title={R.hlTitle} onChange={(e) => { const v = +e.target.value as HlMode; setHl(v); onHl?.(v); }}>
+              {R.hl.map((l, i) => <option key={l} value={i}>{l}</option>)}
+            </select>
             <span className="grow" />
             <button className="btn btn--ghost btn--sm skipbtn" title={x.live.skip} onClick={() => { const n = clone(m); n.sides[me].autoSubs = true; simulate(n, get); setBanner(null); onUpdate(n); onSave(n); }}>{R.instant}</button>
             <button className="btn btn--accent" onClick={() => setChanges(true)}><I n="swap" />{x.live.changes}</button>
