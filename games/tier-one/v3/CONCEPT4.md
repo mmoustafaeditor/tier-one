@@ -80,9 +80,21 @@ shown as "Reach Level 5" with the bar, never as a lock icon alone.
   Blurt, a follower counter that rolls.
 - Juice primitives (`ui/juice.tsx`): `<Count>` (rolling numbers), `<Pop>` (tap scale), `<Ticker>` (follower / coin rolls),
   `<Typing>`, `<Notify>` (tray), `<Ratio>` (the reply counter on a wrong post). Every lane uses these, nobody reinvents them.
-- Films stay drawn (no characters, no 3D): DM voice-note scenes, the Drop reveal, the night-to-morning transition, the Live clock.
-- Not AI-built: one custom icon set, one type system, real microcopy in the editor's voice, specific brand marks drawn as
-  logotypes, no gradient blobs or glass, no identical card grids, no emoji icons.
+- **No illustrated "motion films" or drawn scenes anywhere.** The owner cut them: they felt gimmicky, and their backgrounds
+  looked wrong. `src/film`, `ui/film.tsx`, the film loops and the CallScene/PostScene film playback are deleted, and nothing new of
+  that kind is built. Motion in this game is the phone's own motion: app-open and sheet springs, DM typing dots then the
+  answer card sliding in, the post card lifting off and landing in the timeline, the Drop reveal (card flip, catchphrase typed on,
+  one slam), the ratio counter spinning up on a wrong post, number rolls, the night-to-morning as the status bar clock running
+  and the timeline refreshing, the Live clock bar. Every one of these is UI motion on real UI, built from `ui/juice.tsx`.
+- Not the classic AI look: one custom icon set, one type system, real microcopy in a human voice, specific brand marks drawn as
+  logotypes, no gradient blobs or glass, no identical card grids, no emoji icons. AI tools may be used to make it, as long as
+  nothing on screen looks like a stock "AI app".
+- **Art.** Imagery is built, not illustrated: wallpapers and Drop card backgrounds are generative (club-colour fields, grain, big
+  type, geometric patterns, light leaks) rendered as SVG/CSS/canvas so they scale and theme; contacts and rivals have
+  typographic avatars (initials, a colour, a mark), no faces; brands are logotypes. If the owner supplies bitmap art later it goes
+  in `web/public/art/<name>.webp` with a line in `web/public/art/manifest.json` (`{ id, kind, credit }`) and the looks catalog
+  picks it up by id; nothing in the game depends on it existing.
+
 - Mystery: sealed results (open post by post), Secret files, the whistleblower, deals that arrive unannounced, a rival who DMs you
   after a Scoop.
 
