@@ -1,1 +1,0 @@
-import{j as o}from"./vendor-CgP-wcIU.js";import{Expired as r}from"./Rooms-CPQulte4.js";import"./index-CItzt3mO.js";import"./boot-LIbiBAMB.js";import"./i18n-BXcsMICR.js";import"./world-lZPKPapH.js";import"./screen-DBDGBagp.js";function m({code:m,...s}){return o.jsx(r,{chrome:s})}export{m as NewsroomScreen};

@@ -2,9 +2,6 @@
 // credits glyph, the gift and packs sheets, and <CustomizeLink/> for the Me lane. Logic lives in lib/wallet.ts and
 // lib/catalog.ts; the screen in screens/Customize.tsx.
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import type { Preview } from '../lib/kinds';
-import { OUTS4 } from '../lib/engine';
-import { BRANDS, type Brand } from '../lib/deals';
 import { useSave, type Save } from '../lib/save';
 import { useT, fmtDate, type T } from '../lib/i18n';
 import { sfx } from '../lib/sfx';
@@ -64,7 +61,7 @@ export function Countdown({ to, lang }: { to: number; lang: string }) {
 export type Try = Partial<Record<Kind, string>>;
 export const look = (kind: Kind, s: Save, tryOn?: Try): Item => { const id = tryOn?.[kind]; const it = id ? item(id) : null; return it && it.kind === kind ? it : equipped(kind, s); };
 const pv = <K extends Kind>(kind: K, s: Save, tryOn?: Try) => look(kind, s, tryOn).preview as Extract<Item['preview'], { k: K }>;
-export const initialsOf = (n: string) => (n || 'You').split(/\s+/).map((x) => x[0]).join('').slice(0, 2).toUpperCase();
+const initialsOf = (n: string) => (n || 'You').split(/\s+/).map((x) => x[0]).join('').slice(0, 2).toUpperCase();
 
 /** The byline card as it appears on Me and in press-box tables, in the chosen design, flair, ink and press pass. */
 export function BylinePreview({ s, tryOn, style }: { s: Save; tryOn?: Try; style?: CSSProperties }) {
@@ -245,14 +242,9 @@ export function Stage({ tab, s, tryOn }: { tab: Kind; s: Save; tryOn?: Try }) {
 // ---------------------------------------------------------------- tiles
 export function Thumb({ it, s }: { it: Item; s: Save }) {
   const t = useT();
-  const p = it.preview;
-  // 4.0 phone looks draw themselves (wallpapers, Drop cards, OS themes, frames), season-track ones included.
-  if (p.k === 'wallpaper') return <Wallpaper p={p} className="cz-th cz-th--wp" />;
-  if (p.k === 'dropcard') return <span className="cz-th cz-th--dc" aria-hidden="true"><DropFace p={p} o={0} cp={t('cp.house.default')} mini /></span>;
-  if (p.k === 'theme' && p.os) return <span className="cz-th cz-th--os" style={{ background: p.os.bg, color: p.os.ink, ['--acc' as string]: p.os.accent, ['--bar' as string]: p.os.bar }} aria-hidden="true"><i /><i /><i /><i /></span>;
-  if (p.k === 'frame') return <span className="cz-th cz-th--fr" aria-hidden="true"><FrameRing p={p} initials={initialsOf(s.nick)} size={44} /></span>;
   const lc = legacy(it);
   if (lc && !isStandard(it.id)) return <CosSwatch c={lc} nick={s.nick} size="sm" />;
+  const p = it.preview;
   switch (p.k) {
     case 'byline': return <span className="cz-th cz-th--by" style={{ background: p.bg, color: p.ink, ['--acc' as string]: p.accent }} aria-hidden="true"><i /><b /></span>;
     case 'masthead': return <span className="cz-th cz-th--mh" style={{ background: p.bg, color: p.ink, fontFamily: p.face === 'cond' ? 'var(--f-cond)' : p.face === 'mono' ? 'var(--f-mono)' : 'var(--f-display)' }} aria-hidden="true">{p.orn || 'Aa'}</span>;
@@ -261,6 +253,7 @@ export function Thumb({ it, s }: { it: Item; s: Save }) {
     case 'sharecard': return <span className="cz-th cz-th--sc" style={{ background: p.paper, color: p.ink, ['--acc' as string]: p.accent }} aria-hidden="true"><i /><b /><b /></span>;
     case 'paper': return <span className="cz-th cz-th--paper" aria-hidden="true"><Icon n="pen" size={20} /></span>;
     case 'gold': return <span className="cz-th cz-th--gold" aria-hidden="true"><Icon n="crown" size={22} /></span>;
+    case 'frame': return <span className="cz-th cz-th--std" aria-hidden="true"><i style={{ border: '2px solid ' + p.c }} /></span>;
     case 'ink': return <span className="cz-th cz-th--ink" aria-hidden="true"><b style={{ color: p.c, borderColor: p.c }}>{t('stamp.filed')}</b></span>;
     case 'theme': return <span className="cz-th" style={{ background: p.desk ? `linear-gradient(135deg, ${p.desk[0]}, ${p.desk[2]})` : undefined }} aria-hidden="true"><i className="cz-th__sheet" /></span>;
     case 'ringtone': return <span className="cz-th cz-th--std" aria-hidden="true"><Icon n="phone" size={18} /></span>;
@@ -345,85 +338,3 @@ export function CustomizeLink({ kind = 'dark', size = '' }: { kind?: 'dark' | 'g
   return <GBtn kind={kind} size={size} sound="open" onClick={() => navTo({ n: 'customize' })}><Icon n="pen" size={22} />{t('eco.link')}</GBtn>;
 }
 export const myCode = referralCode;
-
-// ---------------------------------------------------------------- 4.0 the phone's looks (CONCEPT4 §5, §6 "Art")
-// Built, not illustrated: a wallpaper is a colour field with a drawn motif (grain, halftone, stripe, grid, pitch lines);
-// a Drop card is type on a colour with the club's two colours as a band; a frame is a ring; a brand is a logotype.
-// Other lanes use these: <Wallpaper/> (lock and home screen), <DropFace/> and <DropCard/> (Blurt's Drop, the Lens grid,
-// the share card), <FrameRing/> (avatars), <BrandMark/> (sponsor DMs, results thread lines).
-type WP = Extract<Preview, { k: 'wallpaper' }>;
-type DC = Extract<Preview, { k: 'dropcard' }>;
-type FR = Extract<Preview, { k: 'frame' }>;
-/** A wallpaper as a surface. Children sit on top (a clock, widgets). */
-export function Wallpaper({ p, className = '', style, children }: { p: WP; className?: string; style?: CSSProperties; children?: ReactNode }) {
-  return <span className={'lk-wp ' + className} data-motif={p.motif} style={{ ['--wp-bg' as string]: p.bg, ['--wp-ink' as string]: p.ink, ['--wp-acc' as string]: p.accent, ...style }} aria-hidden={children ? undefined : true}>{children}</span>;
-}
-export interface DropFaceProps { p: DC; o: number; cp: string; player?: string; club?: { s: string; n: string; c1: string; c2: string }; handle?: string; scoop?: boolean; foot?: ReactNode; mini?: boolean; className?: string }
-/** The face of a Drop card in a style: the ending in wood type, the player, the club band, your line stamped across. */
-export function DropFace({ p, o, cp, player, club, handle, scoop, foot, mini, className = '' }: DropFaceProps) {
-  const t = useT();
-  const word = t('out4.' + OUTS4[Math.max(0, Math.min(2, o))]);
-  return <span className={'lk-dc' + (mini ? ' lk-dc--mini' : '') + ' ' + className} data-style={p.style} style={{ ['--dc-bg' as string]: p.bg, ['--dc-ink' as string]: p.ink, ['--dc-acc' as string]: p.accent, ['--dc-c1' as string]: club?.c1 || p.accent, ['--dc-c2' as string]: club?.c2 || p.ink }}>
-    <span className="lk-dc__band" aria-hidden="true"><i /><i /></span>
-    {p.mark && <b className="lk-dc__mark" aria-hidden="true">{p.mark}</b>}
-    {!mini && club?.s && <span className="lk-dc__club" dir="auto">{club.n}</span>}
-    <b className="lk-dc__out" dir="auto">{word}</b>
-    {!mini && player && <span className="lk-dc__who" dir="auto">{player}</span>}
-    <span className="lk-dc__cp" dir="auto">{cp}</span>
-    {!mini && scoop && <span className="lk-dc__scoop">{t('l4.drop.scoop')}</span>}
-    {!mini && (handle || foot) && <span className="lk-dc__foot">{handle && <span dir="auto">@{handle}</span>}{foot}</span>}
-  </span>;
-}
-/** The equipped (or tried-on) Drop card with real content. */
-export function DropCard(props: Omit<DropFaceProps, 'p'> & { s: Save; tryOn?: Try; p?: DC }) {
-  const { s, tryOn, p, ...rest } = props;
-  return <DropFace p={p || pv('dropcard', s, tryOn)} handle={rest.handle ?? s.nick} {...rest} />;
-}
-/** An avatar inside a frame ring: initials on a colour (no faces anywhere), the ring in the frame's pattern. */
-export function FrameRing({ p, initials, size = 72, accent }: { p: FR; initials: string; size?: number; accent?: string }) {
-  return <span className="lk-fr" data-pat={p.pat} style={{ ['--fr-c' as string]: p.c, ['--fr-c2' as string]: p.c2, ['--sz' as string]: size + 'px', ['--fr-in' as string]: accent || '#F2B632' }} aria-hidden="true"><b>{initials}</b></span>;
-}
-/** Your avatar as everyone sees it: the equipped (or tried-on) frame. */
-export function Avatar({ s, tryOn, size = 72 }: { s: Save; tryOn?: Try; size?: number }) {
-  return <FrameRing p={pv('frame', s, tryOn)} initials={initialsOf(s.nick)} size={size} />;
-}
-/** The phone in miniature: the wallpaper under the theme's status bar, a clock, your handle and the eight apps. */
-export function PhoneMock({ s, tryOn, className = '' }: { s: Save; tryOn?: Try; className?: string }) {
-  const w = pv('wallpaper', s, tryOn), th = pv('theme', s, tryOn);
-  const os = th.os || { bg: '#0F0E0C', ink: '#F4EFE4', accent: '#FF5A36', bar: '#15130F' };
-  return <span className={'lk-phone ' + className} style={{ ['--os-bg' as string]: os.bg, ['--os-ink' as string]: os.ink, ['--os-acc' as string]: os.accent, ['--os-bar' as string]: os.bar }} aria-hidden="true">
-    <Wallpaper p={w} className="lk-phone__wp">
-      <span className="lk-phone__bar"><b>09:41</b><i /></span>
-      <span className="lk-phone__clock">09:41</span>
-      <span className="lk-phone__who" dir="auto">@{s.nick || 'you'}</span>
-      <span className="lk-phone__apps">{Array.from({ length: 8 }, (_, k) => <i key={k} />)}</span>
-      <span className="lk-phone__dock"><i /><i /><i /><i /></span>
-    </Wallpaper>
-  </span>;
-}
-/** A contact ringing, in the ringtone being tried: tap "Hear it" to play it. */
-export function CallMock({ s, tryOn }: { s: Save; tryOn?: Try }) {
-  const t = useT(); const r = pv('ringtone', s, tryOn);
-  return <span className="lk-call">
-    <span className="lk-call__av" aria-hidden="true">AG</span>
-    <b className="lk-call__n">{t('src.agent')}</b>
-    <span className="lk-call__w" aria-hidden="true">{Array.from({ length: 14 }, (_, k) => <i key={k} style={{ ['--k' as string]: k }} />)}</span>
-    <button type="button" className="lk-call__hear" onClick={() => sfx(r.sfx)}><Icon n="sound" size={18} />{t('l4.lk.hear')}</button>
-  </span>;
-}
-
-// ---------------------------------------------------------------- brand logotypes (fictional brands, drawn as marks)
-const brandAccent = (b: Brand) => BRANDS.find((x) => x.id === b)?.accent || '#F2B632';
-/** Each sponsor's logotype: Volt's cut italic, Nine's numeral, Tempo's beat bars, Oasis's wave, Kickoff's ball, Halo's ring. */
-export function BrandMark({ brand, size = 28, ink }: { brand: Brand; size?: number; ink?: string }) {
-  const c = ink || brandAccent(brand);
-  const h = size, common = { height: h, role: 'img' as const, 'aria-label': brand };
-  switch (brand) {
-    case 'volt': return <svg {...common} viewBox="0 0 96 32" className="lk-mark" fill={c}><text x="0" y="26" fontFamily="var(--f-cond)" fontWeight="900" fontStyle="italic" fontSize="30" letterSpacing="-1.5" style={{ fontStretch: '75%' }}>VOLT</text><path d="M78 3h12l-7 11h8L74 31l5-13h-7z" /></svg>;
-    case 'nine': return <svg {...common} viewBox="0 0 104 32" className="lk-mark" fill="none" stroke={c}><circle cx="16" cy="16" r="14" strokeWidth="3" /><text x="16" y="23" textAnchor="middle" fill={c} stroke="none" fontFamily="var(--f-display)" fontWeight="700" fontSize="21">9</text><text x="38" y="22" fill={c} stroke="none" fontFamily="var(--f-text)" fontWeight="600" fontSize="14" letterSpacing="5">NINE</text></svg>;
-    case 'tempo': return <svg {...common} viewBox="0 0 108 32" className="lk-mark" fill={c}><text x="0" y="23" fontFamily="var(--f-text)" fontWeight="800" fontSize="24" letterSpacing="-1">tempo</text>{[10, 18, 8, 22, 14].map((y, k) => <rect key={k} x={78 + k * 6} y={28 - y} width="3.5" height={y} rx="1.5" />)}</svg>;
-    case 'oasis': return <svg {...common} viewBox="0 0 92 32" className="lk-mark" fill={c}><text x="0" y="20" fontFamily="var(--f-display)" fontStyle="italic" fontWeight="600" fontSize="23">oasis</text><path d="M2 27c6-4 10-4 16 0s10 4 16 0 10-4 16 0 10 4 16 0" fill="none" stroke={c} strokeWidth="2.4" strokeLinecap="round" /></svg>;
-    case 'kickoff': return <svg {...common} viewBox="0 0 120 32" className="lk-mark" fill={c}><text x="0" y="25" fontFamily="var(--f-cond)" fontWeight="900" fontSize="26" letterSpacing=".5" style={{ fontStretch: '80%' }}>KICK</text><circle cx="62" cy="16" r="9.5" /><path d="M62 10.5l4.2 3-1.6 5h-5.2l-1.6-5z" fill="#111" /><text x="74" y="25" fontFamily="var(--f-cond)" fontWeight="900" fontSize="26" letterSpacing=".5" style={{ fontStretch: '80%' }}>FF</text></svg>;
-    case 'halo': return <svg {...common} viewBox="0 0 84 32" className="lk-mark" fill="none" stroke={c}><ellipse cx="15" cy="16" rx="13" ry="13" strokeWidth="1.6" /><ellipse cx="15" cy="16" rx="13" ry="4.5" strokeWidth="1.6" /><text x="34" y="23" fill={c} stroke="none" fontFamily="var(--f-text)" fontWeight="300" fontSize="22" letterSpacing="1">halo</text></svg>;
-  }
-}

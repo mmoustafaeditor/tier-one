@@ -1,10 +1,9 @@
-/* Share to X (ui/sharex.tsx): "Post it" sits in the Results share row; the Drop card (in the style you have on) takes a
-   full row under it, with its own post button. */
+/* Share to X (ui/sharex.tsx): "Post it" sits in the Results share row; the catchphrase card takes a full row under it. */
 .res4__share > .sx-btn { width: auto; flex: 1 1 120px; }
 .sx-x { flex: none; margin-inline-end: 6px; }
-.sx-cp { flex: 1 1 100%; display: grid; grid-template-columns: minmax(0, 200px) 1fr; align-items: end; gap: 14px; min-width: 0; }
-.sx-cp__card { width: 100%; font-size: 9.5px; animation: sx-lift .5s cubic-bezier(.2, .9, .25, 1.2) both; }
-.sx-cp__btn { justify-self: start; width: auto; }
-@keyframes sx-lift { from { opacity: 0; transform: translateY(14px) rotate(-3deg) scale(.94); } }
-@media (max-width: 360px) { .sx-cp { grid-template-columns: 1fr; } .sx-cp__card { max-width: 220px; } }
-@media (prefers-reduced-motion: reduce) { .sx-cp__card { animation: none; } }
+.sx-cp { flex: 1 1 100%; display: grid; gap: 4px; padding: 14px 16px; border-radius: 12px; background: #F2EEE5; color: #15130F; box-shadow: inset 0 0 0 2px var(--cp, #F7B928); min-width: 0; }
+.sx-cp__k { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: #15130F; background: var(--cp, #F7B928); justify-self: start; padding: 2px 8px; border-radius: 4px; }
+.sx-cp__line { font-family: var(--f-cond, "Archivo", sans-serif); font-weight: 900; font-size: clamp(26px, 8vw, 40px); line-height: 1; text-transform: uppercase; overflow-wrap: anywhere; }
+.sx-cp__sub { font-style: italic; font-size: 15px; overflow-wrap: anywhere; }
+.sx-cp__foot { font-size: 11px; opacity: .7; }
+.sx-cp__btn { justify-self: start; margin-top: 6px; width: auto; }

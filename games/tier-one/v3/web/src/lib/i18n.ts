@@ -10,7 +10,6 @@ function deep(a: any, b: any): any { if (!b) return a; const o: any = Array.isAr
 const merged = (base: Dict, lang: 'en' | 'ar' | 'es') => PARTS.reduce((acc, p) => deep(acc, p[lang]), base as any) as Dict;
 const EN = merged(en, 'en');
 const DICTS: Record<string, Dict> = { en: EN, ar: merged(ar, 'ar'), es: merged(es, 'es') };
-export const _DICTS = DICTS; // dev: read by the string sweep
 export const LANGS = [['en', 'English'], ['ar', 'العربية'], ['es', 'Español']] as const;
 export type Vars = Record<string, string | number>;
 

@@ -1,4 +1,4 @@
-// The desk (GOTY.md §7.1–7.2; 4.0 has no editor's desk on screen, Story and Home read this): one assignment queue across every mode, the morning papers, the streak
+// The editor's desk (GOTY.md §7.1–7.2): one assignment queue across every mode, the morning papers, the streak
 // stake, the welcome-back note, and the cross-mode consequences that ride the byline's events.
 // Pure readers take the save and `now`; the only writers are touchDesk() (called when Home opens), the mark* helpers
 // and the byline listener at the bottom, which writes into the same draft the byline is already writing.
@@ -7,8 +7,9 @@ import type { Route } from '../App';
 import { onByline, setWireShield, pushFeed, unreadOf, toRoute, RIVALS, rivalOf, netOf, type FeedItem } from './byline';
 import { missionsView } from './progress';
 import { ymdUTC } from './meta';
+import { totalFavours } from './career';
+import { moment } from './moments';
 import { trackStyle } from './style';
-import type { ResultSaga } from './engine';
 import { ddLiveActive, ddResultsDue, ddCountdown, liveOf, liveDraft, myDDCalls, type LiveSave } from './live';
 import type { DeadlineDay } from './season';
 import type { WireCall, BoardItem } from './wireData';
@@ -16,7 +17,7 @@ import type { WireCall, BoardItem } from './wireData';
 const DAY = 864e5;
 const hash = (x: string) => { let h = 0x811c9dc5; for (let i = 0; i < x.length; i++) { h ^= x.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; };
 const dayDiff = (a: string, b: string) => Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / DAY);
-export const WELCOME_DAYS = 3, WIRE_CREDIT_CAP = 3, STORY_FREE_CAP = 3;
+export const WELCOME_DAYS = 3, WIRE_CREDIT_CAP = 3, STREAK_FILMS = [7, 30, 100];
 
 // ---------------------------------------------------------------- §7.1 the queue
 export type AssignKind = 'ddlive' | 'ddresults' | 'daily' | 'resume' | 'wire' | 'career' | 'room' | 'wireSettling' | 'mission' | 'practice';
@@ -36,12 +37,11 @@ export function assignments(s: Save, now = Date.now(), ctx: DeskCtx = {}): Assig
   const res = ddResultsDue(now);
   if (res && !dd) out.push({ kind: 'ddresults', to: { n: 'ddlive' } as Route, voice: voice('ddresults'), dd: res });
   if (s.practice.live) out.push({ kind: 'resume', to: { n: 'play', mode: 'practice', key: 0 }, v: { m: 'practice', d: s.practice.live.log.filter((a) => a[0] === 'e').length + 1 }, voice: voice('resume') });
-  else if (s.v4?.live?.career) out.push({ kind: 'resume', to: { n: 'story' }, v: { m: 'career', d: s.v4.live.career.log.filter((a) => a[0] === 'e').length + 1 }, voice: voice('resume') });
   else if (s.career && s.career.live) out.push({ kind: 'resume', to: { n: 'story' }, v: { m: 'career', d: s.career.live.log.filter((a) => a[0] === 'e').length + 1 }, voice: voice('resume') });
   const un = unreadOf(s);
   const wire = un.find((f) => f.kind === 'wire');
   if (wire) out.push({ kind: 'wire', to: toRoute(wire.to), v: wire.v, feedId: wire.id, voice: voice('wire') });
-  if (s.career && !s.career.live && !s.v4?.live?.career && !(s.career.history[0] && ymdUTC(s.career.history[0].at) === today)) out.push({ kind: 'career', to: { n: 'story' }, v: { w: s.career.windows + 1 }, voice: voice('career') });
+  if (s.career && !s.career.live && !(s.career.history[0] && ymdUTC(s.career.history[0].at) === today)) out.push({ kind: 'career', to: { n: 'story' }, v: { w: s.career.windows + 1 }, voice: voice('career') });
   const room = un.find((f) => f.kind === 'room');
   if (room) out.push({ kind: 'room', to: toRoute(room.to), v: room.v, feedId: room.id, voice: voice('room') });
   else if (ctx.roomsOpen) out.push({ kind: 'room', to: { n: 'rooms', code: ctx.roomCode }, v: { n: ctx.roomsOpen }, voice: voice('room') });
@@ -142,14 +142,11 @@ onByline((e) => {
   const s = e.save, l = liveDraft(s);
   switch (e.kind) {
     case 'wire': {
-      // A Market call that lands earns Story a free extra (an extra DM or a tip-off before a window; never ranked).
+      // A Wire call that lands moves the Career editor's opinion and unlocks a favour (Story only; never the Daily).
       if (!e.call.right || !s.career || !once(l, 'wire:' + e.call.rid)) return;
-      const st = (s.story = s.story || {}) as NonNullable<Save['story']> & { c4?: { free?: number } };
-      if (st.c4 && (st.c4.free || 0) < STORY_FREE_CAP) {
-        st.c4.free = (st.c4.free || 0) + 1;
-        st.inbox = [...(st.inbox || []), { at: Date.now(), from: 'mags', key: 'st4.free.market', v: { p: e.player || '?' } }].slice(-80);
-        pushFeed(s, { kind: 'editor', from: 'editor', key: 'st4.free.feed', v: { p: e.player || '?' }, to: { n: 'story' }, tone: 'gold' });
-      }
+      const st = (s.story = s.story || {});
+      st.inbox = [...(st.inbox || []), { at: Date.now(), from: 'editor', key: 'wireLanded', v: { p: e.player || '?' } }].slice(-30);
+      if (totalFavours(s.career) < 5) { s.career.favours.tipoff++; pushFeed(s, { kind: 'editor', from: 'editor', key: 'live.feed.favour', v: { p: e.player || '?' }, to: { n: 'story' }, tone: 'gold' }); }
       return;
     }
     case 'career-promo': {
@@ -169,8 +166,10 @@ onByline((e) => {
       return;
     }
     case 'window': {
-      trackStyle(s, e.w.per.filter((p) => !('scoop' in p)) as ResultSaga[], e.w.mode); // style reads v3 sagas; v4 stories are skipped until lib/style.ts moves
+      trackStyle(s, e.w.per, e.w.mode);
       if (e.w.mode !== 'daily') return;
+      const films = (l.streakFilms = l.streakFilms || {});
+      for (const m of STREAK_FILMS) if (s.streak.n === m && !films[m]) { films[m] = Date.now(); moment('streak:' + m, { n: m }); }
       if (l.streakLost && !l.streakLost.seen) l.streakLost.seen = true;
       return;
     }

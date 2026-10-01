@@ -15,15 +15,19 @@ const MAP = {
   'sparkle': 'sparkle', 'thock': 'thock', 'type': 'key', 'typewriter': 'typewriter', 'whoosh': 'whoosh',
   'scene.agent': 'agentcall', 'scene.barber': 'salon', 'scene.spotter': 'airport', 'scene.physio': 'monitor',
   'scene.kitman': 'kitman', 'scene.leak': 'fax', 'voice': 'voice',
-  'publish.hwg': 'fanfare', 'stop.press': 'glitch', // 4.0: the old catchphrase cue plays the fanfare (the player's own line is the stamp)
-  // 4.0 the phone OS (CONCEPT4.md §6, ui/phone.tsx + ui/juice.tsx): every cue is a synth voice that already exists.
-  'os.unlock': 'unlock', 'os.open': 'open', 'os.close': 'whoosh', 'os.home': 'select', 'os.locked': 'thock',
-  'dm.in': 'ding', 'dm.typing': 'tick', 'post': 'send', 'drop': 'boom', 'scoop': 'fanfare', 'ratio': 'bad',
-  'deal': 'register', 'level.up': 'levelup', 'tray': 'notify', 'count.roll': 'count',
-  // Objects and places, no voices (ui/juice.tsx and the apps' own motion).
+  'publish.hwg': 'herewego', 'stop.press': 'glitch',
+  // 3.4 motion pieces (src/film, GOTY §10): objects and places, no voices.
   'press.roll': 'presses', 'shutter': 'shutter', 'lamp.off': 'lampoff', 'lamp.on': 'lampon', 'lift': 'lift', 'flap': 'flap', 'notify': 'notify', 'pen': 'pen', 'flash': 'flash', 'car.pass': 'carpass',
+  // GOTY.md §10: foley for the drawn call films, the post film and the day end (frame cues; all synth, nothing fetched)
+  'film.phone': 'ringonce', 'film.phone2': 'buzz', 'film.bad': 'bad', 'film.beat': 'heartbeat', 'film.bin': 'stamp',
+  'film.board': 'flip', 'film.chime': 'ding', 'film.clippers': 'tick', 'film.copier': 'whoosh', 'film.crumple': 'shred',
+  'film.drape': 'whoosh', 'film.flip': 'flip', 'film.ink': 'stamp', 'film.monitor': 'tick', 'film.rain': 'whoosh',
+  'film.stamp': 'stamp', 'film.strip': 'tick', 'film.tag': 'pop', 'film.tear': 'shred', 'film.tick': 'tick', 'film.whoosh': 'whoosh',
+  'film.press': 'reveal', 'film.city': 'sparkle', 'film.catch': 'fanfare',
   'day.lamp': 'select', 'day.roll': 'whoosh', 'day.stamp': 'stamp',
 } as const;
+/** A film's frame cue by name (unknown names are ignored). */
+export const filmCue = (k: string) => { if (k in MAP) sfx(k as Sfx); };
 export type Sfx = keyof typeof MAP;
 
 export function sfx(name: Sfx, arg?: unknown) {

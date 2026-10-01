@@ -1,104 +1,97 @@
-// 4.1 call screen (UI41 §Daily Challenge): tapping a source on the player screen rings them. The contact's name, a
-// running timer, a live waveform and their ambient sound bed (lib/sfx.ts presets: the salon, the kit room, a car on
-// speaker, the airport, the treatment room), a few seconds, then the answer in one line. Tap or Skip ends it at once;
-// the answer then lands on that source's button (the driver keeps it). It sits inside the play screen, never a page.
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { useT, tr } from '../lib/i18n';
-import { sfx, voice, haptic, type Sfx } from '../lib/sfx';
+// The source call (GOTY.md §10, §12): one screen, a short wordless film of the source's place. The phone on the
+// counter rings and lights (the pick-up beat), the camera pushes in, and in the last second the place tells you what
+// the source knows, with the outcome object the brightest thing in frame: the calendar flips to next month (staying),
+// the other club's colours arrive (leaving), two phones light in two colours (hijack), the paper goes in the bin (fake).
+// Chosen by the clue's read (the best outcome of E.weights). What the source said lands on the call page as a quote card
+// (Saga.tsx). First call to a source in 6 h plays the full cut (~3.5 s), repeats the short one (~2 s). Unskippable; it
+// returns to the call page by itself. Drawn and frame-driven (film/calls), no video; reduced motion shows the last frame.
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import type { CastSaga, Clue, Rules } from '../lib/engine';
+import { E } from '../lib/engine';
+import { useT } from '../lib/i18n';
+import { getSave, update } from '../lib/save';
+import { sfx, buzz, filmCue, type Sfx } from '../lib/sfx';
 import { prefersReducedMotion } from '../lib/motion';
-import { RULES4, type CastSaga, type Clue4, type Rules4 } from '../lib/engine';
-import { saysWord4 } from '../lib/story';
+import { GRADE } from '../lib/story';
+import { Rel } from './game';
+import { ringFor } from '../lib/wallet';
+import { CallFilm, accentOf, cutLen, timeline, PICK_FULL, PICK_SHORT } from '../film/calls/CallFilm';
+import { placeOf, monthsOf, HOUSE } from '../film/calls/places';
+import type { Words } from '../film/calls/places/spec';
+import '../film/calls/callfilms.css';
 
-export const CONTACTS = ['barber', 'kitman', 'agent', 'spotter', 'physio'] as const;
-const MONO: Record<string, string> = { barber: 'BA', kitman: 'KM', agent: 'AG', spotter: 'SP', physio: 'PH', tabloid: 'BB', itk: 'IK', insider: 'PP' };
-/** One colour per person: the avatar disc and the call screen's wash. */
-export const CONTACT_TINT: Record<string, string> = { barber: '#C8743A', kitman: '#3F9A5E', agent: '#3B6FD1', spotter: '#8A63D2', physio: '#169AA0', tabloid: '#E0442A', itk: '#D9A21B', insider: '#5C6B7A' };
-const BED: Record<string, [Sfx, number]> = { barber: ['scene.barber', 1700], kitman: ['scene.kitman', 2300], agent: ['car.pass', 1900], spotter: ['scene.spotter', 2700], physio: ['scene.physio', 1900] };
+// Painted character art slots (the art pack). Keys: source id → image URL. The films don't use it; kept for the pack.
+export const ART: Record<string, string> = {};
+export const GRADE_BARS: Record<string, number> = { A: 3, B: 2, C: 1, D: 1 };
+const FPS = 30, HOLD_MS = 380, STILL_MS = 1200;
+// Dev preview: ?callfilm=<source> / ?postfilm=1|hwg|ut (film/calls/preview.tsx; stripped from builds).
+if (import.meta.env.DEV && /[?&](callfilm|postfilm)=/.test(location.search)) setTimeout(() => { void import('../film/calls/preview'); }, 0);
+const portraitNow = () => typeof matchMedia === 'function' && matchMedia('(orientation: portrait)').matches;
 
-export function ContactAvatar({ src, size = 40 }: { src: string; size?: number }) {
-  return <span className="d41-av" style={{ ['--av' as string]: CONTACT_TINT[src] || '#666', ['--sz' as string]: size + 'px' } as CSSProperties} aria-hidden="true"><b>{MONO[src] || src.slice(0, 2).toUpperCase()}</b></span>;
-}
-
-/** How often a contact is right under these rules, in tenths, from the engine's own tables. */
-export function accTenths(R: Rules4, src: string): number {
-  const so = R.SOURCES[src]; if (!so) return 0;
-  if (so.kind === 'street') return (so.rel ?? 0.5) * 10;
-  const M = so.M || []; let a = 0;
-  for (let t = 0; t < 3; t++) { const row = M[t] || []; const k = row.length === 2 ? (t === 2 ? 1 : 0) : t; a += R.PRIOR[t] * (row[k] || 0); }
-  return a * 10;
-}
-/** "8 in 10" / "19 in 20". */
-export function accShort(lang: string, R: Rules4, src: string): string {
-  const a = accTenths(R, src);
-  return a >= 9.3 ? tr(lang, 'd41.src.acc20') : tr(lang, 'd41.src.acc', { n: Math.round(a) });
-}
-/** The spoken answer: "Heard he's off to Leeds. Heard it from a guy." */
-export function askLine(lang: string, src: string, r: number, c?: CastSaga): string {
-  const l = tr(lang, 'pl4.call.line.' + src + '.' + r);
-  return l.startsWith('pl4.') ? saysWord4(lang, src, r) : l.replace(/\{to\}/g, c ? c.to.s : '');
-}
-/** Why a source is shut today: "From Day 3" (or "Deadline Day"). */
-export function lockShort(lang: string, src: string, R: Rules4 = RULES4): string {
-  const so = R.SOURCES[src]; const d = so ? so.from : 1;
-  return d >= R.DAYS && R.DAYS > 1 ? tr(lang, 'd41.src.fromDD') : tr(lang, 'd41.src.from', { d });
-}
-
-type Phase = 'ring' | 'live' | 'done';
-/** `clue` may arrive late (the Daily asks the server): it rings until it does. */
-export function CallScene({ src, clue, c, onDone }: { src: string; clue: Clue4 | null; c?: CastSaga; onDone: () => void }) {
+// `mode` stays in the props for callers; the source intro card no longer plays before a call (one screen per call).
+export function CallScene({ src, clue, c, R, onDone }: { src: string; clue: Clue; c: CastSaga; R: Rules; onDone: () => void; mode?: string }) {
   const t = useT();
-  const reduce = prefersReducedMotion();
-  const [phase, setPhase] = useState<Phase>('ring');
-  const [secs, setSecs] = useState(0);
-  const bars = useRef<HTMLSpanElement>(null);
-  const close = useRef(onDone); close.current = onDone;
-  const line = clue ? askLine(t.lang, src, clue.r, c) : '';
-
-  useEffect(() => { if (!reduce) { sfx('phone.ring'); haptic('tap'); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  // ring (a beat) → the line is open (the bed plays, the voice) → the answer
-  useEffect(() => {
-    if (phase !== 'ring' || !clue) return;
-    const id = setTimeout(() => { setPhase('live'); sfx('dm.in'); voice(src, 1.2); }, reduce ? 0 : 800);
-    return () => clearTimeout(id);
-  }, [phase, clue, reduce, src]);
-  useEffect(() => {
-    if (phase !== 'live') return;
-    const id = setTimeout(() => setPhase('done'), reduce ? 0 : 1700);
-    return () => clearTimeout(id);
-  }, [phase, reduce]);
-  useEffect(() => { if (phase !== 'done') return; sfx('ui.pop'); const id = setTimeout(() => close.current(), 1500); return () => clearTimeout(id); }, [phase]);
-  useEffect(() => {
-    if (reduce || phase !== 'live') return;
-    const [cue, ms] = BED[src] || BED.barber;
-    sfx(cue); const id = setInterval(() => sfx(cue), ms);
-    return () => clearInterval(id);
-  }, [phase, src, reduce]);
-  // timer + waveform (transforms only)
-  useEffect(() => {
-    if (reduce) return;
-    let raf = 0, last = 0; const t0 = performance.now();
-    const loop = (ms: number) => {
-      raf = requestAnimationFrame(loop);
-      if (ms - last < 70) return; last = ms;
-      setSecs(Math.floor((ms - t0) / 1000));
-      const el = bars.current; if (!el) return;
-      const talk = phase === 'live' ? 1 : phase === 'ring' ? 0.15 : 0.05;
-      Array.from(el.children).forEach((b, k) => { const h = 0.1 + talk * (0.5 + 0.5 * Math.sin(ms / (90 + (k % 5) * 23) + k * 1.7)) * (0.55 + ((k * 37) % 11) / 22); (b as HTMLElement).style.transform = `scaleY(${Math.min(1, h).toFixed(3)})`; });
+  const [reduced] = useState(prefersReducedMotion);
+  const full = useMemo(() => { const seen = getSave().scenes || {}; return !(seen[src] && Date.now() - seen[src] < 6 * 3600e3); }, [src]);
+  const spec = placeOf(src);
+  const w = E.weights(R, src, clue.r) || [0, 0, 0, 1]; const o = Math.max(0, w.indexOf(Math.max(...w)));
+  const len = cutLen(full);
+  const [portrait, setPortrait] = useState(portraitNow);
+  const [f, setF] = useState(reduced ? len : 0);
+  const done = useRef(false), root = useRef<HTMLDivElement>(null);
+  const finish = () => { if (done.current) return; done.current = true; onDone(); };
+  const film = useMemo(() => {
+    const words = {} as Words;
+    (['boarding', 'cancelled', 'gate', 'medical', 'noShow'] as const).forEach((k) => { words[k] = t('mo.w.' + k); });
+    return {
+      to: { c1: c.to.c1, c2: c.to.c2, s: c.to.s }, from: { c1: c.from.c1, c2: c.from.c2, s: c.from.s },
+      alt: c.alt ? { c1: c.alt.c1, c2: c.alt.c2, s: c.alt.s } : HOUSE.alt, words, ...monthsOf(t.lang),
     };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [phase, reduce]);
-  useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === 'Escape' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); skip(); } }; window.addEventListener('keydown', k, true); return () => window.removeEventListener('keydown', k, true); });
+  }, [c, t]);
 
-  const skip = () => { if (phase === 'done') close.current(); else if (clue) setPhase('done'); };
-  const name = t('src4.name.' + src);
-  return <div className={'d41-call is-' + phase} role="dialog" aria-modal="true" aria-label={name} style={{ ['--av' as string]: CONTACT_TINT[src] } as CSSProperties} onClick={skip}>
-    <span className="d41-call__state">{phase === 'ring' ? t('d41.call.ringing') : phase === 'live' ? t('d41.call.onLine') : t('d41.call.saved')}</span>
-    <ContactAvatar src={src} size={96} />
-    <b className="d41-call__name" dir="auto">{name}</b>
-    <span className="d41-call__time g-num">{c ? c.player.n + ' · ' : ''}{String(Math.floor(secs / 60)).padStart(2, '0')}:{String(secs % 60).padStart(2, '0')}</span>
-    <span className="d41-call__wave" ref={bars} aria-hidden="true">{Array.from({ length: 24 }, (_, k) => <i key={k} />)}</span>
-    <p className="d41-call__line" aria-live="polite" dir="auto">{phase === 'done' && clue ? <>“{line}”<b>{saysWord4(t.lang, src, clue.r)}</b></> : ' '}</p>
-    <button type="button" className="d41-call__skip" onClick={(e) => { e.stopPropagation(); skip(); }}>{phase === 'done' ? t('d41.call.close') : t('d41.call.skip')}</button>
+  useEffect(() => { const on = () => setPortrait(portraitNow()); addEventListener('resize', on); return () => removeEventListener('resize', on); }, []);
+  useEffect(() => {
+    update((s) => { s.scenes = { ...(s.scenes || {}), [src]: Date.now() }; });
+    if (reduced) { const id = setTimeout(finish, STILL_MS); return () => clearTimeout(id); }
+    if (full) sfx(('scene.' + src) as Sfx); else sfx(ringFor(src) as Sfx); // a ring pack: one ring per source (Your desk)
+    buzz(src === 'agent' && full ? [60, 120, 60] : 20);
+    // The drawn film's clock: frames from real time; foley on the scene frames it passes. A safety net brings the
+    // call page back however the tab behaves.
+    const safety = setTimeout(finish, (len * 1000) / FPS + HOLD_MS + 2500);
+    const cues = spec.cues(o), first = timeline(full ? PICK_FULL : PICK_SHORT, full).f;
+    let raf = 0, prev = performance.now(), acc = 0, fr = 0, endAt = 0;
+    const tick = (now: number) => {
+      acc += Math.min(100, now - prev); prev = now;
+      const a = fr;
+      while (acc >= 1000 / FPS && fr < len) { acc -= 1000 / FPS; fr++; }
+      if (fr !== a) {
+        const fa = timeline(a, full), fb = timeline(fr, full);
+        const from = fa.phase === 'call' ? fa.f : first - 1;
+        if (fb.phase === 'call') cues.forEach((q) => { if (from < q.f && fb.f >= q.f) filmCue(q.k); });
+        setF(fr);
+      }
+      if (fr >= len) { if (!endAt) endAt = now; else if (now - endAt > HOLD_MS) return finish(); }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => { cancelAnimationFrame(raf); clearTimeout(safety); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useLayoutEffect(() => {
+    const was = document.activeElement as HTMLElement | null, ov = document.body.style.overflow, hov = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden'; document.documentElement.style.overflow = 'hidden'; root.current?.focus({ preventScroll: true });
+    return () => { document.body.style.overflow = ov; document.documentElement.style.overflow = hov; was?.focus?.({ preventScroll: true }); };
+  }, []);
+
+  const who = t('src.' + src), about = t('g.call.about', { p: c.player.s, to: c.to.s });
+  return <div ref={root} tabIndex={-1} className={'call-scene cs--' + src + (reduced ? ' is-poster' : '')} role="dialog" aria-modal="true" aria-label={who + ' · ' + about} style={{ ['--acc' as string]: accentOf(src) }}>
+    <div className="cs__stage">
+      <CallFilm src={src} o={o} t={f} full={full} {...film} rtl={t.rtl} still={reduced} portrait={portrait} />
+    </div>
+    <header className="cs__top" aria-hidden="true">
+      <span className="cs__who">{who}</span>
+      <span className="cs__about"><span>{about}</span><span className="cs__rel"><Rel n={GRADE_BARS[GRADE[src]] || 1} /> {t('g.call.rel.' + (GRADE[src] || 'C'))}</span></span>
+    </header>
+    <i className="cs__bar" aria-hidden="true" style={{ ['--dur' as string]: Math.round((len * 1000) / FPS + HOLD_MS) + 'ms' }} />
   </div>;
 }

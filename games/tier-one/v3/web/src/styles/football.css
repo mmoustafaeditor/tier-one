@@ -1,101 +1,37 @@
-/* Transfer Market (UI41 §Transfer Wire) inside ui/screen.tsx <Screen tone="market">. Nothing scrolls: rows fill the
-   Pager's fixed slots, the picker replaces the list, the call screen fits one viewport. Spacing 4/8/12/16/24. */
-.scr[data-tone='market'] { --wm-moves: #43D18F; --wm-stays: #6CC9F2; --wm-pos: #43D18F; --wm-neg: #FF7A66; --wm-line: rgba(255, 255, 255, .12); --wm-card: rgba(255, 255, 255, .06); }
-.scr[data-tone='market'] .pos { color: var(--wm-pos); }
-.scr[data-tone='market'] .neg { color: var(--wm-neg); }
+/* Football lane (GOTY §1.6, §5): ON THE WIRE chip, the Wire's window framing and the settled-calls reel. */
 
-/* ---------- buttons (footer) */
-.wm-btn { min-height: 48px; padding: 0 16px; border-radius: 14px; border: 0; background: var(--wm-card); color: inherit; font: 800 15px/1.1 var(--font-ui, system-ui); white-space: nowrap; cursor: pointer; }
-.wm-btn--main { flex: 2 !important; background: var(--accent, #F2B632); color: var(--accent-ink, #1A1405); font-size: 17px; min-height: 52px; }
-.wm-btn--ghost { border: 1px solid var(--wm-line); background: transparent; }
-.wm-btn--ghost.is-on { border-color: var(--wm-stays); color: var(--wm-stays); }
-.wm-btn:disabled { opacity: .55; cursor: default; }
-.wm-btn:focus-visible, .wm-row:focus-visible, .wm-pick__o:focus-visible, .wm-yn button:focus-visible, .wm-stakes button:focus-visible { outline: 2px solid var(--accent, #F2B632); outline-offset: 2px; }
-
-/* ---------- filters + search */
-.wm-filters button[aria-expanded='true'] { border-color: var(--accent, #F2B632); }
-.wm-filters button { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.wm-search { flex: none; height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--wm-line); background: rgba(0, 0, 0, .2); color: inherit; font: 500 15px/1 var(--font-ui, system-ui); }
-.wm-search::placeholder { color: inherit; opacity: .6; }
-.wm-search:focus { outline: 2px solid var(--accent, #F2B632); outline-offset: 0; }
-.wm-empty { margin: auto; text-align: center; opacity: .8; }
-
-/* ---------- a row (rumour or call) */
-.wm-row { display: grid; grid-template-columns: minmax(0, 1fr) 52px 52px 64px; align-items: center; gap: 8px; min-height: 0; padding: 0 12px; border-radius: 12px; border: 0; background: var(--wm-card); color: inherit; text-align: start; font: inherit; cursor: pointer; }
-.wm-row.is-gone { grid-template-columns: 1fr; cursor: default; opacity: .7; }
-.wm-row:has(.wm-row__stat--wide) { grid-template-columns: minmax(0, 1fr) auto; }
-.wm-row.is-right { box-shadow: inset 3px 0 0 var(--wm-pos); }
-.wm-row.is-wrong { box-shadow: inset 3px 0 0 var(--wm-neg); }
-[dir='rtl'] .wm-row.is-right { box-shadow: inset -3px 0 0 var(--wm-pos); }
-[dir='rtl'] .wm-row.is-wrong { box-shadow: inset -3px 0 0 var(--wm-neg); }
-.wm-row__who { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.wm-row__who b { font: 800 15px/1.15 var(--font-ui, system-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wm-row__who small { font: 500 12.5px/1.2 var(--font-ui, system-ui); opacity: .78; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wm-row__stat { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
-.wm-row__stat b { font: 800 16px/1 var(--font-ui, system-ui); font-variant-numeric: tabular-nums; color: var(--accent, #F2B632); white-space: nowrap; }
-.wm-row__stat small { font: 600 11px/1 var(--font-ui, system-ui); opacity: .72; white-space: nowrap; }
-.wm-row__stat--wide { align-items: flex-end; }
-.wm-row__stat--wide b { color: inherit; font-size: 19px; }
-.wm-row__you { display: flex; justify-content: flex-end; }
-.wm-side { display: inline-flex; align-items: baseline; gap: 2px; padding: 4px 6px; border-radius: 6px; font: 800 11px/1 var(--font-ui, system-ui); white-space: nowrap; }
-.wm-side.is-moves { background: color-mix(in srgb, var(--wm-moves) 20%, transparent); color: var(--wm-moves); }
-.wm-side.is-stays { background: color-mix(in srgb, var(--wm-stays) 20%, transparent); color: var(--wm-stays); }
-.wm-eye { font: 700 11px/1 var(--font-ui, system-ui); color: var(--wm-stays); white-space: nowrap; }
-
-/* ---------- league / team picker (replaces the list) */
-.wm-pick { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
-.wm-pick__t { margin: 0; font: 800 14px/1 var(--font-ui, system-ui); opacity: .85; }
-.wm-pick__o { min-height: 0; border-radius: 12px; border: 1px solid var(--wm-line); background: transparent; color: inherit; font: 700 15px/1.1 var(--font-ui, system-ui); text-align: start; padding: 0 16px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wm-pick__o.on { background: var(--accent, #F2B632); color: var(--accent-ink, #1A1405); border-color: transparent; }
-
-/* ---------- rumour screen */
-.wm-mkt { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 16px; background: var(--wm-card); flex: none; }
-.wm-mkt small { font: 600 12.5px/1 var(--font-ui, system-ui); opacity: .75; }
-.wm-mkt b { font: 800 34px/1 var(--font-display, system-ui); font-variant-numeric: tabular-nums; color: var(--accent, #F2B632); }
-.wm-mkt__meta { font: 600 13px/1.2 var(--font-ui, system-ui); opacity: .8; }
-.wm-bar { display: block; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, .12); overflow: hidden; }
-.wm-bar i { display: block; height: 100%; background: var(--accent, #F2B632); border-radius: inherit; }
-.wm-story { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow: hidden; }
-.wm-story h2 { margin: 0; font: 800 14px/1 var(--font-ui, system-ui); opacity: .85; }
-.wm-story__fact { margin: 0; font: 500 14px/1.35 var(--font-ui, system-ui); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.wm-story ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.wm-story li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 36px; padding: 0 8px; border-radius: 10px; background: var(--wm-card); font: 700 14px/1.1 var(--font-ui, system-ui); }
-.wm-story li span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wm-stage { font: 700 11.5px/1 var(--font-ui, system-ui); font-style: normal; padding: 4px 8px; border-radius: 999px; background: rgba(255, 255, 255, .1); white-space: nowrap; }
-.wm-stage.is-bid, .wm-stage.is-agreed { background: color-mix(in srgb, var(--accent, #F2B632) 25%, transparent); }
-.wm-mine { flex: none; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: center; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--wm-line); }
-.wm-mine.is-right { border-color: var(--wm-pos); }
-.wm-mine.is-wrong { border-color: var(--wm-neg); }
-.wm-mine__k { grid-row: span 2; font: 800 13px/1 var(--font-ui, system-ui); padding: 8px; border-radius: 8px; background: var(--wm-card); white-space: nowrap; }
-.wm-mine p { margin: 0; font: 600 13px/1.25 var(--font-ui, system-ui); }
-.wm-mine b { font: 800 15px/1 var(--font-ui, system-ui); }
-
-/* ---------- call screen */
-.wm-lbl { margin: 0; font: 800 14px/1 var(--font-ui, system-ui); opacity: .85; }
-.wm-yn { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: none; }
-.wm-yn button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 76px; border-radius: 16px; border: 2px solid var(--wm-line); background: var(--wm-card); color: inherit; cursor: pointer; }
-.wm-yn b { font: 900 21px/1 var(--font-display, system-ui); white-space: nowrap; }
-.wm-yn small { font: 600 12px/1 var(--font-ui, system-ui); opacity: .75; }
-.wm-yn .is-moves b { color: var(--wm-moves); }
-.wm-yn .is-stays b { color: var(--wm-stays); }
-.wm-yn .is-moves.on { border-color: var(--wm-moves); background: color-mix(in srgb, var(--wm-moves) 16%, transparent); }
-.wm-yn .is-stays.on { border-color: var(--wm-stays); background: color-mix(in srgb, var(--wm-stays) 16%, transparent); }
-.wm-stakes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; flex: none; }
-.wm-stakes button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 76px; padding: 8px 4px; border-radius: 14px; border: 2px solid var(--wm-line); background: var(--wm-card); color: inherit; cursor: pointer; }
-.wm-stakes b { font: 800 14px/1.1 var(--font-ui, system-ui); text-align: center; }
-.wm-stakes small { font: 600 11.5px/1 var(--font-ui, system-ui); opacity: .75; white-space: nowrap; }
-.wm-stakes span { font: 800 12.5px/1 var(--font-ui, system-ui); font-variant-numeric: tabular-nums; }
-.wm-stakes em { font-style: normal; }
-.wm-stakes button.on { border-color: var(--accent, #F2B632); background: color-mix(in srgb, var(--accent, #F2B632) 14%, transparent); }
-.wm-stakes .is-all.on { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #F2B632) 30%, transparent); }
-.wm-deal { margin: 4px 0 0; font: 800 17px/1.3 var(--font-ui, system-ui); text-align: center; }
-.wm-fine { margin: auto 0 0; font: 500 12.5px/1.35 var(--font-ui, system-ui); opacity: .75; text-align: center; }
-
-/* ---------- "On the Market" chip (ui/WireChip.tsx) */
-.wchip { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: 999px; border: 0; cursor: pointer;
-  font: 800 11px/1 var(--font-ui, system-ui); white-space: nowrap; color: #062B35; background: #6CC9F2; -webkit-tap-highlight-color: transparent; }
+/* ---------- ON THE WIRE chip */
+.wchip { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px; border-radius: 999px; cursor: pointer;
+  font: 800 11px/1 var(--f-mono, ui-monospace, monospace); letter-spacing: .02em; white-space: nowrap;
+  color: #062B35; background: var(--m-wire, #35C3E6); box-shadow: 0 2px 0 rgba(0, 0, 0, .35); user-select: none;
+  transition: transform 90ms var(--ease-out, ease-out); -webkit-tap-highlight-color: transparent; }
 .wchip:active { transform: scale(.95); }
-.wchip:focus-visible { outline: 2px solid var(--accent, #F2B632); outline-offset: 2px; }
-.wchip--sm { height: 20px; padding: 0 8px 0 6px; font-size: 10px; gap: 4px; }
-.wchip__dot { width: 7px; height: 7px; border-radius: 50%; background: #D2381B; flex: none; }
-@media (prefers-reduced-motion: reduce) { .wchip:active { transform: none; } }
+.wchip:focus-visible { outline: 2px solid var(--gold, #F7B928); outline-offset: 2px; }
+.wchip--sm { height: 20px; padding: 0 7px 0 6px; font-size: 10px; gap: 5px; }
+.wchip__dot { width: 7px; height: 7px; border-radius: 50%; background: #FF5A36; flex: none; }
+
+/* ---------- window framing on the Wire hero */
+.wwin { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.wwin__now { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
+.wwin__note { margin: 0; font-size: 13px; opacity: .75; max-width: 60ch; }
+
+/* ---------- settled-calls reel */
+.wreel { display: flex; flex-direction: column; gap: 12px; padding: 14px; border: 2px solid var(--c-done, #2FBF71); }
+.wreel.is-down { border-color: var(--red, #FF5A36); }
+.wreel__head { margin: 0; font-size: 15px; font-weight: 800; }
+.wreel__total { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.wreel__total b { font-size: clamp(40px, 9vw, 60px); line-height: 1; }
+.wreel__total small { opacity: .75; }
+.wreel__row { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 4px; }
+.wreel__c { flex: none; width: 150px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 6px; padding: 12px 10px; border-radius: 12px;
+  background: rgba(127, 120, 105, .12); }
+.wreel__c .g-stamp { align-self: flex-start; font-size: 15px; animation-delay: calc(var(--k, 0) * 140ms + 220ms); }
+.wreel__c b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wreel__c .g-mono { font-size: 11px; opacity: .75; }
+
+/* settled chips in the live strip get a coloured edge */
+.cchip.is-right { box-shadow: inset 0 0 0 2px var(--c-done, #2FBF71); }
+.cchip.is-wrong { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--red, #FF5A36) 70%, transparent); }
+
+:root.reduce .wreel__c .g-stamp { animation: none; }
+@media (prefers-reduced-motion: reduce) { .wreel__c .g-stamp { animation: none; } }

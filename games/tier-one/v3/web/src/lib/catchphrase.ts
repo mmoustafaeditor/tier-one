@@ -1,5 +1,5 @@
-// The catchphrase system (GOTY.md §12, CONCEPT4 §3): a right Drop fires YOUR line: the stamp on the Drop card, the
-// sound, the Lens grid and the share card. Words only: nothing here reaches a Daily board, a source or a score.
+// The catchphrase system (GOTY.md §12): it replaces "HERE WE GO". A Confirmed call that lands fires YOUR line: the
+// stamp, the sound, the share card, the film title. Words only: nothing here reaches a Daily board, a source or a score.
 //
 // CONTRACT for other lanes (stamp, results, share card, films):
 //   catchphraseOf(save) -> { id, text, tone }
@@ -14,7 +14,7 @@
 //   earned    rank, streaks and story chapters (source 'earned'; lib/earned.ts) — never sold
 //   signature bought with credits (source 'store'), fixed prices, refundable like any look
 //   season    one line per season set, on sale only inside the season (vault returns possible)
-//   custom    your own line from Insider rank: 24 characters, client blocklist here, then v4 `catchphrase.set` checks it
+//   custom    your own line from Chief rank: 24 characters, client blocklist here, then v4 `catchphrase.set` checks it
 //             server-side (profanity + brand/real-person blocklist). Rejected by the server = back to the house line.
 // Nothing in the game uses another person's catchphrase: every line is an original, and the blocklist refuses the
 // famous ones.
@@ -37,7 +37,7 @@ export const HOUSE_ID = 'cp.house.default';
 export const HOUSE_KEY = 'cp.house.default';
 export const CUSTOM_ID = 'cp.custom';
 export const CUSTOM_MAX = 24;
-export const CUSTOM_RANK = 'insider'; // 4.0 ranks (CONCEPT4 §5: your own line from Insider)
+export const CUSTOM_RANK = 'chief';
 /** The sound a line lands with (lib/sfx cues that already exist). */
 export const TONE_SFX: Record<CatchTone, Sfx> = { loud: 'stamp.done', cool: 'unlock', dry: 'typewriter', gold: 'fanfare' };
 
@@ -48,7 +48,7 @@ export const catchphrases = (ms = Date.now()): CatchDef[] => itemsOf('catchphras
 /** The registry at load time (house + earned + signature + this season). Use catchphrases() for a live list. */
 export const CATCHPHRASES: CatchDef[] = catchphrases();
 
-/** The line a right Drop fires: the house default, then whatever is equipped. */
+/** The line a Confirmed call that lands fires: the house default, then whatever is equipped. */
 export function catchphraseOf(s: Save = getSave()): Catchphrase {
   const it = equipped('catchphrase', s);
   const d = defOf(it);
@@ -63,7 +63,7 @@ export const catchphraseColor = (s: Save = getSave()): string => { const p = equ
 export const catchDef = (it: Item) => defOf(it);
 export const houseLine = () => defOf(standardOf('catchphrase'));
 
-// ---------------------------------------------------------------- your own line (Insider rank)
+// ---------------------------------------------------------------- your own line (Chief rank)
 // The client list is a first pass so a player sees a refusal at once; the server list (api/tier-one/v4/catchphrase.mjs)
 // is the one that counts. Both normalise leetspeak and separators before matching.
 const BLOCK = [
@@ -85,7 +85,7 @@ export function lineAllowed(x: string): boolean {
 export const cleanLine = (x: string) => x.replace(/[<>{}\u0000-\u001f\u200b-\u200f\u2028-\u202e]/g, '').replace(/\s+/g, ' ').trim().slice(0, CUSTOM_MAX);
 export const customUnlocked = (s: Save = getSave()) => REP_TIERS.findIndex(([id]) => id === peakTier(s)) >= REP_TIERS.findIndex(([id]) => id === CUSTOM_RANK) || s.owned.includes(CUSTOM_ID);
 export type CustomResult = { ok: true; text: string } | { ok: false; error: 'rank' | 'empty' | 'long' | 'blocked' };
-/** Write your own line (Insider rank and up). Equips it at once; the server check follows and can take it back. */
+/** Write your own line (Chief rank and up). Equips it at once; the server check follows and can take it back. */
 export function setCustomCatchphrase(text: string): CustomResult {
   const s = getSave();
   if (!customUnlocked(s)) return { ok: false, error: 'rank' };
@@ -101,7 +101,7 @@ export function setCustomCatchphrase(text: string): CustomResult {
   return { ok: true, text: clean };
 }
 /** The server check. Offline (or the api is down): the line stays on, shown locally and marked `net`, and goes out
- *  again the next time Lens › Looks opens (retryCustomCatchphrase). Refused: back to the house line. */
+ *  again the next time "Your desk" opens (retryCustomCatchphrase). Refused: back to the house line. */
 function sendCustom() {
   const cp0 = getSave().desk?.cp; if (!cp0) return;
   const at = cp0.at;

@@ -1,7 +1,9 @@
-// Tier One's service worker (GOTY.md §8.2). Hand-rolled, no Workbox: three caches and three rules.
+// Tier One's service worker (GOTY.md §8.2). Hand-rolled, no Workbox: four caches and four rules.
 //   shell   the page, the play loop's route chunks, styles, icons and the Latin fonts, precached on install (the list is injected by
 //           vite.config.ts as __PRECACHE__; one cache per build, old ones dropped on activate).
 //   runtime hashed assets (Arabic/extended fonts, art, later chunks): cache-first, filled on first use.
+//   films   films/<stem>-<p|l>.mp4 and .jpg: cached whole the first time they play (or when lib/perf.ts prefetches
+//           them), then served with Range support so <video> seeks from the cache.
 //   daily   today's API reads (daily.start, the boards, the tables): network-first; offline, the last good answer for
 //           today comes back with `offline: true`, so the board opens and Home shows the five. Writes (daily.act…)
 //           are never replayed blind: the Daily is server-scored, so offline they fail like a dropped connection and
@@ -17,8 +19,9 @@ declare const __SW_BUILD__: string;
 
 const SHELL = 't1-shell-' + __SW_BUILD__;
 const RUNTIME = 't1-runtime-v1';
+const FILMS = 't1-films-v1';
 const DAILY = 't1-daily-v1';
-const KEEP = new Set([SHELL, RUNTIME, DAILY]); // the 3.x films cache (t1-films-v1) is dropped on activate: 4.0 has no films
+const KEEP = new Set([SHELL, RUNTIME, FILMS, DAILY]);
 const SCOPE = new URL(sw.registration.scope);
 const abs = (p: string) => new URL(p, SCOPE).href;
 const ymd = () => new Date().toISOString().slice(0, 10);
@@ -60,6 +63,7 @@ sw.addEventListener('fetch', (e) => {
   if (req.mode === 'navigate') { e.respondWith(page(req)); return; }
   if (!url.href.startsWith(SCOPE.href)) return;
   const rel = url.href.slice(SCOPE.href.length);
+  if (rel.startsWith('films/')) { e.respondWith(film(req)); return; }
   if (rel === 'version.json' || rel === 'sw.js') return; // always fresh
   if (rel.startsWith('assets/')) { e.respondWith(cacheFirst(req)); return; }
   e.respondWith(staleWhileRevalidate(req));
@@ -85,6 +89,52 @@ async function staleWhileRevalidate(req: Request): Promise<Response> {
   const hit = await c.match(req);
   const net = fetch(req).then((r) => { if (r.ok) c.put(req, r.clone()).catch(() => {}); return r; }).catch(() => null);
   return hit || (await net) || Response.error();
+}
+
+// ---------- films: whole files in the cache, Range answered from them
+const inflight = new Map<string, Promise<void>>();
+/** Fetch a clip whole and keep it (used by prefetch, CACHE_FILM messages and the first playback). */
+function cacheFilm(url: string): Promise<void> {
+  let p = inflight.get(url);
+  if (p) return p;
+  p = (async () => {
+    const c = await caches.open(FILMS);
+    if (await c.match(url)) return;
+    const r = await fetch(url, { cache: 'no-store' });
+    if (r.ok && r.status === 200) await c.put(url, r);
+  })().catch(() => {}).finally(() => inflight.delete(url));
+  inflight.set(url, p);
+  return p;
+}
+async function film(req: Request): Promise<Response> {
+  const url = req.url.split('#')[0];
+  const c = await caches.open(FILMS);
+  const full = await c.match(url);
+  const range = req.headers.get('range');
+  if (full) return range ? partial(full, range) : full;
+  if (!range) {
+    const r = await fetch(req);
+    if (r.ok && r.status === 200) c.put(url, r.clone()).catch(() => {});
+    return r;
+  }
+  // A Range request for a clip we don't have: let the network answer it, and pull the whole file in behind it.
+  cacheFilm(url);
+  return fetch(req);
+}
+async function partial(full: Response, range: string): Promise<Response> {
+  const buf = await full.clone().arrayBuffer();
+  const m = /bytes=(\d*)-(\d*)/.exec(range);
+  const size = buf.byteLength;
+  let start = m && m[1] ? Number(m[1]) : 0;
+  let end = m && m[2] ? Number(m[2]) : size - 1;
+  if (m && !m[1] && m[2]) { start = Math.max(0, size - Number(m[2])); end = size - 1; }
+  if (start >= size || end < start) return new Response(null, { status: 416, headers: { 'Content-Range': `bytes */${size}` } });
+  end = Math.min(end, size - 1);
+  const h = new Headers(full.headers);
+  h.set('Content-Range', `bytes ${start}-${end}/${size}`);
+  h.set('Content-Length', String(end - start + 1));
+  h.set('Accept-Ranges', 'bytes');
+  return new Response(buf.slice(start, end + 1), { status: 206, headers: h });
 }
 
 // ---------- the API: today's reads, offline
@@ -123,6 +173,7 @@ async function api(req: Request): Promise<Response> {
 sw.addEventListener('message', (e) => {
   const d = e.data || {};
   if (d.type === 'SKIP_WAITING') sw.skipWaiting();
+  else if (d.type === 'CACHE_FILM' && typeof d.url === 'string') e.waitUntil(cacheFilm(d.url));
   else if (d.type === 'PRUNE_DAILY') e.waitUntil(pruneDaily());
   else if (d.type === 'VERSION' && e.ports[0]) e.ports[0].postMessage({ build: __SW_BUILD__ });
 });

@@ -1,21 +1,94 @@
-/* Tier One 4.1: the phone on the desk (UI41.md law 5). From 700px the phone is one phone, centred, at a fixed phone
-   size; nothing stretches and there is no side panel. The device look (lib/phones.ts) draws the bezel, frame and notch.
-   `transform` on .ph keeps every fixed overlay (sheets, toasts, films) inside the phone. Loaded last (App.tsx). */
-@media (min-width: 700px) {
-  :root { --ph-w: 390px; --ph-h: min(844px, calc(100dvh - 48px)); }
-  html.os, html.os body { background: var(--os-desk); }
-  .ph-desk { display: grid; place-items: center; height: 100dvh; padding: 24px; background: var(--os-desk); background-image: radial-gradient(120% 80% at 50% 40%, var(--os-desk-2), var(--os-desk) 70%); }
-  .ph { width: var(--ph-w); height: var(--ph-h); border-radius: var(--os-r-phone); transform: translateZ(0); contain: layout paint;
-    box-shadow: 0 0 0 11px var(--dv-bezel), 0 0 0 13px var(--dv-frame), 0 0 0 14px color-mix(in srgb, var(--dv-frame) 50%, #000), 0 40px 80px -30px rgba(0, 0, 0, .9); }
-  .ph__screen { padding-top: 30px; }
-  .ph::before { content: ""; position: absolute; z-index: 61; top: 9px; left: 50%; width: 92px; height: 22px; margin-left: -46px; border-radius: 12px; background: var(--dv-bezel); pointer-events: none; }
-  [data-notch="dot"] .ph::before { width: 12px; height: 12px; margin-left: -6px; top: 10px; border-radius: 50%; }
-  [data-notch="bar"] .ph::before { top: 0; width: 100%; left: 0; margin-left: 0; height: 22px; border-radius: 0; }
-  [data-notch="none"] .ph::before { display: none; }
-  [data-crack] .ph::after { content: ""; position: absolute; z-index: 62; top: 30px; right: 10px; width: 150px; height: 110px; pointer-events: none; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70'><path d='M100 2 L72 20 L80 27 L55 44 L62 49 L34 68 M72 20 L58 14 M55 44 L44 38' fill='none' stroke='white' stroke-opacity='.45' stroke-width='.8'/></svg>") no-repeat 100% 0 / contain; }
-  .lf-bezel { display: none; }
-  .ph-lock { margin-top: -30px; padding-top: 96px; }
-  .ph .scrim { align-items: flex-end; }
-  .ph .jc-banners { inset-inline: 10px; top: 36px; }
-  .ph .toasts { inset-inline-start: 12px; }
+/* Tier One 3.3: tablet and desktop layouts (GOTY.md §4). Loaded last (from App.tsx), CSS only, on the classes the
+   screens already render. Phones are untouched: everything here sits inside a min-width query.
+     700–1023  tablet: one centred column, a little roomier; the tab bar floats as a pill.
+     ≥1024     desktop: a left rail replaces the tabs; max content width 1280; screens use their width. */
+
+:root { --rail-w: 92px; --rail-top: 84px; --rail-item: 74px; }
+
+/* ================= tablet ================= */
+@media (min-width: 700px) and (max-width: 1023.98px) {
+  .g-tabs { inset-inline: 0; margin-inline: auto; bottom: calc(14px + env(safe-area-inset-bottom, 0)); width: 520px; height: var(--tabs-h); padding: 0;
+    border-radius: 20px; border: 1px solid var(--desk-line); box-shadow: 0 16px 40px -16px rgba(0,0,0,.7); }
+  .g-tabs::after { inset-inline-start: calc((var(--tab-i, 0) + .5) * 20% - 17px); }
+  .g-screen { max-width: 760px; padding-inline: 24px; padding-bottom: calc(var(--tabs-h) + 28px + env(safe-area-inset-bottom, 0)); }
+  .g-screen--wide { max-width: 1000px; }
+  .g-top { margin-inline: -24px; padding-inline: 24px; }
+  .home .desk__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home .dcard { min-height: 132px; padding: 14px; }
+}
+
+/* ================= desktop ================= */
+@media (min-width: 1024px) {
+  /* ---------- the rail: same five tabs, icon over label, the active one's pill slides in its mode colour */
+  #root:has(> .g-tabs) { padding-inline-start: var(--rail-w); }
+  .g-tabs { inset-block: 0; inset-inline: 0 auto; width: var(--rail-w); height: auto; display: flex; flex-direction: column; align-items: stretch;
+    padding: calc(var(--rail-top) + env(safe-area-inset-top, 0)) 0 env(safe-area-inset-bottom, 0); padding-inline-start: env(safe-area-inset-left, 0);
+    border-top: 0; border-inline-end: 1px solid var(--desk-line); background: color-mix(in srgb, var(--desk) 88%, #000 12%); }
+  .g-tabs__brand { display: flex; align-items: baseline; justify-content: center; padding-top: 9px; white-space: nowrap; position: absolute; top: calc(20px + env(safe-area-inset-top, 0)); inset-inline: 0; margin-inline: auto; width: 46px; height: 46px; border-radius: 12px;
+    background: var(--red); color: #fff; font-family: var(--f-display); font-weight: 800; font-size: 24px; letter-spacing: -.04em; line-height: 1; transform: rotate(-4deg); box-shadow: 0 4px 0 var(--red-deep); }
+  .g-tabs__brand b { font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; font-size: 18px; margin-inline-start: 1px; }
+  .g-tabs a { z-index: 1; height: var(--rail-item); flex: none; gap: 5px; font-size: 11.5px; }
+  .g-tabs a[aria-current] svg { transform: scale(1.1); }
+  .g-tabs::after { z-index: 0; top: calc(var(--rail-top) + env(safe-area-inset-top, 0) + 5px); inset-inline-start: 10px; width: calc(100% - 20px); height: calc(var(--rail-item) - 10px); border-radius: 16px;
+    background: color-mix(in srgb, var(--tab-c, var(--red)) 15%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tab-c, var(--red)) 35%, transparent);
+    transform: translateY(calc(var(--tab-i, 0) * var(--rail-item))); transition: transform var(--d-ui2) var(--ease-spring), background-color var(--d-ui2), box-shadow var(--d-ui2); }
+  .g-tabs a:focus-visible { outline-offset: -8px; }
+
+  /* ---------- screens: no tab bar below any more, so they end at their content */
+  .g-screen { padding-inline: 28px; padding-bottom: 40px; max-width: 880px; }
+  .g-screen--wide { max-width: 1280px; }
+  .g-top { margin-inline: -28px; padding-inline: 28px; padding-top: 14px; }
+  .toasts { inset-inline-start: var(--rail-w); }
+
+  /* ---------- Home: a real desk. 1 = the assignment (tall), 2 = the cards (2×2) and the strip, 3 = the feed, rivals and
+     contacts down the side (rendered only at this width). Row 4 is the flexible one, so the hero's height never pushes
+     gaps into column 2. */
+  .home.g-screen { max-width: 1280px; }
+  .home .desk__grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .95fr) minmax(280px, .8fr); grid-template-rows: auto auto auto 1fr auto; gap: 16px 22px; align-items: start; }
+  .home .desk__grid > .desk-by { grid-column: 1 / 3; grid-row: 1; }
+  .home .desk__grid > .desk__hero { grid-column: 1; grid-row: 2 / span 3; }
+  .home .desk__grid > .desk__cards { grid-column: 2; grid-row: 2; grid-template-columns: 1fr 1fr; }
+  .home .desk__grid > .desk__strip { grid-column: 2; grid-row: 3; }
+  .home .desk__grid > .desk__links { grid-column: 1 / 3; grid-row: 5; }
+  .home .desk__grid > .desk__side { grid-column: 3; grid-row: 1 / span 5; position: sticky; top: 76px; }
+  .home .dcard { min-height: 132px; }
+  .home .five__kit .g-kit { --kit: 52px !important; }
+
+  /* ---------- the window: board on the left, the saga file docked as a right pane that scrolls on its own */
+  .play.g-screen--wide { max-width: 1280px; }
+  .play__cols { grid-template-columns: minmax(340px, 400px) minmax(0, 1fr); gap: 28px; }
+  .play__file { position: sticky; top: 72px; max-height: calc(100dvh - 88px); overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; scrollbar-width: thin; padding: 2px 6px 24px; margin-inline-end: -6px; }
+
+  /* ---------- results: the front page (verdict, share, your name) on one side; the calls, doors and actions on the other */
+  .results2.res4.g-screen { max-width: 1200px; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); grid-template-rows: auto auto auto; column-gap: 28px; align-items: start; }
+  .results2.res4 > * { max-width: none; grid-column: 1 / -1; }
+  .results2.res4 > .g-top { grid-row: 1; }
+  .results2.res4 > .press { grid-row: 2; }
+  .results2.res4 > .res4__lead { grid-column: 1; grid-row: 2; }
+  .results2.res4 > .res4__desk { grid-column: 2; grid-row: 2; margin-top: 6px; }
+  .results2.res4 > .results2__skip { grid-row: 3; }
+  .results2.res4 .vcard { margin-top: 0; }
+
+  /* ---------- Wire: hero across; your live calls beside the leaderboard; then the wall (already a card grid) across */
+  .wire3 .g-stack:has(> .live) { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr); gap: 16px 24px; align-items: start; }
+  .wire3 .g-stack:has(> .live) > * { grid-column: 1 / -1; }
+  .wire3 .g-stack:has(> .live) > .live { grid-column: 1; grid-row: 2; }
+  .wire3 .g-stack:has(> .live) > .wboard { grid-column: 2; grid-row: 2; }
+
+  /* ---------- Story, Friends, Pass, Me, Practice, How to: wider sheets; their own 2-column grids take over */
+  .sm.g-screen--wide { max-width: 1200px; }
+  .sm-cols { gap: 24px; }
+  .rooms3.g-screen { max-width: 1080px; }
+  .pass3.g-screen--wide { max-width: 1200px; }
+  .pass3__cols { gap: 24px; }
+  .me.g-screen { max-width: 1000px; }
+  .me .shelf { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .me .me__links { grid-template-columns: repeat(4, 1fr); }
+  .practice3.g-screen, .howto3.g-screen { max-width: 1000px; }
+}
+
+@media (min-width: 1440px) {
+  :root { --rail-w: 104px; }
+  .g-screen { padding-inline: 40px; }
+  .g-top { margin-inline: -40px; padding-inline: 40px; }
 }

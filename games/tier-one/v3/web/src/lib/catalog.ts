@@ -18,40 +18,12 @@ import {
   cosmetic as seasonCosmetic, storeItems as seasonStore, seasonItems, seasonAt, seasonById, isoWeek,
   type Cosmetic, type CosKind, type SeasonKey,
 } from './season';
-import { REGISTRY, KINDS, KINDS4, LEGACY4, GROUPS, kindDef, kindsOf, isKind, isKind4, overriddenBy, validateRegistry, type Kind, type Kind4, type Preview, type Group } from './kinds';
-import { PRICES, lookPrice, levelUnlocks, type Rarity4 } from './economy';
-// The server's table (RULES4 §5): credit packs, Gold, coin packs, the starter bundle and the credit earns are read
-// from here so the client and api/tier-one/v4 can never disagree. Vite bundles the JSON; the server validates it on load.
-import serverCatalog from '../../../../../../api/tier-one/v4/config/catalog.json';
+import { REGISTRY, KINDS, GROUPS, kindDef, kindsOf, isKind, overriddenBy, validateRegistry, type Kind, type Preview, type Group } from './kinds';
 
-export { KINDS, KINDS4, LEGACY4, GROUPS, REGISTRY, kindDef, kindsOf, isKind, isKind4, overriddenBy, validateRegistry, type Kind, type Kind4, type Preview, type Group };
-
-// ---------------------------------------------------------------- the server table (api/tier-one/v4/config/catalog.json)
-interface ServerItem { id: string; kind: 'credits' | 'gold' | 'cosmetic' | 'coins' | 'name'; name: string; desc?: string; price: { credits?: number; eur?: number; usd?: number }; grants: { credits?: number; coins?: number; ent?: string }; season?: string; featured?: boolean; from?: string; until?: string; giftable?: boolean }
-interface ServerCatalog { items: ServerItem[]; earn: Record<string, number>; gift: { max: number; perDay: number } }
-export const SERVER: ServerCatalog = serverCatalog as ServerCatalog;
-/** A credit pack: what money buys. `eur` is cents on the server; `price` is the display string. */
-export interface CreditPack { id: string; credits: number; eur: number; price: string; tag?: 'gold' | 'starter'; coins?: number; ent?: string; desc?: string }
-const eurText = (cents: number) => '€' + (cents / 100).toFixed(2);
-const packOf = (it: ServerItem): CreditPack => ({ id: it.id, credits: it.grants.credits || 0, eur: (it.price.eur || 0) / 100, price: eurText(it.price.eur || 0), tag: it.id.startsWith('starter') ? 'starter' : it.grants.credits === GOLD_CREDITS_JSON ? 'gold' : undefined, coins: it.grants.coins, ent: it.grants.ent, desc: it.desc });
-const GOLD_CREDITS_JSON = SERVER.items.find((x) => x.kind === 'gold')?.price.credits || 350;
-/** Gold costs exactly one credit pack (RULES4 §3: 350 credits ≈ €4.99). */
-export const GOLD_CREDITS = GOLD_CREDITS_JSON;
-/** The ONE credit pack table (money → credits), in price order. */
-export const CREDIT_PACKS: CreditPack[] = SERVER.items.filter((x) => x.kind === 'credits' && !x.id.startsWith('starter')).map(packOf).sort((a, b) => a.eur - b.eur);
-/** Coin packs (credits → coins). */
-export interface CoinPack { id: string; credits: number; coins: number; desc?: string }
-export const COIN_PACKS: CoinPack[] = SERVER.items.filter((x) => x.kind === 'coins').map((x) => ({ id: x.id, credits: x.price.credits || 0, coins: x.grants.coins || 0, desc: x.desc }));
-/** The one-time starter bundle, shown once in Lens › Looks from Level 3 (CONCEPT4 §5), never as a popup. */
-export const STARTER: (CreditPack & { level: number; look: string }) | null = (() => { const it = SERVER.items.find((x) => x.id.startsWith('starter')); return it ? { ...packOf(it), level: levelUnlocks.live, look: 'wp.starter' } : null; })();
-/** Credits earned by playing, server amounts (lib/wallet.ts CREDITS_EARN reads these). */
-export const SERVER_EARN = SERVER.earn;
-export const packBonus = (p: CreditPack) => { const base = CREDIT_PACKS[0]; return !base || !p.eur || !base.eur ? 0 : Math.round(((p.credits / p.eur) / (base.credits / base.eur) - 1) * 100); };
+export { KINDS, GROUPS, REGISTRY, kindDef, kindsOf, isKind, overriddenBy, validateRegistry, type Kind, type Preview, type Group };
 
 // ---------------------------------------------------------------- types
-/** The 3.x kinds whose equipped id lives in lib/season.ts fields (save.equip / save.theme). wallpaper and dropcard are
- *  CosKinds too (the season track hands them out) but store in save.desk.equip like every 4.0 kind. */
-export type LegacyKind = Exclude<CosKind, 'wallpaper' | 'dropcard'>;
+export type LegacyKind = CosKind; // 'frame' | 'ink' | 'theme' | 'ringtone' | 'flair' (lib/season.ts)
 export const LEGACY_KINDS: LegacyKind[] = ['frame', 'ink', 'theme', 'ringtone', 'flair'];
 export const isLegacyKind = (k: Kind): k is LegacyKind => (LEGACY_KINDS as string[]).includes(k);
 
@@ -93,47 +65,7 @@ export const isStandard = (id: string) => id.startsWith('std.');
 // Coins buy the small things (rare and under); credits buy the things that are seen most: epic and legendary looks,
 // season sets, Gold and your paper's name. Every price is fixed; the weekly featured price is the only discount.
 // `drop` dates put an item on the "new this week" rail for its first week; launch stock has none.
-const P4 = (r: Rarity4) => lookPrice(r);
 const NEW: Item[] = [
-  // ---- 4.0 the phone (CONCEPT4 §5 Looks): wallpapers, Drop card styles, OS themes, frames. Prices are the one rarity
-  // table (lib/economy.ts PRICES.look): common 150 · rare 400 · epic 900 coins; legendary is credits or the Gold lane.
-  // Drawn, specific looks: grain, halftone, pitch lines, wood type. No gradients blobs, no glass.
-  { id: 'wp.night', kind: 'wallpaper', nameKey: 'e4.items.wp.night', price: P4('common'), source: 'store', rarity: 'common', set: 'night', preview: { k: 'wallpaper', bg: '#0F0E0C', ink: '#F4EFE4', accent: '#F7B928', motif: 'grain' } },
-  { id: 'wp.pitch', kind: 'wallpaper', nameKey: 'e4.items.wp.pitch', price: P4('common'), source: 'store', rarity: 'common', preview: { k: 'wallpaper', bg: '#0F2A18', ink: '#E9F6EC', accent: '#7FCB6A', motif: 'pitch' } },
-  { id: 'wp.redtop', kind: 'wallpaper', nameKey: 'e4.items.wp.redtop', price: P4('rare'), source: 'store', rarity: 'rare', set: 'redtop', preview: { k: 'wallpaper', bg: '#C8102E', ink: '#FFFFFF', accent: '#FFD35C', motif: 'halftone' } },
-  { id: 'wp.wire', kind: 'wallpaper', nameKey: 'e4.items.wp.wire', price: P4('rare'), source: 'store', rarity: 'rare', set: 'wire', preview: { k: 'wallpaper', bg: '#0E1A20', ink: '#E6F7FC', accent: '#35C3E6', motif: 'grid' } },
-  { id: 'wp.terrace', kind: 'wallpaper', nameKey: 'e4.items.wp.terrace', price: P4('epic'), source: 'store', rarity: 'epic', preview: { k: 'wallpaper', bg: '#1B1A17', ink: '#FBF6EA', accent: '#FF5A36', motif: 'stripe' } },
-  { id: 'wp.gilt', kind: 'wallpaper', nameKey: 'e4.items.wp.gilt', price: P4('legendary'), source: 'store', rarity: 'legendary', set: 'gilt', preview: { k: 'wallpaper', bg: '#15130F', ink: '#F4EFE4', accent: '#F7B928', motif: 'halftone' } },
-  { id: 'dc.ticker', kind: 'dropcard', nameKey: 'e4.items.dc.ticker', price: P4('common'), source: 'store', rarity: 'common', set: 'wire', preview: { k: 'dropcard', bg: '#0E1A20', ink: '#E6F7FC', accent: '#35C3E6', style: 'ticker' } },
-  { id: 'dc.redtop', kind: 'dropcard', nameKey: 'e4.items.dc.redtop', price: P4('common'), source: 'store', rarity: 'common', set: 'redtop', preview: { k: 'dropcard', bg: '#FFFFFF', ink: '#15130F', accent: '#C8102E', style: 'bold' } },
-  { id: 'dc.poster', kind: 'dropcard', nameKey: 'e4.items.dc.poster', price: P4('rare'), source: 'store', rarity: 'rare', set: 'night', preview: { k: 'dropcard', bg: '#15130F', ink: '#F4EFE4', accent: '#F7B928', style: 'poster' } },
-  { id: 'dc.stamp', kind: 'dropcard', nameKey: 'e4.items.dc.stamp', price: P4('rare'), source: 'store', rarity: 'rare', set: 'broadsheet', preview: { k: 'dropcard', bg: '#FBF6EA', ink: '#1B1A17', accent: '#C9381A', style: 'stamp' } },
-  { id: 'dc.neon', kind: 'dropcard', nameKey: 'e4.items.dc.neon', price: P4('epic'), source: 'store', rarity: 'epic', set: 'night', preview: { k: 'dropcard', bg: '#0B0B10', ink: '#FFFFFF', accent: '#FF5A7A', style: 'poster' } },
-  { id: 'dc.gilt', kind: 'dropcard', nameKey: 'e4.items.dc.gilt', price: P4('legendary'), source: 'store', rarity: 'legendary', set: 'gilt', preview: { k: 'dropcard', bg: '#F4EFE4', ink: '#3A2600', accent: '#B8830B', style: 'stamp' } },
-  { id: 'th.paper', kind: 'theme', nameKey: 'e4.items.th.paper', price: P4('rare'), source: 'store', rarity: 'rare', set: 'broadsheet', preview: { k: 'theme', desk: ['#F4EFE4', '#E6DFCF', '#D8CFBA'], os: { bg: '#F4EFE4', ink: '#15130F', accent: '#C9381A', bar: '#E6DFCF' } } },
-  { id: 'th.wire', kind: 'theme', nameKey: 'e4.items.th.wire', price: P4('epic'), source: 'store', rarity: 'epic', set: 'wire', preview: { k: 'theme', desk: ['#0E1A20', '#132530', '#1B3340'], os: { bg: '#0E1A20', ink: '#E6F7FC', accent: '#35C3E6', bar: '#132530' } } },
-  { id: 'th.redtop', kind: 'theme', nameKey: 'e4.items.th.redtop', price: P4('epic'), source: 'store', rarity: 'epic', set: 'redtop', preview: { k: 'theme', desk: ['#2A0A10', '#3D0F17', '#C8102E'], os: { bg: '#2A0A10', ink: '#FFFFFF', accent: '#FFD35C', bar: '#3D0F17' } } },
-  { id: 'th.gilt', kind: 'theme', nameKey: 'e4.items.th.gilt', price: P4('legendary'), source: 'store', rarity: 'legendary', set: 'gilt', preview: { k: 'theme', desk: ['#15130F', '#2A2210', '#3A2600'], os: { bg: '#15130F', ink: '#F4EFE4', accent: '#F7B928', bar: '#2A2210' } } },
-  { id: 'fr.chalk', kind: 'frame', nameKey: 'e4.items.fr.chalk', price: P4('rare'), source: 'store', rarity: 'rare', preview: { k: 'frame', c: '#FBF6EA', c2: '#1B1A17', pat: 'dash' } },
-  { id: 'fr.neon', kind: 'frame', nameKey: 'e4.items.fr.neon', price: P4('epic'), source: 'store', rarity: 'epic', set: 'night', preview: { k: 'frame', c: '#35C3E6', c2: '#0E1A20', pat: 'foil' } },
-  { id: 'fr.gilt', kind: 'frame', nameKey: 'e4.items.fr.gilt', price: P4('legendary'), source: 'store', rarity: 'legendary', set: 'gilt', preview: { k: 'frame', c: '#F7B928', c2: '#3A2600', pat: 'foil' } },
-  // ---- 4.0 the shell (CONCEPT4 §17/§18): lock faces, icon packs, OS themes, device skins. The same rarity table.
-  // Lock faces: six house faces (std.lockface and lf.edition are free), the chapter face comes with the Chronicle phone.
-  { id: 'lf.ticker', kind: 'lockface', nameKey: 'sh.items.lf.ticker', price: P4('common'), source: 'store', rarity: 'common', set: 'wire', preview: { k: 'lockface', bg: '#101518', ink: '#E9EEF0', accent: '#3FC1E0', motif: 'grid', clock: 'ticker', stamp: 'followers', tray: 'strip' } },
-  { id: 'lf.split', kind: 'lockface', nameKey: 'sh.items.lf.split', price: P4('rare'), source: 'store', rarity: 'rare', preview: { k: 'lockface', bg: '#1B4D2E', ink: '#F3ECDD', accent: '#F2B632', c2: '#EDE4D0', motif: 'plain', clock: 'split', stamp: 'streak', tray: 'cards' } },
-  { id: 'lf.floodlight', kind: 'lockface', nameKey: 'sh.items.lf.floodlight', price: P4('epic'), source: 'store', rarity: 'epic', set: 'night', preview: { k: 'lockface', bg: '#0E0D0B', ink: '#FFFFFF', accent: '#FFD86B', motif: 'halftone', clock: 'numerals', stamp: 'catch', tray: 'strip' } },
-  { id: 'lf.gilt', kind: 'lockface', nameKey: 'sh.items.lf.gilt', price: P4('legendary'), source: 'store', rarity: 'legendary', set: 'gilt', preview: { k: 'lockface', bg: '#15120B', ink: '#F4E7C2', accent: '#D4A23A', motif: 'stripe', clock: 'stacked', stamp: 'handle', tray: 'paper' } },
-  // Icon packs: every app icon changes together (default paper tiles, outline, editorial stamp, club crest, retro).
-  { id: 'ip.outline', kind: 'iconpack', nameKey: 'sh.items.ip.outline', price: P4('common'), source: 'store', rarity: 'common', preview: { k: 'iconpack', style: 'outline', tile: '#14110D', ink: '#F3ECDD' } },
-  { id: 'ip.stamp', kind: 'iconpack', nameKey: 'sh.items.ip.stamp', price: P4('rare'), source: 'store', rarity: 'rare', set: 'broadsheet', preview: { k: 'iconpack', style: 'stamp', tile: '#EDE4D0', ink: '#B3261E' } },
-  { id: 'ip.retro', kind: 'iconpack', nameKey: 'sh.items.ip.retro', price: P4('rare'), source: 'store', rarity: 'rare', preview: { k: 'iconpack', style: 'retro', tile: '#F2B632', ink: '#1A1611' } },
-  { id: 'ip.crest', kind: 'iconpack', nameKey: 'sh.items.ip.crest', price: P4('epic'), source: 'store', rarity: 'epic', preview: { k: 'iconpack', style: 'crest', tile: '#1B4D2E', ink: '#F3ECDD' } },
-  // OS themes (tokens: surface, ink, accent, radius, type): the epic/legendary tier of the shell.
-  { id: 'th.chalk', kind: 'theme', nameKey: 'sh.items.th.chalk', price: P4('rare'), source: 'store', rarity: 'rare', preview: { k: 'theme', desk: ['#17201A', '#1F2A22', '#2A372D'], os: { bg: '#17201A', ink: '#E8EDE4', accent: '#F2E15B', bar: '#1F2A22', radius: 10, face: 'cond' } } },
-  { id: 'th.programme', kind: 'theme', nameKey: 'sh.items.th.programme', price: P4('epic'), source: 'store', rarity: 'epic', set: 'broadsheet', preview: { k: 'theme', desk: ['#F1E9D8', '#E6DCC6', '#D8CCB2'], paper: true, os: { bg: '#F1E9D8', ink: '#1A1714', accent: '#1F4FBF', bar: '#E6DCC6', radius: 18, face: 'editorial' } } },
-  // Device skins (CONCEPT4 §18): the top cosmetic line. Perks are lib/phones.ts, coins only, never on a ranked board.
-  { id: 'dv.terrace', kind: 'device', nameKey: 'sh.items.dv.terrace', price: P4('epic'), source: 'store', rarity: 'epic', preview: { k: 'device', bezel: '#12301E', frame: '#E8E1CF', radius: 40, notch: 'dot', boot: 'quick' } },
-  { id: 'dv.haloone', kind: 'device', nameKey: 'sh.items.dv.haloone', price: P4('legendary'), source: 'store', rarity: 'legendary', set: 'deals', preview: { k: 'device', bezel: '#0B0B0D', frame: '#D9D2C3', radius: 50, notch: 'pill', boot: 'quick' } },
   // byline card designs: the card on Me, in the press box tables and on results
   { id: 'by.redtop', kind: 'byline', nameKey: 'eco.items.by.redtop', price: { coins: 400, credits: 80 }, source: 'store', rarity: 'rare', set: 'redtop', preview: { k: 'byline', bg: '#C8102E', ink: '#FFFFFF', accent: '#FFD35C', rule: 'thick', face: 'cond' } },
   { id: 'by.broadsheet', kind: 'byline', nameKey: 'eco.items.by.broadsheet', price: { coins: 400, credits: 80 }, source: 'store', rarity: 'rare', set: 'broadsheet', preview: { k: 'byline', bg: '#FBF6EA', ink: '#1B1A17', accent: '#1B1A17', rule: 'double', face: 'display' } },
@@ -204,32 +136,12 @@ const NEW: Item[] = [
 // Story chapter completions, the Tier One rank, long streaks, rivalry trophies, a referred trio, Deadline Day Live.
 // lib/earned.ts evaluates `earn` against the save and grants into save.owned; the collection book shows how.
 const EARNED: Item[] = [
-  // 4.0: the starter bundle's wallpaper and the brand deals' looks (CONCEPT4 §4: a big deal pays a branded look).
-  // Deal looks are granted by lib/deals.ts through grantEarned() when the deal pays; `via: 'event'` keeps them unpriced.
-  { id: 'wp.starter', kind: 'wallpaper', nameKey: 'e4.items.wp.starter', price: {}, source: 'earned', rarity: 'rare', set: 'starter', earn: { via: 'event', ref: 'starter' }, preview: { k: 'wallpaper', bg: '#1B1A17', ink: '#F4EFE4', accent: '#FF5A36', motif: 'grain' } },
-  { id: 'dl.volt', kind: 'dropcard', nameKey: 'e4.items.dl.volt', price: {}, source: 'earned', rarity: 'rare', set: 'deals', earn: { via: 'event', ref: 'deal-volt' }, preview: { k: 'dropcard', bg: '#0B0B10', ink: '#FFFFFF', accent: '#D6FF3A', style: 'brand', mark: 'VOLT' } },
-  { id: 'dl.oasis', kind: 'wallpaper', nameKey: 'e4.items.dl.oasis', price: {}, source: 'earned', rarity: 'rare', set: 'deals', earn: { via: 'event', ref: 'deal-oasis' }, preview: { k: 'wallpaper', bg: '#0A2A33', ink: '#E6F7FC', accent: '#4FD1E0', motif: 'stripe' } },
-  { id: 'dl.kickoff', kind: 'frame', nameKey: 'e4.items.dl.kickoff', price: {}, source: 'earned', rarity: 'rare', set: 'deals', earn: { via: 'event', ref: 'deal-kickoff' }, preview: { k: 'frame', c: '#2FBF71', c2: '#04200F', pat: 'tape' } },
-  { id: 'dl.tempo', kind: 'wallpaper', nameKey: 'e4.items.dl.tempo', price: {}, source: 'earned', rarity: 'epic', set: 'deals', earn: { via: 'event', ref: 'deal-tempo' }, preview: { k: 'wallpaper', bg: '#141018', ink: '#F4EFE4', accent: '#FF4FA3', motif: 'halftone' } },
-  { id: 'dl.nine', kind: 'dropcard', nameKey: 'e4.items.dl.nine', price: {}, source: 'earned', rarity: 'epic', set: 'deals', earn: { via: 'event', ref: 'deal-nine' }, preview: { k: 'dropcard', bg: '#0E2231', ink: '#DDEFF8', accent: '#FFD35C', style: 'brand', mark: 'NINE' } },
-  { id: 'dl.halo', kind: 'theme', nameKey: 'e4.items.dl.halo', price: {}, source: 'earned', rarity: 'legendary', set: 'deals', earn: { via: 'event', ref: 'deal-halo' }, preview: { k: 'theme', desk: ['#101014', '#1A1A22', '#26263A'], os: { bg: '#101014', ink: '#FFFFFF', accent: '#9AD6F5', bar: '#1A1A22' } } },
-  // 4.0 the shell: the second free lock face (your first day), the widgets that come with looks, and The Comeback's
-  // phones (CONCEPT4 §18): each chapter hands you a device; the burner is Priya's second SIM in Chapter 4.
-  { id: 'lf.edition', kind: 'lockface', nameKey: 'sh.items.lf.edition', price: {}, source: 'earned', rarity: 'common', earn: { via: 'streak', n: 1 }, preview: { k: 'lockface', bg: '#EDE4D0', ink: '#1A1611', accent: '#B3261E', motif: 'grain', clock: 'stacked', stamp: 'catch', tray: 'paper' } },
-  { id: 'lf.chronicle', kind: 'lockface', nameKey: 'sh.items.lf.chronicle', price: {}, source: 'earned', rarity: 'legendary', set: 'story', earn: { via: 'story', n: 5 }, preview: { k: 'lockface', bg: '#DCD6C8', ink: '#111111', accent: '#8B1A10', motif: 'plain', clock: 'stacked', stamp: 'handle', tray: 'paper' } },
-  { id: 'wg.boss', kind: 'widget', nameKey: 'sh.items.wg.boss', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 1 }, preview: { k: 'widget', w: 'boss' } },
-  { id: 'wg.files', kind: 'widget', nameKey: 'sh.items.wg.files', price: {}, source: 'earned', rarity: 'rare', set: 'rank', earn: { via: 'rank', ref: 'rising' }, preview: { k: 'widget', w: 'files' } },
-  { id: 'dv.brick', kind: 'device', nameKey: 'sh.items.dv.brick', price: {}, source: 'earned', rarity: 'common', set: 'story', earn: { via: 'story', n: 1 }, preview: { k: 'device', bezel: '#2B2925', frame: '#4A453C', radius: 28, notch: 'bar', crack: true, boot: 'beat' } },
-  { id: 'dv.post', kind: 'device', nameKey: 'sh.items.dv.post', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 2 }, preview: { k: 'device', bezel: '#22252A', frame: '#5C6370', radius: 36, notch: 'dot', boot: 'quick' } },
-  { id: 'dv.halo', kind: 'device', nameKey: 'sh.items.dv.halo', price: {}, source: 'earned', rarity: 'epic', set: 'story', earn: { via: 'story', n: 3 }, preview: { k: 'device', bezel: '#0E0E10', frame: '#BFC3C9', radius: 48, notch: 'pill', boot: 'quick' } },
-  { id: 'dv.burner', kind: 'device', nameKey: 'sh.items.dv.burner', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 4 }, preview: { k: 'device', bezel: '#1A1A1A', frame: '#2E2E2E', radius: 18, notch: 'none', boot: 'beat' } },
-  { id: 'dv.chronicle', kind: 'device', nameKey: 'sh.items.dv.chronicle', price: {}, source: 'earned', rarity: 'legendary', set: 'story', earn: { via: 'story', n: 5 }, preview: { k: 'device', bezel: '#15130F', frame: '#8B7A55', radius: 46, notch: 'pill', boot: 'quick' } },
   { id: 'st.ch1', kind: 'flair', nameKey: 'eco.items.st.ch1', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 1 }, preview: { k: 'flair', g: '¶', c: '#2657C9' } },
   { id: 'st.ch2', kind: 'ink', nameKey: 'eco.items.st.ch2', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 2 }, preview: { k: 'ink', c: '#5B3E96' } },
   { id: 'st.ch3', kind: 'frame', nameKey: 'eco.items.st.ch3', price: {}, source: 'earned', rarity: 'epic', set: 'story', earn: { via: 'story', n: 3 }, preview: { k: 'frame', c: '#1B1A17', c2: '#FBF6EA', pat: 'double' } },
   { id: 'st.ch4', kind: 'poster', nameKey: 'eco.items.st.ch4', price: {}, source: 'earned', rarity: 'epic', set: 'story', earn: { via: 'story', n: 4 }, preview: { k: 'poster', c: '#5B3E96', c2: '#F4EFE4', style: 'tape' } },
   { id: 'st.ch5', kind: 'byline', nameKey: 'eco.items.st.ch5', price: {}, source: 'earned', rarity: 'legendary', set: 'story', earn: { via: 'story', n: 5 }, preview: { k: 'byline', bg: '#1B1A17', ink: '#FBF6EA', accent: '#D9913A', rule: 'double', face: 'display', tex: 'foil' } },
-  { id: 'rk.chief', kind: 'presspass', nameKey: 'eco.items.rk.chief', price: {}, source: 'earned', rarity: 'epic', set: 'rank', earn: { via: 'rank', ref: 'insider' }, preview: { k: 'presspass', c1: '#3A2600', c2: '#15130F', ink: '#FFD35C', stripe: '#F7B928' } },
+  { id: 'rk.chief', kind: 'presspass', nameKey: 'eco.items.rk.chief', price: {}, source: 'earned', rarity: 'epic', set: 'rank', earn: { via: 'rank', ref: 'chief' }, preview: { k: 'presspass', c1: '#3A2600', c2: '#15130F', ink: '#FFD35C', stripe: '#F7B928' } },
   { id: 'rk.tierone', kind: 'byline', nameKey: 'eco.items.rk.tierone', price: {}, source: 'earned', rarity: 'legendary', set: 'rank', earn: { via: 'rank', ref: 'tierone' }, preview: { k: 'byline', bg: '#15130F', ink: '#F4EFE4', accent: '#FF5A36', rule: 'thick', face: 'cond', tex: 'halftone' } },
   { id: 'sk.30', kind: 'ink', nameKey: 'eco.items.sk.30', price: {}, source: 'earned', rarity: 'rare', set: 'streak', earn: { via: 'streak', n: 30 }, preview: { k: 'ink', c: '#FF5A36' } },
   { id: 'sk.100', kind: 'presspass', nameKey: 'eco.items.sk.100', price: {}, source: 'earned', rarity: 'legendary', set: 'streak', earn: { via: 'streak', n: 100 }, preview: { k: 'presspass', c1: '#FF5A36', c2: '#C9381A', ink: '#FFF3E0', stripe: '#FFD35C' } },
@@ -241,9 +153,9 @@ const EARNED: Item[] = [
   { id: 'dd.2027-09-01', kind: 'poster', nameKey: 'eco.items.dd.summer', nameVars: { y: '’27' }, price: {}, source: 'earned', rarity: 'epic', set: 'ddlive', earn: { via: 'ddlive', ref: '2027-09-01' }, preview: { k: 'poster', c: '#FFD35C', c2: '#2A1206', style: 'neon' } },
   // house catchphrases you earn by playing (GOTY §12): rank, streaks, story chapters. `cp.custom` is the line you write
   // yourself once you reach Chief (lib/catchphrase.ts setCustomCatchphrase; server-checked by v4 catchphrase.set).
-  { id: 'cp.pen', kind: 'catchphrase', nameKey: 'cp.house.pen', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'rank', ref: 'rising' }, preview: { k: 'catchphrase', key: 'cp.house.pen', tone: 'dry', c: '#15130F' } },
-  { id: 'cp.dusted', kind: 'catchphrase', nameKey: 'cp.house.dusted', price: {}, source: 'earned', rarity: 'rare', set: 'lines', earn: { via: 'rank', ref: 'itk' }, preview: { k: 'catchphrase', key: 'cp.house.dusted', tone: 'loud', c: '#C9381A' } },
-  { id: 'cp.announce', kind: 'catchphrase', nameKey: 'cp.house.announce', price: {}, source: 'earned', rarity: 'epic', set: 'lines', earn: { via: 'rank', ref: 'insider' }, preview: { k: 'catchphrase', key: 'cp.house.announce', tone: 'loud', c: '#FF5A36' } },
+  { id: 'cp.pen', kind: 'catchphrase', nameKey: 'cp.house.pen', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'rank', ref: 'stringer' }, preview: { k: 'catchphrase', key: 'cp.house.pen', tone: 'dry', c: '#15130F' } },
+  { id: 'cp.dusted', kind: 'catchphrase', nameKey: 'cp.house.dusted', price: {}, source: 'earned', rarity: 'rare', set: 'lines', earn: { via: 'rank', ref: 'correspondent' }, preview: { k: 'catchphrase', key: 'cp.house.dusted', tone: 'loud', c: '#C9381A' } },
+  { id: 'cp.announce', kind: 'catchphrase', nameKey: 'cp.house.announce', price: {}, source: 'earned', rarity: 'epic', set: 'lines', earn: { via: 'rank', ref: 'chief' }, preview: { k: 'catchphrase', key: 'cp.house.announce', tone: 'loud', c: '#FF5A36' } },
   { id: 'cp.sealed', kind: 'catchphrase', nameKey: 'cp.house.sealed', price: {}, source: 'earned', rarity: 'legendary', set: 'lines', earn: { via: 'rank', ref: 'tierone' }, preview: { k: 'catchphrase', key: 'cp.house.sealed', tone: 'gold', c: '#F7B928' } },
   { id: 'cp.medical', kind: 'catchphrase', nameKey: 'cp.house.medical', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'streak', n: 7 }, preview: { k: 'catchphrase', key: 'cp.house.medical', tone: 'cool', c: '#2FBF71' } },
   { id: 'cp.bags', kind: 'catchphrase', nameKey: 'cp.house.bags', price: {}, source: 'earned', rarity: 'rare', set: 'lines', earn: { via: 'streak', n: 30 }, preview: { k: 'catchphrase', key: 'cp.house.bags', tone: 'dry', c: '#5B3E96' } },
@@ -251,11 +163,7 @@ const EARNED: Item[] = [
   { id: 'cp.shirt', kind: 'catchphrase', nameKey: 'cp.house.shirt', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'story', n: 1 }, preview: { k: 'catchphrase', key: 'cp.house.shirt', tone: 'loud', c: '#2657C9' } },
   { id: 'cp.inkdry', kind: 'catchphrase', nameKey: 'cp.house.inkdry', price: {}, source: 'earned', rarity: 'rare', set: 'lines', earn: { via: 'story', n: 3 }, preview: { k: 'catchphrase', key: 'cp.house.inkdry', tone: 'dry', c: '#1B1A17' } },
   { id: 'cp.wheels', kind: 'catchphrase', nameKey: 'cp.house.wheels', price: {}, source: 'earned', rarity: 'epic', set: 'lines', earn: { via: 'story', n: 5 }, preview: { k: 'catchphrase', key: 'cp.house.wheels', tone: 'cool', c: '#35C3E6' } },
-  // The three house lines a new account picks from (CONCEPT4 §12): 'Book it.' is the standard one; these two are granted
-  // by the onboarding lane (screens/Onboarding.tsx grantEarned) when picked at "Your line".
-  { id: 'cp.lockin', kind: 'catchphrase', nameKey: 'cp.house.lockin', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'event', ref: 'start' }, preview: { k: 'catchphrase', key: 'cp.house.lockin', tone: 'cool', c: '#1FA7D9' } },
-  { id: 'cp.gates', kind: 'catchphrase', nameKey: 'cp.house.gates', price: {}, source: 'earned', rarity: 'common', set: 'lines', earn: { via: 'event', ref: 'start' }, preview: { k: 'catchphrase', key: 'cp.house.gates', tone: 'dry', c: '#1DB46A' } },
-  { id: 'cp.custom', kind: 'catchphrase', nameKey: 'cp.custom.name', descKey: 'cp.custom.desc', price: {}, source: 'earned', rarity: 'legendary', set: 'lines', earn: { via: 'rank', ref: 'insider' }, preview: { k: 'catchphrase', key: 'cp.custom.name', tone: 'gold', c: '#F7B928' } },
+  { id: 'cp.custom', kind: 'catchphrase', nameKey: 'cp.custom.name', descKey: 'cp.custom.desc', price: {}, source: 'earned', rarity: 'legendary', set: 'lines', earn: { via: 'rank', ref: 'chief' }, preview: { k: 'catchphrase', key: 'cp.custom.name', tone: 'gold', c: '#F7B928' } },
 ];
 
 // ---------------------------------------------------------------- season-limited sets (generated per season id)
@@ -304,6 +212,7 @@ const SEASON_NEW: Record<SeasonKey, Record<SeasonSlot, Slot>> = {
     cp: { kind: 'catchphrase', price: { credits: 90 }, rarity: 'epic', preview: { k: 'catchphrase', key: 'cp.season.summer', tone: 'gold', c: '#E0552A' } },
   },
 };
+export const GOLD_CREDITS = 350; // exactly the €4.99 credit pack (lib/wallet.ts CREDIT_PACKS)
 const SEASON_RE = /^((rumour|winter|spring|summer)-(\d{4}))\.(by|mh|po|hd|lp|fs|cp)$/;
 const GOLD_RE = /^gold\.((rumour|winter|spring|summer)-(\d{4}))$/;
 function seasonNew(id: string): Item | null {
@@ -335,7 +244,6 @@ export const vaultList = (): VaultReturn[] => VAULT;
 
 // ---------------------------------------------------------------- legacy cosmetics (lib/season.ts), same ids
 const RARITY_LEGACY = (c: Cosmetic): Rarity => {
-  if (c.rarity) return c.rarity;
   if (c.price === 'track') return 'epic';
   if (c.price === 'gold') return /\.g8$/.test(c.id) ? 'legendary' : 'rare';
   if (c.price === 'event') return 'rare';
@@ -345,11 +253,9 @@ const previewLegacy = (c: Cosmetic): Preview => {
   switch (c.kind) {
     case 'frame': return { k: 'frame', c: c.c || '#15130F', c2: c.c2 || '#F4EFE4', pat: c.pat || 'solid' };
     case 'ink': return { k: 'ink', c: c.c || '#C9381A' };
-    case 'theme': return { k: 'theme', desk: c.desk, paper: c.paper, os: c.os };
+    case 'theme': return { k: 'theme', desk: c.desk, paper: c.paper };
     case 'ringtone': return { k: 'ringtone', sfx: c.sfx || 'phone.ring' };
     case 'flair': return { k: 'flair', g: c.g || '', c: c.c || '#15130F' };
-    case 'wallpaper': return { k: 'wallpaper', bg: c.bg || '#15130F', ink: c.ink || '#F4EFE4', accent: c.accent || '#FF5A36', motif: c.motif || 'grain' };
-    case 'dropcard': return { k: 'dropcard', bg: c.bg || '#F4EFE4', ink: c.ink || '#15130F', accent: c.accent || '#C9381A', style: c.style || 'bold' };
   }
 };
 export function fromLegacy(c: Cosmetic): Item {
@@ -406,15 +312,6 @@ export function itemsOf(kind: Kind, ms = Date.now()): Item[] {
 function seasonCosmeticsAll(): Item[] {
   return ['ev.rival', 'ev.medical', 'ev.frenzy', 'ev.barber', 'ev.local'].map((id) => seasonCosmetic(id)).filter((c): c is Cosmetic => !!c).map(fromLegacy);
 }
-/** Every earned-only id a season track or the weekly events can hand out (owned ids resolve through item()). */
-export const isTrackItem = (id: string) => /^(rumour|winter|spring|summer)-\d{4}\.(f[1-6]|g(?:[1-9]|10))$/.test(id);
-/** 4.0 Lens › Looks: everything the v4 shop lists for a kind (standard + stock + this season + earned), one of KINDS4. */
-export const looks4 = (kind: Kind4, ms = Date.now()): Item[] => itemsOf(kind, ms);
-/** 4.0: what is on sale today across the six v4 kinds (the rails and the featured rotation read storeCatalog). */
-export const store4 = (ms = Date.now()): Item[] => storeCatalog(ms).filter((x) => isKind4(x.kind));
-/** The coin or credit price of a look: the rarity table for v4 stock, the item's own price otherwise. */
-export const priceOf = (it: Item): Price => (isKind4(it.kind) && it.source === 'store' && !it.window ? lookPrice(it.rarity) : it.price);
-export const RARITY_PRICES = PRICES.look;
 /** Items that are part of a named set (evergreen families, seasons, earned families). */
 export const setOf = (set: string, ms = Date.now()): Item[] => KINDS.flatMap((k) => itemsOf(k, ms)).filter((x) => x.set === set);
 
@@ -437,7 +334,7 @@ export const vaultNow = (ms = Date.now()): Item[] => VAULT.filter((v) => ms >= v
 // stay in the book: gone items show "may return from the vault"). Ownership is decided by the caller (wallet.owns).
 /** The book lists season sets up to the end of the 2026/27 football year (the summer window closes 1 Sep 2027). */
 export const SEASON_BOOK_END = utc(2027, 9, 2);
-export const BOOK_ORDER = ['deals', 'starter', 'lines', 'story', 'rank', 'streak', 'rivalry', 'referral', 'ddlive', 'redtop', 'broadsheet', 'wire', 'night', 'gilt', 'event'];
+export const BOOK_ORDER = ['lines', 'story', 'rank', 'streak', 'rivalry', 'referral', 'ddlive', 'redtop', 'broadsheet', 'wire', 'night', 'gilt', 'event'];
 export function bookSets(ms = Date.now()): { set: string; season: boolean; items: Item[] }[] {
   const all = [...NEW.filter((x) => x.source !== 'standard'), ...EARNED, ...seasonCosmeticsAll(), ...seasonStore().map(fromLegacy)];
   const map = new Map<string, Item[]>();
@@ -476,12 +373,12 @@ export function featuredView(ms = Date.now()): { items: Featured[]; ends: number
   const last = new Set(pick('t1feat:' + prev.key, new Set()).map((x) => x.id));
   const rot = pick('t1feat:' + w.key, last);
   const pinned = pool.filter((x) => x.featured && !rot.includes(x));
-  return { week: w.key, ends: w.end, items: [...pinned.map((item) => ({ item, was: priceOf(item), price: priceOf(item), pinned: true })), ...rot.map((item) => ({ item, was: priceOf(item), price: featuredPrice(priceOf(item)), pinned: false }))] };
+  return { week: w.key, ends: w.end, items: [...pinned.map((item) => ({ item, was: item.price, price: item.price, pinned: true })), ...rot.map((item) => ({ item, was: item.price, price: featuredPrice(item.price), pinned: false }))] };
 }
-/** The price to pay right now (featured this week or not; v4 stock at the rarity table). */
+/** The price to pay right now (featured this week or not). */
 export function priceNow(it: Item, ms = Date.now()): Price {
   const f = featuredView(ms).items.find((x) => x.item.id === it.id);
-  return f ? f.price : priceOf(it);
+  return f ? f.price : it.price;
 }
 
 // ---------------------------------------------------------------- remote config (v4 adapter point)
@@ -569,9 +466,6 @@ function validatePreview(it: Item): string[] {
     case 'poster': col('c'); col('c2'); break;
     case 'ink': col('c'); break;
     case 'flair': col('c'); break;
-    case 'lockface': col('bg'); col('ink'); col('accent'); col('c2'); if (!['numerals', 'stacked', 'ticker', 'split'].includes(it.preview.clock)) e.push(`${it.id}: bad clock style`); if (!['handle', 'catch', 'followers', 'streak'].includes(it.preview.stamp)) e.push(`${it.id}: bad lock stamp`); if (!['cards', 'strip', 'paper'].includes(it.preview.tray)) e.push(`${it.id}: bad tray style`); break;
-    case 'iconpack': col('tile'); col('ink'); if (!['paper', 'outline', 'stamp', 'crest', 'retro'].includes(it.preview.style)) e.push(`${it.id}: bad icon style`); break;
-    case 'device': col('bezel'); col('frame'); if (!['pill', 'dot', 'bar', 'none'].includes(it.preview.notch)) e.push(`${it.id}: bad notch`); if (!Number.isInteger(it.preview.radius) || it.preview.radius < 0 || it.preview.radius > 64) e.push(`${it.id}: device radius is 0–64`); break;
     case 'catchphrase': if (!/^cp\.[a-z]+\.[a-z]+$/.test(it.preview.key)) e.push(`${it.id}: a catchphrase is an i18n key cp.<group>.<id>`); if (!['loud', 'cool', 'dry', 'gold'].includes(it.preview.tone)) e.push(`${it.id}: bad catchphrase tone`); col('c'); break;
     default: break;
   }

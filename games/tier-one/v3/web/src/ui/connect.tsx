@@ -5,7 +5,7 @@ import { useSave, getSave, type Save } from '../lib/save';
 import { useT, type T } from '../lib/i18n';
 import { sfx } from '../lib/sfx';
 import {
-  unreadOf, toRoute, nextUp, markRead, bylineOf, rankOf, REP_TIERS, rivalOf, netOf, RIVALS, recordWindow, windowKey,
+  unreadOf, toRoute, nextUp, markRead, bylineOf, repTier, REP_TIERS, rivalOf, netOf, RIVALS, recordWindow, windowKey,
   type FeedItem, type WindowSummary,
 } from '../lib/byline';
 import type { View } from '../lib/driver';
@@ -14,7 +14,7 @@ import type { Route, Go } from '../App';
 import { Icon, GBtn, CountUp, useCountUp } from './game';
 import '../styles/connect.css';
 import { feedSkin } from '../lib/wallet';
-import { CatchLine, Showcase, Avatar } from './customize';
+import { CatchLine, Showcase } from './customize';
 import { BadgeRow } from './awards';
 
 // ---------- navigation for components that don't get chrome (the bell lives in every TopBar)
@@ -142,32 +142,33 @@ export function RivalStrip({ go, style }: { go: Go; style?: CSSProperties }) {
 export function BylineCard({ s, style }: { s: Save; style?: CSSProperties }) {
   const t = useT();
   const b = bylineOf(s);
-  const tier = rankOf(s); // the rank held: once reached, it stays (RULES4 §3)
+  const tier = repTier(b.rep);
   const ti = REP_TIERS.findIndex(([k]) => k === tier);
   const nxt = REP_TIERS[ti + 1];
   const floor = REP_TIERS[ti][1], ceil = nxt ? nxt[1] : 100;
-  const into = nxt ? Math.max(0, Math.min(100, Math.round((100 * (b.rep - floor)) / (ceil - floor)))) : 100;
+  const into = nxt ? Math.round((100 * (b.rep - floor)) / (ceil - floor)) : 100;
   const name = s.nick || t('g.home.noName');
+  const initials = name.split(/\s+/).map((x) => x[0]).join('').slice(0, 2).toUpperCase();
   return <section className={'cn-byline cn-tier--' + tier} style={style} aria-label={t('cn.me.byline')}>
     <div className="cn-byline__top">
-      <span className="cn-byline__av cn-byline__av--fr" aria-hidden="true"><Avatar s={s} size={56} /></span>
+      <span className="cn-byline__av" aria-hidden="true">{initials}</span>
       <div className="cn-byline__id">
         <p className="cn-byline__by" dir="auto">{t('share.by', { n: name })}</p>
-        <span className={'g-stamp cn-byline__stamp is-slam'}>{tier === 'tierone' && <Icon n="crown" size={14} />}{t('cn.tier.' + tier)}</span>
+        <span className={'g-stamp cn-byline__stamp is-slam'}>{t('cn.tier.' + tier)}</span>
       </div>
     </div>
     <div className="cn-ladder" role="img" aria-label={t('cn.me.ladder') + ': ' + t('cn.tier.' + tier) + '. ' + (nxt ? t('cn.me.toTier', { n: ceil - b.rep, rt: t('cn.tier.' + nxt[0]) }) : t('cn.me.topTier'))}>
       <ol className="cn-ladder__rungs" aria-hidden="true">{REP_TIERS.map(([k], i) => <li key={k} className={i < ti ? 'is-past' : i === ti ? 'is-now' : ''}>
         <i style={i === ti ? { ['--into' as string]: into + '%' } : undefined} /><span>{t('cn.tier.' + k)}</span>
       </li>)}</ol>
-      <p className="cn-ladder__next">{nxt ? t('cn.me.toTier', { n: Math.max(0, ceil - b.rep), rt: t('cn.tier.' + nxt[0]) }) : t('cn.me.topTier')}</p>
+      <p className="cn-ladder__next">{nxt ? t('cn.me.toTier', { n: ceil - b.rep, rt: t('cn.tier.' + nxt[0]) }) : t('cn.me.topTier')}</p>
     </div>
     <dl className="cn-byline__stats">
       <div><dt>{t('cn.me.followers')}</dt><dd className="g-num"><Rolling to={b.followers} /></dd></div>
       <div><dt>{t('cn.me.rep')}</dt><dd className="g-num">{b.rep}<small>/100</small></dd></div>
       <div className={'cn-hot' + (b.hot ? ' is-lit' : '')}><dt>{t('cn.me.hot')}</dt><dd className="g-num"><Icon n="flame" size={22} />{b.hot}</dd><small>{b.hot ? t('cn.me.best', { n: b.best }) : t('cn.me.cold')}</small></div>
     </dl>
-    {/* Your line (the stamp on every right Drop) and three pinned looks */}
+    {/* Your desk (GOTY §8.4, §12): the line a Confirmed call that lands fires, and three pinned looks */}
     <div className="cn-byline__desk">
       <span className="cn-byline__cpk">{t('cp.ui.tab')}</span>
       <CatchLine s={s} className="cn-byline__cp" />

@@ -180,5 +180,3 @@
 :root[data-edition="morning"] .desk-by__tier.cn-tier--blogger { --sc: var(--c-off-deep); } :root[data-edition="morning"] .desk-by__tier.cn-tier--stringer { --sc: var(--c-done-deep); }
 :root[data-edition="morning"] .desk-by__tier.cn-tier--correspondent { --sc: #1F7FA0; } :root[data-edition="morning"] .desk-by__tier.cn-tier--chief { --sc: var(--red-deep); } :root[data-edition="morning"] .desk-by__tier.cn-tier--tierone { --sc: var(--gold-deep); }
 :root[data-edition="morning"] .desk-by__streak.is-lit b { color: #C25A00; }
-
-/* 4.1: the home screen, lock screen and shell screens are styled in styles/phone.css (UI41.md). Widgets and Edit home are cut. */

@@ -1,0 +1,69 @@
+/* Surface films (GOTY.md §9; ui/film.tsx): ambient loops behind the UI and the beats the player triggers.
+   Nothing here changes layout: every layer is absolute or fixed and ignores the pointer. Without a clip or a poster
+   the layer isn't rendered at all. */
+
+/* ---------- the stage: one fixed layer under the whole page (#root is z-index 1) for screen-level loops and the 3D desk */
+#t1-film { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; contain: strict; background: transparent; }
+/* ---------- the overlay: full-screen beats (a phone lifting, a page turning) above the page, below dialogs (.call-scene is 100, films 1000) */
+#t1-beat { position: fixed; inset: 0; z-index: 90; pointer-events: none; overflow: hidden; contain: strict; }
+
+/* ---------- a loop: poster first, the video on top once it plays; both cover the box */
+.fl { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity .6s var(--ease-out, ease-out); contain: strict; }
+.fl.is-in { opacity: 1; }
+.fl--inline { z-index: -1; border-radius: inherit; }
+.fl > img, .fl > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; max-width: none; }
+.fl--contain > img, .fl--contain > video { object-fit: contain; }
+.fl > video { opacity: 0; transition: opacity .35s; }
+.fl > video.is-on { opacity: 1; }
+/* legibility: the loop is a set, not a poster. Dim it and darken the top and bottom where copy sits. */
+.fl--dim > img, .fl--dim > video { filter: brightness(.62) saturate(.9); }
+.fl--dim::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 7, 5, .55), rgba(8, 7, 5, .12) 30%, rgba(8, 7, 5, .18) 70%, rgba(8, 7, 5, .7)); }
+.fl--plain::after { content: none; }
+/* the stage's loops sit under a faint vignette so cards read as paper on a lit desk */
+#t1-film .fl::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(110% 80% at 50% 40%, transparent 40%, rgba(5, 4, 3, .55)); }
+#t1-film .fl::after { z-index: 1; }
+/* An inline loop or beat slot sits at z-index -1 inside an isolated host: over the host's own background, under every
+   child (static or positioned), without touching the children's own positioning. */
+.fl-host { isolation: isolate; }
+
+/* ---------- a beat: a short clip that plays once (or loops while held) in its slot (or the full-screen overlay) */
+.fl-beat--slot { display: block; position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; border-radius: inherit; }
+.fl-beat { display: block; position: absolute; inset: 0; overflow: hidden; pointer-events: none; border-radius: inherit; contain: strict; }
+.fl-beat > video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; max-width: none; opacity: 0; transition: opacity .12s; }
+.fl-beat > video.is-on { opacity: 1; }
+.fl-beat--rtl > video { transform: scaleX(-1); }
+/* the stamp beat under the CSS stamp on a paper card: multiply so the paper shows through the film's white */
+.fl-beat--stamp { mix-blend-mode: multiply; opacity: .9; }
+.fl-beat--stamp video { object-position: 100% 35%; }
+[dir="rtl"] .fl-beat--stamp video { object-position: 0% 35%; }
+/* the press warming under the thumb: inside the hold-to-publish button, under .hold__fill (z-index 0) */
+.fl-beat--press { opacity: .85; }
+/* the shred in the post film: between the shot and the laptop screen (tree order at z-index 0) */
+.fl-beat--shred { z-index: 0; }
+/* the page turn: the whole viewport for 0.3 s, over the page, under dialogs; it is what carries the motion */
+.fl-beat--turn { position: fixed; z-index: 95; }
+#t1-beat > .fl-beat > video.is-on { transition: none; }
+
+/* ---------- the 3D desk (ui/desk3d): its canvas fills the stage; the poster shows until the first frame is drawn */
+.desk3d { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.desk3d > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .8s var(--ease-out, ease-out); }
+.desk3d.is-live > canvas { opacity: 1; }
+.desk3d > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; max-width: none; filter: brightness(.62) saturate(.9); }
+.desk3d::after { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(110% 80% at 50% 45%, transparent 30%, rgba(5, 4, 3, .72)), linear-gradient(180deg, rgba(8, 7, 5, .55), transparent 28%, transparent 70%, rgba(8, 7, 5, .6)); }
+
+/* ---------- the settings row (ui/film.tsx FilmSetting) */
+.filmset { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.filmset__t { display: flex; align-items: center; gap: 10px; }
+.filmset__t small { display: block; color: var(--on-desk-3, #8C8475); font-size: 12px; margin-top: 2px; }
+.filmset__why { font-size: 11px; color: var(--on-desk-3, #8C8475); }
+
+/* film off: nothing renders, even if a layer is mid-fade */
+:root[data-film="none"] .fl, :root[data-film="none"] .fl-beat, :root[data-film="none"] .desk3d { display: none !important; }
+@media (prefers-reduced-motion: reduce) { .fl > video, .fl-beat, .desk3d > canvas { display: none !important; } .fl, .fl > video { transition: none; } }
+:root.reduce .fl > video, :root.reduce .fl-beat, :root.reduce .desk3d > canvas { display: none !important; }
+
+/* ---------- a drawn loop (GOTY.md §10; film/surfaces/drawn.tsx): an SVG set animated by CSS, dimmed like a clip */
+.fl--draw > svg.dl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.fl--draw.fl--dim > svg.dl { opacity: .62; }
+.fl--draw { background: #0C0B09; }
+.fl--draw.fl--inline { background: transparent; }

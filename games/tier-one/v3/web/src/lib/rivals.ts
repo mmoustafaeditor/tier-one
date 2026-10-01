@@ -125,36 +125,3 @@ export function creatorByCode(code: string): CreatorRival | null {
   const k = code.trim().toUpperCase();
   return (k && creatorRivals().find((c) => (c.code || '').toUpperCase() === k)) || null;
 }
-
-// ---------------------------------------------------------------- 4.0: the accounts on the feed and the chapter boss
-// CONCEPT4 §10. On a ranked board the three accounts are just accounts with their accuracy printed (never "rivals").
-// In Story one of them is the chapter boss: the Story lane registers who it is and the head-to-head with setBoss(),
-// and Blurt shows the boss strip at the top of a Career window and the head-to-head on its results thread.
-export interface Boss4 {
-  /** The account id (tabloid / itk / insider) or another handle the story names. */
-  id: string; handle: string;
-  /** Accuracy in tenths (6 → "Right 6 in 10"). */
-  acc?: number;
-  /** The chapter head-to-head so far (windows you won · windows they won). */
-  you: number; them: number;
-  /** What beating them opens ("Rising"), shown small. */
-  prize?: string;
-}
-/** Story's result of one window against the boss (the Story lane computes it; Blurt prints it). */
-export interface BossResult4 { won: boolean; you: number; them: number; line?: string }
-type BossSource = { boss: () => Boss4 | null; result?: (out: { per: { right: boolean; scoop: boolean; call: unknown }[]; total: number }) => BossResult4 | null };
-let bossSrc: BossSource | null = null;
-/** The Story lane calls this once (at import): who the boss is now, and how a finished Career window went against them. */
-export function setBoss(src: BossSource | null) { bossSrc = src; }
-export const bossNow = (): Boss4 | null => { try { return bossSrc ? bossSrc.boss() : null; } catch { return null; } };
-export const bossResult = (out: Parameters<NonNullable<BossSource['result']>>[0]): BossResult4 | null => { try { return bossSrc?.result ? bossSrc.result(out) : null; } catch { return null; } };
-const CUT4 = /tweet|exclusiv|u-?turn|twist|here we go|confirmed|\btalks\b|advanced|hijack|tally|front page|newspaper|editor|[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/iu;
-/** The boss's line after a window: a gloat when they won, a concession when you did. Lines with a cut word are skipped. */
-export function bossLine(lang: string, id: string, youWon: boolean, seed: string | number, v: Vars = {}): string {
-  const l = trList(lang, 'cn.taunt.' + voiceOf(id) + '.' + (youWon ? 'winning' : 'losing')) as string[] | undefined;
-  if (!Array.isArray(l) || !l.length) return '';
-  const vars: Vars = { name: getSave().nick || '', rec: '', p: '', ...v };
-  const st = hash(id + '|boss|' + seed) % l.length;
-  for (let k = 0; k < l.length; k++) { const x = l[(st + k) % l.length]; if (!CUT4.test(x) && (vars.rec || !x.includes('{rec}'))) return fill(x, vars); }
-  return '';
-}

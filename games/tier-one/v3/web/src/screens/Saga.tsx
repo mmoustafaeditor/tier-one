@@ -1,166 +1,258 @@
-// 4.1 player screen and decide sheet (UI41 §Daily Challenge). One screen per player: the header (kit, clubs in club
-// colours), the five sources as five buttons (name, what they tell you or their answer, how often they're right, the
-// cost in calls), rival posts one line each, and two buttons: Decide now / Decide later. The decide sheet: SIGNS /
-// ELSEWHERE / STAYS with the clubs named, Hint / Post / Drop, the one-line deal from driver.preview, Post.
-// Deadline Day uses the same screen; its sheet posts in two taps (ending, then how loud).
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
-import type { CastSaga, Pub4, WClub } from '../lib/engine';
-import { coachLine, type Driver4 } from '../lib/driver';
-import { useT, tr, num } from '../lib/i18n';
-import { haptic } from '../lib/sfx';
-import { saysWord4, outWord4, backWord4 } from '../lib/story';
-import { Kit } from '../ui/game';
-import { Crest } from '../ui/bits';
-import { Pop } from '../ui/juice';
-import { Hint } from '../ui/hint';
-import { Screen } from '../ui/screen';
-import { CONTACTS, ContactAvatar, accShort, lockShort } from '../ui/CallScene';
+// The file: one saga on one screen (HYBRID.md §5). Player card, What we know, source tiles (locked ones say when they open),
+// Make the call (Make a call / Decide later → what happens → how loud → stake line → hold to publish), the rival race.
+// The maths sits behind "How's this scored?". 3.3 (GOTY.md §2) changes feel only: every number comes from the engine.
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { E, OUTS, type Game, type Clue } from '../lib/engine';
+import { useT, num } from '../lib/i18n';
+import { leanOf, voiceLine, postLine, saysWord, addsText, outWord, strWord, streetCount, GRADE, vars, varsH } from '../lib/story';
+import { Glyph, Lines, Crest } from '../ui/bits';
+import { Icon, Kit, SrcIcon, Rel, GBtn } from '../ui/game';
+import { GRADE_BARS } from '../ui/CallScene';
+import { accentOf } from '../film/calls/CallFilm';
+import { sfx, buzz } from '../lib/sfx';
+import { hereWeGo } from '../lib/share';
+// Surface films (GOTY.md §9, ui/film.tsx): the press warming under the thumb while publishing is held, the stamp coming
+// down under a filed call's CSS slam. Additive: nothing renders without the clips.
+import { Beat } from '../ui/film';
+import { stampBeat } from '../film/surfaces/manifest';
+import type { View } from '../lib/driver';
+import { vinceOf } from '../lib/career';
+import { srcNamed } from '../lib/storyMode';
+import { catchphraseOf } from '../lib/catchphrase';
 
-export const OUT_KEYS = ['signs', 'elsewhere', 'stays'] as const;
-/** Readable ink on a club colour. */
-export function inkOn(hex: string): string {
-  const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return '#fff';
-  const n = parseInt(m[1], 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-  // WCAG: whichever of black / white reads better on this colour (one of them always clears 4.5:1).
-  const lin = (v: number) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
-  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-  return (L + 0.05) / 0.05 >= 1.05 / (L + 0.05) ? '#000' : '#fff';
+// Your head-to-head ledger against one rival (GOTY.md §1.3). Filled by the connect lane's rivalRecord(id).
+export interface RivalRecord { w: number; l: number; d: number }
+export interface SagaProps {
+  view: View; g: Game; i: number; busy: boolean; last: { i: number; c: Clue } | null; dd: boolean;
+  onAsk: (src: string) => void; onPost: (o: number, s: number, ut: boolean) => void; favours?: ReactNode; justFiled?: number; onLater?: () => void;
+  /** Optional: the record shown under each rival avatar in the race strip. Nothing renders when absent or null. */
+  rivalRecord?: (id: string) => RivalRecord | null | undefined;
 }
-export function ClubChip({ club }: { club: WClub }) {
-  return <span className="d41-club" style={{ ['--c1' as string]: club.c1, ['--c2' as string]: club.c2, ['--ci' as string]: inkOn(club.c1) } as CSSProperties}><Crest club={club} size={14} /><b dir="auto">{club.s}</b></span>;
-}
-/** "Leeds → Arsenal" with the linked club in its colours. */
-export function Route({ c }: { c: CastSaga }) {
-  const t = useT();
-  return <span className="d41-route"><span dir="auto">{c.from.s}</span><i aria-hidden="true">{t.rtl ? '←' : '→'}</i><ClubChip club={c.to} /></span>;
-}
-/** The window's name: "Daily Challenge #41", "Practice", "Career", "Deadline Day" … */
-export function windowLabel(t: ReturnType<typeof useT>, d: Driver4): string {
-  switch (d.mode) {
-    case 'daily': return d.no ? t('d41.win.dailyN', { n: d.no }) : t('d41.win.daily');
-    case 'room': return t('d41.win.room', { n: (d.room?.round || 0) + 1 });
-    case 'career': { const m = /^story:(\d+):(\d+)$/.exec(d.label || ''); return m ? t('c41.sub', { n: m[1], w: m[2] }) : d.label || t('d41.win.career'); }
-    case 'tutorial': return t('d41.win.tutorial');
-    case 'deadline': return t('d41.win.deadline');
-    case 'challenge': return t('d41.win.challenge');
-    default: return d.label || t('d41.win.practice');
-  }
-}
-/** "Day 2 of 5" / "Deadline Day". */
-export function dayWord(t: ReturnType<typeof useT>, day: number, days: number): string {
-  if (days <= 1) return t('d41.win.deadline');
-  return day >= days ? t('d41.day.dd', { d: day, n: days }) : t('d41.day.of', { d: day, n: days });
-}
-export const callsWord = (t: ReturnType<typeof useT>, n: number) => (n === 1 ? t('d41.calls.one') : t('d41.calls.n', { n }));
+export const RIVAL_IC: Record<string, string> = { tabloid: 'BB', itk: '?', insider: 'PP' };
 
-/** A player's state as a chip: no info · 2 tips · your call stamped. */
-export function StatusChip({ pub, i }: { pub: Pub4; i: number }) {
+export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, justFiled, onLater, rivalRecord }: SagaProps) {
   const t = useT();
-  const call = pub.calls[i], n = (pub.clues[i] || []).length;
-  if (call) return <span className={'d41-stamp d41-o--' + OUT_KEYS[call.o]}><b>{outWord4(t.lang, call.o)}</b><small>{backWord4(t.lang, call.s)}</small></span>;
-  return <span className={'d41-chip' + (n ? ' is-on' : '')}>{n === 0 ? t('d41.st.none') : n === 1 ? t('d41.st.tip1') : t('d41.st.tips', { n })}</span>;
-}
-
-// ---------------------------------------------------------------- the player screen
-export function PlayerScreen({ driver, pub, i, landed, notes, right, onBack, onAsk, onDecide }: {
-  driver: Driver4; pub: Pub4; i: number; landed: Record<string, number>; notes: string[]; right?: ReactNode;
-  onBack: () => void; onAsk: (src: string) => void; onDecide: () => void;
-}) {
-  const t = useT();
-  const R = driver.R, c = driver.cast[i];
-  const clues = pub.clues[i] || [], call = pub.calls[i];
-  const cs = driver.callState(i);
-  const posts = pub.feed.filter((f) => f.i === i);
-  const srcs = CONTACTS.filter((src) => !!R.SOURCES[src]);
-  const lines: { k: string; who: string; text: ReactNode; tone?: string }[] = [
-    ...posts.map((f) => ({ k: 'p' + f.id + f.day, who: tr(t.lang, 'rival4.' + f.id), text: <><b className={'d41-o d41-o--' + OUT_KEYS[f.claim]}>{outWord4(t.lang, f.claim)}</b><small>{t('rival4.right.' + f.id)}</small></>, tone: 'rival' })),
-    ...notes.map((n, k) => ({ k: 'n' + k, who: '', text: <span dir="auto">{n}</span>, tone: 'tip' })),
-  ];
-  if (driver.coach && !call) { const cl = coachLine(t.lang, driver.coach(i)); lines.push({ k: 'coach', who: t('coach4.name'), text: <><b className={'d41-o d41-o--' + OUT_KEYS[cl.o]}>{outWord4(t.lang, cl.o)}</b><small>{cl.words}</small></>, tone: 'coach' }); }
-  const hint = call ? null : cs === 'nosource' ? t('d41.player.needCall') : cs === 'over' ? t('d41.player.over') : null;
-  const footer = call
-    ? <Pop className="d41-btn" onTap={onBack}>{t('d41.player.board')}</Pop>
-    : <>
-      <Pop className="d41-btn d41-btn--quiet" onTap={onBack}>{t('d41.player.later')}</Pop>
-      <Pop className="d41-btn" onTap={onDecide} disabled={cs !== 'ok'} sound="sheet.open" data-tut="post">{t('d41.player.now')}</Pop>
-    </>;
-  return <Screen title={c.player.n} sub={(R.DAYS > 1 ? dayWord(t, pub.day, R.DAYS) + ' · ' : '') + callsWord(t, pub.left)} onBack={onBack} right={right} footer={footer}>
-    <div className="d41-ph" style={{ ['--c1' as string]: c.from.c1, ['--c2' as string]: c.from.c2 } as CSSProperties}>
-      <Kit club={c.from} player={c.player} size={52} />
-      <span className="d41-ph__b">
-        <span className="d41-ph__meta">{[c.player.pos, c.player.age ? t('d41.player.age', { n: c.player.age }) : ''].filter(Boolean).join(' · ')}</span>
-        <Route c={c} />
-      </span>
-      {call && <StatusChip pub={pub} i={i} />}
-    </div>
-    <div className="d41-srcs bl-know" role="group" aria-label={t('d41.player.sources')}>
-      {srcs.map((src) => {
-        const st = driver.askState(i, src), so = R.SOURCES[src];
-        const clue = clues.find((x) => x.src === src);
-        const cost = st === 'asked' ? t('d41.src.asked') : st === 'closed' ? lockShort(t.lang, src, R) : st === 'broke' ? t('d41.src.broke') : so && so.cost ? (so.cost === 1 ? t('d41.calls.cost1') : t('d41.calls.cost', { n: so.cost })) : t('d41.src.free');
-        return <Pop key={src} className={'d41-src is-' + st + (clue ? ' has-clue' : '') + (so && !so.cost ? ' is-free' : '')} onTap={() => onAsk(src)} disabled={st === 'asked' || st === 'over' || st === 'none'} sound={st === 'ok' ? 'ui.tap' : null} data-tut={'dm-' + src} label={t('src4.name.' + src) + ' · ' + cost}>
-          <ContactAvatar src={src} size={36} />
-          <span className="d41-src__b">
-            <b dir="auto">{t('src4.name.' + src)}</b>
-            {clue ? <span key={landed[src] || 0} className={'d41-src__ans dm-chip' + (landed[src] ? ' is-land' : '')} dir="auto">{saysWord4(t.lang, src, clue.r)}</span>
-              : <small dir="auto">{t('d41.src.tells', { x: t('src4.tells.' + src) })}</small>}
-          </span>
-          <span className="d41-src__r"><small className="g-num">{accShort(t.lang, R, src)}</small><em className={'d41-cost is-' + st}>{cost}</em></span>
-        </Pop>;
-      })}
-    </div>
-    <div className="d41-intel" aria-label={t('d41.player.intel')}>
-      {hint && <p className="d41-intel__hint">{hint}</p>}
-      {lines.slice(0, hint ? 2 : 3).map((l) => <p key={l.k} className={'d41-line is-' + l.tone}>{l.who && <span dir="ltr">{l.who}</span>}{l.text}</p>)}
-      {!hint && !lines.length && <p className="d41-intel__quiet">{t('d41.player.quiet')}</p>}
-    </div>
-  {driver.mode !== 'tutorial' && <Hint id="player">{t('s41.hint.player')}</Hint>}</Screen>;
-}
-
-// ---------------------------------------------------------------- the decide sheet
-export function DecideSheet({ driver, i, quick, onClose, onPost }: { driver: Driver4; i: number; quick?: boolean; onClose: () => void; onPost: (o: number, s: number) => void }) {
-  const t = useT();
-  const c = driver.cast[i];
+  const c = view.cast[i];
+  const ln = leanOf(g, i);
+  const call = g.calls[i];
+  const cs = E.callState(g, i);
+  const canUt = !!call && E.canUturn(g, i);
   const [o, setO] = useState<number | null>(null);
   const [s, setS] = useState(1);
-  const pv = o != null ? driver.preview(i, o, s) : null;
-  const scoopWho = o != null ? driver.pub().feed.find((f) => f.i === i && f.claim === o) : undefined;
-  const go = (s2 = s) => { if (o == null) return; haptic('publish'); onPost(o, s2); };
+  const [how, setHow] = useState(false);
+  const [clips, setClips] = useState(true);
+  const [utOpen, setUtOpen] = useState(false);
+  const [going, setGoing] = useState(false);
+  useEffect(() => { setO(null); setS(1); setUtOpen(false); setGoing(false); }, [i, call ? call.o + ':' + call.s : '']);
+  // Nothing is pre-picked: the call is yours.
+  const selO = o;
+  const pv = selO != null && (cs === 'ok' || canUt) && !(call && call.o === selO) ? E.preview(g, i, selO, s) : null;
+  const tw = g.twist && g.twist.i === i ? g.twist : null;
+  const reads = g.clues[i];
+  const era = tw && g.day >= tw.day ? 1 : 0;
+  const curReads = reads.filter((r) => r.era === era);
+  const livePosts = E.livePosts(g, i);
+  const srcs = E.sourcesFor(g.R, i);
+  const post7 = g.day === g.R.DAYS ? g.R.DD_POSTS - g.posts7 : null;
+  const maxT = Math.max(3, ...ln.tally);
+  // The quote that just came in (after the call film): the newest read matching the last answer, for this saga.
+  const newK = last && last.i === i ? curReads.map((r, k) => (r.src === last.c.src && r.day === last.c.day && r.r === last.c.r ? k : -1)).reduce((a, b) => Math.max(a, b), -1) : -1;
+  const newRef = useRef<HTMLLIElement>(null);
   useEffect(() => {
-    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose(); } };
-    window.addEventListener('keydown', k, true); return () => window.removeEventListener('keydown', k, true);
-  }, [onClose]);
-  const sub = (k: number) => (k === 0 ? t('pl4.out.signsC', { to: c.to.s }) : k === 1 ? t('pl4.out.elsewhereC', { to: c.to.s }) : t('pl4.out.staysC', { from: c.from.s }));
-  const deal = pv && o != null ? (t.list('pl4.deal') as string[])[o].replace('{w}', String(pv.win)).replace('{l}', String(Math.abs(pv.lose))).replace('{to}', c.to.s) : '';
-  const extra = pv && o != null ? (s === 2 ? (pv.scoop ? t('pl4.sheet.scoopOn', { out: outWord4(t.lang, o) }) : scoopWho ? t('pl4.sheet.scoopOff', { who: tr(t.lang, 'rival4.' + scoopWho.id), out: outWord4(t.lang, o) }) : '') : '') + (pv.early > 0 ? ' ' + t('pl4.sheet.early', { n: pv.early }) : '') : '';
-  return <div className="d41-sheet" onClick={onClose}>
-    <div className={'d41-sheet__card' + (quick ? ' is-quick' : '')} role="dialog" aria-modal="true" aria-label={t('d41.decide.title')} onClick={(e) => e.stopPropagation()}>
-      <header className="d41-sheet__h">
-        <span><small>{t('d41.decide.title')}</small><b dir="auto">{c.player.n}</b></span>
-        <button type="button" className="d41-x" onClick={onClose} aria-label={t('d41.decide.cancel')}>×</button>
-      </header>
-      <div className="d41-outs" role="radiogroup" aria-label={t('d41.decide.how')}>
-        {OUT_KEYS.map((k, n) => <Pop key={k} role="radio" aria-checked={o === n} className={'d41-out d41-o--' + k + (o === n ? ' is-on' : '')} onTap={() => setO(n)} data-tut={'how-' + n}>
-          <b>{outWord4(t.lang, n)}</b><small dir="auto">{sub(n)}</small>
-        </Pop>)}
+    if (newK < 0) return;
+    setClips(true);
+    const id = setTimeout(() => newRef.current?.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }), 80);
+    return () => clearTimeout(id);
+  }, [newK, last]);
+
+  const backers = (k: number) => [
+    ...curReads.filter((r) => { const w = E.weights(g.R, r.src, r.r); return w[k] > 0 && w[k] === Math.max(...w); }).map((r) => ({ k: r.src, rival: false })),
+    ...livePosts.filter((p) => p.claim === k).map((p) => ({ k: p.id, rival: true })),
+  ];
+  const post = () => { if (selO == null) return; onPost(selO, s, !!call); };
+  // The stake line's third beat: is the exclusive still there for this call, and if not, why (or who took it).
+  const beatenBy = selO != null ? livePosts.find((p) => p.claim === selO) : undefined;
+  const exTail = !pv ? null : pv.exclPossible ? <span className="stake__ex"><Icon n="bolt" size={14} />{t('calls.stake.open', { n: pv.excl })}</span>
+    : call ? <span className="stake__no">{t('calls.stake.repost')}</span>
+    : !E.exclusiveOpen(g, i, selO!) ? <span className="stake__no stake__beat">{beatenBy && <span className={'rv-av rv-av--sm rv-av--' + beatenBy.id}>{RIVAL_IC[beatenBy.id]}</span>}{t('calls.stake.beaten', { r: beatenBy ? t('rival.' + beatenBy.id) : '' })}</span>
+    : s !== 2 ? <span className="stake__no">{t('calls.stake.loud')}</span>
+    : <span className="stake__no">{t('calls.stake.two')}</span>;
+
+  return <div className="file2">
+    <div className={'pcard g-card' + (justFiled ? ' is-filed' : '')}>
+      {call && <Beat stem={stampBeat(OUTS[call.o])} trigger={justFiled || null} className="fl-beat--stamp" />}
+      <div className="pcard__kit"><Kit club={c.from} player={c.player} size={92} /></div>
+      <div className="pcard__main">
+        <div className="g-mono pcard__k">{t('common.saga', { n: i + 1, m: view.cast.length })}{c.player.star >= 3 ? <span className="g-chip g-chip--gold pcard__star"><Icon n="star" />{t('g.saga.star')}</span> : null}</div>
+        <h1 className="pcard__n">{c.player.n}</h1>
+        <div className="pcard__m g-mono">{[t('pos.' + c.player.pos), c.player.age > 0 ? String(c.player.age) : '', c.player.nat].filter(Boolean).join(' · ')}</div>
+        <div className="pcard__route"><Crest club={c.from} size={28} /><span className="pcard__arrow"><Icon n={t.rtl ? 'back' : 'arrow'} size={18} /></span><Crest club={c.to} size={28} /><span className="pcard__to"><bdi><b>{c.to.s}</b>?</bdi></span></div>
       </div>
-      {quick
-        ? <div className="d41-louds is-go">
-          {[0, 1, 2].map((n) => { const p = o != null ? driver.preview(i, o, n) : null;
-            return <Pop key={n} className={'d41-loud is-go' + (n === 2 ? ' is-drop' : '')} onTap={() => go(n)} disabled={o == null} sound={null} data-tut={'loud-' + n}>
-              <b>{backWord4(t.lang, n)}</b><small className="g-num">{p ? '+' + num(p.win) + ' / −' + num(Math.abs(p.lose)) : t('back4.' + ['x1D', 'x2D', 'allinD'][n])}</small>
-            </Pop>; })}
-        </div>
-        : <>
-          <div className="d41-louds" role="radiogroup" aria-label={t('d41.decide.loud')}>
-            {[0, 1, 2].map((n) => <Pop key={n} role="radio" aria-checked={s === n} className={'d41-loud' + (s === n ? ' is-on' : '') + (n === 2 ? ' is-drop' : '')} onTap={() => setS(n)} data-tut={'loud-' + n}>
-              <b>{backWord4(t.lang, n)}</b><small className="g-num">{t('back4.' + ['x1D', 'x2D', 'allinD'][n])}</small>
-            </Pop>)}
-          </div>
-          <p className={'d41-deal' + (pv ? '' : ' is-empty')} aria-live="polite" dir="auto">{pv ? deal : t('d41.decide.pick')}{extra && <small>{extra}</small>}</p>
-          <Pop className={'d41-btn d41-btn--big' + (s === 2 ? ' is-drop' : '')} onTap={() => go()} disabled={o == null} sound={null} data-tut="publish">{(t.list('pl4.sheet.go') as string[])[s]}</Pop>
-        </>}
-      <p className="d41-sheet__fine">{quick && o == null ? t('d41.decide.quick') : t('pl4.sheet.final')}</p>
+      {call && <span key={call.o + ':' + call.s + ':' + (justFiled || 0)} className={'pcard__stamp g-stamp g-stamp--' + (hereWeGo(call) ? 'gold' : OUTS[call.o]) + (justFiled ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : strWord(t.lang, call.s) + ' · ' + outWord(t.lang, call.o)}</span>}
     </div>
+
+    {tw && <div className="stoppress"><b>{t('g.saga.stopPress')}</b><span>{t('saga.twistBanner', { p: c.player.s })} {t('saga.twistNote')}</span></div>}
+    {view.mode === 'career' && vinceOf(g.R)?.i === i && <div className="vince-banner"><Icon n="eye" size={18} /><span><b>{t('g.story.vince.chip')}</b> {t('g.story.vince.banner')}</span></div>}
+    {g.tips && i in g.tips && <div className="g-chip g-chip--gold tipchip">{t(g.tips[i] ? 'career.tipFake' : 'career.tipReal', { p: c.player.s })}</div>}
+
+    <section className="know g-card">
+      <div className="know__h"><h2>{t('g.saga.know')}</h2><span className="g-mono">{t('g.saga.reports', { n: curReads.length + livePosts.length })}</span></div>
+      {ln.none && <p className="know__none">{t('g.saga.knowNone')}</p>}
+      <div className="know__rows">
+        {[0, 1, 2, 3].map((k) => {
+          const b = backers(k), cn = E.circlesFor(g, i, k).size;
+          return <div key={k} className={'know__r oc--' + OUTS[k] + (!ln.none && ln.o === k ? ' is-lead' : '') + (ln.tally[k] ? '' : ' is-zero')}>
+            <span className="know__o"><Glyph o={k} /><b>{outWord(t.lang, k)}</b></span>
+            <span className="know__bar"><i style={{ width: (100 * ln.tally[k]) / maxT + '%' }} /></span>
+            <span className="know__who">{b.slice(0, 4).map((x, n) => x.rival ? <span key={n} className={'rv-av rv-av--sm rv-av--' + x.k}>{RIVAL_IC[x.k]}</span> : <SrcIcon key={n} k={x.k} size={22} />)}{cn >= 2 && <span className="g-chip g-chip--done know__two" title={t('daily.circles', { n: cn })}><Icon n="check" />{cn}</span>}</span>
+          </div>;
+        })}
+      </div>
+      {streetCount(g, i) >= 2 && <p className="know__warn"><Icon n="eye" size={14} /> {t('g.saga.echo')}</p>}
+      {view.posterior && <p className="know__coach g-mono">{t('saga.coach')} · {view.posterior(i).map((p, k) => `${outWord(t.lang, k)} ${Math.round(p * 100)}%`).join(' · ')}</p>}
+    </section>
+
+    <section>
+      <div className="g-sec"><h2>{t('g.saga.ring')}</h2><span className="g-mono phones-left"><span className="phones">{Array.from({ length: Math.min(8, Math.max(g.left, 0)) }, (_, k) => <Icon key={k} n="phone" size={13} />)}</span>{t('g.saga.left', { n: g.left })}</span></div>
+      <div className="srcs">
+        {srcs.map((k) => {
+          const st = E.askState(g, i, k), so = E.srcOf(g.R, i, k)!;
+          const asked = curReads.filter((r) => r.src === k);
+          const lastR = asked[asked.length - 1];
+          const lw = lastR ? E.weights(g.R, k, lastR.r) : null;
+          return <button key={k} className={'src' + (st === 'ok' ? '' : ' is-' + st)} data-src={k} disabled={st !== 'ok' || busy} onClick={() => onAsk(k)}>
+            <span className="src__cost">{st === 'closed' ? <Icon n="lock" size={11} /> : <><Icon n="phone" size={11} />{so.cost}</>}</span>
+            <SrcIcon k={k} size={46} />
+            <span className="src__n">{t('g.src.' + k)}</span>
+            {lastR && lw ? <span className={'g-chip src__says g-chip--' + OUTS[lw.indexOf(Math.max(...lw))]}>{saysWord(t.lang, k, lastR.r, c)}</span>
+              : st === 'closed' ? <span className="src__opens">{t('d2.opens', { n: so.from })}</span>
+              : <span className="src__rel"><Rel n={GRADE_BARS[GRADE[k]] || 1} /></span>}
+          </button>;
+        })}
+      </div>
+      {favours}
+    </section>
+
+    {(curReads.length > 0 || livePosts.length > 0) && <section className="clips">
+      <button className="clips__h" onClick={() => setClips(!clips)} aria-expanded={clips}><span>{t('g.saga.clippings', { n: curReads.length + livePosts.length })}</span><Icon n={clips ? 'x' : 'news'} size={18} /></button>
+      {clips && <ol className="clips__l">
+        {[...curReads.map((r, k) => {
+          // What the source said, word for word, with who said it, their read (stamp) and what it added to the tally.
+          const w = E.weights(g.R, r.src, r.r), isNew = k === newK;
+          return { d: r.day + k / 1000, el: <li key={'r' + k} ref={isNew ? newRef : undefined} className={'clip clip--q' + (isNew ? ' is-new' : '')} style={{ ['--acc' as string]: accentOf(r.src) }}>
+            <SrcIcon k={r.src} size={34} />
+            <div className="clip__b">
+              <div className="clip__h"><b>{view.mode === 'career' ? srcNamed(t, r.src) : t('src.' + r.src)}</b><span className="g-mono">{t('common.day', { n: r.day })}</span>{isNew && <span className="clip__new">{t('cf.new')}</span>}</div>
+              <blockquote className="clip__q" cite={t('src.' + r.src)}>{voiceLine(t.lang, c, r)}</blockquote>
+              <div className="clip__f"><span className={'g-stamp clip__says g-stamp--' + OUTS[w.indexOf(Math.max(...w))]}>{saysWord(t.lang, r.src, r.r, c)}</span><span className="clip__adds g-mono">{addsText(t.lang, w) || t('g.call.nothingNew')}</span></div>
+            </div>
+          </li> };
+        }),
+          ...livePosts.map((p, k) => ({ d: p.day + .5, el: <li key={'p' + k} className="clip clip--rival"><span className={'rv-av rv-av--' + p.id}>{RIVAL_IC[p.id]}</span><div><div className="clip__h"><b>{t('rival.' + p.id)}</b><span className="g-mono">{t('common.day', { n: p.day })}</span><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div><p>{postLine(t.lang, c, p)}</p></div></li> }))].sort((a, b) => b.d - a.d).map((x) => x.el)}
+      </ol>}
+    </section>}
+
+    <section className={'callbox g-card' + (dd ? ' is-dd' : '')} id={'file-' + i}>
+      <div className="callbox__h"><h2>{call ? (utOpen ? t('g.saga.changeCall') : t('g.saga.yourCall')) : t('g.saga.makeCall')}</h2>{post7 != null && <span className="g-chip g-chip--red">{t('dd.posts', { n: post7 })}</span>}</div>
+      {call && <p className="callbox__filed">{t('g.saga.filedLine', { s: strWord(t.lang, call.s), o: outWord(t.lang, call.o), d: call.day })}{canUt ? ' ' + t('saga.uturnNote', { p: g.R.UT_PEN[call.s] }) : call.ut ? ' ' + t('saga.uturnUsed') : ''}</p>}
+      {canUt && !utOpen && <GBtn kind="paper" size="sm" className="callbox__ut" onClick={() => setUtOpen(true)}><Icon n="uturn" />{t('calls.repost.open')}</GBtn>}
+      {cs === 'ok' && !call && !going && <div className="callgate">
+        <p className="callgate__q">{t('d2.call.lead', { p: c.player.s })}</p>
+        <div className="callgate__b">
+          <GBtn kind="paper" onClick={() => onLater?.()}><Icon n="clock" />{t('d2.call.later')}</GBtn>
+          <GBtn onClick={() => setGoing(true)} sound="page.turn"><Icon n="pen" />{t('d2.call.make')}</GBtn>
+        </div>
+      </div>}
+      {((cs === 'ok' && (going || !!call)) || (canUt && utOpen)) && <div className="callform">
+        <div className="step"><span className="step__n">1</span>{t('g.saga.what')}</div>
+        <div className="outs">
+          {[0, 1, 2, 3].map((k) => <button key={k} className={'out oc--' + OUTS[k]} aria-pressed={selO === k} disabled={!!call && call.o === k} onClick={() => { sfx('thock', OUTS[k]); setO(k); }}>
+            <Glyph o={k} /><b>{outWord(t.lang, k)}</b><span>{t('out.' + OUTS[k] + 'D', vars(c))}</span>
+          </button>)}
+        </div>
+        <div className="step"><span className="step__n">2</span>{t('g.saga.loud')}</div>
+        <div className="vols">
+          {[0, 1, 2].map((k) => { const p = selO != null ? E.preview(g, i, selO, k) : null; return <button key={k} className={'vol vol--' + k} aria-pressed={s === k} onClick={() => { sfx('ui.tap'); setS(k); }}>
+            <span className="vol__meter">{[0, 1, 2].map((m) => <i key={m} className={m <= k ? 'on' : ''} />)}</span>
+            <b>{strWord(t.lang, k)}</b>
+            {p ? <span className="vol__odds"><span className="w">+{p.win}</span><span className="l">{num(p.lose)}</span></span> : <span className="vol__d">{t('str.' + ['talks', 'advanced', 'confirmed'][k] + 'D')}</span>}
+          </button>; })}
+        </div>
+        {pv && <p className="stake" aria-live="polite"><span className="stake__w">{t('calls.stake.right', { n: pv.win })}</span><span className="stake__l">{t('calls.stake.wrong', { n: num(pv.lose) })}</span>{exTail}</p>}
+        <HoldPublish disabled={selO == null || busy || (!!call && call.o === selO)} shine={selO != null} gold={selO === 0 && s === 2 && !call} onCommit={post}
+          label={selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}>
+          <Icon n={call ? 'uturn' : 'news'} size={24} /><span className="publish__t">{selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : selO === 0 && s === 2 ? <><b>{catchphraseOf().text.toUpperCase()}</b><em>{t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}</em></> : (() => { const [h, ...rest] = t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) }).split(' · '); return rest.length ? <><b>{h}</b><em>{rest.join(' · ')}</em></> : h; })()}</span>
+        </HoldPublish>
+      </div>}
+      {cs === 'nosource' && !call && <p className="callbox__none"><Icon n="phone" size={16} /> {t('g.saga.noStory')}</p>}
+    </section>
+
+    <section className="rivals race">
+      <div className="g-sec"><h2>{t('calls.race.h')}</h2></div>
+      <div className="rivals__row">
+        {g.R.RIVALS.map((r) => {
+          const mine = livePosts.filter((p) => p.id === r.id), rec = rivalRecord?.(r.id), name = t('rival.' + r.id);
+          return <div key={r.id + (mine.length ? ':' + mine[0].claim : '')} className={'rv' + (mine.length ? ' is-posted rv--' + OUTS[mine[0].claim] : '')}>
+            <span className={'rv-av rv-av--' + r.id}>{RIVAL_IC[r.id]}</span>
+            <span className="rv__n">{name}</span>
+            {mine.length ? <span className={'g-chip g-chip--' + OUTS[mine[0].claim]}>{outWord(t.lang, mine[0].claim)} · {t('g.saga.dayShort', { n: mine[0].day })}</span> : <span className="rv__when g-mono">{t('g.saga.rivalWhen', { a: r.days[0], b: r.days[1] })}</span>}
+            {rec && <span className="rv__rec g-mono" aria-label={t('calls.race.recAria', { w: rec.w, l: rec.l, d: rec.d, r: name })}>{t('calls.race.rec', { w: rec.w, l: rec.l, d: rec.d })}</span>}
+          </div>;
+        })}
+      </div>
+    </section>
+
+    <button className="howbtn" onClick={() => setHow(!how)} aria-expanded={how}><Icon n="help" size={16} />{t('g.saga.how')}</button>
+    {how && <HowScored g={g} i={i} view={view} />}
+  </div>;
+}
+
+// Hold to publish (GOTY.md §2): the button fills over 600 ms while held and fires when full. A tap (press and release
+// early) still publishes, as do Enter and Space. Sliding off or a scroll cancels. A buzz on commit.
+const HOLD_MS = 600;
+function HoldPublish({ disabled, onCommit, children, label, shine, gold }: { disabled: boolean; onCommit: () => void; children: ReactNode; label: string; shine?: boolean; gold?: boolean }) {
+  const t = useT();
+  const [k, setK] = useState(0);
+  const st = useRef({ on: false, done: false, t0: 0, raf: 0, tick: 0 });
+  useEffect(() => { st.current.done = false; setK(0); }, [disabled]);
+  useEffect(() => () => cancelAnimationFrame(st.current.raf), []);
+  const stop = () => { const x = st.current; x.on = false; cancelAnimationFrame(x.raf); if (!x.done) setK(0); };
+  const commit = () => {
+    const x = st.current; if (x.done || disabled) return;
+    x.done = true; x.on = false; cancelAnimationFrame(x.raf); setK(1);
+    buzz(gold ? [18, 30, 40] : [12, 24, 30]);
+    onCommit();
+  };
+  const down = (e: React.PointerEvent) => {
+    if (disabled || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    const x = st.current; x.on = true; x.done = false; x.t0 = performance.now(); x.tick = 0; sfx('ui.tap');
+    const step = (now: number) => {
+      if (!x.on) return;
+      const f = Math.min(1, (now - x.t0) / HOLD_MS); setK(f);
+      const q = Math.floor(f * 4); if (q > x.tick && f < 1) { x.tick = q; sfx('count'); }
+      if (f >= 1) commit(); else x.raf = requestAnimationFrame(step);
+    };
+    x.raf = requestAnimationFrame(step);
+  };
+  const up = () => { if (st.current.on && !st.current.done) commit(); };
+  return <button type="button" className={'g-btn g-btn--lg publish hold' + (gold ? ' g-btn--gold is-hwg' : '') + (k > 0 && k < 1 ? ' is-holding' : '') + (k >= 1 ? ' is-full' : '')}
+    style={{ ['--hold' as string]: String(k) }} disabled={disabled} aria-label={t('calls.hold.aria', { l: label })} title={t('calls.hold.hint')}
+    onPointerDown={down} onPointerUp={up} onPointerLeave={stop} onPointerCancel={stop} onContextMenu={(e) => e.preventDefault()}
+    onClick={(e) => { if (e.detail === 0) commit(); }}>
+    <Beat stem="beat-press-warm" held={k > 0 && k < 1} className="fl-beat--press" />
+    <span className="hold__fill" aria-hidden="true" />{shine && <span className="shine" />}{children}
+  </button>;
+}
+
+function HowScored({ g, i, view }: { g: Game; i: number; view: View }) {
+  const t = useT();
+  const c = view.cast[i];
+  const ln = leanOf(g, i);
+  const srcs = E.sourcesFor(g.R, i);
+  return <div className="g-card howbox">
+    <p className="g-sub">{t('g.saga.howIntro')}</p>
+    <ul className="howbox__src">{srcs.map((k) => <li key={k}><SrcIcon k={k} size={26} /><div><b>{t('src.' + k)}</b><span>{t('src.' + k + 'P')}</span><em className="g-mono">{t('src.' + k + 'Rule', varsH(c))}</em></div></li>)}</ul>
+    <div className="howbox__tally">{[0, 1, 2, 3].map((k) => <span key={k} className={'oc--' + OUTS[k]}><Glyph o={k} />{outWord(t.lang, k)} <b>{ln.tally[k]}</b> <Lines n={E.circlesFor(g, i, k).size} max={2} /></span>)}</div>
+    <p className="g-sub">{t('g.saga.howPoints', { t: g.R.BASE.join(' / '), l: g.R.LOSS.join(' / ') })}</p>
   </div>;
 }

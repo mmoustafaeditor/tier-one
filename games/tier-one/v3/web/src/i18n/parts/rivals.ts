@@ -24,11 +24,11 @@ const EN: Pools = {
   tabloid: {
     losing: [
       'L + you fell for it + {rec}.', 'Screenshotted your {p} post before you could delete it. It’s pinned now.', 'RATIO. {rec}. Have a lovely evening.', 'Source: trust me bro. That was your whole file on {p}.',
-      'Imagine going All in on {p} with a barber and a dream. 😂', 'The reel’s got a new intro clip. Guess who’s in it.', 'BREAKING: {name} wrong again. In other news, water wet.', '{name} calls it, the opposite happens. Reliable in its own way.',
+      'Imagine going Confirmed on {p} with a barber and a dream. 😂', 'The reel’s got a new intro clip. Guess who’s in it.', 'BREAKING: {name} wrong again. In other news, water wet.', '{name} calls it, the opposite happens. Reliable in its own way.',
       'Medical booked? Mate, the only thing booked was your L.', 'I don’t need sources. I just wait for {name} to post and go the other way.', 'Agent tweet was fake. Your call was faker. {rec}.', 'The office sweepstake was “how wrong”. Everyone picked “very”. Everyone won.',
       'You: “announce him”. The club: announced someone else. 😂', '{p} deal was cooked and so were you.', 'Quote-tweeting this in July when it ages even worse.', '{rec}. Not a rivalry. A public service announcement.',
-      'Delete it, {name}. We’ve all got it saved anyway.', 'Your sources are my sources’ ex-sources.', 'Your followers are DMing me for the real story. I send them my link.', 'You Dropped {p}. Dropped it on your foot, to be fair.',
-      'Hard to be this loud and this wrong. Respect, sort of.', 'Ran your {p} tweet on the back page. Under “Things That Didn’t Happen”.', 'Rumour: {name} is good at this. Status: false.', 'Every window, same film: I post, you scramble, I win. {rec}.',
+      'Delete it, {name}. We’ve all got it saved anyway.', 'Your sources are my sources’ ex-sources.', 'Your followers are DMing me for the real story. I send them my link.', 'You posted {p} at Confirmed. Confirmed wrong, to be fair.',
+      'Hard to be this loud and this wrong. Respect, sort of.', 'Ran your {p} tweet on the back page. Under “Things That Didn’t Happen”.', 'Rumour: {name} is good at this. Status: FAKE.', 'Every window, same film: I post, you scramble, I win. {rec}.',
     ],
     winning: [
       'Okay {name}. You got one. The reel is still longer than your record.', 'Screenshot THIS then. Actually don’t.', 'Post deleted. Account fine. Ego bruised. {rec}.', 'You were right on {p}. I was right about it being Tuesday.',
@@ -69,14 +69,14 @@ const EN: Pools = {
       'draw. my source says you’ve got a source. worrying.', 'tied. not used to sharing. 🤫', 'ok you’re keeping up. keeping up isn’t ahead. {rec}.', 'level pegging. i’m going back to the car park.',
       'both right on {p}. one of us was told, one of us worked it out. both fine.', 'even. next time i post at 6am. set an alarm, {name}.', 'same read on {p}. did you ring my guy? did my guy ring you?', 'dead heat. the network hates a dead heat.',
       '{rec}. neither of us is wrong yet. give it a window.', 'tied. you wrote a paragraph, i wrote 👀. same result. mine faster.', 'level. i’ll allow it. barely.', 'we agree on {p}. don’t make it a thing.',
-      'the replies are asking who was first. me. by a day. as usual. still a draw though.', 'even. the physio is playing us both.', 'draw. someone in that building says too much.', 'split. next one i’m going full cryptic. three emojis, no words.',
+      'the replies are asking who was first. me. by a day. as usual. still a draw though.', 'even. the physio is playing us both.', 'draw. someone in that building talks too much.', 'split. next one i’m going full cryptic. three emojis, no words.',
       'level with {name}. noting it. not enjoying it.', 'both right. both early. only one of us was mysterious about it.', '{rec}. more soon. same time, same club.', 'tied. i’ll get the tie-breaker from a car park near you.',
     ],
   },
   insider: {
     losing: [
       'I don’t do rumours. You do. That is the whole difference, {name}.', 'A medical is not a signing. Write that on the wall above your desk.', 'You posted first. I posted correctly. Only one of those is a job.', '{rec}. I take no pleasure in it. Some, then.',
-      'The {p} story was in the club’s body language a week ago. You read the barber.', 'Two sources, {name}. Two. Not one man with clippers.', 'I have never been ratio’d. I have never posted anything worth ratioing. Think about that.', 'All in means you know. You used it as a mood.',
+      'The {p} story was in the club’s body language a week ago. You read the barber.', 'Two sources, {name}. Two. Not one man with clippers.', 'I have never been ratio’d. I have never posted anything worth ratioing. Think about that.', 'Confirmed means confirmed. You used it as an adjective.',
       'You’ll get there. Most do, after enough windows like this one. {rec}.', 'The record says {rec}. The record doesn’t shout.', 'I waited. You didn’t. {p} was never going to be quick.', 'Deadline Day is a clock, not an excuse. You filed like it was both.',
       'The press box heard about {p} on Tuesday. We didn’t tweet it. We checked it.', '{rec}. I’d be gentler if it helped. It doesn’t.', 'You read a jet as a signing. Jets go on holiday too, son.', 'I had one line on {p}, on day five, and it was right. That’s the whole craft.',
       'Nobody remembers who was first, {name}. Everybody remembers who was wrong.', 'The agent told you what she tells everyone. I know because she told me, and I waited.', 'Your call had energy. Mine had a medical.', 'The trouble with being loud is that everyone hears the correction too.',
@@ -84,7 +84,7 @@ const EN: Pools = {
     ],
     winning: [
       'Well done, {name}. Properly. That was a journalist’s call.', 'Your {p} read was better than mine. That sentence cost me something.', 'I was slow and, for once, slow was also wrong. {rec}.', 'Two circles before you posted. I noticed. Good habit.',
-      'I’d have waited another day on {p}. You didn’t need to. Fair.', 'The press box talked about your call this morning. Kindly, mostly.', 'Right, and early, and All in. Don’t make me get used to it.', '{rec}. I keep the record honestly. It says you.',
+      'I’d have waited another day on {p}. You didn’t need to. Fair.', 'The press box talked about your call this morning. Kindly, mostly.', 'Right, and early, and Confirmed. Don’t make me get used to it.', '{rec}. I keep the record honestly. It says you.',
       'My man at the training ground has been quietly retired.', 'A good week for you, {name}. Enjoy it and check the next one twice.', 'The record moves against me. It happens rarely enough that I notice.', 'You didn’t chase the agent. That’s why you were right on {p}.',
       'Old habits: I waited for the paperwork. Yours: the paperwork waited for you.', 'I’ll not call it luck. Luck doesn’t read a physio.', 'Right on {p}. I said in the press box that you would be. Nobody believed me either.', '{rec}. Bring the same discipline next window and I’ll be worried.',
       'You’re learning what not to post. That’s most of the job.', 'I was wrong. Three words I write more easily than the tabloid does.', 'Credit, {name}. I don’t deal in it often, so spend it wisely.', 'The younger reporters are quoting you. Deal with that responsibly.',
@@ -94,7 +94,7 @@ const EN: Pools = {
       'Same call on {p}, same day, different fonts. Mine smaller.', 'Level, {name}. Two people did their job. It shouldn’t be news.', 'We agreed. I checked twice, you checked once. The result forgave you.', '{rec}. No complaints. Few compliments either.',
       'Both right on {p}. The agent will claim she told us both. She told neither.', 'Even. If you keep this up I’ll have to learn your name.', 'A draw between people who wait is just two correct sentences.', 'Level. I still filed later. I still slept better.',
       'Same story. I attributed mine. Do that.', 'Honours even, and honour is the point, {name}.', 'We both read the medical. That’s the whole secret. Now everyone knows.', 'Tied. I don’t mind a tie. The tabloid minds enough for all of us.',
-      '{rec}. Nobody was loud, nobody was wrong. A good week for the trade.', 'Both right on {p}. Mine had a second paragraph. Nobody read it.', 'Level. I’ll take that from someone with your record.', 'Same call. You’ll notice I didn’t go All in until Friday.',
+      '{rec}. Nobody was loud, nobody was wrong. A good week for the trade.', 'Both right on {p}. Mine had a second paragraph. Nobody read it.', 'Level. I’ll take that from someone with your record.', 'Same call. You’ll notice I didn’t use the word Confirmed until Friday.',
       'Even. We’ll settle it on a story that actually needs settling.', 'Two correct calls and a quiet press box. Ideal, frankly.', 'Draw. I’ll write it up properly. You post it.', 'Level, and both of us ignored the barber. Progress.',
       'We agree on {p}. Kev will say he had it first. He had it vaguest.', '{rec}. Evens. Good.', 'Same answer. I got there by the training ground. You?', 'Level. I was going to say something cutting. Nothing came. That’s praise.',
     ],
@@ -105,10 +105,10 @@ const AR: Pools = {
   tabloid: {
     losing: [
       'L + صدّقتها + {rec}.', 'صوّرت بوست {p} بتاعك قبل ما تمسحه. متثبّت عندي دلوقتي.', 'ريشيو. {rec}. ليلة سعيدة يا باشا.', 'المصدر: ثق فيا يا برو. ده كان ملفك كله عن {p}.',
-      'تخيّل تروح بكله على {p} بحلّاق وحلم. 😂', 'الفيديو الملخص نزله مقدمة جديدة. خمّن مين فيها.', 'عاجل: {name} غلط تاني. وفي خبر تاني: المية مبلولة.', '{name} يقول حاجة، يحصل عكسها. ثابت على مبدأ.',
+      'تخيّل تقول «مؤكد» على {p} بحلّاق وحلم. 😂', 'الفيديو الملخص نزله مقدمة جديدة. خمّن مين فيها.', 'عاجل: {name} غلط تاني. وفي خبر تاني: المية مبلولة.', '{name} يقول حاجة، يحصل عكسها. ثابت على مبدأ.',
       'الكشف الطبي اتحجز؟ اللي اتحجز يا صاحبي هو الـL بتاعك.', 'أنا مش محتاج مصادر. بستنى {name} ينشر وأمشي عكسه.', 'تويتة الوكيل كانت فيك. وقرارك كان فيك أكتر. {rec}.', 'رهان المكتب كان «هيغلط قد إيه». الكل قال «جامد». الكل كسب.',
       'انت: «أعلنوا عنه». النادي: أعلن عن واحد تاني. 😂', 'صفقة {p} اتحرقت وانت اتحرقت معاها.', 'هعمل كوت للبوست ده في الصيف لما يبقى أوحش.', '{rec}. دي مش منافسة. دي رسالة توعية.',
-      'امسحه يا {name}. كلنا حافظينه أصلاً.', 'مصادرك هي المصادر القديمة لمصادري.', 'متابعينك بيبعتولي DM عشان الخبر الحقيقي. ببعتلهم اللينك بتاعي.', 'نزّلت دروب على {p}. ووقع على رجلك، للأمانة.',
+      'امسحه يا {name}. كلنا حافظينه أصلاً.', 'مصادرك هي المصادر القديمة لمصادري.', 'متابعينك بيبعتولي DM عشان الخبر الحقيقي. ببعتلهم اللينك بتاعي.', 'نزلت {p} «مؤكد». مؤكد إنه غلط، للأمانة.',
       'صعب تبقى عالي الصوت وغلطان كده. احترامي، تقريباً.', 'نزلت تويتة {p} بتاعتك في الصفحة الأخيرة. تحت «حاجات محصلتش».', 'إشاعة: {name} شاطر في الشغلانة دي. الحالة: فيك.', 'كل فترة نفس الفيلم: أنا أنشر، انت تتلخبط، أنا أكسب. {rec}.',
     ],
     winning: [
@@ -157,7 +157,7 @@ const AR: Pools = {
   insider: {
     losing: [
       'أنا مبعملش إشاعات. انت بتعمل. ده الفرق كله يا {name}.', 'الكشف الطبي مش توقيع. اكتبها على الحيطة فوق مكتبك.', 'انت نشرت الأول. أنا نشرت صح. واحدة بس فيهم شغلانة.', '{rec}. مش مبسوط بيها. شوية، يعني.',
-      'قصة {p} كانت باينة في لغة جسم النادي من أسبوع. انت قريت الحلّاق.', 'مصدرين يا {name}. اتنين. مش راجل واحد ومعاه مكنة.', 'عمري ما اتعملي ريشيو. عمري ما نشرت حاجة تستاهل. فكّر في دي.', '«بكله» يعني انت عارف. انت استخدمتها مزاج.',
+      'قصة {p} كانت باينة في لغة جسم النادي من أسبوع. انت قريت الحلّاق.', 'مصدرين يا {name}. اتنين. مش راجل واحد ومعاه مكنة.', 'عمري ما اتعملي ريشيو. عمري ما نشرت حاجة تستاهل. فكّر في دي.', '«مؤكد» يعني مؤكد. انت استخدمتها صفة.',
       'هتوصل. أغلب الناس بتوصل، بعد فترات كتير زي دي. {rec}.', 'السجل بيقول {rec}. السجل مبيزعّقش.', 'أنا استنيت. انت لأ. {p} عمرها ما كانت هتبقى بسرعة.', 'يوم الديدلاين ساعة، مش عذر. انت نشرت كأنه الاتنين.',
       'كابينة الصحافة سمعت عن {p} يوم التلات. مغرّدناش. اتأكدنا.', '{rec}. كنت هبقى ألطف لو ده هيفيد. مش هيفيد.', 'قريت طيارة على إنها توقيع. الطيارات بتروح أجازات برضه يا ابني.', 'كان عندي سطر واحد عن {p}، يوم خمسة، وكان صح. ده الفن كله.',
       'محدش فاكر مين كان الأول يا {name}. الكل فاكر مين غلط.', 'الوكيلة قالتلك اللي بتقوله للكل. عارف لأنها قالتهولي، واستنيت.', 'قرارك كان فيه حماس. قراري كان فيه كشف طبي.', 'مشكلة الصوت العالي إن الكل بيسمع التصحيح كمان.',
@@ -165,7 +165,7 @@ const AR: Pools = {
     ],
     winning: [
       'برافو يا {name}. بجد. ده قرار صحفي.', 'قرايتك لـ{p} كانت أحسن من قرايتي. الجملة دي كلّفتني.', 'كنت بطيء، والمرة دي البطء كان غلط كمان. {rec}.', 'دايرتين قبل ما تنشر. خدت بالي. عادة كويسة.',
-      'كنت هستنى يوم كمان في {p}. انت مكنتش محتاج. ماشي.', 'كابينة الصحافة اتكلمت عن قرارك الصبح. بلطف، غالباً.', 'صح، وبدري، وبكله. متخلّينيش أتعوّد.', '{rec}. بكتب السجل بأمانة. بيقول انت.',
+      'كنت هستنى يوم كمان في {p}. انت مكنتش محتاج. ماشي.', 'كابينة الصحافة اتكلمت عن قرارك الصبح. بلطف، غالباً.', 'صح، وبدري، و«مؤكد». متخلّينيش أتعوّد.', '{rec}. بكتب السجل بأمانة. بيقول انت.',
       'الراجل بتاعي في مركز التدريب طلع معاش بهدوء.', 'أسبوع حلو ليك يا {name}. استمتع وراجع اللي جاي مرتين.', 'السجل بيتحرك ضدّي. نادراً لدرجة إني باخد بالي.', 'مجريتش ورا الوكيل. عشان كده كنت صح في {p}.',
       'عادتي القديمة: أستنى الورق. عادتك: الورق هو اللي استناك.', 'مش هقول حظ. الحظ مبيقراش علاج طبيعي.', 'صح في {p}. قلت في الكابينة إنك هتبقى صح. محدش صدّقني برضه.', '{rec}. هات نفس الانضباط الفترة الجاية وهقلق.',
       'بتتعلم إيه اللي متنشروش. ده أغلب الشغلانة.', 'كنت غلطان. كلمتين بكتبهم أسهل من التابلويد.', 'كريدت يا {name}. مبدّيهوش كتير، فاصرفه بعقل.', 'المراسلين الصغيرين بيقتبسوا منك. خلّي بالك من ده.',
@@ -175,7 +175,7 @@ const AR: Pools = {
       'نفس القرار في {p}، نفس اليوم، فونتات مختلفة. بتاعي أصغر.', 'تعادل يا {name}. اتنين عملوا شغلهم. ده مش المفروض يبقى خبر.', 'اتفقنا. أنا راجعت مرتين، انت مرة. النتيجة سامحتك.', '{rec}. مفيش شكاوى. ولا مدح كتير.',
       'الاتنين صح في {p}. الوكيلة هتقول إنها قالتلنا. مقالتش لحد.', 'تعادل. لو كمّلت كده هضطر أحفظ اسمك.', 'التعادل بين ناس بتستنى هو جملتين صح وخلاص.', 'تعادل. أنا برضه نشرت متأخر. ونمت أحسن.',
       'نفس الخبر. أنا نسبته لمصدر. اعمل كده.', 'تعادل مشرّف، والشرف هو المهم يا {name}.', 'الاتنين قرينا الكشف الطبي. ده السر كله. دلوقتي الكل عرف.', 'تعادل. مبيضايقنيش. التابلويد متضايق كفاية عن الكل.',
-      '{rec}. محدش عِلي صوته، محدش غلط. أسبوع حلو للمهنة.', 'الاتنين صح في {p}. بتاعي كان فيه فقرة تانية. محدش قراها.', 'تعادل. هقبله من حد سجله زي سجلك.', 'نفس القرار. خد بالك إني مرحتش بكله غير يوم الجمعة.',
+      '{rec}. محدش عِلي صوته، محدش غلط. أسبوع حلو للمهنة.', 'الاتنين صح في {p}. بتاعي كان فيه فقرة تانية. محدش قراها.', 'تعادل. هقبله من حد سجله زي سجلك.', 'نفس القرار. خد بالك إني مقلتش «مؤكد» غير يوم الجمعة.',
       'تعادل. نحسمها على قصة محتاجة حسم بجد.', 'قرارين صح وكابينة هادية. مثالي، بصراحة.', 'تعادل. أنا هكتبها صح. انت انشرها.', 'تعادل، والاتنين طنّشنا الحلّاق. تقدّم.',
       'متفقين على {p}. كيف هيقول إنه كان الأول. كان الأغمض.', '{rec}. متعادلين. كويس.', 'نفس الإجابة. أنا وصلت من مركز التدريب. وانت؟', 'تعادل. كنت هقول حاجة تجرح. محضرتش. ده مدح.',
     ],
@@ -186,18 +186,18 @@ const ES: Pools = {
   tabloid: {
     losing: [
       'L + te lo tragaste + {rec}.', 'Captura de tu post de {p} antes de que lo borraras. Ya está fijado.', 'RATIO. {rec}. Que pases buena noche.', 'Fuente: créeme bro. Ese era todo tu dosier sobre {p}.',
-      'Imagina ir con todo en lo de {p} con un barbero y un sueño. 😂', 'El vídeo recopilatorio tiene intro nueva. Adivina quién sale.', 'ÚLTIMA HORA: {name} vuelve a fallar. En otras noticias, el agua moja.', '{name} lo dice y pasa lo contrario. Fiable a su manera.',
-      '¿Reconocimiento reservado? Lo único reservado fue tu L.', 'No necesito fuentes. Espero a que {name} publique y voy al revés.', 'El tuit del agente era falso. Tu Scoop, más. {rec}.', 'La porra de la redacción era “cuánto falla”. Todos pusieron “mucho”. Todos ganaron.',
+      'Imagina poner Confirmado lo de {p} con un barbero y un sueño. 😂', 'El vídeo recopilatorio tiene intro nueva. Adivina quién sale.', 'ÚLTIMA HORA: {name} vuelve a fallar. En otras noticias, el agua moja.', '{name} lo dice y pasa lo contrario. Fiable a su manera.',
+      '¿Reconocimiento reservado? Lo único reservado fue tu L.', 'No necesito fuentes. Espero a que {name} publique y voy al revés.', 'El tuit del agente era falso. Tu exclusiva, más. {rec}.', 'La porra de la redacción era “cuánto falla”. Todos pusieron “mucho”. Todos ganaron.',
       'Tú: “anunciadlo”. El club: anunció a otro. 😂', 'Lo de {p} se quemó y tú con ello.', 'Te cito este tuit en julio, cuando envejezca aún peor.', '{rec}. No es una rivalidad. Es un anuncio de servicio público.',
-      'Bórralo, {name}. Lo tenemos todos guardado igual.', 'Tus fuentes son las exfuentes de mis fuentes.', 'Tus seguidores me escriben por DM para saber la verdad. Les paso mi enlace.', 'Lanzaste un Drop con {p}. Te cayó en el pie, eso sí.',
-      'Difícil ser tan ruidoso y tan malo. Respeto, más o menos.', 'Saqué tu tuit de {p} en mi hilo. En “Cosas que no pasaron”.', 'Rumor: {name} es bueno en esto. Estado: falso.', 'Cada mercado, la misma peli: yo publico, tú corres, yo gano. {rec}.',
+      'Bórralo, {name}. Lo tenemos todos guardado igual.', 'Tus fuentes son las exfuentes de mis fuentes.', 'Tus seguidores me escriben por DM para saber la verdad. Les paso mi enlace.', 'Pusiste lo de {p} en Confirmado. Confirmado que fallaste, eso sí.',
+      'Difícil ser tan ruidoso y tan malo. Respeto, más o menos.', 'Saqué tu tuit de {p} en contraportada. En “Cosas que no pasaron”.', 'Rumor: {name} es bueno en esto. Estado: FAKE.', 'Cada mercado, la misma peli: yo publico, tú corres, yo gano. {rec}.',
     ],
     winning: [
       'Vale, {name}. Una. El vídeo sigue siendo más largo que tu historial.', 'Pues haz captura de ESTO. Mejor no.', 'Post borrado. Cuenta bien. Orgullo tocado. {rec}.', 'Acertaste lo de {p}. Yo acerté que hoy era martes.',
       'Silencio la palabra “{p}” una semana. Nada que ver contigo.', 'Mi fuente en el club era la tienda del club. Mala fuente.', 'Enhorabuena por leer un parte médico. Periodismo del bueno.', 'Tú cantaste lo de {p}. Yo pedí un taxi. Prioridades.',
       'Por esto no miro el marcador. {rec}. Horrible.', '{rec}. Que nadie se lo diga al grupo.', 'Me ha hecho ratio alguien con menos seguidores. Nuevo mínimo. De verdad.', 'Las respuestas dicen que estoy acabado. Las respuestas tienen razón.',
       'Justo. Te debo una caña. No te la voy a pagar.', 'Disfrútalo, {name}. Los mercados vuelven rápido.', 'Sigo gritando más. Gritar cuenta. No para puntos, parece.', 'Fallé lo de {p}. Acierto en todo lo demás de mi vida. Casi.',
-      'Tú tenías la noticia. Yo tenía la tipografía del titular. Uno de los dos cobró.', 'El vídeo tiene tomas falsas. Salgo yo.', 'Retuiteé tu Scoop de {p}. Sin citarte, obvio.', '¿Dos seguidas? ¿Quién te pasa la info?',
+      'Tú tenías la noticia. Yo tenía la tipografía del titular. Uno de los dos cobró.', 'El vídeo tiene tomas falsas. Salgo yo.', 'Retuiteé tu exclusiva de {p}. Sin citarte, obvio.', '¿Dos seguidas? ¿Quién te pasa la info?',
       'Estás en racha, {name}. Las rachas acaban. Normalmente en mi timeline.', 'Aura check: la tuya arriba, la mía frita. Temporal.', 'Te la paso. Una vez. {rec}.', 'El tabloide lo reconoce. Un momento. En letra pequeña.',
     ],
     level: [
@@ -238,15 +238,15 @@ const ES: Pools = {
   insider: {
     losing: [
       'Yo no hago rumores. Tú sí. Esa es toda la diferencia, {name}.', 'Un reconocimiento no es un fichaje. Escríbelo en la pared de tu mesa.', 'Tú publicaste primero. Yo publiqué bien. Solo una de las dos cosas es un oficio.', '{rec}. No me alegra. Un poco, sí.',
-      'Lo de {p} estaba en el lenguaje corporal del club hace una semana. Tú leíste al barbero.', 'Dos fuentes, {name}. Dos. No un señor con maquinilla.', 'Nunca me han hecho ratio. Nunca he publicado nada que lo mereciera. Piénsalo.', 'Ir con todo significa saberlo. Tú lo usaste como estado de ánimo.',
+      'Lo de {p} estaba en el lenguaje corporal del club hace una semana. Tú leíste al barbero.', 'Dos fuentes, {name}. Dos. No un señor con maquinilla.', 'Nunca me han hecho ratio. Nunca he publicado nada que lo mereciera. Piénsalo.', 'Confirmado significa confirmado. Tú lo usaste de adjetivo.',
       'Llegarás. Casi todos llegan, después de muchos mercados como este. {rec}.', 'El historial dice {rec}. El historial no grita.', 'Yo esperé. Tú no. Lo de {p} nunca iba a ser rápido.', 'El cierre es un reloj, no una excusa. Publicaste como si fuera las dos cosas.',
       'En la tribuna de prensa supimos lo de {p} el martes. No lo tuiteamos. Lo comprobamos.', '{rec}. Sería más amable si sirviera de algo. No sirve.', 'Leíste un jet como un fichaje. Los jets también van de vacaciones, chaval.', 'Tuve una línea sobre {p}, el día cinco, y era buena. Ese es todo el oficio.',
-      'Nadie recuerda quién fue primero, {name}. Todos recuerdan quién falló.', 'La agente te dijo lo que le dice a todos. Lo sé porque me lo dijo a mí, y esperé.', 'Tu Scoop tenía energía. El mío tenía reconocimiento médico.', 'El problema de gritar es que todo el mundo oye también la rectificación.',
+      'Nadie recuerda quién fue primero, {name}. Todos recuerdan quién falló.', 'La agente te dijo lo que le dice a todos. Lo sé porque me lo dijo a mí, y esperé.', 'Tu exclusiva tenía energía. La mía tenía reconocimiento médico.', 'El problema de gritar es que todo el mundo oye también la rectificación.',
       '{rec}. La próxima, trae libreta.', 'Entiendo la presión del timeline. No la siento. Ese es el truco.', 'Confundiste una noticia con un deseo. Normal a tu nivel.', 'Yo pregunté en la ciudad deportiva. Tú, en internet. {p} fue donde dijo la ciudad deportiva.',
     ],
     winning: [
       'Bien hecho, {name}. De verdad. Eso fue periodismo.', 'Tu lectura de {p} fue mejor que la mía. Esa frase me ha costado.', 'Fui lento y, por una vez, lento también fue malo. {rec}.', 'Dos círculos antes de publicar. Me fijé. Buen hábito.',
-      'Yo habría esperado otro día con {p}. Tú no lo necesitaste. Justo.', 'En la tribuna comentamos tu Scoop esta mañana. Con cariño, casi siempre.', 'Bien, pronto y con todo. No me acostumbres.', '{rec}. Llevo el historial con honradez. Dice tu nombre.',
+      'Yo habría esperado otro día con {p}. Tú no lo necesitaste. Justo.', 'En la tribuna comentamos tu exclusiva esta mañana. Con cariño, casi siempre.', 'Bien, pronto y Confirmado. No me acostumbres.', '{rec}. Llevo el historial con honradez. Dice tu nombre.',
       'Mi contacto en la ciudad deportiva se ha jubilado discretamente.', 'Buena semana, {name}. Disfrútala y revisa la siguiente dos veces.', 'El historial se mueve en mi contra. Pasa tan poco que lo noto.', 'No persiguiste al agente. Por eso acertaste {p}.',
       'Mi costumbre: esperar los papeles. La tuya: que los papeles te esperen a ti.', 'No lo llamaré suerte. La suerte no lee a un fisio.', 'Acertaste {p}. Dije en la tribuna que lo harías. Tampoco me creyeron.', '{rec}. Trae la misma disciplina el próximo mercado y me preocuparé.',
       'Estás aprendiendo qué no publicar. Eso es casi todo el oficio.', 'Me equivoqué. Dos palabras que escribo con más facilidad que el tabloide.', 'Mérito, {name}. No lo reparto a menudo, gástalo con cabeza.', 'Los periodistas jóvenes te citan. Tómatelo con responsabilidad.',
@@ -256,7 +256,7 @@ const ES: Pools = {
       'Misma apuesta con {p}, mismo día, distinta tipografía. La mía, más pequeña.', 'Empate, {name}. Dos personas hicieron su trabajo. No debería ser noticia.', 'Coincidimos. Yo comprobé dos veces, tú una. El resultado te perdonó.', '{rec}. Sin quejas. Pocos elogios también.',
       'Los dos acertamos {p}. La agente dirá que nos lo contó a ambos. No se lo contó a ninguno.', 'Empate. Si sigues así tendré que aprenderme tu nombre.', 'Un empate entre gente que espera son solo dos frases correctas.', 'Empate. Yo publiqué más tarde. Y dormí mejor.',
       'Misma noticia. Yo cité la mía. Hazlo.', 'Tablas, y la honra es lo que cuenta, {name}.', 'Los dos leímos el reconocimiento. Ese es el secreto. Ahora lo sabe todo el mundo.', 'Empate. No me importa. Al tabloide le importa por todos.',
-      '{rec}. Nadie gritó, nadie falló. Buena semana para el oficio.', 'Los dos acertamos {p}. El mío tenía un segundo párrafo. Nadie lo leyó.', 'Empate. Lo acepto viniendo de alguien con tu historial.', 'Misma apuesta. Fíjate que no fui con todo hasta el viernes.',
+      '{rec}. Nadie gritó, nadie falló. Buena semana para el oficio.', 'Los dos acertamos {p}. El mío tenía un segundo párrafo. Nadie lo leyó.', 'Empate. Lo acepto viniendo de alguien con tu historial.', 'Misma apuesta. Fíjate que no dije Confirmado hasta el viernes.',
       'Empate. Lo resolveremos en una historia que de verdad lo necesite.', 'Dos aciertos y una tribuna tranquila. Ideal, francamente.', 'Empate. Yo lo escribo bien. Tú lo publicas.', 'Empate, y los dos ignoramos al barbero. Progresamos.',
       'Coincidimos en {p}. Kev dirá que lo tuvo primero. Lo tuvo más vago.', '{rec}. Iguales. Bien.', 'Misma respuesta. Yo llegué por la ciudad deportiva. ¿Y tú?', 'Empate. Iba a decir algo cortante. No me salió. Eso es un elogio.',
     ],
@@ -297,8 +297,8 @@ export default {
       },
       insider: {
         cp: {
-          right: ['All in and correct. That is the only kind that counts. Well done.', '“{phrase}”, you said. I’d have used plain text, but I can’t fault it.', '{p} is done, and you said so properly. Noted in the record.', 'Right on a Drop. Two contacts first, I hope. It read that way.', 'The paperwork agrees with you. Rarest thing in the trade.', '“{phrase}”, they’ll say. I say: accurate. Same thing, fewer exclamation marks.', 'Loud and right. I’ll allow the loud when the right is that clean.', 'Good. Now do it again quietly and I’ll start worrying.'],
-          wrong: ['All in is a phrase with a meaning, son. Look it up. Then look at {p}.', 'A catchphrase doesn’t make a fact. A medical does. There wasn’t one.', 'Loud is not the same as right. Today it wasn’t even close.', 'You Dropped a hope. I don’t do hopes.', 'I said wait. You said “{phrase}”. {p} said neither.', 'Every reporter gets one of these. Make it one.', 'The record notes a Drop that missed. The record is not kind about those.', 'Check the medical. Then check it again. Then keep the catchphrase in your pocket.'],
+          right: ['Confirmed and correct. That is the only kind that counts. Well done.', '“{phrase}”, you said. I’d have used plain text, but I can’t fault it.', '{p} is done, and you said so properly. Noted in the record.', 'Right at Confirmed. Two circles first, I hope. It read that way.', 'The paperwork agrees with you. Rarest thing in the trade.', '“{phrase}”, they’ll say. I say: accurate. Same thing, fewer exclamation marks.', 'Loud and right. I’ll allow the loud when the right is that clean.', 'Good. Now do it again quietly and I’ll start worrying.'],
+          wrong: ['Confirmed is a word with a meaning, son. Look it up. Then look at {p}.', 'A catchphrase doesn’t make a fact. A medical does. There wasn’t one.', 'Loud is not the same as right. Today it wasn’t even close.', 'You confirmed a hope. I don’t do hopes.', 'I said wait. You said “{phrase}”. {p} said neither.', 'Every reporter gets one of these. Make it one.', 'The record notes a Confirmed miss. The record is not kind about those.', 'Check the medical. Then check it again. Then keep the catchphrase in your pocket.'],
         },
         uturn: ['A correction. Good. Now file the first one correctly next time.', 'Deleted and reposted. I don’t delete, because I don’t post before I know.', 'The U-turn is honest, at least. The original wasn’t reporting.', 'Twenty years, no corrections. Not luck. Patience.', 'You changed your mind on {p}. Fine. Change your method.', 'A repost is a receipt for a rushed post.', 'Two posts, one story. One too many.', 'Corrected. The record notes both.'],
         dd: ['Deadline Day. Sixty seconds is a long time if you already know.', 'The clock frightens people into posting. Don’t be people.', 'Three posts. I’ll use one, at the end, and it’ll be right.', 'Deadline Day is where reputations go to be tested. Check the physio first.', 'Sixty seconds. I’ve had a week. So have you. Use it.', 'Quick post is for people who didn’t ring anyone.', 'The window shuts at midnight. Truth doesn’t care about the clock.', 'Deadline Day. Same rules. Slow down.'],
@@ -330,7 +330,7 @@ export default {
       },
       itk: {
         cp: {
-          right: ['قلتلك خلصت. انت قلت «{phrase}». ماشي. 👀', '«{phrase}». أنا قلت 🔜 قبلها بيوم. نفس الحاجة، حروف أقل.', 'ماشي {p} خلصت. الاتنين كنا عارفين. واحد بس استخدم جملة مشهورة.', 'جملة مشهورة؟ المصدر مكنش محتاج.', 'بكله، وصح. خدها. 🤫', 'النادي كان عارف. أنا كنت عارف. انت نشرتها كبيرة. كله صح.', '«{phrase}». أنا بفضّل 📝 بس ماشي.', 'ماشي. كانت معاك. متعملّيش تاج في الاحتفال.'],
+          right: ['قلتلك خلصت. انت قلت «{phrase}». ماشي. 👀', '«{phrase}». أنا قلت 🔜 قبلها بيوم. نفس الحاجة، حروف أقل.', 'ماشي {p} خلصت. الاتنين كنا عارفين. واحد بس استخدم جملة مشهورة.', 'جملة مشهورة؟ المصدر مكنش محتاج.', 'مؤكد، وصح. خدها. 🤫', 'النادي كان عارف. أنا كنت عارف. انت نشرتها كبيرة. كله صح.', '«{phrase}». أنا بفضّل 📝 بس ماشي.', 'ماشي. كانت معاك. متعملّيش تاج في الاحتفال.'],
           wrong: ['«{phrase}»؟ مصدري قال لأ. 🤫', 'أنا نشرت «خلّي عينك على نادي تالت». انت نشرت «{phrase}». 👀', 'قلتلك {p} مخلصتش. الغلط بصوت عالي برضه غلط.', 'مش إشاعة: انت غلطت. حقيقة.', 'الجملة المشهورة مساعدتش. المصدر كان هيساعد.', '{p} راح. في حتة تانية. قلت كده.', 'الدرافتس عندي كان فيها الـL دي قبلها بيوم.', 'انت: «{phrase}». أنا: 🔜❌. أنا صح.'],
         },
         uturn: ['اتمسح واتنشر تاني. التايم لاين فاكر. 👀', 'لفّة متأخرة يوم. أنا كنت بدري يوم. حساب.', 'الريبوست اتسجّل. الأصلي اتسجّل أكتر.', 'طاقة جي بي إس من {name}. جاري إعادة الحساب.', 'امسح براحتك. الكوتس فاضلة.', 'محاولة تانية في {p}. الأولى متصوّرة. 🤫', 'الشبكة شافت الأصلي. الشبكة بتضحك بهدوء.', 'اتنشرت تاني. لسه غلط؟ نشوف. 🔜'],
@@ -344,8 +344,8 @@ export default {
       },
       insider: {
         cp: {
-          right: ['بكله وصح. ده النوع الوحيد اللي بيتحسب. برافو.', 'قلت «{phrase}». كنت هكتبها عادي، بس مقدرش أعيب عليها.', '{p} خلصت، وانت قلتها صح. متسجّلة في السجل.', 'صح في دروب. مصدرين الأول، أتمنى. كانت باينة كده.', 'الورق متفق معاك. أندر حاجة في المهنة.', 'هيقولوا «{phrase}». أنا بقول: دقيق. نفس المعنى، علامات تعجب أقل.', 'عالي وصح. هعدّي العلوّ لما الصح يبقى نضيف كده.', 'كويس. اعملها تاني بهدوء وهبدأ أقلق.'],
-          wrong: ['«بكله» كلمة ليها معنى يا ابني. دوّر عليها. وبعدين بصّ على {p}.', 'الجملة المشهورة مبتعملش حقيقة. الكشف الطبي بيعمل. ومكنش في كشف.', 'الصوت العالي مش هو الصح. النهارده مكنش قريب حتى.', 'انت نزّلت أمنية دروب. أنا مبشتغلش أماني.', 'قلت استنى. انت قلت «{phrase}». و{p} مقالش ولا ده ولا ده.', 'كل صحفي بتحصله واحدة زي دي. خلّيها واحدة.', 'السجل بيسجّل دروب غلط. والسجل مش لطيف معاه.', 'راجع الكشف. وراجعه تاني. وبعدين خلّي الجملة في جيبك.'],
+          right: ['مؤكد وصح. ده النوع الوحيد اللي بيتحسب. برافو.', 'قلت «{phrase}». كنت هكتبها عادي، بس مقدرش أعيب عليها.', '{p} خلصت، وانت قلتها صح. متسجّلة في السجل.', 'صح وانت «مؤكد». دايرتين الأول، أتمنى. كانت باينة كده.', 'الورق متفق معاك. أندر حاجة في المهنة.', 'هيقولوا «{phrase}». أنا بقول: دقيق. نفس المعنى، علامات تعجب أقل.', 'عالي وصح. هعدّي العلوّ لما الصح يبقى نضيف كده.', 'كويس. اعملها تاني بهدوء وهبدأ أقلق.'],
+          wrong: ['«مؤكد» كلمة ليها معنى يا ابني. دوّر عليها. وبعدين بصّ على {p}.', 'الجملة المشهورة مبتعملش حقيقة. الكشف الطبي بيعمل. ومكنش في كشف.', 'الصوت العالي مش هو الصح. النهارده مكنش قريب حتى.', 'انت أكّدت أمنية. أنا مبشتغلش أماني.', 'قلت استنى. انت قلت «{phrase}». و{p} مقالش ولا ده ولا ده.', 'كل صحفي بتحصله واحدة زي دي. خلّيها واحدة.', 'السجل بيسجّل غلطة «مؤكد». والسجل مش لطيف معاها.', 'راجع الكشف. وراجعه تاني. وبعدين خلّي الجملة في جيبك.'],
         },
         uturn: ['تصحيح. كويس. المرة الجاية انشر الأولى صح.', 'اتمسح واتنشر تاني. أنا مبمسحش، عشان مبنشرش قبل ما أعرف.', 'اللفّة صادقة على الأقل. الأصلي مكنش صحافة.', 'عشرين سنة، ولا تصحيح. مش حظ. صبر.', 'غيّرت رأيك في {p}. ماشي. غيّر منهجك.', 'الريبوست إيصال لبوست مستعجل.', 'بوستين، خبر واحد. واحد زيادة.', 'اتصحّح. السجل بيسجّل الاتنين.'],
         dd: ['يوم الديدلاين. ستين ثانية وقت طويل لو انت عارف.', 'الساعة بتخوّف الناس فينشروا. متبقاش الناس.', 'تلات بوستات. هستخدم واحد، في الآخر، وهيبقى صح.', 'يوم الديدلاين هو امتحان السمعة. راجع العلاج الطبيعي الأول.', 'ستين ثانية. أنا كان عندي أسبوع. وانت كمان. استخدمه.', 'البوست السريع للي مكلّمش حد.', 'الفترة بتقفل نص الليل. الحقيقة مبتفرقش معاها الساعة.', 'يوم الديدلاين. نفس القواعد. هدّي.'],
@@ -367,7 +367,7 @@ export default {
           wrong: ['“{phrase}” 😂 Recortado. Enmarcado. Fijado.', 'Le pusiste “{phrase}” a {p}. {p} dijo no, gracias.', 'L + te lo tragaste + con frase de marca.', 'Captura antes del borrado. Fijada para siempre.', '“{phrase}” → Y SE FUE. A otro sitio.', 'Viene ratio. Abrígate.', 'El vídeo tiene nueva intro. Pone “{phrase}” en cuerpo 72.', 'Confirmaste lo de {p}. La realidad lo rechazó.'],
         },
         uturn: ['Borrar y republicar. El dos pasos. {name} clásico.', 'Borrado más rápido que el reconocimiento de {p}. Lo vimos.', 'Captura antes de que lo borraras 📸 Como siempre.', 'Modo GPS. “Recalculando.”', 'Un post, un borrado, un ratio. Eficiente.', 'Está editando la historia en directo. La historia guarda recibos.', 'Republica lo que quieras. El vídeo guarda el original.', 'Menudo cambio de rumbo. 😂'],
-        dd: ['Día de cierre. Sesenta segundos. Yo necesito cinco. Tú, un milagro.', 'El reloj corre. Yo ya he publicado. Dos veces.', 'El día de cierre es mi Navidad. Tus Scoops son los chistes del roscón.', 'Publica algo. Lo que sea. El vídeo necesita un final.', 'Sesenta segundos, tres posts, uno de los dos acierta. Como siempre.', '¿Post rápido? Fallo rápido. Venga.', 'El mercado cierra a medianoche. Tu credibilidad cerró a mediodía.', 'DÍA DE CIERRE. MAYÚSCULAS OBLIGATORIAS.'],
+        dd: ['Día de cierre. Sesenta segundos. Yo necesito cinco. Tú, un milagro.', 'El reloj corre. Yo ya he publicado. Dos veces.', 'El día de cierre es mi Navidad. Tus exclusivas son los chistes del roscón.', 'Publica algo. Lo que sea. El vídeo necesita un final.', 'Sesenta segundos, tres posts, uno de los dos acierta. Como siempre.', '¿Post rápido? Fallo rápido. Venga.', 'El mercado cierra a medianoche. Tu credibilidad cerró a mediodía.', 'DÍA DE CIERRE. MAYÚSCULAS OBLIGATORIAS.'],
         ddlive: {
           open: ['Cierre en directo. Todos los periodistas del juego, una tabla. Hoy los ratios son públicos.', 'La tabla real está abierta. Publica antes del pitido o no publiques. Ya sé qué harás.', 'Todos con los mismos cinco. No hay dónde esconderse, {name}.', 'Tabla en directo. L en directo. Vamos.'],
           close: ['Pitido. Tabla cerrada. Resultados a medianoche, lágrimas en el desayuno.', 'Se acabó el cierre. Ahora a esperar la tabla y el ratio.', 'Tabla cerrada. Tus apuestas están dentro. Algunas, al menos.', 'Mercado cerrado. Vídeo abierto.'],
@@ -391,8 +391,8 @@ export default {
       },
       insider: {
         cp: {
-          right: ['Con todo y cierto. El único tipo que cuenta. Bien hecho.', 'Dijiste “{phrase}”. Yo habría usado texto normal, pero no le pongo pegas.', 'Lo de {p} está hecho y lo dijiste bien. Anotado en el historial.', 'Bien en un Drop. Dos contactos antes, espero. Así se leía.', 'Los papeles te dan la razón. Lo más raro del oficio.', 'Dirán “{phrase}”. Yo digo: exacto. Lo mismo, menos exclamaciones.', 'Alto y bien. Paso el volumen cuando el acierto es así de limpio.', 'Bien. Repítelo en voz baja y empezaré a preocuparme.'],
-          wrong: ['Ir con todo tiene un significado, chaval. Búscalo. Luego mira lo de {p}.', 'Una frase de marca no hace un hecho. Un reconocimiento sí. No lo hubo.', 'Gritar no es acertar. Hoy ni se acercó.', 'Lanzaste un deseo en Drop. Yo no trabajo deseos.', 'Dije espera. Tú dijiste “{phrase}”. {p} no dijo ninguna de las dos.', 'A todo periodista le pasa una. Que sea una.', 'El historial anota un Drop fallido. El historial no es amable con eso.', 'Revisa el reconocimiento. Revísalo otra vez. Y guárdate la frase en el bolsillo.'],
+          right: ['Confirmado y cierto. El único tipo que cuenta. Bien hecho.', 'Dijiste “{phrase}”. Yo habría usado texto normal, pero no le pongo pegas.', 'Lo de {p} está hecho y lo dijiste bien. Anotado en el historial.', 'Bien en Confirmado. Dos círculos antes, espero. Así se leía.', 'Los papeles te dan la razón. Lo más raro del oficio.', 'Dirán “{phrase}”. Yo digo: exacto. Lo mismo, menos exclamaciones.', 'Alto y bien. Paso el volumen cuando el acierto es así de limpio.', 'Bien. Repítelo en voz baja y empezaré a preocuparme.'],
+          wrong: ['Confirmado es una palabra con significado, chaval. Búscala. Luego mira lo de {p}.', 'Una frase de marca no hace un hecho. Un reconocimiento sí. No lo hubo.', 'Gritar no es acertar. Hoy ni se acercó.', 'Confirmaste un deseo. Yo no trabajo deseos.', 'Dije espera. Tú dijiste “{phrase}”. {p} no dijo ninguna de las dos.', 'A todo periodista le pasa una. Que sea una.', 'El historial anota un Confirmado fallido. El historial no es amable con eso.', 'Revisa el reconocimiento. Revísalo otra vez. Y guárdate la frase en el bolsillo.'],
         },
         uturn: ['Una rectificación. Bien. La próxima, publica bien la primera.', 'Borrado y republicado. Yo no borro, porque no publico antes de saber.', 'El cambio de rumbo es honesto, al menos. El original no era periodismo.', 'Veinte años, ninguna rectificación. No es suerte. Es paciencia.', 'Cambiaste de idea con {p}. Vale. Cambia de método.', 'Una republicación es el recibo de un post con prisas.', 'Dos posts, una noticia. Uno de más.', 'Rectificado. El historial anota los dos.'],
         dd: ['Día de cierre. Sesenta segundos es mucho si ya lo sabes.', 'El reloj asusta a la gente y publica. No seas la gente.', 'Tres posts. Usaré uno, al final, y será bueno.', 'El día de cierre se ponen a prueba las reputaciones. Mira al fisio primero.', 'Sesenta segundos. Yo he tenido una semana. Tú también. Úsala.', 'El post rápido es para quien no llamó a nadie.', 'El mercado cierra a medianoche. A la verdad no le importa el reloj.', 'Día de cierre. Mismas reglas. Frena.'],
