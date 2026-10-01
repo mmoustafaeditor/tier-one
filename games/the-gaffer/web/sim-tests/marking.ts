@@ -1,12 +1,12 @@
 // Foundation step 5: marking styles (tactics.ts marking / setMark). No style may be a free win: against the default
 // (mixed / mixed), every combination's expected points over many fixtures stay within +3%. Closed-form (the engine's
 // expected goals), then a seeded simulation of the extremes for the trade-offs (fouls, chances conceded by kind).
-// Usage: node sim-tests/build.mjs marking [simulated matches per style=600]
+// Usage: node sim-tests/build.mjs marking [simulated matches per style=1200]
 import { generateWorld, playerOf, strengthOf } from '../src/sim/world';
 import { expected, simulate, startMatch } from '../src/sim/match';
 import { pointsLeft, withTactics } from '../src/sim/engine/story';
 
-const SIMS = +(process.argv[2] ?? 600);
+const SIMS = +(process.argv[2] ?? 1200); // 300 is too few: the box/through gap between styles drowns in noise
 const w = generateWorld(7);
 const get = (id: string) => playerOf(w, id)!;
 let fails = 0;
