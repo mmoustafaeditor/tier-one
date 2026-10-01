@@ -9,6 +9,7 @@ import { FORMATIONS, fullTactics } from '../sim/tactics';
 import { planOf, spotOf, type Spot } from '../sim/engine/phases';
 import type { Position } from '../model/types';
 import type { World } from '../sim/world';
+import { lineDepth, pressShape, pressSpot, speedsOf, step, type LineState, type PressPlan } from './pitch/move';
 
 type Pt = { x: number; y: number };
 
@@ -44,9 +45,14 @@ interface Anim {
   zone: number;           // zone of the ball (absolute), -1 none
   minute: number;
   time: number;
+  spd: number[][];        // speed ratio per [side][slot] (pace and match fitness), refreshed every minute
+  line: (LineState | undefined)[]; // each side's back-line depth out of possession
+  back: [number, number]; // when each side last played the ball backwards (a time, for the back line's step-up)
 }
 
 const L = 105, W = 68;
+// Measurement hook for ui-tests/pitch.mjs: only with ?pitchdebug in the address.
+const PITCH_DEBUG = typeof location !== 'undefined' && /[?&]pitchdebug\b/.test(location.search);
 const LINE: Record<Position, 'gk' | 'def' | 'mid' | 'fwd'> = {
   GK: 'gk', CB: 'def', LB: 'def', RB: 'def', CDM: 'mid', CM: 'mid', CAM: 'mid', LW: 'fwd', RW: 'fwd', ST: 'fwd',
 };
@@ -116,8 +122,9 @@ const zonePt = (z: number, r: () => number): Pt => ({ x: (Math.floor(z / 5) + 0.
 const slotNear = (m: LiveMatch, a: Anim, side: 0 | 1, pt: Pt) => onPitch(m, side).sort((x, y) => dist(a.pos[side][x] ?? pt, pt) - dist(a.pos[side][y] ?? pt, pt))[0] ?? 0;
 
 // Plan the minute from the engine's ball path: contests won and lost, fouls, shots. Slow speeds show more of it.
-function plan(a: Anim, m: LiveMatch, msPerMinute: number) {
+function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
   const r = rngFor(`${m.key}:anim`, m.minute);
+  a.spd = speedsOf(m, world);
   const all: Beat[] = [];
   let poss = a.poss;
   if (a.inNet) { const side = (1 - a.poss) as 0 | 1; all.push({ kind: 'kickoff', side }); poss = side; }
@@ -192,6 +199,7 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     if (b.pt) a.run = { side: b.side, slot: b.to, pt: b.pt };
     if (b.to === a.carrier) return;
     const to = b.pt ?? a.pos[b.side][b.to];
+    if (depthOf(b.side, to.x) < depthOf(b.side, a.ball.x) - 3) a.back[b.side] = a.time; // a backward pass: the other side's line steps up
     a.carrier = -1;
     fly(a, { x: to.x + (b.side === 0 ? 1 : -1), y: to.y }, travel, () => { a.carrier = b.to; });
     return;
@@ -262,6 +270,8 @@ function markings(pr: Proj): { pitch: string; stripes: string; lines: string; gr
 export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', camera = 0 }: { m: LiveMatch; world: World; msPerMinute: number; running: boolean; goalWord?: string; camera?: Camera }) {
   const mRef = useRef(m);
   mRef.current = m;
+  const worldRef = useRef(world);
+  worldRef.current = world;
   const cfg = useRef({ msPerMinute, running, camera });
   cfg.current = { msPerMinute, running, camera };
   const pitchRef = useRef<SVGPathElement | null>(null);
@@ -289,6 +299,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
     const a: Anim = {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: -1, time: 0,
+      spd: speedsOf(m, world), line: [undefined, undefined], back: [-1e9, -1e9],
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -305,9 +316,10 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       last = now;
       const a = anim.current!;
       const mm = mRef.current;
+      if (PITCH_DEBUG) (window as unknown as { __gafferPitch?: unknown }).__gafferPitch = { a, slots: mm.sides.map((sd) => FORMATIONS[sd.tactics.formation].slots.map((x) => x.pos)), pressing: mm.sides.map((sd) => sd.tactics.pressing) };
       const { msPerMinute: ms, running: go, camera: cam } = cfg.current;
       a.time += dt;
-      if (a.minute !== mm.minute) plan(a, mm, ms);
+      if (a.minute !== mm.minute) plan(a, mm, ms, worldRef.current);
       if (go) {
         a.clock += dt;
         while (a.beat < a.beats.length && a.clock >= a.beat * a.beatLen) runBeat(a, mm, a.beats[a.beat++]);
@@ -323,19 +335,45 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         const p = a.pos[a.poss][a.carrier];
         a.ball = { x: p.x + (a.poss === 0 ? 1.1 : -1.1), y: p.y + 0.6 };
       }
-      // Players glide towards where they want to be; the nearest defenders press the ball.
-      const ease = 1 - Math.exp(-dt / Math.max(120, ms * 0.9));
+      // Players move towards where they want to be at their own speed (pace, stamina); out of possession the back line
+      // moves as one and the press comes with cover (ui2/pitch/move.ts).
       for (const side of [0, 1] as const) {
         const ks = onPitch(mm, side);
-        const pressers = a.poss === side ? [] : [...ks].filter((k) => LINE[FORMATIONS[mm.sides[side].tactics.formation].slots[k].pos] !== 'gk')
-          .sort((x, y) => dist(a.pos[side][x], a.ball) - dist(a.pos[side][y], a.ball)).slice(0, mm.sides[side].tactics.pressing === 2 ? 2 : 1);
+        const slots = FORMATIONS[mm.sides[side].tactics.formation].slots;
+        const sps = spotsOf(mm, side);
+        const has = a.poss === side;
+        const ownGoal = { x: toX(side, 0), y: W / 2 };
+        const tg: Pt[] = [];
+        for (const k of ks) tg[k] = target(mm, a, side, k);
+        let pp: PressPlan = { press: [], cover: -1, trigger: false };
+        if (!has) {
+          pp = pressShape(ks.filter((k) => LINE[slots[k].pos] !== 'gk'), a.pos[side], a.ball, depthOf(side, a.ball.x), mm.sides[side].tactics.pressing, (k) => sps[k]?.oop ?? '');
+          const line = (k: number) => LINE[sps[k]?.opos ?? slots[k].pos];
+          const free = (k: number) => !pp.press.includes(k) && k !== pp.cover;
+          const defs = ks.filter((k) => line(k) === 'def' && free(k));
+          // Step up after their backward pass; drop off when their carrier has time and space in our half.
+          const other = (1 - side) as 0 | 1;
+          const pressed = ks.some((k) => a.pos[side][k] && Math.hypot(a.pos[side][k].x - a.ball.x, a.pos[side][k].y - a.ball.y) < 6);
+          const adjust = a.time - a.back[other] < 1500 ? 5 : !pressed && depthOf(side, a.ball.x) < 60 ? -4 : 0;
+          const ln = lineDepth(defs.map((k) => depthOf(side, tg[k].x)), a.line[side], adjust, a.time);
+          a.line[side] = ln;
+          for (const k of ks) {
+            if (!free(k)) continue;
+            const d = depthOf(side, tg[k].x);
+            if (line(k) === 'def') tg[k] = { x: toX(side, ln.depth), y: tg[k].y };
+            else if (line(k) === 'mid') tg[k] = { x: toX(side, clamp(d, ln.depth + 8, ln.depth + 16)), y: tg[k].y };
+            else if (line(k) === 'fwd') tg[k] = { x: toX(side, Math.min(d, ln.depth + 38)), y: tg[k].y };
+          }
+          for (const k of pp.press) tg[k] = pressSpot(a.ball, ownGoal, 1.8);
+          if (pp.cover >= 0 && pp.press.length) tg[pp.cover] = pressSpot(a.ball, ownGoal, 7);
+        } else a.line[side] = undefined;
         for (const k of ks) {
-          let t = target(mm, a, side, k);
-          if (pressers.includes(k)) t = { x: a.ball.x + (side === 0 ? -2.2 : 2.2), y: a.ball.y };
-          if (a.poss === side && k === a.carrier) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
+          let t = tg[k];
+          if (has && k === a.carrier) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
           const wob = Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
           const p = a.pos[side][k] ?? t;
-          a.pos[side][k] = { x: p.x + (t.x - p.x) * ease, y: p.y + (t.y + wob - p.y) * ease };
+          const sprint = pp.press.includes(k) ? (pp.trigger ? 1.6 : 1.3) : 1;
+          a.pos[side][k] = step(p, { x: t.x, y: t.y + wob }, dt, ms, (a.spd[side]?.[k] ?? 1) * sprint);
         }
       }
       // Draw. In Arabic the home side sits on the right of the score, so the picture is mirrored (the numbers are not).
