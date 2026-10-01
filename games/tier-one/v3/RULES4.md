@@ -18,10 +18,10 @@ feed it. A new player needs six ideas, and every one fits on a card:
 
 1. **Stories.** A player, a club. It ends one of three ways: **SIGNS** (joins that club), **ELSEWHERE** (joins another club),
    **STAYS** (doesn't move).
-2. **Calls.** Each day you get a few phone calls to make. Each contact tells you one thing about one story.
+2. **DMs.** Each day you get a few DMs to send. Each contact tells you one thing about one story.
 3. **Contacts.** Five people. Each card prints what they can tell you and how often they're right.
-4. **Post.** Pick the ending and how hard you back it: **×1**, **×2** or **×3 All in**. The post screen shows exactly what you win
-   or lose. Posts are final.
+4. **Post.** Pick the ending and how loud you go: a **Hint** (×1), a **Post** (×2) or a **Drop** (×3, All in). The post screen shows
+   exactly what you win or lose. Posts are final.
 5. **Earlier pays more.** Every day before Deadline Day adds a bonus to a right call.
 6. **Scoop.** Go All in, be right, and be there before any rival posted that ending.
 
@@ -43,7 +43,7 @@ Cut, and why:
 |---|---|---|
 | Stories | 5 | Five decisions is a satisfying session; six got samey in testing. |
 | Days | 5 (Mon–Thu, then Deadline Day) | Two fewer than 3.x: the same tension, a 4-minute session. |
-| Phone calls | 3 a day, 2 on Deadline Day | 14 calls for 5 stories: you can't check everything, so you choose. |
+| DMs | 3 a day, 2 on Deadline Day | 14 DMs for 5 stories: you can't check everything, so you choose. |
 | How it ends (start) | SIGNS 40% · ELSEWHERE 25% · STAYS 35% | No ending is a safe default guess. |
 
 ### Contacts
@@ -51,10 +51,10 @@ Cut, and why:
 | Contact | Tells you | Right | From | Costs |
 |---|---|---|---|---|
 | The barber | an ending | 50%; when wrong he repeats the rumour mill | day 1 | free |
-| The kit man | LEAVING or STAYING | 85% / 80% | day 1 | 1 call |
-| The agent | an ending | 60–80%; when he's wrong he says SIGNS (agents talk up deals) | day 1 | 1 call |
-| The spotter | seen there · seen elsewhere · not seen | 85% | day 3 | 1 call |
-| The physio | medical there · elsewhere · none | 95% | Deadline Day | 1 call |
+| The kit man | LEAVING or STAYING | 85% / 80% | day 1 | 1 DM |
+| The agent | an ending | 60–80%; when he's wrong he says SIGNS (agents talk up deals) | day 1 | 1 DM |
+| The spotter | seen there · seen elsewhere · not seen | 85% | day 3 | 1 DM |
+| The physio | medical there · elsewhere · none | 95% | Deadline Day | 1 DM |
 
 Each contact answers once per story. Same question, same answer, for everyone (a fair ranked board).
 
@@ -66,16 +66,16 @@ Scoop.
 
 ### Scoring
 
-| Back it | Right | Wrong | Each day early | Scoop |
+| How loud | Right | Wrong | Each day early | Scoop |
 |---|---|---|---|---|
-| ×1 | +10 | −5 | +2 | — |
-| ×2 | +20 | −20 | +3 | — |
-| ×3 All in | +30 | −60 | +4 | +25 |
+| Hint ×1 | +10 | −5 | +2 | — |
+| Post ×2 | +20 | −20 | +3 | — |
+| Drop ×3 All in | +30 | −60 | +4 | +25 |
 
 How sure you need to be (before the early bonus): ×1 above 1 in 3, ×2 above 3 in 5, All in above 4 in 5. The post screen says
 it in words: "You win 46 if he signs. You lose 60 if he doesn't."
 
-All in is the catchphrase moment: a right All in call stamps your catchphrase on the story.
+A Drop is the catchphrase moment: a right Drop stamps your catchphrase on the story and lands on your Lens grid.
 
 ### Grades
 
@@ -96,7 +96,7 @@ Per story on the board: **Tier One** 36 and at least one Scoop · **Tier Two** 2
 Reading the cards always beats gambling, copying and waiting. Tier One is earned: about 1 in 8 good Dailies, most days for a
 sharp player.
 
-## 2. Modes: one game, different knobs
+## 2. Modes: one game, different knobs (the apps are named in CONCEPT4.md §2)
 
 Every mode runs `engine4.mjs`. A mode is a rule set from `rulesFor(mode, opts)` plus where its board comes from.
 
@@ -119,7 +119,7 @@ Four things grow, and each has one job. Nothing else is a currency.
 | Thing | Job | Earned by | Shown as |
 |---|---|---|---|
 | **XP** | how much you've played | every window, Wire call, room round | **Level** (forever) and the **Season** track (resets each season) |
-| **Reputation** 0–100 | how good you are | right calls (more for bigger backing), lost on wrong ones | **Rank**: Blogger 0 · Stringer 40 · Correspondent 55 · Chief 70 · Tier One 85 |
+| **Reputation** 0–100 | how good you are | right calls (more for bigger backing), lost on wrong ones | **Rank**: Nobody 0 · Rising 40 · ITK 55 · Insider 70 · Tier One 85 |
 | **Followers** | how famous you are | right calls, Scoops, hot streaks | the big number on your byline |
 | **Coins** | what you spend | playing, prizes, the season track | coin count; spent on looks, Career extras |
 
@@ -152,7 +152,7 @@ up to +100%. Mode factor: Daily, Career 1 · Press box 0.8 · Wire 1.5 · Practi
 Earn: Daily 15 (+15 Tier One) · Career window 10 · daily missions 3 × 10–20 · level-ups · Daily prizes 60/40/25/10 (top 10 of 3+)
 · weekly prizes 200/120/80/30 · season track · scalps 50 and trophies 150 over rivals. A regular free player earns about 80 a day.
 Spend: looks (common 150, rare 400, epic 900; legendary is credits or the Gold track), coffee with a contact 30 (Trust),
-Career extras (an extra phone call 40, a tip-off 60; max 2 extras a window), paper rename 250.
+Career extras (an extra DM 40, a tip-off 60; max 2 extras a window), handle rename 250. Brand deals (CONCEPT4.md §4) are the main mid-game coin income: 150 → 600 a deal.
 Nothing in the shop ever runs out: every season adds 8–12 new looks, and last season's leave the coin shop for good.
 
 ### Mystery
@@ -160,7 +160,7 @@ Nothing in the shop ever runs out: every season adds 8–12 new looks, and last 
   Daily").
 - **The whistleblower.** About one Career window in eight, an unknown number texts you a single tip on one story. It's right
   75% of the time. Who is it? The Comeback answers that in Chapter 4.
-- **Sealed results.** Your score isn't shown as you play. Results open story by story, like front pages.
+- **Sealed results.** Your score isn't shown as you play. Results open post by post, as a thread (CONCEPT4.md §7).
 
 ## 4. Clarity rules (every screen)
 
@@ -179,4 +179,4 @@ Nothing in the shop ever runs out: every season adds 8–12 new looks, and last 
   archive still replays.
 - Economy numbers: only in `web/src/lib/economy.ts` (client) and `api/tier-one/v4/config/catalog.json` (server); the client
   imports the JSON for prices and packs, so they can't drift.
-- New strings: each lane adds its own `web/src/i18n/parts/<lane>4.ts` with en, ar (Egyptian) and es. No "HERE WE GO" anywhere.
+- New strings: each lane adds its own `web/src/i18n/parts/<lane>4.ts` with en, ar (Egyptian) and es. The words are CONCEPT4.md §3.
