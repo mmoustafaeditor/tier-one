@@ -49,6 +49,7 @@ interface Anim {
   line: (LineState | undefined)[]; // each side's back-line depth out of possession
   back: [number, number]; // when each side last played the ball backwards (a time, for the back line's step-up)
   trans: Transition | null; // the last turnover: who lost it and when (counter-press, recovery runs, breaks)
+  runsN: number;          // real runs off the ball this frame (for the measurement test)
 }
 
 const L = 105, W = 68;
@@ -301,7 +302,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
     const a: Anim = {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: -1, time: 0,
-      spd: speedsOf(m, world), line: [undefined, undefined], back: [-1e9, -1e9], trans: null,
+      spd: speedsOf(m, world), line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0,
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -357,12 +358,13 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
           const bd = depthOf(side, a.ball.x);
           const busy = (k: number) => k === a.carrier || (a.run?.side === side && a.run.slot === k) || (a.shooter?.side === side && a.shooter.slot === k);
           let runs = 0;
+          a.runsN = 0;
           for (const k of [...ks].sort((p, q) => Math.abs((a.pos[side][p]?.y ?? 0) - a.ball.y) - Math.abs((a.pos[side][q]?.y ?? 0) - a.ball.y))) {
             if (busy(k) || LINE[slots[k].pos] === 'gk') continue;
             const d = depthOf(side, tg[k].x);
             const r = runFor(sps[k]?.ip ?? '', { bd, by: a.ball.y, theirLine, d, y: tg[k].y, wide: wideOf(tg[k].y) });
             if (!r) continue;
-            if (r.run) { if (runs >= 3) continue; runs++; boost[k] = 1.25; }
+            if (r.run) { if (runs >= 3) continue; runs++; a.runsN = runs; boost[k] = 1.25; }
             tg[k] = { x: toX(side, clamp(r.d, 2, 103)), y: clamp(r.y, 2, W - 2) };
           }
           if (tr && tr.lost !== side && ft.counter) for (const k of ks) {
@@ -400,7 +402,14 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
               }
             } else {
               const bdep = depthOf(side, a.ball.x);
-              for (const k of field) if (depthOf(side, a.pos[side][k].x) > bdep) { tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), bdep - 5)), y: tg[k].y }; boost[k] = 1.4; }
+              // The back line drops as one (to 5 m behind the ball at most); the others ahead of the ball race back.
+              const lineTo = Math.min(ln.depth, bdep - 5);
+              for (const k of field) {
+                if (line(k) === 'def' && free(k)) { tg[k] = { x: toX(side, lineTo), y: tg[k].y }; if (depthOf(side, a.pos[side][k].x) > lineTo) boost[k] = 1.4; }
+                else if (depthOf(side, a.pos[side][k].x) > bdep) { tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), bdep - 5)), y: tg[k].y }; boost[k] = 1.4; }
+                // Everyone stays tied to the dropped line: midfield within 16 m of it, forwards within 38 m.
+                if (free(k) && line(k) !== 'def') tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), lineTo + (line(k) === 'mid' ? 16 : 38))), y: tg[k].y };
+              }
             }
           }
         } else a.line[side] = undefined;

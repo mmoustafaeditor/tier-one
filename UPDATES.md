@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer pitch movement, part B: runs off the ball, transitions
+- **What changed:** Second step of the pitch-movement plan (UI only; the engine, results and stats are untouched). With the ball, players now make the runs their role asks for: full-backs and wing-backs overlap on the ball's flank, inverted full-backs step inside, wingers hold the touchline, inside forwards run diagonally into the half-space, advanced forwards run on the shoulder of the last defender, target men stay central, false nines drop between the lines, box-to-box and attacking midfielders arrive late in the box, playmakers show for the ball and holders screen. At most 3 real runs at once. After a turnover, the side that lost the ball counter-presses with its nearest three (counter-press instruction, or a high press) or races back, with its back line dropping as one; the side that won it breaks forward when "counter at once" is on. Measured by `ui-tests/pitch.mjs`, two runs: runs in 27-29% of frames (max 2 at once), back-line spread 1.0 m, team length 32-34 m, reaction after a clean turnover 7/8 and 9/10.
+- **Files:** `games/the-gaffer/web/src/ui2/pitch/move.ts`, `web/src/ui2/Pitch2D.tsx`, `web/ui-tests/pitch.mjs`, `UPDATES.md`
+- **Heads-up for the team:** None.
+
 ## 2026-10-01 · saifsaber · The Gaffer pitch movement, part A: speed, back line, press
 - **What changed:** First of three steps of the pitch-movement plan (UI only; the engine, results and stats are untouched). Each player's speed on the 2D pitch now comes from his pace (up to 1.5x between the fastest and the slowest) and drops when his match fitness runs low. Out of possession, the back line moves as one straight line: it steps up after a backward pass and drops when the carrier has time; midfield stays 8-16 m in front of it, and the forwards are within 38 m. The press follows the pressing instruction: sit off waits in its own half, hunt high sends two. The presser stands between the ball and his goal, a second man covers 7 m behind, pressing roles go first, and hold-shape roles never press. Measured by the new `ui-tests/pitch.mjs`: 59 fps, back-line spread 1.5 m, team length 30 m out of possession.
 - **Files:** `games/the-gaffer/web/src/ui2/pitch/move.ts` (new), `web/src/ui2/Pitch2D.tsx`, `web/ui-tests/pitch.mjs` (new), `UPDATES.md`

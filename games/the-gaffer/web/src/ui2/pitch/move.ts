@@ -100,4 +100,5 @@ export const wideOf = (y: number) => sideOf(y);
 // 5. Transitions. For a short while after a turnover: the side that lost the ball counter-presses (cpress 2, or a
 // high press) with its nearest 2-3 players, otherwise it races back; the side that won it breaks forward if told to.
 export interface Transition { lost: 0 | 1; at: number }
-export const TRANSITION_MS = (beatLen: number) => Math.max(700, beatLen * 2);
+// A match minute plays in a few real seconds, so the reaction is held for three beats to be visible.
+export const TRANSITION_MS = (beatLen: number) => Math.max(900, beatLen * 3);

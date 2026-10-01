@@ -31,7 +31,7 @@ const samples = await p.evaluate(async (secs) => {
   while (performance.now() - t0 < secs * 1000) {
     await new Promise((r) => requestAnimationFrame(r));
     const d = window.__gafferPitch; if (!d) continue;
-    const a = d.a; out.push({ t: a.time, poss: a.poss, ball: { ...a.ball }, pos: a.pos.map((s) => s.map((q) => q ? { x: q.x, y: q.y } : null)), spd: a.spd, slots: d.slots, pressing: d.pressing });
+    const a = d.a; out.push({ t: a.time, runs: a.runsN, trans: a.trans ? { ...a.trans } : null, beatLen: a.beatLen, poss: a.poss, ball: { ...a.ball }, pos: a.pos.map((s) => s.map((q) => q ? { x: q.x, y: q.y } : null)), spd: a.spd, slots: d.slots, pressing: d.pressing });
   }
   return out;
 }, SECONDS);
@@ -53,6 +53,28 @@ for (let i = 0; i < samples.length; i++) {
     if (ks.some(([pos, k]) => pos !== 'GK' && Math.hypot(s.pos[side][k].x - s.ball.x, s.pos[side][k].y - s.ball.y) < 3)) pressNear[side]++;
   }
 }
+// Runs: how often a side on the ball has a run going, and never more than 3 at once.
+const runFrames = samples.filter((s) => s.runs > 0).length, maxRuns = Math.max(0, ...samples.map((s) => s.runs));
+// Transitions: in the window after each turnover, the side that lost the ball either counter-presses (2+ players within
+// 5 m of the ball) or drops (its average depth goes back).
+const avgDepth = (s, side) => { const xs = s.pos[side].filter(Boolean).map((q) => depth(side, q.x)); return xs.reduce((a, b) => a + b, 0) / xs.length; };
+let turnovers = 0, reacted = 0;
+for (let i = 1; i < samples.length; i++) {
+  const s = samples[i], tr = s.trans;
+  if (!tr || (samples[i - 1].trans && samples[i - 1].trans.at === tr.at)) continue;
+  const ahead = s.pos[tr.lost].filter((q) => q && depth(tr.lost, q.x) > depth(tr.lost, s.ball.x) + 2).length;
+  if (ahead < 2) continue; // lost deep in its own half: nobody needs to get back
+  turnovers++;
+  const end = samples.findIndex((x, j) => j > i && x.t >= tr.at + Math.max(900, s.beatLen * 3));
+  if (end < 0) continue;
+  const win = samples.slice(i, end + 1);
+  if (win.some((x) => x.trans && x.trans.at !== tr.at)) { turnovers--; continue; } // the ball changed hands again inside the window
+  const press = win.some((x) => x.pos[tr.lost].filter((q) => q && Math.hypot(q.x - x.ball.x, q.y - x.ball.y) < 5).length >= 2);
+  const aheadK = s.pos[tr.lost].map((q, k) => (q && depth(tr.lost, q.x) > depth(tr.lost, s.ball.x) + 2 ? k : -1)).filter((k) => k >= 0);
+  const mean = (x) => aheadK.reduce((t, k) => t + depth(tr.lost, x.pos[tr.lost][k].x), 0) / aheadK.length;
+  const drop = mean(samples[end]) < mean(s) - 1;
+  if (press || drop) reacted++;
+}
 const spdAll = samples.at(-1)?.spd.flat().filter(Boolean) ?? [];
 if (process.env.SHOT) await p.screenshot({ path: process.env.SHOT });
 let fails = 0; const ok = (c, m) => { console.log(`${c ? 'ok  ' : 'FAIL'} ${m}`); if (!c) fails++; };
@@ -62,6 +84,8 @@ ok(Math.max(...spdAll) / Math.min(...spdAll) >= 1.25, `fastest vs slowest player
 ok(med(spread) < 3, `back line out of possession: median spread ${med(spread).toFixed(1)} m (< 3)`);
 ok(med(length) <= 40, `team length out of possession: median ${med(length).toFixed(1)} m (≤ 40)`);
 ok(pressNear[0] + pressNear[1] > 0, `someone presses the ball (${pressNear[0]} / ${pressNear[1]} frames within 3 m)`);
+ok(runFrames > samples.length * 0.1 && maxRuns <= 3, `runs off the ball in ${Math.round((100 * runFrames) / samples.length)}% of frames, at most ${maxRuns} at once (≤ 3)`);
+ok(turnovers > 0 && reacted >= turnovers * 0.8, `after a turnover the side that lost it reacts: ${reacted} of ${turnovers}`);
 ok(!errs.length, `no console errors${errs.length ? ': ' + errs[0] : ''}`);
 await browser.close(); server.close();
 console.log(fails ? `\n${fails} FAILED` : '\nall passed');
