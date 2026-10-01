@@ -3,8 +3,8 @@
 const en = {
   meta: { lang: 'English', dir: 'ltr', dateLocale: 'en-GB' },
   brand: { name: 'Tier One', edition: 'The Transfer Edition', morning: 'Morning paper', late: 'Late edition', auto: 'Follows your device' },
-  tabs: { front: 'Front', daily: 'Daily', wire: 'Transfer Market', desk: 'Career', pass: 'Pass' },
-  nav: { front: 'Front page', daily: 'Daily Challenge', wire: 'Transfer Market', desk: 'Career', pass: 'Semba Pass', practice: 'Practice', rooms: 'Rooms', howto: 'How to play', board: 'The board', back: 'Back' },
+  tabs: { front: 'Front', daily: 'Daily', wire: 'Transfer Market', desk: 'Career Mode', pass: 'Pass' },
+  nav: { front: 'Front page', daily: 'Daily Challenge', wire: 'Transfer Market', desk: 'Career Mode', pass: 'Semba Pass', practice: 'Practice', rooms: 'Rooms', howto: 'How to play', board: 'The board', back: 'Back' },
   common: {
     day: 'Day {n}', dayOf: 'Day {n} of {m}', saga: 'Saga {n} of {m}', no: 'No. {n}', pts: '{n} pts', left: '{n} left', of: '{a} of {b}',
     close: 'Close', cancel: 'Cancel', done: 'Done', open: 'Open', next: 'Next', more: 'More', loading: 'Setting the type…', retry: 'Try again',

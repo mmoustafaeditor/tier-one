@@ -50,6 +50,7 @@ function pick(s: Save, day: string) {
   return ['daily', a.id, b.id];
 }
 export function ensureMissions(s: Save) {
+  ensureWeekly(s);
   const d = today();
   if (s.missions && s.missions.day === d) return s.missions;
   const ids = pick(s, d), base: Record<string, number> = {};
@@ -66,7 +67,49 @@ export function missionsView(s: Save) {
     return { ...m, have, done: have >= m.n, claimed: ms.claimed.includes(id) };
   });
 }
+// 3.7: weekly missions, one per mode plus one for calls right anywhere. Same counters, a Monday-to-Sunday (UTC) base,
+// coins only (never a score). Ids carry a 'w.' prefix so a claim can never collide with a daily one.
+export const WEEKLY: MissionDef[] = [
+  { id: 'w.daily', c: 'daily', n: 5, coins: 40 },
+  { id: 'w.story', c: 'story', n: 3, coins: 40 },
+  { id: 'w.room', c: 'room', n: 3, coins: 40 },
+  { id: 'w.wire', c: 'wire', n: 5, coins: 40 },
+  { id: 'w.right', c: 'right', n: 15, coins: 50 },
+];
+export interface WeekMissionState { wk: string; base: Record<string, number>; claimed: string[] }
+declare module './save' { interface Save { missionsW?: WeekMissionState } }
+/** The Monday (UTC, yyyy-mm-dd) of the current week. */
+export const weekKey = (ms = Date.now()) => { const d = new Date(ms); const dow = (d.getUTCDay() + 6) % 7; return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - dow)).toISOString().slice(0, 10); };
+export function ensureWeekly(s: Save) {
+  const wk = weekKey();
+  if (s.missionsW && s.missionsW.wk === wk) return s.missionsW;
+  const base: Record<string, number> = {};
+  for (const m of WEEKLY) base[m.id] = cnt(s, m.c);
+  s.missionsW = { wk, base, claimed: [] };
+  return s.missionsW;
+}
+/** Which mode a mission belongs to (the Missions page groups by it); 'any' counts in every mode. */
+export type MissionMode = 'daily' | 'career' | 'multi' | 'market' | 'any';
+const MODE_OF: Record<Counter, MissionMode> = { daily: 'daily', practice: 'daily', story: 'career', room: 'multi', wire: 'market', right: 'any', excl: 'any', confRight: 'any', src_physio: 'any', src_spotter: 'any', src_barber: 'any', src_agent: 'any', src_kitman: 'any', twistRight: 'any', uncalledZero: 'any' };
+export const MODE_ORDER: MissionMode[] = ['daily', 'career', 'multi', 'market', 'any'];
+export interface MissionRow extends MissionDef { have: number; done: boolean; claimed: boolean; weekly: boolean; mode: MissionMode; label: string }
+export function weeklyView(s: Save): MissionRow[] {
+  const ms = s.missionsW && s.missionsW.wk === weekKey() ? s.missionsW : null;
+  if (!ms) return [];
+  return WEEKLY.map((m) => { const have = Math.max(0, Math.min(m.n, cnt(s, m.c) - (ms.base[m.id] || 0))); return { ...m, have, done: have >= m.n, claimed: ms.claimed.includes(m.id), weekly: true, mode: MODE_OF[m.c], label: 'hub.missions.wk.' + m.id.slice(2) }; });
+}
+/** Today's three daily missions and this week's weekly ones, in one list. */
+export function allMissions(s: Save): MissionRow[] {
+  const d: MissionRow[] = (missionsView(s) || []).map((m) => ({ ...m, weekly: false, mode: MODE_OF[m.c], label: 'g.missions.' + m.id }));
+  return [...d, ...weeklyView(s)];
+}
+/** Home's three: claimable first, then the closest to done, claimed last. */
+export function topMissions(s: Save, n = 3): MissionRow[] {
+  const score = (m: MissionRow) => (m.claimed ? -2 : m.done ? 2 : m.have / m.n);
+  return [...allMissions(s)].sort((a, b) => score(b) - score(a)).slice(0, n);
+}
 export function claimMission(id: string) {
+  if (id.startsWith('w.')) return claimWeekly(id);
   let paid = 0;
   update((s) => {
     const v = missionsView(s)?.find((m) => m.id === id);
@@ -76,6 +119,19 @@ export function claimMission(id: string) {
     s.credits += coins; s.ledger = [{ at: Date.now(), d: coins, why: 'mission:' + id }, ...s.ledger].slice(0, 30);
     s.stats.earned = (s.stats.earned || 0) + coins;
     s.pp += 20; addSeasonPP(s, 20); paid = coins;
+  });
+  return paid;
+}
+function claimWeekly(id: string) {
+  let paid = 0;
+  update((s) => {
+    const v = weeklyView(s).find((m) => m.id === id);
+    if (!v || !v.done || v.claimed || !s.missionsW) return;
+    s.missionsW.claimed.push(id);
+    const coins = goldBonus(s, v.coins);
+    s.credits += coins; s.ledger = [{ at: Date.now(), d: coins, why: 'mission:' + id }, ...s.ledger].slice(0, 30);
+    s.stats.earned = (s.stats.earned || 0) + coins;
+    s.pp += 40; addSeasonPP(s, 40); paid = coins;
   });
   return paid;
 }
@@ -94,4 +150,4 @@ export function trackWindow(s: Save, r: Result, mode: 'daily' | 'practice' | 'st
   }
   seasonWindow(s, r, mode); // season recap (best tier, top call) and the weekly event
 }
-export const missionsReady = () => (missionsView(getSave()) || []).filter((m) => m.done && !m.claimed).length;
+export const missionsReady = (s: Save = getSave()) => allMissions(s).filter((m) => m.done && !m.claimed).length;

@@ -6,7 +6,7 @@
 export default {
   en: {
     g: { story: {
-      k: 'Career', chapterOf: 'Chapter {n} of 5', chapter: 'Chapter {n}', epilogue: 'Epilogue', prologue: 'Prologue',
+      k: 'Career Mode', chapterOf: 'Chapter {n} of 5', chapter: 'Chapter {n}', epilogue: 'Epilogue', prologue: 'Prologue',
       cover: {
         title: 'The Comeback', hook: 'One wrong “Done deal” cost you everything. Someone fed you that tip on purpose.',
         hook2: 'Rebuild your name, from a free blog to the front page, and find out who burned you.',
@@ -142,7 +142,7 @@ export default {
   },
   ar: {
     g: { story: {
-      k: 'وضع القصة', chapterOf: 'الفصل {n} من ٥', chapter: 'الفصل {n}', epilogue: 'الخاتمة', prologue: 'المقدمة',
+      k: 'وضع المسيرة', chapterOf: 'الفصل {n} من ٥', chapter: 'الفصل {n}', epilogue: 'الخاتمة', prologue: 'المقدمة',
       cover: {
         title: 'الرجوع', hook: '«صفقة تمت» واحدة غلط ضيّعت كل حاجة. وفي حد إدّاك الخبر ده بالقصد.',
         hook2: 'رجّع اسمك، من بلوج ببلاش للصفحة الأولى، واعرف مين اللي حرقك.',
@@ -277,7 +277,7 @@ export default {
   },
   es: {
     g: { story: {
-      k: 'Modo historia', chapterOf: 'Capítulo {n} de 5', chapter: 'Capítulo {n}', epilogue: 'Epílogo', prologue: 'Prólogo',
+      k: 'Modo Carrera', chapterOf: 'Capítulo {n} de 5', chapter: 'Capítulo {n}', epilogue: 'Epílogo', prologue: 'Prólogo',
       cover: {
         title: 'La vuelta', hook: 'Un “Hecho” equivocado te costó todo. Alguien te pasó ese soplo a propósito.',
         hook2: 'Recupera tu nombre, de un blog gratis a la portada, y descubre quién te quemó.',

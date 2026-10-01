@@ -12,7 +12,7 @@ export default {
           resume: 'Your {m} window is on day {d}.', wire: '{p}: {f} followers.', career: 'Career window {w} is ready when you are.', room: 'Your room has news.', roomOpen: '{n} rounds open in your rooms.',
           wireSettling: '{n} of your calls are about to settle.', mission: '{n} missions ready to claim.', practice: 'A board with the coach. No stake.',
         },
-        b: { ddlive: 'Go live', ddresults: 'See the table', daily: 'Open the phones', resume: 'Resume', wire: 'See the call', career: 'Open Career', room: 'Open the room', wireSettling: 'Watch them', mission: 'Claim', practice: 'Practice' },
+        b: { ddlive: 'Go live', ddresults: 'See the table', daily: 'Open the phones', resume: 'Resume', wire: 'See the call', career: 'Open Career Mode', room: 'Open the room', wireSettling: 'Watch them', mission: 'Claim', practice: 'Practice' },
         voice: {
           ddlive: ['It’s the day. Everyone’s on the same board. Don’t be the last name on it.', 'Real deadline, real sagas, one room. Call it before 23:00.', 'The whole newsroom is on this. So are the rivals. Go.', 'No rehearsals today. The board is live until the whistle.'],
           daily: ['Five names on your desk. Ring someone before you post.', 'Same five for everyone. First right call wins the day.', 'Your brief’s on the desk. The barber is lying about one of them.', 'Don’t sit on it. The rivals post at dawn.'],
@@ -91,7 +91,7 @@ export default {
           resume: 'فترة {m} بتاعتك في اليوم {d}.', wire: '{p}: {f} متابع.', career: 'فترة القصة {w} جاهزة لما تكون جاهز.', room: 'أوضتك فيها جديد.', roomOpen: '{n} جولات مفتوحة في أوضك.',
           wireSettling: '{n} من توقعاتك على وشك تتحسم.', mission: '{n} مهام جاهزة تستلمها.', practice: 'لوحة مع المدرب. من غير رهان.',
         },
-        b: { ddlive: 'ادخل لايف', ddresults: 'شوف الجدول', daily: 'افتح التليفونات', resume: 'كمّل', wire: 'شوف التوقّع', career: 'افتح القصة', room: 'افتح الأوضة', wireSettling: 'تابعهم', mission: 'استلم', practice: 'اتمرّن' },
+        b: { ddlive: 'ادخل لايف', ddresults: 'شوف الجدول', daily: 'افتح التليفونات', resume: 'كمّل', wire: 'شوف التوقّع', career: 'افتح وضع المسيرة', room: 'افتح الأوضة', wireSettling: 'تابعهم', mission: 'استلم', practice: 'اتمرّن' },
         voice: {
           ddlive: ['النهارده اليوم. الكل على نفس اللوحة. متبقاش آخر اسم فيها.', 'ديدلاين حقيقي، صفقات حقيقية، أوضة واحدة. قولها قبل ١١ بالليل.', 'الجرنال كله على الموضوع ده. والمنافسين كمان. يلا.', 'مفيش بروفات النهارده. اللوحة شغالة لحد الصفارة.'],
           daily: ['خمس أسامي على مكتبك. كلّم حد قبل ما تنشر.', 'نفس الخمسة للكل. أول توقّع صح بياخد اليوم.', 'البرييف على المكتب. الحلاق بيكدب في واحد منهم.', 'متقعدش عليه. المنافسين بينشروا الفجر.'],
@@ -170,7 +170,7 @@ export default {
           resume: 'Tu ventana de {m} va por el día {d}.', wire: '{p}: {f} seguidores.', career: 'La ventana {w} de la Historia está lista cuando quieras.', room: 'Tu sala tiene novedades.', roomOpen: '{n} rondas abiertas en tus salas.',
           wireSettling: '{n} de tus apuestas están a punto de resolverse.', mission: '{n} misiones listas para cobrar.', practice: 'Un tablero con el entrenador. Sin nada en juego.',
         },
-        b: { ddlive: 'En directo', ddresults: 'Ver la tabla', daily: 'Coge el teléfono', resume: 'Seguir', wire: 'Ver la apuesta', career: 'Abrir Historia', room: 'Abrir la sala', wireSettling: 'Vigilarlas', mission: 'Cobrar', practice: 'Practicar' },
+        b: { ddlive: 'En directo', ddresults: 'Ver la tabla', daily: 'Coge el teléfono', resume: 'Seguir', wire: 'Ver la apuesta', career: 'Abrir Modo Carrera', room: 'Abrir la sala', wireSettling: 'Vigilarlas', mission: 'Cobrar', practice: 'Practicar' },
         voice: {
           ddlive: ['Es el día. Todos en el mismo tablero. No seas el último nombre.', 'Cierre real, culebrones reales, una sala. Cántalo antes de las 23:00.', 'Toda la redacción está en esto. Y los rivales. Ve.', 'Hoy no hay ensayo. El tablero está vivo hasta el pitido.'],
           daily: ['Cinco nombres en tu mesa. Llama a alguien antes de publicar.', 'Los mismos cinco para todos. La primera apuesta buena se lleva el día.', 'Tu encargo está en la mesa. El barbero miente sobre uno.', 'No te sientes encima. Los rivales publican al alba.'],

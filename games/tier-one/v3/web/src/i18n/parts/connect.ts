@@ -5,7 +5,7 @@ export default {
   en: {
     cn: {
       bell: 'Feed, {n} unread',
-      mode: { daily: 'Daily Challenge', career: 'Career', room: 'Room', practice: 'Practice', wire: 'Transfer Market' },
+      mode: { daily: 'Daily Challenge', career: 'Career Mode', room: 'Room', practice: 'Practice', wire: 'Transfer Market' },
       tier: { blogger: 'Blogger', stringer: 'Stringer', correspondent: 'Correspondent', chief: 'Chief', tierone: 'Tier One' },
       feed: {
         title: 'Feed', empty: 'Nothing yet. Publish a call in any mode and the reactions land here.', play: 'Play today’s Daily',
@@ -23,7 +23,7 @@ export default {
       next: {
         resume: { t: 'Pick up your window', s: 'Your {m} window is waiting on day {d}.', b: 'Resume' },
         wire: { t: 'A market call settled', s: '{p}: {f} followers.', b: 'See the call' },
-        career: { t: 'The editor wants copy', s: 'Career window {w} is ready when you are.', b: 'Open Career' },
+        career: { t: 'The editor wants copy', s: 'Career window {w} is ready when you are.', b: 'Open Career Mode' },
         room: { t: 'Your room has results', s: 'See where you finished on the table.', b: 'See the table' },
         mission: { t: 'Coins waiting', s: '{n} missions ready to claim below.', b: 'Claim them' },
         practice: { t: 'Keep your hand warm', s: 'Practice a board. The coach shows the odds.', se: 'This week: {e}.', b: 'Practice' },
@@ -51,7 +51,7 @@ export default {
         p3: 'First ask each window costs 1 less', p5: 'One free second opinion each window',
       },
       nick: { kitman: 'gaffer', barber: 'my guy', agent: 'partner', spotter: 'captain', physio: 'champ' },
-      me: { storyW: 'Career windows', byline: 'Your byline', followers: 'Followers', rep: 'Reputation', hot: 'Hot hand', best: 'Best run {n}', rivals: 'Rivals', contacts: 'Contacts', feed: 'Feed', cold: 'Cold. Get one right.',
+      me: { storyW: 'Career Mode windows', byline: 'Your byline', followers: 'Followers', rep: 'Reputation', hot: 'Hot hand', best: 'Best run {n}', rivals: 'Rivals', contacts: 'Contacts', feed: 'Feed', cold: 'Cold. Get one right.',
         toTier: '{n} rep to {rt}', topTier: 'Top of the trade. Keep it there.', ladder: 'Byline ladder',
         feedSub: { zero: 'All read', one: '1 new', other: '{n} new' }, rivalsSub: 'Record {w}–{l}', rivalsNone: 'No duels yet',
         contactsSub: 'Best: {s}, level {n}', passSub: 'Season level {n}', films: 'Replays',
@@ -80,7 +80,7 @@ export default {
   ar: {
     cn: {
       bell: 'التايملاين، {n} جديد',
-      mode: { daily: 'تحدي النهارده', career: 'المسيرة', room: 'أوضة', practice: 'التمرين', wire: 'سوق الانتقالات' },
+      mode: { daily: 'تحدي النهارده', career: 'وضع المسيرة', room: 'أوضة', practice: 'التمرين', wire: 'سوق الانتقالات' },
       tier: { blogger: 'مدوّن', stringer: 'مراسل حر', correspondent: 'مراسل', chief: 'كبير المراسلين', tierone: 'تير وان' },
       feed: {
         title: 'التايملاين', empty: 'لسه مفيش حاجة. انشر توقّع في أي مود والردود هتوصل هنا.', play: 'العب يومي النهارده',
@@ -98,7 +98,7 @@ export default {
       next: {
         resume: { t: 'كمّل الفترة بتاعتك', s: 'فترة {m} مستنياك في اليوم {d}.', b: 'كمّل' },
         wire: { t: 'توقّع في سوق الانتقالات اتحسم', s: '{p}: {f} متابع.', b: 'شوف التوقّع' },
-        career: { t: 'رئيس التحرير عايز خبر', s: 'فترة القصة رقم {w} جاهزة.', b: 'افتح القصة' },
+        career: { t: 'رئيس التحرير عايز خبر', s: 'فترة القصة رقم {w} جاهزة.', b: 'افتح وضع المسيرة' },
         room: { t: 'أوضتك طلعت نتيجتها', s: 'شوف انت جيت فين في الجدول.', b: 'شوف الجدول' },
         mission: { t: 'فيه كوينز مستنياك', s: '{n} مهمات جاهزة تستلمها تحت.', b: 'استلمهم' },
         practice: { t: 'خلّي إيدك دافية', s: 'اتمرّن على لوحة. المدرب بيوريك الاحتمالات.', se: 'الأسبوع ده: {e}.', b: 'اتمرّن' },
@@ -126,7 +126,7 @@ export default {
         p3: 'أول مكالمة في كل فترة أرخص بواحد', p5: 'رأي تاني ببلاش مرة كل فترة',
       },
       nick: { kitman: 'يا ريّس', barber: 'يا باشا', agent: 'يا شريك', spotter: 'يا كابتن', physio: 'يا بطل' },
-      me: { storyW: 'فترات القصة', byline: 'اسمك في الجرنال', followers: 'المتابعين', rep: 'السمعة', hot: 'الإيد السخنة', best: 'أحسن سلسلة {n}', rivals: 'المنافسين', contacts: 'المصادر', feed: 'التايملاين', cold: 'باردة. صيب واحدة.',
+      me: { storyW: 'فترات وضع المسيرة', byline: 'اسمك في الجرنال', followers: 'المتابعين', rep: 'السمعة', hot: 'الإيد السخنة', best: 'أحسن سلسلة {n}', rivals: 'المنافسين', contacts: 'المصادر', feed: 'التايملاين', cold: 'باردة. صيب واحدة.',
         toTier: 'فاضل {n} سمعة لـ{rt}', topTier: 'على القمة. خليك هناك.', ladder: 'سلّم الصحفي',
         feedSub: { zero: 'كله مقري', one: 'واحد جديد', two: 'اتنين جداد', other: '{n} جديد' }, rivalsSub: 'السجل {w}–{l}', rivalsNone: 'مفيش مواجهات لسه',
         contactsSub: 'الأقرب: {s}، مستوى {n}', passSub: 'مستوى الموسم {n}', films: 'الإعادات',
@@ -155,7 +155,7 @@ export default {
   es: {
     cn: {
       bell: 'Muro, {n} sin leer',
-      mode: { daily: 'Reto diario', career: 'Carrera', room: 'Sala', practice: 'Práctica', wire: 'Mercado de fichajes' },
+      mode: { daily: 'Reto diario', career: 'Modo Carrera', room: 'Sala', practice: 'Práctica', wire: 'Mercado de fichajes' },
       tier: { blogger: 'Bloguero', stringer: 'Colaborador', correspondent: 'Corresponsal', chief: 'Jefe', tierone: 'Tier One' },
       feed: {
         title: 'Muro', empty: 'Nada todavía. Publica una apuesta en cualquier modo y las reacciones llegan aquí.', play: 'Juega el Diario de hoy',
@@ -173,7 +173,7 @@ export default {
       next: {
         resume: { t: 'Retoma tu ventana', s: 'Tu ventana de {m} te espera en el día {d}.', b: 'Seguir' },
         wire: { t: 'Se ha resuelto una apuesta del Mercado de fichajes', s: '{p}: {f} seguidores.', b: 'Ver la apuesta' },
-        career: { t: 'El director quiere texto', s: 'La ventana {w} de la Historia está lista.', b: 'Abrir Historia' },
+        career: { t: 'El director quiere texto', s: 'La ventana {w} de la Historia está lista.', b: 'Abrir Modo Carrera' },
         room: { t: 'Tu sala tiene resultados', s: 'Mira en qué puesto has quedado.', b: 'Ver la tabla' },
         mission: { t: 'Monedas esperando', s: '{n} misiones listas para cobrar abajo.', b: 'Cobrarlas' },
         practice: { t: 'Mantén la mano caliente', s: 'Practica un tablero. El entrenador te enseña las probabilidades.', se: 'Esta semana: {e}.', b: 'Practicar' },
@@ -201,7 +201,7 @@ export default {
         p3: 'La primera llamada de cada ventana cuesta 1 menos', p5: 'Una segunda opinión gratis por ventana',
       },
       nick: { kitman: 'míster', barber: 'crack', agent: 'socio', spotter: 'capi', physio: 'campeón' },
-      me: { storyW: 'Ventanas de Historia', byline: 'Tu firma', followers: 'Seguidores', rep: 'Reputación', hot: 'Racha', best: 'Mejor racha {n}', rivals: 'Rivales', contacts: 'Contactos', feed: 'Muro', cold: 'Fría. Acierta una.',
+      me: { storyW: 'Ventanas del Modo Carrera', byline: 'Tu firma', followers: 'Seguidores', rep: 'Reputación', hot: 'Racha', best: 'Mejor racha {n}', rivals: 'Rivales', contacts: 'Contactos', feed: 'Muro', cold: 'Fría. Acierta una.',
         toTier: '{n} de reputación para {rt}', topTier: 'Lo más alto del oficio. Aguanta ahí.', ladder: 'Escalafón',
         feedSub: { zero: 'Todo leído', one: '1 nueva', other: '{n} nuevas' }, rivalsSub: 'Balance {w}–{l}', rivalsNone: 'Aún sin duelos',
         contactsSub: 'Mejor: {s}, nivel {n}', passSub: 'Nivel de temporada {n}', films: 'Repeticiones',

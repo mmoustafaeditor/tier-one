@@ -14,7 +14,9 @@ import type { Route, Go } from '../App';
 import { Icon, GBtn, CountUp, useCountUp } from './game';
 import '../styles/connect.css';
 import { feedSkin } from '../lib/wallet';
-import { CatchLine, Showcase } from './customize';
+import { CatchLine, Showcase, itemName } from './customize';
+import { notesOf, markNotesRead, type Note, type NoteKind } from '../lib/notes';
+import { item } from '../lib/catalog';
 import { BadgeRow } from './awards';
 
 // ---------- navigation for components that don't get chrome (the bell lives in every TopBar)
@@ -83,18 +85,53 @@ export function RivalMark({ id, size = 40 }: { id: string; size?: number }) {
   return <span className={'cn-rmark cn-rmark--' + id} style={{ ['--sz' as string]: size + 'px' }} aria-hidden="true">{{ tabloid: 'BP', itk: 'IT', insider: 'PP' }[id] || '?'}</span>;
 }
 
-// ---------- the bell (TopBar)
+// ---------- the bell (TopBar), 3.7: a short list of what matters (lib/notes.ts), not the feed. Badge = unread notes.
 const BELL = 'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 20.5a2 2 0 0 0 4 0';
+const NOTE_IC: Record<NoteKind, string> = { daily: 'news', call: 'wire', moved: 'pulse', shop: 'gift' };
 export function Bell() {
   const s = useSave(); const t = useT();
-  const n = unreadOf(s).length;
+  const notes = notesOf(s);
+  const read = s.notes?.read || [];
+  const n = notes.filter((x) => !read.includes(x.id)).length;
   const prev = useRef(n);
   const [pop, setPop] = useState(false);
+  const [open, setOpen] = useState(false);
+  const wrap = useRef<HTMLSpanElement>(null);
   useEffect(() => { if (n > prev.current) { setPop(true); const id = setTimeout(() => setPop(false), 600); prev.current = n; return () => clearTimeout(id); } prev.current = n; }, [n]);
-  return <button className={'g-icbtn cn-bell' + (pop ? ' is-pop' : '')} onClick={() => { sfx('ui.tap'); navTo({ n: 'feed' }); }} aria-label={t('cn.bell', { n })}>
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={BELL} /></svg>
-    {n > 0 && <span className="cn-bell__n">{n > 9 ? '9+' : n}</span>}
-  </button>;
+  const close = () => { setOpen(false); markNotesRead(notes.map((x) => x.id)); };
+  useEffect(() => {
+    if (!open) return;
+    const out = (e: PointerEvent) => { if (!wrap.current?.contains(e.target as Node)) close(); };
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
+    document.addEventListener('pointerdown', out); document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('pointerdown', out); document.removeEventListener('keydown', esc); };
+  }); // eslint-disable-line react-hooks/exhaustive-deps
+  const text = (x: Note) => {
+    if (x.feed) return feedText(t, x.feed);
+    if (x.k === 'moved') return t('hub.note.moved', { p: String(x.v?.p || '?'), s: t('g.home.tick.' + (x.v?.s || 'interest'), { c: String(x.v?.c || '') }) });
+    if (x.k === 'shop') { const it = x.item ? item(x.item) : null; return t('hub.note.shop', { n: it ? itemName(t, it) : '' }); }
+    return t(x.key);
+  };
+  const goTo = (x: Note) => {
+    sfx('ui.tap'); close();
+    navTo(x.k === 'daily' ? { n: 'today' } : x.k === 'shop' ? { n: 'customize' } : { n: 'wire', rid: x.rid });
+  };
+  return <span className="nt" ref={wrap}>
+    <button className={'g-icbtn cn-bell' + (pop ? ' is-pop' : '')} aria-expanded={open} aria-haspopup="true" onClick={() => { sfx('ui.tap'); if (open) close(); else setOpen(true); }} aria-label={t('cn.bell', { n })}>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={BELL} /></svg>
+      {n > 0 && <span className="cn-bell__n">{n > 9 ? '9+' : n}</span>}
+    </button>
+    {open && <div className="nt__panel" role="region" aria-label={t('hub.note.title')}>
+      <b className="nt__h">{t('hub.note.title')}</b>
+      {notes.length ? <ul className="nt__list">{notes.map((x) => <li key={x.id}>
+        <button type="button" className={'nt__row' + (read.includes(x.id) ? '' : ' is-new') + (x.tone ? ' is-' + x.tone : '')} onClick={() => goTo(x)}>
+          <span className={'nt__ic nt__ic--' + x.k} aria-hidden="true"><Icon n={NOTE_IC[x.k]} size={18} /></span>
+          <span className="nt__txt" dir="auto">{text(x)}</span>
+          <time className="nt__at" dateTime={new Date(x.at).toISOString()}>{ago(x.at, t.lang)}</time>
+        </button>
+      </li>)}</ul> : <p className="nt__none">{t('hub.note.none')}</p>}
+    </div>}
+  </span>;
 }
 
 // ---------- Home: the assignment slip (next up, when it isn't the Daily) and "For you"

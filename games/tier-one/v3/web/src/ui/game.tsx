@@ -7,8 +7,7 @@ import { prefersReducedMotion } from '../lib/motion';
 export { prefersReducedMotion } from '../lib/motion';
 import { useSave } from '../lib/save';
 import { useT } from '../lib/i18n';
-import { levelOf } from '../lib/progress';
-import { Bell } from './connect';
+import { Bell, navTo } from './connect';
 
 // ---------- icons (24px line icons, currentColor)
 const P: Record<string, string> = {
@@ -214,10 +213,13 @@ export function useTyped(text: string, cps = 38, on = true) {
   return text.slice(0, n);
 }
 
-// ---------- top bar
+// ---------- top bar (3.7): the bell (important notes only), coins and credits side by side (each opens the Shop on
+// what it buys), help where a screen has it, Settings where a screen passes it. No level here: it lives on Home's
+// My Press Card and in Career Mode.
 export function TopBar({ back, title, onHelp, onMenu, children }: { back?: { label: string; onClick: () => void }; title?: ReactNode; onHelp?: () => void; onMenu?: () => void; children?: ReactNode }) {
   const s = useSave(); const t = useT();
-  const lv = levelOf(s.pp);
+  const cr = s.wallet?.credits || 0;
+  const shop = (cur: 'coins' | 'credits') => { sfx('ui.tap'); navTo({ n: 'customize', cur }); };
   return <header className="g-top">
     {back ? <button className="g-top__back" onClick={() => { sfx('ui.tap'); back.onClick(); }}><Icon n={t.rtl ? 'arrow' : 'back'} size={20} />{back.label}</button>
       : <span className="g-top__logo">Tier One</span>}
@@ -225,8 +227,10 @@ export function TopBar({ back, title, onHelp, onMenu, children }: { back?: { lab
     <span className="g-top__end">
       {children}
       <Bell />
-      <span className="g-pill" aria-label={t('g.coins', { n: s.credits })}><span className="g-coin" /><Roll n={s.credits} from0={false} /></span>
-      <span className="g-pill g-pill--lv" aria-label={t('g.level', { n: lv.n })}>{t('g.lv', { n: lv.n })}</span>
+      <span className="g-wal" role="group" aria-label={t('pass.wallet')}>
+        <button type="button" className="g-wal__b" onClick={() => shop('coins')} aria-label={t('hub.top.coins', { n: s.credits })}><span className="g-coin" /><Roll n={s.credits} from0={false} /></button>
+        <button type="button" className="g-wal__b g-wal__b--c" onClick={() => shop('credits')} aria-label={t('hub.top.credits', { n: cr })}><span className="cz-cred" style={{ ['--sz' as string]: '16px' }} aria-hidden="true"><b>C</b></span><Roll n={cr} from0={false} /></button>
+      </span>
       {onHelp && <button className="g-icbtn" onClick={onHelp} aria-label={t('nav.howto')}><Icon n="help" /></button>}
       {onMenu && <button className="g-icbtn" onClick={onMenu} aria-label={t('common.settings')}><Icon n="menu" /></button>}
     </span>

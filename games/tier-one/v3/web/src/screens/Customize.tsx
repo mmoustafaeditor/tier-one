@@ -2,7 +2,7 @@
 // Tap a look to try it on; buy or put it on in place; gift by friend code; this week's featured looks and the season's
 // limited set with honest countdowns. Everything is cosmetic: nothing here changes a Daily board or a score.
 // Logic: lib/wallet.ts (coins, credits, ledger, equip) and lib/catalog.ts (the one catalog). Pieces: ui/customize.tsx.
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useT, fmtDate } from '../lib/i18n';
 import { useSave } from '../lib/save';
 import { toast } from '../lib/meta';
@@ -25,6 +25,9 @@ import { Seg } from '../ui/screenbits';
 import { usePaged, Pager } from '../ui/fit';
 import { WalletStrip, Stage, Tile, Thumb, PriceTag, CreditIcon, Countdown, GiftSheet, PacksSheet, itemName, type Try } from '../ui/customize';
 import type { Save } from '../lib/save';
+import { spend, ymdUTC } from '../lib/meta';
+import { COFFEE_COST } from '../lib/byline';
+import { update } from '../lib/save';
 
 type Tab = Kind | 'book';
 let remoteApplied = false;
@@ -33,11 +36,14 @@ function applyRemoteOnce() {
   if (remoteApplied) return; remoteApplied = true;
   try { const c = getConfig()?.catalog as unknown as RemoteCatalog | undefined; if (c && (c.looks || c.vault || c.drops || c.rails)) applyRemoteCatalog(c); } catch { /* the built-in catalog stands */ }
 }
-import type { Chrome } from '../App';
+import type { Chrome, Go } from '../App';
 
-export function CustomizeScreen(chrome: Chrome) {
+export function CustomizeScreen({ sec: sec0, cur: cur0, ...chrome }: Chrome & { sec?: 'looks' | 'modes'; cur?: Currency }) {
   const t = useT();
   const s = useSave();
+  // 3.7: two top-level sections. Game customization (looks) and Game modes (extras that help in a mode, never a score).
+  const [top, setTop] = useState<'looks' | 'modes'>(sec0 || 'looks');
+  const [curF, setCurF] = useState<Currency | undefined>(cur0);
   const [tab, setTab] = useState<Tab>('byline');
   const [sel, setSel] = useState<string>(() => equipped('byline').id);
   useEffect(() => { applyRemoteOnce(); retryCustomCatchphrase(); const got = syncEarned().map((id) => item(id)).filter((x): x is Item => !!x); if (got.length) { sfx('unlock'); confetti(['#F7B928', '#FFE08A', '#F4EFE4']); toast('ach', t('eco.toast.earned', { n: itemName(t, got[0]) }), got.length > 1 ? t('eco.toast.earnedMore', { n: got.length - 1 }) : t('eco.book.never')); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -48,9 +54,9 @@ export function CustomizeScreen(chrome: Chrome) {
   const season = seasonAt(now);
   const book = tab === 'book';
   const kind: Kind = book ? 'byline' : tab;
-  const items = useMemo(() => itemsOf(kind, now), [kind, now]);
+  const items = useMemo(() => itemsOf(kind, now).filter((it) => !curF || isStandard(it.id) || it.price[curF] != null || owns(it.id, s)), [kind, now, curF]); // eslint-disable-line react-hooks/exhaustive-deps
   const [sec, setSec] = useState<'shop' | 'drops' | 'more'>('shop'); // 3.6: one screen, three sections
-  const ip = usePaged(items, 8, kind);
+  const ip = usePaged(items, 8, kind + (curF || ''));
   const feat = useMemo(() => featuredView(now), [now]);
   const set = useMemo(() => seasonSet(season.id), [season.id]);
   const fresh = useMemo(() => newThisWeek(now), [now]);
@@ -109,15 +115,20 @@ export function CustomizeScreen(chrome: Chrome) {
     <div className="cz__grid fit__body">
       <aside className="cz__side">
         <WalletStrip onGet={() => setPacks(true)} />
-        <Stage tab={book ? 'byline' : tab} s={s} tryOn={book ? {} : tryOn} />
+        <div className="g-tabs2 cz-top" role="tablist" aria-label={t('hub.row.shop')}>
+          {(['looks', 'modes'] as const).map((k) => <button key={k} role="tab" aria-selected={top === k} onClick={() => { sfx('ui.tap'); setTop(k); }}><Icon n={k === 'looks' ? 'pen' : 'target'} size={18} />{t('hub.shop.' + k)}</button>)}
+        </div>
+        {top === 'looks' && <Stage tab={book ? 'byline' : tab} s={s} tryOn={book ? {} : tryOn} />}
         <p className="cz-hint">{t('eco.sub')}</p>
       </aside>
 
-      <div className="cz__main">
+      {top === 'modes' ? <div className="cz__main"><ModesShop go={chrome.go} /></div> : <div className="cz__main">
         <div className="g-tabs2 cz-secs" role="tablist">
           {(['shop', 'drops', 'more'] as const).map((k) => <button key={k} role="tab" aria-selected={sec === k} onClick={() => { sfx('ui.tap'); setSec(k); }}>{t('hub.shop.' + k)}</button>)}
         </div>
         {sec === 'shop' && <>
+        {curF && <div className="cz-curf"><span>{curF === 'coins' ? <span className="g-coin" aria-hidden="true" /> : <CreditIcon size={15} />}{t('hub.shop.filter.' + curF)}</span>
+          <button type="button" onClick={() => { sfx('ui.tap'); setCurF(undefined); }}><Icon n="x" size={14} />{t('hub.shop.clear')}</button></div>}
         <Seg<Tab> className="cz-tabs" value={tab} onChange={changeTab} label={t('eco.title')} options={[...KINDS.map((k) => ({ v: k as Tab, label: k === 'catchphrase' ? t('cp.ui.tab') : t('eco.tabs.' + k) })), { v: 'book' as Tab, label: t('eco.tabs.book') }]} />
 
         {book ? <BookView s={s} now={now} onPick={(id) => pick(id)} /> : gold ? <GoldTab have={haveGold} sname={t(season.nameKey)} onBuy={() => doBuy(item(goldId)!, 'credits')} credits={balance('credits', s)} />
@@ -229,7 +240,7 @@ export function CustomizeScreen(chrome: Chrome) {
 
         <section className="cz-promise"><h2>{t('eco.promise.hed')}</h2><ul>{(t.list('eco.promise.list') as string[]).map((x, k) => <li key={k}><Icon n="check" size={14} />{x}</li>)}</ul></section>
         </>}
-      </div>
+      </div>}
     </div>
     {giftFor && <GiftSheet it={giftFor} onClose={() => setGiftFor(null)} onSent={(to, queued) => toast('ach', t(queued ? 'eco.gift.queued' : 'eco.gift.sent', { c: to }))} />}
     {packs && <PacksSheet onClose={() => setPacks(false)} />}
@@ -330,5 +341,46 @@ function GoldTab({ have, sname, onBuy, credits }: { have: boolean; sname: string
       {goldOnSale() ? <GBtn kind="dark" size="sm" disabled={busy} onClick={() => { setBusy(true); buyGold().finally(() => setBusy(false)); }}>{t('eco.gold.direct', { p: MONET.goldPrice })}</GBtn> : <small>{t('eco.gold.direct', { p: MONET.goldPrice })} · {t('eco.gold.soon')}</small>}
     </div>}
     <p className="g-fine">{t('season.gold.per')}</p>
+  </section>;
+}
+
+// ---------------------------------------------------------------- Game modes: extras that help inside a mode
+// Only what exists and only coins: Career Mode favours, coffee with a contact, renaming your blog. The ranked modes
+// (Daily Challenge, Multiplayer, Transfer Market) sell nothing: their scores are earned, never bought.
+const FAVOUR_COST = 15, FAVOURS_A_DAY = 3, RENAME_COST = 250;
+function ModesShop({ go }: { go: Go }) {
+  const t = useT();
+  const s = useSave();
+  const k = 'fav:' + ymdUTC();
+  const used = s.stats[k] || 0;
+  const [favName, favD] = t.list('pass.items.favour') as string[];
+  const buyFavour = () => {
+    if (!s.career || used >= FAVOURS_A_DAY) return;
+    if (!spend(FAVOUR_COST, 'favour')) { sfx('bad'); toast('warn', t('eco.toast.short', { c: t('eco.wallet.coins').toLowerCase() })); return; }
+    sfx('coin');
+    update((x) => { x.stats[k] = (x.stats[k] || 0) + 1; if (x.career) { const kinds = ['burner', 'tipoff', 'stakeout'] as const; const kind = kinds[(x.stats[k] - 1) % 3]; x.career.favours[kind]++; toast('info', t('career.' + kind)); } });
+  };
+  type Row = { id: string; ic: string; name: string; desc: string; price: number; act: ReactNode };
+  const rows: Row[] = [
+    { id: 'favour', ic: 'gift', name: favName, desc: favD, price: FAVOUR_COST,
+      act: !s.career ? <GBtn kind="paper" size="sm" onClick={() => go({ n: 'story' })}>{t('hub.shopm.start')}</GBtn>
+        : used >= FAVOURS_A_DAY ? <span className="czm__done">{t('hub.shopm.favDone')}</span>
+          : <GBtn kind="gold" size="sm" onClick={buyFavour} disabled={s.credits < FAVOUR_COST}><span className="g-coin" aria-hidden="true" />{t('hub.shopm.buy', { n: FAVOUR_COST })}</GBtn> },
+    { id: 'coffee', ic: 'phone', name: t('hub.shopm.coffee'), desc: t('hub.shopm.coffeeD'), price: COFFEE_COST,
+      act: <GBtn kind="paper" size="sm" onClick={() => go({ n: 'contacts' })}>{t('hub.shopm.coffeeGo')}</GBtn> },
+    { id: 'rename', ic: 'pen', name: t('hub.shopm.rename'), desc: t('hub.shopm.renameD'), price: RENAME_COST,
+      act: <GBtn kind="paper" size="sm" onClick={() => go({ n: 'story' })}>{t('hub.mode.career')}</GBtn> },
+  ];
+  const pg = usePaged(rows, 3);
+  return <section className="czm" aria-labelledby="czm-h">
+    <h2 id="czm-h" className="czm__h">{t('hub.mode.career')}</h2>
+    <ul className="czm__list">{pg.rows.map((r) => <li key={r.id} className="czm__row">
+      <span className="czm__ic" aria-hidden="true"><Icon n={r.ic} size={20} /></span>
+      <span className="czm__b"><b dir="auto">{r.name}</b><small dir="auto">{r.desc}</small>
+        <span className="czm__price"><span className="g-coin" aria-hidden="true" />{t('eco.price.coins', { n: r.price })}{r.id === 'favour' && s.career ? ' · ' + t('hub.shopm.favLeft', { n: Math.max(0, FAVOURS_A_DAY - used) }) : ''}</span></span>
+      <span className="czm__act">{r.act}</span>
+    </li>)}</ul>
+    <Pager p={pg} />
+    <div className="czm__fair"><Icon n="lock" size={16} /><span><b>{t('hub.shopm.ranked')}</b>{t('hub.shopm.rankedD')}</span></div>
   </section>;
 }

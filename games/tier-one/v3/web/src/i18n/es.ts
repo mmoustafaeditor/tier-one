@@ -4,8 +4,8 @@ import type { Dict } from './en';
 const es: Dict = {
   meta: { lang: 'Español', dir: 'ltr', dateLocale: 'es-ES' },
   brand: { name: 'Tier One', edition: 'Edición de fichajes', morning: 'Edición de mañana', late: 'Edición de noche', auto: 'Como tu dispositivo' },
-  tabs: { front: 'Portada', daily: 'Diario', wire: 'Mercado de fichajes', desk: 'Carrera', pass: 'Pase' },
-  nav: { front: 'Portada', daily: 'Reto diario', wire: 'Mercado de fichajes', desk: 'Carrera', pass: 'Semba Pass', practice: 'Práctica', rooms: 'Salas', howto: 'Cómo se juega', board: 'El tablero', back: 'Volver' },
+  tabs: { front: 'Portada', daily: 'Diario', wire: 'Mercado de fichajes', desk: 'Modo Carrera', pass: 'Pase' },
+  nav: { front: 'Portada', daily: 'Reto diario', wire: 'Mercado de fichajes', desk: 'Modo Carrera', pass: 'Semba Pass', practice: 'Práctica', rooms: 'Salas', howto: 'Cómo se juega', board: 'El tablero', back: 'Volver' },
   common: {
     day: 'Día {n}', dayOf: 'Día {n} de {m}', saga: 'Culebrón {n} de {m}', no: 'N.º {n}', pts: '{n} pts', left: 'quedan {n}', of: '{a} de {b}',
     close: 'Cerrar', cancel: 'Cancelar', done: 'Hecho', open: 'Abrir', next: 'Siguiente', more: 'Más', loading: 'Componiendo la página…', retry: 'Reintentar',
