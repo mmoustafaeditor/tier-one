@@ -4,13 +4,16 @@
 // moving club never locks the career and the new club welcomes you (#40, #49, #50, #27), the inbox trims itself (#37).
 import type { Career, Club, Coach, Licence, LocalizedName, Msg, MsgKind, Objective } from '../model/types';
 import { clamp } from './rng';
-import { objectiveOf, squadOf, type World } from './world';
+import { squadOf, type World } from './world';
 import type { FormationId } from './tactics';
 import { cupRun, cupWinner } from './cups';
 import { newOps } from './economy';
 import { myWorldRank } from './rankings';
 import { addNews } from './news';
 import { balanceOf, sackLine, seasonSackLine } from './balance';
+import { strictness, userObjective } from './vision';
+import { settleClaim } from './press';
+import { DERBY_WEIGHT, isDerby } from './rivalry';
 
 // `board.hired` (coach days at the hire) is written by newBoard and read by sinceHire; saves from before this change have none.
 type Board = Career['board'] & { hired?: number };
@@ -143,7 +146,7 @@ export function objectivesOf(w: World, c: Career): Objectives {
   const lg = w.leagues.find((l) => l.id === club.leagueId)!;
   const country = w.clubs.filter((x) => w.leagues.find((l) => l.id === x.leagueId)?.country === lg.country).sort((a, b) => b.reputation - a.reputation);
   const rank = country.findIndex((x) => x.id === club.id);
-  return { league: objectiveOf(w, club), cup: rank < 2 ? 'win' : rank < 8 ? 'semi' : 'round2', youth: club.reputation >= 85 ? 5 : 15, finance: true };
+  return { league: userObjective(w, c), cup: rank < 2 ? 'win' : rank < 8 ? 'semi' : 'round2', youth: club.reputation >= 85 ? 5 : 15, finance: true };
 }
 
 export const youthApps = (w: World, c: Career) =>
@@ -172,6 +175,11 @@ export function cupAimMet(w: World, c: Career, aim: CupAim): boolean | null {
 // `expected`: the engine's own expected points at kick-off (3·P(win) + P(draw) from predict()), the same odds the user saw.
 export interface MatchOutcome { mine: number; theirs: number; oppId: string; home: boolean; myLevel: number; oppLevel: number; cup: boolean; expected?: number }
 export const BOARD_PER_SURPRISE = 1.8;
+export const FANS_PER_SURPRISE = 2;
+export const FANS_REST = 55; // where the fans drift back to: 3% of the gap a match keeps a winning side's fans near 80 and
+export const FANS_SETTLE = 0.03; // a struggling side's near 35, instead of running to 100 or 0
+export const FANS_PER_TROPHY = 8; // a trophy (league, cup, promotion) lifts the fans at the season's end
+export const FANS_RESULT: Record<number, number> = { 0: -1.5, 1: 0, 3: 1.5 };
 
 export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World; career: Career } {
   const me = w.clubs.find((x) => x.id === c.clubId)!;
@@ -179,6 +187,7 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
   const pts = o.mine > o.theirs ? 3 : o.mine === o.theirs ? 1 : 0;
   const expected = o.expected ?? clamp(1.4 + (o.myLevel - o.oppLevel) * 0.1 + (o.home ? 0.2 : -0.2), 0.3, 2.6);
   const surprise = pts - expected;
+  const k = isDerby(c.clubId, o.oppId) ? DERBY_WEIGHT : 1; // V2.8: a derby's result counts 1.5 times with the board and the fans
   const coach: Coach = {
     ...c.coach,
     record: [c.coach.record[0] + 1, c.coach.record[1] + (pts === 3 ? 1 : 0), c.coach.record[2] + (pts === 1 ? 1 : 0), c.coach.record[3] + (pts === 0 ? 1 : 0), 0],
@@ -190,10 +199,12 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
   };
   const before = c.board;
   const board = {
-    confidence: clamp(Math.round((before.confidence + surprise * BOARD_PER_SURPRISE) * 10) / 10, 0, 100),
-    fans: clamp(Math.round((before.fans + surprise * 4 + (o.mine >= 3 ? 1 : 0)) * 10) / 10, 0, 100),
+    confidence: clamp(Math.round((before.confidence + surprise * BOARD_PER_SURPRISE * k) * 10) / 10, 0, 100),
+    // Fans enjoy winning whatever the odds said, and a surprise moves them on top: odds alone left a winning
+    // favourite's fans "muttering" all season (audit GF-004).
+    fans: clamp(Math.round((before.fans + (FANS_RESULT[pts] + surprise * FANS_PER_SURPRISE) * k + (o.mine >= 3 ? 1 : 0) + (FANS_REST - before.fans) * FANS_SETTLE) * 10) / 10, 0, 100),
   };
-  let career: Career = { ...c, coach, board };
+  let career: Career = settleClaim({ ...c, coach, board }, o.oppId, pts); // V2.9: a presser's public claim
   // Messages that match what really happened (E2E #19).
   if (o.mine - o.theirs >= 3) career = addMsg(career, 'fans', 'bigWin', { club: opp.id, s: `${o.mine}-${o.theirs}` });
   if (o.theirs - o.mine >= 3) career = addMsg(career, 'board', 'badLoss', { club: opp.id, s: `${o.mine}-${o.theirs}` });
@@ -211,8 +222,10 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
 }
 
 // Mid-season sacking: after the honeymoon (a new job's first matchdays, and the start of every season), a board below 12% lets you go.
-export function sackCheck(w: World, c: Career): Career {
-  if (c.sacked || c.round < HONEYMOON || sinceHire(c) < HONEYMOON || c.board.confidence >= sackLine(balanceOf(c))) return c;
+// `onCourse`: the club meets its objective or is within touching distance of it (season.ts onCourse); a board doesn't
+// sack a manager who is delivering what it asked for (audit GF-004: a Man City side 2nd with 33 wins was sacked).
+export function sackCheck(w: World, c: Career, onCourse = false): Career {
+  if (c.sacked || onCourse || c.round < HONEYMOON || sinceHire(c) < HONEYMOON || c.board.confidence >= sackLine(balanceOf(c)) + strictness(c)) return c;
   const career: Career = { ...c, sacked: true, jobs: jobOffers(w, c, true) };
   return addNews(addMsg(career, 'board', 'sacked', { club: c.clubId }), 'managers', 'sacked', { club: c.clubId, s: c.managerName });
 }
@@ -297,12 +310,12 @@ export function coachSeasonEnd(w: World, c: Career, position: number, leagueId: 
   let career: Career = {
     ...c,
     coach: { ...c.coach, trophies, reputation: clamp(rep, 0, 100), xp: c.coach.xp + (met ? 400 : 100) },
-    board: { ...c.board, confidence: clamp(c.board.confidence + delta, 0, 100), fans: clamp(c.board.fans + (met ? 10 : -10), 0, 100) },
+    board: { ...c.board, confidence: clamp(c.board.confidence + delta, 0, 100), fans: clamp(c.board.fans + (met ? 10 : -10) + FANS_PER_TROPHY * (trophies.length - c.coach.trophies.length), 0, 100) },
   };
   career = addMsg(career, 'board', met ? 'seasonGood' : 'seasonBad', { n: position });
   const ms = checkMilestones(career, null);
   career = ms.career;
-  if (career.board.confidence < seasonSackLine(balanceOf(career))) {
+  if (career.board.confidence < seasonSackLine(balanceOf(career)) + strictness(c)) {
     career = { ...career, sacked: true, jobs: jobOffers(w, career, true) };
     career = addMsg(career, 'board', 'sacked', { club: c.clubId });
     career = addNews(career, 'managers', 'sacked', { club: c.clubId, s: c.managerName });

@@ -197,7 +197,7 @@ export function complete(w: World, c: Career, neg: Negotiation, t: Terms): Ok | 
   if (p.clubId !== FREE_AGENT && squadOf(w, p.clubId).length <= SQUAD_SELL_MIN) return no('sellerThin');
   const cost = dealCost(w, c, neg, t);
   // The whole deal — now and later — has to fit the spending room, and the wage the wage room.
-  if (cost.total > spendingRoom(w, c)) return no('budget');
+  if (cost.total > spendingRoom(w, c, neg.id)) return no('budget');
   if (t.wage > wageRoom(w, c)) return no('wageCap');
   const now = tickOf(c);
   const to = c.clubId, from = p.clubId;
@@ -239,7 +239,7 @@ function talk(w: World, c: Career, neg: Negotiation, t: Terms): Ok | No {
   if (chk) return chk;
   // You can't bluff: terms you couldn't pay are refused before the agent hears them.
   const cost = dealCost(w, c, neg, t);
-  if (cost.total > spendingRoom(w, c)) return no('budget');
+  if (cost.total > spendingRoom(w, c, neg.id)) return no('budget');
   if (t.wage > wageRoom(w, c)) return no('wageCap');
   const ag = agentOf(c, p);
   const d = demandOf(w, c, p, ag);

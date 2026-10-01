@@ -1,0 +1,231 @@
+{
+ "errs": [],
+ "out": [
+  {
+   "id": "tactics",
+   "label": "Change the formation",
+   "taps": 1,
+   "scroll": 0,
+   "steps": [
+    "nav:Match"
+   ],
+   "ok": true,
+   "landed": "4-3-3 · Balanced"
+  },
+  {
+   "id": "table",
+   "label": "See the league table",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Match",
+    "Table"
+   ],
+   "ok": true,
+   "landed": "Egyptian Premier League"
+  },
+  {
+   "id": "fixtures",
+   "label": "See the fixtures",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Match",
+    "Fixtures"
+   ],
+   "ok": true,
+   "landed": ""
+  },
+  {
+   "id": "player",
+   "label": "Open a player",
+   "taps": 2,
+   "scroll": 162,
+   "steps": [
+    "nav:Squad",
+    "EMAM ASHOUR (↓162px)"
+   ],
+   "ok": true,
+   "landed": "Emam Ashour"
+  },
+  {
+   "id": "search",
+   "label": "Search the market",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Transfers",
+    "Search"
+   ],
+   "ok": true,
+   "landed": "Find a goalkeeper"
+  },
+  {
+   "id": "money",
+   "label": "Check the money",
+   "taps": 1,
+   "scroll": 0,
+   "steps": [
+    "nav:Club"
+   ],
+   "ok": true,
+   "landed": "The money, the board, the bricks."
+  },
+  {
+   "id": "board",
+   "label": "Check the board’s objectives",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Club",
+    "Board"
+   ],
+   "ok": true,
+   "landed": "The money, the board, the bricks."
+  },
+  {
+   "id": "facility",
+   "label": "Upgrade a facility",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Club",
+    "Facilities"
+   ],
+   "ok": true,
+   "landed": "The money, the board, the bricks."
+  },
+  {
+   "id": "staff",
+   "label": "Set what the staff handle",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Club",
+    "Staff"
+   ],
+   "ok": true,
+   "landed": "The money, the board, the bricks."
+  },
+  {
+   "id": "room",
+   "label": "Visit the dressing room",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Squad",
+    "Dressing room"
+   ],
+   "ok": true,
+   "landed": "The room is settled."
+  },
+  {
+   "id": "training",
+   "label": "Set the training week",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Squad",
+    "Training"
+   ],
+   "ok": true,
+   "landed": "Training week"
+  },
+  {
+   "id": "medical",
+   "label": "Check the medical room",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Squad",
+    "Medical"
+   ],
+   "ok": true,
+   "landed": "Medical"
+  },
+  {
+   "id": "academy",
+   "label": "Visit the academy",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Squad",
+    "Academy"
+   ],
+   "ok": true,
+   "landed": "Academy & pathway"
+  },
+  {
+   "id": "career",
+   "label": "Career history and legends",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Club",
+    "Career"
+   ],
+   "ok": true,
+   "landed": "The first trophy is the hardest."
+  },
+  {
+   "id": "pass",
+   "label": "Club Pass and looks",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Club",
+    "Club Pass"
+   ],
+   "ok": true,
+   "landed": "The Semba Club Pass"
+  },
+  {
+   "id": "settings",
+   "label": "Change language / saves",
+   "taps": 2,
+   "scroll": 0,
+   "steps": [
+    "nav:Club",
+    "Settings and saves"
+   ],
+   "ok": true,
+   "landed": "Settings"
+  },
+  {
+   "id": "news",
+   "label": "Read the inbox",
+   "taps": 1,
+   "scroll": 0,
+   "steps": [
+    "css:.inbox-line"
+   ],
+   "ok": true,
+   "landed": "News and inbox"
+  },
+  {
+   "id": "hop",
+   "label": "Training → Medical → Players",
+   "taps": 4,
+   "scroll": 0,
+   "steps": [
+    "nav:Squad",
+    "Training",
+    "Medical",
+    "Players"
+   ],
+   "ok": true,
+   "landed": "The squad"
+  },
+  {
+   "id": "play",
+   "label": "Get to the next match",
+   "taps": 1,
+   "scroll": 0,
+   "steps": [
+    "Continue"
+   ],
+   "ok": true,
+   "landed": "Al Ahly v NBE."
+  }
+ ]
+}

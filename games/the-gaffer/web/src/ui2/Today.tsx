@@ -5,7 +5,11 @@ import type { Choice, Decision } from '../sim/decisions';
 import { decisions, staffCallsSinceMatch } from '../sim/decisions';
 import { predict } from '../sim/match';
 import { advice } from '../sim/scouting';
-import { objectiveOf, playerOf, squadOf } from '../sim/world';
+import { playerOf, squadOf } from '../sim/world';
+import { userObjective } from '../sim/vision';
+import { isDerby } from '../sim/rivalry';
+import { CL } from '../lang-club-all';
+import { NV } from '../lang-nav-all';
 import { nextUserMatch, seasonOver } from '../sim/season';
 import { available } from '../sim/tactics';
 import { dayName, dayNum, shortDate, dateOf } from '../sim/calendar';
@@ -38,7 +42,8 @@ export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision,
   const today = new Date(nowDate.getTime() - 2 * 86400000);
   const daysTo = nm0 ? Math.round((nm0.date.getTime() - today.getTime()) / 86400000) : 0;
   const dayWord = nm0 ? dayName(nm0.date, g.ui) : '';
-  const head = c.sacked ? x.today.sacked : over ? x.today.seasonDone : nm0?.cup ? x.today.headCup(list.length) : x.today.head(list.length, dayWord);
+  // No match left for us (our league finished while others play on) reads as season over, never as an empty day (GF-007).
+  const head = c.sacked ? x.today.sacked : over || !nm0 ? x.today.seasonDone : nm0?.cup ? x.today.headCup(list.length) : x.today.head(list.length, dayWord);
   const resolve = async (d: Decision, ch: Choice) => {
     const ok = await onResolve(d, ch);
     if (ok) setReceipts((r) => [{ id: d.id, label: `${titleText(g, d)} · ${choiceText(g, ch)}` }, ...r].slice(0, 3));
@@ -46,12 +51,15 @@ export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision,
   const handedOver = DEPTS.filter((d) => levelOf(c, d) === 'staff').map((d) => x.office.depts[d]);
   const staffN = staffCallsSinceMatch(c);
 
+  const unread = c.inbox.filter((m) => !m.read).length;
   return (
     <div className="sc-today">
       <div className="layout">
         <section className="hero a-hero on-ground">
           <span className="eyebrow">{nm0 && opp ? x.today.eyebrow(matchLabel(g, { cup: nm0.cup, round: nm0.round, group: nm0.group }), cn(opp, lang), x.today.inDays(daysTo)) : g.league.name[lang]}</span>
           <h1 className="h-hero">{head[0]}<em>{head[1]}</em>{head[2]}</h1>
+          {/* UI/UX pass (UX-02): the inbox, one tap from Today, with its unread count. */}
+          <button className={`inbox-line${unread ? ' new' : ''}`} onClick={() => g.go({ s: 'news' })}><I n="news" size="sm" />{NV[g.ui].inboxLine(unread)}{unread > 0 && <em>{unread}</em>}<I n="chev" size="sm" flip={g.rtl} /></button>
         </section>
 
         <div className="week a-week on-ground" aria-label={x.today.week}>
@@ -123,7 +131,7 @@ function FixtureCard() {
       <div className="top">
         <div className="between">
           <span className="eyebrow">{matchLabel(g, { cup: u.cup, round: u.round, group: u.group })}</span>
-          <span className="tag"><I n="stadium" size="sm" />{mine ? x.today.ourGround : x.today.theirGround}</span>
+          <span className="chips">{isDerby(home.id, away.id) && <span className="tag tag--warn"><I n="fans" size="sm" />{CL[g.ui].derby}</span>}<span className="tag"><I n="stadium" size="sm" />{mine ? x.today.ourGround : x.today.theirGround}</span></span>
         </div>
         <div className="vs">
           <div className="team"><Crest club={home} size={64} /><b>{cn(home, lang)}</b><Form list={formOf(rows, home.id)} letters={x.wdl} /></div>
@@ -156,7 +164,8 @@ function FitPanel() {
   const out = squad.filter((p) => !available(p) || cupBan(p) || p.fitness < 78 || (c.rested ?? []).includes(p.id))
     .sort((a, b) => (b.injured + b.banned) - (a.injured + a.banned) || a.fitness - b.fitness).slice(0, 3);
   const u = upcoming(w, c, 1)[0];
-  const day = u ? dayName(u.date, g.ui) : '';
+  if (!u) return null; // nothing left to be fit for this season (GF-007)
+  const day = dayName(u.date, g.ui);
   const fit = squad.filter(available).length;
   return (
     <Panel i={3} className="a-avail" label={x.today.fit(day)}>
@@ -190,7 +199,7 @@ function PulsePanel({ pos }: { pos: number }) {
   const low = [...squad].sort((a, b) => a.morale - b.morale)[0];
   const lastM = c.matches?.[0];
   const res = lastM ? (() => { const me = lastM.home === c.clubId ? 0 : 1; const d = lastM.goals[me] - lastM.goals[1 - me]; const o = clubOf(w, me === 0 ? lastM.away : lastM.home); return `${x.today.lastResult}: ${lastM.goals[me]}–${lastM.goals[1 - me]} v ${cn(o, g.lang)}${d > 0 ? '' : ''}`; })() : '';
-  const obj = g.t.objective[objectiveOf(w, g.club)];
+  const obj = g.t.objective[userObjective(w, c)]; // V2.7: after the board meeting
   const rows: [string, string, string, string, number, number[]][] = [
     ['board', x.today.board, x.today.mood(board), x.today.boardWhy(obj.toLowerCase(), x.place(pos)), board, last(1, board)],
     ['fans', x.today.fans, x.today.fansMood(fans), res, fans, last(2, fans)],

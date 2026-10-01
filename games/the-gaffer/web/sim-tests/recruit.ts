@@ -93,7 +93,7 @@ ok(checkCareer(w, c).length === 0 && checkWorld(w).length === 0, `invariants: ${
     const nq = rcOf(c).negs.find((x) => x.playerId === q.p.id)!;
     console.log('  instalment bid:', nq.stage, nq.bids.map((b) => b.answer ?? '').join(','));
     if (nq.stage === 'terms') {
-      const r0 = spendingRoom(w, c);
+      const r0 = spendingRoom(w, c, nq.id); // GF-013: the agreed fee is already held back; measure the room this deal sees
       const r = run({ type: 'rc.meet', negId: nq.id, which: 'demand' });
       if (r.ok) ok(committed(c) === Math.round(a * 0.6) && spendingRoom(w, c) < r0 - Math.round(a * 0.6), `instalment committed ${committed(c)}; room ${r0} → ${spendingRoom(w, c)}`);
     }

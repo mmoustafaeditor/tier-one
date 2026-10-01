@@ -4,6 +4,8 @@ import { Crest, I, Kpi } from './kit';
 import { Panel, PanelHead } from './shell';
 import { useGame, clubOf, cn, money } from './game';
 import { dateOf, longDate } from '../sim/calendar';
+import { legendsOf, onTheWay } from '../sim/legends';
+import { CL } from '../lang-club-all';
 
 export function CareerScreen() {
   const g = useGame();
@@ -14,6 +16,7 @@ export function CareerScreen() {
   const lastT = [...k.trophies].sort((a, b) => b.season - a.season)[0];
   const next = LICENCES[LICENCES.indexOf(k.licence) + 1];
   const recs = Object.entries(c.records ?? {}).filter(([, v]) => v);
+  const L = CL[g.ui].legends, legends = legendsOf(c, c.clubId), way = onTheWay(w, c); // V2.8 the club's legends
   const liftClub = lastT ? clubOf(w, lastT.clubId) : g.club;
   const conf = Array.from({ length: 18 }, (_, i) => i);
   return (
@@ -71,6 +74,15 @@ export function CareerScreen() {
               <div key={key} className="rec"><span>{K.recs[key]}<small>{x.seasonLabel(v!.season)}{v!.pn ? ` · ${v!.pn[lang]}` : ''}</small></span><b className="ltr">{v!.s ?? (key === 'bestBuy' || key === 'bestSale' ? money(v!.v) : v!.v)}</b></div>
             ))}
             {!recs.length && <p className="small muted">{K.noSeasons}</p>}
+          </div>
+        </Panel>
+
+        <Panel i={2} label={L.title}>
+          <PanelHead title={L.title} right={<span className="eyebrow">{cn(g.club, lang)}</span>} />
+          <div className="recs">
+            {legends.map((l) => <div key={l.id} className="rec"><span>{l.pn[lang] || l.pn.en}<small>{L.line(l.apps, l.goals, l.trophies)}</small></span><b><I n="star" size="sm" /></b></div>)}
+            {!legends.length && <p className="small muted">{L.none}</p>}
+            {way.length > 0 && <p className="small"><b>{L.way}:</b> {way.map((y) => `${y.p.name[lang] || y.p.name.en} (${y.t[0]})`).join(', ')}</p>}
           </div>
         </Panel>
 
