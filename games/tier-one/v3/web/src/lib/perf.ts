@@ -1,4 +1,4 @@
-// Smoothness (GOTY.md §8.2): the service worker and its update flow, the install prompt, film preloading, and small
+// Smoothness (GOTY.md §8.2): the service worker and its update flow, the install prompt and small
 // helpers the rest of the app can lean on so nothing heavy lands on the boot path or inside a frame.
 //   initPerf()          main.tsx calls it once: marks boot, registers sw.js once the page has settled, wires the update
 //                       toast ("New edition ready → Reload"), the install chip (never on a first visit), and keeps the
@@ -62,7 +62,7 @@ function offerUpdate(worker: ServiceWorker) {
   ]);
 }
 
-// ---------- install prompt: never on a first visit, at most once a fortnight, only on Home with no film playing
+// ---------- install prompt: never on a first visit, at most once a fortnight, only on Home with nothing open
 type BIPEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> };
 let bip: BIPEvent | null = null;
 const standalone = () => matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
@@ -76,7 +76,7 @@ function maybeOfferInstall() {
   const p = readState();
   if (!installEligible(p)) return;
   const r = document.documentElement.dataset.route;
-  if ((r && r !== 'front') || document.querySelector('.film, .call-scene, .post-scene, [role="dialog"]')) { setTimeout(maybeOfferInstall, 15000); return; }
+  if ((r && r !== 'front') || document.querySelector('.dm-call, .bl-fly, .bl-night, [role="dialog"]')) { setTimeout(maybeOfferInstall, 15000); return; }
   writeState({ ...p, installAsk: Date.now() });
   chip('install', t('perf.install.title'), t('perf.install.body'), [
     { label: t('perf.install.yes'), primary: true, on: async () => { const e = bip; bip = null; if (!e) return; await e.prompt(); const c = await e.userChoice; if (c.outcome === 'accepted') writeState({ ...readState(), installed: Date.now() }); } },

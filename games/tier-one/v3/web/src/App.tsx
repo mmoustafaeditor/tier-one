@@ -13,7 +13,7 @@ import { makeDriver, type Driver4, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
 import { LockScreen } from './screens/Front';
 import { installTilt, prefersReducedMotion } from './ui/game';
-import { Phone, DeskPanel, AppIcon, appOf, appById, routeOf, isUnlocked, bumpUse, batteryMode, levelInfo, unlockLevel, callLevel, APPS, type AppId } from './ui/phone';
+import { Phone, DeskPanel, readFeedFor, AppIcon, appOf, appById, routeOf, isUnlocked, bumpUse, batteryMode, levelInfo, unlockLevel, callLevel, APPS, type AppId } from './ui/phone';
 import { NotifyHost, notify, setTrayNav } from './ui/juice';
 import { onGain, onDriverDone } from './lib/meta';
 import { nextCareerWindow } from './lib/storyMode';
@@ -34,9 +34,6 @@ const NewsroomScreen = lazy(() => import('./screens/Newsroom').then((m) => ({ de
 const HowTo = lazy(() => import('./screens/HowTo').then((m) => ({ default: m.HowTo })));
 const SettingsScreen = lazy(() => import('./screens/Settings').then((m) => ({ default: m.SettingsScreen })));
 const Onboarding = lazy(() => import('./screens/Onboarding').then((m) => ({ default: m.Onboarding })));
-const SceneHost = lazy(() => import('./lib/scenes').then((m) => ({ default: m.SceneHost })));
-const FeedScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.FeedScreen })));
-const RivalsScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.RivalsScreen })));
 const ContactsScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.ContactsScreen })));
 const CustomizeScreen = lazy(() => import('./screens/Customize').then((m) => ({ default: m.CustomizeScreen })));
 const DDLiveScreen = lazy(() => import('./screens/DDLive').then((m) => ({ default: m.DDLiveScreen })));
@@ -107,10 +104,13 @@ export function App() {
   // inside an app slides. The back stack is the OS's: back pops it, and at an app's root goes home.
   const routeRef = useRef(route); routeRef.current = route;
   const hist = useRef<Route[]>([]);
-  const go: Go = useCallback((r: Route) => {
+  const go: Go = useCallback((r0: Route) => {
+    // 3.x routes with no 4.0 screen: the feed is Blurt, the rivals are the accounts and bosses in Lens › Profile.
+    const r: Route = r0.n === 'feed' ? { n: 'daily' } : r0.n === 'rivals' ? { n: 'me' } : r0;
     const from = routeRef.current, fa = appOf(from), ta = appOf(r);
     if (ta && !isUnlocked(ta)) { sfx('os.locked'); return; } // the tile says "Reach Level N"; never a bare lock
     if (ta && ta !== fa) bumpUse(ta);
+    if (ta) readFeedFor(ta); // the app's unread lines (rival posts, contact level-ups …) are seen when it opens
     const a = !ta && fa ? 'close' : ta && !fa ? 'open' : ta !== fa ? 'open' : r.n === from.n ? '' : 'app';
     sfx(a === 'open' ? 'os.open' : a === 'close' ? 'os.close' : a === 'app' ? 'page.turn' : 'ui.tap');
     if (r.n === 'front') hist.current = []; else if (from.n !== 'front' && from.n !== r.n) hist.current = [...hist.current.slice(-12), from];
@@ -129,7 +129,7 @@ export function App() {
     go({ n: 'front' }); return true;
   }, [go]);
   useEffect(() => { setTrayNav(go, openApp); }, [go, openApp]);
-  // The lock screen is not Home: the season opener and anything else that waits for Home (lib/scenes.ts onHome) waits for the unlock.
+  // The lock screen is not Home: anything that waits for Home waits for the unlock.
   useEffect(() => { document.documentElement.dataset.route = locked ? 'lock' : routeRef.current.n; }, [locked]);
   useEffect(() => { document.documentElement.classList.toggle('has-vt', 'startViewTransition' in document); }, []);
   // The equipped headline font rides on <html> (data-hd + --hd-*), so the results card and the share card pick it up from CSS.
@@ -237,8 +237,7 @@ export function App() {
     case 'rooms': screen = <RoomsScreen {...chrome} code={route.code} challenge={route.challenge} />; break;
     case 'newsroom': screen = <NewsroomScreen {...chrome} code={route.code} />; break;
     case 'howto': screen = <HowTo {...chrome} />; break;
-    case 'feed': screen = <FeedScreen {...chrome} />; break;
-    case 'rivals': screen = <RivalsScreen {...chrome} />; break;
+    case 'feed': case 'rivals': screen = <Home {...chrome} />; break; // normalized in go(); never rendered
     case 'contacts': screen = <ContactsScreen {...chrome} />; break;
     case 'customize': screen = <CustomizeScreen {...chrome} />; break;
     case 'ddlive': screen = <DDLiveScreen {...chrome} />; break;
@@ -254,7 +253,6 @@ export function App() {
     <Toasts />
     <Suspense fallback={null}>
       <Onboarding go={go} route={locked ? 'lock' : route.n} />
-      <SceneHost />
       <SocialWatch />
     </Suspense>
   </Phone>;

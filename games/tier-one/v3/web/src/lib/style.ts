@@ -24,7 +24,6 @@
 // Under STYLE_MIN calls the profile is `rookie`. A title is announced once (film moment-style-<id>, a feed line).
 import type { Save } from './save';
 import type { ResultSaga } from './engine';
-import { moment } from './moments';
 import { pushFeed } from './byline';
 import { t } from './i18n';
 
@@ -110,7 +109,6 @@ export function trackStyle(s: Save, per: ResultSaga[], mode: string, days = 7): 
   if (titles[id]) return null;
   titles[id] = Date.now();
   pushFeed(s, { kind: 'level', key: 'live.feed.style', v: { m: 'live.style.' + id + '.t' }, to: { n: 'me' }, tone: 'gold' });
-  moment('style:' + id, undefined, true); // film: moment-style-<id>, once per title
   return id;
 }
 /** The i18n key of a one-line read of your style (rivals' banter, the editor's notes, the Daily brief). */

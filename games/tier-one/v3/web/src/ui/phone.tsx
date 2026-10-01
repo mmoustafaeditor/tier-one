@@ -28,7 +28,7 @@ import { useT, resetAt, num } from '../lib/i18n';
 import { sfx, haptic } from '../lib/sfx';
 import { prefersReducedMotion } from '../lib/motion';
 import { ymdUTC } from '../lib/meta';
-import { unreadOf, bylineOf, nextUp } from '../lib/byline';
+import { unreadOf, markRead, bylineOf, nextUp } from '../lib/byline';
 import { missionsView } from '../lib/progress';
 import { offersFor } from '../lib/deals';
 import { unopenedFiles } from '../lib/lens';
@@ -45,16 +45,23 @@ export type AppId = 'blurt' | 'dms' | 'lens' | 'story' | 'live' | 'market' | 'gr
 export type Badge = number | 'dot' | 0;
 /** `unlock`: the level the tile opens at (lib/economy.ts levelUnlocks). `calls`: the level the app's own call / post
  *  action opens at while the rest of the app is free to use from the start (the Market, CONCEPT4 §9). */
+/** Which byline feed lines (lib/byline.ts pushFeed) belong to which app: they count on its badge until it opens. */
+export const FEED_KINDS: Partial<Record<AppId, string[]>> = {
+  blurt: ['window', 'rival', 'hot'], dms: ['contact', 'editor'], lens: ['level', 'season', 'mission'], market: ['wire'], groups: ['room', 'challenge', 'friend', 'newsroom'],
+};
+const feedFor = (s: Save, a: AppId) => { const k = FEED_KINDS[a] || []; return unreadOf(s).filter((f) => k.includes(f.kind)); };
+/** Marks the app's feed lines read (App.tsx calls it when an app opens). */
+export function readFeedFor(a: AppId) { const ids = feedFor(getSave(), a).map((f) => f.id); if (ids.length) markRead(ids); }
 export interface AppDef { id: AppId; accent: string; ink?: string; unlock: number; calls?: number; route: Route; aliases: string[]; badge: (s: Save) => Badge }
 const today = () => ymdUTC();
 export const APPS: AppDef[] = [
-  { id: 'blurt', accent: '#FF4D2E', unlock: 1, route: { n: 'daily' }, aliases: ['daily', 'window', 'feed'], badge: (s) => (!s.daily[today()] ? 'dot' : unreadOf(s).filter((f) => f.kind === 'window' || f.kind === 'rival' || f.kind === 'hot').length) },
-  { id: 'dms', accent: '#1DB46A', unlock: 1, route: { n: 'contacts' }, aliases: ['contacts', 'calls'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'contact' || f.kind === 'editor').length + offersFor(s).length }, // brand offers land in the DMs (CONCEPT4 §4)
-  { id: 'lens', accent: '#F2B632', ink: '#2A1C00', unlock: 1, route: { n: 'me' }, aliases: ['me', 'profile', 'pass', 'looks', 'customize'], badge: (s) => (missionsView(s) || []).filter((m) => m.done && !m.claimed).length + Object.values(s.prizes || {}).filter((p) => !p.paid).length + unreadOf(s).filter((f) => f.kind === 'level' || f.kind === 'season' || f.kind === 'mission').length + unopenedFiles(s).length },
+  { id: 'blurt', accent: '#FF4D2E', unlock: 1, route: { n: 'daily' }, aliases: ['daily', 'window', 'feed'], badge: (s) => (!s.daily[today()] ? 'dot' : feedFor(s, 'blurt').length) },
+  { id: 'dms', accent: '#1DB46A', unlock: 1, route: { n: 'contacts' }, aliases: ['contacts', 'calls'], badge: (s) => feedFor(s, 'dms').length + offersFor(s).length }, // brand offers land in the DMs (CONCEPT4 §4)
+  { id: 'lens', accent: '#F2B632', ink: '#2A1C00', unlock: 1, route: { n: 'me' }, aliases: ['me', 'profile', 'pass', 'looks', 'customize'], badge: (s) => (missionsView(s) || []).filter((m) => m.done && !m.claimed).length + Object.values(s.prizes || {}).filter((p) => !p.paid).length + feedFor(s, 'lens').length + unopenedFiles(s).length },
   { id: 'story', accent: '#D9486F', unlock: 1, route: { n: 'story' }, aliases: ['career', 'desk', 'editor'], badge: (s) => (s.v4?.live?.career ? 'dot' : (s.story?.inbox || []).filter((x) => !x.read).length) },
   { id: 'live', accent: '#B51B2C', unlock: levelUnlocks.live, route: { n: 'ddlive' }, aliases: ['ddlive', 'deadline'], badge: () => (ddLiveDates().some((d) => d.day === today() && d.live) ? 'dot' : 0) },
-  { id: 'market', accent: '#1FA7D9', unlock: 1, calls: levelUnlocks.market, route: { n: 'wire' }, aliases: ['wire', 'rumours'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'wire').length }, // watching is free; calls at Level 2
-  { id: 'groups', accent: '#7C5CFF', unlock: levelUnlocks.groups, route: { n: 'rooms' }, aliases: ['rooms', 'newsroom', 'friends', 'room'], badge: (s) => unreadOf(s).filter((f) => f.kind === 'room' || f.kind === 'challenge' || f.kind === 'friend' || f.kind === 'newsroom').length },
+  { id: 'market', accent: '#1FA7D9', unlock: 1, calls: levelUnlocks.market, route: { n: 'wire' }, aliases: ['wire', 'rumours'], badge: (s) => feedFor(s, 'market').length }, // watching is free; calls at Level 2
+  { id: 'groups', accent: '#7C5CFF', unlock: levelUnlocks.groups, route: { n: 'rooms' }, aliases: ['rooms', 'newsroom', 'friends', 'room'], badge: (s) => feedFor(s, 'groups').length },
   { id: 'boards', accent: '#3B82F6', unlock: 1, route: { n: 'boards' }, aliases: ['leaderboards', 'lb'], badge: () => 0 },
   { id: 'settings', accent: '#6B7280', unlock: 1, route: { n: 'settings' }, aliases: ['howto', 'options'], badge: () => 0 },
 ];
