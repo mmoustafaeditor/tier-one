@@ -96,7 +96,7 @@ export function WidgetView({ w, z, nav, edit }: { w: WidgetId; z: WSize; nav: Wi
     }
   })();
   if (w === 'window') return <section className={'hw hw--window hw--' + z} aria-label={t('sh.w.window.t')}>{body}</section>;
-  return <Pop as="section" className={'hw hw--' + w + ' hw--' + z} sound={edit ? null : 'os.open'} haptic={!edit} onTap={edit ? undefined : () => nav.openApp(d.app)} label={t('sh.w.' + w + '.t')} role="button" tabIndex={0}>
+  return <Pop className={'hw hw--' + w + ' hw--' + z} sound={edit ? null : 'os.open'} haptic={!edit} onTap={edit ? undefined : () => nav.openApp(d.app)} tabIndex={edit ? -1 : 0}>
     <span className="hw__k">{t('sh.w.' + w + '.t')}</span>
     {body}
   </Pop>;

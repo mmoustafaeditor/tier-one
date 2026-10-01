@@ -12,7 +12,7 @@
 //
 // EXPORTS other lanes rely on:
 //   PHONES, phoneDef(id), PARTS, PART_PRICES, partLevel(id, part, s?), partValue(id, part, s?), upgradePrice(id, part, s?)
-//   ownedPhones(s?), equipped(save, mode) → PhoneDef, equipPhone(id, mode?), upgrade(id, part) → UpgradeTx
+//   ownedPhones(s?), equipped(save, mode) → PhoneDef, equipPhone(id, mode?), upgrade(id, part) → UpgradeTx, carries(s?)
 //   perksFor(save, mode, ranked?) → Perks (NO_PERKS on ranked modes), slotsFor(s?), pagesFor(s?), RANKED_NOTE_KEY
 //   phoneLook(s?) → Look, tryLook(id | null), useTry(), useLook()
 import { useSyncExternalStore } from 'react';
@@ -126,6 +126,14 @@ export function equipPhone(id: PhoneId, mode: 'daily' | 'career' = 'daily'): boo
     const d = desk(x); d.equip = { ...d.equip, device: p.look.startsWith('std.') ? undefined : p.look };
   });
   return true;
+}
+
+/** What the profile says you carry (CONCEPT4 §18 "Carries: Halo One · Brick (retired)"): the Daily phone, the Story
+ *  phone when different, and the story phones you've moved on from. */
+export function carries(s: Save = getSave()): { daily: PhoneDef; story: PhoneDef | null; retired: PhoneDef[] } {
+  const daily = equipped(s, 'daily'), story = s.career ? equipped(s, 'career') : null;
+  const retired = ownedPhones(s).filter((p) => p.chapter != null && !p.second && p.id !== daily.id && p.id !== story?.id);
+  return { daily, story: story && story.id !== daily.id ? story : null, retired };
 }
 
 // ---------------------------------------------------------------- upgrading (coins only)

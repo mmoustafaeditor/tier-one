@@ -46,7 +46,9 @@
 html.os, html.os body { background: var(--os-bg); }
 html.os body::before { display: none; }
 .ph-desk { min-height: 100dvh; background: var(--os-bg); }
-.ph { position: relative; display: flex; flex-direction: column; min-height: 100dvh; background: var(--os-bg); color: var(--os-ink); font-family: var(--os-face); }
+.ph { position: relative; display: flex; flex-direction: column; min-height: 100dvh; background: var(--os-bg); color: var(--os-ink); }
+/* an OS theme's type face dresses the phone's own chrome (status bar, labels, widget heads), never an app's body text */
+.ph-status, .ph-tile__l, .hw__k, .hm-me__meta, .hm-editbar__t small, .sh-tab, .sh-row__t b, .ph-note__k b { font-family: var(--os-face); }
 .ph__screen { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .ph__page { flex: 1; min-height: 0; }
 .ph .g-screen { padding-top: 4px; padding-bottom: calc(var(--os-bar-h) + 20px + env(safe-area-inset-bottom, 0)); }
