@@ -1,6 +1,6 @@
 // Catchphrases (GOTY.md §12): your line replaces "DONE DEAL". A Confirmed call that lands fires it (stamp, share
 // card, film title). cp.house.<id>: the ten house originals (default "Book it."); cp.unlock.<id>: how each one is
-// earned (rank, streak, chapter); cp.react.*: fans and rivals reacting, templated on {phrase} (+ {p} player, {name} you).
+// earned, matching the catalog's earn rules in lib/catalog.ts (rank, streak, chapter); cp.react.*: fans and rivals reacting, templated on {phrase} (+ {p} player, {name} you).
 // Nothing here is anyone else's catchphrase: every line is an original (docs/LEGAL_NAMES.md).
 // Merge note: the longtail lane may add this file with the same keys; keep theirs and add these lines.
 export default {
@@ -12,9 +12,9 @@ export default {
         ink: 'Ink’s dry.', shirt: 'Shirt’s printed.', gates: 'Through the gates.', sealed: 'Signed. Sealed.', lockin: 'Lock it in.',
       },
       unlock: {
-        default: 'Yours from day one.', bookit: 'Yours from day one.', pen: 'Reach level 5.', dusted: 'Land three right calls in a row.', announce: 'Win a Deadline Day.',
-        medical: 'Land a Confirmed call off the physio.', ink: 'Finish Story chapter 2.', shirt: 'Hit a 7-day streak.', gates: 'Reach Tier 1 in a window.',
-        sealed: 'Finish Story chapter 4.', lockin: 'Beat all three rivals in one window.',
+        default: 'Yours from day one.', bookit: 'Yours from day one.', pen: 'Reach Stringer rank.', dusted: 'Reach Correspondent rank.', announce: 'Reach Chief rank.', sealed: 'Reach Tier One rank.',
+        medical: 'Hit a 7-day streak.', bags: 'Hit a 30-day streak.', front: 'Hit a 100-day streak.', shirt: 'Finish Story chapter 1.', inkdry: 'Finish Story chapter 3.', wheels: 'Finish Story chapter 5.',
+        custom: 'Reach Chief rank to write your own line.', ink: 'Finish Story chapter 3.', gates: 'Reach Tier 1 in a window.', lockin: 'Beat all three rivals in one window.',
       },
       react: {
         fan: {
@@ -37,9 +37,9 @@ export default {
         ink: 'الحبر نشف.', shirt: 'القميص اتطبع.', gates: 'عدّى البوابة.', sealed: 'مضى. واتختم.', lockin: 'ثبّتها.',
       },
       unlock: {
-        default: 'بتاعتك من أول يوم.', bookit: 'بتاعتك من أول يوم.', pen: 'وصّل للمستوى ٥.', dusted: 'تلات قرارات صح ورا بعض.', announce: 'اكسب يوم ديدلاين.',
-        medical: 'قرار «مؤكد» صح من العلاج الطبيعي.', ink: 'خلّص الفصل ٢ في القصة.', shirt: 'سلسلة ٧ أيام.', gates: 'وصّل للتير ١ في فترة.',
-        sealed: 'خلّص الفصل ٤ في القصة.', lockin: 'اكسب التلات منافسين في فترة واحدة.',
+        default: 'بتاعتك من أول يوم.', bookit: 'بتاعتك من أول يوم.', pen: 'وصّل لرتبة مراسل حر.', dusted: 'وصّل لرتبة مراسل.', announce: 'وصّل لرتبة كبير المراسلين.', sealed: 'وصّل لرتبة تير وان.',
+        medical: 'سلسلة ٧ أيام.', bags: 'سلسلة ٣٠ يوم.', front: 'سلسلة ١٠٠ يوم.', shirt: 'خلّص الفصل ١ في القصة.', inkdry: 'خلّص الفصل ٣ في القصة.', wheels: 'خلّص الفصل ٥ في القصة.',
+        custom: 'وصّل لرتبة كبير المراسلين واكتب جملتك بنفسك.', ink: 'خلّص الفصل ٣ في القصة.', gates: 'وصّل للتير ١ في فترة.', lockin: 'اكسب التلات منافسين في فترة واحدة.',
       },
       react: {
         fan: {
@@ -62,9 +62,9 @@ export default {
         ink: 'La tinta está seca.', shirt: 'Camiseta impresa.', gates: 'Ya está dentro.', sealed: 'Firmado. Sellado.', lockin: 'Atado y bien atado.',
       },
       unlock: {
-        default: 'Tuya desde el primer día.', bookit: 'Tuya desde el primer día.', pen: 'Llega al nivel 5.', dusted: 'Tres aciertos seguidos.', announce: 'Gana un día de cierre.',
-        medical: 'Acierta un Confirmado gracias al fisio.', ink: 'Termina el capítulo 2 de la Historia.', shirt: 'Racha de 7 días.', gates: 'Llega a Tier 1 en un mercado.',
-        sealed: 'Termina el capítulo 4 de la Historia.', lockin: 'Gana a los tres rivales en un mercado.',
+        default: 'Tuya desde el primer día.', bookit: 'Tuya desde el primer día.', pen: 'Llega al rango Colaborador.', dusted: 'Llega al rango Corresponsal.', announce: 'Llega al rango Jefe.', sealed: 'Llega al rango Tier One.',
+        medical: 'Racha de 7 días.', bags: 'Racha de 30 días.', front: 'Racha de 100 días.', shirt: 'Termina el capítulo 1 de la Historia.', inkdry: 'Termina el capítulo 3 de la Historia.', wheels: 'Termina el capítulo 5 de la Historia.',
+        custom: 'Llega al rango Jefe para escribir tu propia frase.', ink: 'Termina el capítulo 3 de la Historia.', gates: 'Llega a Tier 1 en un mercado.', lockin: 'Gana a los tres rivales en un mercado.',
       },
       react: {
         fan: {

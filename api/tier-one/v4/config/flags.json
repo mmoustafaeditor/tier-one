@@ -11,7 +11,8 @@
     "livePresence": true,
     "morningPapers": true,
     "telemetry": true,
-    "feedCap": 60
+    "feedCap": 60,
+    "creatorRivals": false
   },
   "ab": {
     "experiments": [

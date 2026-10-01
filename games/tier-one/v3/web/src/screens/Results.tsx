@@ -29,6 +29,7 @@ import { flushDeferredScenes, playScene, afterScenes, firstToday } from '../lib/
 import { windowKey, bylineOf, repTier, REP_TIERS, type WindowSummary } from '../lib/byline';
 import { ChallengeButton as SocialChallengeButton } from '../ui/social';
 import { catchphraseOf } from '../lib/catchphrase';
+import { ShareToX } from '../ui/sharex';
 
 /** SLOT (social lane, ui/social.tsx): `<ChallengeButton/>`. Assign the real component here; it renders beside Share.
  *  Props: { view, result }. */
@@ -59,7 +60,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   // One seed per window: the same result always draws the same replies, in every language's own pools.
   const seed = view.seed || (view.no ? 'daily-' + view.no : view.room ? 'room-' + view.room.code + '-' + view.room.round : r.row || 'w');
   const { threads, verdict } = useMemo(() => {
-    const b = new Banter(t.lang, seed);
+    const b = new Banter(t.lang, seed, catchphraseOf().text, s.nick.trim());
     const th = r.per.map((p) => b.thread(p, cast[p.i], view.R));
     return { threads: th, verdict: b.verdict(r.tier) };
   }, [t.lang, seed, r]);
@@ -143,6 +144,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
 
         {stage >= PROG && <div className="res4__share stagger">
           <GBtn size="sm" sound="open" onClick={share.send}><Icon n="share" />{t('bn.ui.share')}</GBtn>
+          <ShareToX r={r} cast={cast} seed={seed} v={{ hed, what, tier: t('tier.' + r.tier), pts: num(r.total), row: r.row || '' }} card={share.card} />
           {ChallengeButton ? <ChallengeButton view={view} result={r} /> : null}
           <button className="res4__save" onClick={share.save}>{share.msg || t('results.saveImg')}</button>
         </div>}
@@ -429,5 +431,5 @@ function useShare(view: View, r: Result, what: string, hed: string, bestDest: Ca
     const blob = await renderCard(card()); if (!blob) return;
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tier-one-scoop.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); onShared();
   };
-  return { send, save, msg };
+  return { send, save, msg, card };
 }

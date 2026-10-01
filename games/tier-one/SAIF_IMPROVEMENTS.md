@@ -14,8 +14,8 @@ When a status changes, update it in the table **and** add a dated line to that p
 
 | ID | Proposal | Status |
 |---|---|---|
-| TIERONE-SAIF-01 | Restore and improve deal-related comments and reactions | In Progress |
-| TIERONE-SAIF-02 | Restore and upgrade the game's humor and personality | In Progress |
+| TIERONE-SAIF-01 | Restore and improve deal-related comments and reactions | Completed |
+| TIERONE-SAIF-02 | Restore and upgrade the game's humor and personality | Completed |
 | TIERONE-SAIF-03 | Restore and upgrade leaderboards, prizes, achievements and badges | Proposed |
 | TIERONE-SAIF-04 | Fix overlapping UI elements, especially around publishing controls | Proposed |
 
@@ -34,7 +34,7 @@ When a status changes, update it in the table **and** add a dated line to that p
 
 ## TIERONE-SAIF-01 — Restore and improve deal-related comments and reactions
 
-**Status:** In Progress.
+**Status:** Completed.
 
 **Saif's observation:** The previous version had comments and reactions on the player's in-game blog and Twitter feed
 when deals were completed or succeeded. These interactions seem missing or less visible after the redesign.
@@ -48,10 +48,11 @@ when deals were completed or succeeded. These interactions seem missing or less 
 **Log:**
 - 2026-09-30 · Recorded from Saif. Not yet verified.
 - 2026-09-30 · Verified: the classic fan roast/praise, U-turn and source-reply pools (tier-one-classic, lane/content 2f2ed0c) never reached v3. Restored in `i18n/parts/banter.ts` as replies under each call on the results page, tied to the real outcome; settled Wire calls get one reply.
+- 2026-10-01 · Completed. Results threads draw 50 fan lines per outcome (bn + bnx + bn3) in EN/AR/ES, quote the actual call and filing day, and a third of the repliers are fans of the clubs in the saga. The post scene's reactions are picked by outcome and loudness (9 per pair). A landed Confirmed Done call gets fan and rival reactions to the player's catchphrase. "Post it" on Results shares the card to X, with a catchphrase card when the line fired.
 
 ## TIERONE-SAIF-02 — Restore and upgrade the game's humor and personality
 
-**Status:** In Progress.
+**Status:** Completed.
 
 **Saif's observation:** The previous version had more personality in its comments, Twitter interactions, phone calls,
 and dialogue with agents, mission-related characters and airport situations. Characters sometimes hinted at a deal's
@@ -71,6 +72,7 @@ and made the world feel alive.
 **Log:**
 - 2026-09-30 · Recorded from Saif. Not yet verified.
 - 2026-09-30 · Results page redesigned for every window mode: verdict card with tier quip and native idiom, calls as tweets with rival jabs, fan banter and source smirks, the rest in closable sheets. Calls, agents and airport dialogue still to do.
+- 2026-10-01 · Completed. The three fictional rivals have 32 feed lines per state (winning, losing, level) in each language, aimed at the player's byline, plus catchphrase, U-turn and Deadline Day packs. The agent, kit man, physio, plane spotter, barber and press office get more in-character hints that keep each read's meaning (`voice3.*`). Mags Doyle has more lines per assignment. Arabic is written fresh in Egyptian colloquial. Fictional names only (`docs/LEGAL_NAMES.md`); real creators can join later only with signed consent (`docs/CREATORS.md`, flag off).
 
 ## TIERONE-SAIF-03 — Restore and upgrade leaderboards, prizes, achievements and badges
 
