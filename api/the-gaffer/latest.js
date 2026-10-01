@@ -2,7 +2,7 @@
 // Installed apps compare versionCode with their own and offer the download when this one is higher.
 const LATEST = {
   "version": "2.2.0",
-  "versionCode": 29847260,
+  "versionCode": 29847298,
   "downloadUrl": "https://www.sembagames.app/downloads/TheGaffer.apk",
   "webUrl": "https://www.sembagames.app/the-gaffer",
   "changelog": "The Gaffer 2.2.0"
