@@ -100,7 +100,7 @@ export const windowParts = (w: string) => { const m = /^(\d{4})-(01|summer)$/.ex
 // Everything below is the Market's own layer over the Wire data above. Watching is free from Level 1; calling opens at
 // Level 2 (lib/economy.ts levelUnlocks.market). `save.market` holds the watchlist, the season profile and the paid marks.
 export interface WatchSnap { at: number; m: number; state: string; status: string; stage: string; name: string }
-export interface MarketSave { watch?: Record<string, WatchSnap>; profile?: { cred: number; hit: number; resolved: number; season: string; at: number } }
+export interface MarketSave { watch?: Record<string, WatchSnap>; profile?: { cred: number; hit: number; resolved: number; season: string; at: number }; seen?: Record<string, 1> }
 type MarketHost = Save & { market?: MarketSave };
 const mk = (s: Save): MarketSave => { const h = s as MarketHost; return (h.market = h.market || {}); };
 export const marketOf = (s: Save): MarketSave => (s as MarketHost).market || {};
@@ -184,4 +184,20 @@ export function marketProfile(s: Save = getSave()): { cred: number; hit: number 
 export function marketDeal(moves: boolean, s: number, m: number) {
   const c = moves ? m : 1 - m, r1 = (x: number) => Math.round(x * 10) / 10;
   return { win: r1(s * (10 * (1 - c) + 2)), lose: r1(s * 10 * c), c };
+}
+
+// ================================================================ 4.1 (UI41 §Transfer Wire): filters and the home badge
+/** The league a rumour belongs to: the player's current club's league (world ids like 'eng1'), or '' if unknown. */
+export const leagueOf = (r: Rumour) => WORLD.clubs.find((c) => c.id === r.currentClubId)?.l || '';
+/** Every club in a rumour: where he is and who's linked (ids where known, else the name). */
+export const clubsOf = (r: Rumour) => [{ id: r.currentClubId, name: r.currentClubName }, ...r.linked.map((l) => ({ id: l.clubId || l.name, name: l.name }))];
+/** Resolved calls you haven't looked at yet: the red dot on the Transfer Market tile. */
+export function wireBadge(s: Save = getSave(), st: WireState = cache): number {
+  const seen = marketOf(s).seen || {};
+  return (st.mine?.calls || []).filter((c) => c.done && !seen[c.rid]).length;
+}
+/** Opening My calls clears the dot. */
+export function markCallsSeen(calls: WireCall[]) {
+  const ids = calls.filter((c) => c.done && !marketOf(getSave()).seen?.[c.rid]).map((c) => c.rid);
+  if (ids.length) update((x) => { const m = mk(x); m.seen = m.seen || {}; for (const id of ids) m.seen[id] = 1; });
 }
