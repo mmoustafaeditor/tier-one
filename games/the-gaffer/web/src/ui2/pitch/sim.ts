@@ -555,8 +555,10 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           for (const k of [...ks].sort((p, q) => Math.abs((a.pos[side][p]?.y ?? 0) - a.ball.y) - Math.abs((a.pos[side][q]?.y ?? 0) - a.ball.y))) {
             if (busy(k) || LINE[slots[k].pos] === 'gk') continue;
             const d = depthOf(side, tg[k].x);
-            const ip = sps[k]?.ip ?? '', look = soon && fbRole(ip) && depthOf(side, soon.pt.x) > bd;
-            const r = runFor(ip, { bd: look ? depthOf(side, soon!.pt.x) : bd, by: look ? soon!.pt.y : a.ball.y, theirLine, d, y: tg[k].y, wide: wideOf(tg[k].y) });
+            // The play as it is; a full-back with nothing to do there reads the next wide ball (it adds a run, never
+            // takes one away from the full-back on the ball's side).
+            const ip = sps[k]?.ip ?? '', ctx = { bd, by: a.ball.y, theirLine, d, y: tg[k].y, wide: wideOf(tg[k].y) };
+            const r = runFor(ip, ctx) ?? (soon && fbRole(ip) && depthOf(side, soon.pt.x) > bd ? runFor(ip, { ...ctx, bd: depthOf(side, soon.pt.x), by: soon.pt.y }) : null);
             if (!r) continue;
             if (r.run) { if (runs >= 3) continue; runs++; a.runsN = runs; boost[k] = 1.25; }
             tg[k] = { x: toX(side, clamp(r.d, 2, 103)), y: clamp(r.y, 2, W - 2) };
