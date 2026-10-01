@@ -7,6 +7,7 @@ export const R_AR: RefStrings = {
   varOn: 'VAR', varOff: 'من غير VAR',
   refLine: (r, s, v) => `الحكم ${r} · ${s} · ${v ? 'فيه VAR' : 'من غير VAR'}`,
   speeds: ['بطيء', 'عادي', 'سريع'],
+  wx: ['الجو صحو', 'مطر', 'مطر جامد', 'هوا شديد', 'حر', 'تلج'],
   instant: 'فورًا',
   commentary: 'التعليق', moments: 'أهم اللحظات',
   windows: (n) => `فاضل ${n} فرص تغيير`,

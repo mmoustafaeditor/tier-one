@@ -10,6 +10,7 @@
 //   • FULL play (the user's match) samples a pair of players per contest and records who won,
 //   • FAST play (every other match) samples the contest's average odds,
 //   • solve() computes the exact long-run expectations (predict(), the board's expected points, suggestions).
+import { WX } from './weather';
 import type { Player, Position } from '../../model/types';
 import { fitPenalty, fullTactics, type FullTactics, type Tactics } from '../tactics';
 // [tactics v3] phase shapes and roles live in phases.ts / roles.ts; this file reads their parameters (marked below).
@@ -130,6 +131,7 @@ export interface SideInput {
   talk: number;          // 0 none, 1 fire up, 2 calm down, 3 focus
   mark: string | null;   // the opponent this side man-marks
   foulK?: number;        // gf-ref: how many fouls this side commits (referee.ts foulFactor); missing = 1
+  wx?: number;           // the match's weather (engine/weather.ts); missing = clear
 }
 
 // [tactics v3] Where a player stands in each phase (his in- and out-of-possession slots, the instructions and his
@@ -296,6 +298,7 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   // between the lines, but runners from wide and into the box find space. Man-marking: tight on the flanks and in the
   // air, but markers get pulled out of shape (more room in midfield and between the lines) and it costs fouls.
   const mk = td.marking - 1, sm = td.setMark - 1;
+  const wx = id.wx ?? 0; // weather (engine/weather.ts): the same for both sides
   const tm = [1.25, 1, 0.8][ta.tempo] * (ta.waste ? 1.15 : 1);
   const pm = [1.12, 1, 0.86][ta.passing];
   // Defenders in the attacker's frame (mirrored): their OOP shape; their IP shape for transitions.
@@ -316,20 +319,20 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   const bLong = clamp([0.08, 0.2, 0.45][ta.build] + 0.35 * (1 - bShort.mean), 0, 0.8);
   const bLoss = [0.2, 0.3, 0.42][td.pressing];
   // [tactics v3] + [gf-ref]: fouls: the defending side's instructions × the aggression of the roles in that contest × referee foul factor
-  const foulTeam = teamFoulFactor(td) * (id.talk === 2 ? 0.7 : id.talk === 1 ? 1.25 : 1) * (1 + 0.08 * mk);
+  const foulTeam = teamFoulFactor(td) * (id.talk === 2 ? 0.7 : id.talk === 1 ? 1.25 : 1) * (1 + 0.08 * mk) * WX.foul[wx];
   const aggr = (d: Duel) => d.wf.reduce((s, v) => s + v, 0) / (d.wd.reduce((s, v) => s + v, 0) || 1);
   const fouls = (f: number, d?: Duel) => f * foulTeam * (d ? aggr(d) : 1) * (id.foulK ?? 1); // gf-ref: foulK
   // Long ball: our target against their centre-backs; a high line invites the ball in behind.
   const inBehind = td.line === 2 ? 0.3 : td.line === 0 ? -0.2 : 0;
   const aerial = A.some((x) => ROLES[x.ip].fx.air); // [tactics v3] a target man: long balls go to his head
-  const long = duel(A, za[Z.LONG], aerial ? S.airA : S.target, D, zd[Z.LONG], S.hold, b.LONG + bonusA + inBehind, mark, 0.5);
+  const long = duel(A, za[Z.LONG], aerial ? S.airA : S.target, D, zd[Z.LONG], S.hold, b.LONG + bonusA + inBehind + WX.long[wx], mark, 0.5);
 
   // Progression lanes: midfield numbers and quality; a trap makes one lane a snare, the rest a little looser.
   const trapped = (l: number) => (td.pressing < 1 || !td.trap ? 0 : td.trap === 1 ? (l !== 1 ? 1 : -0.35) : td.trap === 2 ? (l === 1 ? 1 : -0.35) : 0.45);
   // Man-marking pulls the marker out of the defensive shape: a little more room in midfield and between the lines.
   const markHole = mark && A.some((x) => x.id === mark) ? 1 : 0;
   const P = [0, 1, 2].map((l) => duel(A, za[Z.P0 + l], S.prog, D, zd[Z.P0 + l], S.screen,
-    b.P + bonusA + eP + 0.12 * markHole + 0.5 * holes - 0.4 * trapped(l) + (td.line === 0 ? 0.3 : td.line === 2 ? -0.15 : 0) + (td.pressing === 2 ? 0.12 : 0) + 0.05 * mk, mark));
+    b.P + bonusA + eP + 0.12 * markHole + 0.5 * holes - 0.4 * trapped(l) + (td.line === 0 ? 0.3 : td.line === 2 ? -0.15 : 0) + (td.pressing === 2 ? 0.12 : 0) + 0.05 * mk + WX.prog[wx], mark));
   const presP = P.map((d) => d.na);
   const widthPref = [[0.6, 1.7, 0.6], [0.85, 1.3, 0.85], [1.2, 0.9, 1.2]][ta.width];
   const lanePick = (pres: number[], ds: Duel[]) => {
@@ -344,7 +347,7 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   const flank = [Z.FL, Z.FR].map((z) => duel(A, za[z], S.wingA, D, zd[z], S.wingD,
     b.FLANK + bonusA + (ta.mentality * 0.1) + [-0.1, 0, 0.12][ta.width] - 0.07 * mk, mark));
   const combo = duel(A, za[Z.COMBO], S.create, D, zd[Z.COMBO], S.block,
-    b.COMBO + bonusA + eC + 0.08 * markHole + holes + 0.1 * ta.mentality + (ta.tempo === 2 ? 0.08 : 0) + [-0.4, 0, 0.15][ta.width] + 0.07 * mk, mark);
+    b.COMBO + bonusA + eC + 0.08 * markHole + holes + 0.1 * ta.mentality + (ta.tempo === 2 ? 0.08 : 0) + [-0.4, 0, 0.15][ta.width] + 0.07 * mk + WX.combo[wx], mark);
   const presF = [flank[0].na, combo.na, flank[1].na];
   const qF = lanePick(presF, [flank[0], combo, flank[1]]);
   // Through balls: runners against the back line, with space behind a high line (and the offside trap).
@@ -359,11 +362,11 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   const oL = clamp(0.11 * (1 + 0.28 * ta.mentality) * (0.7 + 0.3 * midShoot / 70) + (td.line === 0 ? 0.04 : 0) + lob, 0.03, 0.3);
   const offside = [0.2, 0.35, 0.55][td.line];
   // Crosses: our box presence in the air against theirs.
-  const header = duel(A, za[Z.BOX], S.airA, D, zd[Z.BOX], S.airD, b.HEAD + bonusA - 0.05 * mk, mark);
+  const header = duel(A, za[Z.BOX], S.airA, D, zd[Z.BOX], S.airD, b.HEAD + bonusA - 0.05 * mk + WX.air[wx], mark);
   const cross = clamp([0.84, 0.88, 0.9][ta.width] + (aerial ? 0.08 : 0) - (header.mean < 0.25 ? 0.08 : 0), 0.3, 0.85);
   // Corners and free-kick deliveries: the big men.
   const corner = duel(A, za[Z.SET], S.airA, D, zd[Z.SET], S.airD,
-    b.CRN + bonusA + [0, 0.22, -0.45][ta.routine] - 0.08 * sm, mark, 0.3);
+    b.CRN + bonusA + [0, 0.22, -0.45][ta.routine] - 0.08 * sm + WX.air[wx], mark, 0.3);
   const cShort = ta.routine === 2 ? 0.45 : 0.08;
   // Transitions: the other side's exposure when we win the ball, our runners against their rest defence.
   const restD = D.reduce((s, d) => s + (out(d) ? sig((42 - d.y) / 5) : 0), 0);

@@ -9,6 +9,7 @@ export const R_EN = {
   varOn: 'VAR', varOff: 'No VAR',
   refLine: (r: string, s: string, v: boolean): string => `Referee ${r} · ${s} · ${v ? 'VAR in use' : 'no VAR'}`,
   speeds: ['Slow', 'Normal', 'Fast'] as [string, string, string],
+  wx: ['Clear', 'Rain', 'Heavy rain', 'Windy', 'Hot', 'Snow'] as string[], // matchday weather (engine/weather.ts)
   instant: 'Instant',
   commentary: 'Commentary', moments: 'Key moments',
   windows: (n: number): string => `${n} ${P(n, 'window', 'windows')} left`,
