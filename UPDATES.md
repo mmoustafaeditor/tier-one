@@ -19,8 +19,8 @@ together with your change.
 
 ## 2026-10-01 · saifsaber · The Gaffer CI: a failed publish now fails the run
 - **What changed:** When a push run and a manual "publish a new APK" run overlapped, the second one's publish hit a rebase conflict on the generated build files, never reached `main`, and still showed green. The publish step now rebases with this run's generated files winning (`-X theirs`), aborts a failed rebase before retrying, and fails the run if all 4 attempts fail.
-- **Files:** `.github/workflows/build-the-gaffer.yml`, `UPDATES.md`
-- **Heads-up for the team:** Avoid starting a manual Gaffer build while a push build is still running; if a publish fails now, the run is red instead of silently green.
+- **Files:** `.github/workflows/build-the-gaffer.yml`, `games/the-gaffer/README.md` (APK and HTML links now point at sembagames.app: the GitHub raw links 404 for people outside the repo), `UPDATES.md`
+- **Heads-up for the team:** The 2.2.0 APK is published (versionCode 29847260, `downloads/TheGaffer.apk`). Avoid starting a manual Gaffer build while a push build is still running; if a publish fails now, the run is red instead of silently green.
 
 ## 2026-10-01 · saifsaber · The Gaffer 2.2.0: version name, READMEs and a new APK
 - **What changed:** The release that merged in PR #6 (audit fixes, V2.7–V2.10, navigation redesign) is now called 2.2.0 (`web/package.json`), and the root and game READMEs show 2.2.0 with what's new. After this lands, the build workflow is run with "Also publish a new APK", so `downloads/TheGaffer.apk` bundles 2.2.0 and the update feed `api/the-gaffer/latest.js` (written by CI) announces it.

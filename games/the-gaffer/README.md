@@ -4,8 +4,8 @@
 
 <p align="center">
   <a href="https://sembagames.app/the-gaffer">▶ Play on the web</a> ·
-  <a href="https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/the-gaffer/index.html">🌐 Standalone HTML</a> ·
-  <a href="https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TheGaffer.apk">⬇ Download Android APK</a>
+  <a href="https://www.sembagames.app/the-gaffer/index.html">🌐 Standalone HTML</a> ·
+  <a href="https://www.sembagames.app/downloads/TheGaffer.apk">⬇ Download Android APK (2.2.0)</a>
 </p>
 
 ## Status
@@ -101,7 +101,7 @@ The Android wrapper lives in `android/`.
 
 - app id: `com.sembagames.thegaffer`
 - update endpoint: `https://sembagames.app/api/the-gaffer/latest`
-- direct APK fallback: `https://github.com/mmoustafaeditor/tier-one/raw/refs/heads/main/downloads/TheGaffer.apk`
+- direct APK: `https://www.sembagames.app/downloads/TheGaffer.apk`
 - shares images, reports, saves, and text through the native Android share sheet
 - supports file import and the native Back button
 - keeps the actual game inside `assets/index.html`
