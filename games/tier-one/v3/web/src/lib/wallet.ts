@@ -9,15 +9,15 @@
 // is pushed with its id as the idempotency key; `reconcile()` pulls the server balance back. Until then the local
 // ledger is the source of truth and nothing here makes a request.
 //
-// Earnable-credit hooks for other lanes (each is idempotent per key; safe inside an update() mutator when `s` is given):
-//   awardFirstTier1(s?)        — lib/meta.ts onDailyDone, when r.tier === 'T1' the first time (30 credits)
-//   awardStreak(n, s?)         — lib/meta.ts onDailyDone after the streak moves (40 credits at every 30 days)
-//   awardSeasonEnd(sid, lv, s?)— lib/season.ts syncSeason when a season rolls over (25 credits, +25 at level 40)
-//   onFirstWindowFinished(s?)  — any Results screen after the player's first finished window (pays the referral)
+// Earnable credits (each idempotent per key; safe inside an update() mutator when `s` is given) are WIRED to the real
+// events through lib/economy.ts creditHooks (4.0): awardFirstTier1 on the first Tier One Daily, awardStreak at every
+// 30-day streak, awardSeasonEnd when a season rolls over, onFirstWindowFinished after the first window of any mode.
+// The amounts come from api/tier-one/v4/config/catalog.json `earn`, the same table the server pays from.
 import { update, getSave, type Save } from './save';
 import { MONET } from './monet';
-import { syncSeason, seasonAt, installThemeCSS, equipped as seasonEquipped, type CosKind } from './season';
-import { item, priceNow, onSale, isStandard, isLegacyKind, standardOf, legacy, GOLD_CREDITS, type Item, type Kind, type Price } from './catalog';
+import { syncSeason, seasonAt, installThemeCSS, setShopBuy, equipped as seasonEquipped, type CosKind } from './season';
+import { item, priceNow, onSale, isStandard, isLegacyKind, standardOf, legacy, GOLD_CREDITS, CREDIT_PACKS, COIN_PACKS, STARTER, SERVER_EARN, packBonus, type CreditPack, type CoinPack, type Item, type Kind, type Price } from './catalog';
+import { credit as creditCoins, debit as debitCoins, setCreditHooks, levelOf, xpOf, SEASON } from './economy';
 import { t } from './i18n';
 import { earnMet } from './earned';
 import { catchphraseOf, catchphraseColor, type Catchphrase } from './catchphrase';
@@ -33,6 +33,7 @@ export interface WalletSave {
   ref?: { from?: string; at?: number; paid?: boolean; friends?: number }; // who referred me; how many I've brought
   gifts?: GiftOut[];                                  // outbox for the press box lane / v4 wallet.gift
   refunds?: number;
+  starter?: { seen?: number; bought?: number };       // 4.0: the one-time starter bundle (shown once, bought once)
 }
 export interface DeskSave {
   equip: Partial<Record<Kind, string>>; paper?: string;
@@ -47,21 +48,18 @@ export type Tx = { ok: true; id: string; n: number; cur: Currency } | { ok: fals
 export const LEDGER_CAP = 120;
 export const REFUND_HOURS = 48;
 
-// Earnable credits (the only ways credits are not bought). Small on purpose: credits should mean something.
-export const CREDITS_EARN = { firstT1: 30, streak30: 40, seasonEnd: 25, seasonTop: 25, referral: 30 } as const;
+// Earnable credits (the only ways credits are not bought): the server's `earn` table, so client and server agree.
+export const CREDITS_EARN = {
+  firstT1: SERVER_EARN.first_t1 ?? 30, streak30: SERVER_EARN.streak_30 ?? 40, seasonEnd: SERVER_EARN.season_end ?? 25,
+  seasonTop: SERVER_EARN.season_end ?? 25, referral: SERVER_EARN.referral ?? 30,
+} as const;
 export const GIFT_MIN_LEVEL = 3; // a friend code can gift once the account is past the tutorial levels (anti-fraud)
 
-// Credit packs at honest tiers (docs/BUSINESS.md). No pack over €20, the bonus grows slowly, and the middle pack is
-// exactly one Gold season so the price of Gold is the same however you pay.
-export interface CreditPack { id: string; credits: number; price: string; eur: number; tag?: 'gold' }
-export const CREDIT_PACKS: CreditPack[] = [
-  { id: 'c100', credits: 100, price: '€1.49', eur: 1.49 },
-  { id: 'c350', credits: GOLD_CREDITS, price: '€4.99', eur: 4.99, tag: 'gold' },
-  { id: 'c800', credits: 800, price: '€9.99', eur: 9.99 },
-  { id: 'c1800', credits: 1800, price: '€19.99', eur: 19.99 },
-];
-export const packBonus = (p: CreditPack) => Math.round(((p.credits / p.eur) / (CREDIT_PACKS[0].credits / CREDIT_PACKS[0].eur) - 1) * 100);
+// The ONE credit pack table lives in api/tier-one/v4/config/catalog.json (lib/catalog.ts CREDIT_PACKS reads it): no
+// pack over €20, and the 350 pack is exactly one Gold season so the price of Gold is the same however you pay.
+export { CREDIT_PACKS, COIN_PACKS, STARTER, packBonus, type CreditPack, type CoinPack };
 export const creditPacksOnSale = () => MONET.enabled && !!purchaseFlow;
+export const GOLD_PRICE_TEXT = CREDIT_PACKS.find((p) => p.credits === GOLD_CREDITS)?.price || '€4.99';
 
 // ---------------------------------------------------------------- v4 adapter point
 export interface WalletSync {
@@ -100,7 +98,7 @@ const hash = (x: string) => { let h = 0x811c9dc5; for (let i = 0; i < x.length; 
 /** Moves `d` of `cur` on a draft and records it. Coins also land in the legacy ledger so the Pass wallet shows them. */
 function move(s: Save, cur: Currency, d: number, why: string, extra: Partial<WalletEntry> = {}): WalletEntry {
   const w = wallet(s);
-  if (cur === 'coins') { s.credits = Math.max(0, s.credits + d); s.ledger = [{ at: Date.now(), d, why }, ...s.ledger].slice(0, 30); if (d > 0) s.stats.earned = (s.stats.earned || 0) + d; }
+  if (cur === 'coins') { if (d > 0) d = creditCoins(s, d, why); else debitCoins(s, -d, why); } // the one coin ledger (lib/economy.ts)
   else w.credits = Math.max(0, w.credits + d);
   const e: WalletEntry = { id: txid(why), at: Date.now(), cur, d, why, ...extra };
   w.ledger = [e, ...w.ledger].slice(0, LEDGER_CAP);
@@ -120,9 +118,18 @@ export const awardFirstTier1 = (s?: Save) => earnCredits('t1:first', CREDITS_EAR
 export const awardStreak = (n: number, s?: Save) => (n > 0 && n % 30 === 0 ? earnCredits('streak:' + n, CREDITS_EARN.streak30, 'earn:streak', s) : null);
 export function awardSeasonEnd(sid: string, lv: number, s?: Save) {
   const a = earnCredits('season:' + sid, CREDITS_EARN.seasonEnd, 'earn:season', s);
-  const b = lv >= 40 ? earnCredits('season:' + sid + ':top', CREDITS_EARN.seasonTop, 'earn:seasonTop', s) : null;
+  const b = lv >= SEASON.tiers ? earnCredits('season:' + sid + ':top', CREDITS_EARN.seasonTop, 'earn:seasonTop', s) : null;
   return a || b;
 }
+// 4.0: wired to the real events (lib/meta.ts onDailyDone, lib/season.ts syncSeason) through lib/economy.ts creditHooks.
+setCreditHooks({
+  firstT1: (s) => { awardFirstTier1(s); },
+  streak: (s, n) => { awardStreak(n, s); },
+  seasonEnd: (s, sid, lv) => { awardSeasonEnd(sid, lv, s); },
+  firstWindow: (s) => { onFirstWindowFinished(s); },
+});
+// The 3.x season store (lib/season.ts buyCosmetic) is the same shop: coins through buy().
+setShopBuy((id) => buy(id, 'coins').ok);
 
 // ---------------------------------------------------------------- spend, buy, equip
 export function canPay(p: Price, cur: Currency, s: Save = getSave()) { const n = p[cur]; return n != null && balance(cur, s) >= n; }
@@ -293,12 +300,38 @@ export async function buyCreditPack(id: string): Promise<Tx> {
   if (!p || !creditPacksOnSale()) return { ok: false, error: 'off' };
   return purchaseFlow!(p);
 }
-/** After the server verifies a pack purchase (api lane): idempotent per receipt. */
+/** After the server verifies a pack purchase (api lane): idempotent per receipt. The starter bundle also pays its
+ *  coins and grants the Starter wallpaper, once. */
 export function applyPurchase(receipt: string, packId: string): WalletEntry | null {
-  const p = CREDIT_PACKS.find((x) => x.id === packId); if (!p) return null;
-  return earnCredits('pack:' + receipt, p.credits, 'pack:' + packId);
+  const p = CREDIT_PACKS.find((x) => x.id === packId) || (STARTER && STARTER.id === packId ? STARTER : null); if (!p) return null;
+  const e = earnCredits('pack:' + receipt, p.credits, 'pack:' + packId);
+  if (e && p.tag === 'starter') update((s) => { const w = wallet(s); if (w.starter?.bought) return; w.starter = { ...(w.starter || {}), bought: Date.now() }; if (p.coins) creditCoins(s, p.coins, 'pack:' + packId); const look = STARTER?.look; if (look && !s.owned.includes(look)) { s.owned.push(look); const d = desk(s); d.fresh = [...(d.fresh || []), look].slice(-12); } });
+  return e;
 }
 export const goldItemId = (ms = Date.now()) => 'gold.' + seasonAt(ms).id;
+
+// ---------------------------------------------------------------- coin packs (credits → coins) and the starter bundle
+/** Buys a coin pack with credits (api lane: wallet.spend on the server when online; the local ledger is the fallback). */
+export function buyCoinPack(id: string): Tx {
+  const p = COIN_PACKS.find((x) => x.id === id); const s = getSave();
+  if (!p) return { ok: false, error: 'bad' };
+  if (balance('credits', s) < p.credits) return { ok: false, error: 'short' };
+  let e: WalletEntry | null = null;
+  update((x) => { e = move(x, 'credits', -p.credits, 'buy:' + id, { item: id }); creditCoins(x, p.coins, 'pack:' + id); });
+  if (e) pushLater(e);
+  return { ok: true, id: e!.id, n: p.credits, cur: 'credits' };
+}
+/** The starter bundle (CONCEPT4 §5): one-time, from Level 3, shown once in Lens › Looks, never a popup.
+ *  `show` = list it now; `seen` = it has been shown once already (the quiet line stays on the Looks screen). */
+export function starterOffer(s: Save = getSave()): { pack: CreditPack & { level: number; look: string }; show: boolean; seen: boolean; bought: boolean } | null {
+  if (!STARTER) return null;
+  const st = s.wallet?.starter || {};
+  const bought = !!st.bought, level = levelOf(xpOf(s)).n;
+  return { pack: STARTER, show: !bought && level >= STARTER.level && creditPacksOnSale(), seen: !!st.seen, bought };
+}
+/** Lens › Looks calls this the first time it lists the bundle (so it is shown big once, then as a line). */
+export function markStarterSeen() { update((s) => { const w = wallet(s); if (!w.starter?.seen) w.starter = { ...(w.starter || {}), seen: Date.now() }; }); }
+export const buyStarter = (): Promise<Tx> => (STARTER && creditPacksOnSale() && starterOffer()?.show ? purchaseFlow!(STARTER) : Promise.resolve({ ok: false, error: 'off' } as Tx));
 
 // ---------------------------------------------------------------- what other screens read
 /** CSS variables for the byline card wherever it appears (Me, press box tables, results). */

@@ -16,8 +16,8 @@ export const LOCAL_FIELDS: (keyof Save)[] = ['dev', 'sound', 'reduced'];
 type Doc = Record<string, unknown>;
 export interface CollectionRule { id?: string | ((e: unknown) => unknown); cap?: number; sort?: string; flags?: string[] }
 export const RULES = {
-  counters: ['credits', 'pp', 'byline.followers', 'stats.*', 'book.*.xp', 'book.*.asks', 'book.*.hits', 'rivals.*.w', 'rivals.*.l', 'rivals.*.d'],
-  max: ['byline.hot', 'byline.best', 'streak.best', 'book.*.lv', 'practice.played'],
+  counters: ['credits', 'xp', 'pp', 'season.xp', 'byline.followers', 'stats.*', 'book.*.xp', 'book.*.asks', 'book.*.hits', 'rivals.*.w', 'rivals.*.l', 'rivals.*.d'],
+  max: ['byline.hot', 'byline.best', 'byline.rank', 'streak.best', 'book.*.lv', 'practice.played'],
   first: ['ach.*', 'milestones.*', 'scenes.*', 'rivals.*.scalp', 'rivals.*.trophy', 'stats.pay:*'],
   collections: {
     feed: { id: 'id', cap: 60, sort: 'at', flags: ['read'] },
@@ -29,7 +29,7 @@ export const RULES = {
     'byline.keys': { cap: 40 },
   } as Record<string, CollectionRule>,
   maps: ['daily'],
-  clampMin: { credits: 0, 'byline.followers': 0, pp: 0 } as Record<string, number>,
+  clampMin: { credits: 0, 'byline.followers': 0, pp: 0, xp: 0, 'season.xp': 0 } as Record<string, number>,
 };
 const isObj = (v: unknown): v is Doc => !!v && typeof v === 'object' && !Array.isArray(v);
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);

@@ -1,11 +1,24 @@
-// Progress around the window: streak (with grace days), Semba Credits, Press Points on the season track, the 30
-// achievements, and toasts. Everything here is local and cosmetic: none of it touches a ranked score.
+// Progress around the window (RULES4 §3): the streak, XP and the Level (forever), coins, the 12 Secret files, brand
+// deals, and toasts. Every number is in lib/economy.ts. Everything here is local: none of it touches a ranked score.
+//
+// CONTRACT for the results thread (CONCEPT4 §7): every on*Done takes a v4 Result4 (or a v3 Result for old data) and
+// RETURNS a Gain: { xp, level, levelUp, coins, rep, repDelta, followers, followersDelta, rank, rankUp, unlocked, deal?, files? }.
+// The byline (followers, Rep, rank, Contacts Book, rivals) moves in the same update through lib/byline.ts recordInto,
+// so a later recordWindow() from a Results screen is a no-op for the same window key.
 import { update, getSave, type Save } from './save';
-import type { Result } from './engine';
+import type { Result, Result4, CastSaga } from './engine';
 import { t } from './i18n';
-import { trackWindow } from './progress';
-import { addSeasonPP, goldBonus, seasonAt } from './season';
+import { trackWindow, setAddXp, type TrackMode } from './progress';
+import { addSeasonXP, seasonAt } from './season';
 import { earnHook } from './earnhook';
+import {
+  XP, COINS, SECRET_FILES, SECRET_FILE_XP, credit as credit0, debit, levelOf, levelCoins, newUnlocks, xpOf, xpForWindow, coinsForWindow,
+  emptyGain, rankIndex, underReview, creditHooks, type Gain, type SecretFile, type Mode4,
+} from './economy';
+/** A result as a screen hands it over: the engine's Result (v3) or Result4, plus what the server adds (rank, par…). */
+export type AnyResult = (Result | Result4) & { rank?: number | null; players?: number; par?: number | null; row?: string; cast?: CastSaga[] };
+import { recordInto, liteOf, bylineOf, rankOf, windowKey, type CallLite } from './byline';
+import { evaluate as evaluateDeals, settle as settleDeals, type DealOutcome } from './deals';
 
 type Toast = { id: number; kind: 'ach' | 'info' | 'warn'; title: string; body?: string };
 const listeners = new Set<(t: Toast[]) => void>();
@@ -18,57 +31,103 @@ export function toast(kind: Toast['kind'], title: string, body?: string, ms = 36
 }
 export function onToasts(f: (t: Toast[]) => void) { listeners.add(f); return () => { listeners.delete(f); }; }
 
-export const ACH: Record<string, number> = {
-  first: 10, t1: 50, t1x3: 50, excl: 20, excl3: 50, clean: 30, uturn: 15, twist: 20, dd: 15, silent: 10,
-  fake: 20, hijack: 15, agent: 20, echo: 10, physio: 15, streak7: 20, streak30: 50, practice5: 15, coach: 10, career1: 10,
-  rank2: 20, rank3: 30, rank5: 50, trust5: 30, leak: 25, wire1: 10, wireRight: 25, room: 15, share: 10, rich: 20,
-};
-export const ACH_IDS = Object.keys(ACH);
-
-function grant(s: Save, id: string) {
-  if (s.ach[id] || !(id in ACH)) return;
-  s.ach[id] = Date.now();
-  credit(s, ACH[id], 'ach:' + id);
-  addPP(s, 25);
-  const name = t('ach.list.' + id + '.0') || id;
-  setTimeout(() => toast('ach', t('ach.got', { n: name }), t('ach.reward', { n: ACH[id] })), 300);
+// ---------------------------------------------------------------- coins and XP (the only writers)
+/** Every coin grant goes through here (lib/economy.ts credit: the Gold +10%, the ledger line). */
+export const credit = credit0;
+export function spend(n: number, why: string): boolean {
+  if (getSave().credits < n) return false;
+  let ok = false;
+  update((s) => { ok = debit(s, n, why); });
+  return ok;
 }
-export function credit(s: Save, d: number, why: string) {
-  if (!d) return;
-  d = goldBonus(s, d); // Gold lane: +10% on coins earned (lib/season.ts)
-  s.credits += d; s.ledger = [{ at: Date.now(), d, why }, ...s.ledger].slice(0, 30);
-  s.stats.earned = (s.stats.earned || 0) + Math.max(0, d);
-  if ((s.stats.earned || 0) >= 500) grant(s, 'rich');
+/** Adds XP to the account and the season track; a level-up pays coins (10 × level, capped 200). Returns the levels crossed. */
+export function addXP(s: Save, n: number): number[] {
+  if (!(n > 0)) return [];
+  const before = levelOf(xpOf(s)).n;
+  s.xp = xpOf(s) + Math.round(n); s.pp = s.xp; // `pp` is the 3.x name, kept in step until every screen reads `xp`
+  addSeasonXP(s, Math.round(n));
+  const after = levelOf(s.xp).n, crossed: number[] = [];
+  for (let L = before + 1; L <= after; L++) { crossed.push(L); credit(s, levelCoins(L), 'level:' + L); }
+  return crossed;
 }
-export function addPP(s: Save, n: number) {
-  const before = Math.floor(s.pp / 100);
-  s.pp += n; addSeasonPP(s, n);
-  const after = Math.min(40, Math.floor(s.pp / 100));
-  for (let tier = before + 1; tier <= after; tier++) if (tier % 4 === 0) credit(s, 20, 'track:' + tier);
-}
+/** 3.x name. */
+export const addPP = addXP;
+setAddXp(addXP);
 
 export const ymdUTC = (ms = Date.now()) => new Date(ms).toISOString().slice(0, 10);
 const dayDiff = (a: string, b: string) => Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 864e5);
 
-// Per-window achievements shared by every mode.
-function windowAch(s: Save, r: Result) {
-  if (r.ex >= 1) grant(s, 'excl');
-  if (r.ex >= 3) grant(s, 'excl3');
-  if (r.called === r.per.length && r.right === r.per.length && r.per.length >= 5) grant(s, 'clean');
-  if (r.per.some((p) => p.right && p.call && p.call.ut)) grant(s, 'uturn');
-  if (r.per.some((p) => p.right && p.tw)) grant(s, 'twist');
-  if (r.called === 0 && r.total >= 0) grant(s, 'silent');
-  if (r.per.some((p) => p.right && p.truth === 3 && p.call && p.call.s === 2)) grant(s, 'fake');
-  if (r.per.some((p) => p.right && p.truth === 1)) grant(s, 'hijack');
-  if (r.per.some((p) => p.right && p.call && p.reads.some((c) => c.src === 'agent' && c.r >= 2 && c.r === p.call!.o))) grant(s, 'agent');
-  if (r.per.some((p) => p.right && p.call && p.call.s === 2 && p.reads.some((c) => c.src === 'physio' && c.day <= p.call!.day))) grant(s, 'physio');
-  if (r.per.some((p) => !p.right && p.call && p.reads.filter((c) => c.src === 'barber' && c.r === p.call!.o).length + p.posts.filter((f) => f.id !== 'insider' && f.claim === p.call!.o && f.day < p.call!.day).length >= 2)) grant(s, 'echo');
+// ---------------------------------------------------------------- Secret files (RULES4 §3 Mystery)
+// 12 hidden achievements, shown as sealed files until earned. Each pays 50 XP. `ACH` keeps the 3.x name so the Me
+// screen still lists them; the value is the XP a file pays (coins come only from the RULES4 table).
+export const ACH: Record<string, number> = Object.fromEntries(SECRET_FILES.map((id) => [id, SECRET_FILE_XP]));
+export const ACH_IDS: string[] = [...SECRET_FILES];
+export const ACH_XP = SECRET_FILE_XP;
+function grant(s: Save, id: SecretFile, got: SecretFile[]) {
+  if (s.ach[id] || !(id in ACH)) return;
+  s.ach[id] = Date.now();
+  addXP(s, ACH[id]);
+  got.push(id);
+  const name = t('e4.sf.' + id + '.n');
+  setTimeout(() => toast('ach', t('e4.sf.got', { n: name }), t('e4.sf.xp', { n: ACH[id] })), 300);
+}
+const isV4 = (r: AnyResult): r is Result4 & AnyResult => (r as Result4).v === 4;
+/** The files a finished window can open. v4 results carry the truth per story; v3 results open only the mode-free ones. */
+function windowFiles(s: Save, r: AnyResult, mode: Mode4, got: SecretFile[]) {
+  const per = r.per.map(liteOf), calls = per.filter((p) => p.called);
+  const n = r.per.length;
+  if (calls.length === n && calls.every((p) => p.right) && n >= 5) grant(s, 'cleanSheet', got);
+  if (calls.filter((p) => p.scoop).length >= 2) grant(s, 'scoop2', got);
+  if (calls.some((p) => p.right && p.s === 2 && p.day === 1)) grant(s, 'dayOne', got);
+  if (calls.some((p) => p.right && p.s === 2 && !p.reads.some((c) => c.src === 'physio'))) grant(s, 'physioNo', got);
+  if (mode === 'daily' && r.tier === 'T1' && !per.some((p) => p.reads.some((c) => c.src === 'barber'))) grant(s, 'noBarber', got);
+  if ((r.tier === 'T1' || r.tier === 'T2') && calls.length >= 3 && calls.every((p) => p.s === 0)) grant(s, 'quiet', got);
+  if (calls.some((p) => p.scoop && p.rivals.some((f) => f.id === 'insider' && f.right && f.day >= p.day))) grant(s, 'rivalBeat', got);
+  if (mode === 'deadline' && r.tier === 'T1') grant(s, 'liveT1', got);
+  if (isV4(r) && mode === 'daily' && r.per.filter((p) => p.right && p.call && p.call.s === 2 && p.truth === 2).length >= 3) grant(s, 'stays3', got);
+  if ((s.byline?.hot || 0) >= 10) grant(s, 'hot10', got);
+  if ((s.stats.deals_paid || 0) >= 3) grant(s, 'deal3', got);
 }
 
-export function onDailyDone(dayKey: string, no: number, r: Result, extra: { ddLast15?: boolean } = {}) {
+// ---------------------------------------------------------------- the Gain (what the results thread reads)
+interface Snap { level: number; xp: number; rep: number; followers: number; rank: Gain['rank']; credits: number }
+const snapOf = (s: Save): Snap => { const b = bylineOf(s); return { level: levelOf(xpOf(s)).n, xp: xpOf(s), rep: b.rep, followers: b.followers, rank: rankOf(s), credits: s.credits }; };
+function gainOf(before: Snap, s: Save, deal: DealOutcome | null, files: SecretFile[]): Gain {
+  const a = snapOf(s), g = emptyGain(a.level, a.rep, a.followers, a.rank);
+  g.xp = a.xp - before.xp; g.levelUp = a.level > before.level; g.unlocked = newUnlocks(before.level, a.level);
+  g.coins = a.credits - before.credits;
+  g.repDelta = a.rep - before.rep; g.followersDelta = a.followers - before.followers;
+  g.rankUp = rankIndex(a.rank) > rankIndex(before.rank);
+  g.review = underReview(a.rep, bylineOf(s).rank || 0);
+  if (deal && deal.status !== 'missed') g.deal = { brand: deal.brand, status: deal.status, coins: deal.coins };
+  if (files.length) g.files = files;
+  return g;
+}
+const modeKey = (mode: Mode4, extra: { no?: number; seed?: string; room?: { code: string; round: number } }) => windowKey({ mode, ...extra });
+
+/** The shared end-of-window move, inside one update: byline, deals, missions, files, XP and coins. */
+function settleWindow(s: Save, r: AnyResult, mode: Mode4, key: string, opts: { xp?: number; coins?: number; cast?: CastSaga[]; no?: number; room?: { code: string; round: number } } = {}): { deal: DealOutcome | null; files: SecretFile[]; lite: CallLite[] } {
+  const got: SecretFile[] = [];
+  const bmode = mode === 'deadline' ? 'daily' : mode === 'wire' ? 'practice' : mode;
+  if (mode !== 'career') recordInto(s, { mode: bmode as 'daily' | 'room' | 'practice' | 'career', key, per: r.per, cast: r.cast && r.cast.length ? r.cast : opts.cast, tier: r.tier, total: r.total, no: opts.no, room: opts.room });
+  const lite = r.per.map(liteOf);
+  const deal = evaluateDeals(s, lite, mode);
+  if (opts.coins) credit(s, opts.coins, mode + ':' + (opts.no || key));
+  addXP(s, opts.xp ?? xpForWindow(mode, r.tier));
+  trackWindow(s, r, (mode === 'career' ? 'story' : mode === 'wire' ? 'practice' : mode) as TrackMode);
+  windowFiles(s, r, mode, got);
+  if (!s.stats.firstWindow) { s.stats.firstWindow = Date.now(); creditHooks.firstWindow?.(s); } // a referred friend's first window pays (lib/wallet.ts)
+  earnHook(s);
+  return { deal, files: got, lite };
+}
+
+export function onDailyDone(dayKey: string, no: number, r: AnyResult, extra: { ddLast15?: boolean } = {}): Gain {
+  const before = snapOf(getSave());
+  let out: { deal: DealOutcome | null; files: SecretFile[] } = { deal: null, files: [] };
   update((s) => {
     if (s.daily[dayKey]) { s.daily[dayKey] = { ...s.daily[dayKey], rank: r.rank, players: r.players, par: r.par }; return; }
-    s.daily[dayKey] = { no, total: r.total, tier: r.tier, row: r.row || '', ex: r.ex, rank: r.rank, players: r.players, par: r.par };
+    const ex = isV4(r) ? r.scoops : r.ex;
+    s.daily[dayKey] = { no, total: r.total, tier: r.tier, row: r.row || '', ex, rank: r.rank, players: r.players, par: r.par, v: isV4(r) ? 4 : 3 };
     // Streak with grace days: one earned per 7-day run (bank up to 2); a missed day spends one.
     const st = s.streak;
     const gap = st.last ? dayDiff(st.last, dayKey) : 99;
@@ -76,57 +135,77 @@ export function onDailyDone(dayKey: string, no: number, r: Result, extra: { ddLa
     else if (gap > 1 && gap - 1 <= st.grace && st.n > 0) { st.grace -= gap - 1; st.n++; }
     else if (gap !== 0) st.n = 1;
     st.last = dayKey; st.best = Math.max(st.best, st.n);
-    if (st.n % 7 === 0) { st.grace = Math.min(2, st.grace + 1); credit(s, 20, 'streak:' + st.n); }
-    if (st.n >= 7) grant(s, 'streak7');
-    if (st.n >= 30) grant(s, 'streak30');
-    earnHook(s); // streak looks and lines (lib/earned.ts)
-    credit(s, 5 + (r.tier === 'T1' ? 5 : 0), 'daily:' + no);
-    addPP(s, 20 + (({ T1: 15, T2: 10, T3: 5 } as Record<string, number>)[r.tier] || 0));
+    if (st.n % 7 === 0) { st.grace = Math.min(2, st.grace + 1); credit(s, COINS.streak7, 'streak:' + st.n); }
+    creditHooks.streak?.(s, st.n); // 30-day streaks earn credits (lib/wallet.ts, server-matching)
     s.stats.dailies = (s.stats.dailies || 0) + 1;
-    if (r.tier === 'T1') s.stats.t1 = (s.stats.t1 || 0) + 1;
-    grant(s, 'first');
-    if (r.tier === 'T1') grant(s, 't1');
-    if ((s.stats.t1 || 0) >= 3) grant(s, 't1x3');
-    if (extra.ddLast15) grant(s, 'dd');
-    windowAch(s, r);
-    trackWindow(s, r, 'daily');
+    if (r.tier === 'T1') { s.stats.t1 = (s.stats.t1 || 0) + 1; creditHooks.firstT1?.(s, dayKey); }
+    if (extra.ddLast15) s.stats.ddLate = (s.stats.ddLate || 0) + 1;
+    // Spiked yesterday, Tier One today: the "ratioed" file.
+    const prev = Object.keys(s.daily).filter((k) => k < dayKey).sort().pop();
+    const files: SecretFile[] = [];
+    out = settleWindow(s, r, 'daily', windowKey({ mode: 'daily', no }), { coins: coinsForWindow('daily', r.tier), no });
+    if (prev && s.daily[prev].tier === 'SPIKED' && r.tier === 'T1') grant(s, 'ratioed', files);
+    out.files.push(...files);
+    wireCredit?.(s, r.tier); // §7.1: a Tier One Daily earns a Wire credit (lib/desk.ts registers the hook)
   });
+  return gainOf(before, getSave(), out.deal, out.files);
 }
-export function onPracticeDone(r: Result, coach: boolean) {
+export function onPracticeDone(r: AnyResult, coach: boolean, seed = ''): Gain {
+  const before = snapOf(getSave());
+  let out: { deal: DealOutcome | null; files: SecretFile[] } = { deal: null, files: [] };
   update((s) => {
     const d = ymdUTC();
     if (s.practice.day !== d) { s.practice.day = d; s.practice.today = 0; }
     s.practice.today++; s.practice.played++;
-    if (s.practice.today <= 3) addPP(s, 10);
-    if (s.practice.played >= 5) grant(s, 'practice5');
-    if (coach) grant(s, 'coach');
-    windowAch(s, r);
-    trackWindow(s, r, 'practice');
+    if (coach) s.stats.coach = (s.stats.coach || 0) + 1;
+    out = settleWindow(s, r, 'practice', modeKey('practice', { seed: seed || 'p' + s.practice.played }), { xp: s.practice.today <= XP.practiceFreePerDay ? XP.practice : 0 });
   });
+  return gainOf(before, getSave(), out.deal, out.files);
 }
-export function onCareerDone(r: Result, milestoneCredits: number) {
+/** A Career window. lib/career.ts applyWindow has already moved the byline (recordInto under the pre-key) in the same
+ *  Results settle; this adds the XP, the coins, deals and files. `milestoneCredits` is the 3.x argument, unused. */
+export function onCareerDone(r: AnyResult, _milestoneCredits?: number): Gain {
+  const before = snapOf(getSave());
+  const last = getSave().byline?.last;
+  let out: { deal: DealOutcome | null; files: SecretFile[] } = { deal: null, files: [] };
   update((s) => {
     const c = s.career; if (!c) return;
-    grant(s, 'career1');
-    if (c.rank >= 1) grant(s, 'rank2');
-    if (c.rank >= 2) grant(s, 'rank3');
-    if (c.rank >= 4) grant(s, 'rank5');
-    if (Object.values(s.book || {}).some((x) => x.xp >= 560)) grant(s, 'trust5'); // a gold card in the Contacts Book
-    if (Object.values(c.relations).some((x) => x.v >= 3)) grant(s, 'leak');
-    if (milestoneCredits) credit(s, milestoneCredits, 'followers');
-    addPP(s, 10);
-    windowAch(s, r);
-    trackWindow(s, r, 'story');
+    out = settleWindow(s, r, 'career', 'career:' + c.windows, { coins: coinsForWindow('career') });
   });
+  const g = gainOf(before, getSave(), out.deal, out.files);
+  // The byline moved before this call: read the window's own followers/rep from the recorded summary.
+  if (last && /^pre:career:/.test(last.key)) { g.followersDelta = last.followers; g.repDelta = last.rep; g.rankUp = !!last.rankUp; }
+  return g;
 }
-export function onRoomDone(r: Result) { update((s) => { grant(s, 'room'); addPP(s, 15); windowAch(s, r); trackWindow(s, r, 'room'); }); }
-export function onWireFiled() { update((s) => { grant(s, 'wire1'); s.stats.wire = (s.stats.wire || 0) + 1; s.stats.m_wire = (s.stats.m_wire || 0) + 1; addPP(s, 5); }); }
-export function onWireRight() { update((s) => { grant(s, 'wireRight'); addPP(s, 10); }); }
-export function onShared() { update((s) => grant(s, 'share')); }
-export function spend(n: number, why: string): boolean {
-  if (getSave().credits < n) return false;
-  update((s) => { s.credits -= n; s.ledger = [{ at: Date.now(), d: -n, why }, ...s.ledger].slice(0, 30); });
-  return true;
+export function onRoomDone(r: AnyResult, room?: { code: string; round: number }): Gain {
+  const before = snapOf(getSave());
+  let out: { deal: DealOutcome | null; files: SecretFile[] } = { deal: null, files: [] };
+  update((s) => { s.stats.rooms = (s.stats.rooms || 0) + 1; out = settleWindow(s, r, 'room', modeKey('room', { room }), { room }); });
+  return gainOf(before, getSave(), out.deal, out.files);
 }
+/** Deadline Day (Live or Practice). `ranked` is a DD Live day; practice runs still pay XP, never a ranked score. */
+export function onDeadlineDone(r: AnyResult, seed: string, ranked = false): Gain {
+  const before = snapOf(getSave());
+  let out: { deal: DealOutcome | null; files: SecretFile[] } = { deal: null, files: [] };
+  update((s) => { s.stats.deadline = (s.stats.deadline || 0) + 1; if (ranked) s.stats.ddLive = (s.stats.ddLive || 0) + 1; out = settleWindow(s, r, 'deadline', 'deadline:' + seed); });
+  return gainOf(before, getSave(), out.deal, out.files);
+}
+/** A Wire call posted: 10 XP. The call's result (followers, Rep at half) lands through lib/byline.ts recordWireResolution. */
+export function onWireFiled(): Gain {
+  const before = snapOf(getSave());
+  update((s) => { s.stats.wire = (s.stats.wire || 0) + 1; s.stats.m_wire = (s.stats.m_wire || 0) + 1; addXP(s, XP.wire); earnHook(s); });
+  return gainOf(before, getSave(), null, []);
+}
+/** A Wire call settled right: +15 XP (and the coins the Wire screen pays are routed through credit()). */
+export function onWireRight(coins = 0, rid = ''): Gain {
+  const before = snapOf(getSave());
+  let deal: DealOutcome | null = null;
+  update((s) => { addXP(s, XP.wireRight); if (coins) credit(s, coins, 'wire:' + rid); deal = settleDeals(s)[0] || null; const got: SecretFile[] = []; if ((s.byline?.hot || 0) >= 10) grant(s, 'hot10', got); earnHook(s); });
+  return gainOf(before, getSave(), deal, []);
+}
+export function onShared() { update((s) => { s.stats.shared = (s.stats.shared || 0) + 1; }); }
+/** 3.x hook kept for lib/desk.ts: a Tier One Daily earns one Wire credit. */
+let wireCredit: ((s: Save, tier: string) => void) | null = null;
+export const setWireCreditHook = (f: typeof wireCredit) => { wireCredit = f; };
 // The real-calendar season (lib/season.ts): Rumour Mill, Winter Window, Spring Whispers, Summer Window.
 export function seasonName(ms = Date.now()) { return t(seasonAt(ms).nameKey); }

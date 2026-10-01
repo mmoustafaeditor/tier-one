@@ -1,11 +1,15 @@
-// Seasons and the cosmetic economy (GOTY.md §3). Real-calendar seasons, each with its own 40-level track fed by the
-// same Press Points as the account level, a free and a Gold lane, a cosmetics catalogue, and a weekly event.
-// The fairness line: nothing here reaches a Daily board, its sources or its score. Everything is cosmetic or coins.
-// Weekly-event rule deltas are data only; the Practice/Career integrator applies them to local windows.
+// Seasons and the season track (RULES4.md §3 "Season track", CONCEPT4.md §5). Real-calendar seasons, each with a
+// 30-tier track of 400 XP a tier fed by the same XP as the account level, a free lane (coins and a look every 5 tiers)
+// and a Gold lane (350 credits: a look every 3 tiers, the season's Legendary at tier 30, +10% coins).
+// The fairness line: nothing here reaches a board, its sources or its score. Everything is cosmetic or coins.
+// The old 3.x coin store that lived here (BASE below) is now just stock in the one shop (lib/catalog.ts); the numbers
+// come from lib/economy.ts, and buyCosmetic() routes through the wallet.
 import { update, getSave, type Save } from './save';
-import type { Result, Tier } from './engine';
+import type { Tier } from './engine';
 import type { Sfx } from './sfx';
 import { t } from './i18n';
+import { SEASON, PRICES, seasonTierOf, credit, setGoldCheck, goldBonus as goldBonus0, creditHooks } from './economy';
+import type { WallpaperMotif, DropStyle } from './kinds';
 
 const DAY = 864e5;
 const utc = (y: number, m: number, d: number) => Date.UTC(y, m - 1, d);
@@ -23,13 +27,11 @@ const CAL: { key: SeasonKey; from: [number, number]; to: [number, number]; accen
 export interface Season {
   id: string; key: SeasonKey; year: number; nameKey: string; accent: string;
   start: number; end: number; // ms, end is exclusive (00:00 UTC the day after the last day)
-  days: number; daysLeft: number; ppPerLv: number;
+  days: number; daysLeft: number;
+  /** XP per tier (400, every season). `ppPerLv` is the 3.x name of the same number, kept for screens not yet moved. */
+  xpPerTier: number; ppPerLv: number;
 }
-// XP per season level. The track should take a committed player (Daily + missions, about 100 XP a day) roughly three
-// quarters of the season to finish, so short windows get cheaper levels: Winter 60, Summer 150, Rumour Mill 230,
-// Spring 260. Rounded to 10 and never under 60.
-const perLevel = (days: number) => Math.max(60, Math.round((days * 0.75 * 100) / (MAX_SLV - 1) / 10) * 10);
-export const MAX_SLV = 40;
+export const MAX_SLV = SEASON.tiers;
 
 export function seasonAt(ms = Date.now()): Season {
   const y = new Date(ms).getUTCFullYear();
@@ -38,7 +40,7 @@ export function seasonAt(ms = Date.now()): Season {
   const days = Math.round((end - start) / DAY);
   return {
     id: c.key + '-' + y, key: c.key, year: y, nameKey: 'season.names.' + c.key, accent: c.accent, start, end, days,
-    daysLeft: Math.max(0, Math.ceil((end - ms) / DAY)), ppPerLv: perLevel(days),
+    daysLeft: Math.max(0, Math.ceil((end - ms) / DAY)), xpPerTier: SEASON.xpPerTier, ppPerLv: SEASON.xpPerTier,
   };
 }
 export function seasonById(id: string): Season | null {
@@ -52,73 +54,67 @@ export const nextSeason = (ms = Date.now()) => seasonAt(seasonAt(ms).end + DAY /
 
 // ---------- Season state in the save
 export interface SeasonSave {
-  id: string; pp: number; gold: boolean; claimed: string[]; // claimed: 'f<lv>' free lane, 'g<lv>' Gold lane
+  id: string; xp: number; gold: boolean; claimed: string[]; // claimed: 'f<tier>' free lane, 'g<tier>' Gold lane
+  pp?: number; // 3.x name of `xp`; the v4 migration folds it in and it is never written again
   best?: Tier; top?: { pts: number; mode: string; at: number } | null; seen?: boolean;
 }
-export interface SeasonRecap { id: string; lv: number; pp: number; gold: boolean; best?: Tier; top?: { pts: number; mode: string; at: number } | null; banked: number; seen?: boolean }
+export interface SeasonRecap { id: string; lv: number; xp: number; gold: boolean; best?: Tier; top?: { pts: number; mode: string; at: number } | null; banked: number; seen?: boolean; pp?: number }
 export interface WeekEvState { wk: string; n: number; got?: boolean }
 
-export function seasonLevel(pp: number, per: number) {
-  const n = Math.min(MAX_SLV, Math.floor(pp / per) + 1);
-  const into = n >= MAX_SLV ? per : pp - (n - 1) * per;
-  return { n, into, need: per, pct: Math.round((into / per) * 100), max: n >= MAX_SLV };
-}
+/** The season tier `xp` stands at. `per` is accepted for 3.x callers and ignored: a tier is always 400 XP. */
+export function seasonLevel(xp: number, _per?: number) { const v = seasonTierOf(xp); return { n: v.n, into: v.into, need: v.need, pct: v.pct, max: v.max }; }
+export const seasonXp = (st: SeasonSave | undefined | null) => Math.max(0, Math.round((st && (st.xp ?? st.pp)) || 0));
 
 // Rolls the season over when the calendar moves on: the old season becomes a recap (its unclaimed free coins are
-// banked for the player, not lost) and the track starts again at level 1. Safe to call any time; mutates `s`.
+// banked for the player, not lost) and the track starts again at tier 1. Safe to call any time; mutates `s`.
 export function syncSeason(s: Save, ms = Date.now()): SeasonSave {
   const cur = seasonAt(ms);
-  if (s.season && s.season.id === cur.id) return s.season;
-  if (s.season && s.season.pp > 0) {
-    const old = s.season, def = seasonById(old.id);
-    const lv = def ? seasonLevel(old.pp, def.ppPerLv).n : 1;
+  if (s.season && s.season.id === cur.id) { if (s.season.xp == null) { s.season.xp = seasonXp(s.season); delete s.season.pp; } return s.season; }
+  if (s.season && seasonXp(s.season) > 0) {
+    const old = s.season, xp = seasonXp(old);
+    const lv = seasonLevel(xp).n;
     let banked = 0;
     for (let L = 1; L <= lv; L++) { const r = freeReward(old.id, L); if (r && r.coins && !old.claimed.includes('f' + L)) banked += r.coins; }
     for (let L = 1; L <= lv && old.gold; L++) { const r = goldReward(old.id, L); if (r && r.coins && !old.claimed.includes('g' + L)) banked += r.coins; }
-    // Unclaimed cosmetics from the old season are granted too: they were earned.
+    // Unclaimed looks from the old season are granted too: they were earned.
     for (let L = 1; L <= lv; L++) {
       const f = freeReward(old.id, L); if (f?.cos && !s.owned.includes(f.cos)) s.owned.push(f.cos);
       const g = old.gold ? goldReward(old.id, L) : null; if (g?.cos && !s.owned.includes(g.cos)) s.owned.push(g.cos);
     }
-    if (banked) pay(s, banked, 'season:' + old.id, false);
-    s.seasonLog = [{ id: old.id, lv, pp: old.pp, gold: old.gold, best: old.best, top: old.top || null, banked }, ...(s.seasonLog || [])].slice(0, 12);
+    if (banked) credit(s, banked, 'season:' + old.id);
+    creditHooks.seasonEnd?.(s, old.id, lv); // season-end credits (lib/wallet.ts, server-matching)
+    s.seasonLog = [{ id: old.id, lv, xp, gold: old.gold, best: old.best, top: old.top || null, banked }, ...(s.seasonLog || [])].slice(0, 12);
   }
-  s.season = { id: cur.id, pp: 0, gold: false, claimed: [] };
+  s.season = { id: cur.id, xp: 0, gold: false, claimed: [] };
   return s.season;
 }
 export const isGold = (s: Save = getSave()) => !!s.season && s.season.id === seasonAt().id && s.season.gold;
-// +10% coins for Gold holders, on coins earned by playing. Rounded up so small rewards still show it.
-export const goldBonus = (s: Save, d: number) => (d > 0 && isGold(s) ? Math.ceil(d * 1.1) : d);
+setGoldCheck(isGold); // lib/economy.ts credit() applies the Gold +10% through this
+export const goldBonus = goldBonus0;
 
-// Called wherever Press Points are earned (lib/meta.ts addPP): the season track moves with the account level.
-export function addSeasonPP(s: Save, n: number) { if (n > 0) syncSeason(s).pp += n; }
+/** Called wherever XP is earned (lib/meta.ts addXP): the season track moves with the account level. */
+export function addSeasonXP(s: Save, n: number) { if (n > 0) syncSeason(s).xp += n; }
+/** 3.x name. */
+export const addSeasonPP = addSeasonXP;
 
-function pay(s: Save, d: number, why: string, bonus = true) {
-  const n = bonus ? goldBonus(s, d) : d;
-  s.credits += n; s.ledger = [{ at: Date.now(), d: n, why }, ...s.ledger].slice(0, 30);
-  s.stats.earned = (s.stats.earned || 0) + Math.max(0, n);
-  return n;
-}
-
-// ---------- The two lanes (40 levels)
+// ---------- The two lanes (30 tiers; RULES4 §3)
 export interface Reward { lane: 'free' | 'gold'; lv: number; coins?: number; cos?: string }
-// Free: coins every third level (10 → 25 as you climb, 235 in all) and the season's exclusive frame at 40.
+/** Free: a look every 5 tiers (f1…f6), 20 coins on every other tier (480 a season). */
 export function freeReward(sid: string, lv: number): Reward | null {
-  if (lv === MAX_SLV) return { lane: 'free', lv, cos: sid + '.x' };
-  if (lv % 3 === 0) return { lane: 'free', lv, coins: lv < 10 ? 10 : lv < 20 ? 15 : lv < 30 ? 20 : 25 };
-  return null;
+  if (lv < 1 || lv > MAX_SLV) return null;
+  if (lv % SEASON.freeLookEvery === 0) return { lane: 'free', lv, cos: sid + '.f' + lv / SEASON.freeLookEvery };
+  return { lane: 'free', lv, coins: SEASON.freeCoins };
 }
-// Gold: a cosmetic every fifth level (8 a season) and 10 coins on the other even levels (160 in all).
-const GOLD_SLOTS: Record<number, string> = { 5: 'g1', 10: 'g2', 15: 'g3', 20: 'g4', 25: 'g5', 30: 'g6', 35: 'g7', 40: 'g8' };
+/** Gold: a look every 3 tiers (g1…g10, g10 is the season's Legendary at tier 30), 15 coins on the other tiers. */
 export function goldReward(sid: string, lv: number): Reward | null {
-  if (GOLD_SLOTS[lv]) return { lane: 'gold', lv, cos: sid + '.' + GOLD_SLOTS[lv] };
-  if (lv % 2 === 0) return { lane: 'gold', lv, coins: 10 };
-  return null;
+  if (lv < 1 || lv > MAX_SLV) return null;
+  if (lv % SEASON.goldLookEvery === 0) return { lane: 'gold', lv, cos: sid + '.g' + lv / SEASON.goldLookEvery };
+  return { lane: 'gold', lv, coins: SEASON.goldCoins };
 }
 export function trackView(s: Save = getSave(), ms = Date.now()) {
   const def = seasonAt(ms);
-  const st = s.season && s.season.id === def.id ? s.season : { id: def.id, pp: 0, gold: false, claimed: [] as string[] };
-  const lv = seasonLevel(st.pp, def.ppPerLv);
+  const st: SeasonSave = s.season && s.season.id === def.id ? s.season : { id: def.id, xp: 0, gold: false, claimed: [] as string[] };
+  const lv = seasonLevel(seasonXp(st));
   const rows = Array.from({ length: MAX_SLV }, (_, k) => {
     const L = k + 1, f = freeReward(def.id, L), g = goldReward(def.id, L);
     return {
@@ -129,29 +125,40 @@ export function trackView(s: Save = getSave(), ms = Date.now()) {
   const ready = rows.filter((r) => r.reached && ((r.free && !r.freeClaimed) || (st.gold && r.gold && !r.goldClaimed))).length;
   return { def, st, lv, rows, ready, gold: st.gold };
 }
-// Claims one reward; returns what was paid (coins after the Gold bonus, or the cosmetic id), or null.
+// Claims one reward; returns what was paid (coins after the Gold bonus, or the look's id), or null.
 export function claimReward(lane: 'free' | 'gold', L: number): { coins?: number; cos?: string } | null {
   let out: { coins?: number; cos?: string } | null = null;
   update((s) => {
-    const st = syncSeason(s), def = seasonAt();
-    if (L > seasonLevel(st.pp, def.ppPerLv).n) return;
+    const st = syncSeason(s);
+    if (L > seasonLevel(st.xp).n) return;
     const tag = (lane === 'free' ? 'f' : 'g') + L;
     if (st.claimed.includes(tag) || (lane === 'gold' && !st.gold)) return;
     const r = lane === 'free' ? freeReward(st.id, L) : goldReward(st.id, L); if (!r) return;
     st.claimed.push(tag);
-    if (r.coins) out = { coins: pay(s, r.coins, 'track:' + st.id + ':' + L) };
+    if (r.coins) out = { coins: credit(s, r.coins, 'track:' + st.id + ':' + L) };
     if (r.cos) { if (!s.owned.includes(r.cos)) s.owned.push(r.cos); out = { cos: r.cos }; }
   });
   return out;
 }
+/** Every reward still unclaimed on reached tiers, both lanes: the Lens lane's "claim all". */
+export function claimAll(): { coins: number; cos: string[] } {
+  const out = { coins: 0, cos: [] as string[] };
+  for (const row of trackView().rows) {
+    if (!row.reached) continue;
+    if (row.free && !row.freeClaimed) { const r = claimReward('free', row.lv); if (r?.coins) out.coins += r.coins; if (r?.cos) out.cos.push(r.cos); }
+    if (row.gold && !row.goldClaimed && isGold()) { const r = claimReward('gold', row.lv); if (r?.coins) out.coins += r.coins; if (r?.cos) out.cos.push(r.cos); }
+  }
+  return out;
+}
 
-// ---------- Cosmetics
-export type CosKind = 'frame' | 'ink' | 'theme' | 'ringtone' | 'flair';
-export const COS_KINDS: CosKind[] = ['frame', 'ink', 'theme', 'ringtone', 'flair'];
+// ---------- Cosmetics (the 3.x shape; lib/catalog.ts wraps every one of these as an Item without changing its id)
+export type CosKind = 'frame' | 'ink' | 'theme' | 'ringtone' | 'flair' | 'wallpaper' | 'dropcard';
+export const COS_KINDS: CosKind[] = ['wallpaper', 'theme', 'dropcard', 'frame', 'ringtone', 'ink', 'flair'];
 export type FramePat = 'solid' | 'double' | 'dash' | 'foil' | 'tape';
 export interface Cosmetic {
   id: string; kind: CosKind;
-  price: number | 'gold' | 'track' | 'event'; // coins, the Gold lane, the free lane's level 40, or a weekly event
+  price: number | 'gold' | 'track' | 'event'; // coins, the Gold lane, the free lane, or a weekly event
+  rarity?: 'common' | 'rare' | 'epic' | 'legendary';
   season?: string;         // season id for season items
   nameKey: string; nameVars?: Record<string, string | number>;
   c?: string; c2?: string; // frame colours, ink colour, flair colour
@@ -159,26 +166,30 @@ export interface Cosmetic {
   g?: string;              // flair glyph shown after the byline
   sfx?: Sfx;               // ringtone cue
   desk?: [string, string, string]; // desk theme: --desk, --desk-2, --desk-3
+  os?: { bg: string; ink: string; accent: string; bar: string }; // 4.0 whole-phone theme
   paper?: boolean;         // legacy paper themes (styles/app.css), not generated here
+  bg?: string; ink?: string; accent?: string; motif?: WallpaperMotif; style?: DropStyle; // 4.0 wallpapers and Drop cards
 }
-// Evergreen items sold for coins, the old paper themes, and the weekly-event rewards.
+const C = PRICES.look.common, R = PRICES.look.rare;
+// Evergreen items sold for coins (3.x stock, re-priced to the one rarity table), the old paper themes, and the
+// weekly-event rewards. New 4.0 stock (wallpapers, Drop cards, OS themes) lives in lib/catalog.ts.
 const BASE: Cosmetic[] = [
-  { id: 'salmon', kind: 'theme', price: 400, nameKey: 'pass.items.salmon.0', paper: true },
-  { id: 'tabloid', kind: 'theme', price: 400, nameKey: 'pass.items.tabloid.0', paper: true },
-  { id: 'neon', kind: 'theme', price: 400, nameKey: 'pass.items.neon.0', paper: true },
-  { id: 'desk.oak', kind: 'theme', price: 350, nameKey: 'season.cos.deskOak', desk: ['#1E1610', '#2A1F16', '#37291D'] },
-  { id: 'desk.slate', kind: 'theme', price: 350, nameKey: 'season.cos.deskSlate', desk: ['#12161B', '#1A2027', '#242C35'] },
-  { id: 'frame.press', kind: 'frame', price: 150, nameKey: 'season.cos.framePress', c: '#15130F', c2: '#F4EFE4', pat: 'double' },
-  { id: 'frame.redtop', kind: 'frame', price: 150, nameKey: 'season.cos.frameRedtop', c: '#C8102E', c2: '#FFFFFF', pat: 'solid' },
-  { id: 'frame.tape', kind: 'frame', price: 180, nameKey: 'season.cos.frameTape', c: '#F7B928', c2: '#15130F', pat: 'tape' },
-  { id: 'ink.blue', kind: 'ink', price: 120, nameKey: 'season.cos.inkBlue', c: '#2657C9' },
-  { id: 'ink.green', kind: 'ink', price: 120, nameKey: 'season.cos.inkGreen', c: '#1C8A50' },
-  { id: 'ink.violet', kind: 'ink', price: 120, nameKey: 'season.cos.inkViolet', c: '#7147D6' },
-  { id: 'ring.whistle', kind: 'ringtone', price: 120, nameKey: 'season.cos.ringWhistle', sfx: 'dd.whistle' },
-  { id: 'ring.fax', kind: 'ringtone', price: 120, nameKey: 'season.cos.ringFax', sfx: 'scene.leak' },
-  { id: 'ring.type', kind: 'ringtone', price: 120, nameKey: 'season.cos.ringType', sfx: 'typewriter' },
-  { id: 'flair.pen', kind: 'flair', price: 100, nameKey: 'season.cos.flairPen', g: '✎', c: '#F4EFE4' },
-  { id: 'flair.star', kind: 'flair', price: 100, nameKey: 'season.cos.flairStar', g: '★', c: '#F7B928' },
+  { id: 'salmon', kind: 'theme', price: R, rarity: 'rare', nameKey: 'pass.items.salmon.0', paper: true },
+  { id: 'tabloid', kind: 'theme', price: R, rarity: 'rare', nameKey: 'pass.items.tabloid.0', paper: true },
+  { id: 'neon', kind: 'theme', price: R, rarity: 'rare', nameKey: 'pass.items.neon.0', paper: true },
+  { id: 'desk.oak', kind: 'theme', price: R, rarity: 'rare', nameKey: 'season.cos.deskOak', desk: ['#1E1610', '#2A1F16', '#37291D'], os: { bg: '#1E1610', ink: '#F4EFE4', accent: '#D9913A', bar: '#2A1F16' } },
+  { id: 'desk.slate', kind: 'theme', price: R, rarity: 'rare', nameKey: 'season.cos.deskSlate', desk: ['#12161B', '#1A2027', '#242C35'], os: { bg: '#12161B', ink: '#E6EDF3', accent: '#35C3E6', bar: '#1A2027' } },
+  { id: 'frame.press', kind: 'frame', price: C, rarity: 'common', nameKey: 'season.cos.framePress', c: '#15130F', c2: '#F4EFE4', pat: 'double' },
+  { id: 'frame.redtop', kind: 'frame', price: C, rarity: 'common', nameKey: 'season.cos.frameRedtop', c: '#C8102E', c2: '#FFFFFF', pat: 'solid' },
+  { id: 'frame.tape', kind: 'frame', price: C, rarity: 'common', nameKey: 'season.cos.frameTape', c: '#F7B928', c2: '#15130F', pat: 'tape' },
+  { id: 'ink.blue', kind: 'ink', price: C, rarity: 'common', nameKey: 'season.cos.inkBlue', c: '#2657C9' },
+  { id: 'ink.green', kind: 'ink', price: C, rarity: 'common', nameKey: 'season.cos.inkGreen', c: '#1C8A50' },
+  { id: 'ink.violet', kind: 'ink', price: C, rarity: 'common', nameKey: 'season.cos.inkViolet', c: '#7147D6' },
+  { id: 'ring.whistle', kind: 'ringtone', price: C, rarity: 'common', nameKey: 'season.cos.ringWhistle', sfx: 'dd.whistle' },
+  { id: 'ring.fax', kind: 'ringtone', price: C, rarity: 'common', nameKey: 'season.cos.ringFax', sfx: 'scene.leak' },
+  { id: 'ring.type', kind: 'ringtone', price: C, rarity: 'common', nameKey: 'season.cos.ringType', sfx: 'typewriter' },
+  { id: 'flair.pen', kind: 'flair', price: C, rarity: 'common', nameKey: 'season.cos.flairPen', g: '✎', c: '#F4EFE4' },
+  { id: 'flair.star', kind: 'flair', price: C, rarity: 'common', nameKey: 'season.cos.flairStar', g: '★', c: '#F7B928' },
   // Weekly-event rewards (one per event, earned by playing that week; never sold).
   { id: 'ev.rival', kind: 'flair', price: 'event', nameKey: 'season.cos.evRival', g: '⚔', c: '#FF5A36' },
   { id: 'ev.medical', kind: 'ink', price: 'event', nameKey: 'season.cos.evMedical', c: '#2BB3A3' },
@@ -186,52 +197,54 @@ const BASE: Cosmetic[] = [
   { id: 'ev.barber', kind: 'ringtone', price: 'event', nameKey: 'season.cos.evBarber', sfx: 'scene.barber' },
   { id: 'ev.local', kind: 'flair', price: 'event', nameKey: 'season.cos.evLocal', g: '⌂', c: '#2FBF71' },
 ];
-// Season items are generated from the season id, so every season (and every year) gets its own set.
+// Season items are generated from the season id, so every season (and every year) gets its own set: six free-lane
+// looks (f1…f6, tiers 5…30) and ten Gold-lane looks (g1…g10, tiers 3…30; g10 is the Legendary). Each season has a
+// palette and a drawn motif; the kinds rotate so a season dresses the whole phone.
 type SeasonSlot = Omit<Cosmetic, 'id' | 'price' | 'season' | 'nameKey' | 'nameVars'>;
-const SEASON_SETS: Record<SeasonKey, Record<string, SeasonSlot>> = {
-  rumour: {
-    x: { kind: 'frame', c: '#D9913A', c2: '#3A2310', pat: 'foil' },
-    g1: { kind: 'flair', g: '❝', c: '#D9913A' }, g2: { kind: 'ink', c: '#B4531F' }, g3: { kind: 'ringtone', sfx: 'scene.agent' },
-    g4: { kind: 'frame', c: '#8A5A2B', c2: '#F2E3C9', pat: 'double' }, g5: { kind: 'flair', g: '☕', c: '#C9A27A' },
-    g6: { kind: 'ink', c: '#6E3B1E' }, g7: { kind: 'theme', desk: ['#1F140C', '#2B1C11', '#382517'] }, g8: { kind: 'frame', c: '#F7B928', c2: '#8A5A2B', pat: 'foil' },
-  },
-  winter: {
-    x: { kind: 'frame', c: '#5BB8E8', c2: '#0E2231', pat: 'foil' },
-    g1: { kind: 'flair', g: '❄', c: '#9AD6F5' }, g2: { kind: 'ink', c: '#2C7FB8' }, g3: { kind: 'ringtone', sfx: 'dd.siren' },
-    g4: { kind: 'frame', c: '#DDEFF8', c2: '#2C7FB8', pat: 'double' }, g5: { kind: 'flair', g: '⏱', c: '#5BB8E8' },
-    g6: { kind: 'ink', c: '#1B3F66' }, g7: { kind: 'theme', desk: ['#0E141B', '#151E28', '#1E2A37'] }, g8: { kind: 'frame', c: '#F7B928', c2: '#1B3F66', pat: 'foil' },
-  },
-  spring: {
-    x: { kind: 'frame', c: '#7FCB6A', c2: '#15260F', pat: 'foil' },
-    g1: { kind: 'flair', g: '✿', c: '#F2A7C3' }, g2: { kind: 'ink', c: '#3E8E2F' }, g3: { kind: 'ringtone', sfx: 'sparkle' },
-    g4: { kind: 'frame', c: '#F2A7C3', c2: '#3E8E2F', pat: 'dash' }, g5: { kind: 'flair', g: '☂', c: '#7FCB6A' },
-    g6: { kind: 'ink', c: '#C2477A' }, g7: { kind: 'theme', desk: ['#111810', '#182218', '#212E20'] }, g8: { kind: 'frame', c: '#F7B928', c2: '#3E8E2F', pat: 'foil' },
-  },
-  summer: {
-    x: { kind: 'frame', c: '#FF7A3D', c2: '#2A1206', pat: 'foil' },
-    g1: { kind: 'flair', g: '☀', c: '#FFB02E' }, g2: { kind: 'ink', c: '#E0552A' }, g3: { kind: 'ringtone', sfx: 'fanfare' },
-    g4: { kind: 'frame', c: '#FFD35C', c2: '#E0552A', pat: 'tape' }, g5: { kind: 'flair', g: '✈', c: '#FF7A3D' },
-    g6: { kind: 'ink', c: '#0F8A8A' }, g7: { kind: 'theme', desk: ['#1C130D', '#281A11', '#352316'] }, g8: { kind: 'frame', c: '#F7B928', c2: '#E0552A', pat: 'foil' },
-  },
+const PALETTE: Record<SeasonKey, { bg: string; ink: string; accent: string; c2: string; motif: WallpaperMotif; sfx: Sfx }> = {
+  rumour: { bg: '#2B1C11', ink: '#F2E3C9', accent: '#D9913A', c2: '#8A5A2B', motif: 'halftone', sfx: 'scene.agent' },
+  winter: { bg: '#0E2231', ink: '#DDEFF8', accent: '#5BB8E8', c2: '#1B3F66', motif: 'grid', sfx: 'dd.siren' },
+  spring: { bg: '#15260F', ink: '#F6FBF1', accent: '#7FCB6A', c2: '#C2477A', motif: 'pitch', sfx: 'sparkle' },
+  summer: { bg: '#2A1206', ink: '#FFF3E0', accent: '#FF7A3D', c2: '#E0552A', motif: 'stripe', sfx: 'fanfare' },
 };
+const GOLD = '#F7B928';
+function seasonSlot(key: SeasonKey, slot: string): SeasonSlot | null {
+  const p = PALETTE[key];
+  const wall = (rarity: SeasonSlot['rarity'], motif: WallpaperMotif, accent = p.accent): SeasonSlot => ({ kind: 'wallpaper', rarity, bg: p.bg, ink: p.ink, accent, motif });
+  const drop = (rarity: SeasonSlot['rarity'], style: DropStyle, bg = p.bg, ink = p.ink): SeasonSlot => ({ kind: 'dropcard', rarity, bg, ink, accent: p.accent, style });
+  const frame = (rarity: SeasonSlot['rarity'], pat: FramePat, c = p.accent, c2 = p.c2): SeasonSlot => ({ kind: 'frame', rarity, c, c2, pat });
+  const ring = (rarity: SeasonSlot['rarity']): SeasonSlot => ({ kind: 'ringtone', rarity, sfx: p.sfx });
+  const theme = (rarity: SeasonSlot['rarity'], bg = p.bg): SeasonSlot => ({ kind: 'theme', rarity, desk: [bg, p.c2, p.accent], os: { bg, ink: p.ink, accent: p.accent, bar: p.c2 } });
+  const F: Record<string, SeasonSlot> = { f1: wall('common', 'plain'), f2: drop('common', 'bold'), f3: frame('rare', 'double'), f4: ring('rare'), f5: wall('rare', p.motif), f6: theme('epic') };
+  const G: Record<string, SeasonSlot> = {
+    g1: drop('rare', 'ticker'), g2: wall('rare', 'grain'), g3: ring('rare'), g4: frame('rare', 'tape'), g5: drop('epic', 'poster', p.accent, p.bg),
+    g6: theme('epic', p.c2), g7: wall('epic', p.motif, GOLD), g8: frame('epic', 'foil', GOLD, p.c2), g9: drop('epic', 'stamp'),
+    g10: wall('legendary', 'halftone', GOLD),
+  };
+  return F[slot] || G[slot] || null;
+}
 export function cosmetic(id: string): Cosmetic | null {
   const b = BASE.find((x) => x.id === id); if (b) return b;
-  const m = /^((rumour|winter|spring|summer)-(\d{4}))\.(x|g[1-8])$/.exec(id); if (!m) return null;
-  const slot = SEASON_SETS[m[2] as SeasonKey][m[4]];
-  return { ...slot, id, price: m[4] === 'x' ? 'track' : 'gold', season: m[1], nameKey: 'season.cos.' + m[2] + '.' + m[4], nameVars: { y: '’' + m[3].slice(2) } };
+  const m = /^((rumour|winter|spring|summer)-(\d{4}))\.(f[1-6]|g(?:[1-9]|10))$/.exec(id); if (!m) return null;
+  const slot = seasonSlot(m[2] as SeasonKey, m[4]); if (!slot) return null;
+  return { ...slot, id, price: m[4][0] === 'f' ? 'track' : 'gold', season: m[1], nameKey: 'e4.cos.' + m[2] + '.' + slot.kind, nameVars: { y: '’' + m[3].slice(2) } };
 }
+export const SEASON_FREE_SLOTS = ['f1', 'f2', 'f3', 'f4', 'f5', 'f6'] as const;
+export const SEASON_GOLD_SLOTS = ['g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8', 'g9', 'g10'] as const;
 export const storeItems = () => BASE.filter((x) => typeof x.price === 'number');
-export const seasonItems = (sid = seasonAt().id) => ['x', 'g1', 'g2', 'g3', 'g4', 'g5', 'g6', 'g7', 'g8'].map((k) => cosmetic(sid + '.' + k)!);
-export const goldPreview = (sid = seasonAt().id) => seasonItems(sid).slice(1);
+export const seasonItems = (sid = seasonAt().id) => [...SEASON_FREE_SLOTS, ...SEASON_GOLD_SLOTS].map((k) => cosmetic(sid + '.' + k)!);
+export const goldPreview = (sid = seasonAt().id) => SEASON_GOLD_SLOTS.map((k) => cosmetic(sid + '.' + k)!);
+export const freePreview = (sid = seasonAt().id) => SEASON_FREE_SLOTS.map((k) => cosmetic(sid + '.' + k)!);
 // Everything the player owns, in catalogue order (store items first, then season and event items).
 export function ownedItems(s: Save = getSave(), kind?: CosKind) {
   return s.owned.map(cosmetic).filter((x): x is Cosmetic => !!x && (!kind || x.kind === kind));
 }
 export const owns = (id: string, s: Save = getSave()) => s.owned.includes(id);
 
-// What other screens read: the equipped post frame, stamp ink, ringtone, byline flair or desk theme (null = standard).
+// What other screens read: the equipped post frame, stamp ink, ringtone, byline flair or theme (null = standard).
+// 4.0 kinds (wallpaper, dropcard) are stored by lib/wallet.ts in save.desk.equip; read them through wallet.equipped().
 export function equipped(kind: CosKind, s: Save = getSave()): Cosmetic | null {
-  const id = kind === 'theme' ? s.theme : s.equip?.[kind];
+  const id = kind === 'theme' ? s.theme : kind === 'wallpaper' || kind === 'dropcard' ? s.desk?.equip?.[kind] : s.equip?.[kind];
   if (!id || id === 'standard') return null;
   const c = cosmetic(id);
   return c && c.kind === kind && s.owned.includes(id) ? c : null;
@@ -240,6 +253,7 @@ export function equip(id: string | null, kind: CosKind) {
   update((s) => {
     if (id && (!s.owned.includes(id) || cosmetic(id)?.kind !== kind)) return;
     if (kind === 'theme') { s.theme = id || 'standard'; return; }
+    if (kind === 'wallpaper' || kind === 'dropcard') { s.desk = s.desk || { equip: {} }; s.desk.equip = { ...s.desk.equip, [kind]: id || undefined }; return; }
     s.equip = { ...(s.equip || {}), [kind]: id || undefined };
   });
 }
@@ -258,11 +272,13 @@ export function frameCSS(c: Cosmetic | null): Record<string, string> {
   }
 }
 
-// Desk themes plug into the existing theme mechanism: App.tsx sets <html data-theme="{s.theme}">; these rules are
-// generated from the catalogue once. The morning edition keeps its pale wood.
+// Desk / OS themes plug into the existing theme mechanism: App.tsx sets <html data-theme="{s.theme}">; these rules
+// are generated from the catalogue once. The morning edition keeps its pale wood. A 4.0 `os` block also sets the
+// phone's variables (--os-bg, --os-ink, --os-accent, --os-bar) for the shell lane.
 function themeRule(c: Cosmetic) {
   const [d1, d2, d3] = c.desk!;
-  return `:root[data-theme="${c.id}"]:not([data-edition="morning"]){--desk:${d1};--desk-2:${d2};--desk-3:${d3};}`;
+  const os = c.os ? `--os-bg:${c.os.bg};--os-ink:${c.os.ink};--os-accent:${c.os.accent};--os-bar:${c.os.bar};` : '';
+  return `:root[data-theme="${c.id}"]:not([data-edition="morning"]){--desk:${d1};--desk-2:${d2};--desk-3:${d3};${os}}`;
 }
 let themed = '';
 export function installThemeCSS(extra: string[] = []) {
@@ -274,20 +290,26 @@ export function installThemeCSS(extra: string[] = []) {
   if (!el) { el = document.createElement('style'); el.id = 't1-season-themes'; document.head.appendChild(el); }
   el.textContent = css;
 }
-installThemeCSS(goldPreview().filter((c) => c.kind === 'theme').map((c) => c.id));
+installThemeCSS(seasonItems().filter((c) => c.kind === 'theme').map((c) => c.id));
 
-// Buying with coins (the store). Returns false when short or not for sale.
+// Buying with coins: the one shop is lib/wallet.ts buy(); this 3.x entry point hands over to it (the wallet registers
+// itself here so season → wallet never becomes an import cycle). Returns false when short or not for sale.
+let shopBuy: ((id: string) => boolean) | null = null;
+export const setShopBuy = (f: ((id: string) => boolean) | null) => { shopBuy = f; };
 export function buyCosmetic(id: string): boolean {
-  const c = cosmetic(id); const s = getSave();
-  if (!c || typeof c.price !== 'number' || s.owned.includes(id) || s.credits < c.price) return false;
+  const c = cosmetic(id);
+  if (!c || typeof c.price !== 'number' || getSave().owned.includes(id)) return false;
+  if (shopBuy) return shopBuy(id);
+  // Before the wallet has loaded (tests, early boot): the same move, straight on the save.
   const price = c.price;
-  update((x) => { x.credits -= price; x.ledger = [{ at: Date.now(), d: -price, why: 'shop:' + id }, ...x.ledger].slice(0, 30); x.owned.push(id); });
+  if (getSave().credits < price) return false;
+  update((x) => { x.credits -= price; x.ledger = [{ at: Date.now(), d: -price, why: 'buy:' + id }, ...x.ledger].slice(0, 30); x.owned.push(id); });
   equip(id, c.kind);
   if (c.kind === 'theme') installThemeCSS();
   return true;
 }
 
-// ---------- Weekly events (Practice and Career only; seeded by ISO week)
+// ---------- Weekly events (Practice and Career only; seeded by ISO week). Cosmetic: a look for playing that week.
 export function isoWeek(d: Date | number = Date.now()) {
   const x = new Date(typeof d === 'number' ? d : d.getTime());
   const t = Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate());
@@ -312,7 +334,8 @@ const EVENTS: Omit<WeekEvent, 'wk' | 'start' | 'end' | 'rules' | 'nameKey' | 'de
 ];
 const LEAGUES = ['eng1', 'esp1', 'ita1', 'ger1', 'fra1'];
 const eventIdx = (wk: string) => hash('t1ev:' + wk) % EVENTS.length;
-// Deterministic by ISO week, and never the same event two weeks running.
+// Deterministic by ISO week, and never the same event two weeks running. The `rules` block is data only (4.0 never
+// changes a rule for an event: every mode runs engine4 as written); it stays for the Practice screen's copy.
 export function weekEvent(date: Date | number = Date.now()): WeekEvent {
   const w = isoWeek(date), prev = isoWeek(w.start - DAY);
   let i = eventIdx(w.key);
@@ -326,28 +349,28 @@ export function weekEventView(s: Save = getSave(), ms = Date.now()) {
   const ev = weekEvent(ms), st = s.weekEv && s.weekEv.wk === ev.wk ? s.weekEv : { wk: ev.wk, n: 0 };
   return { ev, n: Math.min(ev.goal, st.n), got: !!st.got || s.owned.includes(ev.reward), daysLeft: Math.max(1, Math.ceil((ev.end - ms) / DAY)) };
 }
-// ITK beaten on a saga: you called it right, and ITK either called it wrong or posted after you.
-const beatItk = (r: Result) => r.per.filter((p) => p.right && p.call && p.posts.some((f) => f.id === 'itk' && (!f.right || f.day > p.call!.day))).length;
-function eventProgress(s: Save, r: Result, mode: string) {
-  if (mode !== 'practice' && mode !== 'story') return;
+/** What seasonWindow needs from any result (v3 Result or v4 Result4): the tier and, per story, right/points/ITK duel. */
+export interface SeasonResultLite { tier: Tier; per: { right: boolean; called: boolean; pts: number; beatItk?: boolean }[] }
+function eventProgress(s: Save, r: SeasonResultLite, mode: string) {
+  if (mode !== 'practice' && mode !== 'story' && mode !== 'career') return;
   const ev = weekEvent();
   if (!s.weekEv || s.weekEv.wk !== ev.wk) s.weekEv = { wk: ev.wk, n: 0 };
-  s.weekEv.n += ev.id === 'rival' ? beatItk(r) : 1;
+  s.weekEv.n += ev.id === 'rival' ? r.per.filter((p) => p.beatItk).length : 1;
   if (s.weekEv.n >= ev.goal && !s.weekEv.got) { s.weekEv.got = true; if (!s.owned.includes(ev.reward)) s.owned.push(ev.reward); s.stats.m_evWon = (s.stats.m_evWon || 0) + 1; }
 }
 
 // ---------- Hooks from lib/progress.ts trackWindow (every finished window): the recap's best tier and top call.
 const TIER_RANK: Record<string, number> = { T1: 5, T2: 4, T3: 3, T4: 2, SPIKED: 1 };
-export function seasonWindow(s: Save, r: Result, mode: string) {
+export function seasonWindow(s: Save, r: SeasonResultLite, mode: string) {
   const st = syncSeason(s);
   if (!st.best || TIER_RANK[r.tier] > TIER_RANK[st.best]) st.best = r.tier;
-  const top = r.per.reduce((m, p) => (p.right && p.call && p.pts > m ? p.pts : m), 0);
+  const top = r.per.reduce((m, p) => (p.right && p.called && p.pts > m ? p.pts : m), 0);
   if (top > 0 && (!st.top || top > st.top.pts)) st.top = { pts: top, mode, at: Date.now() };
   eventProgress(s, r, mode);
 }
 export const pendingRecap = (s: Save = getSave()) => (s.seasonLog && s.seasonLog[0] && !s.seasonLog[0].seen ? s.seasonLog[0] : null);
 export const dismissRecap = () => update((s) => { if (s.seasonLog && s.seasonLog[0]) s.seasonLog[0].seen = true; });
-export const ensureSeason = () => { const s = getSave(); if (!s.season || s.season.id !== seasonAt().id) update((x) => { syncSeason(x); }); };
+export const ensureSeason = () => { const s = getSave(); if (!s.season || s.season.id !== seasonAt().id || s.season.xp == null) update((x) => { syncSeason(x); }); };
 
 // ---------- Deadline days (GOTY §7.1): the real transfer deadlines, one source of truth for the client.
 // The Wire's windows and their deadline days. `deadline` is the UTC date the 24 h Deadline Day Live board runs on;

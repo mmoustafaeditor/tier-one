@@ -7,17 +7,25 @@
 // recordInto() exactly like a Daily, a room, a Practice board or a Wire call (lib/career.ts applyWindow calls it), and
 // every screen reads them from here: Me, the Story hub, Results (careerDelta), the Contacts screen, share cards.
 import { update, getSave, type Save } from './save';
-import type { ResultSaga, CastSaga, Tier } from './engine';
+import type { ResultSaga, ResultStory4, CastSaga, Tier } from './engine';
 import { credit, toast, ymdUTC } from './meta';
-import { levelOf, missionsView } from './progress';
+import { missionsView } from './progress';
 import { t, trList } from './i18n';
+import {
+  RANKS, RANK_IDS, rankByRep, rankHeld, rankIndex, underReview, repDelta as repDelta4, clampRep, REP,
+  followerDelta as followerDelta4, hotMult as hotMult4, FOLLOWERS, BOOK, bookLevel, trustOfLevel, COINS, levelOf, xpOf, type RankId,
+} from './economy';
 import type { Route } from '../App';
 import { moment } from './moments';
 import { earnHook } from './earnhook';
 
 // ---------------------------------------------------------------- types (stored in the save; all optional there)
 export type BMode = 'daily' | 'career' | 'room' | 'wire' | 'practice';
-export interface Byline { followers: number; rep: number; hot: number; best: number; keys?: string[]; last?: WindowSummary }
+export interface Byline {
+  followers: number; rep: number; hot: number; best: number; keys?: string[]; last?: WindowSummary;
+  /** 4.0: the highest rank index reached (RANKS). A rank, once reached, stays; see rankOf() / isUnderReview(). */
+  rank?: number;
+}
 export interface BookEntry { xp: number; lv: number; coffee?: string; asks?: number; hits?: number }
 export type RivalResult = 'w' | 'l' | 'd';
 // 3.4 friend rivals (§7.3, lib/social.ts) share this shape under the `friend:<pub>` id namespace: `name` is the friend's
@@ -31,46 +39,57 @@ export interface FeedItem { id: string; at: number; kind: FeedKind; key: string;
 export interface WindowSummary {
   key: string; mode: BMode; followers: number; rep: number; hot: number; hotBefore: number;
   levels: { src: string; lv: number }[]; xp: Record<string, number>; rivals: { id: string; r: RivalResult }[];
+  /** 4.0: the rank held before and after, whether this window reached a new one, and the "under review" flag. */
+  rankBefore?: RankId; rank?: RankId; rankUp?: boolean; review?: boolean;
   /** The player's numbers before this window (careerSnapshot), so Results can show careerDelta(snap, save). */
   snap?: CareerSnap;
 }
 
-// ---------------------------------------------------------------- §1.1 numbers
-export const MODE_F: Record<BMode, number> = { daily: 1, career: 1, room: 0.8, wire: 1.5, practice: 0.25 };
-export const BASE_RIGHT = [40, 90, 220];
-export const BASE_WRONG = [20, 60, 260];
-export const EXCL_BONUS = 300;
-export const HOT_CAP = 10;
-// The one ladder. The five tiers are the five Career ranks (lib/career.ts RANKS reads its rep gates from here), so the
-// byline's word and the story's word are the same word: a new name starts at rep 50, a Blogger; 55 makes a Stringer.
-export const REP_TIERS = [['blogger', 0], ['stringer', 55], ['correspondent', 65], ['chief', 75], ['tierone', 85]] as const;
-export type RepTier = typeof REP_TIERS[number][0];
-export const repTier = (rep: number): RepTier => [...REP_TIERS].reverse().find(([, m]) => rep >= m)![0];
-export const hotMult = (hot: number) => 1 + 0.1 * Math.min(hot, HOT_CAP);
-/** Followers for one resolved call (§1.1). `s` is loudness 0 Talks · 1 Advanced · 2 Confirmed. */
-export function followerDelta(mode: BMode, s: number, right: boolean, excl: boolean, hot: number): number {
-  const st = Math.max(0, Math.min(2, s));
-  if (right) return Math.round((BASE_RIGHT[st] + (excl ? EXCL_BONUS : 0)) * MODE_F[mode] * hotMult(hot));
-  return -Math.round(BASE_WRONG[st] * MODE_F[mode] * 0.5);
-}
-export const freshByline = (): Byline => ({ followers: 0, rep: 50, hot: 0, best: 0 });
+// ---------------------------------------------------------------- §1.1 numbers (RULES4 §3; every number is in lib/economy.ts)
+export const MODE_F: Record<BMode, number> = FOLLOWERS.modeFactor as Record<BMode, number>;
+export const BASE_RIGHT = FOLLOWERS.right, BASE_WRONG = FOLLOWERS.wrong, EXCL_BONUS = FOLLOWERS.scoop, HOT_CAP = FOLLOWERS.hotCap;
+// The one ladder: Rep 0–100 reads as a Rank. Nobody 0 · Rising 40 · ITK 55 · Insider 70 · Tier One 85. The Career
+// ranks (lib/career.ts RANKS) read their rep gates from here, so the byline's word and the story's word are one word.
+export const REP_TIERS = RANKS;
+export type RepTier = RankId;
+/** The rank a reputation reads as right now (no memory). For the rank the player holds, use rankOf(save). */
+export const repTier = (rep: number): RepTier => rankByRep(rep);
+export const hotMult = hotMult4;
+/** Followers for one resolved call (§1.1). `s` is backing 0 ×1 · 1 ×2 · 2 Drop; `excl` is a Scoop. */
+export const followerDelta = (mode: BMode | string, s: number, right: boolean, excl: boolean, hot: number): number => followerDelta4(mode, s, right, excl, hot);
+export const freshByline = (): Byline => ({ followers: 0, rep: REP.start, hot: 0, best: 0, rank: 0 });
 export const bylineOf = (s: Save): Byline => s.byline || freshByline();
-// Follower milestones pay coins once, whichever mode crosses them (was Career-only before 3.4).
-export const FOLLOWER_MILESTONES: [number, number][] = [[10000, 50], [50000, 100], [100000, 200], [250000, 300]];
+/** The rank the player holds: once reached it stays (a title); `rank` on the byline is the high-water mark. */
+export const rankOf = (s: Save): RankId => { const b = bylineOf(s); return rankHeld(b.rep, b.rank || 0); };
+/** "Under review": rep has dropped 10 under the held rank's bar (RULES4 §3 Reputation). Shown next to the rank. */
+export const isUnderReview = (s: Save): boolean => { const b = bylineOf(s); return underReview(b.rep, b.rank || 0); };
+/** Keeps the high-water mark; returns true when a new rank was just reached. */
+function keepRank(b: Byline): boolean {
+  const now = rankIndex(rankByRep(b.rep)), kept = b.rank || 0;
+  if (now > kept) { b.rank = now; return true; }
+  if (b.rank == null) b.rank = now;
+  return false;
+}
+// Follower milestones are a line in the feed (4.0 pays coins only from the RULES4 §3 table; milestones pay none).
+export const FOLLOWER_MILESTONES: [number, number][] = [[1000, 0], [10000, 0], [50000, 0], [100000, 0], [250000, 0], [1000000, 0]];
 function payMilestones(s: Save) {
   const b = bylineOf(s);
   for (const [f, cr] of FOLLOWER_MILESTONES) if (b.followers >= f && !s.milestones['f' + f]) {
-    s.milestones['f' + f] = Date.now(); credit(s, cr, 'followers:' + f);
+    s.milestones['f' + f] = Date.now(); if (cr) credit(s, cr, 'followers:' + f);
     pushFeed(s, { id: 'followers:' + f, kind: 'level', key: 'cn.feed.followers', v: { n: f.toLocaleString('en'), c: cr }, to: { n: 'me' }, tone: 'gold' });
   }
 }
 
 // ---------------------------------------------------------------- §1.2 the Contacts Book
 export const BOOK_SRC = ['kitman', 'barber', 'agent', 'spotter', 'physio'] as const;
-export const BOOK_LV = [0, 60, 160, 320, 560];
-export const XP_ASK = 10, XP_MATCH = 25, XP_IGNORE = 5, XP_COFFEE = 20, COFFEE_COST = 30;
-export const lvOfXp = (xp: number) => BOOK_LV.filter((x) => xp >= x).length;
+export const BOOK_LV: readonly number[] = BOOK.levels;
+export const XP_ASK = BOOK.xpAsk, XP_MATCH = BOOK.xpMatch, XP_IGNORE = BOOK.xpIgnore, XP_COFFEE = BOOK.xpCoffee, COFFEE_COST = BOOK.coffee;
+export const lvOfXp = bookLevel;
 export const bookOf = (s: Save, src: string): BookEntry => (s.book && s.book[src]) || { xp: 0, lv: 1 };
+/** 4.0 Contacts Book trust 0–1 for engine4 `rulesFor('career', { trust })`: level 1 → 0, level 5 → 1. */
+export const trustFor = (src: string, s: Save = getSave()): number => trustOfLevel(lvOfXp(bookOf(s, src).xp));
+/** Every contact's trust at once, the shape rulesFor wants. */
+export const trustMap = (s: Save = getSave()): Record<string, number> => Object.fromEntries(BOOK_SRC.map((src) => [src, trustFor(src, s)]));
 export function bookProgress(e: BookEntry) {
   const lv = lvOfXp(e.xp), max = lv >= BOOK_LV.length;
   const from = BOOK_LV[lv - 1], to = max ? from : BOOK_LV[lv];
@@ -110,11 +129,12 @@ export const TAUNTS = 8; // the legacy floor: friend pools (so.taunt) and old fe
 /** How many feed taunts a house rival has for a state. English sizes the pool (every language keeps the same length),
  *  so the whole 32-line voice pack in i18n/parts/rivals.ts is reachable, not just the first 8. */
 export const tauntCount = (id: string, st: string): number => { const l = trList('en', 'cn.taunt.' + id + '.' + st); return Math.max(TAUNTS, Array.isArray(l) ? l.length : 0); };
-/** Head-to-head on one saga (§1.3): null when the rival didn't post or nobody was right. */
-export function duel(p: ResultSaga, rival: string): RivalResult | null {
-  const posts = p.posts.filter((x) => x.id === rival);
+/** Head-to-head on one story (§1.3): null when the rival didn't post or nobody was right. */
+export function duel(p: ResultSaga | ResultStory4 | CallLite, rival: string): RivalResult | null {
+  const l = 'reads' in p && 'rivals' in p && 'called' in p && !('truth' in p) ? (p as CallLite) : liteOf(p as ResultSaga | ResultStory4);
+  const posts = l.rivals.filter((x) => x.id === rival);
   if (!posts.length) return null;
-  const theirs = posts[posts.length - 1].right, mine = !!p.call && p.right;
+  const theirs = posts[posts.length - 1].right, mine = l.called && l.right;
   if (mine && !theirs) return 'w';
   if (theirs && !mine) return 'l';
   if (mine && theirs) return 'd';
@@ -147,16 +167,23 @@ const mark = (b: Byline, key: string) => { b.keys = [key, ...(b.keys || []).filt
 const modeRoute = (mode: BMode, code?: string): FeedRoute => (mode === 'daily' ? { n: 'daily' } : mode === 'room' ? { n: 'rooms', code } : mode === 'career' ? { n: 'story' } : mode === 'practice' ? { n: 'practice' } : { n: 'wire' });
 
 // ---------------------------------------------------------------- the one entry point per resolved window
+/** One story's result in the shape the byline needs, whatever engine produced it (v3 ResultSaga or v4 ResultStory4). */
+export interface CallLite { i: number; called: boolean; right: boolean; s: number; day: number; scoop: boolean; reads: { src: string; right: boolean; day: number }[]; rivals: { id: string; day: number; right: boolean }[] }
+export const isStory4 = (p: ResultSaga | ResultStory4): p is ResultStory4 => 'scoop' in p && 'rivals' in p;
+export function liteOf(p: ResultSaga | ResultStory4): CallLite {
+  if (isStory4(p)) return { i: p.i, called: !!p.call, right: p.right, s: p.call ? p.call.s : 0, day: p.call ? p.call.day : 0, scoop: p.scoop, reads: p.reads.map((r) => ({ src: r.src, right: r.right, day: r.day })), rivals: p.rivals.map((r) => ({ id: r.id, day: r.day, right: r.right })) };
+  return { i: p.i, called: !!p.call, right: p.right, s: p.call ? p.call.s : 0, day: p.call ? p.call.day : 0, scoop: p.excl, reads: p.reads.map((r) => ({ src: r.src, right: r.right, day: r.day })), rivals: p.posts.map((r) => ({ id: r.id, day: r.day, right: r.right })) };
+}
 export interface WindowIn {
-  mode: 'daily' | 'room' | 'practice' | 'career';
+  mode: 'daily' | 'room' | 'practice' | 'career' | 'deadline';
   /** Idempotency key: see windowKey(). */
   key: string;
-  /** The engine's per-saga results: reads (who was asked, right or not), rival posts, the call (loudness s), right, excl. */
-  per: ResultSaga[];
+  /** The engine's per-story results (v3 or v4): reads (who was asked, right or not), rival posts, the call (backing s), right, Scoop. */
+  per: (ResultSaga | ResultStory4)[];
   cast?: CastSaga[];
   tier?: Tier; total?: number;
-  /** Press Points before the window (for the level-up feed item). */
-  ppBefore?: number;
+  /** XP before the window (for the level-up feed item). `ppBefore` is the 3.x name of the same number. */
+  xpBefore?: number; ppBefore?: number;
   /** A Career story beat to mirror into the feed. */
   beat?: { from: string; key: string; v?: Record<string, string | number> } | null;
   room?: { code: string; round: number };
@@ -183,24 +210,25 @@ export function recordWindow(w: WindowIn): WindowSummary | null {
     // Recorded at settle time under the pre-key (a Career window): the plain key is marked now, on the first Results
     // mount, so a revisit skips the results film exactly as it does for every other mode.
     if (!seen(pre, w.key)) update((s) => { mark(s.byline!, w.key); });
-    levelFeed(w.ppBefore);
+    levelFeed(w.xpBefore ?? w.ppBefore);
     return pre.last && (pre.last.key === w.key || pre.last.key === preKey(w.key)) ? pre.last : null;
   }
   let out: WindowSummary | null = null;
   const toasts: [string, string][] = [];
   update((s) => {
     out = recordInto(s, w, toasts);
-    if (w.ppBefore != null) passLevelFeed(s, w.ppBefore);
+    const before = w.xpBefore ?? w.ppBefore;
+    if (before != null) passLevelFeed(s, before);
     earnHook(s); // rank and rivalry-trophy looks (lib/earned.ts)
   });
   for (const [a, c] of toasts) toast('ach', a, c);
   return out;
 }
-// The Pass level-up line is keyed by level, not by window, so a Career window (recorded before Results mounts, without
-// the Press Points it is about to earn) still gets its line when Results calls recordWindow with ppBefore.
-function levelFeed(ppBefore?: number) { if (ppBefore == null) return; if (levelOf(ppBefore).n < levelOf(getSave().pp).n) update((s) => passLevelFeed(s, ppBefore)); }
-function passLevelFeed(s: Save, ppBefore: number) {
-  const a = levelOf(ppBefore, s).n, c = levelOf(s.pp, s).n;
+// The level-up line is keyed by level, not by window, so a Career window (recorded before Results mounts, without
+// the XP it is about to earn) still gets its line when Results calls recordWindow with xpBefore.
+function levelFeed(xpBefore?: number) { if (xpBefore == null) return; if (levelOf(xpBefore).n < levelOf(xpOf(getSave())).n) update((s) => passLevelFeed(s, xpBefore)); }
+function passLevelFeed(s: Save, xpBefore: number) {
+  const a = levelOf(xpBefore).n, c = levelOf(xpOf(s)).n;
   for (let n = a + 1; n <= c; n++) pushFeed(s, { id: 'pass:' + n, kind: 'level', key: 'cn.feed.level', v: { n }, to: { n: 'pass' }, tone: 'gold' });
 }
 
@@ -211,37 +239,41 @@ export function recordInto(s: Save, w: WindowIn, toasts: [string, string][] = []
   if (seen(b, w.key) || seen(b, preKey(w.key)) || (w.key.startsWith(PRE) && seen(b, w.key.slice(PRE.length)))) return null;
   const snap = careerSnapshot(s);
   mark(b, w.key);
-  const mode: BMode = w.mode;
+  const mode: BMode = w.mode === 'deadline' ? 'daily' : w.mode;
   const name = (i: number) => w.cast?.[i]?.player.s || w.cast?.[i]?.player.n || '';
-  const sum: WindowSummary = { key: w.key, mode, followers: 0, rep: 0, hot: b.hot, hotBefore: b.hot, levels: [], xp: {}, rivals: [], snap };
-  // 1.1 followers / rep / hot hand, in the order the calls were filed
-  const calls = w.per.filter((p) => p.call).sort((a, c) => a.call!.day - c.call!.day || a.i - c.i);
+  const sum: WindowSummary = { key: w.key, mode, followers: 0, rep: 0, hot: b.hot, hotBefore: b.hot, levels: [], xp: {}, rivals: [], snap, rankBefore: rankOf(s) };
+  const per = w.per.map(liteOf);
+  // 1.1 followers / rep / hot streak, in the order the calls were posted (RULES4 §3: by backing, +Scoop, mode factor)
+  const calls = per.filter((p) => p.called).sort((a, c) => a.day - c.day || a.i - c.i);
+  let repMove = 0;
   for (const p of calls) {
-    const d = followerDelta(mode, p.call!.s, p.right, p.excl, b.hot);
+    const d = followerDelta(mode, p.s, p.right, p.scoop, b.hot);
     sum.followers += d;
-    if (p.right) { b.hot++; b.best = Math.max(b.best, b.hot); sum.rep += 1; }
-    else { b.hot = 0; if (p.call!.s === 2) sum.rep -= 2; }
+    repMove += repDelta4(w.mode, p.s, p.right, p.scoop);
+    if (p.right) { b.hot++; b.best = Math.max(b.best, b.hot); } else b.hot = 0;
   }
   b.followers = Math.max(0, b.followers + sum.followers);
-  const rep0 = b.rep; b.rep = Math.max(0, Math.min(100, b.rep + sum.rep)); sum.rep = b.rep - rep0;
+  const rep0 = b.rep; b.rep = clampRep(b.rep + repMove); sum.rep = b.rep - rep0;
   sum.hot = b.hot;
+  const rankUp = keepRank(b);
+  sum.rank = rankOf(s); sum.rankUp = rankUp; sum.review = isUnderReview(s);
   if (b.hot > sum.hotBefore && [3, 5, 10, 15, 20].some((m) => sum.hotBefore < m && b.hot >= m)) pushFeed(s, { kind: 'hot', key: 'cn.feed.hot', v: { n: b.hot }, to: { n: 'me' }, tone: 'gold' });
-  if (repTier(rep0) !== repTier(b.rep)) pushFeed(s, { kind: 'level', key: b.rep > rep0 ? 'cn.feed.tierUp' : 'cn.feed.tierDown', v: { rt: repTier(b.rep) }, to: { n: 'me' }, tone: b.rep > rep0 ? 'gold' : 'bad' });
-  if (b.rep > rep0 && repTier(rep0) !== repTier(b.rep)) moment('tier:' + repTier(b.rep), undefined, true); // film: the new press pass
+  if (rankUp) { pushFeed(s, { kind: 'level', key: 'cn.feed.tierUp', v: { rt: sum.rank }, to: { n: 'me' }, tone: 'gold' }); moment('tier:' + sum.rank, undefined, true); } // film: the new rank
+  else if (sum.review && !underReview(rep0, b.rank || 0)) pushFeed(s, { kind: 'level', key: 'cn.feed.tierDown', v: { rt: sum.rank }, to: { n: 'me' }, tone: 'bad' });
   payMilestones(s);
 
   // 1.2 contacts: +10 per ask, +25 read right and call matched, +5 right call that ignored a wrong read
   const book = (s.book = s.book || {});
-  for (const p of w.per) for (const r of p.reads) {
+  for (const p of per) for (const r of p.reads) {
     if (!(BOOK_SRC as readonly string[]).includes(r.src)) continue;
-    const x = XP_ASK + (p.right && p.call ? (r.right ? XP_MATCH : XP_IGNORE) : 0);
+    const x = XP_ASK + (p.right && p.called ? (r.right ? XP_MATCH : XP_IGNORE) : 0);
     sum.xp[r.src] = (sum.xp[r.src] || 0) + x;
   }
   for (const [src, x] of Object.entries(sum.xp)) {
     const e = (book[src] = book[src] || { xp: 0, lv: 1 });
     const lv0 = lvOfXp(e.xp);
-    e.xp += x; e.asks = (e.asks || 0) + w.per.reduce((a, p) => a + p.reads.filter((r) => r.src === src).length, 0);
-    e.hits = (e.hits || 0) + w.per.reduce((a, p) => a + p.reads.filter((r) => r.src === src && r.right).length, 0);
+    e.xp += x; e.asks = (e.asks || 0) + per.reduce((a, p) => a + p.reads.filter((r) => r.src === src).length, 0);
+    e.hits = (e.hits || 0) + per.reduce((a, p) => a + p.reads.filter((r) => r.src === src && r.right).length, 0);
     e.lv = lvOfXp(e.xp);
     for (let lv = lv0 + 1; lv <= e.lv; lv++) levelUp(s, src, lv, sum, toasts);
   }
@@ -249,7 +281,7 @@ export function recordInto(s: Save, w: WindowIn, toasts: [string, string][] = []
   // 1.3 rival ledgers
   const rv = (s.rivals = s.rivals || {});
   const touched = new Map<string, { r: RivalResult; p: string }>();
-  for (const p of w.per) for (const id of RIVALS) {
+  for (const p of per) for (const id of RIVALS) {
     const r = duel(p, id); if (!r) continue;
     const rec = (rv[id] = rv[id] || { w: 0, l: 0, d: 0, streak: 0, last: '' });
     if (r === 'w') { rec.w++; rec.streak = rec.streak > 0 ? rec.streak + 1 : 1; }
@@ -295,7 +327,7 @@ export function feedBeat(s: Save, beat: { from: string; key: string; v?: Record<
   pushFeed(s, { id: 'beat:' + beat.from + ':' + beat.key + ':' + (hash(JSON.stringify(beat.v || {})) % 1e6).toString(36), kind: 'editor', from: beat.from, key: 'g.story.beat.' + beat.key, v: beat.v, to: { n: 'story' } });
 }
 function levelUp(s: Save, src: string, lv: number, sum: WindowSummary | null, toasts: [string, string][]) {
-  const coins = lv * 10;
+  const coins = lv * COINS.contactLevel;
   credit(s, coins, 'contact:' + src + ':' + lv);
   sum?.levels.push({ src, lv });
   pushFeed(s, { kind: 'contact', from: src, key: 'cn.feed.contact', v: { src, lv, perk: 'cn.perk.l' + lv, n: coins }, to: { n: 'contacts' }, tone: lv >= 5 ? 'gold' : 'good' });
@@ -327,12 +359,14 @@ export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: strin
     list.forEach((c, k) => {
       mark(b, 'wire:' + c.rid + ':' + c.at);
       const st = Math.max(0, Math.min(2, (c.s || 1) - 1));
-      // §7.1: a Wire credit (earned by a Daily Tier 1) shields one wrong call's followers and rep; the hot hand still resets.
+      // §7.1: a Wire credit (earned by a Daily Tier 1) shields one wrong call's followers and rep; the hot streak still resets.
       const shielded = !c.right && !!wireShield && wireShield(s, c);
       const d = shielded ? 0 : followerDelta('wire', st, !!c.right, false, b.hot);
-      if (c.right) { b.hot++; b.best = Math.max(b.best, b.hot); b.rep = Math.min(100, b.rep + 1); official = nameOf?.(c.rid) || c.player || ''; }
-      else { b.hot = 0; if (st === 2 && !shielded) b.rep = Math.max(0, b.rep - 2); }
+      if (c.right) { b.hot++; b.best = Math.max(b.best, b.hot); official = nameOf?.(c.rid) || c.player || ''; }
+      else b.hot = 0;
+      if (!shielded) b.rep = clampRep(b.rep + repDelta4('wire', st, !!c.right, false)); // Wire moves Rep at half (RULES4 §3)
       b.followers = Math.max(0, b.followers + d);
+      if (keepRank(b)) pushFeed(s, { kind: 'level', key: 'cn.feed.tierUp', v: { rt: rankOf(s) }, to: { n: 'me' }, tone: 'gold' });
       payMilestones(s);
       // Old backlog lands quietly; the newest few make the feed.
       if (k >= list.length - 5) pushFeed(s, { id: 'wire:' + c.rid + ':' + c.at, kind: 'wire', key: c.right ? 'cn.feed.wireRight' : shielded ? 'cn.feed.wireShield' : 'cn.feed.wireWrong', v: { p: nameOf?.(c.rid) || c.player || '?', f: (d > 0 ? '+' : d < 0 ? '−' : '') + Math.abs(d).toLocaleString('en') }, to: { n: 'wire', rid: c.rid }, tone: c.right ? 'good' : shielded ? undefined : 'bad' });
@@ -343,7 +377,7 @@ export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: strin
   // Film: the newest call that settled your way gets its OFFICIAL broadcast (one per refresh).
   if (official != null) moment('official', official ? { p: official } : undefined);
   const b1 = getSave().byline;
-  if (b1 && b1.rep > repW0 && repTier(repW0) !== repTier(b1.rep)) moment('tier:' + repTier(b1.rep), undefined, true);
+  if (b1 && b1.rep > repW0 && rankIndex(rankByRep(repW0)) < rankIndex(rankOf(getSave()))) moment('tier:' + rankOf(getSave()), undefined, true);
 }
 
 // ---------------------------------------------------------------- the player's numbers, before and after (Results)
@@ -351,16 +385,19 @@ export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: strin
 export interface CareerSnap {
   followers: number; rep: number; tier: RepTier; hot: number; best: number;
   book: Record<string, number>; rivals: Record<string, { w: number; l: number; d: number }>;
-  rank: number; windows: number; t1: number; favours: number; credits: number; pass: number;
+  rank: number; windows: number; t1: number; favours: number; credits: number;
+  /** The account level (forever) and lifetime XP; `pass` is the 3.x name of the level. */
+  level: number; xp: number; pass: number;
 }
 export function careerSnapshot(s: Save): CareerSnap {
   const b = bylineOf(s), c = s.career;
   const book: Record<string, number> = {}; for (const src of BOOK_SRC) book[src] = lvOfXp(bookOf(s, src).xp);
   const rivals: CareerSnap['rivals'] = {}; for (const id of RIVALS) { const r = rivalOf(s, id); rivals[id] = { w: r.w, l: r.l, d: r.d }; }
+  const lv = levelOf(xpOf(s)).n;
   return {
-    followers: b.followers, rep: b.rep, tier: repTier(b.rep), hot: b.hot, best: b.best, book, rivals,
+    followers: b.followers, rep: b.rep, tier: rankOf(s), hot: b.hot, best: b.best, book, rivals,
     rank: c ? c.rank : -1, windows: c ? c.windows : 0, t1: c ? c.t1 : 0, favours: c ? c.favours.burner + c.favours.tipoff + c.favours.stakeout : 0,
-    credits: s.credits, pass: levelOf(s.pp, s).n,
+    credits: s.credits, level: lv, xp: xpOf(s), pass: lv,
   };
 }
 export interface CareerDelta {
@@ -377,7 +414,7 @@ const isSave = (x: CareerSnap | Save): x is Save => 'v' in x && 'daily' in x;
  *  Results reads it as careerDelta(byline.last.snap, save); see lastDelta(). */
 export function careerDelta(before: CareerSnap | Save, after: CareerSnap | Save): CareerDelta {
   const a = isSave(before) ? careerSnapshot(before) : before, b = isSave(after) ? careerSnapshot(after) : after;
-  const ti = (x: RepTier) => REP_TIERS.findIndex(([k]) => k === x);
+  const ti = (x: RepTier) => RANK_IDS.indexOf(x);
   return {
     followers: b.followers - a.followers, rep: b.rep - a.rep, tierBefore: a.tier, tierAfter: b.tier, tierUp: ti(b.tier) > ti(a.tier), tierDown: ti(b.tier) < ti(a.tier),
     hot: b.hot, hotBefore: a.hot,

@@ -5,8 +5,11 @@
 //   byline  followers, reputation (0–100), the hot hand        lib/byline.ts §1.1
 //   book    the five contacts' XP and level                      lib/byline.ts §1.2
 //   rivals  the head-to-head ledgers                             lib/byline.ts §1.3
-//   pp      lifetime Press Points; the season Pass is the one visible level (lib/progress.ts levelOf)
+//   xp      lifetime XP: the Level (forever) and the Season track (lib/economy.ts levelOf); `pp` is its 3.x name
+//   deals   brand deals (lib/deals.ts)                                lib/deals.ts
 // A Career slot keeps only what is its own story: rank/chapter, windows, favours, club relations, counters, history.
+// v4 (4.0 "Insider"): Press Points become XP, rep keeps its number under the new ranks (Nobody 0 · Rising 40 · ITK 55 ·
+// Insider 70 · Tier One 85, the highest reached is kept), the season track counts XP, coins and looks carry over.
 import { useRef, useSyncExternalStore } from 'react';
 import type { Pub, Tier, Act } from './engine';
 import type { MissionState } from './progress';
@@ -15,9 +18,9 @@ import type { Byline, BookEntry, RivalRec, FeedItem } from './byline';
 import type { SocialSave } from './social';
 
 export const SAVE_KEY = 'tierone_v3';
-export const SAVE_V = 3;
+export const SAVE_V = 4;
 
-export interface DailyRecord { no: number; total: number; tier: Tier; row: string; ex: number; rank?: number | null; players?: number; par?: number | null }
+export interface DailyRecord { no: number; total: number; tier: Tier; row: string; ex: number; rank?: number | null; players?: number; par?: number | null; v?: 3 | 4 }
 export interface LocalWindow { seed: string; mode: 'practice' | 'career'; log: Act[]; started: number; coach?: boolean; label?: string; favours?: { kind: string; i: number; day: number; info?: number }[]; ddAt?: number }
 export interface CareerSave {
   slot: number; paper: string; rank: number; windows: number; favours: { burner: number; tipoff: number; stakeout: number };
@@ -31,7 +34,10 @@ export interface Save {
   v: number; dev: string; nick: string; lang: 'en' | 'ar' | 'es'; edition: '' | 'morning' | 'late'; sound: boolean; reduced: boolean; onboarded: boolean;
   daily: Record<string, DailyRecord>;
   streak: { n: number; best: number; last: string; grace: number };
-  credits: number; ledger: { at: number; d: number; why: string }[]; owned: string[]; theme: string; pp: number;
+  /** Coins (the legacy field name; lib/economy.ts credit()/debit() are the only writers) and their ledger. */
+  credits: number; ledger: { at: number; d: number; why: string }[]; owned: string[]; theme: string;
+  /** Lifetime XP (v4). `pp` is the 3.x name, kept equal to `xp` by lib/meta.ts addXP until every screen reads `xp`. */
+  xp: number; pp: number;
   ach: Record<string, number>; stats: Record<string, number>;
   practice: { coach: boolean; live: LocalWindow | null; played: number; day: string; today: number };
   career: CareerSave | null;
@@ -62,7 +68,7 @@ const rid = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz2
 export function fresh(): Save {
   return {
     v: SAVE_V, dev: rid(), nick: '', lang: guessLang(), edition: '', sound: true, reduced: false, onboarded: false,
-    daily: {}, streak: { n: 0, best: 0, last: '', grace: 0 }, credits: 0, ledger: [], owned: [], theme: 'standard', pp: 0,
+    daily: {}, streak: { n: 0, best: 0, last: '', grace: 0 }, credits: 0, ledger: [], owned: [], theme: 'standard', xp: 0, pp: 0,
     ach: {}, stats: {}, practice: { coach: true, live: null, played: 0, day: '', today: 0 }, career: null, rooms: [], milestones: {}, wireSeen: [],
     slots: [null, null, null], slot: 0,
   };
@@ -90,7 +96,7 @@ type LegacyCareer = CareerSave & { rep?: number; followers?: number; contacts?: 
  *  v2→v3 migration and by slot restores, whose transfer codes may come from a 3.3 device. Mutates both. */
 export function absorbLegacyCareer(s: Save, c: LegacyCareer | null | undefined) {
   if (!c || typeof c !== 'object') return;
-  const b = (s.byline = s.byline || { followers: 0, rep: 50, hot: 0, best: 0 });
+  const b = (s.byline = s.byline || { followers: 0, rep: 50, hot: 0, best: 0 }); // 3.3 numbers: the v3→v4 step re-reads them
   if (typeof c.followers === 'number') b.followers = Math.max(b.followers || 0, Math.round(c.followers));
   if (typeof c.rep === 'number') b.rep = Math.max(0, Math.min(100, Math.max(b.rep ?? 50, Math.round(c.rep))));
   if (c.contacts && typeof c.contacts === 'object') {
@@ -118,7 +124,29 @@ const MIG: Record<number, (s: any) => any> = {
     if (Array.isArray(out.slots)) for (const sl of out.slots) if (sl && sl.career) absorbLegacyCareer(out, sl.career);
     return out;
   },
+  // v3 -> v4 (4.0 "Insider"): Press Points become XP (same number: the Level is a function of lifetime XP), the season
+  // track's points become XP, the rep number stays and the highest v4 rank it (or the kept 3.x peak) reads as is
+  // remembered, coins, looks, the streak and the Contacts Book carry over untouched. Nothing a player earned is lost.
+  3: (s) => migrateV4(s),
 };
+const V3_RANK_TO_V4: Record<string, number> = { blogger: 0, stringer: 1, correspondent: 2, chief: 3, tierone: 4 };
+const V4_BARS = [0, 40, 55, 70, 85]; // frozen copy of lib/economy.ts RANKS, so this migration never drifts
+export function migrateV4(s: any): any {
+  const out = { ...s, v: 4 };
+  const xp = Math.max(0, Math.round(Number(out.xp ?? out.pp) || 0));
+  out.xp = xp; out.pp = xp;
+  if (out.byline && typeof out.byline === 'object') {
+    const b = out.byline;
+    b.rep = Math.max(0, Math.min(100, Math.round(Number(b.rep) || 0)));
+    const byRep = V4_BARS.filter((x) => b.rep >= x).length - 1;
+    const peak = out.desk && typeof out.desk.peak === 'string' ? V3_RANK_TO_V4[out.desk.peak] ?? 0 : 0;
+    b.rank = Math.max(byRep, peak, typeof b.rank === 'number' ? b.rank : 0);
+    if (out.desk && typeof out.desk.peak === 'string') out.desk.peak = ['nobody', 'rising', 'itk', 'insider', 'tierone'][b.rank];
+  }
+  if (out.season && typeof out.season === 'object' && out.season.xp == null) { out.season.xp = Math.max(0, Math.round(Number(out.season.pp) || 0)); delete out.season.pp; }
+  if (Array.isArray(out.seasonLog)) out.seasonLog = out.seasonLog.map((r: any) => (r && r.xp == null ? { ...r, xp: Math.max(0, Math.round(Number(r.pp) || 0)) } : r));
+  return out;
+}
 export function migrate(raw: any): Save {
   let s = raw && typeof raw === 'object' ? raw : fresh();
   if (typeof s.v !== 'number') s.v = 0;
