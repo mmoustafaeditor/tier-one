@@ -20,7 +20,7 @@ export const GOAL_HALF = 3.66;
 export interface Threat { k: number; p: Pt }
 // `cost(marker, threat)` ranks the candidates (by default the distance); the caller uses it to send a midfielder, not a
 // centre-back, to a man standing in front of the line.
-export function assignMarks(markers: { k: number; p: Pt }[], threats: Threat[], man?: { threat: number; prefer: number[] }, cost: (m: { k: number; p: Pt }, t: Threat) => number = (m, t) => dist(m.p, t.p)): Map<number, number> {
+export function assignMarks(markers: { k: number; p: Pt }[], threats: Threat[], man?: { threat: number; prefer: number[] }, cost: (m: { k: number; p: Pt }, t: Threat) => number = (m, t) => dist(m.p, t.p), reach = T.MARK_REACH): Map<number, number> {
   const out = new Map<number, number>();
   const used = new Set<number>();
   if (man) {
@@ -30,7 +30,7 @@ export function assignMarks(markers: { k: number; p: Pt }[], threats: Threat[], 
   }
   for (const t of threats) {
     if ([...out.values()].includes(t.k)) continue;
-    const m = markers.filter((x) => !used.has(x.k) && dist(x.p, t.p) < T.MARK_REACH).sort((a, b) => cost(a, t) - cost(b, t))[0];
+    const m = markers.filter((x) => !used.has(x.k) && dist(x.p, t.p) < reach).sort((a, b) => cost(a, t) - cost(b, t))[0];
     if (m) { out.set(m.k, t.k); used.add(m.k); }
   }
   return out;

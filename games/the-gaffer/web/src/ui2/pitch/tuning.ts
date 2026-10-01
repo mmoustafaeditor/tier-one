@@ -30,4 +30,9 @@ export const T = {
   GK_OUT_K: 0.12,    // ... growing by this per metre the ball is away
   GK_SHUFFLE: 8,     // the keeper's quick side-steps across his goal: he tracks the angle much faster than a runner closes a gap
   BLOCK_GAP: 1.6,    // a blocker stands this far from the ball in the shooting lane
+  // Foundation step 5: the marking instruction (tactics marking: zonal / mixed / man), × the mixed values above
+  MARK_REACH_K: [0.7, 1, 1.6] as [number, number, number], // how far a marker goes for a man
+  THREAT_K: [0.85, 1, 1.25] as [number, number, number],   // how far from goal attackers get a man
+  ZONE_BOX: 16,      // zonal: a defender leaves the line for his man only inside this distance of goal
+  SET_ZONAL: [11, 3, 0] as [number, number, number],       // corners: how many defenders hold zones (the rest mark men)
 };

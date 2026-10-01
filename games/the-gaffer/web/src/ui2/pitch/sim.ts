@@ -431,11 +431,26 @@ function stage(a: Anim, m: LiveMatch, side: 0 | 1, ks: number[], tg: Pt[], boost
     // The wall is picked once (the nearest men when the whistle goes), so nobody swaps in and out of it.
     const near = sp.wall ??= [...field].sort((p, q) => dist(a.pos[side][p], sp.at) - dist(a.pos[side][q], sp.at)).slice(0, n);
     wallSpots(sp.at, goal, n).forEach((q, i) => { tg[near[i]] = q; boost[near[i]] = sp.rush; });
-    const rest = field.filter((k) => !near.includes(k));
-    defendSpots(rest.length + 1, flank).slice(1).forEach((q, i) => { tg[rest[i]] = { x: toX(side, q.d), y: q.y }; boost[rest[i]] = sp.rush; });
+    setMarks(a, m, side, field.filter((k) => !near.includes(k)), tg, boost, flank, 1);
     return;
   }
-  defendSpots(field.length, flank).forEach((q, i) => { tg[field[i]] = { x: toX(side, q.d), y: q.y }; boost[field[i]] = sp.rush; });
+  setMarks(a, m, side, field, tg, boost, flank, 0);
+}
+// Defending a corner or a free kick: the set-piece marking instruction (step 5). The first men (best in the air) hold
+// zones (zonal all of them, mixed three, man none); the rest each take an attacker in the box, goal-side, nearest goal first.
+function setMarks(a: Anim, m: LiveMatch, side: 0 | 1, field: number[], tg: Pt[], boost: number[], flank: -1 | 1, skip: number) {
+  const sp = a.sp!, att = (1 - side) as 0 | 1, ownGoal = { x: toX(side, 0), y: W / 2 };
+  const nz = Math.min(field.length, T.SET_ZONAL[fullTactics(m.sides[side].tactics).setMark]);
+  const zones = defendSpots(nz + skip, flank).slice(skip);
+  field.slice(0, nz).forEach((k, i) => { tg[k] = { x: toX(side, zones[i].d), y: zones[i].y }; boost[k] = sp.rush; });
+  const men = onPitch(m, att).filter((j) => j !== sp.taker && a.pos[att][j] && dist(a.pos[att][j], ownGoal) < 30)
+    .sort((p, q) => dist(a.pos[att][p], ownGoal) - dist(a.pos[att][q], ownGoal));
+  const rest = field.slice(nz);
+  rest.forEach((k, i) => {
+    const t = men[i] !== undefined ? a.pos[att][men[i]] : null;
+    const q = t ? markSpot(t, ownGoal, sp.at) : (() => { const z = defendSpots(nz + skip + i + 1, flank)[nz + skip + i]; return { x: toX(side, z.d), y: z.y }; })();
+    tg[k] = q; boost[k] = sp.rush;
+  });
 }
 
 // A match's pitch at kick-off: everyone in position, the home side on the ball.
@@ -556,12 +571,14 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
             blockK = [...field].sort((p, q) => dist(a.pos[side][p], spot) - dist(a.pos[side][q], spot))[0] ?? -1;
             if (blockK >= 0) tg[blockK] = spot;
           }
-          // Marking: every attacker near our goal gets a man, goal-side (zonal by default; the man-marking
-          // instruction pairs its target first). Defenders keep the line unless their man is near goal or beyond it.
+          // Marking: every attacker near our goal gets a man, goal-side; the man-marking instruction pairs its target
+          // first. Defenders keep the line unless their man is near goal or beyond it. The marking style (step 5):
+          // zonal takes only men who come into a player's area and the line holds until the box; man-marking reaches
+          // further, from further out, and a defender follows his man wherever he goes.
           const oSlots = FORMATIONS[mm.sides[other].tactics.formation].slots;
           const onBall = a.poss === other ? a.carrier : -1;
           const threats = onPitch(mm, other)
-            .filter((j) => oSlots[j].pos !== 'GK' && a.pos[other][j] && j !== onBall && dist(a.pos[other][j], ownGoal) < T.THREAT)
+            .filter((j) => oSlots[j].pos !== 'GK' && a.pos[other][j] && j !== onBall && dist(a.pos[other][j], ownGoal) < T.THREAT * T.THREAT_K[ft.marking])
             .map((j) => ({ k: j, p: a.pos[other][j] }))
             .sort((p, q) => dist(p.p, ownGoal) - dist(q.p, ownGoal));
           const markers = ks.filter((k) => free(k) && k !== blockK && !pp.press.includes(k) && (line(k) === 'def' || line(k) === 'mid') && a.pos[side][k]).map((k) => ({ k, p: a.pos[side][k] }));
@@ -569,14 +586,17 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           const manK = manId ? mm.sides[other].onPitch.indexOf(manId) : -1;
           // A man in front of our line is a midfielder's job; one near goal or beyond the line, a defender's.
           const ahead = (t: { p: Pt }) => dist(t.p, ownGoal) >= 22 && depthOf(side, t.p.x) > ln.depth + 3;
+          // Zonal: the cost is from where the player should stand (his zone), not where he is.
+          const home = (m: { k: number; p: Pt }) => (ft.marking === 0 ? tg[m.k] ?? m.p : m.p);
           const marks = assignMarks(markers, threats, manK >= 0 ? { threat: manK, prefer: markers.map((x) => x.k) } : undefined,
-            (m, t) => dist(m.p, t.p) + (ahead(t) ? (line(m.k) === 'def' ? T.MARK_ROLE : 0) : line(m.k) === 'mid' ? T.MARK_ROLE : 0));
+            (m, t) => dist(home(m), t.p) + (ahead(t) ? (line(m.k) === 'def' ? T.MARK_ROLE : 0) : line(m.k) === 'mid' ? T.MARK_ROLE : 0), T.MARK_REACH * T.MARK_REACH_K[ft.marking]);
           if (PITCH_DEBUG) (a as unknown as { mk?: number[] }).mk = [threats.length, marks.size, markers.length];
           for (const [mk, tk] of marks) {
             const t = a.pos[other][tk];
             const spot = markSpot(t, ownGoal, a.ball);
             // A defender keeps the line (and only shadows his man across) unless his man is near goal or beyond it.
-            if (line(mk) === 'def' && dist(t, ownGoal) >= 22 && depthOf(side, t.x) >= ln.depth - 2) tg[mk] = { x: tg[mk].x, y: tg[mk].y * 0.4 + t.y * 0.6 };
+            const holds = ft.marking === 0 ? dist(t, ownGoal) >= T.ZONE_BOX : ft.marking === 1 && dist(t, ownGoal) >= 22 && depthOf(side, t.x) >= ln.depth - 2;
+            if (line(mk) === 'def' && holds) tg[mk] = { x: tg[mk].x, y: tg[mk].y * 0.4 + t.y * 0.6 };
             else tg[mk] = spot;
           }
           // The keeper: on the shooting angle.
