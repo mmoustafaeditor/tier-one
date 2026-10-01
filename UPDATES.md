@@ -17,6 +17,18 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer pitch, phase 2 of the FM26 plan: the defence as a group
+- **What changed:** The Gaffer's live 2D pitch only; nothing under `sim/` changed. Out of possession the defence now works as a group (`ui2/pitch/defend.ts`):
+  - every attacker within 32 m of goal gets a goal-side marker: zonal by default, and the man-marking instruction pairs its target first; midfielders take men in front of the line, defenders take those near goal or beyond it;
+  - the back line slides across towards the ball and stays compact;
+  - a carrier wide in our third gets a second man;
+  - the keeper stands on the bisector of the shooting angle;
+  - the nearest defender steps into the shooting lane at once when a carrier is in our box.
+
+  These are FM26's known weak spots, done on purpose. Measured in settled play (`ui-tests/pitch.mjs`): marking went from 40-47% before this phase to 80-100% in most runs, and the keeper went from 1.2-1.6 m off the angle to 0.0-0.5 m in most runs. Small samples make single runs swing: one long spell of a man unmarked in front of the line can pull a run down.
+- **Files:** `games/the-gaffer/web/src/ui2/Pitch2D.tsx`, `src/ui2/pitch/defend.ts` (new), `src/ui2/pitch/tuning.ts`, `ui-tests/pitch.mjs`
+- **Heads-up for the team:** Some test checks are still unstable from run to run: back-line spread sometimes lands right on the 3 m limit, and reacting after losing the ball sometimes fails (e.g. 2 of 6). That is phase 4 (the director). The pitch test now leaves out frames of a paused or finished match, and judges marking at 5 m in the last 22 m and 8 m out to 30 m, where the line holds. The box blocker rarely gets measured: the engine's shots come straight after the pass, so there are only 3-10 such frames a run. Getting a defender there in time needs phase 4 (the director). Next after this: a marking-style instruction like FM (zonal / mixed / man, set pieces), agreed with Saif. Tier One is untouched.
+
 ## 2026-10-01 · mmoustafaeditor · Tier One: leaderboards, prizes and badges (SAIF-03); publish-area overlaps fixed (SAIF-04)
 - **What changed:** New Leaderboards screen (Me › Leaderboards, or "All leaderboards" under the Results board): today, this week and the Wire season, with your rank and the top 25. A top-10 finish in a finished Daily or week pays coins once (Daily 60/40/25/10, week 200/120/80/30, boards with 3+ players), collected on a gold prize card; prizes never change a score. Badges on the byline: board medals, wins over rivals, latest trophies. `lb.top` now takes an optional past `day` (read-only). SAIF-04: the filed stamp on the saga card no longer runs over the route, the post card's stamp clears the send button, and the Wire file sheet's band sits under the sheet handle instead of behind it.
 - **Files:** `api/tier-one/v3/index.js` (`lb.top` `day`), `games/tier-one/v3/web/src/lib/awards.ts` (new), `src/ui/awards.tsx` (new), `src/screens/Boards.tsx` (new), `src/styles/awards.css` (new), `src/i18n/parts/awards.ts` (new), `src/App.tsx`, `src/screens/Me.tsx`, `src/screens/Results.tsx`, `src/ui/connect.tsx`, `src/lib/save.ts` (optional `prizes`), `src/styles/play.css`, `src/styles/system.css`, `games/tier-one/SAIF_IMPROVEMENTS.md`, `UPDATES.md`

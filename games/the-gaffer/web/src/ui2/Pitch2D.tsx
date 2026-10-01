@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 import type { LiveMatch, MatchEvent } from '../sim/match';
 import { T } from './pitch/tuning';
 import { bodiesOf, decideMs, move, reactMs, type Body } from './pitch/body';
+import { assignMarks, blockSpot, inBox, keeperSpot, markSpot, slideY, wideInThird } from './pitch/defend';
 import { attackSpots, defendSpots, rushFor, wallSize, wallSpots, type SetPiece } from './pitch/setpieces';
 import { rngFor } from '../sim/match';
 import { FORMATIONS, fullTactics } from '../sim/tactics';
@@ -501,6 +502,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       const mm = mRef.current;
       if (PITCH_DEBUG) (window as unknown as { __gafferPitch?: unknown }).__gafferPitch = { a, slots: mm.sides.map((sd) => FORMATIONS[sd.tactics.formation].slots.map((x) => x.pos)), pressing: mm.sides.map((sd) => sd.tactics.pressing) };
       const { msPerMinute: ms, running: go, camera: cam } = cfg.current;
+      if (PITCH_DEBUG) (a as unknown as { go?: boolean }).go = go; // the test skips a paused or finished match
       a.time += dt;
       if (a.minute !== minuteKey(mm)) plan(a, mm, ms, worldRef.current);
       if (go) {
@@ -557,6 +559,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
           }
         }
         let pp: PressPlan = { press: [], cover: -1, trigger: false };
+        let blockK = -1; // phase 2: the defender stepping into the shooting lane (reacts at once)
         if (!has) {
           pp = pressShape(ks.filter((k) => LINE[slots[k].pos] !== 'gk'), a.pos[side], a.ball, depthOf(side, a.ball.x), mm.sides[side].tactics.pressing, (k) => sps[k]?.oop ?? '');
           const line = (k: number) => LINE[sps[k]?.opos ?? slots[k].pos];
@@ -577,6 +580,50 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
           }
           for (const k of pp.press) tg[k] = pressSpot(a.ball, ownGoal, 1.8);
           if (pp.cover >= 0 && pp.press.length) tg[pp.cover] = pressSpot(a.ball, ownGoal, 7);
+          // Phase 2: the defence as a group (ui2/pitch/defend.ts). The line slides across towards the ball, compact.
+          const lineKs = ks.filter((k) => line(k) === 'def' && free(k));
+          const ys = slideY(lineKs.map((k) => tg[k].y), a.ball.y);
+          lineKs.forEach((k, i) => { tg[k] = { x: tg[k].x, y: ys[i] }; });
+          // A carrier wide in our third gets a second man.
+          const field = ks.filter((k) => LINE[slots[k].pos] !== 'gk' && a.pos[side][k]);
+          const nearBall = (xs: number[]) => [...xs].sort((p, q) => dist(a.pos[side][p], a.ball) - dist(a.pos[side][q], a.ball))[0];
+          if (wideInThird(a.ball, ownGoal) && pp.press.length === 1) {
+            const k2 = nearBall(field.filter((k) => !pp.press.includes(k)));
+            if (k2 !== undefined) { pp.press.push(k2); tg[k2] = pressSpot(a.ball, ownGoal, 3); }
+          }
+          // A carrier in our box: the nearest defender steps into the shooting lane at once.
+          if (inBox(a.ball, ownGoal) && a.poss === other && a.carrier >= 0) {
+            const spot = blockSpot(a.ball, ownGoal);
+            blockK = [...field].sort((p, q) => dist(a.pos[side][p], spot) - dist(a.pos[side][q], spot))[0] ?? -1;
+            if (blockK >= 0) tg[blockK] = spot;
+          }
+          // Marking: every attacker near our goal gets a man, goal-side (zonal by default; the man-marking
+          // instruction pairs its target first). Defenders keep the line unless their man is near goal or beyond it.
+          const oSlots = FORMATIONS[mm.sides[other].tactics.formation].slots;
+          const onBall = a.poss === other ? a.carrier : -1;
+          const threats = onPitch(mm, other)
+            .filter((j) => oSlots[j].pos !== 'GK' && a.pos[other][j] && j !== onBall && dist(a.pos[other][j], ownGoal) < T.THREAT)
+            .map((j) => ({ k: j, p: a.pos[other][j] }))
+            .sort((p, q) => dist(p.p, ownGoal) - dist(q.p, ownGoal));
+          const markers = ks.filter((k) => free(k) && k !== blockK && !pp.press.includes(k) && (line(k) === 'def' || line(k) === 'mid') && a.pos[side][k]).map((k) => ({ k, p: a.pos[side][k] }));
+          const manId = mm.sides[side].tactics.mark;
+          const manK = manId ? mm.sides[other].onPitch.indexOf(manId) : -1;
+          // A man in front of our line is a midfielder's job; one near goal or beyond the line, a defender's.
+          const ahead = (t: { p: Pt }) => dist(t.p, ownGoal) >= 22 && depthOf(side, t.p.x) > ln.depth + 3;
+          const marks = assignMarks(markers, threats, manK >= 0 ? { threat: manK, prefer: markers.map((x) => x.k) } : undefined,
+            (m, t) => dist(m.p, t.p) + (ahead(t) ? (line(m.k) === 'def' ? T.MARK_ROLE : 0) : line(m.k) === 'mid' ? T.MARK_ROLE : 0));
+          if (PITCH_DEBUG) (a as unknown as { mk?: number[] }).mk = [threats.length, marks.size, markers.length];
+          for (const [mk, tk] of marks) {
+            const t = a.pos[other][tk];
+            const spot = markSpot(t, ownGoal, a.ball);
+            // A defender keeps the line (and only shadows his man across) unless his man is near goal or beyond it.
+            if (line(mk) === 'def' && dist(t, ownGoal) >= 22 && depthOf(side, t.x) >= ln.depth - 2) tg[mk] = { x: tg[mk].x, y: tg[mk].y * 0.4 + t.y * 0.6 };
+            else tg[mk] = spot;
+          }
+          // The keeper: on the shooting angle.
+          const gk = ks.find((k) => LINE[slots[k].pos] === 'gk');
+          if (gk !== undefined) { tg[gk] = keeperSpot(a.ball, ownGoal); boost[gk] = T.GK_SHUFFLE; }
+          if (PITCH_DEBUG && gk !== undefined) (a as unknown as { gkT?: unknown }).gkT = { ...tg[gk] }; // short quick steps across his goal
           // Just lost it: counter-press with the nearest three, or everyone ahead of the ball races back.
           if (tr && tr.lost === side) {
             const field = ks.filter((k) => LINE[slots[k].pos] !== 'gk' && a.pos[side][k]);
@@ -612,15 +659,18 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         for (const k of ks) {
           let t = tg[k];
           if (has && k === a.carrier && !staging) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
-          const wob = Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
+          // A little life in everyone's feet, except a keeper set on the shooting angle (he stays on it).
+          const wob = !has && LINE[slots[k].pos] === 'gk' ? 0 : Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
           const p = a.pos[side][k] ?? t;
           const B0 = a.body[side]?.[k] ?? { top: 1, acc: 1, turn: 1, reads: 0.5, tank: 0.7 };
           // In the line: the line's pace. Walking to a set piece: no turning limit (he's not running at speed).
-          const B = staging ? { ...B0, turn: B0.turn * 4 } : isDef(k) ? { ...B0, top: Math.min(B0.top, lineTop), acc: Math.min(B0.acc, lineAcc) } : B0;
+          // The keeper side-steps across his goal (no running turn limit, quick feet).
+          const B = staging || (!has && LINE[slots[k].pos] === 'gk') ? { ...B0, turn: B0.turn * 4, acc: B0.acc * 1.5 } : isDef(k) ? { ...B0, top: Math.min(B0.top, lineTop), acc: Math.min(B0.acc, lineAcc) } : B0;
           const g = a.ag[side][k] ??= { vx: 0, vy: 0, tx: t.x, ty: t.y + wob, at: 0, tank: 1, pend: false, spr: false };
           // On the ball, about to receive or shoot, or walking to a set piece: no delay. Everyone else commits to
           // a new target at his decision ticks, and after a new ball only once he has reacted.
-          const onIt = (has && k === a.carrier) || (a.run?.side === side && a.run.slot === k) || (a.shooter?.side === side && a.shooter.slot === k);
+          // The keeper never takes his eyes off the ball: he follows it without a reaction delay.
+          const onIt = (has && k === a.carrier) || (!has && (k === blockK || LINE[slots[k].pos] === 'gk')) || (a.run?.side === side && a.run.slot === k) || (a.shooter?.side === side && a.shooter.slot === k);
           if (onIt || staging) { g.tx = t.x; g.ty = t.y + wob; g.pend = false; }
           else if (a.time >= g.at) {
             const since = a.time - a.eventAt;
@@ -634,7 +684,8 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
           }
           let sprint = Math.max(pp.press.includes(k) ? (pp.trigger ? 1.6 : 1.3) : 1, boost[k] ?? 1);
           // The sprint tank: an empty tank caps the boost; sprinting drains it (faster for a small tank), jogging refills.
-          if (!staging && g.tank < T.EMPTY) sprint = Math.min(sprint, T.SPRINT);
+          const keeperOut = !has && LINE[slots[k].pos] === 'gk'; // the keeper's side-steps aren't sprints
+          if (!staging && !keeperOut && g.tank < T.EMPTY) sprint = Math.min(sprint, T.SPRINT);
           const vx0 = g.vx, vy0 = g.vy;
           const nk = move({ x: p.x, y: p.y, vx: g.vx, vy: g.vy }, g.tx, g.ty, dt, tau, B, sprint);
           // The line's depth is one decision for all its defenders (PR A): it moves together at the line's pace, and
@@ -643,7 +694,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
           g.vx = nk.vx; g.vy = nk.vy;
           a.pos[side][k] = { x: nk.x, y: nk.y };
           const vmax = (T.VMAX * B.top * sprint) / tau, sp1 = Math.hypot(nk.vx, nk.vy);
-          g.spr = !staging && sprint > T.SPRINT && sp1 > 0.6 * vmax;
+          g.spr = !staging && !keeperOut && sprint > T.SPRINT && sp1 > 0.6 * vmax;
           g.tank = g.spr ? Math.max(0, g.tank - (T.DRAIN * dt) / ms / B.tank) : Math.min(1, g.tank + (T.REFILL * dt) / ms);
           // Measurement (ui-tests/pitch.mjs): how close to his turning and acceleration limits he came.
           if (PITCH_DEBUG && dt > 0 && !(isDef(k) && !staging)) { // (the line's depth is shared, measured by the line test)
