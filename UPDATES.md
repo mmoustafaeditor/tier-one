@@ -32,6 +32,26 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer pitch: support for the ball carrier, with the marker a moment behind
+- **What changed:**
+  - **Support.** When a team-mate has the ball in his own half or midfield, the three nearest players offer him a pass. One whose lane is shadowed checks away sharply (a sprint) to the nearest open spot at passing range: short, wide, behind or ahead of the carrier, never offside. Near their box, attackers keep their runs and positions instead.
+  - **The marker's delay.** A marker sees his man where he was a moment ago (`T.MARK_LAG`); a good reader of the game closes most of that gap (`T.MARK_READ` × his reading). That half-step is what lets a sharp move open the lane, and it shows the difference between defenders.
+  - **Measurement fix.** A man now blocks a pass only if he is in front of the ball along it. Before, a presser standing beside the carrier counted as closing every pass in every direction: with a presser within 3 m only 22% of frames had two open passes, against 93% without one. The supporting players' own choice used the same wrong rule, so both were fixed.
+  - **Results:**
+
+    | | Full match (4 matches) | Extended (10 matches) |
+    |---|---|---|
+    | Two open passes for the carrier | 91% (was 55–59%) | 86% |
+    | Marking | 78% | 84% |
+    | Overlaps | 53% | 59% |
+    | Box blocking | 97% | 92% |
+    | Offside | 2% | 1% |
+    | Reaction after losing the ball | — | 25 of 25 |
+
+  - **Browser:** 58 fps, no console errors; the nav test passes.
+- **Files:** `games/the-gaffer/web/src/ui2/pitch/{sim,tuning}.ts`, `ui-tests/pitch-metrics.mjs`
+- **Heads-up for the team:** Support movement across the whole pitch was tried first: near their box the sprints pulled attackers away from their markers and marking fell to 73%. That is why support stops at their last third (`T.SUPPORT_UPTO`). Tier One is untouched.
+
 ## 2026-10-01 · mmoustafaeditor (Claude Code session) · Tier One 4.1.0 "compact rebuild": four modes, nothing scrolls (lane8/t1-hybrid)
 - **What changed:** UI41.md as a build, merged from four lanes (lane41/shell, daily, career, wire) plus integration. **Home** is four big mode tiles (Daily Challenge, Career, Multiplayer, Transfer Market) and one row of five labelled utilities (Press Card, Leaderboards, Missions, Shop, Settings) with red count badges; Deadline Day and Practice sit inside the Daily Challenge tile. No widgets, dock, status bar, bottom back arrow or desktop side panel; every screen is `ui/screen.tsx <Screen>` with a real Back button top-left (Esc / Android Back) and pages instead of scrolling. **Daily Challenge**: five compact player rows, big calls-left, End Day; the player screen shows the five sources as buttons (what they tell you, how often they're right, cost in calls), Decide now / Decide later, the decide sheet (SIGNS / ELSEWHERE / STAYS, In talks ×1 / Advanced ×2 / Confirmed ×3, the deal in one line), results on one screen. **Deadline Day**: night board with the 90 s clock as the hero, rival ticker, six players in a 2×3 grid, red clock and ticks under 15 s, two-tap posting, "window shut" results. **Career**: Continue / New career, a three-step prologue, one chapter card (three lines, boss card, goal bars, paged story messages, Play next window). **Transfer Market** (real life): Stars / Heat / League / Team filters + search, 5 a page, rumour screen with Watch / Call it, My calls (open / resolved / watching). **Multiplayer** = Rooms only (create, join with a code, Table / Rounds / Chat, Leave room); challenges and newsrooms show "This link has expired". **Press Card** (7 tabs: Overall, Daily, Career, Deadline, Market, Rooms, Sponsor), **Leaderboards** (own app: Daily Challenge today / this week, each of your rooms, Transfer Market), **Missions** (today, this week, season; Claim), **Shop**, one-screen Settings / How to play / onboarding, a 4-tip first-Daily tutorial and one first-time hint per main screen. Word sweep: no Blurt / Lens / DMs / Wire / Groups / Boards / Hint / Post-as-stake / Drop anywhere a player sees (`i18n/parts/zz41.ts` loads last and overrides the older parts in EN / AR / ES). Formatting pass measured with a headless layout check (every screen at 390×664, 390×844 and 1280×800 in EN and AR: no page or box scroll, no clipped labels, contrast ≥ 4.5, taps ≥ 44 px, Back on every page).
 - **Files:** `games/tier-one/v3/web/src/**` (App.tsx, ui/phone.tsx, ui/screen.css, screens/*, styles/*, i18n/parts/{shell41,daily41,career41,wire41,zz41}.ts), new `screens/Leaderboards.tsx`, `lib/missions41.ts`; deleted `screens/{Blurt,DMs,Connect}.tsx`, `styles/{blurt,lens,results}.css`, `lib/widgets.ts`; `games/tier-one/v3/web/package.json` 4.1.0.

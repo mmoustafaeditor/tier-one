@@ -175,7 +175,9 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
     P3.off[1]++;
     if (A.some((q, k) => q && k !== s.carrier && dep(q) > lineD + 0.5)) P3.off[0]++;
     // Support: teammates 6-28 m away with no defender within 2 m of the passing lane.
-    const lane = (q) => D.every((d) => { if (!d) return true; const vx = q.x - c.x, vy = q.y - c.y, l2 = vx * vx + vy * vy; const t = Math.max(0, Math.min(1, ((d.x - c.x) * vx + (d.y - c.y) * vy) / l2)); return Math.hypot(c.x + t * vx - d.x, c.y + t * vy - d.y) > 2; });
+    // A man blocks the pass only if he is in front of the ball along it (a presser beside or behind the carrier doesn't
+    // close a pass played away from him).
+    const lane = (q) => D.every((d) => { if (!d) return true; const vx = q.x - c.x, vy = q.y - c.y, l2 = vx * vx + vy * vy; const raw = ((d.x - c.x) * vx + (d.y - c.y) * vy) / l2; if (raw * Math.sqrt(l2) < 0.5) return true; const t = Math.min(1, raw); return Math.hypot(c.x + t * vx - d.x, c.y + t * vy - d.y) > 2; });
     const open = A.filter((q, k) => q && k !== s.carrier && s.slots[att][k] !== 'GK' && Math.hypot(q.x - c.x, q.y - c.y) > 6 && Math.hypot(q.x - c.x, q.y - c.y) < 28 && lane(q)).length;
     P3.sup[1]++; if (open >= 2) P3.sup[0]++;
     // Overlap / underlap: a wide carrier in the last third (short of the byline), his full-back within 14 m and no more

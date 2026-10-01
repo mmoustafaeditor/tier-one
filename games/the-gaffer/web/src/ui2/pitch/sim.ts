@@ -68,6 +68,7 @@ export interface Anim {
   hurtAt: { side: 0 | 1; slot: number; at: number }[]; // this minute's injuries, when they happen (ms into the minute)
   snap?: boolean;         // highlights: a minute not shown — everyone goes straight to his place (the picture cuts)
   ids: string[][];        // who was in each slot when the minute was planned (an injured man's slot after he's gone)
+  seen: Pt[][];           // where each player is seen by the men marking him: his position a moment ago (T.MARK_LAG)
 }
 
 interface Agent { vx: number; vy: number; tx: number; ty: number; at: number; tank: number; pend: boolean; spr: boolean }
@@ -504,7 +505,7 @@ export function newAnim(m: LiveMatch, world: World): Anim {
     const a: Anim = {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], starts: [], msPM: 1000, beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
-      spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null, hurt: null, hurtAt: [], ids: [[...m.sides[0].onPitch], [...m.sides[1].onPitch]],
+      spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null, hurt: null, hurtAt: [], ids: [[...m.sides[0].onPitch], [...m.sides[1].onPitch]], seen: [[], []],
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -547,6 +548,9 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
         a.bh = 0;
         a.ball = { x: p.x + (a.poss === 0 ? 1.1 : -1.1), y: p.y + 0.6 };
       }
+      // What markers see: each player's position a moment ago (it trails him; MARK_LAG at the normal pace).
+      { const k = 1 - Math.exp(-dt / Math.max(1, (T.MARK_LAG * scale) / 2400));
+        for (const sd of [0, 1] as const) a.pos[sd].forEach((q, j) => { if (!q) return; const s0 = a.seen[sd][j]; a.seen[sd][j] = s0 && !a.snap ? { x: s0.x + (q.x - s0.x) * k, y: s0.y + (q.y - s0.y) * k } : { ...q }; }); }
       // Players move towards where they want to be at their own speed (pace, stamina); out of possession the back line
       // moves as one and the press comes with cover (ui2/pitch/move.ts).
       for (const side of [0, 1] as const) {
@@ -564,6 +568,7 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
         // Sprints (body.ts move, urgent): flat out until close, as a real sprint is — an overlap, a counter-press, a
         // recovery run, closing a shot. Everything else (holding shape, walking to a set piece) eases in.
         const rush = new Set<number>();
+        const staging0 = !!a.sp && a.time < a.sp.until; // a set piece is being staged (nobody offers for a pass)
         if (has) {
           // Runs off the ball by role (at most 3 real runs at once), then the break after winning the ball.
           const other = (1 - side) as 0 | 1;
@@ -598,6 +603,31 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           for (const k of ks) {
             if (k === a.carrier || !tg[k] || (goes && k === receiver)) continue;
             if (depthOf(side, tg[k].x) > offLine - T.ONSIDE) tg[k] = { x: toX(side, offLine - T.ONSIDE), y: tg[k].y };
+          }
+          // Support (phase 3): the nearest team-mates offer the carrier a pass. One whose lane is shadowed checks away
+          // sharply (a sprint) to the nearest open spot at passing range around the carrier: short, wide, behind or ahead
+          // of him, never offside. With the marker a moment behind (MARK_LAG), that sharp move opens the lane.
+          // (in build-up and midfield: near their box attackers keep their runs and positions)
+          if (a.carrier >= 0 && a.pos[side][a.carrier] && !a.flight && !staging0 && bd < T.SUPPORT_UPTO) {
+            const cp = a.pos[side][a.carrier];
+            const opp = onPitch(mm, other).map((j) => a.pos[other][j]).filter(Boolean);
+            // (a man blocks it only in front of the ball along the pass: a presser beside the carrier doesn't)
+            const open = (q: Pt) => opp.every((d) => { const vx = q.x - cp.x, vy = q.y - cp.y, l2 = vx * vx + vy * vy || 1; const raw = ((d.x - cp.x) * vx + (d.y - cp.y) * vy) / l2; if (raw * Math.sqrt(l2) < 0.5) return true; const t = Math.min(1, raw); return Math.hypot(cp.x + t * vx - d.x, cp.y + t * vy - d.y) > T.LANE; });
+            const inRange = (q: Pt) => { const r = dist(q, cp); return r >= T.SUPPORT_D[0] && r <= T.SUPPORT_D[1]; };
+            const spots: Pt[] = [];
+            for (const r of [9, 13, 17, 21]) for (let i = 0; i < 12; i++) {
+              const q = { x: cp.x + Math.cos((i * Math.PI) / 6) * r, y: cp.y + Math.sin((i * Math.PI) / 6) * r };
+              if (q.x > 2 && q.x < L - 2 && q.y > 2 && q.y < W - 2 && depthOf(side, q.x) <= offLine - T.ONSIDE && open(q)) spots.push(q);
+            }
+            const mates = ks.filter((k) => k !== a.carrier && LINE[slots[k].pos] !== 'gk' && tg[k] && a.pos[side][k] && !(a.run?.side === side && a.run.slot === k) && !(a.shooter?.side === side && a.shooter.slot === k))
+              .sort((p, q) => dist(a.pos[side][p], cp) - dist(a.pos[side][q], cp)).slice(0, T.SUPPORT);
+            const taken: Pt[] = [];
+            for (const k of mates) {
+              const here = a.pos[side][k];
+              if (inRange(here) && open(here)) { taken.push(here); continue; } // already free: stay
+              const best = spots.filter((q) => taken.every((t) => dist(t, q) > 6)).sort((p, q) => dist(p, here) - dist(q, here))[0];
+              if (best) { tg[k] = best; taken.push(best); rush.add(k); boost[k] = Math.max(boost[k] ?? 1, 1.3); }
+            }
           }
           // The carrier's pace: he drives on into space and slows, shielding it, when a man is on him.
           if (a.carrier >= 0 && a.pos[side][a.carrier] && tg[a.carrier]) { // (a carrier sent off or subbed has no target)
@@ -680,7 +710,9 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
             (m, t) => dist(home(m), t.p) + (ahead(t) ? (line(m.k) === 'def' ? T.MARK_ROLE : 0) : line(m.k) === 'mid' ? T.MARK_ROLE : 0), T.MARK_REACH * T.MARK_REACH_K[ft.marking]);
           if (PITCH_DEBUG) (a as unknown as { mk?: number[] }).mk = [threats.length, marks.size, markers.length];
           for (const [mk, tk] of marks) {
-            const t = a.pos[other][tk];
+            // He marks the man where he sees him: a moment behind, less so the better he reads the game.
+            const now = a.pos[other][tk], was = a.seen[other][tk] ?? now, rd = (a.body[side]?.[mk]?.reads ?? 0.5) * T.MARK_READ;
+            const t = { x: was.x + (now.x - was.x) * rd, y: was.y + (now.y - was.y) * rd };
             const spot = markSpot(t, ownGoal, a.ball);
             // A defender keeps the line (and only shadows his man across) unless his man is near goal or beyond it.
             const holds = ft.marking === 0 ? dist(t, ownGoal) >= T.ZONE_BOX : ft.marking === 1 && dist(t, ownGoal) >= 22 && depthOf(side, t.x) >= ln.depth - 2;
