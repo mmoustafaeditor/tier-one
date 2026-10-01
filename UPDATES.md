@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-10-01 · mmoustafaeditor (Claude Code session) · Closed three of Saif's requests
+- **What changed:** Removed from `.claude/requests.md`: the new Tier One app icon (already on `main`, and in the 3.4.0 / versionCode 19 APK Saif published), Saif's proposal files (already on `main`), and publishing The Gaffer (live at sembagames.app/the-gaffer). Approved by Mostafa.
+- **Files:** `.claude/requests.md`, `UPDATES.md`
+- **Heads-up for the team:** The Vercel deploy hook request stays open until Mostafa has created the hook and the `VERCEL_DEPLOY_HOOK` secret.
+
 ## 2026-10-01 · saifsaber · The Gaffer pitch, phase 1 of the FM26 plan: each player's body
 - **What changed:** The Gaffer's live 2D pitch only; nothing under `sim/` changed. Each player now moves with his own body: a top speed, acceleration and turning limit from his attributes and match fitness, and a sprint tank that empties when he sprints and refills when he jogs. He re-reads the play at decision ticks (like FM's quarter-second "slice") and reacts to a new ball after his own reaction time. Better players react sooner. The game has 7 attributes, so "reading the game" is derived from rating, age and the skill his position leans on, the same way the referee derives aggression; saves don't change. The back line holds its depth together at its slowest defender's pace. All the numbers are in one tuning file, `ui2/pitch/tuning.ts`. New `sim-tests/body.ts`; `ui-tests/pitch.mjs` checks the limits, reaction times and tank (120 s run: 59 fps, all checks passed).
 - **Files:** `games/the-gaffer/web/src/ui2/Pitch2D.tsx`, `src/ui2/pitch/body.ts` (new), `src/ui2/pitch/tuning.ts` (new), `ui-tests/pitch.mjs`, `sim-tests/body.ts` (new)
