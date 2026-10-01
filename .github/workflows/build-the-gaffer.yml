@@ -118,11 +118,14 @@ jobs:
         env:
           BEFORE: ${{ github.event.before }}
           WANT_APK: ${{ inputs.apk }}
+          EVENT: ${{ github.event_name }}
         run: |
           set -e
           # A new APK only when the Android app itself changed, when asked, or when there is none yet.
           APK=false
           if [ "$WANT_APK" = "true" ] || [ ! -f downloads/TheGaffer.apk ]; then APK=true
+          # A manual run has no "before" commit: it publishes an APK only when asked (the box above), never by default.
+          elif [ "$EVENT" = "workflow_dispatch" ]; then APK=false
           elif [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then APK=true
           elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -q '^games/the-gaffer/android/'; then APK=true
           fi
