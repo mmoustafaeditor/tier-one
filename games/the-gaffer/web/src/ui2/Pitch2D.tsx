@@ -4,6 +4,7 @@
 // Presentation only: nothing here decides anything (the score and stats come from the event log).
 import { useEffect, useRef } from 'react';
 import type { LiveMatch, MatchEvent } from '../sim/match';
+import { attackSpots, defendSpots, rushFor, wallSize, wallSpots, type SetPiece } from './pitch/setpieces';
 import { rngFor } from '../sim/match';
 import { FORMATIONS, fullTactics } from '../sim/tactics';
 import { planOf, spotOf, type Spot } from '../sim/engine/phases';
@@ -27,6 +28,9 @@ type Beat =
   | { kind: 'turnover'; side: 0 | 1; to?: number; pt?: Pt; z?: number }
   | { kind: 'shot'; side: 0 | 1; shooter: number; result: 'goal' | 'save' | 'miss' | 'block'; z?: number; how?: string }
   | { kind: 'kickoff'; side: 0 | 1 }
+  | { kind: 'corner'; side: 0 | 1; taker?: number }
+  | { kind: 'offside'; side: 0 | 1 }
+  | { kind: 'foul'; side: 0 | 1; to: number; pt: Pt }
   | { kind: 'hold' };
 
 interface Anim {
@@ -39,7 +43,9 @@ interface Anim {
   beats: Beat[];
   beat: number;
   clock: number;
-  beatLen: number;
+  beatLen: number;        // one ordinary beat (ms); a set piece takes a few (WEIGHT), within the same minute
+  starts: number[];       // when each beat starts (ms into the minute)
+  msPM: number;           // real ms per match minute (the speed setting) when the minute was planned
   inNet: boolean;
   shooter: { side: 0 | 1; slot: number; how?: string } | null; // runs into the box (or to the edge of it) before a shot
   run: { side: 0 | 1; slot: number; pt: Pt } | null; // the carrier heads for the zone the engine says the play is in
@@ -51,7 +57,9 @@ interface Anim {
   back: [number, number]; // when each side last played the ball backwards (a time, for the back line's step-up)
   trans: Transition | null; // the last turnover: who lost it and when (counter-press, recovery runs, breaks)
   runsN: number;          // real runs off the ball this frame (for the measurement test)
-  kinds: Record<string, number>; // passes and shots shown, by type (for the measurement test)
+  kinds: Record<string, number>; // passes, shots and set pieces shown, by type (for the measurement test)
+  sp: SetPiece | null;    // a set piece being staged (corner, free kick, goal kick)
+  flag: { x: number; until: number } | null; // the assistant's flag is up (offside), at this x on the near touchline
 }
 
 const L = 105, W = 68;
@@ -136,7 +144,7 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
     const pt = zonePt(f.z, r);
     const found = f.p ? slotOf(m, f.p) : null;
     const slot = found && found.side === f.s ? found.slot : slotNear(m, a, f.s, pt);
-    if (f.k === 'f') { all.push({ kind: 'hold' }); continue; }
+    if (f.k === 'f') { all.push({ kind: 'foul', side: f.s, to: slot, pt }); poss = f.s; continue; }
     if (f.k === 'w' || f.k === 'l') {
       if (f.s !== poss) { all.push({ kind: 'turnover', side: f.s, to: slot, pt, z: f.z }); poss = f.s; }
       else all.push({ kind: 'pass', side: f.s, to: slot, pt, z: f.z });
@@ -168,7 +176,7 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
       const pre = all[i - 1], dl = deliveryOf(b.how);
       if (!dl || pre?.kind !== 'pass' || pre.side !== b.side) continue;
       pre.type = dl;
-      if (dl === 'through') continue;
+      if (dl === 'through' || b.how === 'corner') continue;
       // The ball goes out wide first, to the flank the nearest wide player is on.
       const ks = onPitch(m, b.side).filter((k) => k !== b.shooter && FORMATIONS[m.sides[b.side].tactics.formation].slots[k].pos !== 'GK' && a.pos[b.side][k]);
       const wk = ks.sort((p, q) => Math.abs(a.pos[b.side][q].y - W / 2) - Math.abs(a.pos[b.side][p].y - W / 2))[0];
@@ -177,12 +185,45 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
       all.splice(i - 1, 0, { kind: 'pass', side: b.side, to: wk, pt: { x: toX(b.side, dl === 'cutback' ? 99 : 82), y: top ? 6 : W - 6 } });
     }
   }
+  // Corners and offsides go where the engine had them: after as many shots as came before them in the event log.
+  const live = (e: MatchEvent) => e.min === m.minute && (e.plus ?? 0) === (m.plus ?? 0);
+  let shotsSeen = 0;
+  const place: { after: number; b: Beat }[] = [];
+  for (const e of m.events) {
+    if (!live(e)) continue;
+    if (SHOT_EV.has(e.kind)) shotsSeen++;
+    else if (e.kind === 'corner') { const f = e.playerId ? slotOf(m, e.playerId) : null; place.push({ after: shotsSeen, b: { kind: 'corner', side: e.side, taker: f && f.side === e.side ? f.slot : undefined } }); }
+    else if (e.kind === 'offside') place.push({ after: shotsSeen, b: { kind: 'offside', side: e.side } });
+  }
+  for (const { after, b } of place.reverse()) {
+    // After the n-th shot beat; a corner that leads to the next shot goes before that shot's delivery.
+    let i = 0, seen = 0;
+    while (i < all.length && seen < after) { if (all[i].kind === 'shot') seen++; i++; }
+    if (b.kind === 'offside') {
+      // The flag goes up just before the other side gets the ball.
+      const j = all.findIndex((x, ix) => ix >= i && x.kind === 'turnover' && x.side !== b.side);
+      if (j >= 0) all.splice(j, 0, b);
+      continue;
+    }
+    while (i < all.length && all[i].kind === 'pass' && all[i + 1]?.kind !== 'shot') i++;
+    all.splice(i, 0, b);
+  }
+  // Keep who has the ball consistent after the staging: a pass by the side without it becomes a turnover, and back.
+  let has: 0 | 1 = a.poss;
+  for (let i = 0; i < all.length; i++) {
+    const b = all[i];
+    if (b.kind === 'kickoff' || b.kind === 'corner' || b.kind === 'foul') has = b.side;
+    else if (b.kind === 'offside') has = (1 - b.side) as 0 | 1;
+    else if (b.kind === 'shot') has = (1 - b.side) as 0 | 1;
+    else if (b.kind === 'pass' && b.side !== has) { all[i] = { kind: 'turnover', side: b.side, to: b.to, pt: b.pt, z: b.z }; has = b.side; }
+    else if (b.kind === 'turnover') { if (b.side === has && b.to !== undefined) all[i] = { kind: 'pass', side: b.side, to: b.to, pt: b.pt, z: b.z }; has = b.side; }
+  }
   // As many beats as the speed allows; a shot and the move before it always make the cut.
   const n = Math.max(2, Math.round(msPerMinute / 130));
   let beats = all;
   if (all.length > n) {
     const lastShot = all.map((b) => b.kind).lastIndexOf('shot');
-    const end = lastShot >= 0 ? lastShot + 1 : all.length;
+    const end = lastShot >= 0 ? lastShot + 1 + (all[lastShot + 1]?.kind === 'corner' ? 1 : 0) : all.length; // a corner won by the shot stays too
     beats = [...(all[0].kind === 'kickoff' ? [all[0]] : []), ...all.slice(Math.max(all[0].kind === 'kickoff' ? 1 : 0, end - n), end)];
   }
   const shot = beats.find((b) => b.kind === 'shot') as Extract<Beat, { kind: 'shot' }> | undefined;
@@ -190,9 +231,14 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
   a.beats = beats;
   a.beat = 0;
   a.clock = 0;
-  a.beatLen = msPerMinute / Math.max(1, beats.length);
+  a.msPM = msPerMinute;
+  // A set piece gets a longer share of the minute (players need time to take their spots); the minute stays as long.
+  const wt = beats.map((b) => weightOf(b));
+  a.beatLen = msPerMinute / Math.max(1, wt.reduce((t, x) => t + x, 0));
+  a.starts = wt.map((_, i) => wt.slice(0, i).reduce((t, x) => t + x, 0) * a.beatLen);
   a.minute = minuteKey(m);
 }
+const weightOf = (b: Beat) => (b.kind === 'corner' ? 4 : b.kind === 'foul' ? (wallSize(depthOf(b.side, b.pt.x)) ? 4 : 1.5) : b.kind === 'offside' ? 1.5 : 1);
 const SHOT_EV = new Set(['goal', 'nogoal', 'save', 'block', 'miss']);
 const minuteKey = (m: LiveMatch) => `${m.minute}+${m.plus ?? 0}`;
 
@@ -204,11 +250,39 @@ const nearestOf = (m: LiveMatch, a: Anim, side: 0 | 1, pt: Pt) => onPitch(m, sid
 function runBeat(a: Anim, m: LiveMatch, b: Beat) {
   const travel = Math.min(420, a.beatLen * 0.7);
   if (b.kind === 'hold') return;
+  if (b.kind === 'pass' || b.kind === 'turnover' || b.kind === 'shot' || b.kind === 'kickoff') a.sp = null; // the ball is live again
   if (b.kind === 'kickoff') {
     a.inNet = false; a.zone = -1; a.run = null;
     a.ball = { x: L / 2, y: W / 2 };
     a.poss = b.side;
     a.carrier = forwardSlot(m, b.side);
+    return;
+  }
+  if (b.kind === 'corner') {
+    // To the corner flag on the ball's side; the taker (the engine's, else the nearest) goes to it.
+    const flag = { x: toX(b.side, 104.4), y: a.ball.y < W / 2 ? 0.8 : W - 0.8 };
+    const k = b.taker ?? nearestOf(m, a, b.side, flag);
+    if (k === undefined) return;
+    a.run = null; a.carrier = -1; a.zone = -1;
+    a.sp = { kind: 'corner', side: b.side, at: flag, until: a.time + a.beatLen * weightOf(b), taker: k, rush: rushFor(a.msPM, a.beatLen * weightOf(b)) };
+    a.kinds.corner = (a.kinds.corner ?? 0) + 1;
+    fly(a, flag, travel * 0.3, () => { a.poss = b.side; a.carrier = k; });
+    return;
+  }
+  if (b.kind === 'offside') {
+    // The flag goes up on the line of the last defender; the free kick goes to the other side (the next beat).
+    a.flag = { x: a.ball.x, until: a.time + Math.max(1400, a.beatLen * 1.5) };
+    a.kinds.offside = (a.kinds.offside ?? 0) + 1;
+    return;
+  }
+  if (b.kind === 'foul') {
+    // The whistle: a free kick where the foul was; within range of goal the other side builds a wall.
+    if (!a.pos[b.side][b.to]) return;
+    a.run = null; a.carrier = -1;
+    a.sp = { kind: 'fk', side: b.side, at: b.pt, until: a.time + a.beatLen * weightOf(b), taker: b.to, rush: rushFor(a.msPM, a.beatLen * weightOf(b)) };
+    a.kinds.foul = (a.kinds.foul ?? 0) + 1;
+    if (wallSize(depthOf(b.side, b.pt.x))) a.kinds.wall = (a.kinds.wall ?? 0) + 1;
+    fly(a, b.pt, travel * 0.3, () => { a.poss = b.side; a.carrier = b.to; });
     return;
   }
   if (b.kind === 'turnover') {
@@ -264,7 +338,10 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
   const t = shotTarget(b.result, r);
   if (b.result === 'goal') fly(a, { x: goalX, y: t.y }, travel * 0.8, () => { a.inNet = true; a.shooter = null; }, lift, t.h);
   else if (b.result === 'miss') fly(a, { x: goalX + fwd * 2, y: t.y }, travel * 0.8, () => {
+    // A goal kick: the keeper places it on the six-yard box.
     a.shooter = null; a.poss = other; a.carrier = gkSlot(m, other);
+    a.sp = { kind: 'gk', side: other, at: { x: toX(other, 5.5), y: W / 2 + (t.y < W / 2 ? -9 : 9) }, until: a.time + a.beatLen * 1.2, taker: a.carrier, rush: 1 };
+    a.kinds.goalkick = (a.kinds.goalkick ?? 0) + 1;
   }, lift, t.h);
   else {
     const gk = gkSlot(m, other);
@@ -280,6 +357,37 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
       } else { a.poss = other; a.carrier = gk; }
     }, lift, t.h);
   }
+}
+
+// Set pieces: the attackers' and defenders' spots for a corner (and a free kick in range, with its wall), the keeper's
+// spot for a goal kick. Outfield players only; the order follows who is best in the air (centre-backs and strikers first).
+// The ball is dead: the walk to the spots is sped up (a real corner takes half a minute), so they're set before the kick
+// at any match speed (SetPiece.rush).
+const AIR: Record<string, number> = { CB: 0, ST: 1, CDM: 2, CM: 3, LB: 4, RB: 4, CAM: 5, LW: 6, RW: 6, GK: 9 };
+function stage(a: Anim, m: LiveMatch, side: 0 | 1, ks: number[], tg: Pt[], boost: number[]) {
+  const sp = a.sp!, slots = FORMATIONS[m.sides[side].tactics.formation].slots;
+  if (sp.kind === 'gk') { if (side === sp.side && a.carrier >= 0) tg[a.carrier] = sp.at; return; }
+  const att = sp.side, flank: -1 | 1 = sp.at.y < W / 2 ? -1 : 1;
+  const field = ks.filter((k) => slots[k].pos !== 'GK' && !(side === att && k === sp.taker)).sort((p, q) => AIR[slots[p].pos] - AIR[slots[q].pos]);
+  const ballD = depthOf(att, sp.at.x);
+  if (side === att) {
+    if (sp.kind === 'fk' && !wallSize(ballD)) return; // a free kick out of range is just played on
+    attackSpots(field.length, flank).forEach((q, i) => { tg[field[i]] = { x: toX(side, q.d), y: q.y }; boost[field[i]] = sp.rush; });
+    if (sp.taker >= 0) { tg[sp.taker] = { x: sp.at.x - (side === 0 ? 1.2 : -1.2), y: sp.at.y }; boost[sp.taker] = sp.rush; }
+    return;
+  }
+  if (sp.kind === 'fk') {
+    const n = wallSize(ballD);
+    if (!n) return;
+    const goal = { x: toX(side, 0), y: W / 2 };
+    // The wall is picked once (the nearest men when the whistle goes), so nobody swaps in and out of it.
+    const near = sp.wall ??= [...field].sort((p, q) => dist(a.pos[side][p], sp.at) - dist(a.pos[side][q], sp.at)).slice(0, n);
+    wallSpots(sp.at, goal, n).forEach((q, i) => { tg[near[i]] = q; boost[near[i]] = sp.rush; });
+    const rest = field.filter((k) => !near.includes(k));
+    defendSpots(rest.length + 1, flank).slice(1).forEach((q, i) => { tg[rest[i]] = { x: toX(side, q.d), y: q.y }; boost[rest[i]] = sp.rush; });
+    return;
+  }
+  defendSpots(field.length, flank).forEach((q, i) => { tg[field[i]] = { x: toX(side, q.d), y: q.y }; boost[field[i]] = sp.rush; });
 }
 
 // ---------- cameras ----------
@@ -342,6 +450,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   const dots = useRef<(SVGGElement | null)[][]>([[], []]);
   const ballRef = useRef<SVGGElement | null>(null);
   const shadowRef = useRef<SVGEllipseElement | null>(null);
+  const flagRef = useRef<SVGGElement | null>(null);
   const netRef = useRef<SVGTextElement | null>(null);
   const anim = useRef<Anim | null>(null);
 
@@ -354,9 +463,9 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   // Start: everyone in position, home side kicks off.
   if (!anim.current) {
     const a: Anim = {
-      pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], beat: 0, clock: 0,
+      pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], starts: [], msPM: 1000, beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
-      spd: speedsOf(m, world), line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {},
+      spd: speedsOf(m, world), line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null,
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -379,7 +488,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       if (a.minute !== minuteKey(mm)) plan(a, mm, ms, worldRef.current);
       if (go) {
         a.clock += dt;
-        while (a.beat < a.beats.length && a.clock >= a.beat * a.beatLen) runBeat(a, mm, a.beats[a.beat++]);
+        while (a.beat < a.beats.length && a.clock >= (a.starts[a.beat] ?? a.beat * a.beatLen)) runBeat(a, mm, a.beats[a.beat++]);
       }
       // Ball: in flight, or at the carrier's feet.
       if (a.flight) {
@@ -389,6 +498,8 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         a.ball = { x: f.from.x + (f.to.x - f.from.x) * e, y: f.from.y + (f.to.y - f.from.y) * e };
         a.bh = arcHeight(f.h, f.t, f.end);
         if (f.t >= 1) { a.flight = null; if (!f.end) a.bh = 0; f.then(); }
+      } else if (a.sp && a.sp.kind !== 'gk' && a.time < a.sp.until) {
+        a.ball = { ...a.sp.at }; a.bh = 0; // a dead ball sits on its spot until it's taken
       } else if (a.carrier >= 0 && a.pos[a.poss][a.carrier] && !a.inNet) {
         const p = a.pos[a.poss][a.carrier];
         a.bh = 0;
@@ -469,9 +580,11 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
             }
           }
         } else a.line[side] = undefined;
+        // A set piece being staged: everyone takes his spot (ui2/pitch/setpieces.ts).
+        if (a.sp && a.time < a.sp.until) stage(a, mm, side, ks, tg, boost);
         for (const k of ks) {
           let t = tg[k];
-          if (has && k === a.carrier) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
+          if (has && k === a.carrier && !(a.sp && a.time < a.sp.until)) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
           const wob = Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
           const p = a.pos[side][k] ?? t;
           const sprint = Math.max(pp.press.includes(k) ? (pp.trigger ? 1.6 : 1.3) : 1, boost[k] ?? 1);
@@ -533,6 +646,11 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       ballRef.current?.setAttribute('transform', `translate(${bx.toFixed(2)} ${(by - a.bh * 0.55 * bs).toFixed(2)}) scale(${(bs * (1 + a.bh * 0.05)).toFixed(3)})`);
       if (ballRef.current && layer.current && cam) { if (shadowRef.current) layer.current.appendChild(shadowRef.current); layer.current.appendChild(ballRef.current); }
       netRef.current?.setAttribute('opacity', a.inNet ? '1' : '0');
+      if (flagRef.current) {
+        const up = !!a.flag && a.time < a.flag.until;
+        flagRef.current.setAttribute('opacity', up ? '1' : '0');
+        if (up) { const [fx0, fy0, fs] = pr(fx(a.flag!.x), W - 0.3); flagRef.current.setAttribute('transform', `translate(${fx0.toFixed(2)} ${fy0.toFixed(2)}) scale(${fs.toFixed(3)})`); }
+      }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -558,6 +676,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         <ellipse ref={shadowRef} rx="1.1" ry=".6" fill="#000" opacity="0" />
         <g ref={ballRef}><circle r="1.05" fill="#fff" stroke="#111" strokeWidth=".3" /></g>
       </g>
+      <g ref={flagRef} className="g-flag" opacity="0"><path d="M0 0V-4.2" stroke="#222" strokeWidth=".35" /><path d="M0 -4.2h2.6l-.5 1 .5 1H0z" fill="#ffd400" stroke="#7a6400" strokeWidth=".15" /></g>
       <text ref={netRef} className="g-goal" x={L / 2} y={vh / 2 + 4} textAnchor="middle" opacity="0">{goalWord}</text>
     </svg>
   );
