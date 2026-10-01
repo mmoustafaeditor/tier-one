@@ -227,3 +227,64 @@
   .lv-live i, .lv-asg, .lv-asg.is-hot .g-btn, .lv-saga, .lv-stake.is-risk .lv-stake__ic svg, .lv-tick .g-ticker__track { animation: none; }
   .lv-tally__seg { transition: none; }
 }
+
+/* ================================================================ Live 4.0 (CONCEPT4 §2): the lobby of a 90-second stream.
+   One loud thing: the clock. One action: the red button. Everything else is quiet OS surface. */
+.lv4 { --lv: var(--app-live, #B51B2C); --lv-hot: #FF3B4E; padding-bottom: 32px; }
+.lv4-hero { margin: 4px var(--os-gutter, 16px) 0; padding: 18px 18px 16px; border-radius: var(--os-r-widget, 24px); background: var(--os-bg-2); color: var(--os-ink); box-shadow: inset 0 0 0 1px var(--os-line); }
+.lv4-hero.is-on { background: #1A0B0E; color: #FBEFEF; box-shadow: inset 0 0 0 2px var(--lv); }
+.lv4-hero__k { margin: 0; font-family: var(--f-text); font-weight: 800; font-size: 13px; color: var(--os-ink-2); }
+.lv4-hero.is-on .lv4-hero__k { color: #FBEFEF; }
+.lv4-rec { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 10px; border-radius: 999px; background: var(--lv); color: #fff; }
+.lv4-rec i { width: 9px; height: 9px; border-radius: 50%; background: #fff; animation: lv4-rec 1.4s ease-in-out infinite; }
+@keyframes lv4-rec { 50% { opacity: .25; } }
+.lv4-hero__t { margin: 10px 0 0; font-family: var(--f-display); font-weight: 800; font-size: clamp(26px, 7.4vw, 34px); line-height: 1.02; letter-spacing: -.025em; text-wrap: balance; }
+.lv4-clock { display: grid; margin: 14px 0 4px; }
+.lv4-clock__n { font-family: var(--f-cond); font-stretch: var(--cond-stretch, 75%); font-weight: 900; font-size: clamp(56px, 19vw, 84px); line-height: .9; letter-spacing: -.01em; font-variant-numeric: tabular-nums; color: var(--lv); }
+.lv4-hero.is-on .lv4-clock__n { color: var(--lv-hot); }
+.lv4-clock__c { margin-top: 4px; font-family: var(--f-text); font-weight: 700; font-size: 14px; color: var(--os-ink-2); }
+.lv4-hero.is-on .lv4-clock__c { color: #E9C9CC; }
+.lv4-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 16px 0; padding: 0; list-style: none; }
+.lv4-facts li { display: grid; gap: 2px; padding: 10px 8px; border-radius: 14px; background: var(--os-bg-3); text-align: center; }
+.lv4-hero.is-on .lv4-facts li { background: rgba(255, 255, 255, .07); }
+.lv4-facts b { font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 26px; line-height: 1; }
+.lv4-facts span { font-family: var(--f-text); font-size: 11.5px; font-weight: 700; line-height: 1.15; color: var(--os-ink-2); }
+.lv4-hero.is-on .lv4-facts span { color: #E9C9CC; }
+.lv4-go { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 68px; padding: 12px 18px; border: 0; border-radius: 20px; background: var(--os-ink); color: var(--os-bg); text-align: start; cursor: pointer; box-shadow: 0 4px 0 rgba(0, 0, 0, .35); }
+.lv4-go.is-ranked { background: var(--lv); color: #fff; box-shadow: 0 4px 0 #6E0C17; }
+.lv4-go:disabled { opacity: .6; }
+.lv4-go:focus-visible, .lv4-link:focus-visible { outline: 3px solid var(--app-lens, #F2B632); outline-offset: 3px; }
+.lv4-go__dot { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--lv); box-shadow: 0 0 0 4px color-mix(in srgb, var(--lv) 30%, transparent); }
+.lv4-go.is-ranked .lv4-go__dot { background: #fff; box-shadow: 0 0 0 4px rgba(255, 255, 255, .25); animation: lv4-rec 1.4s ease-in-out infinite; }
+.lv4-go__t { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.lv4-go__t b { font-family: var(--f-display); font-weight: 800; font-size: 20px; line-height: 1.05; }
+.lv4-go__t small { font-family: var(--f-text); font-size: 13px; font-weight: 600; opacity: .82; }
+.lv4-link { display: block; margin: 10px auto 0; min-height: 40px; padding: 0 12px; background: none; border: 0; color: inherit; font-weight: 800; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.lv4-err { margin: 10px 0 0; font-weight: 700; font-size: 14px; color: var(--lv-hot); }
+.lv4-hero__fine { margin: 12px 0 0; font-size: 12.5px; line-height: 1.35; color: var(--os-ink-3); }
+.lv4-hero.is-on .lv4-hero__fine { color: #C9A3A7; }
+.lv4-who { display: flex; align-items: center; gap: 10px; margin: 14px var(--os-gutter, 16px) 0; font-weight: 700; font-size: 14.5px; color: var(--os-ink-2); }
+.lv4-who__dot { width: 8px; height: 8px; border-radius: 50%; background: #2BD46B; box-shadow: 0 0 0 3px rgba(43, 212, 107, .2); }
+.lv4-run, .lv4-last, .lv4-board { margin: 16px var(--os-gutter, 16px) 0; padding: 16px; border-radius: var(--os-r-card, 20px); background: var(--os-bg-2); color: var(--os-ink); box-shadow: inset 0 0 0 1px var(--os-line); }
+.lv4-run { display: grid; gap: 10px; justify-items: start; }
+.lv4-run__b, .lv4-last__b { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.lv4-run__n, .lv4-last__n { font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 44px; line-height: 1; }
+.lv4-last__n.is-neg { color: var(--lv-hot); }
+.lv4-last__tier { font-family: var(--f-display); font-weight: 800; font-size: 18px; }
+.lv4-run__rank { margin: 0; font-size: 15px; font-weight: 600; }
+.lv4-run__rank b { font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 22px; color: var(--lv-hot); }
+.lv4-last header, .lv4-board header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.lv4-last h2, .lv4-board h2 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 18px; }
+.lv4-last header span, .lv4-board header span { font-size: 12.5px; font-weight: 700; color: var(--os-ink-3); }
+.lv4-last__k { margin: 10px 0 0; font-size: 12px; color: var(--os-ink-3); }
+.lv4-board__me { margin: 0 0 10px; font-weight: 700; font-size: 15px; }
+.lv4-rows { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.lv4-rows li { display: grid; grid-template-columns: 44px 28px 1fr auto 48px; align-items: center; gap: 10px; min-height: 48px; padding: 0 8px; border-radius: 12px; }
+.lv4-rows li.is-me { background: color-mix(in srgb, var(--lv) 16%, transparent); }
+.lv4-rows__r { font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 17px; }
+.lv4-rows__n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: 14.5px; }
+.lv4-rows__s { font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 18px; text-align: end; font-variant-numeric: tabular-nums; }
+.lv4-empty { margin: 18px var(--os-gutter, 16px); font-size: 14.5px; line-height: 1.4; color: var(--os-ink-2); }
+@media (max-width: 360px) { .lv4-rows li { grid-template-columns: 40px 28px 1fr 44px; } .lv4-rows .gp-grid { display: none; } }
+:root.reduce .lv4-rec i, :root.reduce .lv4-go__dot { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .lv4-rec i, .lv4-go__dot { animation: none !important; } }

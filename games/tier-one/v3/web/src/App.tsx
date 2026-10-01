@@ -55,7 +55,7 @@ export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
   | { n: 'rooms'; code?: string; challenge?: string } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize' } | { n: 'ddlive' } | { n: 'editor' } | { n: 'boards'; period?: 'daily' | 'weekly' | 'wire' }
   | { n: 'settings' }
-  | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
+  | { n: 'play'; mode: 'practice' | 'career' | 'deadline' | 'challenge'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
 /** What every screen gets: `go` (any route), `home` (the home screen), `openApp` (an app by id), `openSettings` (the
  *  Settings app), `edition` (toggle the phone's light/dark theme). */
@@ -178,6 +178,7 @@ export function App() {
     if (route.n === 'daily') return remoteDriver();
     if (route.n === 'room') return remoteDriver(route.room);
     if (route.n === 'play') {
+      if (route.mode !== 'practice' && route.mode !== 'career') return null; // deadline / challenge windows are Driver4 (lib/driver.ts makeDriver): the play lane mounts them
       const sv = getSave();
       const lw = route.mode === 'practice' ? sv.practice.live : sv.career && sv.career.live;
       return lw ? localDriver(route.mode, lw) : null;
