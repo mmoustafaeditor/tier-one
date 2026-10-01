@@ -229,3 +229,28 @@ Ten events, each with level, rank, day-of-player-life and mode: `window_start`, 
 - Numbers on screen match RULES4 and `lib/economy.ts`; the sim's reader player still lands 10–15% Tier One.
 - Nothing paid changes a score; no offer interrupts play; every price previewable; refunds within 48 h.
 - A per-app pixel pass and an independent verifier that tries to refute it (the Final Cut process, GOTY.md §11.2) run before the lead ships.
+
+## 16. Story mode: The Comeback, and why no two chapters play the same
+
+Career is **Story mode**, full stop: the app is called Story, and every window in it is a scene in *The Comeback* (STORY.html is
+the bible: the fall, Vince Marlow, Mags Doyle, Hana Okafor, Priya/@ITK_Kev, Carl Stubbs, the five contacts by name). Rules for the
+mode: the story is told in DMs and on the timeline by the people in it (no narration boxes); the guide changes by chapter; each
+chapter adds one mechanic, one contact or tool, one boss, one reveal and one unlock, so the game you play in Chapter 4 is not the
+game you played in Chapter 1; and nothing in the story is a separate grind: it runs on the windows you play.
+
+| Chapter | Where you are | Your guide | Stories / contacts | The chapter's own mechanic | Boss | Reveal (mid-chapter) | Unlock at the end |
+|---|---|---|---|---|---|---|---|
+| **Prologue** | Deadline Day at the Chronicle, 23:58 | Mags | one scripted story | you post the "Done deal" Drop Vince fed you; it's wrong; the ratio; 38,200 followers gone; the box; the text "Nothing personal." | — | — | a 200-follower account |
+| **1 · The Blog** | a laptop in a rented flat | Rosa (the agent who still picks up) | 3 stories · barber, kit man, agent only | learning the three tells; Local sponsors only | @BackPageBants | Rosa: "Vince doesn't lose deals by accident." | **the spotter** (Terminal Tony) + the chapter wallpaper |
+| **2 · The Post** | the Evening Post hires you | Hana Okafor | 4 stories · + spotter from day 3 | **Vince's clients**: some stories are tagged; on those the agent talks up the deal (less reliable) and @ITK_Kev posts a day early | @ITK_Kev | Kev's early calls line up with the night you fell | **the physio** + National sponsors + a catchphrase |
+| **3 · The Nationals** | top-flight stories, star players | Hana + Tony | 5 stories · all five contacts | **the race**: @PressBoxPete is slow and almost never wrong, so Scoops only come from early Drops; Tips from the Market become spendable here | @PressBoxPete | Tony's long lens: Vince shaking hands with Carl Stubbs | **Live** (ranked deadline days) + Global sponsors + a Drop card style |
+| **4 · The War** | the Roar comes for you | Priya (she DMs you first) · Mags calls you, not the other way round | 5–6 stories | **Vince's play**: one story a window has a poisoned contact; you learn who lies from what they do; the whistleblower's tips become Priya's (90% right) | The Daily Roar (Carl Stubbs) | Priya: "I was there that night. I kept the call log." | **custom catchphrase** + the evidence wall (a look) |
+| **5 · The Chronicle** | the same building, the same desk | Mags | 6 stories · star players · the last window is a 45-second Live | **the trap**: Vince DMs you the same "Done deal" pitch, word for word; your contacts' actions say otherwise; three Tier One windows to finish | Vince Marlow | the call log goes public | **Tier One** rank, the Chronicle wallpaper, the long-term Global deal |
+| **Epilogue** | — | — | — | your Drop pinned at the top of Blurt; Vince's phone lights up: "Nothing personal." You sent it. The career carries on; each real season brings a new chapter of banter and a new boss. | | | |
+
+Implementation notes: contact availability per chapter is a rule option (`rulesFor('career', { rank, trust, boss, contacts })`);
+"Vince's clients" is a per-story flag that swaps that story's agent for a talk-it-up variant and moves @ITK_Kev a day earlier;
+Vince's play is a per-story planted contact revealed on the results thread; the Live finale uses `rulesFor('deadline')` with
+45 seconds. Story progress (chapter, windows, head-to-head, reveals seen) lives in the save and is shown as the pinned goal at the
+top of the Story thread. Levels, sponsors and looks come from the same account as everywhere else; Story only adds its own
+unlocks on top.
