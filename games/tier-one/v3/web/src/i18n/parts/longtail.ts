@@ -5,7 +5,7 @@ export default {
   en: {
     cp: {
       house: {
-        default: 'Book it.', pen: 'Pen on paper.', dusted: 'Done. Dusted.', announce: 'Announce him.', sealed: 'Signed, sealed, his.',
+        default: 'It’s happening.', pen: 'Pen down.', dusted: 'Bags packed.', announce: 'Live now.', sealed: 'All agreed. All done.',
         medical: 'Medical booked.', bags: 'Bags are packed.', front: 'Clear the timeline.', shirt: 'Shirt’s printed.', inkdry: 'The ink is dry.', wheels: 'Wheels up.',
       },
       sig: { shades: 'Sunglasses on. Medical.', pens: 'Pens are out.', boots: 'Boots in the car.', photos: 'Photos at the training ground.', shut: 'Window shut. Job done.', kettle: 'Put the kettle on.' },
@@ -41,7 +41,7 @@ export default {
         sets: { lines: 'Catchphrases', story: 'The Story', rank: 'The ranks', streak: 'Streaks', rivalry: 'Rivalry trophies', referral: 'Bring a friend', ddlive: 'Deadline Day Live', redtop: 'Red-top', broadsheet: 'Broadsheet', wire: 'Wire', night: 'Late edition', gilt: 'Gilt', event: 'Weekly events', other: 'The rest' },
       },
       items: {
-        std: { headline: 'Wood type', lamp: 'Desk lamp', ringpack: 'One ring for all', feedskin: 'The wire', frontpage: 'Two-column card', catchphrase: 'Book it.' },
+        std: { headline: 'Wood type', lamp: 'Desk lamp', ringpack: 'One ring for all', feedskin: 'The wire', frontpage: 'Two-column card', catchphrase: 'It’s happening.' },
         hd: { serif: 'Broadsheet serif', slab: 'Red-top slab', mono: 'Wire mono', stencil: 'Stencil' },
         lp: { amber: 'Amber lamp', dawn: 'Dawn lamp', neon: 'Neon lamp', gilt: 'Gilt lamp' },
         rp: { newsroom: 'Newsroom rings', newsroomD: 'Every source has its own ring. Know who it is before the card lands.', stadium: 'Stadium rings', stadiumD: 'Whistles, sirens and a heartbeat: one per source.' },

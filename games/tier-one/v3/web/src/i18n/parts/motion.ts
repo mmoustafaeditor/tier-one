@@ -1,7 +1,7 @@
 // The few words printed on things (departures board, day-end card) and the house catchphrase that stands in until the player picks their own. Never "DONE DEAL".
 export default {
   en: {
-    cp: { house: { default: 'Book it.' } },
+    cp: { house: { default: 'It’s happening.' } },
     mo: { w: { boarding: 'BOARDING', cancelled: 'CANCELLED', gate: 'DEPARTURES', medical: 'MEDICAL', noShow: 'NO SHOW' }, dawn: 'Next morning' },
   },
   ar: {

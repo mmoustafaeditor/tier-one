@@ -60,7 +60,7 @@ export default {
           "0": [
             "{p} to {d}. Medical booked, pen warm.",
             "{p} → {d}. Shirt’s at the printers.",
-            "{p} is going to {d}. Book it."
+            "{p} is going to {d}. It’s happening."
           ],
           "1": [
             "{p} leaves {c}, but not for {d}. Someone’s gazumped them.",
