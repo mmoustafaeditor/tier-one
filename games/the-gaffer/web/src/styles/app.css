@@ -377,6 +377,7 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .pens { font: 700 14px/1 var(--f-text); color: var(--ink-2); }
 .pitchwrap { position: relative; }
 .view-chips { margin-bottom: var(--s-3); }
+.hlsel { width: 100%; margin: 0 0 var(--s-3); }
 .live-tip { display: grid; gap: var(--s-2); }
 .skipbtn { white-space: nowrap; }
 .subcols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }

@@ -32,12 +32,13 @@ await tap('Walk out'); await p.waitForTimeout(1500);
 await p.selectOption('select.hlsel', String(MODE));
 if (CPU > 1) await (await ctx.newCDPSession(p)).send('Emulation.setCPUThrottlingRate', { rate: CPU });
 // Frames: count them and the long ones while the pitch is on screen; a screenshot of the pitch every few seconds.
-await p.evaluate(() => { const f = (window.__frames = { n: 0, long: 0, worst: 0, last: performance.now() }); const loop = (now) => { const d = now - f.last; f.last = now; f.n++; if (d > 50) f.long++; f.worst = Math.max(f.worst, d); requestAnimationFrame(loop); }; requestAnimationFrame(loop); });
+await p.evaluate(() => { const f = (window.__frames = { n: 0, long: 0, worst: 0, last: performance.now() }); const loop = (now) => { const d = now - f.last; f.last = now; f.n++; if (d > 50) f.long++; if (d > 300) (f.big ??= []).push([Math.round(d), document.querySelector('.clock')?.textContent ?? '', document.querySelector('.goalbanner, .varbanner') ? 'banner' : '']); f.worst = Math.max(f.worst, d); requestAnimationFrame(loop); }; requestAnimationFrame(loop); });
 const t0 = Date.now(); let shot = 0;
 while (Date.now() - t0 < SECONDS * 1000) {
   await p.waitForTimeout(SHOTS ? 4000 : 1000);
-  if (SHOTS) { const el = await p.$('.pitchwrap'); if (el) await el.screenshot({ path: `${SHOTS}/m${MODE}-${String(shot++).padStart(2, '0')}.png` }).catch(() => {}); }
+  if (SHOTS) { const el = process.env.FULL ? p : await p.$(".pitchwrap"); if (el) await el.screenshot({ path: `${SHOTS}/m${MODE}-${String(shot++).padStart(2, "0")}.png` }).catch(() => {}); }
 }
 const f = await p.evaluate(() => ({ ...window.__frames, clock: document.querySelector('.clock')?.textContent ?? '' }));
+if (f.big?.length) console.log('  slow frames (ms, clock, on screen):', JSON.stringify(f.big));
 console.log(`mode ${MODE}, cpu ${CPU}×: ${(f.n / SECONDS).toFixed(0)} fps, ${f.long} frames over 50 ms, worst ${f.worst.toFixed(0)} ms, match clock ${f.clock} after ${SECONDS} s${errs.length ? `, errors: ${errs[0]}` : ''}`);
 await ctx.close(); await browser.close(); server.close();

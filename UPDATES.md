@@ -32,6 +32,23 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer: watched as a player, and checked on a slow phone
+- **What changed:**
+  - **Watching tool.** New `ui-tests/watch.mjs` plays a match in the built game in one highlight mode. It reports smoothness (frames a second, frames over 50 ms, which minute the slow ones fall in) and can slow the CPU like a cheap phone (`CPU=4|6`). It can also record a video and screenshots of the pitch (kept out of git).
+  - **Pitch no longer hidden.** The highlights list now sits in the pitch card ("Highlights: Extended"). On a 390-px phone it used to wrap onto a third row of the match bar, and that bar covered the pitch.
+  - **Saves during play** happen every 5 match minutes but at most once every 10 real seconds, and only in a minute between highlights (the picture is cutting anyway); in Full match, every 10 s. A save writes the whole career. With the clock running fast between highlights, it froze the pitch on slow phones in the middle of a passage.
+  - **Measured smoothness:**
+
+    | | Normal CPU | CPU 4× slower | CPU 6× slower |
+    |---|---|---|---|
+    | Full match | 59 fps | 55 fps | 55 fps |
+    | Extended, before | 58 fps | 46 fps, freezes up to 0.9 s | 35 fps, up to 1.85 s |
+    | Extended, now | 58 fps | 57 fps, at most 0.45 s | 49 fps |
+
+    At CPU 6× slower the saves still take about a second, but only between highlights.
+- **Files:** `games/the-gaffer/web/ui-tests/watch.mjs` (new), `src/ui2/Live.tsx`, `src/styles/app.css`, `.gitignore` (`review/`)
+- **Heads-up for the team:** A save during play still writes the whole career, about 0.2 s on a normal CPU. Saving only the live match on its own would remove that cost but changes the save format, so it was left for a decision. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer pitch: support for the ball carrier, with the marker a moment behind
 - **What changed:**
   - **Support.** When a team-mate has the ball in his own half or midfield, the three nearest players offer him a pass. One whose lane is shadowed checks away sharply (a sprint) to the nearest open spot at passing range: short, wide, behind or ahead of the carrier, never offside. Near their box, attackers keep their runs and positions instead.
