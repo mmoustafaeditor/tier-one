@@ -17,6 +17,19 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer pitch, foundation step 3: the engine tells the pitch when, what, and when the ball goes out
+- **What changed:** The engine's ball path for the pitch (`m.flow`, FULL matches only) now carries more information:
+  - each entry has the second within the minute it happens (`t`) and the engine node it happened at (`n`: a cross, a through ball…);
+  - throw-ins and goal kicks are entries of their own (`k: 'ti' | 'gk'`, from `restartOnTurnover`).
+
+  Nothing else in the engine changed: 200 seeded full matches give the same fingerprint before and after (every event, score, stat and tally; `node sim-tests/build.mjs fingerprint`). The referee test passes too.
+
+  On the pitch, a throw-in now runs the ball over the touchline and the nearest outfield man takes it from the line. A goal kick that doesn't follow a missed shot (a cross or a long ball out) is staged by the keeper. In 10 seeded matches that is 319 throw-ins and 202 goal kicks (143 before).
+
+  Throw-ins count as restarts in the pitch test, so turnover reaction no longer measures them: it is now 96 of 115 (83%, passes).
+- **Files:** `games/the-gaffer/web/src/sim/engine/play.ts`, `src/sim/engine/referee.ts`, `src/ui2/pitch/sim.ts`, `src/ui2/pitch/setpieces.ts`, `ui-tests/pitch-metrics.mjs`, `sim-tests/fingerprint.ts` (new)
+- **Heads-up for the team:** Saves and match results are unaffected: `flow` isn't saved into results, and nothing reads `t` or `n` yet. The director (phase 4) will use them to time beats. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer pitch, foundation steps 1-2: pitch logic out of React, seeded Node pitch test
 - **What changed:** Nothing a player sees. The pitch's movement code moved out of the React component into `ui2/pitch/sim.ts` (`newAnim`, `tick`); `Pitch2D.tsx` only draws now. The pitch test's measurements moved into `ui-tests/pitch-metrics.mjs`, shared by the browser test and a new Node test, `node sim-tests/build.mjs pitch [matches] [minutes]`. It plays 10 seeded full matches (about 134,000 frames) in about 18 s a run and runs twice: both runs give identical numbers.
   With samples this big, the real baseline shows:
