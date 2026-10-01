@@ -9,7 +9,8 @@ import { bylineOf, repTier } from './byline';
 // hwg (3.3): when set, the card leads with a gold "HERE WE GO!" band (e.g. t('calls.hwg.card', { p })) above the kicker.
 // style (3.4, lib/wallet.ts shareStyle(save)): the equipped share-card style (paper/ink/accent), the post frame and the
 // player's paper name as the masthead. Absent = the classic card, exactly as before.
-export interface CardStyle { paper?: string; ink?: string; accent?: string; frame?: { c: string; c2: string; pat: string } | null; masthead?: string }
+// hed / cpColor (3.4 long tail): the equipped headline font (face, case, ink) and the catchphrase's stamp colour for the band.
+export interface CardStyle { paper?: string; ink?: string; accent?: string; frame?: { c: string; c2: string; pat: string } | null; masthead?: string; hed?: { face: 'wood' | 'serif' | 'slab' | 'stencil' | 'mono'; upper: boolean; ink: string | null }; cpColor?: string }
 export interface Card { hed: string; sub: string; kick: string; no: string; date: string; by: string; url: string; stats: [string, string][]; stamp: string; stampKind: string; club: WClub; no2: number; who: string; rtl: boolean; hwg?: string; style?: CardStyle; flair?: string }
 const GO = '#17613F', FAKE = '#5B3E96', DEAD = '#8B857A', GOLD = '#F7B928', GOLD_D = '#7A5200';
 const mix = (hex: string, to: string, k: number) => { const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16); const ch = (s: number) => Math.round(((a >> s) & 255) * (1 - k) + ((b >> s) & 255) * k); return '#' + [16, 8, 0].map((s) => ch(s).toString(16).padStart(2, '0')).join(''); };
@@ -75,21 +76,26 @@ export async function renderCard(c: Card): Promise<Blob | null> {
   ctx.fillStyle = INK; ctx.fillRect(P, P + 104, W - 2 * P, 10); ctx.fillRect(P, P + 122, W - 2 * P, 3);
   // kicker (or the gold HERE WE GO band, which leads the card)
   if (c.hwg) {
-    ctx.fillStyle = GOLD; ctx.fillRect(P, P + 150, W - 2 * P, 62);
-    ctx.fillStyle = GOLD_D; ctx.font = `900 40px ${cond}`; ctx.textAlign = alignS;
+    const band = st.cpColor || GOLD;
+    ctx.fillStyle = band; ctx.fillRect(P, P + 150, W - 2 * P, 62);
+    ctx.fillStyle = st.cpColor ? (parseInt(band.slice(1, 3), 16) * 0.3 + parseInt(band.slice(3, 5), 16) * 0.59 + parseInt(band.slice(5, 7), 16) * 0.11 > 150 ? '#15130F' : '#FFFFFF') : GOLD_D; ctx.font = `900 40px ${cond}`; ctx.textAlign = alignS;
     ctx.fillText(c.hwg.toUpperCase(), ar ? S - 18 : S + 18, P + 196, W - 2 * P - 36);
   } else { ctx.fillStyle = ACC_T; ctx.font = `800 31px ${text}`; ctx.textAlign = alignS; ctx.fillText(c.kick.toUpperCase(), S, P + 196); }
   // headline (wood type)
-  ctx.fillStyle = INK;
-  const hed = c.hed.toUpperCase();
-  ctx.font = `900 200px ${cond}`;
-  (ctx as unknown as { fontStretch: string }).fontStretch = 'extra-condensed';
+  const hs = st.hed && st.hed.face !== 'wood' ? st.hed : null;
+  const hFace = !hs || ar ? cond : hs.face === 'serif' ? disp : hs.face === 'mono' ? mono : cond;
+  const hW = hs && hs.face === 'serif' ? 800 : 900;
+  ctx.fillStyle = hs?.ink || INK;
+  const hed = !hs || hs.upper ? c.hed.toUpperCase() : c.hed;
+  ctx.font = `${hW} 200px ${hFace}`;
+  (ctx as unknown as { fontStretch: string }).fontStretch = !hs || hs.face === 'stencil' ? 'extra-condensed' : 'normal';
   const lines = wrap(ctx, hed, W - 2 * P).slice(0, 3);
-  const px = Math.min(...lines.map((l) => fit(ctx, l, (n) => `900 ${n}px ${cond}`, W - 2 * P, 210, 70)));
-  ctx.font = `900 ${px}px ${cond}`;
+  const px = Math.min(...lines.map((l) => fit(ctx, l, (n) => `${hW} ${n}px ${hFace}`, W - 2 * P, 210, 70)));
+  ctx.font = `${hW} ${px}px ${hFace}`;
   let y = P + 196 + px * 0.95;
   for (const l of lines) { ctx.fillText(l, S, y); y += px * 0.84; }
   y -= px * 0.84;
+  ctx.fillStyle = INK; (ctx as unknown as { fontStretch: string }).fontStretch = 'normal';
   // sub
   ctx.font = `italic 400 70px ${disp}`; y += 86; ctx.fillText(c.sub, S, y, W - 2 * P);
   // body: portrait + stats

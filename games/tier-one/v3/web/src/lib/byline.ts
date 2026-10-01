@@ -13,6 +13,7 @@ import { levelOf, missionsView } from './progress';
 import { t } from './i18n';
 import type { Route } from '../App';
 import { moment } from './moments';
+import { earnHook } from './earnhook';
 
 // ---------------------------------------------------------------- types (stored in the save; all optional there)
 export type BMode = 'daily' | 'career' | 'room' | 'wire' | 'practice';
@@ -187,6 +188,7 @@ export function recordWindow(w: WindowIn): WindowSummary | null {
   update((s) => {
     out = recordInto(s, w, toasts);
     if (w.ppBefore != null) passLevelFeed(s, w.ppBefore);
+    earnHook(s); // rank and rivalry-trophy looks (lib/earned.ts)
   });
   for (const [a, c] of toasts) toast('ach', a, c);
   return out;
@@ -332,6 +334,7 @@ export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: strin
       if (k >= list.length - 5) pushFeed(s, { id: 'wire:' + c.rid + ':' + c.at, kind: 'wire', key: c.right ? 'cn.feed.wireRight' : shielded ? 'cn.feed.wireShield' : 'cn.feed.wireWrong', v: { p: nameOf?.(c.rid) || c.player || '?', f: (d > 0 ? '+' : d < 0 ? '−' : '') + Math.abs(d).toLocaleString('en') }, to: { n: 'wire', rid: c.rid }, tone: c.right ? 'good' : shielded ? undefined : 'bad' });
       emitByline({ kind: 'wire', call: c, player: nameOf?.(c.rid) || c.player || '', d, shielded, save: s });
     });
+    earnHook(s);
   });
   // Film: the newest call that settled your way gets its OFFICIAL broadcast (one per refresh).
   if (official != null) moment('official', official ? { p: official } : undefined);

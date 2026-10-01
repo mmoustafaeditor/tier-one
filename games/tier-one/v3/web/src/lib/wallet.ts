@@ -37,8 +37,9 @@ export interface WalletSave {
 export interface DeskSave {
   equip: Partial<Record<Kind, string>>; paper?: string;
   peak?: string;                                       // highest rep tier reached (lib/earned.ts), so earned looks stay earned
-  cp?: { text: string; at: number; ok?: boolean };     // your own catchphrase (lib/catchphrase.ts); ok=false: refused by the server
+  cp?: { text: string; at: number; ok?: boolean; net?: boolean }; // your own catchphrase (lib/catchphrase.ts); ok=false: refused; net: not checked yet (offline)
   show?: string[];                                     // the byline card's showcase: up to three owned looks
+  fresh?: string[];                                    // earned looks granted since "Your desk" last opened (lib/earned.ts)
 }
 declare module './save' { interface Save { wallet?: WalletSave; desk?: DeskSave } }
 
@@ -355,9 +356,9 @@ export function headlineStyle(s: Save = getSave()): HeadlineStyle {
 /** CSS variables for the headline surfaces (results front page): --hd-face, --hd-case, --hd-ink. */
 export const headlineVars = (s: Save = getSave()): Record<string, string> => { const h = headlineStyle(s); return { '--hd-face': h.family, '--hd-case': h.upper ? 'uppercase' : 'none', ...(h.ink ? { '--hd-ink': h.ink } : {}) }; };
 /** The desk lamp on Home's film stage: glow and pool colours plus a warmth word (data-lamp on the stage). */
-export function lampStyle(s: Save = getSave()): { vars: Record<string, string>; warmth: 'warm' | 'cool' | 'neon' } {
-  const p = equipped('lamp', s).preview; if (p.k !== 'lamp') return { vars: {}, warmth: 'warm' };
-  return { vars: { '--lamp-glow': p.glow, '--lamp-pool': p.pool }, warmth: p.warmth };
+export function lampStyle(s: Save = getSave()): { vars: Record<string, string>; warmth: 'warm' | 'cool' | 'neon'; on: boolean } {
+  const it = equipped('lamp', s); const p = it.preview; if (p.k !== 'lamp') return { vars: {}, warmth: 'warm', on: false };
+  return { vars: { '--lamp-glow': p.glow, '--lamp-pool': p.pool }, warmth: p.warmth, on: it.source !== 'standard' };
 }
 /** Who is calling, by sound: the ring pack's cue for this source, else the single ringtone (a pack overrides it). */
 export function ringFor(src: string, s: Save = getSave()): string {
@@ -365,9 +366,9 @@ export function ringFor(src: string, s: Save = getSave()): string {
   if (pk.source !== 'standard' && pk.preview.k === 'ringpack') return pk.preview.rings[src as RingSource] || pk.preview.fallback;
   return ringtoneOf(s);
 }
-/** Feed row skin: a data attribute value and CSS variables (ui/connect.tsx FeedRow). */
+/** Feed row skin: a data attribute value and CSS variables (ui/connect.tsx FeedRow). The standard wire look: ''. */
 export function feedSkin(s: Save = getSave()): { skin: string; vars: Record<string, string> } {
-  const p = equipped('feedskin', s).preview; if (p.k !== 'feedskin') return { skin: 'wire', vars: {} };
+  const it = equipped('feedskin', s); const p = it.preview; if (p.k !== 'feedskin' || it.source === 'standard') return { skin: '', vars: {} };
   return { skin: p.style, vars: { '--fs-rule': p.rule, '--fs-bg': p.bg, '--fs-ink': p.ink } };
 }
 

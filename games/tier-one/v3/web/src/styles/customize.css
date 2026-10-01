@@ -312,6 +312,164 @@
 .cz-gold__row .g-btn { flex: 1 1 200px; width: auto; }
 .cz-gold__row small { font-size: 12.5px; color: var(--card-ink-3); }
 
+/* ---------- 3.4 long tail: the previews and pieces for the newer kinds (catchphrase, headline, lamp, ring pack, feed,
+   front page), the rails, the collection book and the byline showcase. Big, readable, one action each. */
+
+/* the catchphrase: a slammed stamp in the line's colour; tone sets the treatment */
+.cz-cp { --cp: var(--gold); display: inline-block; max-width: 100%; padding: 3px 10px 2px; border: 3px solid var(--cp); border-radius: 6px; color: var(--cp); font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; font-size: 17px; line-height: 1.1; text-transform: uppercase; letter-spacing: .01em; transform: rotate(-4deg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; animation: g-slam .42s var(--ease-out) both; }
+:root:lang(ar) .cz-cp { text-transform: none; letter-spacing: 0; }
+.cz-cp--loud { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cp) 30%, transparent); }
+.cz-cp--cool { border-style: double; border-width: 4px; font-stretch: 85%; }
+.cz-cp--dry { border-width: 2px; font-family: var(--f-mono); font-stretch: normal; font-weight: 700; font-size: 14px; text-transform: none; transform: rotate(-2deg); }
+.cz-cp--gold { background: linear-gradient(180deg, #FFE9A8, #FFD35C); color: #3A2600; border-color: #B8830B; box-shadow: 0 3px 0 #7A5200; }
+.cz-cp--big { font-size: clamp(26px, 8vw, 36px); padding: 6px 16px 4px; border-width: 4px; }
+.cz-by__cp { display: block; width: fit-content; margin-top: 10px; font-size: 15px; }
+.cz-sc__cp { align-self: flex-start; margin-top: 8px; font-size: 12px; padding: 1px 7px; border-width: 2px; }
+
+/* the catchphrase stage: a post, and your line slammed on it; tap to hear it land */
+.cz-cpstage { position: relative; display: grid; place-items: center; gap: 10px; width: 100%; min-height: 170px; padding: 16px; border-radius: 12px; background: var(--card); color: var(--card-ink); box-shadow: 0 18px 30px -18px rgba(0,0,0,.8); cursor: pointer; }
+.cz-cpstage__post { position: absolute; inset: 14px 16px auto; display: grid; gap: 6px; text-align: start; }
+.cz-cpstage__post b { font-size: 13px; color: var(--card-ink-2); }
+.cz-cpstage__post i { display: block; height: 7px; border-radius: 4px; background: rgba(21,19,15,.12); }
+.cz-cpstage__post i + i { width: 62%; }
+.cz-cpstage__slam { position: relative; margin-top: 34px; max-width: 100%; }
+.cz-cpstage__hint { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--card-ink-2); }
+
+/* "Your catchphrase" panel: what's on, and your own line from Chief rank with a live stamp */
+.cz-cpp { display: grid; gap: 8px; padding: 14px; border-radius: 14px; background: var(--card); color: var(--card-ink); box-shadow: var(--shadow-card); border-top: 6px solid var(--gold); }
+.cz-cpp h2 { font-family: var(--f-display); font-weight: 800; font-size: 22px; line-height: 1.1; }
+.cz-cpp__dek { font-size: 13.5px; line-height: 1.45; color: var(--card-ink-2); }
+.cz-cpp__now { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; font-weight: 800; color: var(--card-ink-2); }
+.cz-cpp__now .cz-cp { font-size: 20px; }
+.cz-cpp__now small { font-weight: 600; color: var(--card-ink-3); }
+.cz-cpp__net { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--card-ink-2); }
+.cz-cpp__write { display: grid; gap: 8px; }
+.cz-cpp__write.is-locked { opacity: .75; }
+.cz-cpp__write .g-btn { width: auto; justify-self: start; min-width: 180px; }
+.cz-input--cp { font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 20px; text-transform: uppercase; }
+:root:lang(ar) .cz-input--cp { text-transform: none; }
+.cz-cpp__live { display: grid; place-items: center; gap: 8px; min-height: 96px; padding: 12px; border-radius: 12px; background: var(--card-2); overflow: hidden; }
+.cz-cpp__live small { justify-self: start; font-size: 11.5px; font-weight: 800; color: var(--card-ink-3); }
+.cz-cpp__live.is-bad .cz-cpp__stamp { filter: grayscale(1); opacity: .45; }
+
+/* headline font: a front-page headline set in it */
+.cz-hd { padding: 14px 16px; border-radius: 8px; background: var(--card); color: var(--card-ink); box-shadow: 0 18px 30px -18px rgba(0,0,0,.8); }
+.cz-hd__k { display: block; padding-bottom: 6px; border-bottom: 3px solid currentColor; font-family: var(--f-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--card-ink-2); }
+.cz-hd__h { margin-top: 8px; font-size: clamp(36px, 11vw, 52px); line-height: .92; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.cz-hd__s { margin-top: 6px; font-family: var(--f-display); font-style: italic; font-size: 14px; color: var(--card-ink-2); }
+.cz-th--hd { background: var(--card); color: var(--card-ink); font-size: 24px; line-height: 1; }
+
+/* desk lamp: Home after dark, a shade and its pool of light */
+.cz-lamp { position: relative; height: 170px; border-radius: 12px; overflow: hidden; background: radial-gradient(70% 60% at 50% 100%, var(--lamp-pool), #07060a 80%); box-shadow: 0 18px 30px -18px rgba(0,0,0,.8); }
+.cz-lamp__shade { position: absolute; top: 0; left: 50%; width: 70px; height: 34px; transform: translateX(-50%); border-radius: 0 0 40px 40px; background: linear-gradient(180deg, #2A2620, #15130F); box-shadow: 0 8px 24px var(--lamp-glow); }
+.cz-lamp__pool { position: absolute; inset: 20px 0 0; background: radial-gradient(46% 70% at 50% 0%, color-mix(in srgb, var(--lamp-glow) 55%, transparent), transparent 75%); }
+.cz-lamp--neon .cz-lamp__pool { filter: saturate(1.4); animation: cz-flicker 3.2s steps(1) infinite; }
+@keyframes cz-flicker { 0%, 100% { opacity: 1; } 42% { opacity: .78; } 44% { opacity: 1; } }
+.cz-lamp__desk { position: absolute; inset: auto 16px 18px; display: grid; grid-template-columns: 1.2fr 1fr .8fr; gap: 8px; }
+.cz-lamp__desk i { height: 34px; border-radius: 4px; background: color-mix(in srgb, #F4EFE4 75%, var(--lamp-glow)); transform: rotate(-3deg); box-shadow: 0 6px 10px -4px rgba(0,0,0,.7); }
+.cz-lamp__desk i:nth-child(2) { transform: rotate(4deg); height: 28px; }
+.cz-lamp__t { position: absolute; top: 44px; inset-inline: 0; text-align: center; font-family: var(--f-display); font-weight: 800; font-size: 18px; color: var(--lamp-glow); text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+.cz-th--lamp { background: radial-gradient(60% 80% at 50% 0%, var(--lamp-glow), var(--lamp-pool) 85%); }
+.cz-th--lamp i { position: absolute; top: 0; left: 50%; width: 22px; height: 10px; transform: translateX(-50%); border-radius: 0 0 12px 12px; background: #15130F; }
+
+/* ring pack: six sources, tap one to hear its ring */
+.cz-rp { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 12px; border-radius: 14px; background: var(--card); box-shadow: 0 18px 30px -18px rgba(0,0,0,.8); }
+.cz-rp__b { --sz: auto; display: grid; justify-items: center; gap: 4px; width: auto; height: auto; min-height: 64px; padding: 10px 4px 8px; border-radius: 12px; cursor: pointer; }
+.cz-rp__b small { font-size: 11px; font-weight: 800; line-height: 1.1; text-align: center; }
+.cz-rp__b:active { transform: scale(.96); }
+.cz-th__n { position: absolute; bottom: 4px; inset-inline-end: 6px; font-size: 11px; font-weight: 900; }
+
+/* feed skin: three rows in the skin */
+.cz-feed { --fs-bg: var(--card); --fs-ink: var(--card-ink); --fs-rule: var(--gold); padding: 10px 12px; border-radius: 12px; background: var(--fs-bg); color: var(--fs-ink); box-shadow: 0 18px 30px -18px rgba(0,0,0,.8); display: grid; gap: 6px; }
+.cz-feed__h { font-family: var(--f-display); font-weight: 800; font-size: 16px; }
+.cz-feed__row { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 8px; align-items: center; padding: 8px 10px; border-inline-start: 4px solid var(--fs-rule); font-size: 13.5px; line-height: 1.3; background: color-mix(in srgb, var(--fs-ink) 5%, transparent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cz-feed__row i { width: 8px; height: 8px; border-radius: 50%; background: var(--fs-rule); }
+.cz-feed--ticker .cz-feed__row, .cz-feed--ticker .cz-feed__h { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+.cz-feed--memo .cz-feed__row { background: transparent; border-inline-start: 0; border-bottom: 1px dashed var(--fs-rule); font-family: var(--f-display); font-style: italic; }
+.cz-feed--redtop .cz-feed__row { font-weight: 800; border-inline-start-width: 6px; }
+.cz-feed--night .cz-feed__row { background: color-mix(in srgb, var(--fs-rule) 10%, transparent); }
+.cz-th--fs { padding: 6px; align-content: center; gap: 4px; }
+.cz-th--fs i { display: block; width: 100%; height: 6px; border-inline-start: 3px solid var(--rule); background: currentColor; opacity: .5; }
+
+/* the feed rows themselves, wherever they are (ui/connect.tsx FeedRow data-skin) */
+.cn-row[data-skin] { background: var(--fs-bg); color: var(--fs-ink); border-inline-start-color: var(--fs-rule); }
+.cn-row[data-skin] :is(.cn-row__txt, .cn-row__at, .cn-row__who) { color: inherit; }
+.cn-row[data-skin] .cn-row__at { opacity: .7; }
+.cn-row[data-skin="ticker"] .cn-row__txt { font-family: var(--f-mono); font-size: 13px; text-transform: uppercase; letter-spacing: .02em; }
+.cn-row[data-skin="memo"] .cn-row__txt { font-family: var(--f-display); font-style: italic; }
+.cn-row[data-skin="redtop"] { border-inline-start-width: 7px; }
+.cn-row[data-skin="redtop"] .cn-row__txt { font-weight: 700; }
+:root:lang(ar) .cn-row[data-skin="ticker"] .cn-row__txt { text-transform: none; letter-spacing: 0; font-family: inherit; }
+
+/* front page */
+.cz-fp { padding: 12px 14px; border-radius: 6px; background: var(--fp-paper); color: var(--fp-ink); box-shadow: 0 18px 30px -18px rgba(0,0,0,.8); }
+.cz-fp__mast { font-family: var(--f-display); font-weight: 800; font-size: 24px; text-align: center; padding-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cz-fp--single .cz-fp__mast { border-bottom: 1.5px solid var(--fp-ink); }
+.cz-fp--double .cz-fp__mast { border-bottom: 4px double var(--fp-ink); }
+.cz-fp--thick .cz-fp__mast { border-bottom: 5px solid var(--fp-kick); }
+.cz-fp__h { margin-top: 8px; font-size: 30px; line-height: .95; color: var(--fp-ink); }
+.cz-fp__cols { display: grid; grid-template-columns: repeat(var(--fp-cols), minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.cz-fp__cols span { display: grid; gap: 5px; }
+.cz-fp__cols i { display: block; height: 5px; border-radius: 2px; background: color-mix(in srgb, var(--fp-ink) 25%, transparent); }
+.cz-fp__cols i:first-child { background: var(--fp-kick); }
+.cz-fp__k { display: block; margin-top: 8px; font-size: 11px; font-weight: 700; opacity: .75; }
+.cz-th--fp { padding: 5px 6px; display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); align-content: start; gap: 3px; }
+.cz-th--fp b { grid-column: 1 / -1; height: 6px; background: var(--kick); }
+.cz-th--fp i { height: 24px; background: currentColor; opacity: .2; }
+
+/* catchphrase thumb */
+.cz-th--cp { background: var(--card); padding: 4px; }
+.cz-th--cp b { max-width: 100%; padding: 1px 5px; border: 2px solid var(--cp); border-radius: 4px; color: var(--cp); font-family: var(--f-cond); font-stretch: 75%; font-weight: 900; font-size: 11px; line-height: 1.1; text-transform: uppercase; transform: rotate(-5deg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cz-th--cp.cz-cp--gold b { background: #FFD35C; color: #3A2600; border-color: #B8830B; }
+:root:lang(ar) .cz-th--cp b { text-transform: none; }
+
+.cz-tile__lock { position: absolute; top: 12px; inset-inline-start: 12px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--card-ink); color: var(--card); }
+
+/* rails: new this week, last chance */
+.cz-rails { display: grid; gap: 8px; }
+.cz-rails__last { color: #FF9A85; }
+.cz-rails__ends { font-size: 11.5px; font-weight: 800; color: var(--red-deep); }
+
+/* the collection book */
+.cz-book { display: grid; gap: 10px; }
+.cz-book > h2 { font-family: var(--f-display); font-weight: 800; font-size: 22px; color: var(--on-desk); }
+.cz-book__set { display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: var(--card); color: var(--card-ink); box-shadow: var(--shadow-card); }
+.cz-book__set.is-done { box-shadow: var(--shadow-card), inset 0 0 0 2.5px var(--c-done); }
+.cz-book__set.is-season { border-inline-start: 6px solid var(--sa, var(--gold)); }
+.cz-book__h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.cz-book__h h3 { font-family: var(--f-display); font-weight: 800; font-size: 19px; line-height: 1.1; }
+.cz-book__h .g-num { font-size: 16px; color: var(--card-ink-2); white-space: nowrap; }
+.cz-book__when { font-size: 12.5px; font-weight: 700; color: var(--red-deep); }
+.cz-book__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.cz-book__list li { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 56px; }
+.cz-book__list li button { display: block; width: 64px; border-radius: 8px; }
+.cz-book__list .cz-tile__art { height: 48px; }
+.cz-book__list li.is-miss .cz-tile__art { filter: grayscale(.85); opacity: .6; }
+.cz-book__list li.is-own svg { color: var(--c-done-deep); }
+.cz-book__txt { display: grid; gap: 2px; min-width: 0; }
+.cz-book__txt b { font-family: var(--f-display); font-weight: 700; font-size: 15px; line-height: 1.15; }
+.cz-book__txt small { font-size: 12.5px; line-height: 1.3; color: var(--card-ink-2); }
+.cz-book__never { justify-self: start; margin-top: 2px; padding: 1px 7px; border-radius: 999px; background: var(--card-ink); color: var(--card); font-style: normal; font-size: 10.5px; font-weight: 900; }
+
+/* the showcase: three pinned looks on the byline card */
+.cz-show { display: flex; gap: 8px; margin-top: 10px; }
+.cz-show__i { width: 64px; height: 48px; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 2px color-mix(in srgb, var(--by-ink, var(--card-ink)) 20%, transparent); }
+.cz-show__i > * { width: 100%; height: 100%; }
+
+/* Me: the byline card's desk strip (catchphrase + showcase) */
+.cn-byline__desk { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(21,19,15,.14); }
+.cn-byline__cpk { flex: 1 0 100%; font-size: 11.5px; font-weight: 800; color: var(--card-ink-3); }
+.cn-byline__cp { font-size: 20px; }
+.cn-byline__desk .cz-show { margin-top: 0; margin-inline-start: auto; }
+
+/* Home: the desk lamp's pool of light over the film stage (screens/Home.tsx data-lamp) */
+.home[data-lamp]::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(55% 38% at 50% 0%, color-mix(in srgb, var(--lamp-glow) 30%, transparent), transparent 75%), linear-gradient(180deg, transparent 55%, color-mix(in srgb, var(--lamp-pool) 55%, transparent)); }
+.home[data-lamp="neon"]::before { animation: cz-flicker 5s steps(1) infinite; }
+
+:root.reduce :is(.cz-cp, .cz-lamp--neon .cz-lamp__pool, .home[data-lamp]::before) { animation: none; }
+@media (prefers-reduced-motion: reduce) { .cz-cp, .cz-lamp--neon .cz-lamp__pool, .home[data-lamp]::before { animation: none; } }
+
 /* ---------- keyboard, reduced motion */
 .cz :is(button, a, input):focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 :root.reduce .cz-ring__ic, :root.reduce .cz-stage__in, :root.reduce .cz-sheet, :root.reduce .cz-scrim { animation: none; }

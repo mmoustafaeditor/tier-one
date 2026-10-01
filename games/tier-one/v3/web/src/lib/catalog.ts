@@ -110,6 +110,7 @@ const NEW: Item[] = [
   { id: 'lp.gilt', kind: 'lamp', nameKey: 'eco.items.lp.gilt', price: { credits: 200 }, source: 'store', rarity: 'legendary', set: 'gilt', drop: utc(2026, 11, 23), preview: { k: 'lamp', glow: '#FFE08A', pool: '#3A2600', warmth: 'warm' } },
   // ring packs v2: one ring per source, so you know who is calling before the card lands
   { id: 'rp.newsroom', kind: 'ringpack', nameKey: 'eco.items.rp.newsroom', descKey: 'eco.items.rp.newsroomD', price: { coins: 350, credits: 70 }, source: 'store', rarity: 'rare', drop: utc(2026, 10, 5), preview: { k: 'ringpack', rings: { kitman: 'dd.whistle', barber: 'scene.barber', agent: 'scene.agent', spotter: 'scene.spotter', physio: 'scene.physio', leak: 'scene.leak' }, fallback: 'phone.ring' } },
+  { id: 'rp.terrace', kind: 'ringpack', nameKey: 'eco.items.rp.terrace', descKey: 'eco.items.rp.terraceD', price: { coins: 300 }, source: 'store', rarity: 'rare', drop: utc(2026, 10, 26), preview: { k: 'ringpack', rings: { kitman: 'thock', barber: 'type', agent: 'coin', spotter: 'whoosh', physio: 'count', leak: 'stamp.done' }, fallback: 'phone.ring' } },
   { id: 'rp.stadium', kind: 'ringpack', nameKey: 'eco.items.rp.stadium', descKey: 'eco.items.rp.stadiumD', price: { credits: 120 }, source: 'store', rarity: 'epic', drop: utc(2026, 11, 2), preview: { k: 'ringpack', rings: { kitman: 'dd.whistle', barber: 'sparkle', agent: 'fanfare', spotter: 'dd.siren', physio: 'dd.heart', leak: 'typewriter' }, fallback: 'dd.whistle' } },
   // feed skins: the rows of the Feed and Home's "For you"
   { id: 'fs.memo', kind: 'feedskin', nameKey: 'eco.items.fs.memo', price: { coins: 180 }, source: 'store', rarity: 'common', drop: utc(2026, 9, 28), preview: { k: 'feedskin', style: 'memo', rule: '#F7B928', bg: '#FFF7D6', ink: '#3A2600' } },
@@ -331,17 +332,24 @@ export const vaultNow = (ms = Date.now()): Item[] => VAULT.filter((v) => ms >= v
 // ---------------------------------------------------------------- the collection book (sets)
 // Every set with every item in it: evergreen families, the lines, earned families, and each season (past seasons
 // stay in the book: gone items show "may return from the vault"). Ownership is decided by the caller (wallet.owns).
+/** The book lists season sets up to the end of the 2026/27 football year (the summer window closes 1 Sep 2027). */
+export const SEASON_BOOK_END = utc(2027, 9, 2);
 export const BOOK_ORDER = ['lines', 'story', 'rank', 'streak', 'rivalry', 'referral', 'ddlive', 'redtop', 'broadsheet', 'wire', 'night', 'gilt', 'event'];
 export function bookSets(ms = Date.now()): { set: string; season: boolean; items: Item[] }[] {
   const all = [...NEW.filter((x) => x.source !== 'standard'), ...EARNED, ...seasonCosmeticsAll(), ...seasonStore().map(fromLegacy)];
   const map = new Map<string, Item[]>();
   const add = (it: Item) => { const k = it.set || 'other'; const l = map.get(k) || []; if (!l.some((x) => x.id === it.id)) l.push(it); map.set(k, l); };
   all.forEach(add);
-  // this season and the last three: the six-slot set plus Gold
-  let cur = seasonAt(ms);
-  for (let i = 0; i < 4 && cur; i++) { seasonSet(cur.id).forEach((it) => { if (it.kind !== 'gold') add({ ...it, set: cur!.id }); }); const prev = seasonAt(cur.start - DAY); if (prev.id === cur.id) break; cur = prev; }
+  // the whole 2026/27 football year and the three seasons before this one: the seven-slot set and the season track (Gold is its own tab).
+  // Upcoming sets show "arrives", the live one counts down, past ones say the vault may bring a piece back.
+  const now = seasonAt(ms);
+  const ids: string[] = [];
+  for (let c = now, i = 0; i < 4; i++) { ids.push(c.id); const p = seasonAt(c.start - DAY); if (p.id === c.id) break; c = p; }
+  for (let c = seasonAt(now.end + DAY / 2); c.start < SEASON_BOOK_END && !ids.includes(c.id); c = seasonAt(c.end + DAY / 2)) ids.push(c.id);
+  for (const sid of ids) seasonSet(sid).forEach((it) => { if (it.kind !== 'gold') add({ ...it, set: sid }); });
+  const when = (x: { items: Item[] }) => { const w = x.items[0].window; return !w ? 0 : ms >= w.from && ms < w.to ? 0 : w.from > ms ? 1 + (w.from - ms) / 1e13 : 2 + (ms - w.from) / 1e13; };
   const rank = (k: string) => { const i = BOOK_ORDER.indexOf(k); return i >= 0 ? i : /^\w+-\d{4}$/.test(k) ? -1 : 99; };
-  return [...map.entries()].map(([set, items]) => ({ set, season: /^\w+-\d{4}$/.test(set), items })).sort((a, b) => rank(a.set) - rank(b.set) || (a.season && b.season ? (b.items[0].window?.from || 0) - (a.items[0].window?.from || 0) : 0));
+  return [...map.entries()].map(([set, items]) => ({ set, season: /^\w+-\d{4}$/.test(set), items })).sort((a, b) => rank(a.set) - rank(b.set) || (a.season && b.season ? when(a) - when(b) : 0));
 }
 
 // ---------------------------------------------------------------- the featured rotation

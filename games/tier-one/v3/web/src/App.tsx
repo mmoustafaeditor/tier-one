@@ -36,6 +36,7 @@ const EditorDeskScreen = lazy(() => import('./screens/Editor').then((m) => ({ de
 import { setNav } from './screens/Connect';
 import { SocialWatch } from './ui/social';
 import { captureReferral } from './lib/wallet';
+import './lib/earned'; // registers the earned-looks hook (lib/earnhook.ts) the game events call
 import { MorningPapers } from './ui/live';
 // Shell layer (GOTY.md §4): motion tokens + view transitions, then the tablet/desktop layouts. Loaded after the screen styles.
 import './styles/motion.css';

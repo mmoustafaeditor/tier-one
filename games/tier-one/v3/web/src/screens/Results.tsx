@@ -29,6 +29,11 @@ import { flushDeferredScenes, playScene, afterScenes, firstToday } from '../lib/
 import { windowKey, bylineOf, repTier, REP_TIERS, type WindowSummary } from '../lib/byline';
 import { ChallengeButton as SocialChallengeButton } from '../ui/social';
 import { catchphraseOf } from '../lib/catchphrase';
+import { shareStyle, headlineStyle, equipped } from '../lib/wallet';
+// Your desk (GOTY §8.4): the scoop card wears the equipped share-card style, frame, paper name, headline font and the
+// catchphrase's colour; the results front page wears the headline font. The standard look passes nothing (unchanged).
+const cardStyle = () => { const x = shareStyle(); return { paper: x.paper, ink: x.ink, accent: x.accent, frame: x.frame, masthead: x.masthead, hed: x.headline, cpColor: equipped('catchphrase').source === 'standard' ? undefined : x.catchColor }; };
+const hedCss = (): React.CSSProperties | undefined => { if (equipped('headline').source === 'standard') return undefined; const h = headlineStyle(); return { fontFamily: h.family, textTransform: h.upper ? 'uppercase' : 'none', ...(h.ink ? { color: h.ink } : {}), ...(h.face === 'stencil' ? { letterSpacing: '.06em' } : {}) }; };
 
 /** SLOT (social lane, ui/social.tsx): `<ChallengeButton/>`. Assign the real component here; it renders beside Share.
  *  Props: { view, result }. */
@@ -123,7 +128,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
           <div className="vcard__row">
             <div className="vcard__main">
               <div className="g-mono vcard__k" dir="auto">{r.ex > 0 ? t('g.res.byline', { n: me.name }) : t('hr.res.by', { n: me.name })}</div>
-              <h1 className="vcard__hed">{hed}</h1>
+              <h1 className="vcard__hed" style={hedCss()}>{hed}</h1>
             </div>
             <div className="vcard__stampwrap">
               {stage >= TIER ? <span className={'vcard__stamp g-stamp is-slam g-stamp--' + (TIER_C[r.tier] || '')}>{t('tier.' + r.tier)}</span> : <Kit club={bestDest} player={bc.player} size={72} />}
@@ -411,7 +416,7 @@ function useShare(view: View, r: Result, what: string, hed: string, bestDest: Ca
   const url = 'sembagames.app/tier-one';
   const text = shareText(t, { what, tier: t('tier.' + r.tier), pts: num(r.total), row: r.row || '', url: 'https://' + url });
   const hwgIdx = hereWeGoOf(r);
-  const card = () => ({ hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl, hwg: hwgIdx >= 0 ? catchphraseOf().text.toUpperCase() + ' · ' + bc.player.s : undefined });
+  const card = () => ({ hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl, hwg: hwgIdx >= 0 ? catchphraseOf().text.toUpperCase() + ' · ' + bc.player.s : undefined, style: cardStyle() });
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 2400); };
   const send = async () => {
     onShared();

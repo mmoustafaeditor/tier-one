@@ -5,6 +5,7 @@ import type { Result } from './engine';
 import { t } from './i18n';
 import { trackWindow } from './progress';
 import { addSeasonPP, goldBonus, seasonAt } from './season';
+import { earnHook } from './earnhook';
 
 type Toast = { id: number; kind: 'ach' | 'info' | 'warn'; title: string; body?: string };
 const listeners = new Set<(t: Toast[]) => void>();
@@ -78,6 +79,7 @@ export function onDailyDone(dayKey: string, no: number, r: Result, extra: { ddLa
     if (st.n % 7 === 0) { st.grace = Math.min(2, st.grace + 1); credit(s, 20, 'streak:' + st.n); }
     if (st.n >= 7) grant(s, 'streak7');
     if (st.n >= 30) grant(s, 'streak30');
+    earnHook(s); // streak looks and lines (lib/earned.ts)
     credit(s, 5 + (r.tier === 'T1' ? 5 : 0), 'daily:' + no);
     addPP(s, 20 + (({ T1: 15, T2: 10, T3: 5 } as Record<string, number>)[r.tier] || 0));
     s.stats.dailies = (s.stats.dailies || 0) + 1;
