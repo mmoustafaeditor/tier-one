@@ -139,23 +139,27 @@ export function settle(s: Save, ms = Date.now()): DealOutcome[] {
   return out;
 }
 /** One finished window against every active deal. Call inside update(), after the byline moved (rep is current).
- *  Practice and the Wire never count. Returns the first deal that resolved (paid / pulled / missed), or null. */
+ *  Practice and the Wire never count. A wrong Drop reads as "pulled" before anything else; then week deals whose week
+ *  ended and repAbove deals that fell under the line settle; then window deals resolve with this window.
+ *  Returns the first deal that resolved (paid / pulled / missed), or null. */
 export function evaluate(s: Save, per: CallLite[], mode: DealMode, ms = Date.now()): DealOutcome | null {
-  const d = s.deals; if (!d || !d.active.length) return settle(s, ms)[0] || null;
-  const settled = settle(s, ms);
-  if (!COUNTS[mode]) return settled[0] || null;
-  const rep = s.byline?.rep ?? 0, day = ymd(ms);
+  const d = s.deals; if (!d || !d.active.length) return null;
+  const out: DealOutcome[] = [], counts = COUNTS[mode], day = ymd(ms);
   const calls = per.filter((p) => p.called);
   const right = calls.filter((p) => p.right).length, scoop = calls.some((p) => p.scoop), wrongDrop = calls.some((p) => !p.right && p.s === 2);
-  const out: DealOutcome[] = [...settled];
-  for (const a of [...d.active]) {
+  if (counts) for (const a of [...d.active]) {
     a.p.windows++; a.p.right += right; a.p.scoop = a.p.scoop || scoop; a.p.wrongDrop = a.p.wrongDrop || wrongDrop;
     if (mode === 'daily' && !a.p.days.includes(day)) a.p.days.push(day);
-    if (wrongDrop) { out.push(finish(s, d, a, 'pulled', ms)); continue; }   // "Volt has pulled out."
-    if (a.term === 'window') { out.push(finish(s, d, a, met(a, rep) ? 'paid' : 'missed', ms)); continue; }
-    // week: pay as soon as the condition can't be undone (right calls / a Scoop); the rest waits for the week to end
-    if ((a.cond === 'rightCalls' || a.cond === 'scoop') && met(a, rep)) out.push(finish(s, d, a, 'paid', ms));
-    else if (a.cond === 'playDaily' && a.p.days.length >= a.n) out.push(finish(s, d, a, 'paid', ms));
+    if (wrongDrop) out.push(finish(s, d, a, 'pulled', ms));   // "Volt has pulled out."
+  }
+  out.push(...settle(s, ms));
+  if (counts) {
+    const rep = s.byline?.rep ?? 0;
+    for (const a of [...d.active]) {
+      if (a.term === 'window') { out.push(finish(s, d, a, met(a, rep) ? 'paid' : 'missed', ms)); continue; }
+      // week: pay as soon as the condition can't be undone (right calls / a Scoop / the days played); the rest waits for the week to end
+      if ((a.cond === 'rightCalls' || a.cond === 'scoop' || a.cond === 'playDaily') && met(a, rep)) out.push(finish(s, d, a, 'paid', ms));
+    }
   }
   return out[0] || null;
 }
