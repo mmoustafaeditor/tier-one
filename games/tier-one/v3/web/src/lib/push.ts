@@ -1,4 +1,6 @@
-// Push scaffolding (GOTY.md §8.2): "your Daily is ready", "results are in", "Deadline Day Live opens".
+// Push scaffolding (GOTY.md §8.2, CONCEPT4.md §2): "today's window is open", "results are in", "Live opens", "a deal landed".
+// A tap lands on the phone at `url` ("?app=blurt", "?app=dms"…; the legacy "?tab=" still maps), and the shell puts the
+// same event in the tray (ui/juice.tsx notify) so the lock screen shows it too.
 //
 // Two transports behind one API:
 //   • Web Push: the service worker (src/sw.ts) subscribes with the VAPID public key (T1_VAPID_PUBLIC at build time,
@@ -12,7 +14,7 @@
 //   push.unsubscribe { dev, endpoint?: string, token?: string } → { ok: true }
 //   push.topics      { dev, endpoint?: string, token?: string, topics: PushTopic[] } → { ok: true }
 //   The payload the server sends (web: JSON in the push body; FCM: data message) is
-//     { topic: PushTopic, title: string, body: string, url?: string (relative to /tier-one/, e.g. "?tab=daily"), tag?: string }
+//     { topic: PushTopic, title: string, body: string, url?: string (relative to /tier-one/, e.g. "?app=blurt"), tag?: string }
 //   Schedules: daily-ready at the player's local 08:00 (tz sent above) once the day's board exists; results-in when
 //   the player's Daily is scored (or the room's round settles); ddlive-open when Deadline Day Live opens (§7.1).
 //
@@ -26,8 +28,8 @@
 // Everything here treats the bridge as synchronous (addJavascriptInterface) but tolerates promises.
 import { getSave } from './save';
 
-export type PushTopic = 'daily-ready' | 'results-in' | 'ddlive-open';
-export const PUSH_TOPICS: PushTopic[] = ['daily-ready', 'results-in', 'ddlive-open'];
+export type PushTopic = 'daily-ready' | 'results-in' | 'ddlive-open' | 'deal-in';
+export const PUSH_TOPICS: PushTopic[] = ['daily-ready', 'results-in', 'ddlive-open', 'deal-in'];
 export interface TierPushBridge {
   register(topicsCsv: string): string | Promise<string>;
   unregister(): void | Promise<void>;
