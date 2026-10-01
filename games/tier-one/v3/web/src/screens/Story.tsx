@@ -4,8 +4,8 @@
 // Career rules and rank gates are unchanged (lib/career.ts); chapters are the ranks (lib/storyMode.ts).
 // One career (GOTY.md §7.2): credibility is the byline's reputation, followers are the byline's, the sources' trust is
 // the Contacts Book level, all read from lib/byline.ts. The hub owns only the story: chapter, goal, favours, clubs.
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
-import { useT, num, fmtDate } from '../lib/i18n';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { useT, num } from '../lib/i18n';
 import { useSave, update } from '../lib/save';
 import { RANKS, newCareer, totalFavours, VINCE_RANK, careerTrust, TRUST_EARLY, TRUST_AGAIN } from '../lib/career';
 import { bylineOf, bookOf, bookProgress, repTier } from '../lib/byline';
@@ -17,7 +17,8 @@ import { spend, toast } from '../lib/meta';
 import { playScene, afterScenes, seen } from '../lib/scenes';
 import { sfx } from '../lib/sfx';
 import { Icon, GBtn, TopBar, SrcIcon, Rel, confetti } from '../ui/game';
-import { Crest } from '../ui/bits';
+import { Crest, Sheet } from '../ui/bits';
+import { Tip, usePaged, Pager } from '../ui/fit';
 import type { Chrome } from '../App';
 import { earnHook } from '../lib/earnhook';
 
@@ -36,6 +37,7 @@ function Face({ from, sm }: { from: string; sm?: boolean }) {
   return <span className={'sm-av sm-av--' + from + (sm ? ' sm-av--sm' : '')}><Icon n={FROM_ICON[from] || 'news'} /></span>;
 }
 
+let doorPassed = false;
 export function StoryScreen(chrome: Chrome) {
   const s = useSave();
   const c = s.career;
@@ -57,10 +59,19 @@ export function StoryScreen(chrome: Chrome) {
   const needCard = !!c && !s.story?.prologue;
   useEffect(() => { if (needCard) afterScenes(() => setPro((p) => p || (c!.windows > 0 ? 'replay' : 'start'))); }, [needCard]); // eslint-disable-line react-hooks/exhaustive-deps
   const ch = c ? chapterFor(c, bylineOf(s).rep) : null;
-  const intro = !!(c && ch && !pro && !needCard && (s.story?.chapterSeen ?? -1) < ch.i);
+  // 3.6: opening Career shows the door (Continue · New career) first; Continue goes straight to the chapter from then on,
+  // until Back takes you home. A window in progress skips the door.
+  const [door, setDoor] = useState(() => !doorPassed && !c?.live);
+  const intro = !!(c && ch && !door && !pro && !needCard && (s.story?.chapterSeen ?? -1) < ch.i);
+  const wipe = () => {
+    update((x) => { x.career = newCareer((x.slot || 0) + 1, (x.career?.restarts || 0) + 1); x.story = { ...(x.story || {}), prologue: true, chapterSeen: -1, beats: {}, inbox: [] }; });
+    doorPassed = true; setDoor(false);
+  };
 
   return <>
-    {c && ch ? <ChapterScreen chrome={chrome} ch={ch} onPrologue={() => film('replay')} /> : <Cover chrome={chrome} onStart={start} onPrologue={s.story?.prologue ? () => film('replay') : undefined} />}
+    {c && ch && door ? <CareerDoor chrome={chrome} ch={ch} onContinue={() => { doorPassed = true; setDoor(false); }} onNew={wipe} />
+      : c && ch ? <ChapterScreen chrome={chrome} ch={ch} onPrologue={() => film('replay')} onBack={() => { doorPassed = false; chrome.go({ n: 'front' }); }} />
+      : <Cover chrome={chrome} onStart={start} onPrologue={s.story?.prologue ? () => film('replay') : undefined} />}
     {pro && <PrologueCard replay={pro === 'replay'} onAgain={() => { setPro(null); film(pro); }} onDone={() => { if (pro === 'start') create(); else if (!s.story?.prologue) update((x) => { x.story = { ...(x.story || {}), prologue: true }; }); setPro(null); }} />}
     {intro && ch && <ChapterIntro ch={ch} onGo={() => update((x) => { x.story = x.story || {}; x.story.chapterSeen = ch.i; earnHook(x); })} />}
   </>;
@@ -69,31 +80,22 @@ export function StoryScreen(chrome: Chrome) {
 // ---------------------------------------------------------------- cover (no career yet)
 function Cover({ chrome, onStart, onPrologue }: { chrome: Chrome; onStart: () => void; onPrologue?: () => void }) {
   const t = useT();
-  return <div className="g-screen sm">
-    <TopBar onHelp={() => chrome.go({ n: 'howto' })} onMenu={chrome.openSettings} />
-    <div className="stagger sm-stack">
+  return <div className="g-screen sm fit">
+    <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('hub.mode.career')} onHelp={() => chrome.go({ n: 'howto' })} />
+    <div className="fit__body">
+      <Tip id="career" />
       <section className="sm-book g-card" style={vi(0)}>
         <span className="sm-book__spine" aria-hidden="true" />
         <div className="sm-book__in">
           <span className="g-chip g-chip--gold"><Icon n="story" />{t('g.story.k')}</span>
           <h1 className="sm-book__title">{t('g.story.cover.title')}</h1>
-          <div className="sm-clip g-halftone" aria-hidden="true">
-            <span className="g-mono">{t('g.story.cover.clip')}</span>
-            <b>{t('g.story.pro.hwg')}</b>
-            <i /><i /><i className="short" />
-            <span className="g-stamp is-slam sm-clip__stamp">{t('g.story.pro.wrong')}</span>
-          </div>
           <p className="sm-book__hook">{t('g.story.cover.hook')}</p>
           <div className="sm-book__lost"><b className="g-num">−38,200</b><span className="g-mono">{t('g.story.cover.lost')}</span></div>
           <TextBubble />
-          <p className="sm-book__hook2">{t('g.story.cover.hook2')}</p>
-          <GBtn kind="gold" size="lg" pulse shine sound={null} onClick={onStart} style={{ marginTop: 18 }}><Icon n="story" size={24} />{t('g.story.cover.start')}</GBtn>
+          <GBtn kind="gold" size="lg" pulse shine sound={null} onClick={onStart} style={{ marginTop: 14 }}><Icon n="story" size={24} />{t('g.story.cover.start')}</GBtn>
           {onPrologue && <button className="sm-link" onClick={onPrologue}><Icon n="play" size={16} />{t('g.story.cover.replay')}</button>}
-          <p className="sm-book__meta g-mono">{t('g.story.cover.meta')}</p>
         </div>
       </section>
-      <Trail at={-1} style={vi(1)} />
-      <Slots style={vi(2)} />
     </div>
   </div>;
 }
@@ -201,7 +203,7 @@ function ChapterIntro({ ch, onGo }: { ch: Chapter; onGo: () => void }) {
 
 // ---------------------------------------------------------------- the case file: who burned you?
 const EV_FACE: Record<string, string> = { rosa: 'agent', kev: 'itk', tony: 'spotter', priya: 'itk' };
-function CaseFile({ ch, style }: { ch: Chapter; style?: CSSProperties }) {
+function CaseFile({ ch, style, unfolded }: { ch: Chapter; style?: CSSProperties; unfolded?: boolean }) {
   const t = useT();
   const s = useSave();
   const c = s.career!;
@@ -213,7 +215,7 @@ function CaseFile({ ch, style }: { ch: Chapter; style?: CSSProperties }) {
   const at = revealAt(c.rank, beats);
   // Folded on phones (the hub stays one screen); a fresh lead opens it.
   const fresh = s.story?.inbox?.some((m) => !m.read && /^reveal\d$/.test(m.key));
-  const [unfold, setUnfold] = useState(() => wide() || !!fresh);
+  const [unfold, setUnfold] = useState(() => !!unfolded || wide() || !!fresh);
   return <section className={'sm-case g-card' + (solved ? ' is-solved' : '') + (unfold ? ' is-open' : '') + (fresh ? ' is-fresh' : '')} style={style} aria-labelledby="sm-case-h">
     <button className="sm-case__h" aria-expanded={unfold} onClick={() => { sfx('ui.tap'); setUnfold(!unfold); }}>
       <span className="sm-case__ht"><h2 id="sm-case-h">{t('g.story.caseFile.title')}</h2><span className="g-mono">{t('g.story.caseFile.aside')}</span></span>
@@ -242,8 +244,61 @@ function CaseFile({ ch, style }: { ch: Chapter; style?: CSSProperties }) {
   </section>;
 }
 
-// ---------------------------------------------------------------- the chapter screen (career exists)
-function ChapterScreen({ chrome, ch, onPrologue }: { chrome: Chrome; ch: Chapter; onPrologue: () => void }) {
+// ---------------------------------------------------------------- the Career door (3.6): Continue · New career
+function CareerDoor({ chrome, ch, onContinue, onNew }: { chrome: Chrome; ch: Chapter; onContinue: () => void; onNew: () => void }) {
+  const t = useT();
+  const s = useSave();
+  const c = s.career!;
+  const [sure, setSure] = useState(false);
+  const paper = c.paper || t('g.story.paperDefault', { n: s.nick || t('common.you') });
+  return <div className="g-screen sm fit">
+    <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('hub.mode.career')} onHelp={() => chrome.go({ n: 'howto' })} />
+    <div className="fit__body cr-door">
+      <Tip id="career" />
+      <section className="g-card cr-card">
+        <div className="cr-card__k g-mono"><span>{ch.i >= EPILOGUE ? t('g.story.epilogue') : t('g.story.chapterOf', { n: ch.n })}</span><span>{paper}</span></div>
+        <h1 className="g-h1">{bare(t('g.story.ch.' + ch.id + '.name'))}</h1>
+        <ul className="cr-lines">
+          <li><Icon n="news" size={16} /><span>{t('hub.career.windows', { n: c.windows })}</span></li>
+          <li><Icon n="target" size={16} /><span>{needLine(t, ch)}</span></li>
+        </ul>
+        <GoalBar ch={ch} />
+        <GBtn kind="gold" size="lg" shine pulse sound="open" onClick={onContinue} style={{ marginTop: 6 }}><Icon n="story" size={24} />{t('hub.career.continue')}</GBtn>
+      </section>
+      <GBtn kind="ghost" onClick={() => setSure(true)}><Icon n="uturn" size={20} />{t('hub.career.newCareer')}</GBtn>
+    </div>
+    <Sheet open={sure} onClose={() => setSure(false)} label={t('hub.career.newCareer')}>
+      <div className="rm-sure">
+        <h2 className="g-h2" style={{ color: 'var(--card-ink)' }}>{t('hub.career.newSure')}</h2>
+        <div className="rm-sure__b">
+          <GBtn onClick={() => { setSure(false); sfx('ui.pop'); onNew(); }}>{t('hub.career.newYes')}</GBtn>
+          <GBtn kind="paper" onClick={() => setSure(false)}>{t('hub.career.cancel')}</GBtn>
+        </div>
+      </div>
+    </Sheet>
+  </div>;
+}
+type TT = ReturnType<typeof useT>;
+function needLine(t: TT, ch: Chapter) {
+  const g = ch.goal;
+  if (!g) return t('hub.career.needDone');
+  if (g.t1 != null) return t('hub.career.needT1', { n: Math.max(0, g.t1 - (g.haveT1 || 0)) });
+  return t('hub.career.need', { w: Math.max(0, g.windows - g.haveW), c: Math.max(0, g.rep - g.haveRep) });
+}
+function GoalBar({ ch }: { ch: Chapter }) {
+  const t = useT();
+  const g = ch.goal;
+  const p = Math.round(100 * Math.min(1, ch.progress));
+  return <div className="cr-goal">
+    <span className="cr-goal__l g-mono"><span>{t('hub.career.goal')}</span><span>{g ? (g.t1 != null ? (g.haveT1 || 0) + '/' + g.t1 : g.haveW + '/' + g.windows + ' · ' + g.haveRep + '/' + g.rep) : '✓'}</span></span>
+    <span className="g-bar" style={{ ['--bar' as string]: p >= 100 ? 'var(--c-done)' : 'linear-gradient(90deg,#FFD35C,#F7B928)' }}><i style={{ width: p + '%' }} /></span>
+  </div>;
+}
+
+// ---------------------------------------------------------------- the chapter screen (career exists): one short card,
+// the goal bar and Play next window; three messages at a time; everything else one tap away in a sheet.
+type More = null | 'case' | 'record' | 'sources' | 'desk';
+function ChapterScreen({ chrome, ch, onPrologue, onBack }: { chrome: Chrome; ch: Chapter; onPrologue: () => void; onBack: () => void }) {
   const t = useT();
   const s = useSave();
   const c = s.career!;
@@ -252,7 +307,7 @@ function ChapterScreen({ chrome, ch, onPrologue }: { chrome: Chrome; ch: Chapter
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(c.paper);
   const [sure, setSure] = useState(false);
-  const [all, setAll] = useState(false);
+  const [more, setMore] = useState<More>(null);
   useEffect(() => { if (unread) update((x) => { x.story?.inbox?.forEach((m) => { m.read = true; }); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cost = (c.renames || 0) > 0 ? RENAME_COST : 0;
@@ -268,194 +323,149 @@ function ChapterScreen({ chrome, ch, onPrologue }: { chrome: Chrome; ch: Chapter
   };
   const paper = c.paper || t('g.story.paperDefault', { n: s.nick || t('common.you') });
   const inbox = [...(s.story?.inbox || [])].reverse();
-  const latest = inbox[0];
-  const brief: { from: string; text: string; fresh: boolean } = latest && unread
-    ? { from: beatFrom(latest), text: t(beatKey(latest as Beat), latest.v), fresh: true }
-    : { from: t('g.story.ch.' + ch.id + '.briefBy'), text: t('g.story.ch.' + ch.id + '.brief'), fresh: false };
+  const msgs: { key: string; from: string; text: string; fresh: boolean; lead: boolean }[] = inbox.length
+    ? inbox.slice(0, 30).map((m, j) => ({ key: m.at + ':' + j, from: beatFrom(m), text: t(beatKey(m as Beat), m.v), fresh: j < unread, lead: /^reveal\d$/.test(m.key) }))
+    : [{ key: 'brief', from: t('g.story.ch.' + ch.id + '.briefBy'), text: t('g.story.ch.' + ch.id + '.brief'), fresh: false, lead: false }];
+  const mp = usePaged(msgs, 3);
   const rightPct = c.calls ? Math.round((100 * c.right) / c.calls) : 0;
   const b = bylineOf(s); // one career: credibility is the byline's reputation, followers are the byline's
   const clubs = Object.entries(c.relations).filter(([, r]) => r.v !== 0).sort((a, b) => b[1].v - a[1].v);
   const g = ch.goal;
+  const epi = ch.i >= EPILOGUE;
+  const against = rk.rivals.map((k) => t('rival.' + k)).join(', ');
   const beats = s.story?.beats || {};
   const leadAt = ch.i < 4 && !beats['reveal' + (ch.i + 1)] ? revealAt(c.rank, beats) : 0;
-  const shown = all ? inbox.slice(0, 30) : inbox.slice(0, 6);
-  const epi = ch.i >= EPILOGUE;
 
-  return <div className="g-screen g-screen--wide sm sm--hub">
-    <TopBar onHelp={() => chrome.go({ n: 'howto' })} onMenu={chrome.openSettings} />
-    <div className="sm-cols">
-      <div className="stagger sm-stack">
-        {/* ---------- the hub: chapter, goal, the latest word, Play. Fits one phone screen. */}
-        <section className="sm-head g-card" style={vi(0)}>
-          <div className="sm-head__band">
-            <span className="g-mono">{epi ? t('g.story.epilogue') : t('g.story.chapterOf', { n: ch.n })} · {t('career.ranks.' + c.rank)}</span>
-            <span className="sm-head__paper">{paper}<button className="g-icbtn" style={{ width: 28, height: 28, marginInlineStart: 6, verticalAlign: 'middle' }} aria-label={t('g.story.rename')} onClick={() => { setName(c.paper); setEditing(!editing); }}><Icon n="pen" size={14} /></button></span>
-          </div>
-          {editing && <form className="sm-rename" style={{ padding: '10px 14px 0' }} onSubmit={(e) => { e.preventDefault(); saveName(); }}>
-            <input value={name} maxLength={28} autoFocus placeholder={t('g.story.paperPh')} onChange={(e) => setName(e.target.value)} aria-label={t('g.story.paperPh')} />
-            <GBtn kind="gold" size="sm" onClick={saveName} sound="ui.pop">{t('g.story.save')}{cost ? <> · <span className="g-coin" />{cost}</> : ''}</GBtn>
-            <p className="sm-note" style={{ width: '100%' }}>{cost ? t('m.rename.cost', { n: cost, have: s.credits }) : t('m.rename.free', { n: RENAME_COST })}</p>
-          </form>}
-          <div className="sm-head__body">
-            <div className="sm-head__row">
-              <span className="sm-head__num g-num" aria-hidden="true">{epi ? <Icon n="star" size={36} /> : ch.n}</span>
-              <div className="sm-head__t">
-                <h1 className="g-h1">{bare(t('g.story.ch.' + ch.id + '.name'))}</h1>
-                <p className="sm-premise">{t('g.story.ch.' + ch.id + '.premise')}</p>
-              </div>
-            </div>
-            <div className="sm-goal">
-              <span className="g-mono sm-goal__k"><Icon n="target" size={14} />{t('g.story.goal.k')}</span>
-              {g && g.t1 == null && <>
-                <b className="sm-goal__t">{t('g.story.goal.promo', { rank: t('career.ranks.' + (c.rank + 1)) })}</b>
-                <div className="sm-goal__m">
-                  <Meter label={t('g.story.goal.windows')} have={g.haveW} need={g.windows} />
-                  <Meter label={t('g.story.goal.cred')} have={g.haveRep} need={g.rep} />
-                </div>
-              </>}
-              {g && g.t1 != null && <>
-                <b className="sm-goal__t">{t('g.story.goal.finale')}</b>
-                <Meter label={t('g.story.goal.t1')} have={g.haveT1 || 0} need={g.t1} pips />
-              </>}
-              {!g && <><b className="sm-goal__t">{t('g.story.goal.done')}</b><span className="g-sub">{t('g.story.goal.doneSub')}</span></>}
-              {leadAt > 0 && <span className="sm-goal__lead"><Icon n="eye" size={15} /><b>{t('g.story.goal.lead')}</b>{c.windows + 1 >= leadAt ? t('g.story.goal.leadNext') : t('g.story.goal.leadIn', { n: leadAt })}</span>}
-              {c.rank >= VINCE_RANK && <span className="sm-goal__lead sm-goal__lead--vince"><Icon n="eye" size={15} /><b>{t('g.story.vince.chip')}</b>{t('g.story.vince.introD')}</span>}
-            </div>
-            {/* the latest word, or the chapter's brief */}
-            <div className={'sm-note2' + (brief.fresh ? ' is-new' : '')}>
-              <Face from={brief.from} sm />
-              <p><b>{t('g.story.from.' + brief.from)}{brief.fresh && <span className="g-chip g-chip--red sm-brief__new">{t('g.story.inbox.unread')}</span>}</b>{brief.text}</p>
-            </div>
-            <GBtn kind="gold" size="lg" pulse={!c.live} shine sound="open" onClick={play} style={{ marginTop: 14 }}>
-              <Icon n="phone" size={24} />{c.live ? t('g.story.resume') : t('g.story.play', { n: c.windows + 1 })}
-            </GBtn>
-            <p className="sm-head__line g-mono">{t('career.boardLine', { s: rk.sagas, c: rk.contacts, d: rk.dd })}</p>
-          </div>
-        </section>
+  return <div className="g-screen sm sm--hub fit">
+    <TopBar back={{ label: t('g.tabs.home'), onClick: onBack }} title={t('hub.mode.career')} onHelp={() => chrome.go({ n: 'howto' })} />
+    <div className="fit__body">
+      <Tip id="career" />
+      {/* ---------- one short chapter card: where you are, who's against you, what you need; the goal; Play */}
+      <section className="g-card cr-card">
+        <div className="cr-card__k g-mono">
+          <span>{epi ? t('g.story.epilogue') : t('g.story.chapterOf', { n: ch.n })} · {t('career.ranks.' + c.rank)}</span>
+          <span>{paper}<button className="g-icbtn" style={{ width: 28, height: 28, marginInlineStart: 6, verticalAlign: 'middle' }} aria-label={t('g.story.rename')} onClick={() => { setName(c.paper); setEditing(!editing); }}><Icon n="pen" size={14} /></button></span>
+        </div>
+        {editing && <form className="sm-rename" onSubmit={(e) => { e.preventDefault(); saveName(); }}>
+          <input value={name} maxLength={28} autoFocus placeholder={t('g.story.paperPh')} onChange={(e) => setName(e.target.value)} aria-label={t('g.story.paperPh')} />
+          <GBtn kind="gold" size="sm" onClick={saveName} sound="ui.pop">{t('g.story.save')}{cost ? <> · <span className="g-coin" />{cost}</> : ''}</GBtn>
+        </form>}
+        <h1 className="g-h1" style={{ fontSize: 28 }}>{bare(t('g.story.ch.' + ch.id + '.name'))}</h1>
+        <ul className="cr-lines">
+          <li><Icon n="news" size={16} /><span>{t('hub.career.where', { paper, n: ch.n })}</span></li>
+          <li><Icon n="bolt" size={16} /><span>{t('hub.career.against', { r: against })}</span></li>
+          <li><Icon n="target" size={16} /><span>{needLine(t, ch)}</span></li>
+        </ul>
+        <GoalBar ch={ch} />
+        {leadAt > 0 && <span className="g-mono" style={{ fontSize: 11, color: 'var(--card-ink-3)' }}><Icon n="eye" size={13} /> {c.windows + 1 >= leadAt ? t('g.story.goal.leadNext') : t('g.story.goal.leadIn', { n: leadAt })}</span>}
+        <GBtn kind="gold" size="lg" pulse={!c.live} shine sound="open" onClick={play}>
+          <Icon n="phone" size={24} />{c.live ? t('g.story.resume') : t('g.story.play', { n: c.windows + 1 })}
+        </GBtn>
+      </section>
 
-        <CaseFile ch={ch} style={vi(1)} />
+      {/* ---------- messages: short, three at a time */}
+      <div className="g-sec" style={{ margin: 0 }}><h2>{t('hub.career.messages')}</h2>{unread > 0 && <span className="g-chip g-chip--red">{t('g.story.inbox.unread')} · {unread}</span>}</div>
+      <div className="cr-msgs">{mp.rows.map((m) => <div key={m.key} className={'cr-msg' + (m.fresh ? ' is-new' : '')}>
+        <Face from={m.from} sm />
+        <span><b>{t('g.story.from.' + m.from)}{m.lead ? ' · ' + t('g.story.caseFile.title') : ''}</b><span dir="auto">{m.text}</span></span>
+      </div>)}</div>
+      <Pager p={mp} />
 
-        {/* ---------- inbox */}
-        <Drawer title={t('g.story.inbox.title')} aside={unread ? t('g.story.inbox.unread') + ' · ' + unread : t('g.story.inbox.aside')} hot={unread > 0} style={vi(2)} className="sm-inbox">
-          {inbox.length ? shown.map((m, j) => { const f = beatFrom(m); return <div key={m.at + ':' + j} className={'sm-msg' + (j < unread ? ' is-new' : '') + (/^reveal\d$/.test(m.key) ? ' is-lead' : '')}>
-            <Face from={f} sm />
-            <span className="sm-msg__b"><b>{t('g.story.from.' + f)}{/^reveal\d$/.test(m.key) && <span className="g-chip g-chip--red sm-msg__tag"><Icon n="eye" />{t('g.story.caseFile.title')}</span>}</b><span>{t(beatKey(m as Beat), m.v)}</span></span>
-            <span className="sm-msg__d g-mono">{fmtDate(m.at, t.lang, { day: 'numeric', month: 'short' })}</span>
-          </div>; }) : <p className="sm-empty">{t('g.story.inbox.empty')}</p>}
-          {inbox.length > 6 && !all && <button className="sm-link sm-link--desk" onClick={() => setAll(true)}>{t('common.more')}<Icon n="down" size={14} /></button>}
-        </Drawer>
-      </div>
-
-      <div className="stagger sm-stack">
-        <Drawer title={t('g.story.trail')} aside={epi ? t('g.story.epilogue') : t('g.story.chapterOf', { n: ch.n })} style={vi(3)}>
-          <Trail at={ch.i} done={ch.done} bare />
-        </Drawer>
-
-        {/* ---------- the record: stats, favours, clubs, recent windows */}
-        <Drawer title={t('g.story.stats.title')} aside={t('g.story.stats.cred') + ' ' + Math.round(b.rep) + ' · ' + fmtK(b.followers)} style={vi(4)}>
-          {/* the byline's numbers, the same in every mode; one line, and a door to Me */}
-          <button className="sm-byline" onClick={() => { sfx('ui.tap'); chrome.go({ n: 'me' }); }}>
-            <span className="g-stamp sm-byline__stamp">{t('cn.tier.' + repTier(b.rep))}</span>
-            <span className="sm-byline__n"><b className="g-num">{Math.round(b.rep)}</b><small className="g-mono">{t('g.story.stats.cred')}</small></span>
-            <span className="sm-byline__n"><b className="g-num">{fmtK(b.followers)}</b><small className="g-mono">{t('g.story.stats.followers')}</small></span>
-            <span className="sm-byline__same g-mono">{t('g.story.stats.same')}</span>
-            <Icon n={t.rtl ? 'back' : 'arrow'} size={16} />
-          </button>
-          <div className="sm-stats">
-            <Stat icon="news" v={String(c.windows)} k={t('career.windows')} sub={epi ? t('g.story.epilogue') : t('g.story.chapterOf', { n: ch.n })} />
-            <Stat icon="check" v={rightPct + '%'} k={t('g.story.stats.right')} sub={t('g.story.stats.of', { n: c.calls })} />
-            <Stat icon="bolt" v={String(c.exclusives)} k={t('g.story.stats.excl')} sub={t('g.story.stats.uturns', { n: c.uturns })} />
-            <Stat icon="star" v={String(c.t1)} k={t('g.story.goal.t1')} sub={g && g.t1 != null ? (g.haveT1 || 0) + '/' + g.t1 + ' · ' + t('career.ranks.' + (RANKS.length - 1)) : ''} />
-          </div>
-          <h3 className="sm-sub">{t('g.story.favours.title')}<span className="g-mono">{t('g.story.favours.aside', { n: totalFavours(c) })}</span></h3>
-          <div className="sm-favs">
-            {(['burner', 'tipoff', 'stakeout'] as const).map((k) => <div key={k} className={'sm-fav' + (c.favours[k] ? ' is-on' : '')}>
-              <span className="sm-fav__ic"><Icon n={k === 'burner' ? 'phone' : k === 'tipoff' ? 'eye' : 'plane'} /><b className="g-badge">{c.favours[k]}</b></span>
-              <b>{t('career.' + k)}</b><span>{t('career.' + k + 'D')}</span>
-            </div>)}
-          </div>
-          <h3 className="sm-sub">{t('g.story.clubs.title')}<span className="g-mono">{t('career.clubsAside')}</span></h3>
-          {clubs.length ? clubs.slice(0, 8).map(([id, r]) => { const cl = clubById(id); return <div key={id} className="sm-row">
-            <Crest club={cl} size={28} />
-            <span className="sm-row__b"><b>{cl ? cl.n : id}</b><span>{r.v >= 3 ? t('career.leak') : r.v <= -3 ? t('career.frozen') : t('career.neutral')}</span></span>
-            <span className={'g-chip ' + (r.v >= 3 ? 'g-chip--done' : r.v > 0 ? 'g-chip--hijack' : 'g-chip--off')}>{num(r.v, true)}</span>
-          </div>; }) : <p className="sm-empty">{t('career.clubsEmpty')}</p>}
-          {c.history.length > 0 && <>
-            <h3 className="sm-sub">{t('g.story.hist.title')}<span className="g-mono">{t('career.windows')} {c.windows}</span></h3>
-            {c.history.slice(0, 6).map((h) => <div key={h.n + ':' + h.at} className="sm-row sm-hist">
-              <span className="sm-hist__n g-num">{t('g.story.hist.w', { n: h.n })}</span>
-              <span className={'g-stamp sm-hist__st g-stamp--' + (TIER_STAMP[h.tier] || '')}>{t('tier.' + h.tier)}</span>
-              <span className="sm-hist__p g-num">{num(h.total, true)}</span>
-              <span className="sm-hist__c g-mono">{t('g.story.hist.cred', { n: Math.round(h.repAfter) })}</span>
-            </div>)}
-          </>}
-        </Drawer>
-
-        {/* ---------- sources, by name */}
-        <Drawer title={t('g.story.src.title')} aside={rk.src.map((k) => t('g.story.who.' + k).split(' ')[0]).join(', ')} style={vi(5)}>
-          <div className="sm-srcs">
-            {SRC.map((k) => {
-              // The Contacts Book (lib/byline.ts): one level per source, every mode. The story shows what it does here.
-              const open = rk.src.includes(k), lv = careerTrust(s, k), p = bookProgress(bookOf(s, k));
-              const need = RANKS.findIndex((r) => r.src.includes(k));
-              const steps = lv - 1;
-              return <div key={k} className={'sm-src' + (open ? '' : ' is-locked')}>
-                <div className="sm-src__top"><SrcIcon k={k} size={40} />{open ? <span className="sm-src__lv"><Rel n={Math.ceil((lv * 3) / 5)} /><b className="g-num">{t('career.level', { n: lv })}</b></span> : <Icon n="lock" size={18} className="sm-src__lock" />}</div>
-                <b className="sm-src__n">{open ? t('g.story.who.' + k) : '?'}<span className="sm-src__role g-mono">{t('src.' + k)}</span></b>
-                <span className="sm-src__d">{open ? (k === 'barber' ? t('career.barberFx', { p: Math.round(100 * Math.min(0.95, (RULES.SOURCES.barber.rel || 0.45) + 0.05 * steps)) }) : t('career.trustFx.' + steps)) : t('g.story.src.locked', { n: need + 1 })}</span>
-                {open && <><span className="g-bar g-bar--sm" style={{ ['--bar' as string]: p.max ? 'linear-gradient(90deg,#FFD35C,#F7B928)' : 'var(--gold)' }}><i style={{ width: p.pct + '%' }} /></span>
-                  <span className="sm-src__next g-mono">{p.max ? t('career.trustMax') : t('career.trustNext', { n: p.need - p.into, l: lv + 1 })}{lv < TRUST_EARLY && (k === 'spotter' || k === 'physio') ? ' · ' + t('career.trustEarly', { l: TRUST_EARLY }) : lv < TRUST_AGAIN && c.rank >= 3 ? ' · ' + t('career.trustAgain', { l: TRUST_AGAIN }) : ''}</span></>}
-              </div>;
-            })}
-          </div>
-          <button className="sm-link sm-link--desk" onClick={() => { sfx('ui.tap'); chrome.go({ n: 'contacts' }); }}>{t('g.story.src.book')}<Icon n={t.rtl ? 'back' : 'arrow'} size={14} /></button>
-        </Drawer>
-
-        {/* ---------- the desk drawer: the prologue, save slots, starting over */}
-        <Drawer title={t('g.story.desk.title')} aside={t('m.slots.title')} style={vi(6)}>
-          <button className="sm-replay" onClick={onPrologue}>
-            <span className="sm-replay__ic"><Icon n="play" size={20} /></span>
-            <span className="sm-row__b"><b>{t('g.story.cover.replay')}</b><span>{t('g.story.pro.k')} · {t('g.story.pro.title')}</span></span>
-            <Icon n={t.rtl ? 'back' : 'arrow'} size={18} />
-          </button>
-          <Slots bare />
-          {c.rank >= RANKS.length - 1 && <div className="sm-acts" style={{ marginTop: 12 }}>
-            {sure
-              ? <div className="sm-sure"><p>{t('g.story.restart.sure')}</p>
-                <div className="sm-sure__b"><GBtn size="sm" onClick={() => { update((x) => { x.career = newCareer((x.slot || 0) + 1, (x.career?.restarts || 0) + 1); x.story = { ...(x.story || {}), chapterSeen: -1, beats: {} }; }); setSure(false); }}>{t('g.story.restart.yes')}</GBtn>
-                  <GBtn kind="ghost" size="sm" onClick={() => setSure(false)}>{t('g.story.restart.no')}</GBtn></div></div>
-              : <GBtn kind="ghost" size="sm" onClick={() => setSure(true)}><Icon n="briefcase" size={18} />{t('g.story.restart.go')}</GBtn>}
-            {!sure && <p className="sm-note">{t('career.rivalD')}</p>}
-          </div>}
-        </Drawer>
-      </div>
+      {/* ---------- the rest, one tap away */}
+      <nav className="cr-more" aria-label={t('hub.career.more')}>
+        <button onClick={() => { sfx('ui.tap'); setMore('case'); }}><Icon n="eye" size={18} />{t('hub.career.case')}</button>
+        <button onClick={() => { sfx('ui.tap'); setMore('record'); }}><Icon n="trophy" size={18} />{t('hub.career.record')}</button>
+        <button onClick={() => { sfx('ui.tap'); setMore('sources'); }}><Icon n="phone" size={18} />{t('hub.career.sources')}</button>
+        <button onClick={() => { sfx('ui.tap'); setMore('desk'); }}><Icon n="briefcase" size={18} />{t('hub.career.desk')}</button>
+      </nav>
     </div>
+
+    <Sheet open={more === 'case'} onClose={() => setMore(null)} label={t('hub.career.case')}>
+      <div className="cr-sheet"><CaseFile ch={ch} unfolded /></div>
+    </Sheet>
+    <Sheet open={more === 'record'} onClose={() => setMore(null)} label={t('hub.career.record')}>
+      <div className="cr-sheet g-card g-card--desk sm-drawer__b">
+        <Trail at={ch.i} done={ch.done} bare />
+        <button className="sm-byline" onClick={() => { sfx('ui.tap'); chrome.go({ n: 'me' }); }}>
+          <span className="g-stamp sm-byline__stamp">{t('cn.tier.' + repTier(b.rep))}</span>
+          <span className="sm-byline__n"><b className="g-num">{Math.round(b.rep)}</b><small className="g-mono">{t('g.story.stats.cred')}</small></span>
+          <span className="sm-byline__n"><b className="g-num">{fmtK(b.followers)}</b><small className="g-mono">{t('g.story.stats.followers')}</small></span>
+          <span className="sm-byline__same g-mono">{t('g.story.stats.same')}</span>
+          <Icon n={t.rtl ? 'back' : 'arrow'} size={16} />
+        </button>
+        <div className="sm-stats">
+          <Stat icon="news" v={String(c.windows)} k={t('career.windows')} sub={epi ? t('g.story.epilogue') : t('g.story.chapterOf', { n: ch.n })} />
+          <Stat icon="check" v={rightPct + '%'} k={t('g.story.stats.right')} sub={t('g.story.stats.of', { n: c.calls })} />
+          <Stat icon="bolt" v={String(c.exclusives)} k={t('g.story.stats.excl')} sub={t('g.story.stats.uturns', { n: c.uturns })} />
+          <Stat icon="star" v={String(c.t1)} k={t('g.story.goal.t1')} sub={g && g.t1 != null ? (g.haveT1 || 0) + '/' + g.t1 + ' · ' + t('career.ranks.' + (RANKS.length - 1)) : ''} />
+        </div>
+        <h3 className="sm-sub">{t('g.story.favours.title')}<span className="g-mono">{t('g.story.favours.aside', { n: totalFavours(c) })}</span></h3>
+        <div className="sm-favs">
+          {(['burner', 'tipoff', 'stakeout'] as const).map((k) => <div key={k} className={'sm-fav' + (c.favours[k] ? ' is-on' : '')}>
+            <span className="sm-fav__ic"><Icon n={k === 'burner' ? 'phone' : k === 'tipoff' ? 'eye' : 'plane'} /><b className="g-badge">{c.favours[k]}</b></span>
+            <b>{t('career.' + k)}</b><span>{t('career.' + k + 'D')}</span>
+          </div>)}
+        </div>
+        <h3 className="sm-sub">{t('g.story.clubs.title')}<span className="g-mono">{t('career.clubsAside')}</span></h3>
+        {clubs.length ? clubs.slice(0, 6).map(([id, r]) => { const cl = clubById(id); return <div key={id} className="sm-row">
+          <Crest club={cl} size={28} />
+          <span className="sm-row__b"><b>{cl ? cl.n : id}</b><span>{r.v >= 3 ? t('career.leak') : r.v <= -3 ? t('career.frozen') : t('career.neutral')}</span></span>
+          <span className={'g-chip ' + (r.v >= 3 ? 'g-chip--done' : r.v > 0 ? 'g-chip--hijack' : 'g-chip--off')}>{num(r.v, true)}</span>
+        </div>; }) : <p className="sm-empty">{t('career.clubsEmpty')}</p>}
+        {c.history.length > 0 && <>
+          <h3 className="sm-sub">{t('g.story.hist.title')}<span className="g-mono">{t('career.windows')} {c.windows}</span></h3>
+          {c.history.slice(0, 5).map((h) => <div key={h.n + ':' + h.at} className="sm-row sm-hist">
+            <span className="sm-hist__n g-num">{t('g.story.hist.w', { n: h.n })}</span>
+            <span className={'g-stamp sm-hist__st g-stamp--' + (TIER_STAMP[h.tier] || '')}>{t('tier.' + h.tier)}</span>
+            <span className="sm-hist__p g-num">{num(h.total, true)}</span>
+            <span className="sm-hist__c g-mono">{t('g.story.hist.cred', { n: Math.round(h.repAfter) })}</span>
+          </div>)}
+        </>}
+      </div>
+    </Sheet>
+    <Sheet open={more === 'sources'} onClose={() => setMore(null)} label={t('hub.career.sources')}>
+      <div className="cr-sheet g-card g-card--desk sm-drawer__b">
+        <div className="sm-srcs">
+          {SRC.map((k) => {
+            // The Contacts Book (lib/byline.ts): one level per source, every mode. The story shows what it does here.
+            const open = rk.src.includes(k), lv = careerTrust(s, k), p = bookProgress(bookOf(s, k));
+            const need = RANKS.findIndex((r) => r.src.includes(k));
+            const steps = lv - 1;
+            return <div key={k} className={'sm-src' + (open ? '' : ' is-locked')}>
+              <div className="sm-src__top"><SrcIcon k={k} size={40} />{open ? <span className="sm-src__lv"><Rel n={Math.ceil((lv * 3) / 5)} /><b className="g-num">{t('career.level', { n: lv })}</b></span> : <Icon n="lock" size={18} className="sm-src__lock" />}</div>
+              <b className="sm-src__n">{open ? t('g.story.who.' + k) : '?'}<span className="sm-src__role g-mono">{t('src.' + k)}</span></b>
+              <span className="sm-src__d">{open ? (k === 'barber' ? t('career.barberFx', { p: Math.round(100 * Math.min(0.95, (RULES.SOURCES.barber.rel || 0.45) + 0.05 * steps)) }) : t('career.trustFx.' + steps)) : t('g.story.src.locked', { n: need + 1 })}</span>
+              {open && <><span className="g-bar g-bar--sm" style={{ ['--bar' as string]: p.max ? 'linear-gradient(90deg,#FFD35C,#F7B928)' : 'var(--gold)' }}><i style={{ width: p.pct + '%' }} /></span>
+                <span className="sm-src__next g-mono">{p.max ? t('career.trustMax') : t('career.trustNext', { n: p.need - p.into, l: lv + 1 })}{lv < TRUST_EARLY && (k === 'spotter' || k === 'physio') ? ' · ' + t('career.trustEarly', { l: TRUST_EARLY }) : lv < TRUST_AGAIN && c.rank >= 3 ? ' · ' + t('career.trustAgain', { l: TRUST_AGAIN }) : ''}</span></>}
+            </div>;
+          })}
+        </div>
+        <button className="sm-link sm-link--desk" onClick={() => { sfx('ui.tap'); chrome.go({ n: 'contacts' }); }}>{t('g.story.src.book')}<Icon n={t.rtl ? 'back' : 'arrow'} size={14} /></button>
+      </div>
+    </Sheet>
+    <Sheet open={more === 'desk'} onClose={() => setMore(null)} label={t('hub.career.desk')}>
+      <div className="cr-sheet g-card g-card--desk sm-drawer__b">
+        <button className="sm-replay" onClick={() => { setMore(null); onPrologue(); }}>
+          <span className="sm-replay__ic"><Icon n="play" size={20} /></span>
+          <span className="sm-row__b"><b>{t('g.story.cover.replay')}</b><span>{t('g.story.pro.k')} · {t('g.story.pro.title')}</span></span>
+          <Icon n={t.rtl ? 'back' : 'arrow'} size={18} />
+        </button>
+        <Slots bare />
+        {c.rank >= RANKS.length - 1 && <div className="sm-acts" style={{ marginTop: 12 }}>
+          {sure
+            ? <div className="sm-sure"><p>{t('g.story.restart.sure')}</p>
+              <div className="sm-sure__b"><GBtn size="sm" onClick={() => { update((x) => { x.career = newCareer((x.slot || 0) + 1, (x.career?.restarts || 0) + 1); x.story = { ...(x.story || {}), chapterSeen: -1, beats: {} }; }); setSure(false); }}>{t('g.story.restart.yes')}</GBtn>
+                <GBtn kind="ghost" size="sm" onClick={() => setSure(false)}>{t('g.story.restart.no')}</GBtn></div></div>
+            : <GBtn kind="ghost" size="sm" onClick={() => setSure(true)}><Icon n="briefcase" size={18} />{t('g.story.restart.go')}</GBtn>}
+          {!sure && <p className="sm-note">{t('career.rivalD')}</p>}
+        </div>}
+      </div>
+    </Sheet>
   </div>;
 }
 
-/** A section that folds away on phones (open by default from 900px wide, where there's room for everything). */
+/** Wide screens (900px+) open the case file by default. */
 const wide = () => typeof matchMedia !== 'undefined' && matchMedia('(min-width: 900px)').matches;
-function Drawer({ title, aside, hot, style, className, children }: { title: string; aside?: string; hot?: boolean; style?: CSSProperties; className?: string; children: ReactNode }) {
-  const [open, setOpen] = useState(wide);
-  return <section className={'sm-box sm-drawer g-card g-card--desk' + (open ? ' is-open' : '') + (hot ? ' is-fresh' : '') + (className ? ' ' + className : '')} style={style}>
-    <button className="sm-drawer__h" aria-expanded={open} onClick={() => { sfx('ui.tap'); setOpen(!open); }}>
-      <h2>{title}</h2>
-      {aside && <span className={'g-mono sm-drawer__a' + (hot ? ' is-hot' : '')}>{aside}</span>}
-      <Icon n="down" size={18} className="sm-drawer__ch" />
-    </button>
-    {open && <div className="sm-drawer__b">{children}</div>}
-  </section>;
-}
-
-function Meter({ label, have, need, pips }: { label: string; have: number; need: number; pips?: boolean }) {
-  const ok = have >= need, p = need ? Math.min(1, have / need) : 1;
-  return <div className={'sm-meter' + (ok ? ' is-ok' : '')}>
-    <span className="sm-meter__l">{ok && <Icon n="check" size={14} />}{label}</span>
-    <span className="sm-meter__v g-num">{have}<small>/{need}</small></span>
-    {pips ? <span className="sm-pips">{Array.from({ length: need }, (_, j) => <i key={j} className={j < have ? 'on' : ''}><Icon n="star" /></i>)}</span>
-      : <span className="g-bar" style={{ ['--bar' as string]: ok ? 'var(--c-done)' : 'linear-gradient(90deg,#FFD35C,#F7B928)' }}><i style={{ width: Math.round(p * 100) + '%' }} /></span>}
-  </div>;
-}
 
 function Stat({ icon, v, k, sub }: { icon: string; v: string; k: string; sub?: string }) {
   return <div className="sm-stat"><Icon n={icon} /><b className="g-num">{v}</b><span className="g-mono">{k}</span>{sub ? <em>{sub}</em> : null}</div>;
