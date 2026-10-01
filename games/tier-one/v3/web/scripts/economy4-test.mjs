@@ -64,7 +64,7 @@ ok('the one pack table comes from catalog.json; Gold is the 350 pack', () => {
 save.update((s) => { s.byline = { followers: 400, rep: 40, hot: 0, best: 0, rank: 1 }; s.credits = 0; s.xp = 0; s.pp = 0; });
 ok('sponsors: a Local offer lands right after the first window; one slot without Gold; the offer line has the rate card', () => {
   assert.deepEqual(deals.offersFor(save.getSave()), []);
-  save.update((s) => { deals.refreshOffers(s); });
+  save.update((s) => { assert.deepEqual(deals.refreshOffers(s), [], 'no offer before the First window'); s.stats.windows = 1; deals.refreshOffers(s); });
   const offers = deals.offersFor(save.getSave());
   assert.equal(offers.length, 1); assert.equal(offers[0].tier, 'local'); assert.equal(offers[0].first, true); assert.deepEqual(offers[0].rate, [4, 8, 16]); assert.equal(offers[0].bonus, 60); assert.equal(offers[0].strikes, 3);
   assert.equal(deals.offerLine(offers[0]).v.h, 4); assert.equal(deals.offerDm(offers[0]).key, 'e4.sp.offer.first');
@@ -89,14 +89,15 @@ ok('onDailyDone returns the Gain: XP 100 (Daily 60 + T1 40), level up to 2 with 
   assert.equal(deals.standing(s, sp.brand).stars, 1); assert.equal(deals.active().length, 0); assert.equal(deals.history()[0].status, 'clean');
   assert.equal(byline.rankOf(s), 'itk'); assert.equal(s.season.xp, s.xp);
 });
-ok('wrong calls never cost coins: a wrong Hint is ignored, a wrong Post warns, a wrong Drop strikes; a window deal ends with the window; Practice never counts', () => {
+ok('wrong calls never cost coins: a wrong Hint is ignored, a wrong Post warns, a wrong Drop strikes; a window deal ends with the window; Practice and Groups never count', () => {
   save.update((x) => { x.deals.cool = {}; x.deals.lastOffer = undefined; x.byline.followers = 20000; x.byline.rep = 60; deals.refreshOffers(x); });
   const o = deals.offersFor(save.getSave()); assert.ok(o.length >= 1 && o.length <= 3, 'offers ' + o.length);
   const nat = o.find((x) => x.tier === 'national') || o[0]; assert.ok(deals.accept(nat.id));
   const c0 = save.getSave().credits;
   const g2 = E4.newGame(E4.buildBoard('smoke-2')); for (let i = 0; i < 3; i++) { E4.ask(g2, i, 'barber'); E4.call(g2, i, (g2.board.stories[i].truth + 1) % 3, i); } E4.finish(g2);
   const gp = meta.onPracticeDone(E4.resolve(g2), false, 'p1'); assert.equal(gp.sponsor, undefined, 'practice never touches a sponsor'); assert.equal(deals.active().length, 1);
-  const gr = meta.onRoomDone(E4.resolve(g2), { code: 'ROOM1', round: 1 });
+  const gq = meta.onRoomDone(E4.resolve(g2), { code: 'ROOM1', round: 1 }); assert.equal(gq.sponsor, undefined, 'a Groups round never touches a sponsor (CONCEPT4 §4)'); assert.equal(deals.active().length, 1);
+  const gr = meta.onDeadlineDone(E4.resolve(g2), 'live-1');
   assert.ok(save.getSave().credits >= c0, 'wrong calls never cost coins'); assert.ok(!save.getSave().ledger.some((l) => l.why.startsWith('sponsor:') && l.d < 0));
   const kinds = gr.sponsor.lines.map((l) => l.kind); assert.deepEqual(kinds.slice(0, 3), ['miss', 'warn', 'strike']);
   if (nat.term === 'window') { assert.equal(deals.active().length, 0, 'a window deal ends with the window'); assert.equal(deals.history()[0].status, 'done'); assert.equal(deals.history()[0].bonus, 0, 'no bonus after a strike'); assert.equal(kinds[3], 'done'); }
@@ -107,11 +108,11 @@ ok('a Global week deal: ITK rank + 10,000 followers, warned first, walks on the 
   const gl = deals.offersFor(save.getSave()).find((x) => x.tier === 'global'); assert.ok(gl, 'a global offer'); assert.equal(gl.term, 'week'); assert.deepEqual(gl.rate, [15, 30, 60]); assert.equal(gl.strikes, 1); assert.equal(gl.warnFirst, true);
   assert.ok(deals.accept(gl.id));
   const g3 = E4.newGame(E4.buildBoard('smoke-3')); E4.ask(g3, 0, 'barber'); E4.call(g3, 0, g3.board.stories[0].truth, 2); E4.ask(g3, 1, 'barber'); E4.call(g3, 1, (g3.board.stories[1].truth + 1) % 3, 2); E4.finish(g3);
-  const g1 = meta.onRoomDone(E4.resolve(g3), { code: 'ROOM1', round: 2 });
+  const g1 = meta.onDeadlineDone(E4.resolve(g3), 'live-2');
   const k1 = g1.sponsor.lines.map((l) => l.kind); assert.ok(k1.includes('warn'), 'warned first: ' + k1); assert.ok(!k1.includes('walked')); assert.equal(deals.active().length, 1, 'a week deal survives the window');
   const paidSoFar = deals.active()[0].p.paid; assert.ok(paidSoFar >= 60, 'a right Drop paid 60 or a Scoop 120: ' + paidSoFar);
   const g4 = E4.newGame(E4.buildBoard('smoke-4')); E4.ask(g4, 0, 'barber'); E4.call(g4, 0, (g4.board.stories[0].truth + 1) % 3, 2); E4.finish(g4);
-  const g2r = meta.onRoomDone(E4.resolve(g4), { code: 'ROOM1', round: 3 });
+  const g2r = meta.onDeadlineDone(E4.resolve(g4), 'live-3');
   assert.equal(g2r.sponsor.walked, true); assert.equal(g2r.deal.status, 'pulled'); assert.equal(deals.active().length, 0); assert.equal(deals.standing(save.getSave(), gl.brand).walks, 1); assert.equal(deals.history()[0].paid, paidSoFar);
 });
 ok('season track: 30 tiers, free look every 5, Gold look every 3, Legendary at 30; claims pay through the one ledger', () => {

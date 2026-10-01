@@ -21,7 +21,7 @@ import type { Driver4, Outcome4 } from './driver';
 export type AnyResult = (Result | Result4) & { rank?: number | null; players?: number; par?: number | null; row?: string; cast?: CastSaga[] };
 import { noteWindow } from './lens';
 import { recordInto, liteOf, bylineOf, rankOf, windowKey, type CallLite } from './byline';
-import { onCallAll as sponsorCalls, onTermEnd as sponsorTermEnd, refreshOffers, sponsorGain, type CallOutcome, type TermOutcome, type DealMode, type Offer } from './deals';
+import { onCallAll as sponsorCalls, onTermEnd as sponsorTermEnd, refreshOffers, sponsorGain, COUNTS, type CallOutcome, type TermOutcome, type DealMode, type Offer } from './deals';
 type Sponsor = { calls: CallOutcome[]; ends: TermOutcome[]; offers: Offer[] };
 const noSponsor = (): Sponsor => ({ calls: [], ends: [], offers: [] });
 
@@ -123,7 +123,7 @@ function settleWindow(s: Save, r: AnyResult, mode: Mode4, key: string, opts: { x
   const sp = noSponsor();
   for (const p of lite.filter((x) => x.called).sort((a, c) => a.day - c.day || a.i - c.i)) sp.calls.push(...sponsorCalls(s, { mode: mode as DealMode, right: p.right, s: p.s, scoop: p.scoop, i: p.i }));
   s.stats.windows = (s.stats.windows || 0) + 1;
-  if (mode !== 'practice') sp.ends.push(...sponsorTermEnd(s, { afterWindow: true }));
+  if (COUNTS[mode as DealMode]) sp.ends.push(...sponsorTermEnd(s, { afterWindow: true })); // a window deal's term is a window that counts (§4)
   sp.offers.push(...refreshOffers(s));
   if (opts.coins) credit(s, opts.coins, mode + ':' + (opts.no || key));
   addXP(s, opts.xp ?? xpForWindow(mode, r.tier));
