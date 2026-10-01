@@ -166,7 +166,8 @@ export function syncDeals(): DealOutcome[] { let out: DealOutcome[] = []; update
 /** The one-line condition: `t(key, v)`. */
 export function dealLine(d: Offer | ActiveDeal | DealDone): { key: string; v: Record<string, string | number> } {
   const n = 'n' in d ? d.n : 0;
-  return { key: 'e4.deal.cond.' + d.cond + (d.term === 'week' && d.cond === 'rightCalls' ? 'Week' : ''), v: { n } };
+  const weekly = d.term === 'week' && (d.cond === 'rightCalls' || d.cond === 'repAbove' || d.cond === 'noWrongDrop');
+  return { key: 'e4.deal.cond.' + d.cond + (weekly ? 'Week' : ''), v: { n } };
 }
 /** Progress toward the condition: [have, need] (a bar on the deal card). */
 export function dealProgress(a: ActiveDeal, s: Save = getSave()): [number, number] {

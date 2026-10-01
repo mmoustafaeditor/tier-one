@@ -17,7 +17,7 @@ import { update, getSave, type Save } from './save';
 import { MONET } from './monet';
 import { syncSeason, seasonAt, installThemeCSS, setShopBuy, equipped as seasonEquipped, type CosKind } from './season';
 import { item, priceNow, onSale, isStandard, isLegacyKind, standardOf, legacy, GOLD_CREDITS, CREDIT_PACKS, COIN_PACKS, STARTER, SERVER_EARN, packBonus, type CreditPack, type CoinPack, type Item, type Kind, type Price } from './catalog';
-import { credit as creditCoins, debit as debitCoins, setCreditHooks, levelOf, xpOf, SEASON } from './economy';
+import { credit as creditCoins, debit as debitCoins, setCreditHooks, levelOf, xpOf, SEASON, CAREER_EXTRAS, RENAME_COINS, type CareerExtra } from './economy';
 import { t } from './i18n';
 import { earnMet } from './earned';
 import { catchphraseOf, catchphraseColor, type Catchphrase } from './catchphrase';
@@ -429,3 +429,38 @@ export function priceText(p: Price, cur?: Currency): string {
 }
 export const shortBy = (p: Price, cur: Currency, s: Save = getSave()) => Math.max(0, (p[cur] || 0) - balance(cur, s));
 export const whyText = (why: string) => { const k = why.split(':')[0]; const v = t('eco.why.' + k); return v === 'eco.why.' + k ? k : v; };
+
+// ---------------------------------------------------------------- Career extras and the handle (coins; RULES4 §3 "Spend")
+// An extra DM (40) or a tip-off (60), at most two extras a window; the Story lane applies them to the live window
+// (an extra DM = +1 DM today, a tip-off = one contact's read on one story for free). Counted per window seed.
+export { CAREER_EXTRAS, RENAME_COINS };
+export const extrasUsed = (seed: string, s: Save = getSave()) => s.stats['extras:' + seed] || 0;
+export const extrasLeft = (seed: string, s: Save = getSave()) => Math.max(0, CAREER_EXTRAS.maxPerWindow - extrasUsed(seed, s));
+export const extraPrice = (kind: CareerExtra) => CAREER_EXTRAS[kind];
+/** Buys one Career extra for the window `seed`. Returns false when short or the window has had its two. */
+export function buyCareerExtra(kind: CareerExtra, seed: string): boolean {
+  const s = getSave(); const price = extraPrice(kind);
+  if (!price || extrasLeft(seed, s) <= 0 || s.credits < price) return false;
+  let ok = false;
+  update((x) => {
+    if (!debitCoins(x, price, 'extra:' + kind)) return;
+    x.stats['extras:' + seed] = (x.stats['extras:' + seed] || 0) + 1;
+    if (x.career) { if (kind === 'extraDm') x.career.favours.burner++; else x.career.favours.tipoff++; }
+    ok = true;
+  });
+  return ok;
+}
+/** The handle (your @name). The first change is free; every one after costs 250 coins. */
+export const renamePrice = (s: Save = getSave()) => ((s.stats.renames || 0) > 0 ? RENAME_COINS : 0);
+export const HANDLE_RE = /^[A-Za-z0-9_]{3,16}$/;
+export function renameHandle(handle: string): { ok: true; handle: string; paid: number } | { ok: false; error: 'bad' | 'short' | 'same' } {
+  const h = handle.replace(/^@/, '').trim();
+  const s = getSave();
+  if (!HANDLE_RE.test(h)) return { ok: false, error: 'bad' };
+  if (h === s.nick) return { ok: false, error: 'same' };
+  const price = renamePrice(s);
+  if (s.credits < price) return { ok: false, error: 'short' };
+  let paid = 0;
+  update((x) => { if (price && !debitCoins(x, price, 'rename')) return; paid = price; x.nick = h; x.stats.renames = (x.stats.renames || 0) + 1; });
+  return { ok: true, handle: h, paid };
+}
