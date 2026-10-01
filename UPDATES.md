@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber (Tier One APK at mmoustafaeditor's request) · Tier One Android 3.4.0 published (versionCode 19)
+- **What changed:** The Tier One APK and update feed move from the held 3.1.0 to 3.4.0. Mostafa asked Saif to take care of the APK. The single-file bundle `tier-one/apk/index.html` is rebuilt from the current v3 source (`npm run build:min`, build 29847278). It now carries everything the web already had: drawn motion films, catchphrases, "HERE WE GO" removed, and the one design system. The bundle inside the held 3.4.0 APK predated those merges. `downloads/TierOne.apk` is a fresh `gradle clean assembleDebug` at **3.4.0 / versionCode 19**. It's 19, not 18, because an 18 was briefly published before the hold and may be installed. Checks: `aapt` reads 19 / 3.4.0; the bundled `assets/index.html` is byte-identical to `tier-one/apk/index.html`; the intro files are present; and the signing certificate is identical to the published 3.1.0 (`apksigner`), so installed apps accept the update. `api/tier-one/latest.js` announces 3.4.0 / 19 with a 3.4 changelog. Docs: the Tier One APK badge links to sembagames.app, the versionCode is 19, the app bundles `tier-one/apk` (not the classic game), and The Gaffer is at 2.2.0.
+- **Files:** `downloads/TierOne.apk`, `api/tier-one/latest.js`, `games/tier-one/app/build.gradle`, `tier-one/apk/index.html`, `tier-one/apk/version.json`, `games/tier-one/README.md`, `README.md`, `CLAUDE.md`, `UPDATES.md`
+- **Heads-up for the team:** Installed Tier One apps will now offer the 3.4.0 download. The web game (`tier-one/`) is unchanged and already 3.4.0. Saif's old requests in `.claude/requests.md` are left as they are.
+
 ## 2026-10-01 · saifsaber · The Gaffer CI: a failed publish now fails the run
 - **What changed:** When a push run and a manual "publish a new APK" run overlapped, the second one's publish hit a rebase conflict on the generated build files, never reached `main`, and still showed green. The publish step now rebases with this run's generated files winning (`-X theirs`), aborts a failed rebase before retrying, and fails the run if all 4 attempts fail.
 - **Files:** `.github/workflows/build-the-gaffer.yml`, `games/the-gaffer/README.md` (APK and HTML links now point at sembagames.app: the GitHub raw links 404 for people outside the repo), `UPDATES.md`
