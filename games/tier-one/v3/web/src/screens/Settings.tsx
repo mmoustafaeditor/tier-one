@@ -10,7 +10,6 @@ import { reconcile } from '../lib/wallet';
 import { Sheet } from '../ui/bits';
 import { Icon, TopBar } from '../ui/game';
 import { Toggle, Avatar, Seg } from '../ui/screenbits';
-import { FilmSetting } from '../ui/film';
 import { AppIcon } from '../ui/phone';
 import type { Chrome, Go } from '../App';
 
@@ -52,7 +51,6 @@ function SettingsBody({ go, onClose }: { go: Go; onClose?: () => void }) {
       <div className="ph-set__rows">
         <div className="trow"><span className="trow__ic"><Icon n="sound" /></span><span className="trow__t"><b>{t('os.settings.sound')}</b><small>{t('os.settings.soundD')}</small></span><Toggle on={s.sound} label={t('os.settings.sound')} onChange={() => update((x) => { x.sound = !x.sound; })} /></div>
         <div className="trow"><span className="trow__ic"><Icon n="eye" /></span><span className="trow__t"><b>{t('os.settings.motion')}</b><small>{t('os.settings.motionD')}</small></span><Toggle on={s.reduced} label={t('os.settings.motion')} onChange={() => update((x) => { x.reduced = !x.reduced; })} /></div>
-        <FilmSetting />
         <div className="trow trow--col"><span className="trow__t"><b>{t('os.settings.theme')}</b><small>{t('os.settings.themeD')}</small></span>
           <Seg value={s.edition} label={t('os.settings.theme')} onChange={(v) => update((x) => { x.edition = v; })} options={[{ v: '' as const, label: t('os.settings.auto') }, { v: 'late' as const, label: t('os.settings.dark') }, { v: 'morning' as const, label: t('os.settings.light') }]} />
         </div>

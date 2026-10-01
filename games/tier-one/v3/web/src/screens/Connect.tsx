@@ -1,15 +1,11 @@
 // One Byline screens (GOTY.md §1.2–1.4): the Feed, Rivals and the Contacts Book.
 // Each screen has one moment: the feed prints its new copy, the rivals' scalp stamps slam, a contact's card fills.
 import { useEffect, useState, type CSSProperties } from 'react';
-import { useT, num } from '../lib/i18n';
+import { useT } from '../lib/i18n';
 import { useSave, getSave } from '../lib/save';
-import { spend } from '../lib/meta';
 import { sfx, buzz } from '../lib/sfx';
-import {
-  markRead, rivalOf, netOf, rivalState, RIVALS, SCALP_NET, TROPHY_NET, BOOK_SRC, bookOf, bookProgress, coffeeToday, buyCoffee,
-  COFFEE_COST, XP_COFFEE, BOOK_LV, toRoute, type FeedItem,
-} from '../lib/byline';
-import { Icon, GBtn, TopBar, SrcIcon, CountUp } from '../ui/game';
+import { markRead, rivalOf, netOf, rivalState, RIVALS, SCALP_NET, TROPHY_NET, toRoute, type FeedItem } from '../lib/byline';
+import { TopBar, CountUp } from '../ui/game';
 import { FeedRow, RivalMark, Handle, tn } from '../ui/connect';
 import { Empty } from '../ui/bits';
 import type { Chrome } from '../App';
@@ -100,52 +96,5 @@ function RivalCard({ id, i }: { id: string; i: number }) {
 }
 
 // ---------------------------------------------------------------- Contacts
-export function ContactsScreen(chrome: Chrome) {
-  const t = useT();
-  return <div className="g-screen g-screen--wide cn-screen cn-contacts">
-    <TopBar back={{ label: t('g.tabs.me'), onClick: () => chrome.go({ n: 'me' }) }} title={t('cn.contacts.title')} />
-    <header className="cn-head"><h1>{t('cn.contacts.hed')}</h1><p>{t('cn.contacts.sub')}</p></header>
-    <div className="cn-cgrid">{BOOK_SRC.map((src) => <ContactCard key={src} src={src} />)}</div>
-    <p className="cn-fair">{t('cn.contacts.fair')}</p>
-  </div>;
-}
-function ContactCard({ src }: { src: string }) {
-  const t = useT(); const s = useSave();
-  const e = bookOf(s, src), p = bookProgress(e);
-  const [bump, setBump] = useState(0);
-  const had = coffeeToday(s, src), broke = s.credits < COFFEE_COST;
-  const coffee = () => { if (buyCoffee(src, spend)) { sfx('coin'); buzz(20); setBump((x) => x + 1); } };
-  const perks: [number, string, boolean][] = [[2, 'l2', false], [3, 'l3', false], [3, 'p3', true], [4, 'l4', false], [5, 'l5', false], [5, 'p5', true]];
-  const next = perks.find(([lv]) => lv > p.lv);
-  return <article className={'cn-contact' + (p.lv >= 2 ? ' has-frame' : '') + (p.lv >= 5 ? ' is-gold' : '')} style={{ ['--sc' as string]: SRC_C[src] }}>
-    <header className="cn-contact__h">
-      <SrcIcon k={src} size={48} />
-      <div className="cn-contact__id">
-        <h2>{t('g.story.who.' + src)}<span className="cn-contact__role"> · {t('src.' + src)}</span></h2>
-        {p.lv >= 4 ? <p className="cn-contact__nick">{t('cn.contacts.calls', { n: t('cn.nick.' + src) })}</p> : <p>{t('src.' + src + 'P')}</p>}
-      </div>
-      <span className="cn-lv" aria-label={t('cn.contacts.lv', { n: p.lv })}>
-        <b className="g-num" key={p.lv}>{p.lv}</b>
-        <span className="cn-lv__pips" aria-hidden="true">{BOOK_LV.map((_, k) => <i key={k} className={k < p.lv ? 'on' : ''} />)}</span>
-      </span>
-    </header>
-    <div className="cn-xp">
-      <span className="g-bar" style={{ ['--bar' as string]: p.lv >= 5 ? 'linear-gradient(90deg,#FFD35C,#F7B928)' : 'var(--sc)' }}><i key={bump} style={{ width: p.pct + '%' }} /></span>
-      <small>{p.max ? t('cn.contacts.max') : t('cn.contacts.xp', { a: p.into, b: p.need, n: p.lv + 1 })}</small>
-      {bump > 0 && <span className="cn-xp__pop" key={bump} aria-hidden="true">+{XP_COFFEE}</span>}
-    </div>
-    <div className="cn-perks">
-      {perks.filter(([lv]) => lv <= p.lv).map(([, k, play]) => <span key={k} className="cn-perk"><Icon n="check" size={13} />{t('cn.perk.' + k)}{play && <em>{t('cn.contacts.storyOnly')}</em>}</span>)}
-      {next && <p className="cn-perks__next"><Icon n="lock" size={13} />{t('cn.contacts.next', { n: next[0], p: t('cn.perk.' + next[1]) })}</p>}
-    </div>
-    <footer className="cn-contact__f">
-      <small>{t('cn.contacts.asked', { a: num(e.asks || 0), b: num(e.hits || 0) })}</small>
-      <GBtn size="sm" kind={had ? 'ghost' : 'paper'} disabled={had || broke} onClick={coffee} sound={null} label={had ? t('cn.contacts.coffeeDone') : broke ? t('cn.contacts.coffeeBroke') : t('cn.contacts.coffee')}>
-        <CoffeeCup />{had ? t('cn.contacts.coffeeDone') : t('cn.contacts.coffee')}{!had && <span className="cn-price"><span className="g-coin" />{COFFEE_COST}</span>}
-      </GBtn>
-      {!had && broke && <small className="cn-contact__why">{t('cn.contacts.coffeeBroke')}</small>}
-    </footer>
-  </article>;
-}
-const SRC_C: Record<string, string> = { kitman: '#1C8A50', barber: '#C26B00', agent: '#B8830B', spotter: '#1F8FB0', physio: '#D93A5E' };
-const CoffeeCup = () => <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 9h13v5a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6zM17 11h1.5a2.5 2.5 0 0 1 0 5H17M8 3v3M12 3v3" /></svg>;
+// The Contacts Book became the DMs app (CONCEPT4 §2): screens/DMs.tsx. The route ('contacts') keeps its name.
+export { DMsScreen as ContactsScreen } from './DMs';

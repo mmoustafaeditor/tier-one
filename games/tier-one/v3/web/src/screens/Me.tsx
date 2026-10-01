@@ -14,7 +14,6 @@ import { Icon, TopBar, GBtn } from '../ui/game';
 import type { Chrome } from '../App';
 import { startTutorial } from './Onboarding';
 import { BylineCard, tn } from '../ui/connect';
-import { ScenesGallery } from '../film/ScenesGallery';
 import { StyleCard } from '../ui/live';
 
 
@@ -31,7 +30,6 @@ export function MeScreen(chrome: Chrome) {
   const top = BOOK_SRC.map((src) => ({ src, e: bookOf(s, src) })).sort((a, b) => b.e.xp - a.e.xp)[0];
   const lv = levelOf(s.pp); // the season Pass level: the one level number (lib/progress.ts)
   const ch = chapterOf(s);
-  const toReels = () => document.getElementById('reels-h')?.scrollIntoView({ behavior: s.reduced ? 'auto' : 'smooth', block: 'start' });
   const due = unpaid(s).length;
   const tiles: { k: string; ic: string; t: string; sub: string; go: () => void; badge?: number; tone?: string }[] = [
     { k: 'boards', ic: 'trophy', t: t('aw.title'), sub: due ? t('aw.hubDue', { n: due }) : t('aw.hubSub'), badge: due, go: () => chrome.go({ n: 'boards' }) },
@@ -40,7 +38,6 @@ export function MeScreen(chrome: Chrome) {
     { k: 'contacts', ic: 'phone', t: t('cn.me.contacts'), sub: t('cn.me.contactsSub', { s: t('src.' + top.src), n: top.e.lv }), go: () => chrome.go({ n: 'contacts' }) },
     { k: 'pass', ic: 'crown', t: t('g.me.pass'), sub: t('cn.me.passSub', { n: lv.n }), go: () => chrome.go({ n: 'pass' }) },
     { k: 'desk', ic: 'pen', t: t('eco.title'), sub: t('eco.sub'), go: () => chrome.go({ n: 'customize' }) },
-    { k: 'films', ic: 'eye', t: t('cn.me.films'), sub: t('film.gallery.aside'), go: toReels },
   ];
   return <div className="g-screen me">
     <TopBar title={t('g.tabs.me')} onMenu={chrome.openSettings} />
@@ -74,8 +71,6 @@ export function MeScreen(chrome: Chrome) {
           <span className="trophy__r"><span className="g-coin" />{ACH[id]}</span>
         </div>; })}
       </section>
-
-      <div className="me__films" style={{ ['--i' as string]: 4 }}><ScenesGallery /></div>
 
       <div className="g-sec me__h" style={{ ['--i' as string]: 5 }}><h2>{t('cn.me.more')}</h2></div>
       <div className="me__links" style={{ ['--i' as string]: 5 }}>

@@ -9,13 +9,13 @@ import { sfx } from './lib/sfx';
 import { checkPurchase } from './lib/monet';
 import { Toasts } from './ui/bits';
 import { bootPlatform } from './lib/account';
-import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
+import { makeDriver, type Driver4, type RoomRef } from './lib/driver';
 import { Home } from './screens/Home';
 import { LockScreen } from './screens/Front';
 import { installTilt, prefersReducedMotion } from './ui/game';
 import { Phone, DeskPanel, AppIcon, appOf, appById, routeOf, isUnlocked, bumpUse, batteryMode, levelInfo, unlockLevel, callLevel, APPS, type AppId } from './ui/phone';
 import { NotifyHost, notify, setTrayNav } from './ui/juice';
-import { onGain } from './lib/meta';
+import { onGain, onDriverDone } from './lib/meta';
 // Code-split web build (GOTY.md §8.2): the home screen and the lock screen ship with the shell; every app is its own
 // chunk, fetched on first open (the service worker keeps the play loop's chunks cached after its install).
 const MeScreen = lazy(() => import('./screens/Me').then((m) => ({ default: m.MeScreen })));
@@ -55,7 +55,7 @@ export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
   | { n: 'rooms'; code?: string; challenge?: string } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize' } | { n: 'ddlive' } | { n: 'editor' } | { n: 'boards'; period?: 'daily' | 'weekly' | 'wire' }
   | { n: 'settings' }
-  | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
+  | { n: 'play'; mode: 'practice' | 'career' | 'tutorial' | 'deadline' | 'challenge'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
 /** What every screen gets: `go` (any route), `home` (the home screen), `openApp` (an app by id), `openSettings` (the
  *  Settings app), `edition` (toggle the phone's light/dark theme). */
@@ -174,14 +174,12 @@ export function App() {
 
   useEffect(() => installTilt(), []);
 
-  const driver: Driver | null = useMemo(() => {
-    if (route.n === 'daily') return remoteDriver();
-    if (route.n === 'room') return remoteDriver(route.room);
-    if (route.n === 'play') {
-      const sv = getSave();
-      const lw = route.mode === 'practice' ? sv.practice.live : sv.career && sv.career.live;
-      return lw ? localDriver(route.mode, lw) : null;
-    }
+  // Every window runs on the 4.0 driver (lib/driver.ts) and settles once through lib/meta.ts onDriverDone; Blurt
+  // (screens/Blurt.tsx via screens/Window.tsx) reads the Gain it fires. 'play' resumes the mode's live window or starts one.
+  const driver: Driver4 | null = useMemo(() => {
+    if (route.n === 'daily') return makeDriver({ mode: 'daily', onDone: onDriverDone });
+    if (route.n === 'room') return makeDriver({ mode: 'room', room: route.room, onDone: onDriverDone });
+    if (route.n === 'play') return makeDriver({ mode: route.mode, onDone: onDriverDone });
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.n === 'daily' ? 'daily' : route.n === 'room' || route.n === 'play' ? route.key : route.n]);
