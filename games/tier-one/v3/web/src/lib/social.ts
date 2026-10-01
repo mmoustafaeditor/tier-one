@@ -36,7 +36,7 @@ export interface SocialSave {
   newsroom?: { code: string; name: string } | null; made?: string[]; answered?: string[];
 }
 export interface RoomPlayer { pid: string; nick: string; pub: string; flair?: string; tier?: string; joined: number; seen?: number; results: ({ score: number; tier: Tier; ex: number; row: string; at?: number } | null)[] }
-export type RoomEvent = { t: 'open' | 'join' | 'filed' | 'taunt'; pid: string; nick: string; at: number; name?: string; round?: number; score?: number; tier?: Tier; ex?: number; row?: string; hwg?: string[]; k?: number; to?: string | null; toNick?: string };
+export type RoomEvent = { t: 'open' | 'join' | 'filed' | 'taunt' | 'leave'; pid: string; nick: string; at: number; name?: string; round?: number; score?: number; tier?: Tier; ex?: number; row?: string; hwg?: string[]; k?: number; to?: string | null; toNick?: string };
 export interface Room { code: string; name: string; rounds: number; created: number; host: string; cadence: 'weekly' | 'daily'; season?: string; players: RoomPlayer[]; now: number; roundHours: number; stepMs: number; feed: RoomEvent[] }
 export interface RoomRoundPlayer { pid: string; nick: string; pub: string; flair: string; tier: string; score: number; tier2: Tier; ex: number; row: string; per: { i: number; call: { day: number; o: number; s: number; ut: boolean } | null; right: boolean; excl: boolean; pts: number; truth: number }[] }
 export interface RoomRound { code: string; round: number; days: number; cast: { i: number; player: { id: string; n: string; s: string; no: number }; from: { id: string; s: string; c1: string; c2: string }; to: { id: string; s: string; c1: string; c2: string }; alt?: { id: string; s: string; c1: string; c2: string } }[]; players: RoomRoundPlayer[] }
@@ -273,3 +273,24 @@ export function syncNewsroom(nr: Newsroom | null) {
 // ---------------------------------------------------------------- copy helpers
 export const shortRecord = (r: RivalRec) => r.w + '–' + r.l + (r.d ? '–' + r.d : '');
 export const hoursLeft = (exp: number) => Math.max(0, Math.ceil((exp - Date.now()) / 3600e3));
+
+// ---------------------------------------------------------------- rooms you hold a seat in (3.6)
+export type RoomRef = { code: string; name: string; pid: string; sec: string; nick: string };
+/** A saved room, read from the server. 'gone' when the server no longer has it (a room closes itself after 21 days
+ *  without play): the caller drops it from the list with a note. */
+export async function loadRoom(ref: RoomRef): Promise<{ room: Room } | { gone: true } | { error: string }> {
+  const x = await v3<{ room: Room }>('room.get', { code: ref.code, pid: ref.pid, sec: ref.sec, ...identity() });
+  if (!x.ok) return x.error === 'not found' ? { gone: true } : { error: String(x.error || 'generic') };
+  // A room from a 3.3 server carries no cadence, feed or step: it ran a round a day, and its feed is simply empty.
+  const old = x.room as Partial<Room> & Pick<Room, 'code' | 'name' | 'rounds' | 'created' | 'host' | 'players' | 'roundHours'>;
+  return { room: { ...old, cadence: old.cadence || 'daily', stepMs: old.stepMs || 864e5, feed: old.feed || [], now: old.now || Date.now() } };
+}
+/** Drop a room from the saved list (left, or closed on the server). */
+export function forgetRoom(code: string) { update((s) => { s.rooms = s.rooms.filter((r) => r.code !== code); }); }
+/** Leave a room on the server (`room.leave`), then forget it. A room already gone counts as left. */
+export async function leaveRoom(ref: RoomRef): Promise<boolean> {
+  const x = await v3<{ closed?: boolean }>('room.leave', { code: ref.code, pid: ref.pid, sec: ref.sec });
+  if (!x.ok && x.error !== 'not found') return false;
+  forgetRoom(ref.code);
+  return true;
+}

@@ -10,7 +10,7 @@
 //   catchphraseColor(save) -> the stamp colour of the equipped line (hex)
 //
 // Where lines come from (all are `catchphrase` catalog items, lib/catalog.ts):
-//   house     'Book it.' (cp.house.default): everyone's, from the first call
+//   house     'It’s happening.' (cp.house.default): everyone's, from the first call
 //   earned    rank, streaks and story chapters (source 'earned'; lib/earned.ts) — never sold
 //   signature bought with credits (source 'store'), fixed prices, refundable like any look
 //   season    one line per season set, on sale only inside the season (vault returns possible)

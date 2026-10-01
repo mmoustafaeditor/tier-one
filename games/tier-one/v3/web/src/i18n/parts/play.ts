@@ -21,7 +21,7 @@ export default {
         publish: 'Publish · {s} {o}', uturnBtn: 'U-turn to {o}', noStory: 'Ring someone first. No sources, no story.',
         rivals: 'Who could beat you', rivalWhen: 'Posts days {a}–{b}', how: 'How’s this scored?',
         howIntro: 'Each source adds points to the outcomes it points at. Two different circles agreeing is how you land an exclusive.',
-        howPoints: 'Right: Talks / Advanced / Confirmed win {t}. Wrong: lose {l}.',
+        howPoints: 'Right: In talks / Advanced / Confirmed win {t}. Wrong: lose {l}.',
       },
       onb: {
         tag: 'The transfer journalist game', k: 'Welcome to the desk', h: 'Break the transfer first. Or get ratio’d trying.',
@@ -35,10 +35,10 @@ export default {
         second: 'Ring a different kind of source.', secondP: 'Two different kinds of source agreeing is how you land an exclusive. Street voices only count once.',
         go: 'Time to call it.', goP: 'You’ve heard enough for day one. Open the call panel.',
         what: 'Pick what happens.', whatP: 'Exactly one is true: Done, Hijack, Off or Fake. Go with what What we know is leaning towards.',
-        loud: 'Pick how loud, then hold Publish.', loudP: 'Talks is safe. Confirmed pays most and hurts most if you’re wrong. The numbers on each button are today’s stake.',
+        loud: 'Pick how loud, then hold Publish.', loudP: 'In talks is safe. Confirmed pays most and hurts most if you’re wrong. The numbers on each button are today’s stake.',
         back: 'Filed. Back to the board.', backP: 'Your call is out. Head back to the board to end the day.',
-        sleep: 'That’s day one.', sleepP: 'Sleep on it and the week plays out: rivals post overnight, day 7 is a 60-second Deadline Day. Or start your comeback now: the Story is waiting.',
-        story: 'Go to the Story', keep: 'Keep playing', skip: 'Skip',
+        sleep: 'That’s day one.', sleepP: 'Sleep on it and the week plays out: rivals post overnight, day 7 is a 60-second Deadline Day. Or start your comeback now: Career is waiting.',
+        story: 'Go to Career', keep: 'Keep playing', skip: 'Skip',
       },
       res: {
         rolling: 'The presses are rolling…', byline: 'Exclusive by {n}', hedMove: '{p} to {c}: you called it', hedOut: '{p}: {o}. You called it', hedNone: 'A quiet edition',

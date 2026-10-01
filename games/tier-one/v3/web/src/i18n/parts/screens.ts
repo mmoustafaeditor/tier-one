@@ -20,7 +20,7 @@ export default {
         reporters: '{n} reporters', copy: 'Copy invite', copied: 'Invite copied', roundsT: 'Rounds', table: 'Standings', code: 'Code',
         state: { open: 'Open now', soon: 'Soon', closed: 'Closed', played: 'Filed' },
         leagueK: 'The weekly league', leagueSub: 'Top {u} go up, bottom {d} go down on Sunday night.', leagueUp: 'Top {u} go up on Sunday night.', leagueDown: 'Bottom {d} go down on Sunday night.', week: 'Week {w}', how: 'How points work',
-        daily: 'Daily', wire: 'Wire',
+        daily: 'Daily', wire: 'Transfer Market',
       },
       practice: {
         k: 'Off the record', hed: 'Nothing counts. Everything teaches.', sub: 'A fresh board, no pressure, nothing on your record.',
@@ -38,7 +38,7 @@ export default {
           ['Ring your sources', 'Spend contact points calling the kit man, the barber, the agent and friends.', 'The physio says: “Medical at Chelsea.”'],
           ['Read the evidence', 'Every answer adds a tally to one outcome. Street voices repeat each other, so count the street once.', 'Done ✓✓ · Hijack ✓ · Off · Fake'],
           ['Pick what happens', 'Exactly one is true: Done, Hijack, Off or Fake.', 'Done: he signs for the club in the story.'],
-          ['Pick how loud', 'Talks, Advanced or Confirmed. Louder pays more and hurts more.', 'Right on day 1: Talks +{b0}, Advanced +{b1}, Confirmed +{b2}. Wrong: −{l}.'],
+          ['Pick how loud', 'In talks, Advanced or Confirmed. Louder pays more and hurts more.', 'Right on day 1: In talks +{b0}, Advanced +{b1}, Confirmed +{b2}. Wrong: −{l}.'],
           ['Beat the rivals', 'Post before the rivals for an exclusive, then survive a 60-second Deadline Day.', 'First right Confirmed call: +{x} exclusive.'],
         ],
         full: 'The full rules', fullSub: 'Every number, read from the rules the game runs on.',
@@ -116,7 +116,7 @@ export default {
         reporters: '{n} periodistas', copy: 'Copiar invitación', copied: 'Invitación copiada', roundsT: 'Rondas', table: 'Clasificación', code: 'Código',
         state: { open: 'Abierta', soon: 'Pronto', closed: 'Cerrada', played: 'Enviada' },
         leagueK: 'La liga semanal', leagueSub: 'Los {u} primeros suben y los {d} últimos bajan el domingo por la noche.', leagueUp: 'Los {u} primeros suben el domingo por la noche.', leagueDown: 'Los {d} últimos bajan el domingo por la noche.', week: 'Semana {w}', how: 'Cómo se puntúa',
-        daily: 'Diario', wire: 'Wire',
+        daily: 'Diario', wire: 'Mercado',
       },
       practice: {
         k: 'Extraoficial', hed: 'Nada cuenta. Todo enseña.', sub: 'Un tablero nuevo, sin presión y sin que quede registrado.',

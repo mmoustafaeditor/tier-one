@@ -22,7 +22,6 @@ const StoryScreen = lazy(() => import('./screens/Story').then((m) => ({ default:
 const PassScreen = lazy(() => import('./screens/Pass').then((m) => ({ default: m.PassScreen })));
 const PracticeScreen = lazy(() => import('./screens/Practice').then((m) => ({ default: m.PracticeScreen })));
 const RoomsScreen = lazy(() => import('./screens/Rooms').then((m) => ({ default: m.RoomsScreen })));
-const NewsroomScreen = lazy(() => import('./screens/Newsroom').then((m) => ({ default: m.NewsroomScreen })));
 const HowTo = lazy(() => import('./screens/HowTo').then((m) => ({ default: m.HowTo })));
 const SettingsSheet = lazy(() => import('./screens/Settings').then((m) => ({ default: m.SettingsSheet })));
 const Onboarding = lazy(() => import('./screens/Onboarding').then((m) => ({ default: m.Onboarding })));
@@ -34,6 +33,8 @@ const CustomizeScreen = lazy(() => import('./screens/Customize').then((m) => ({ 
 const DDLiveScreen = lazy(() => import('./screens/DDLive').then((m) => ({ default: m.DDLiveScreen })));
 const EditorDeskScreen = lazy(() => import('./screens/Editor').then((m) => ({ default: m.EditorDeskScreen })));
 const BoardsScreen = lazy(() => import('./screens/Boards').then((m) => ({ default: m.BoardsScreen })));
+const DailyHubScreen = lazy(() => import('./screens/DailyHub').then((m) => ({ default: m.DailyHubScreen })));
+const MissionsScreen = lazy(() => import('./screens/DailyHub').then((m) => ({ default: m.MissionsScreen })));
 import { setNav } from './screens/Connect';
 import { SocialWatch } from './ui/social';
 import { captureReferral, headlineVars, headlineStyle } from './lib/wallet';
@@ -44,10 +45,12 @@ import { MorningPapers } from './ui/live';
 import './styles/motion.css';
 import './styles/desktop.css';
 import './styles/system.css'; // the one design system (docs/DESIGN_SYSTEM.md): last word on the shared parts
+import './styles/fit.css'; // 3.6: one-screen pages (no page scroll), the four-mode Home, pagers and tips
 
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
-  | { n: 'rooms'; code?: string; challenge?: string } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize' } | { n: 'ddlive' } | { n: 'editor' } | { n: 'boards'; period?: 'daily' | 'weekly' | 'wire' }
+  | { n: 'rooms'; code?: string; challenge?: string; expired?: boolean } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize' } | { n: 'ddlive' } | { n: 'editor' }
+  | { n: 'boards'; period?: 'daily' | 'weekly' | 'rooms' | 'wire'; from?: Route } | { n: 'today' } | { n: 'missions' }
   | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
 
@@ -55,16 +58,17 @@ const TABS: { n: Route['n']; k: string; icon: string; c: string }[] = [
   { n: 'front', k: 'g.tabs.home', icon: 'home', c: 'var(--red)' }, { n: 'story', k: 'g.tabs.story', icon: 'story', c: 'var(--m-story)' }, { n: 'wire', k: 'g.tabs.wire', icon: 'wire', c: 'var(--m-wire)' },
   { n: 'rooms', k: 'g.tabs.friends', icon: 'friends', c: 'var(--m-rooms)' }, { n: 'me', k: 'g.tabs.me', icon: 'me', c: 'var(--gold)' },
 ];
-const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' || r.n === 'newsroom' ? 'rooms' : r.n === 'pass' || r.n === 'boards' || r.n === 'rivals' || r.n === 'contacts' || r.n === 'customize' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' || r.n === 'ddlive' || r.n === 'editor' ? 'front' : r.n);
+const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' || r.n === 'newsroom' ? 'rooms' : r.n === 'pass' || r.n === 'rivals' || r.n === 'contacts' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' || r.n === 'ddlive' || r.n === 'editor' || r.n === 'today' || r.n === 'missions' || r.n === 'boards' || r.n === 'customize' ? 'front' : r.n);
 
 function initialRoute(): Route {
   const q = new URLSearchParams(location.search);
   if (q.get('room')) return { n: 'rooms', code: q.get('room')!.toUpperCase().slice(0, 8) };
-  if (q.get('challenge')) return { n: 'rooms', challenge: q.get('challenge')!.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) };
-  if (q.get('newsroom')) return { n: 'newsroom', code: q.get('newsroom')!.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) };
+  // Multiplayer is Rooms only (3.6): challenge and newsroom links say they have expired and land on Rooms.
+  if (q.get('challenge') || q.get('newsroom')) return { n: 'rooms', expired: true };
   const tab = q.get('tab');
   if (tab === 'desk') return { n: 'story' };
-  if (tab === 'daily' || tab === 'wire' || tab === 'story' || tab === 'me' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms' || tab === 'newsroom' || tab === 'feed' || tab === 'rivals' || tab === 'contacts' || tab === 'customize' || tab === 'ddlive' || tab === 'editor' || tab === 'boards') return { n: tab } as Route;
+  if (tab === 'daily' || tab === 'wire' || tab === 'story' || tab === 'me' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms' || tab === 'feed' || tab === 'rivals' || tab === 'contacts' || tab === 'customize' || tab === 'ddlive' || tab === 'editor' || tab === 'boards' || tab === 'today' || tab === 'missions') return { n: tab } as Route;
+  if (tab === 'newsroom') return { n: 'rooms', expired: true };
   return { n: 'front' };
 }
 
@@ -179,8 +183,8 @@ export function App() {
     case 'me': screen = <MeScreen {...chrome} />; break;
     case 'pass': screen = <PassScreen {...chrome} />; break;
     case 'practice': screen = <PracticeScreen {...chrome} />; break;
-    case 'rooms': screen = <RoomsScreen {...chrome} code={route.code} challenge={route.challenge} />; break;
-    case 'newsroom': screen = <NewsroomScreen {...chrome} code={route.code} />; break;
+    case 'rooms': screen = <RoomsScreen {...chrome} code={route.code} expired={route.expired || !!route.challenge} />; break;
+    case 'newsroom': screen = <RoomsScreen {...chrome} expired />; break;
     case 'howto': screen = <HowTo {...chrome} />; break;
     case 'feed': screen = <FeedScreen {...chrome} />; break;
     case 'rivals': screen = <RivalsScreen {...chrome} />; break;
@@ -188,7 +192,9 @@ export function App() {
     case 'customize': screen = <CustomizeScreen {...chrome} />; break;
     case 'ddlive': screen = <DDLiveScreen {...chrome} />; break;
     case 'editor': screen = <EditorDeskScreen {...chrome} />; break;
-    case 'boards': screen = <BoardsScreen {...chrome} period={route.period} />; break;
+    case 'boards': screen = <BoardsScreen {...chrome} period={route.period} from={route.from} />; break;
+    case 'today': screen = <DailyHubScreen {...chrome} />; break;
+    case 'missions': screen = <MissionsScreen {...chrome} />; break;
   }
   return <>
     <Suspense fallback={<RouteStage />}>{screen}</Suspense>

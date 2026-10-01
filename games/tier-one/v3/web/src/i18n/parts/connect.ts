@@ -5,25 +5,25 @@ export default {
   en: {
     cn: {
       bell: 'Feed, {n} unread',
-      mode: { daily: 'The Daily', career: 'Story', room: 'Friends room', practice: 'Practice', wire: 'The Wire' },
+      mode: { daily: 'Daily Challenge', career: 'Career', room: 'Room', practice: 'Practice', wire: 'Transfer Market' },
       tier: { blogger: 'Blogger', stringer: 'Stringer', correspondent: 'Correspondent', chief: 'Chief', tierone: 'Tier One' },
       feed: {
         title: 'Feed', empty: 'Nothing yet. Publish a call in any mode and the reactions land here.', play: 'Play today’s Daily',
         today: 'Today', yesterday: 'Yesterday', earlier: 'Earlier', unread: '{n} new',
-        window: '{mode}: {f} followers{tier}.', room: 'Friends room, round {n}: {f} followers{tier}.',
+        window: '{mode}: {f} followers{tier}.', room: 'Room, round {n}: {f} followers{tier}.',
         hot: 'Hot hand: {n} right calls in a row. Every right call pays more while it lasts.',
         tierUp: 'Your byline now reads {rt}.', tierDown: 'Your byline slipped to {rt}. Two right calls start the climb back.',
         scalp: 'You took {rival}’s scalp. {n} coins paid.', trophy: 'Rivalry won: {rival} has nothing left to say. {n} coins paid.',
         contact: '{src} reached level {lv}: {perk}. {n} coins paid.', mission: 'Mission done: {m}. Claim {n} coins on Home.',
-        wireRight: 'Your Wire call on {p} landed: {f} followers.', wireWrong: 'Your Wire call on {p} missed: {f} followers.',
+        wireRight: 'Your market call on {p} landed: {f} followers.', wireWrong: 'Your market call on {p} missed: {f} followers.',
         streak: 'Your Daily streak reaches {n} if you play before the reset.',
         level: 'Pass level {n}. A new reward is waiting on the Pass.',
         followers: '{n} followers. Every mode counted. {c} coins paid.',
       },
       next: {
         resume: { t: 'Pick up your window', s: 'Your {m} window is waiting on day {d}.', b: 'Resume' },
-        wire: { t: 'A Wire call settled', s: '{p}: {f} followers.', b: 'See the call' },
-        career: { t: 'The editor wants copy', s: 'Story window {w} is ready when you are.', b: 'Open Story' },
+        wire: { t: 'A market call settled', s: '{p}: {f} followers.', b: 'See the call' },
+        career: { t: 'The editor wants copy', s: 'Career window {w} is ready when you are.', b: 'Open Career' },
         room: { t: 'Your room has results', s: 'See where you finished on the table.', b: 'See the table' },
         mission: { t: 'Coins waiting', s: '{n} missions ready to claim below.', b: 'Claim them' },
         practice: { t: 'Keep your hand warm', s: 'Practice a board. The coach shows the odds.', se: 'This week: {e}.', b: 'Practice' },
@@ -51,7 +51,7 @@ export default {
         p3: 'First ask each window costs 1 less', p5: 'One free second opinion each window',
       },
       nick: { kitman: 'gaffer', barber: 'my guy', agent: 'partner', spotter: 'captain', physio: 'champ' },
-      me: { storyW: 'Story windows', byline: 'Your byline', followers: 'Followers', rep: 'Reputation', hot: 'Hot hand', best: 'Best run {n}', rivals: 'Rivals', contacts: 'Contacts', feed: 'Feed', cold: 'Cold. Get one right.',
+      me: { storyW: 'Career windows', byline: 'Your byline', followers: 'Followers', rep: 'Reputation', hot: 'Hot hand', best: 'Best run {n}', rivals: 'Rivals', contacts: 'Contacts', feed: 'Feed', cold: 'Cold. Get one right.',
         toTier: '{n} rep to {rt}', topTier: 'Top of the trade. Keep it there.', ladder: 'Byline ladder',
         feedSub: { zero: 'All read', one: '1 new', other: '{n} new' }, rivalsSub: 'Record {w}–{l}', rivalsNone: 'No duels yet',
         contactsSub: 'Best: {s}, level {n}', passSub: 'Season level {n}', films: 'Replays',
@@ -80,7 +80,7 @@ export default {
   ar: {
     cn: {
       bell: 'التايملاين، {n} جديد',
-      mode: { daily: 'التحدي اليومي', career: 'القصة', room: 'أوضة صحاب', practice: 'التمرين', wire: 'الوكالة' },
+      mode: { daily: 'تحدي النهارده', career: 'المسيرة', room: 'أوضة', practice: 'التمرين', wire: 'سوق الانتقالات' },
       tier: { blogger: 'مدوّن', stringer: 'مراسل حر', correspondent: 'مراسل', chief: 'كبير المراسلين', tierone: 'تير وان' },
       feed: {
         title: 'التايملاين', empty: 'لسه مفيش حاجة. انشر توقّع في أي مود والردود هتوصل هنا.', play: 'العب يومي النهارده',
@@ -90,14 +90,14 @@ export default {
         tierUp: 'اسمك بقى مكتوب جنبه {rt}.', tierDown: 'نزلت لـ{rt}. توقّعين صح وترجع تطلع.',
         scalp: 'خدت راس {rival}. اتصرفلك {n} كوين.', trophy: 'كسبت المنافسة: {rival} معندوش كلام تاني. اتصرفلك {n} كوين.',
         contact: '{src} وصل للمستوى {lv}: {perk}. اتصرفلك {n} كوين.', mission: 'المهمة خلصت: {m}. استلم {n} كوين من الرئيسية.',
-        wireRight: 'توقّعك في الوكالة على {p} طلع صح: {f} متابع.', wireWrong: 'توقّعك في الوكالة على {p} طلع غلط: {f} متابع.',
+        wireRight: 'توقّعك في سوق الانتقالات على {p} طلع صح: {f} متابع.', wireWrong: 'توقّعك في سوق الانتقالات على {p} طلع غلط: {f} متابع.',
         streak: 'سلسلة اليومي توصل {n} لو لعبت قبل ما اليوم يتقفل.',
         level: 'وصلت للمستوى {n} في الباس. فيه جايزة جديدة مستنياك.',
         followers: '{n} متابع. كل الأوضاع اتحسبت. اتدفع {c} عملة.',
       },
       next: {
         resume: { t: 'كمّل الفترة بتاعتك', s: 'فترة {m} مستنياك في اليوم {d}.', b: 'كمّل' },
-        wire: { t: 'توقّع في الوكالة اتحسم', s: '{p}: {f} متابع.', b: 'شوف التوقّع' },
+        wire: { t: 'توقّع في سوق الانتقالات اتحسم', s: '{p}: {f} متابع.', b: 'شوف التوقّع' },
         career: { t: 'رئيس التحرير عايز خبر', s: 'فترة القصة رقم {w} جاهزة.', b: 'افتح القصة' },
         room: { t: 'أوضتك طلعت نتيجتها', s: 'شوف انت جيت فين في الجدول.', b: 'شوف الجدول' },
         mission: { t: 'فيه كوينز مستنياك', s: '{n} مهمات جاهزة تستلمها تحت.', b: 'استلمهم' },
@@ -155,7 +155,7 @@ export default {
   es: {
     cn: {
       bell: 'Muro, {n} sin leer',
-      mode: { daily: 'El Diario', career: 'Historia', room: 'Sala de amigos', practice: 'Práctica', wire: 'El Teletipo' },
+      mode: { daily: 'Reto diario', career: 'Carrera', room: 'Sala', practice: 'Práctica', wire: 'Mercado de fichajes' },
       tier: { blogger: 'Bloguero', stringer: 'Colaborador', correspondent: 'Corresponsal', chief: 'Jefe', tierone: 'Tier One' },
       feed: {
         title: 'Muro', empty: 'Nada todavía. Publica una apuesta en cualquier modo y las reacciones llegan aquí.', play: 'Juega el Diario de hoy',
@@ -165,14 +165,14 @@ export default {
         tierUp: 'Tu firma ya pone {rt}.', tierDown: 'Tu firma ha bajado a {rt}. Dos aciertos y vuelves a subir.',
         scalp: 'Te has cobrado la cabeza de {rival}. {n} monedas pagadas.', trophy: 'Rivalidad ganada: {rival} ya no tiene nada que decir. {n} monedas pagadas.',
         contact: '{src} ha llegado al nivel {lv}: {perk}. {n} monedas pagadas.', mission: 'Misión cumplida: {m}. Cobra {n} monedas en Inicio.',
-        wireRight: 'Tu apuesta del Teletipo sobre {p} ha acertado: {f} seguidores.', wireWrong: 'Tu apuesta del Teletipo sobre {p} ha fallado: {f} seguidores.',
+        wireRight: 'Tu apuesta del Mercado de fichajes sobre {p} ha acertado: {f} seguidores.', wireWrong: 'Tu apuesta del Mercado de fichajes sobre {p} ha fallado: {f} seguidores.',
         streak: 'Tu racha del Diario llega a {n} si juegas antes del reinicio.',
         level: 'Nivel {n} del Pase. Tienes una recompensa nueva esperando.',
         followers: '{n} seguidores. Cuentan todos los modos. {c} monedas pagadas.',
       },
       next: {
         resume: { t: 'Retoma tu ventana', s: 'Tu ventana de {m} te espera en el día {d}.', b: 'Seguir' },
-        wire: { t: 'Se ha resuelto una apuesta del Teletipo', s: '{p}: {f} seguidores.', b: 'Ver la apuesta' },
+        wire: { t: 'Se ha resuelto una apuesta del Mercado de fichajes', s: '{p}: {f} seguidores.', b: 'Ver la apuesta' },
         career: { t: 'El director quiere texto', s: 'La ventana {w} de la Historia está lista.', b: 'Abrir Historia' },
         room: { t: 'Tu sala tiene resultados', s: 'Mira en qué puesto has quedado.', b: 'Ver la tabla' },
         mission: { t: 'Monedas esperando', s: '{n} misiones listas para cobrar abajo.', b: 'Cobrarlas' },

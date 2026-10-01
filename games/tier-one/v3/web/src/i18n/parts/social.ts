@@ -6,9 +6,9 @@ export default {
   en: {
     film: { name: { 'moment-room-win': 'Round yours', 'moment-friend-scalp': 'Friend’s scalp', 'moment-newsroom-week': 'Newsroom week' } },
     so: {
-      tabs: { rooms: 'Press box', league: 'League', newsroom: 'Newsroom' },
+      tabs: { rooms: 'Rooms', league: 'League', newsroom: 'Newsroom' },
       box: {
-        k: 'The press box', hed: 'Your newsroom of friends.', sub: 'One shared board a week, a season table, and a feed that never forgets a bad call.',
+        k: 'Rooms', hed: 'Your newsroom of friends.', sub: 'One shared board a week, a season table, and a feed that never forgets a bad call.',
         mine: 'Your press boxes', last: 'Last round', week: 'Week {w}', season: 'Season', cadence: 'Rounds', weekly: 'Weekly', daily: 'Daily',
         weeklySub: 'One board a week, Monday to Sunday, on the real calendar.', dailySub: 'A board a day, open 48 hours.',
         friends: 'Friend rivals', friendsAll: 'All rivals', challenges: 'Beat my board', newsroomT: 'Your newsroom', newsroomNone: 'Join a newsroom', newsroomSub: 'Twenty bylines under one masthead. A combined table every week.',
@@ -19,7 +19,7 @@ export default {
         play: 'Play', read: 'Front page', watch: 'Watch', waiting: 'Waiting on {n}', notYet: 'File the round first. Then you can watch everyone’s calls.',
         taunt: 'Taunt', tauntTo: 'Taunt {n}', tauntRoom: 'The room', tauntSlow: 'One taunt a minute. Let it land.', tauntSent: 'Posted',
         taunts: ['Three sources and still wrong. Impressive.', 'I had that on day one, mate.', 'DONE DEAL? Here you went. Wrong way.', 'Your barber is lying to you.', 'Filed at Confirmed on vibes. Bold.', 'The physio rang me, not you.', 'Sleep on it? You slept through it.', 'Nice front page. Shame about the score.'],
-        ev: { open: '{n} opened the press box.', join: '{n} pulled up a chair.', filed: '{n} filed round {r}: {p} pts, {tier}.', hwgT: 'DONE DEAL', hwg: '{n} called {p} at Confirmed. Done.', taunt: '{n}: “{t}”', tauntTo: '{n} → {to}: “{t}”' },
+        ev: { open: '{n} opened the room.', join: '{n} pulled up a chair.', filed: '{n} filed round {r}: {p} pts, {tier}.', hwgT: 'DONE DEAL', hwg: '{n} called {p} at Confirmed. Done.', taunt: '{n}: “{t}”', tauntTo: '{n} → {to}: “{t}”' },
         empty: 'Quiet in here. Play the round and the feed starts.', invite: 'Invite', copied: 'Invite copied', you: 'You', host: 'Host',
         stateLine: { open: 'Round {n} is open. Play it before Sunday night.', soon: 'Round {n} opens on Monday.', played: 'You’ve filed round {n}. Wait for the table.', closed: 'The season is over. Start a new press box.' },
       },
@@ -37,7 +37,7 @@ export default {
         pending: 'You’re on {n}’s board', pendingSub: 'Finish the Practice window on this seed and your score answers it by itself.',
         results: 'Answers', noResults: 'Nobody has answered yet.', you: 'You', w: 'beat it', l: 'fell short', d: 'matched it', yours: '{s} pts · {r}',
         mine: 'Your challenges', answered: 'Boards you took', open: 'Open', closed: 'Closed', code: 'Code', label: 'Beat {n}’s board',
-        mode: { daily: 'The Daily', practice: 'Practice', career: 'Story' }, career: 'Story boards replay under Daily rules; the score to beat is the reporter’s word.',
+        mode: { daily: 'The Daily', practice: 'Practice', career: 'Career' }, career: 'Story boards replay under Daily rules; the score to beat is the reporter’s word.',
         errors: { 'not found': 'No challenge with that code.', expired: 'That challenge has expired.', own: 'You can’t answer your own challenge.', done: 'You’ve already answered this one.', full: 'This challenge is full.', play: 'Play today’s Daily first.', log: 'That board didn’t finish. Play it through.', played: 'Play the Daily first, then mint from it.', net: 'Challenges need a connection.', dev: 'Challenges need a connection.', seed: 'That board can’t be shared.', day: 'That Daily can’t be shared.', busy: 'Try again.', rate: 'Slow down a little.' },
       },
       fr: {
@@ -50,9 +50,9 @@ export default {
         level: ['{rec}. Dead level. Next one settles it.', 'Both on {p}. One of us was guessing.', 'Level. I post at dawn on Monday.', 'Honours even. The table won’t stay that way.', 'Same board, same score. Suspicious.', 'Tied. Whoever rings the physio first.', '{rec}. Nobody’s buying the coffee.', 'Even. See you on the next board.'],
       },
       nr: {
-        title: 'Newsroom', k: 'The newsroom', hed: 'One masthead. Twenty bylines.', sub: 'Everyone’s Daily and Wire points add up each week. Newsrooms rank against each other on Sunday night.',
+        title: 'Newsroom', k: 'The newsroom', hed: 'One masthead. Twenty bylines.', sub: 'Everyone’s Daily and market points add up each week. Newsrooms rank against each other on Sunday night.',
         create: 'Found a newsroom', createSub: 'Name it, write the motto, send the code', join: 'Got a code?', joinSub: 'Your editor sent you one', code: 'Newsroom code', name: 'Masthead name', motto: 'Motto', mottoPh: 'First, then right.',
-        members: '{n} of {m} reporters', table: 'This week', last: 'Last week', rank: 'Newsroom rank', rankN: '#{n}', combined: 'Combined', daily: 'Daily', wire: 'Wire', pts: 'Pts', you: 'You', host: 'Editor',
+        members: '{n} of {m} reporters', table: 'This week', last: 'Last week', rank: 'Newsroom rank', rankN: '#{n}', combined: 'Combined', daily: 'Daily', wire: 'Transfer Market', pts: 'Pts', you: 'You', host: 'Editor',
         top: 'Top newsrooms this week', topNone: 'No newsroom has scored yet this week.', empty: 'No newsroom yet. Found one or join with a code.', invite: 'Invite', copied: 'Invite copied', leave: 'Leave the newsroom', leaveSure: 'Leave {name}?', leaveYes: 'Leave',
         masthead: 'Masthead', mastheadSub: 'Cosmetic slots from the Pass. The editor sets them.', frame: 'Frame', ink: 'Ink', flair: 'Flair', standard: 'Standard', save: 'Set the masthead', saved: 'Masthead set',
         lastLine: '{name} finished #{r} last week with {p} pts.', weekLine: '{p} pts this week · #{r} of all newsrooms', full: 'That newsroom is full (20).', member: 'You’re already in a newsroom. Leave it first.',
@@ -76,7 +76,7 @@ export default {
   ar: {
     film: { name: { 'moment-room-win': 'الجولة بتاعتك', 'moment-friend-scalp': 'راس صاحبك', 'moment-newsroom-week': 'أسبوع الجرنال' } },
     so: {
-      tabs: { rooms: 'كابينة الصحافة', league: 'الدوري', newsroom: 'الجرنال' },
+      tabs: { rooms: 'الأوض', league: 'الدوري', newsroom: 'الجرنال' },
       box: {
         k: 'كابينة الصحافة', hed: 'جرنالك إنت وصحابك.', sub: 'لوحة واحدة في الأسبوع، جدول موسم، وفيد عمره ما بينسى توقّع غلط.',
         mine: 'كباينك', last: 'آخر جولة', week: 'الأسبوع {w}', season: 'الموسم', cadence: 'الجولات', weekly: 'أسبوعي', daily: 'يومي',
@@ -120,9 +120,9 @@ export default {
         level: ['{rec}. راس براس. اللي جاية بتحسم.', 'إحنا الاتنين على {p}. واحد فينا كان بيخمّن.', 'متعادلين. أنا بنشر الفجر يوم الاتنين.', 'بالتساوي. الجدول مش هيفضل كده.', 'نفس اللوحة، نفس النتيجة. مريب.', 'تعادل. اللي يكلّم العلاج الطبيعي الأول.', '{rec}. محدش هيعزم على القهوة.', 'بالتساوي. نتقابل على اللوحة الجاية.'],
       },
       nr: {
-        title: 'الجرنال', k: 'الجرنال', hed: 'عنوان واحد. عشرين اسم.', sub: 'نقط اليومي والوكالة بتاعت الكل بتتجمع كل أسبوع. الجرانل بتترتب مع بعض ليلة الحد.',
+        title: 'الجرنال', k: 'الجرنال', hed: 'عنوان واحد. عشرين اسم.', sub: 'نقط اليومي وسوق الانتقالات بتاعت الكل بتتجمع كل أسبوع. الجرانل بتترتب مع بعض ليلة الحد.',
         create: 'أسّس جرنال', createSub: 'سمّيه، اكتب الشعار، ابعت الكود', join: 'معاك كود؟', joinSub: 'رئيس التحرير بعتهولك', code: 'كود الجرنال', name: 'اسم الجرنال', motto: 'الشعار', mottoPh: 'الأول، وبعدين الصح.',
-        members: '{n} من {m} صحفي', table: 'الأسبوع ده', last: 'الأسبوع اللي فات', rank: 'ترتيب الجرنال', rankN: '#{n}', combined: 'المجموع', daily: 'اليومي', wire: 'الوكالة', pts: 'نقط', you: 'إنت', host: 'رئيس التحرير',
+        members: '{n} من {m} صحفي', table: 'الأسبوع ده', last: 'الأسبوع اللي فات', rank: 'ترتيب الجرنال', rankN: '#{n}', combined: 'المجموع', daily: 'اليومي', wire: 'سوق الانتقالات', pts: 'نقط', you: 'إنت', host: 'رئيس التحرير',
         top: 'أحسن جرانل الأسبوع ده', topNone: 'مفيش جرنال سجّل نقط الأسبوع ده لسه.', empty: 'مفيش جرنال لسه. أسّس واحد أو انضم بكود.', invite: 'ادعي', copied: 'الدعوة اتنسخت', leave: 'اخرج من الجرنال', leaveSure: 'تخرج من {name}؟', leaveYes: 'اخرج',
         masthead: 'العنوان', mastheadSub: 'خانات شكلية من الباس. رئيس التحرير بيحددها.', frame: 'الإطار', ink: 'الحبر', flair: 'اللمسة', standard: 'عادي', save: 'ثبّت العنوان', saved: 'العنوان اتثبّت',
         lastLine: '{name} خلّص الأسبوع اللي فات #{r} بـ{p} نقطة.', weekLine: '{p} نقطة الأسبوع ده · #{r} بين كل الجرانل', full: 'الجرنال ده مليان (٢٠).', member: 'إنت في جرنال أصلاً. اخرج منه الأول.',
@@ -146,7 +146,7 @@ export default {
   es: {
     film: { name: { 'moment-room-win': 'Ronda tuya', 'moment-friend-scalp': 'Cabellera de un amigo', 'moment-newsroom-week': 'Semana de redacción' } },
     so: {
-      tabs: { rooms: 'Tribuna', league: 'Liga', newsroom: 'Redacción' },
+      tabs: { rooms: 'Salas', league: 'Liga', newsroom: 'Redacción' },
       box: {
         k: 'La tribuna de prensa', hed: 'Tu redacción de amigos.', sub: 'Un tablero compartido a la semana, una tabla de temporada y un muro que no olvida una mala llamada.',
         mine: 'Tus tribunas', last: 'Última ronda', week: 'Semana {w}', season: 'Temporada', cadence: 'Rondas', weekly: 'Semanales', daily: 'Diarias',
@@ -190,9 +190,9 @@ export default {
         level: ['{rec}. Empate. La siguiente lo decide.', 'Los dos con {p}. Uno de nosotros iba a ciegas.', 'Empate. El lunes publico al alba.', 'Honores repartidos. La tabla no se va a quedar así.', 'Mismo tablero, misma marca. Sospechoso.', 'Empate. Quien llame antes al fisio.', '{rec}. Nadie paga el café.', 'Iguales. Nos vemos en el siguiente tablero.'],
       },
       nr: {
-        title: 'Redacción', k: 'La redacción', hed: 'Una cabecera. Veinte firmas.', sub: 'Los puntos del Diario y del Wire de todos se suman cada semana. Las redacciones se clasifican entre sí el domingo por la noche.',
+        title: 'Redacción', k: 'La redacción', hed: 'Una cabecera. Veinte firmas.', sub: 'Los puntos del Diario y del Mercado de todos se suman cada semana. Las redacciones se clasifican entre sí el domingo por la noche.',
         create: 'Fundar una redacción', createSub: 'Ponle nombre, escribe el lema, manda el código', join: '¿Tienes un código?', joinSub: 'Te lo mandó tu director', code: 'Código de la redacción', name: 'Nombre de la cabecera', motto: 'Lema', mottoPh: 'Primero, y bien.',
-        members: '{n} de {m} periodistas', table: 'Esta semana', last: 'La semana pasada', rank: 'Puesto de la redacción', rankN: '#{n}', combined: 'Combinado', daily: 'Diario', wire: 'Wire', pts: 'Pts', you: 'Tú', host: 'Director',
+        members: '{n} de {m} periodistas', table: 'Esta semana', last: 'La semana pasada', rank: 'Puesto de la redacción', rankN: '#{n}', combined: 'Combinado', daily: 'Diario', wire: 'Mercado', pts: 'Pts', you: 'Tú', host: 'Director',
         top: 'Mejores redacciones de la semana', topNone: 'Ninguna redacción ha puntuado todavía esta semana.', empty: 'Sin redacción todavía. Funda una o únete con un código.', invite: 'Invitar', copied: 'Invitación copiada', leave: 'Dejar la redacción', leaveSure: '¿Dejar {name}?', leaveYes: 'Salir',
         masthead: 'Cabecera', mastheadSub: 'Ranuras cosméticas del Pase. Las fija el director.', frame: 'Marco', ink: 'Tinta', flair: 'Distintivo', standard: 'Estándar', save: 'Fijar la cabecera', saved: 'Cabecera fijada',
         lastLine: '{name} terminó la semana pasada #{r} con {p} pts.', weekLine: '{p} pts esta semana · #{r} entre todas las redacciones', full: 'Esa redacción está llena (20).', member: 'Ya estás en una redacción. Sal primero.',
