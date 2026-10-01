@@ -31,7 +31,7 @@ let samples = await p.evaluate(async (secs) => {
   while (performance.now() - t0 < secs * 1000) {
     await new Promise((r) => requestAnimationFrame(r));
     const d = window.__gafferPitch; if (!d) continue;
-    const a = d.a; out.push({ t: a.time, tanks: a.ag.map((r) => r.map((g) => g ? [Math.round(g.tank * 1000) / 1000, g.spr ? 1 : 0] : null)), bh: a.bh, sp: a.sp && a.time < a.sp.until ? { ...a.sp } : null, flag: !!a.flag && a.time < a.flag.until, runs: a.runsN, trans: a.trans ? { ...a.trans } : null, beatLen: a.beatLen, poss: a.poss, ball: { ...a.ball }, pos: a.pos.map((s) => s.map((q) => q ? { x: q.x, y: q.y } : null)), spd: a.spd, slots: d.slots, pressing: d.pressing });
+    const a = d.a; out.push({ t: a.time, gkT: a.gkT ? { ...a.gkT } : null, mk: a.mk ? [...a.mk] : null, carrier: a.flight ? -1 : a.carrier, tanks: a.ag.map((r) => r.map((g) => g ? [Math.round(g.tank * 1000) / 1000, g.spr ? 1 : 0] : null)), bh: a.bh, sp: a.sp && a.time < a.sp.until ? { ...a.sp } : null, flag: !!a.flag && a.time < a.flag.until, runs: a.runsN, trans: a.trans ? { ...a.trans } : null, beatLen: a.beatLen, poss: a.poss, ball: { ...a.ball }, pos: a.pos.map((s) => s.map((q) => q ? { x: q.x, y: q.y } : null)), spd: a.spd, slots: d.slots, pressing: d.pressing });
   }
   const A = window.__gafferPitch?.a;
   return { out, kinds: { ...A?.kinds }, reacts: A?.reacts ?? [], kin: { ...A?.kin } };
@@ -139,6 +139,53 @@ const emptySprint = samples.filter((s) => s.tanks.some((r) => r.some((g) => g &&
 const minTank = samples.reduce((m, s) => s.tanks.flat().reduce((mm, g) => (g ? Math.min(mm, g[0]) : mm), m), 1);
 ok(emptySprint === 0, `no sprinting on an empty tank (${emptySprint} frames)`);
 ok(minTank < 0.9, `the sprint tank gets used (lowest ${minTank.toFixed(2)})`);
+// Phase 2 (the defence as a group), measured in open play out of possession: attackers near our goal have a man
+// close, the keeper stands on the shooting angle, a carrier in the box finds someone in the way, the line stays narrow
+// enough to cover. Goal at x 0 for side 0, x 105 for side 1.
+const P2 = { mark: [0, 0], markAll: [0, 0], gk: [], block: [0, 0], width: [] };
+for (let i = 0; i < samples.length; i++) {
+  const s = samples[i];
+  if (afterSet[i] || s.sp || s.carrier < 0) continue; // settled play: someone has the ball at his feet
+  const def = (1 - s.poss), att = s.poss, gx = def === 0 ? 0 : L;
+  const D = s.pos[def], A = s.pos[att];
+  const near = (q, r) => D.some((d, k) => d && s.slots[def][k] !== 'GK' && Math.hypot(d.x - q.x, d.y - q.y) < r);
+  // Marking: attackers (not the one on the ball, not the keeper) within 30 m of our goal.
+  const counter = s.trans && s.t - s.trans.at < Math.max(900, s.beatLen * 3); // just after a turnover: still getting back
+  A.forEach((q, k) => {
+    if (!q || s.slots[att][k] === 'GK' || Math.hypot(q.x - s.ball.x, q.y - s.ball.y) < 2) return;
+    if (Math.hypot(q.x - gx, q.y - 34) > 30) return;
+    P2.markAll[1]++; if (near(q, 5)) P2.markAll[0]++;
+    if (counter) return;
+    P2.mark[1]++; if (near(q, 5)) P2.mark[0]++; else if (process.env.DBG) console.log('miss', s.t.toFixed(0), JSON.stringify(s.mk), Math.min(...D.map((d, j) => d && s.slots[def][j] !== 'GK' ? Math.hypot(d.x - q.x, d.y - q.y) : 99)).toFixed(1), (Math.hypot(q.x - gx, q.y - 34)).toFixed(0));
+  });
+  // Keeper: distance from the bisector of the angle the ball makes with the posts, ball within 40 m.
+  const gk = D[s.slots[def].indexOf('GK')];
+  const db = Math.hypot(s.ball.x - gx, s.ball.y - 34);
+  if (gk && db < 40 && db > 6) {
+    const p1 = { x: gx, y: 34 - 3.66 }, p2 = { x: gx, y: 34 + 3.66 };
+    const d1 = Math.hypot(s.ball.x - p1.x, s.ball.y - p1.y), d2 = Math.hypot(s.ball.x - p2.x, s.ball.y - p2.y);
+    const P = { x: gx, y: p1.y + (7.32 * d1) / (d1 + d2) }; // angle bisector theorem
+    const ux = s.ball.x - P.x, uy = s.ball.y - P.y, ul = Math.hypot(ux, uy);
+    P2.gk.push(Math.abs(((gk.x - P.x) * uy - (gk.y - P.y) * ux) / ul));
+    if (process.env.DBG && P2.gk.at(-1) > 2) console.log('gk', s.t.toFixed(0), def, P2.gk.at(-1).toFixed(1), JSON.stringify({ T: s.gkT && { x: +s.gkT.x.toFixed(1), y: +s.gkT.y.toFixed(1) }, gk: { x: +gk.x.toFixed(1), y: +gk.y.toFixed(1) }, ball: { x: +s.ball.x.toFixed(1), y: +s.ball.y.toFixed(1) } }));
+  }
+  // Box: the ball in our box, someone within 2.5 m of the line from it to the goal centre.
+  if (Math.abs(s.ball.x - gx) < 16.5 && Math.abs(s.ball.y - 34) < 20.2) {
+    const seg = (q) => { const vx = gx - s.ball.x, vy = 34 - s.ball.y, l2 = vx * vx + vy * vy; const t = Math.max(0, Math.min(1, ((q.x - s.ball.x) * vx + (q.y - s.ball.y) * vy) / l2)); return Math.hypot(s.ball.x + t * vx - q.x, s.ball.y + t * vy - q.y); };
+    P2.block[1]++; if (D.some((d, k) => d && s.slots[def][k] !== 'GK' && seg(d) < 2.5)) P2.block[0]++;
+    if (process.env.DBG) console.log('box', s.t.toFixed(0), s.poss, s.carrier, JSON.stringify(s.ball), Math.min(...D.map((d, k) => d && s.slots[def][k] !== 'GK' ? seg(d) : 99)).toFixed(1), Math.min(...D.map((d, k) => d && s.slots[def][k] !== 'GK' ? Math.hypot(d.x - s.ball.x, d.y - s.ball.y) : 99)).toFixed(1));
+  }
+  const ys = D.filter((d, k) => d && LINE[s.slots[def][k]] === 'def').map((d) => d.y);
+  if (ys.length >= 3) P2.width.push(Math.max(...ys) - Math.min(...ys));
+}
+const pc = (x) => (x[1] ? Math.round((100 * x[0]) / x[1]) : 0);
+console.log(`  defence: marked ${pc(P2.mark)}% (${P2.mark[1]}; ${pc(P2.markAll)}% counting counter-attacks), keeper off the angle median ${med(P2.gk).toFixed(1)} m, box lane blocked ${pc(P2.block)}% (${P2.block[1]}), back line width median ${med(P2.width).toFixed(1)} m`);
+if (!process.env.BASELINE) {
+  ok(P2.mark[1] < 40 || pc(P2.mark) >= 75, `attackers near our goal have a man within 5 m: ${pc(P2.mark)}%`);
+  ok(med(P2.gk) <= 1.0, `the keeper stands on the shooting angle: median ${med(P2.gk).toFixed(1)} m off`);
+  ok(P2.block[1] < 20 || pc(P2.block) >= 80, `a carrier in our box finds someone in the way: ${pc(P2.block)}%`);
+  ok(med(P2.width) <= 45, `the back line stays narrow enough to cover: median ${med(P2.width).toFixed(1)} m`);
+}
 ok(!errs.length, `no console errors${errs.length ? ': ' + errs[0] : ''}`);
 await browser.close(); server.close();
 console.log(fails ? `\n${fails} FAILED` : '\nall passed');
