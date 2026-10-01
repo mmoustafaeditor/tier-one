@@ -17,6 +17,11 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer: navigation redesign (UI/UX pass, branch only)
+- **What changed:** Inventory, expert usability review (18 measured tasks, phone and desktop, no real users), new information architecture and its implementation. Squad gets a labelled row at the top of all five areas (Players · Dressing room · Training · Medical · Academy): on phones these were ~2,600 px below the fold. The inbox gets a line on Today with the unread count (3 taps → 1), and the desktop rail gains labelled Inbox & news and Settings items. The Match tab "Next match" is renamed "Tactics". Segment and chip rows keep the chosen item in view, and Arabic chart months no longer overlap. Same look, same routes, no save change.
+- **Files:** `games/the-gaffer/web/src/ui2/{shell,SquadTabs (new),Squad,Room,Training,Pathway,Today,Transfers,Office}.tsx`, `App.tsx`, `styles/app.css`, `lang-nav*.ts` (new), `lang-v2*.ts`, `ui-tests/nav.mjs` (new, `npm run test:nav`), `package.json`; docs in `audit-the-gaffer/THE_GAFFER_{FEATURE_NAVIGATION_INVENTORY,UI_UX_AUDIT,INFORMATION_ARCHITECTURE,UI_UX_VERIFICATION}.md` with before/after screenshots in `audit-the-gaffer/evidence/ux/`
+- **Heads-up for the team:** None for Tier One.
+
 ## 2026-09-30 · saifsaber · The Gaffer V2.10 (smallest form): earned credits and club looks (branch only)
 - **What changed:** Semba Credits can now be earned and spent without any payment: +50 cr for every season a career finishes (its first 10 seasons, once per season), and the three club looks on the Club Pass page (Claret night, Harbour blue, Desert gold) can be unlocked for 250 cr each and applied: they recolour the office background, kept after a reload. Presentation only: a test checks that `sim/**` never imports `meta/**`. The Pass itself, ads and every paid item stay "concept, nothing is sold" until real payment ids and server verification exist; kit designer, stadium looks, extra slots and scenarios are not built.
 - **Files:** `games/the-gaffer/web/src/meta/{wallet,looks}.ts`, `sim/prefs.ts`, `ui2/Pass.tsx`, `App.tsx`, `styles/app.css`, `lang-club*.ts`, `sim-tests/store.ts` (new)

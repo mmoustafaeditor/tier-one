@@ -472,3 +472,21 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .sc-pass .looks.looks4 { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
 .sc-pass .looks.looks4 .look .sw { width: 100%; height: auto; aspect-ratio: 16 / 10; border-radius: 12px; }
 .sc-pass .looks.looks4 .look .sw::before { content: none; }
+
+/* UI/UX pass: on phones the area holding an off-bar screen (Career, Club Pass, Settings, Inbox) stays marked. */
+@media (max-width: 1099.98px) { .nav a.nav-parent { color: var(--accent-ink); background: var(--accent); } }
+@media (min-width: 1100px) { .nav { overflow-y: auto; scrollbar-width: none; } .nav a { min-height: 58px; } }
+/* Squad areas row (Players · Dressing room · Training · Medical · Academy) at the top of all five screens. */
+.area-tabs { margin: 0 0 var(--s-3); }
+.area-tabs .seg { overflow-x: auto; scrollbar-width: none; max-width: 760px; }
+.area-tabs .seg::-webkit-scrollbar, .o-tabs .seg::-webkit-scrollbar, .rc-tabs::-webkit-scrollbar { display: none; }
+.area-tabs .seg button { white-space: nowrap; flex: none; }
+/* Today: the inbox line under the headline. */
+.inbox-line { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 var(--s-4); min-height: 44px; padding: 0 var(--s-4); border-radius: var(--r-pill);
+  background: var(--ground-panel); border: 1px solid var(--ground-line); color: var(--on-ground); font: 600 var(--t-small)/1.2 var(--f-text); }
+.inbox-line.new { border-color: var(--accent); }
+.inbox-line em { font-style: normal; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); display: inline-grid; place-items: center; font-size: 12px; }
+@media (max-width: 560px) {
+  .area-tabs .seg { flex-wrap: wrap; overflow: visible; border-radius: 20px; row-gap: 2px; }
+  .area-tabs .seg button { flex: 1 1 auto; }
+}

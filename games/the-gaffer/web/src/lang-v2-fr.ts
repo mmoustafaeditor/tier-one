@@ -420,7 +420,7 @@ export const X_FR: XStrings = {
     philosophy: 'Philosophie',
   },
   table: {
-    tabs: ['Prochain match', 'Calendrier', 'Classement', 'Coupes'],
+    tabs: ['Tactique', 'Calendrier', 'Classement', 'Coupes'],
     pos: '#', club: 'Club', p: 'J', gd: 'Diff', pts: 'Pts', w: 'V', d: 'N', l: 'D',
     scorers: 'Buteurs', assists: 'Passeurs', zones: { up: 'Montée', down: 'Relégation', top: 'Places européennes' },
     round: (n: number) => `Journée ${n}`, noCups: 'Pas de match de coupe cette saison.', group: (g: string) => `Groupe ${g}`,

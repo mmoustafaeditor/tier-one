@@ -14,6 +14,7 @@ import { riskBand } from '../sim/youth';
 import { Y } from '../lang-youth-all';
 import { Chips, Panel, PanelHead } from './shell';
 import { I, Portrait, Ring } from './kit';
+import { SquadTabs } from './SquadTabs';
 import { useGame, money, sn } from './game';
 import { ageOf, moodOf } from './util';
 import { D } from '../lang-dressing-all';
@@ -75,6 +76,7 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
   };
   return (
     <div className="sc-squad">
+      <SquadTabs at="squad" />
       <section className="s-head on-ground">
         <h1 className="h-hero">{x.squad.title}</h1>
         <div className="facts">

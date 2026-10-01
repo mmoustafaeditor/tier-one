@@ -9,6 +9,7 @@ import { playerOf, squadOf } from '../sim/world';
 import { userObjective } from '../sim/vision';
 import { isDerby } from '../sim/rivalry';
 import { CL } from '../lang-club-all';
+import { NV } from '../lang-nav-all';
 import { nextUserMatch, seasonOver } from '../sim/season';
 import { available } from '../sim/tactics';
 import { dayName, dayNum, shortDate, dateOf } from '../sim/calendar';
@@ -50,12 +51,15 @@ export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision,
   const handedOver = DEPTS.filter((d) => levelOf(c, d) === 'staff').map((d) => x.office.depts[d]);
   const staffN = staffCallsSinceMatch(c);
 
+  const unread = c.inbox.filter((m) => !m.read).length;
   return (
     <div className="sc-today">
       <div className="layout">
         <section className="hero a-hero on-ground">
           <span className="eyebrow">{nm0 && opp ? x.today.eyebrow(matchLabel(g, { cup: nm0.cup, round: nm0.round, group: nm0.group }), cn(opp, lang), x.today.inDays(daysTo)) : g.league.name[lang]}</span>
           <h1 className="h-hero">{head[0]}<em>{head[1]}</em>{head[2]}</h1>
+          {/* UI/UX pass (UX-02): the inbox, one tap from Today, with its unread count. */}
+          <button className={`inbox-line${unread ? ' new' : ''}`} onClick={() => g.go({ s: 'news' })}><I n="news" size="sm" />{NV[g.ui].inboxLine(unread)}{unread > 0 && <em>{unread}</em>}<I n="chev" size="sm" flip={g.rtl} /></button>
         </section>
 
         <div className="week a-week on-ground" aria-label={x.today.week}>

@@ -81,7 +81,7 @@ function Money() {
           <Kpi v={<span className="ltr">{money(committed(c))}</span>} l={R[g.ui].kpi.committed} />
         </div>
         {months.length > 1 && (
-          <LineChart h={170} rtl={g.rtl} x={months.map((d) => monthName(d, g.ui))} fmt={(v) => `${v}M`} yMin={Math.min(0, Math.floor(low))}
+          <LineChart h={170} rtl={g.rtl} x={months.map((d, i) => (g.ui === 'ar' && months.length > 6 && i % 2 ? '' : monthName(d, g.ui)))} /* UX-06: Arabic month names collide; every other one */ fmt={(v) => `${v}M`} yMin={Math.min(0, Math.floor(low))}
             series={[{ data: cash, label: O.projected }]} tipX={(i) => monthName(months[i], g.ui)} />
         )}
         <div className="legend"><span><i />{O.projected}</span></div>

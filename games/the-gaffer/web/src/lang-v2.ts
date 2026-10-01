@@ -429,7 +429,7 @@ export const X_EN = {
     philosophy: 'Philosophy',
   },
   table: {
-    tabs: ['Next match', 'Fixtures', 'Table', 'Cups'],
+    tabs: ['Tactics', 'Fixtures', 'Table', 'Cups'],
     pos: '#', club: 'Club', p: 'P', gd: 'GD', pts: 'Pts', w: 'W', d: 'D', l: 'L',
     scorers: 'Top scorers', assists: 'Top assists', zones: { up: 'Promotion', down: 'Relegation', top: 'Continental places' },
     round: (n: number): string => `Matchday ${n}`, noCups: 'No cup ties this season.', group: (g: string): string => `Group ${g}`,

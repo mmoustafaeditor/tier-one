@@ -8,7 +8,8 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "build:min": "tsc --noEmit && vite build --mode min"
+    "build:min": "tsc --noEmit && vite build --mode min",
+    "test:nav": "node ui-tests/nav.mjs"
   },
   "dependencies": {
     "react": "^19.1.1",

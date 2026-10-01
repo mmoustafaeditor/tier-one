@@ -16,7 +16,8 @@ import { Crest, I, Meter, Portrait } from './kit';
 import { Panel, PanelHead, Sheet } from './shell';
 import { useGame, clubOf, cn, money, nm, sn } from './game';
 import { ageOf } from './util';
-import { YouthDoors, BAND_ICON, BAND_TONE } from './Training';
+import { BAND_ICON, BAND_TONE } from './Training';
+import { SquadTabs } from './SquadTabs';
 import { Y } from '../lang-youth-all';
 import '../styles/youth.css';
 
@@ -36,11 +37,10 @@ export function MedicalScreen() {
   const club = clubOf(w, c.clubId)!;
   return (
     <div className="sc-medical sc-youth">
+      <SquadTabs at="medical" />
       <div className="h-head on-ground">
-        <button className="link on-ground" onClick={() => g.go({ s: 'squad' })}><I n="back" size="sm" flip={g.rtl} />{x.player.back}</button>
         <h1 className="h-hero">{M.title}</h1>
         <p className="lead">{M.head(hurt.length, edge.filter((p) => riskBand(p) === 2).length)}</p>
-        <YouthDoors here="medical" />
       </div>
       <div className="grid2">
         <Panel i={0} label={M.out}>
@@ -122,11 +122,10 @@ export function AcademyScreen({ focus }: { focus?: string }) {
   const age = (p: Player) => ageOf(p, c.season);
   return (
     <div className="sc-academy sc-youth">
+      <SquadTabs at="academy" />
       <div className="h-head on-ground">
-        <button className="link on-ground" onClick={() => g.go({ s: 'squad' })}><I n="back" size="sm" flip={g.rtl} />{x.player.back}</button>
         <h1 className="h-hero">{A.title}</h1>
         <p className="lead">{A.head(ac.length, loanees.length, grads.length)}</p>
-        <YouthDoors here="academy" />
       </div>
 
       {/* Intake Day: the countdown, the preview, then the day itself */}
