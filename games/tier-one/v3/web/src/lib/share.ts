@@ -9,7 +9,7 @@ import { bylineOf, repTier } from './byline';
 // hwg (3.3): when set, the card leads with a gold "HERE WE GO!" band (e.g. t('calls.hwg.card', { p })) above the kicker.
 // style (3.4, lib/wallet.ts shareStyle(save)): the equipped share-card style (paper/ink/accent), the post frame and the
 // player's paper name as the masthead. Absent = the classic card, exactly as before.
-export interface CardStyle { paper?: string; ink?: string; accent?: string; frame?: { c: string; c2: string; pat: string } | null; masthead?: string }
+export interface CardStyle { paper?: string; ink?: string; accent?: string; frame?: { c: string; c2: string; pat: string } | null; masthead?: string; headline?: { family: string; upper: boolean; ink: string | null } }
 export interface Card { hed: string; sub: string; kick: string; no: string; date: string; by: string; url: string; stats: [string, string][]; stamp: string; stampKind: string; club: WClub; no2: number; who: string; rtl: boolean; hwg?: string; style?: CardStyle; flair?: string }
 const GO = '#17613F', FAKE = '#5B3E96', DEAD = '#8B857A', GOLD = '#F7B928', GOLD_D = '#7A5200';
 const mix = (hex: string, to: string, k: number) => { const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16); const ch = (s: number) => Math.round(((a >> s) & 255) * (1 - k) + ((b >> s) & 255) * k); return '#' + [16, 8, 0].map((s) => ch(s).toString(16).padStart(2, '0')).join(''); };
@@ -81,11 +81,12 @@ export async function renderCard(c: Card): Promise<Blob | null> {
   } else { ctx.fillStyle = ACC_T; ctx.font = `800 31px ${text}`; ctx.textAlign = alignS; ctx.fillText(c.kick.toUpperCase(), S, P + 196); }
   // headline (wood type)
   ctx.fillStyle = INK;
-  const hed = c.hed.toUpperCase();
+  const hl = c.style?.headline;
+  const hed = hl && !hl.upper ? c.hed : c.hed.toUpperCase();
   ctx.font = `900 200px ${cond}`;
   (ctx as unknown as { fontStretch: string }).fontStretch = 'extra-condensed';
   const lines = wrap(ctx, hed, W - 2 * P).slice(0, 3);
-  const px = Math.min(...lines.map((l) => fit(ctx, l, (n) => `900 ${n}px ${cond}`, W - 2 * P, 210, 70)));
+  const px = Math.min(...lines.map((l) => fit(ctx, l, (n) => `900 ${n}px ${hl ? hl.family : cond}`, W - 2 * P, 210, 70)));
   ctx.font = `900 ${px}px ${cond}`;
   let y = P + 196 + px * 0.95;
   for (const l of lines) { ctx.fillText(l, S, y); y += px * 0.84; }
