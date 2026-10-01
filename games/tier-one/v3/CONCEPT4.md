@@ -192,3 +192,40 @@ Rivals from the Creator Rivals program (opt-in real creators, flag off) and frie
 your posts, the ratio lines on a wrong Drop, the accounts' lines on the timeline, the boss's lines after a window (a win, a loss, a
 Scoop against them), a DM from the boss after you take a Scoop off them, sponsor lines, Mags's lines in Story. Short, specific,
 human, funny; never cruel about real people; never the old words.
+
+## 11. The decision list (what stays, what goes, what changes)
+
+| Keep | Cut | Change |
+|---|---|---|
+| The five contacts and their tells · the catchphrase · the banter (three languages, club fans) · the Market (real rumours, market scoring, heat, watch) · Boards and prizes · Groups (rooms, challenges, crews) · The Comeback (prologue, five chapters, Vince, Mags, Priya) · looks and the collection · streaks with grace days · share cards to real socials · referral credits · offline play · EN / AR / ES | The newspaper frame (editor's desk, front pages, paper names) · drawn motion films and film loops · four endings · Talks/Advanced/Confirmed · U-turns · twists · the two-source rule and tally weights · Deadline Day as day 7 · favours and gear · the second shop · the Pass as its own screen · weekly event rules that never applied · every dead perk in NUMBERS_3x.md · unlabelled icons | Wire → Market (watch free, calls at Level 2) · rivals → chapter bosses with stats cards; ranked boards are you vs real players · Press Points → XP with a Level that never ends · Rep ranks Nobody → Tier One · coins mostly from sponsors · the Daily is 5 stories × 5 days · Live is its own 90-second mode · Results are a thread · the tutorial is the First window, not a rules page |
+
+## 12. The first five minutes (the script every build must play exactly)
+
+1. Lock screen: 09:41, today's date, one notification: "Mags Doyle: You're back. Open this." Tap.
+2. "Your handle" (one field, a suggested handle), then "Your line" (pick one of three house catchphrases). Two taps.
+3. The First window opens in Blurt: 3 stories, Mags in DMs: "Send the barber a DM. He's free. He's also wrong half the time." Each step waits for the player's own action (DM → read the chip → open the agent's card → post a Hint → end day → see @BackPageBants post → a Post → Deadline Day → the physio → a Drop). Nine taps of teaching, no text wall.
+4. The results thread: the first right call, the first catchphrase stamp, the followers roll from 200 to about 500, "Level 2" and the first coins, the Market unlock card.
+5. A DM from a Local sponsor ("Saw your first call. Want to make some money?") and the push-permission card with a reason: "We'll tell you when today's window opens and when your Market calls land." Then the home screen with the Daily card counting down.
+If anything in those five minutes needs a tooltip, the screen is wrong.
+
+## 13. The rhythm (retention and live ops)
+
+- **Daily:** one Daily (4 minutes), the Market check (1 minute), a Career window if you want more. The streak counts any of them. One grace day a week, banked up to two.
+- **Weekly:** Boards and the Global sponsor terms run Monday to Sunday UTC; prizes to collect on Monday morning (a tray notification); three featured looks at 15% off.
+- **Seasonal:** the season track (10 weeks), 8–12 new looks, last season's leave the coin shop; a new chapter of banter.
+- **Real deadline days** (DD Live, ranked): the real windows' closing days from `season.ts` (next: 2 Feb 2027, then the summer 2027 close); the Live app counts down to them for a week before.
+- **Push (web push, `lib/push.ts`, opt-in with a reason):** window opens · your Market call resolved · a sponsor offer · prizes to collect · a boss DM. Never a nag, at most one a day unless the player asked for more in Settings.
+- **Returning after 3+ days:** a "What you missed" thread (results, Market, sponsors), the streak grace used if available, never a penalty screen.
+
+## 14. Telemetry (how the math gets tuned after launch, `api/tier-one/v4` telemetry)
+
+Ten events, each with level, rank, day-of-player-life and mode: `window_start`, `dm_sent` (contact), `post` (o, s, day, scoop_open), `window_end` (tier, total, right, scoops), `level_up`, `sponsor_offer` / `sponsor_accept` / `sponsor_walk`, `market_call` / `market_resolve`, `purchase` (sku, credits), `share`. From these the owner's dashboard reads: D1/D7/D30 retention by first-window outcome, the tier distribution of engaged players (RULES4 §1's 13% Tier One target), coins earned vs spent per level, sponsor pay as a share of income, conversion by moment (after a Tier One, after a Scoop, level 3 bundle). The bars in RULES4 move only at season start, from these numbers.
+
+## 15. The quality bar (ship gate, no exceptions)
+
+- The first five minutes (§12) play end to end in a real browser at 390×844 in EN and AR with no dead end, no overlap, no horizontal scroll, no unlabelled icon, no old word.
+- Every app opens from the home screen and back; every end state links to the next thing; reduced motion respected; keyboard works on desktop.
+- 60 fps on the phone motion (no layout thrash in the timeline; transforms and opacity only); the web build under 1.5 MB gzipped for the first screen; offline opens to the lock screen and the last results.
+- Numbers on screen match RULES4 and `lib/economy.ts`; the sim's reader player still lands 10–15% Tier One.
+- Nothing paid changes a score; no offer interrupts play; every price previewable; refunds within 48 h.
+- A per-app pixel pass and an independent verifier that tries to refute it (the Final Cut process, GOTY.md §11.2) run before the lead ships.
