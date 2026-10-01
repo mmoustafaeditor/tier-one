@@ -133,8 +133,7 @@ A regular player (Daily + a Career window + a minute of Wire) earns about 180 XP
 
 ### Level (never ends)
 XP for the next level = 100 + 30 × (level − 1). Level 2 in the first session, 5 on day 2–3, 10 in about a week, 25 in about two
-months, 50 in about eight months. Every level pays coins (10 × level, capped at 200). Levels 3, 4 and 5 unlock Deadline Day,
-the Press box and the Wire.
+months, 50 in about eight months. Every level pays coins (10 × level, capped at 200). Level 2 unlocks Market calls (watching is free from the start), Level 3 unlocks Live and Level 4 unlocks Groups.
 
 ### Season track
 30 tiers, 400 XP each (12,000 XP ≈ a 10-week season at a regular pace; a casual player finishes about 60%). Free lane: coins
