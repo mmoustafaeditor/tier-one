@@ -37,6 +37,20 @@ together with your change.
 
 ---
 
+## 2026-10-02 · saifsaber · The Gaffer: ENGINE.md brought up to date
+- **What changed:** `games/the-gaffer/ENGINE.md` now covers everything added since engine v2, with today's measured numbers:
+  - injuries from tackles and hidden proneness;
+  - weather;
+  - the marking instructions, including the AI's choices;
+  - highlights;
+  - the engine → pitch contract (`m.flow`: every entry kind, its second and node, and the rule that the pitch never guesses what the engine knows, guarded by the 200-match fingerprint);
+  - the live pitch layer by layer (`sim`, `body`, `move`, `defend`, `setpieces`, `director`, `tuning`);
+  - every test and how to run it (fingerprint, injuries, marking, weather, the Node and browser pitch tests, `watch.mjs` for phones);
+  - the new optional save fields and the in-match save timing;
+  - the known gaps (the whole-career save during a match, `ENGINE_CLOCK` off, cameras unused).
+- **Files:** `games/the-gaffer/ENGINE.md`
+- **Heads-up for the team:** Read it before touching the match engine or the pitch. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer: watched as a player, and checked on a slow phone
 - **What changed:**
   - **Watching tool.** New `ui-tests/watch.mjs` plays a match in the built game in one highlight mode. It reports smoothness (frames a second, frames over 50 ms, which minute the slow ones fall in) and can slow the CPU like a cheap phone (`CPU=4|6`). It can also record a video and screenshots of the pitch (kept out of git).
