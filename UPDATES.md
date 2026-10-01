@@ -17,6 +17,18 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer pitch, foundation steps 1-2: pitch logic out of React, seeded Node pitch test
+- **What changed:** Nothing a player sees. The pitch's movement code moved out of the React component into `ui2/pitch/sim.ts` (`newAnim`, `tick`); `Pitch2D.tsx` only draws now. The pitch test's measurements moved into `ui-tests/pitch-metrics.mjs`, shared by the browser test and a new Node test, `node sim-tests/build.mjs pitch [matches] [minutes]`. It plays 10 seeded full matches (about 134,000 frames) in about 18 s a run and runs twice: both runs give identical numbers.
+  With samples this big, the real baseline shows:
+  - marking 85%, keeper 0.3 m off the angle, every corner 5 in the box, every wall 3+ (all solid);
+  - back-line spread is a median 4.0 m (limit 3 m);
+  - the side that lost the ball reacts in 77% of turnovers (limit 80%, 159 measured);
+  - a carrier in our box finds a blocker 30% of the time (578 frames).
+
+  Those three are what phases 3-4 are for. The browser test still passes nav, 58 fps and no console errors.
+- **Files:** `games/the-gaffer/web/src/ui2/Pitch2D.tsx`, `src/ui2/pitch/sim.ts` (new), `ui-tests/pitch.mjs`, `ui-tests/pitch-metrics.mjs` (new), `sim-tests/pitch.ts` (new)
+- **Heads-up for the team:** Use the Node pitch test to judge pitch changes. The browser test's 40-second samples swing too much to judge marking, the box or the line. The Node test fails on the three weak checks above until phases 3-4. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer pitch, phase 2 of the FM26 plan: the defence as a group
 - **What changed:** The Gaffer's live 2D pitch only; nothing under `sim/` changed. Out of possession the defence now works as a group (`ui2/pitch/defend.ts`):
   - every attacker within 32 m of goal gets a goal-side marker: zonal by default, and the man-marking instruction pairs its target first; midfielders take men in front of the line, defenders take those near goal or beyond it;
