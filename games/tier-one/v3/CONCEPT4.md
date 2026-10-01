@@ -23,7 +23,7 @@ on your story", "Volt wants to talk"). Swipe/tap to unlock → the home screen: 
 |---|---|---|
 | **Blurt** | The timeline. Today's window (the Daily) and every window you play happen here: stories, rival posts, your posts, replies, the ratio, the Scoop. | Window / Saga / Daily |
 | **DMs** | Your contacts. An ask is a DM; a contact answers with a voice note or a line (the existing drawn call films play here). "3 DMs a day" replaces "phone calls" (so a *call* is only ever the thing you post). Trust grows per contact. | Contacts, the call scenes |
-| **Lens** | Your profile: the follower graph, your grid of Drops (right All-ins), your looks, your catchphrase, Secret files, and **Deals** (brands). The shop lives here as "Looks". | Me, Customize, Pass, collection |
+| **Lens** | Your profile: the follower graph, your grid of Drops (right All-ins), your looks, your catchphrase, Secret files, and **Sponsors** (brand deals). The shop lives here as "Looks". | Me, Customize, Pass, collection |
 | **Story** | Career: *The Comeback*, told as a chat thread with Mags Doyle (your old editor, now the manager who takes you back) and the people in the story. Chapter goals pinned at the top. | Story, Editor desk |
 | **Live** | Deadline Day: a 90-second live stream (6 stories, 6 DMs, every contact awake, rivals already posting). Ranked on real deadline days (DD Live), practice any other day. | DDLive, the old day 7 |
 | **Wire** | Real rumours. HE MOVES / HE STAYS, backed Hint / Post / Drop. The market % is on every card with a label. | Wire |
@@ -45,23 +45,41 @@ Everything in the tray is a real event (a result, a deal, a rival, an unlock). N
 - Never: Talks / Advanced / Confirmed, Hijack / Off / Fake, U-turn, twist, exclusive, tally, Press Points, editor's desk,
   front page, newspaper, HERE WE GO. The Chronicle (the outlet that dropped you) may be named in the story only.
 
-## 4. Brand deals (the money loop that makes coins feel like income)
+## 4. Sponsors (brand deals): the money loop that makes coins feel like income
 
 Brands are fictional: **Volt** (boots), **Nine** (airline), **Tempo** (headphones), **Oasis** (water), **Kickoff** (fantasy app),
-**Halo** (phones). A deal is an offer in your DMs when you cross a follower + Rep bar. One active deal at a time (two with Gold).
+**Halo** (phones). A sponsor pays you **for being right, per call, scaled by how loud you went**, warns you when you're wrong, and
+walks only when you keep getting it wrong. Nothing here touches a ranked score; it is coins and standing only.
 
-A deal = a term + a condition + a payout:
-- Term: this window, or this week.
-- Condition, always one line: "Keep Rep above 55 all window" · "3 right calls" · "One Scoop" · "No wrong Drop" · "Play every day this week".
-- Payout: coins (150 → 600 as you grow) and, on the bigger ones, a branded look (a wallpaper, a Drop card style, a profile frame).
-- A wrong Drop during a deal: "Volt has pulled out." You lose the payout, nothing else. Brands come back later.
+**A deal** = a brand + a term + a rate card + a strike rule.
 
-Deals never touch a ranked score. They are where most mid-game coins come from, so coins read as what an insider earns.
+| Tier | Who gets offered it | Term | Pays per right Hint / Post / Drop | Clean-finish bonus | Strikes before the brand walks |
+|---|---|---|---|---|---|
+| **Local** (a town boot shop) | from the First window | one window | 4 / 8 / 16 | 60 | 3 |
+| **National** | Rising rank, 2,000 followers | one window | 8 / 16 / 32 | 150 | 2 |
+| **Global** | ITK rank, 10,000 followers | one week | 15 / 30 / 60 | 400 | 1 (warned first) |
+
+- **Right calls pay instantly**, the moment a result lands: the coins roll in on the results thread with the brand's line
+  ("Volt: nice one. +16"). A **Scoop pays double the Drop rate** ("Volt shared your Scoop. +32").
+- **Wrong calls never cost coins.** They cost **standing with that brand**: a wrong Hint is ignored (brands don't mind quiet
+  misses); a wrong Post is a **warning** ("Volt: careful."); a wrong Drop is a **strike** ("Volt: one more and we're done.").
+  At the limit the brand **walks**: you keep everything already paid, you lose the clean-finish bonus, and the slot opens.
+  Warnings and strikes reset when the term ends.
+- **Standing** per brand, 0–3 stars: a clean finish adds a star, a walk removes one. Stars raise the brand's next rate card
+  (+25% per star) and at 3 stars the brand sends a **branded look** (a wallpaper, a Drop card style, a frame) and a long-term deal.
+  This is the long tail: a reason to keep every deal clean for months.
+- **Offers** arrive in DMs after results and at the start of a week: one to three brands, each with its rate card, bonus, term and
+  strike rule in one line ("Nine · this week · 15 / 30 / 60 per right call · +400 clean · 1 strike"). One active deal (two with
+  Gold). The first offer is a Local brand DM right after the First window: "Saw your first call. Want to make some money?"
+- **What counts:** Daily, Career, Live and Market calls (so the Market keeps paying when there is no window). Practice never.
+- **Balance target** (RULES4 §3): a regular free player earns about 80 coins a day; sponsors are 40–60% of that by mid game, so
+  coins read as what an insider earns. The numbers above are the first pass; `lib/economy.ts` owns them and the sim checks
+  them against a "reader" player (92% right, mostly Hints and Posts): National ≈ 55 coins a Daily plus the bonus most windows.
 
 ## 5. Monetization (a business, never a wall)
 
 Credits (the paid currency, shared Semba wallet) buy:
-1. **Gold** (the season track's paid lane, 350 credits ≈ €4.99): a look every 3 tiers, the season Legendary, +10% coins, a second deal
+1. **Gold** (the season track's paid lane, 350 credits ≈ €4.99): a look every 3 tiers, the season Legendary, +10% coins, a second sponsor
    slot, the Insider mark on your profile (cosmetic).
 2. **Looks**: phone wallpapers and OS themes (the flagship, the whole phone changes), Drop card styles, profile frames, DM ringtones,
    catchphrases, custom catchphrase from Insider rank. Common / rare / epic are coins; legendary is credits or Gold.
@@ -95,14 +113,14 @@ shown as "Reach Level 5" with the bar, never as a lock icon alone.
   in `web/public/art/<name>.webp` with a line in `web/public/art/manifest.json` (`{ id, kind, credit }`) and the looks catalog
   picks it up by id; nothing in the game depends on it existing.
 
-- Mystery: sealed results (open post by post), Secret files, the whistleblower, deals that arrive unannounced, a rival who DMs you
-  after a Scoop.
+- Mystery: sealed results (open post by post), Secret files, the whistleblower, sponsor offers that arrive unannounced, a rival who
+  DMs you after a Scoop.
 
 ## 7. Results, now a thread
 
 When a window ends, Blurt shows your posts resolving one by one as a thread: the ending lands as a news card, your post gets its
 reaction (the Scoop stamp, your catchphrase on a right Drop, the ratio on a wrong one), the points in one line. Then the grade
-(Tier One … Spiked), the follower and Rep rolls, XP and the level bar, coins and any deal paid, and "Share" (the card to real
+(Tier One … Spiked), the follower and Rep rolls, XP and the level bar, coins (the sponsor's line and pay per right call, a warning or strike on a wrong one), and "Share" (the card to real
 socials). Every end state links to the next thing.
 
 ## 8. Build order
