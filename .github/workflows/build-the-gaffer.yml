@@ -131,7 +131,7 @@ jobs:
           fi
           VERSION=$(node -p "require('./games/the-gaffer/build/version.json').version")
           BUILD=$(node -p "require('./games/the-gaffer/build/version.json').build")
-          FILES="the-gaffer/index.html the-gaffer/version.json games/the-gaffer/build/index.html games/the-gaffer/build/version.json"
+          FILES="the-gaffer games/the-gaffer/build"
           if [ "$APK" = "true" ]; then
             # No commit subject as the changelog: main mixes both games, so it could name Tier One work (GF-014).
             node games/the-gaffer/scripts/publish-apk.mjs games/the-gaffer/android/app/build/outputs/apk/debug/app-debug.apk "$BUILD" "$VERSION"
