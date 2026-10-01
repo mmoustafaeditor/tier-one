@@ -55,7 +55,7 @@ export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
   | { n: 'rooms'; code?: string; challenge?: string } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize' } | { n: 'ddlive' } | { n: 'editor' } | { n: 'boards'; period?: 'daily' | 'weekly' | 'wire' }
   | { n: 'settings' }
-  | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
+  | { n: 'play'; mode: 'practice' | 'career' | 'tutorial' | 'deadline' | 'challenge'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
 /** What every screen gets: `go` (any route), `home` (the home screen), `openApp` (an app by id), `openSettings` (the
  *  Settings app), `edition` (toggle the phone's light/dark theme). */
@@ -180,7 +180,7 @@ export function App() {
     if (route.n === 'play') {
       const sv = getSave();
       const lw = route.mode === 'practice' ? sv.practice.live : sv.career && sv.career.live;
-      return lw ? localDriver(route.mode, lw) : null;
+      return lw && (route.mode === 'practice' || route.mode === 'career') ? localDriver(route.mode, lw) : null; // 4.0 modes: the play lane's Driver4
     }
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -246,7 +246,7 @@ export function App() {
     <NotifyHost icon={(a) => <AppIcon id={a} size={28} />} />
     <Toasts />
     <Suspense fallback={null}>
-      {!s.onboarded && !locked && <Onboarding go={go} />}
+      <Onboarding go={go} route={locked ? 'lock' : route.n} />
       <MorningPapers route={route.n} />
       <SceneHost />
       <SocialWatch />
