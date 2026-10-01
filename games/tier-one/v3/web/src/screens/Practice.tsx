@@ -1,6 +1,6 @@
-// Practice (RULES4.md §2): off the record, 4.0 rules exactly, the Coach shows the odds in words ("about 7 in 10").
-// A random window, a past Daily (from the 4.0 cutover, once its seed is published the day after) or a friend's code.
-// Every window starts through lib/driver.ts makeDriver, which keeps it in save.v4.live.practice until it's over.
+// 4.1 Practice (UI41; RULES4.md §2): one screen, no scroll. Off the record, the Daily's rules exactly, the Coach shows
+// the odds in words. New window (the main button), Resume, the Coach switch, a friend's code, and a row of past
+// Dailies. Every window starts through lib/driver.ts makeDriver and plays on the Daily Challenge screen (Window.tsx).
 import { useState } from 'react';
 import { useT, fmtDate } from '../lib/i18n';
 import { useSave, update } from '../lib/save';
@@ -9,8 +9,10 @@ import { V4_FROM } from '../lib/engine';
 import { v3 } from '../lib/api';
 import { ymdUTC } from '../lib/meta';
 import { sfx } from '../lib/sfx';
-import { Icon, GBtn, TopBar, Kit } from '../ui/game';
+import { Pop } from '../ui/juice';
+import { Screen } from '../ui/screen';
 import type { Chrome } from '../App';
+import '../styles/daily41.css';
 
 export function PracticeScreen(chrome: Chrome) {
   const t = useT();
@@ -34,52 +36,31 @@ export function PracticeScreen(chrome: Chrome) {
     setBusy(-1);
     if (!r.ok) { setMsg(t('prac4.net')); return; }
     if (r.v !== 4) { setMsg(t('prac4.old', { d: V4_FROM })); return; }
-    void begin(r.seed, t('front.dailyNo', { n: r.no }));
+    void begin(r.seed, t('d41.win.dailyN', { n: r.no }));
   };
-  // Replays use the server's published seed (daily.seed): 4.0 Dailies only, from the cutover up to yesterday.
   const pastDays = [1, 2, 3, 4, 5, 6, 7].filter((d) => ymdUTC(Date.now() - d * 864e5) >= V4_FROM);
   const clean = code.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
-  return <div className="g-screen practice3">
-    <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('prac4.title')} onMenu={chrome.openSettings} />
-    <div className="stagger g-stack">
-      <section className="g-hero g-hero--practice" style={{ ['--i' as string]: 0 }}>
-        <span className="g-hero__art" aria-hidden="true"><Icon n="target" /></span>
-        <span className="g-mono g-hero__k">{t('prac4.k')} · {t('prac4.played', { n: played })}</span>
-        <h1 className="g-hero__t">{t('prac4.hed')}</h1>
-        <p className="g-hero__s">{t('prac4.sub')}</p>
-        <div className="pkits" aria-hidden="true">{[0, 1, 2, 3, 4].map((k) => <span key={k} style={{ ['--r' as string]: [-7, 4, -2, 6, -4][k] + 'deg', animationDelay: 100 + k * 70 + 'ms' }}><Kit mystery size={44} /></span>)}</div>
-        {live && <GBtn kind="dark" onClick={play} style={{ marginBottom: 12 }}><Icon n="uturn" size={22} />{t('prac4.resume', { d: dayOfLog(live.log) })}<small>{live.label || live.seed}</small></GBtn>}
-        <GBtn kind="green" size="lg" shine pulse={!live} sound="open" onClick={() => { void begin(randomSeed()); }}><Icon n="bolt" size={24} />{t('prac4.random')}</GBtn>
-      </section>
-
-      <button className={'coach3 g-card g-card--desk' + (coach ? ' is-on' : '')} style={{ ['--i' as string]: 1 }} onClick={() => { sfx('ui.tap'); update((x) => { const v = (x.v4 = x.v4 || {}); v.practice = { ...(v.practice || {}), coach: !coach }; }); }} role="switch" aria-checked={coach}>
-        <span className="coach3__ic"><Icon n="eye" /></span>
-        <span className="coach3__t"><b>{t('coach4.name')}</b><small>{coach ? t('coach4.on') : t('coach4.off')}</small><span className="coach3__d">{t('coach4.d')} {t('coach4.line', { out: t('out4.signs'), odds: oddsWords(t.lang, 0.7) })}.</span></span>
-        <span className={'g-toggle' + (coach ? ' is-on' : '')} aria-hidden="true"><span /></span>
-      </button>
-
-      <form className="seedform g-card" style={{ ['--i' as string]: 2 }} onSubmit={(e) => { e.preventDefault(); if (clean.length >= 4) { sfx('open'); void begin(clean); } }}>
-        <span className="seedform__h"><span className="rcard__ic rcard__ic--green"><Icon n="ticket" /></span><span><b className="g-h2">{t('prac4.codeT')}</b><small className="g-sub">{t('prac4.codeD')}</small></span></span>
-        <div className="seedform__row">
-          <input className="codebox codebox--sm" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="K7Q2PX" maxLength={20} aria-label={t('prac4.code')} autoCapitalize="characters" spellCheck={false} />
-          <button type="submit" className="g-btn g-btn--green seedform__go" disabled={clean.length < 4}><Icon n="arrow" size={22} /><span className="sr-only">{t('prac4.go')}</span></button>
-        </div>
-        {live && <p className="g-fine">{t('prac4.share')} · <b className="g-mono">{live.seed}</b></p>}
-      </form>
-
-      {pastDays.length > 0 && <>
-      <div className="g-sec" style={{ ['--i' as string]: 3 }}><h2>{t('prac4.pastT')}</h2></div>
-      <div className="pastgrid" style={{ ['--i' as string]: 3 }}>
-        {pastDays.map((d) => { const ms = Date.now() - d * 864e5; return <button key={d} className={'past' + (busy === d ? ' is-busy' : '')} onClick={() => { sfx('ui.tap'); void past(d); }} disabled={busy >= 0}>
-          <span className="past__dow g-mono">{fmtDate(ms, t.lang, { weekday: 'short' })}</span>
-          <b className="past__d g-num">{fmtDate(ms, t.lang, { day: 'numeric' })}</b>
-          <span className="past__m g-mono">{fmtDate(ms, t.lang, { month: 'short' })}</span>
-          <span className="past__ago">{busy === d ? <Icon n="clock" size={14} /> : t('prac4.ago', { n: d })}</span>
-        </button>; })}
-      </div>
-      <p className="g-fine" style={{ ['--i' as string]: 4 }}>{t('prac4.pastD')}</p>
-      </>}
-      {msg && <p className="g-err" role="alert"><Icon n="x" size={16} />{msg}</p>}
-    </div>
-  </div>;
+  return <div className="d41"><Screen title={t('d41.prac.title')} sub={t('d41.prac.played', { n: played })} onBack={chrome.home}
+    footer={<Pop className="d41-btn d41-btn--big" onTap={() => { void begin(randomSeed()); }} sound="os.open">{t('d41.prac.new')}</Pop>}>
+    <div className="d41-lede"><b>{t('d41.prac.hed')}</b><p>{t('d41.prac.sub')}</p></div>
+    {live && <Pop className="d41-card d41-card--go" onTap={play}>
+      <span><b>{t('d41.prac.resume', { d: dayOfLog(live.log) })}</b><small className="g-num">{live.label || live.seed}</small></span><i aria-hidden="true">{t.rtl ? '‹' : '›'}</i>
+    </Pop>}
+    <button type="button" className={'d41-card d41-switch' + (coach ? ' is-on' : '')} role="switch" aria-checked={coach}
+      onClick={() => { sfx('ui.tap'); update((x) => { const v = (x.v4 = x.v4 || {}); v.practice = { ...(v.practice || {}), coach: !coach }; }); }}>
+      <span><b>{t('coach4.name')}</b><small>{coach ? t('d41.prac.coachOn', { ex: t('coach4.line', { out: t('out4.signs'), odds: oddsWords(t.lang, 0.7) }) }) : t('d41.prac.coachOff')}</small></span>
+      <i className="d41-toggle" aria-hidden="true" />
+    </button>
+    <form className="d41-card d41-code" onSubmit={(e) => { e.preventDefault(); if (clean.length >= 4) { sfx('os.open'); void begin(clean); } }}>
+      <label><b>{t('d41.prac.code')}</b><input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="K7Q2PX" maxLength={20} autoCapitalize="characters" spellCheck={false} /></label>
+      <button type="submit" className="d41-btn" disabled={clean.length < 4}>{t('d41.prac.play')}</button>
+    </form>
+    {pastDays.length > 0 && <div className="d41-past" aria-label={t('d41.prac.past')}>
+      <small>{t('d41.prac.past')}</small>
+      <div>{pastDays.map((d) => { const ms = Date.now() - d * 864e5; return <button key={d} type="button" className={busy === d ? 'is-busy' : ''} disabled={busy >= 0} onClick={() => { sfx('ui.tap'); void past(d); }}>
+        <small>{fmtDate(ms, t.lang, { weekday: 'short' })}</small><b className="g-num">{fmtDate(ms, t.lang, { day: 'numeric' })}</b>
+      </button>; })}</div>
+    </div>}
+    {msg && <p className="d41-err" role="alert">{msg}</p>}
+  </Screen></div>;
 }
