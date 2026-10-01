@@ -21,8 +21,9 @@ export const varsH = (c: CastSaga): Vars => Object.fromEntries(Object.entries(va
 
 // One line per (player, source, era): the same question gets the same words, and nothing repeats across sagas.
 export function voiceLine(lang: string, c: CastSaga, cl: Clue): string {
-  const pack = trList(lang, `voice.${cl.src}.${cl.r}`) as string[] | undefined;
-  if (!pack || !pack.length) return '';
+  // voice.* (base + banterx personality) then voice3.* (parts/banter3*.ts): same outcome index, more of each source's voice.
+  const pack = [...((trList(lang, `voice.${cl.src}.${cl.r}`) as string[] | undefined) || []), ...((trList(lang, `voice3.${cl.src}.${cl.r}`) as string[] | undefined) || [])];
+  if (!pack.length) return '';
   const k = hash(c.player.id + '|' + cl.src + '|' + cl.era + (cl.again ? '|2' : '')) % pack.length;
   return fillV(pack[k], vars(c));
 }

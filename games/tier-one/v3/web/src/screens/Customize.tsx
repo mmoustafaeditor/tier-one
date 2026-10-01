@@ -18,7 +18,7 @@ import {
   setPaperName, paperName, PAPER_NAME_MAX, whyText, giftOutbox, toggleShowcase, SHOWCASE_MAX, priceText, type Currency,
 } from '../lib/wallet';
 import { syncEarned, earnProgress } from '../lib/earned';
-import { setCustomCatchphrase, customUnlocked, customLine, catchDef, cleanLine, CUSTOM_MAX, CUSTOM_ID, TONE_SFX } from '../lib/catchphrase';
+import { setCustomCatchphrase, retryCustomCatchphrase, customUnlocked, customLine, catchDef, cleanLine, lineAllowed, CUSTOM_MAX, CUSTOM_ID, TONE_SFX } from '../lib/catchphrase';
 import { getConfig } from '../lib/flags';
 import { Icon, TopBar, GBtn, confetti } from '../ui/game';
 import { Seg } from '../ui/screenbits';
@@ -39,7 +39,7 @@ export function CustomizeScreen(chrome: Chrome) {
   const s = useSave();
   const [tab, setTab] = useState<Tab>('byline');
   const [sel, setSel] = useState<string>(() => equipped('byline').id);
-  useEffect(() => { applyRemoteOnce(); const got = syncEarned(); if (got.length) { sfx('unlock'); const it = item(got[0]); if (it) toast('ach', t('eco.toast.bought', { n: itemName(t, it) })); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { applyRemoteOnce(); retryCustomCatchphrase(); const got = syncEarned().map((id) => item(id)).filter((x): x is Item => !!x); if (got.length) { sfx('unlock'); confetti(['#F7B928', '#FFE08A', '#F4EFE4']); toast('ach', t('eco.toast.earned', { n: itemName(t, got[0]) }), got.length > 1 ? t('eco.toast.earnedMore', { n: got.length - 1 }) : t('eco.book.never')); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [giftFor, setGiftFor] = useState<Item | null>(null);
   const [packs, setPacks] = useState(false);
   const [name, setName] = useState(() => s.desk?.paper || '');
@@ -223,8 +223,8 @@ export function CustomizeScreen(chrome: Chrome) {
 
 function earnText(t: ReturnType<typeof useT>, it: Item, s: Save): string {
   const e = it.earn!; const [have, need] = earnProgress(e, s);
-  const r = e.ref ? (e.via === 'rank' ? t('cn.tier.' + e.ref) : e.via === 'rivalry' ? t('g.rival.' + e.ref + '.name') : e.ref) : '';
-  const base = t('eco.book.earn.' + e.via, { n: e.n ?? '', r: r.startsWith('g.rival.') ? e.ref! : r });
+  const r = e.ref ? (e.via === 'rank' ? t('cn.tier.' + e.ref) : e.via === 'rivalry' ? t('rival.' + e.ref) : e.ref) : '';
+  const base = t('eco.book.earn.' + e.via, { n: e.n ?? '', r });
   return e.via === 'streak' || e.via === 'referral' || e.via === 'story' ? base + ' · ' + t('eco.book.have', { a: have, b: need }) : base;
 }
 function RailCard({ it, s, now, onPick, badge, ends }: { it: Item; s: Save; now: number; onPick: () => void; badge?: string; ends?: number }) {
@@ -256,13 +256,18 @@ function CatchPanel({ s }: { s: Save }) {
     <p className="cz-cpp__dek">{t('cp.ui.dek')}</p>
     <p className="cz-cpp__now"><span>{t('cp.ui.now')}</span><b className={'cz-cp cz-cp--' + d.tone} style={{ ['--cp' as string]: d.c }} dir="auto">{on.id === CUSTOM_ID && cur?.text && cur.ok !== false ? cur.text : t(d.key)}</b><small>{t('cp.ui.' + d.from)}</small></p>
     {cur?.ok === false && <p className="cz-err" role="alert">{t('cp.ui.refused')}</p>}
+    {cur?.net && cur.ok == null && on.id === CUSTOM_ID && <p className="cz-cpp__net"><Icon n="clock" size={14} /> {t('cp.ui.offline')}</p>}
     <div className={'cz-cpp__write' + (open ? '' : ' is-locked')}>
       <label className="cz-field"><span className="cz-field__l">{open ? t('cp.ui.write') : <><Icon n="lock" size={13} /> {t('cp.ui.write')}</>}</span>
         <input className="cz-input cz-input--cp" value={draft} disabled={!open} onChange={(e) => { setDraft(e.target.value.slice(0, CUSTOM_MAX)); setErr(''); }} maxLength={CUSTOM_MAX} placeholder={t('cp.ui.ph')} dir="auto" spellCheck={false} />
         <small>{open ? t('cp.ui.writeHint') + ' · ' + t('cp.ui.left', { n: CUSTOM_MAX - draft.length }) : t('cp.ui.locked')}</small></label>
+      {open && <div className={'cz-cpp__live' + (draft && !lineAllowed(cleanLine(draft)) ? ' is-bad' : '')} aria-live="polite">
+        <small>{t('cp.ui.live')}</small>
+        <span key={cleanLine(draft)} className="cz-cp cz-cp--gold cz-cp--big cz-cpp__stamp" dir="auto">{cleanLine(draft) || t('cp.ui.ph')}</span>
+      </div>}
       {err && <p className="cz-err" role="alert">{err}</p>}
       {open && <GBtn kind="gold" size="sm" onClick={save} disabled={!cleanLine(draft) || (cleanLine(draft) === cur?.text && on.id === CUSTOM_ID)}><Icon n="pen" />{t('cp.ui.set')}</GBtn>}
-      {cur && cur.ok == null && on.id === CUSTOM_ID && <small className="g-fine">{t('cp.ui.pending')}</small>}
+      {cur && cur.ok == null && !cur.net && on.id === CUSTOM_ID && <small className="g-fine">{t('cp.ui.pending')}</small>}
     </div>
   </section>;
 }
@@ -282,16 +287,17 @@ function BookView({ s, now, onPick }: { s: Save; now: number; onPick: (id: strin
     if (windowsOf(it).length) return t('eco.book.how.gone');
     return t('eco.book.how.buy', { p: priceText(priceNow(it, now)) });
   };
-  const setName = (k: string) => { if (/^\w+-\d{4}$/.test(k)) { const [n, y] = k.split('-'); return t('season.name.' + n) === 'season.name.' + n ? k : t('season.name.' + n) + ' ' + y; } const v = t('eco.book.sets.' + k); return v === 'eco.book.sets.' + k ? k : v; };
+  const setName = (k: string) => { if (/^\w+-\d{4}$/.test(k)) { const [n, y] = k.split('-'); return t('season.names.' + n) + ' ' + y; } const v = t('eco.book.sets.' + k); return v === 'eco.book.sets.' + k ? k : v; };
   return <section className="cz-book" aria-labelledby="book-h">
     <h2 id="book-h">{t('eco.book.hed')}</h2>
     <p className="cz-hint">{t('eco.book.dek')}</p>
-    {sets.map(({ set, items }) => { const have = items.filter((x) => owns(x.id, s)).length; return <div key={set} className={'cz-book__set' + (have === items.length ? ' is-done' : '')}>
+    {sets.map(({ set, items, season }) => { const have = items.filter((x) => owns(x.id, s)).length; const w = season ? items[0].window : undefined; return <div key={set} className={'cz-book__set' + (have === items.length ? ' is-done' : '') + (season ? ' is-season' : '')}>
       <div className="cz-book__h"><h3 dir="auto">{setName(set)}</h3><span className="g-num">{have === items.length ? t('eco.book.done') : t('eco.book.have', { a: have, b: items.length })}</span></div>
+      {w && <p className="cz-book__when">{now < w.from ? t('eco.book.how.soon', { d: fmtDate(w.from, t.lang, { day: 'numeric', month: 'short' }) }) : now < w.to ? <>{t('eco.rails.leaves')} · <Countdown to={w.to} lang={t.lang} /></> : t('eco.book.how.gone')}</p>}
       <span className="g-bar g-bar--sm"><i style={{ width: Math.round((have / items.length) * 100) + '%' }} /></span>
       <ul className="cz-book__list">{items.map((it) => { const own = owns(it.id, s); return <li key={it.id} className={own ? 'is-own' : 'is-miss'}>
         <button type="button" onClick={() => onPick(it.id)} aria-label={itemName(t, it)}><span className="cz-tile__art"><Thumb it={it} s={s} /></span></button>
-        <span className="cz-book__txt"><b dir="auto">{itemName(t, it)}</b><small>{own ? t('eco.state.owned') : how(it)}</small></span>
+        <span className="cz-book__txt"><b dir="auto">{itemName(t, it)}</b><small>{own ? t('eco.state.owned') : how(it)}</small>{it.source === 'earned' && !own && <em className="cz-book__never">{t('eco.book.neverShort')}</em>}</span>
         {own ? <Icon n="check" size={16} /> : it.source === 'earned' ? <Icon n="lock" size={14} /> : null}
       </li>; })}</ul>
     </div>; })}

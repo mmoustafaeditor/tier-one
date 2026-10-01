@@ -1,0 +1,54 @@
+/* Leaderboards, prizes and badges (SAIF-03): screens/Boards.tsx, ui/awards.tsx. Game first: big rank, bright medals. */
+.aw { --gold-m: #F7B928; --silver-m: #C9CED6; --bronze-m: #D98A4E; }
+.aw-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.aw-tabs button { font-size: 17px; padding: 0 6px; text-align: center; line-height: 1.05; }
+.aw-tabs button[aria-selected="true"] { background: var(--gold); color: #3A2600; box-shadow: 0 3px 0 var(--gold-deep); }
+
+.aw-you { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; padding: 16px; }
+.aw-you__rank { display: grid; place-items: center; min-width: 84px; height: 84px; padding: 0 8px; border-radius: 20px; background: var(--card-ink); color: var(--card); font-family: var(--f-cond); font-stretch: 72%; font-weight: 900; font-size: 46px; line-height: 1; animation: g-pop .45s var(--ease-slam) both; }
+.aw-you__rank small { font-size: .5em; opacity: .7; }
+.aw-you__rank--none { background: var(--card-2); color: var(--card-ink-3); }
+.aw-you.is-gold .aw-you__rank { background: linear-gradient(180deg, #FFD35C, var(--gold)); color: #3A2600; }
+.aw-you.is-silver .aw-you__rank { background: linear-gradient(180deg, #F1F3F6, #AEB4BE); color: #2A2E35; }
+.aw-you.is-bronze .aw-you__rank { background: linear-gradient(180deg, #F2B184, #B9672F); color: #3A1A05; }
+.aw-you__b { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.aw-you__b b { font-family: var(--f-display); font-weight: 800; font-size: 21px; line-height: 1.15; letter-spacing: -.01em; }
+.aw-you__b .g-mono { color: var(--card-ink-3); }
+.aw-ladder { display: flex; align-items: center; gap: 8px; margin: -4px 4px 0; font-size: 13.5px; font-weight: 700; color: var(--gold); }
+.aw-ladder svg { flex: none; }
+
+.aw-list { list-style: none; margin: 0; padding: 6px 10px; }
+.aw-list li { display: grid; grid-template-columns: 30px 28px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; min-height: 48px; padding: 6px 4px; border-bottom: 1px solid rgba(21, 19, 15, .1); }
+.aw-list li:last-child { border-bottom: 0; }
+.aw-list li.is-me { background: rgba(247, 185, 40, .2); border-radius: 10px; }
+.aw-list__r { text-align: center; font-size: 19px; color: var(--card-ink-3); display: grid; place-items: center; }
+.aw-list li.is-gold .aw-list__r { color: var(--gold-deep); } .aw-list li.is-silver .aw-list__r { color: #8A919C; } .aw-list li.is-bronze .aw-list__r { color: #B9672F; }
+.aw-list__n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: 15px; }
+.aw-list__t { color: var(--card-ink-3); font-size: 9.5px; }
+.aw-list li > b { font-size: 20px; min-width: 40px; text-align: end; }
+.aw-wait { text-align: center; color: var(--on-desk-3); padding: 20px 0; }
+.aw-fine { text-align: center; color: var(--on-desk-3); font-size: 10px; }
+
+/* prize cards: one per uncollected prize */
+.aw-prizes { display: flex; flex-direction: column; gap: 10px; }
+.aw-prize { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 12px; align-items: center; padding: 14px; background: linear-gradient(160deg, #FFF3CF, var(--card) 60%); box-shadow: 0 0 0 3px var(--gold), var(--shadow-card); animation: g-pop .5s var(--ease-slam) both; }
+.aw-prize__ic { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 16px; background: var(--gold); color: #3A2600; }
+.aw-prize--silver .aw-prize__ic { background: #C9CED6; color: #2A2E35; } .aw-prize--bronze .aw-prize__ic { background: #D98A4E; color: #3A1A05; }
+.aw-prize__b { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.aw-prize__b b { font-family: var(--f-display); font-weight: 800; font-size: 19px; line-height: 1.15; }
+.aw-prize__b .g-mono { color: var(--card-ink-3); }
+.aw-prize .g-btn { grid-column: 1 / -1; gap: 8px; }
+
+/* badges on the byline */
+.aw-badges { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 12px 0 0; padding: 0; }
+.aw-badge { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; max-width: 100%; padding: 0 10px; border-radius: 999px; background: var(--card-2); color: var(--card-ink); font-size: 12.5px; font-weight: 800; }
+.aw-badge__t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aw-badge--gold { background: var(--gold); color: #3A2600; } .aw-badge--silver { background: #DDE1E7; color: #2A2E35; } .aw-badge--bronze { background: #E9A675; color: #3A1A05; }
+.aw-badge--scalp { background: color-mix(in srgb, var(--red) 16%, var(--card-2)); color: var(--red-deep); }
+.aw-badge--ach svg { color: var(--gold-deep); }
+
+/* the Me hub's leaderboards door spans the row */
+.cn-hub__t--boards { grid-column: 1 / -1; --hc: var(--gold); }
+
+:root.reduce .aw-you__rank, :root.reduce .aw-prize { animation: none; }
+@media (prefers-reduced-motion: reduce) { .aw-you__rank, .aw-prize { animation: none; } }

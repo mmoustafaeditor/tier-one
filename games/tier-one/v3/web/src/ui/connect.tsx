@@ -13,6 +13,9 @@ import type { Beat } from '../lib/storyMode';
 import type { Route, Go } from '../App';
 import { Icon, GBtn, CountUp, useCountUp } from './game';
 import '../styles/connect.css';
+import { feedSkin } from '../lib/wallet';
+import { CatchLine, Showcase } from './customize';
+import { BadgeRow } from './awards';
 
 // ---------- navigation for components that don't get chrome (the bell lives in every TopBar)
 let navGo: Go | null = null;
@@ -48,6 +51,7 @@ export function feedText(t: T, f: FeedItem): string {
   if ('tier' in v) v.tier = v.tier ? ', ' + t('tier.' + v.tier) : '';
   if (v.perk) v.perk = t(String(v.perk)).toLowerCase();
   if (v.m) v.m = t(String(v.m), { n: v.mn ?? '' });
+  if (v.name == null) v.name = FSI(getSave().nick.trim() || t('d2.post.you')); // rival taunts aim at your byline
   return t(f.key, v);
 }
 const KIND_IC: Record<string, string> = { editor: 'story', rival: 'reply', wire: 'wire', room: 'friends', contact: 'phone', mission: 'target', level: 'crown', season: 'gift', streak: 'flame', window: 'news', hot: 'flame' };
@@ -63,9 +67,9 @@ export function ago(ms: number, lang: string) {
 
 // ---------- one line of wire copy (Feed screen and Home's "For you")
 export function FeedRow({ f, onOpen, style }: { f: FeedItem; onOpen?: () => void; style?: CSSProperties }) {
-  const t = useT();
+  const t = useT(); useSave(); const fs = feedSkin(); // the feed skin (Your desk): rows restyle live when it changes
   const open = () => { sfx('ui.tap'); markRead([f.id]); onOpen ? onOpen() : navTo(toRoute(f.to)); };
-  return <button className={'cn-row' + (f.read ? '' : ' is-new') + (f.tone ? ' is-' + f.tone : '')} style={{ ['--kc' as string]: kindColor(f.kind), ...style }} onClick={open}>
+  return <button className={'cn-row' + (f.read ? '' : ' is-new') + (f.tone ? ' is-' + f.tone : '')} data-skin={fs.skin || undefined} style={{ ['--kc' as string]: kindColor(f.kind), ...fs.vars, ...style }} onClick={open}>
     <span className="cn-row__ic" aria-hidden="true">{f.kind === 'rival' && f.from ? <RivalMark id={f.from} size={30} /> : <Icon n={kindIcon(f.kind)} size={18} />}</span>
     <span className="cn-row__body">
       {f.kind === 'rival' && f.from && <b className="cn-row__who"><Handle id={f.from} /></b>}
@@ -164,6 +168,13 @@ export function BylineCard({ s, style }: { s: Save; style?: CSSProperties }) {
       <div><dt>{t('cn.me.rep')}</dt><dd className="g-num">{b.rep}<small>/100</small></dd></div>
       <div className={'cn-hot' + (b.hot ? ' is-lit' : '')}><dt>{t('cn.me.hot')}</dt><dd className="g-num"><Icon n="flame" size={22} />{b.hot}</dd><small>{b.hot ? t('cn.me.best', { n: b.best }) : t('cn.me.cold')}</small></div>
     </dl>
+    {/* Your desk (GOTY §8.4, §12): the line a Confirmed call that lands fires, and three pinned looks */}
+    <div className="cn-byline__desk">
+      <span className="cn-byline__cpk">{t('cp.ui.tab')}</span>
+      <CatchLine s={s} className="cn-byline__cp" />
+      <Showcase s={s} />
+    </div>
+    <BadgeRow s={s} />
   </section>;
 }
 

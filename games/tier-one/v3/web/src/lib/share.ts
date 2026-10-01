@@ -9,7 +9,7 @@ import { bylineOf, repTier } from './byline';
 // hwg (3.3): when set, the card leads with a gold "HERE WE GO!" band (e.g. t('calls.hwg.card', { p })) above the kicker.
 // style (3.4, lib/wallet.ts shareStyle(save)): the equipped share-card style (paper/ink/accent), the post frame and the
 // player's paper name as the masthead. Absent = the classic card, exactly as before.
-export interface CardStyle { paper?: string; ink?: string; accent?: string; frame?: { c: string; c2: string; pat: string } | null; masthead?: string }
+export interface CardStyle { paper?: string; ink?: string; accent?: string; frame?: { c: string; c2: string; pat: string } | null; masthead?: string; headline?: { family: string; upper: boolean; ink: string | null } }
 export interface Card { hed: string; sub: string; kick: string; no: string; date: string; by: string; url: string; stats: [string, string][]; stamp: string; stampKind: string; club: WClub; no2: number; who: string; rtl: boolean; hwg?: string; style?: CardStyle; flair?: string }
 const GO = '#17613F', FAKE = '#5B3E96', DEAD = '#8B857A', GOLD = '#F7B928', GOLD_D = '#7A5200';
 const mix = (hex: string, to: string, k: number) => { const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16); const ch = (s: number) => Math.round(((a >> s) & 255) * (1 - k) + ((b >> s) & 255) * k); return '#' + [16, 8, 0].map((s) => ch(s).toString(16).padStart(2, '0')).join(''); };
@@ -81,11 +81,12 @@ export async function renderCard(c: Card): Promise<Blob | null> {
   } else { ctx.fillStyle = ACC_T; ctx.font = `800 31px ${text}`; ctx.textAlign = alignS; ctx.fillText(c.kick.toUpperCase(), S, P + 196); }
   // headline (wood type)
   ctx.fillStyle = INK;
-  const hed = c.hed.toUpperCase();
+  const hl = c.style?.headline;
+  const hed = hl && !hl.upper ? c.hed : c.hed.toUpperCase();
   ctx.font = `900 200px ${cond}`;
   (ctx as unknown as { fontStretch: string }).fontStretch = 'extra-condensed';
   const lines = wrap(ctx, hed, W - 2 * P).slice(0, 3);
-  const px = Math.min(...lines.map((l) => fit(ctx, l, (n) => `900 ${n}px ${cond}`, W - 2 * P, 210, 70)));
+  const px = Math.min(...lines.map((l) => fit(ctx, l, (n) => `900 ${n}px ${hl ? hl.family : cond}`, W - 2 * P, 210, 70)));
   ctx.font = `900 ${px}px ${cond}`;
   let y = P + 196 + px * 0.95;
   for (const l of lines) { ctx.fillText(l, S, y); y += px * 0.84; }
@@ -125,5 +126,70 @@ export async function renderCard(c: Card): Promise<Blob | null> {
   ctx.lineWidth = 3; ctx.strokeRect(ar ? -tw - 46 : -26, -76, tw + 72, 112);
   ctx.fillStyle = col; ctx.textAlign = ar ? 'right' : 'left'; ctx.fillText(c.stamp.toUpperCase(), ar ? -24 : 10, 0);
   ctx.restore();
+  return new Promise((res) => cv.toBlob((b) => res(b), 'image/png'));
+}
+
+// ---------------------------------------------------------------- Share to X (banter lane, additive)
+// "Post it": where the device can share files (most phones), the Web Share API gets the card image and the post text;
+// everywhere else an X intent opens with a banter line, the game URL and two hashtags. Decided synchronously so the
+// intent window opens inside the tap (pop-up blockers allow that, not after an await).
+export const GAME_URL = 'https://sembagames.app/tier-one';
+export const X_TAGS = 'TierOne,TransferTwitter';
+export const xIntentUrl = (text: string, url = GAME_URL, tags = X_TAGS) =>
+  'https://x.com/intent/tweet?' + new URLSearchParams({ text, url, hashtags: tags }).toString();
+/** The text the Web Share API sends (it has no url/hashtags fields that every target honours). */
+export const xShareText = (text: string, url = GAME_URL, tags = X_TAGS) => text + '\n' + url + '\n' + tags.split(',').map((x) => '#' + x.trim()).join(' ');
+const canShareFiles = () => {
+  try {
+    const nav = navigator as Navigator & { canShare?: (d: unknown) => boolean };
+    return typeof File !== 'undefined' && !!nav.share && !!nav.canShare && nav.canShare({ files: [new File([new Uint8Array(1)], 'x.png', { type: 'image/png' })] });
+  } catch { return false; }
+};
+/** Post `text` (and the image, when the device can share one). Resolves 'shared', 'intent' or 'cancelled'. */
+export async function postToX(text: string, image?: () => Promise<Blob | null>, tags = X_TAGS): Promise<'shared' | 'intent' | 'cancelled'> {
+  if (!image || !canShareFiles()) {
+    const w = window.open(xIntentUrl(text, GAME_URL, tags), '_blank', 'noopener,noreferrer');
+    if (!w) location.href = xIntentUrl(text, GAME_URL, tags);
+    return 'intent';
+  }
+  try {
+    const blob = await image();
+    if (!blob) { window.open(xIntentUrl(text, GAME_URL, tags), '_blank', 'noopener,noreferrer'); return 'intent'; }
+    await navigator.share({ files: [new File([blob], 'tier-one.png', { type: 'image/png' })], text: xShareText(text, GAME_URL, tags) });
+    return 'shared';
+  } catch { return 'cancelled'; }
+}
+
+/** The catchphrase card: 1080×1080, your line in wood type over the move it called. Same paper as the scoop card. */
+export interface CpCard { phrase: string; kicker: string; line: string; foot: string; by: string; color: string; rtl: boolean; style?: CardStyle }
+export async function renderCpCard(c: CpCard): Promise<Blob | null> {
+  try { await document.fonts.ready; } catch { /* */ }
+  const W = 1080, H = 1080, P = 72;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d'); if (!ctx) return null;
+  const ar = c.rtl, st = c.style || {};
+  const PAPER = st.paper || '#F2EEE5', INK = st.ink || '#15130F', ACC = c.color || st.accent || '#F7B928';
+  const cond = ar ? '"IBM Plex Sans Arabic", sans-serif' : '"Archivo", "Arial Narrow", sans-serif';
+  const disp = ar ? '"Noto Naskh Arabic", serif' : '"Newsreader", Georgia, serif';
+  const mono = ar ? '"IBM Plex Sans Arabic", sans-serif' : '"IBM Plex Mono", monospace';
+  const S = ar ? W - P : P, al: CanvasTextAlign = ar ? 'right' : 'left';
+  ctx.fillStyle = PAPER; ctx.fillRect(0, 0, W, H);
+  for (let k = 0; k < 7000; k++) { ctx.fillStyle = `rgba(80,70,55,${Math.random() * 0.05})`; ctx.fillRect(Math.random() * W, Math.random() * H, 1.5, 1.5); }
+  ctx.direction = 'ltr'; ctx.textAlign = al; ctx.fillStyle = INK; ctx.font = `700 84px "Newsreader", Georgia, serif`;
+  ctx.fillText(st.masthead || 'Tier One', S, P + 70, W * 0.6);
+  ctx.fillRect(P, P + 96, W - 2 * P, 9); ctx.fillRect(P, P + 113, W - 2 * P, 3);
+  ctx.direction = ar ? 'rtl' : 'ltr';
+  ctx.fillStyle = ACC; ctx.fillRect(P, P + 150, W - 2 * P, 64);
+  ctx.fillStyle = INK; ctx.font = `900 40px ${cond}`; ctx.fillText(c.kicker.toUpperCase(), ar ? S - 20 : S + 20, P + 197, W - 2 * P - 40);
+  // the line itself, as big as it fits on up to three lines
+  const text = c.phrase.toUpperCase();
+  let px = 230, lines: string[] = [];
+  for (; px >= 80; px -= 10) { ctx.font = `900 ${px}px ${cond}`; lines = wrap(ctx, text, W - 2 * P); if (lines.length <= 3 && lines.every((l) => ctx.measureText(l).width <= W - 2 * P)) break; }
+  let y = P + 250 + px * 0.9;
+  for (const l of lines.slice(0, 3)) { ctx.fillText(l, S, y); y += px * 0.86; }
+  ctx.font = `italic 400 64px ${disp}`; ctx.fillText(c.line, S, Math.min(H - P - 150, y + 40), W - 2 * P);
+  ctx.fillRect(P, H - P - 64, W - 2 * P, 3);
+  ctx.font = `italic 400 38px ${disp}`; ctx.fillText(c.by, S, H - P - 14, W * 0.5);
+  ctx.font = `500 24px ${mono}`; ctx.textAlign = ar ? 'left' : 'right'; ctx.fillText(c.foot.toUpperCase(), ar ? P : W - P, H - P - 16, W * 0.45);
   return new Promise((res) => cv.toBlob((b) => res(b), 'image/png'));
 }

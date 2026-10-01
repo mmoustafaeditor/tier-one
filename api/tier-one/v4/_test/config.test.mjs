@@ -59,3 +59,17 @@ test('an edited file is picked up after the cache ttl', () => {
   fs.writeFileSync(path.join(d, 'flags.json'), JSON.stringify(fl));
   assert.equal(cfg.view('x').flags.newsroom, true);
 });
+
+test('creator rivals: validated on load, consent stripped, served only behind the flag', async () => {
+  const { checkRivals, activeRivals, SCHEMAS } = await import('../../../_lib/config.mjs');
+  const ok = { id: 'maker', handle: '@maker_fc', name: 'Maker', voice: 'itk', code: 'MAKER', from: '2026-10-01', until: '2026-12-31', consent: { signed: '2026-09-20', ref: 'CR-0001' } };
+  assert.deepEqual(validate(SCHEMAS.rivals, { rivals: [ok] }), []);
+  assert.ok(validate(SCHEMAS.rivals, { rivals: [{ ...ok, consent: undefined }] }).length);
+  assert.ok(validate(SCHEMAS.rivals, { rivals: [{ ...ok, voice: 'someone' }] }).length);
+  assert.throws(() => checkRivals({ rivals: [{ ...ok, handle: '@ITK_Kev' }] }), /house rival/);
+  assert.throws(() => checkRivals({ rivals: [{ ...ok, consent: { signed: '2026-10-05', ref: 'x12' } }] }), /consent signed after/);
+  const pub = activeRivals({ rivals: [ok, { ...ok, id: 'gone', code: 'GONE', consent: { ...ok.consent, revoked: '2026-10-02' } }] }, '2026-10-10');
+  assert.deepEqual(pub.map((r) => r.id), ['maker']); assert.equal(pub[0].consent, undefined);
+  assert.deepEqual(loadConfig().rivals.rivals, []);
+  assert.deepEqual(createConfig().view('x').rivals, []);
+});

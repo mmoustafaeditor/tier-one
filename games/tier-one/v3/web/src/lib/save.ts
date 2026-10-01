@@ -54,6 +54,8 @@ export interface Save {
   byline?: Byline; book?: Record<string, BookEntry>; rivals?: Record<string, RivalRec>; feed?: FeedItem[];
   // 3.4 the press box (lib/social.ts): challenges, the newsroom, friend-rival bookkeeping, the last local window.
   social?: SocialSave;
+  // SAIF-03 (lib/awards.ts): finished-board placings by 'd:<day>' / 'w:<week>', and whether their coin prize was claimed.
+  prizes?: Record<string, { period: 'daily' | 'weekly'; label: string; rank: number; players: number; coins: number; at: number; paid?: number }>;
 }
 
 const rid = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; let s = ''; const b = new Uint8Array(16); crypto.getRandomValues(b); for (const x of b) s += a[x % a.length]; return s; };

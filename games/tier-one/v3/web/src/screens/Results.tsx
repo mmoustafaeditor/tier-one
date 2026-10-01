@@ -29,6 +29,8 @@ import { flushDeferredScenes, playScene, afterScenes, firstToday } from '../lib/
 import { windowKey, bylineOf, repTier, REP_TIERS, type WindowSummary } from '../lib/byline';
 import { ChallengeButton as SocialChallengeButton } from '../ui/social';
 import { catchphraseOf } from '../lib/catchphrase';
+import { ShareToX } from '../ui/sharex';
+import { shareStyle } from '../lib/wallet';
 
 /** SLOT (social lane, ui/social.tsx): `<ChallengeButton/>`. Assign the real component here; it renders beside Share.
  *  Props: { view, result }. */
@@ -59,7 +61,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   // One seed per window: the same result always draws the same replies, in every language's own pools.
   const seed = view.seed || (view.no ? 'daily-' + view.no : view.room ? 'room-' + view.room.code + '-' + view.room.round : r.row || 'w');
   const { threads, verdict } = useMemo(() => {
-    const b = new Banter(t.lang, seed);
+    const b = new Banter(t.lang, seed, catchphraseOf().text, s.nick.trim());
     const th = r.per.map((p) => b.thread(p, cast[p.i], view.R));
     return { threads: th, verdict: b.verdict(r.tier) };
   }, [t.lang, seed, r]);
@@ -143,6 +145,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
 
         {stage >= PROG && <div className="res4__share stagger">
           <GBtn size="sm" sound="open" onClick={share.send}><Icon n="share" />{t('bn.ui.share')}</GBtn>
+          <ShareToX r={r} cast={cast} seed={seed} v={{ hed, what, tier: t('tier.' + r.tier), pts: num(r.total), row: r.row || '' }} card={share.card} />
           {ChallengeButton ? <ChallengeButton view={view} result={r} /> : null}
           <button className="res4__save" onClick={share.save}>{share.msg || t('results.saveImg')}</button>
         </div>}
@@ -215,6 +218,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
       <div className="sheet__body res3sheet">
         <SheetHead title={t('lb.title')} onClose={close} />
         {modal?.k === 'board' && <Board total={r.total} />}
+        <GBtn kind="dark" size="sm" style={{ marginTop: 12 }} onClick={() => { close(); chrome.go({ n: 'boards' }); }}><Icon n="trophy" size={18} />{t('aw.all')}</GBtn>
       </div>
     </Sheet>
   </div>;
@@ -411,7 +415,7 @@ function useShare(view: View, r: Result, what: string, hed: string, bestDest: Ca
   const url = 'sembagames.app/tier-one';
   const text = shareText(t, { what, tier: t('tier.' + r.tier), pts: num(r.total), row: r.row || '', url: 'https://' + url });
   const hwgIdx = hereWeGoOf(r);
-  const card = () => ({ hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl, hwg: hwgIdx >= 0 ? catchphraseOf().text.toUpperCase() + ' · ' + bc.player.s : undefined });
+  const card = () => ({ style: shareStyle(), hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl, hwg: hwgIdx >= 0 ? catchphraseOf().text.toUpperCase() + ' · ' + bc.player.s : undefined });
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 2400); };
   const send = async () => {
     onShared();
@@ -429,5 +433,5 @@ function useShare(view: View, r: Result, what: string, hed: string, bestDest: Ca
     const blob = await renderCard(card()); if (!blob) return;
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tier-one-scoop.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); onShared();
   };
-  return { send, save, msg };
+  return { send, save, msg, card };
 }

@@ -286,7 +286,10 @@ const actions = {
   // ---- leaderboards ----
   async 'lb.top'(b) {
     // period 'wire': the season's Wire credibility board (scored on the server in wire.mine).
-    const period = b.period === 'weekly' || b.period === 'wire' ? b.period : 'daily', day = today(), dev = devId(b.dev);
+    // `day` (optional, SAIF-03): a past day's Daily board, or the week holding that day, so a finished period's placing
+    // can be read back for its coin prize. Read-only; boards keep their TTL (40 days daily, 60 weekly).
+    const period = b.period === 'weekly' || b.period === 'wire' ? b.period : 'daily', dev = devId(b.dev);
+    const asked = clean(b.day, 10), day = /^\d{4}-\d{2}-\d{2}$/.test(asked) && asked < today() && asked >= '2026-09-01' ? asked : today();
     const key = period === 'wire' ? 't1v3:cred:' + season(Date.now()) : period === 'weekly' ? 't1v3:lb:w:' + isoWeek(day) : 't1v3:lb:d:' + day;
     const [z, total] = await redis([['ZREVRANGE', key, 0, LB_TOP - 1, 'WITHSCORES'], ['ZCARD', key]]);
     const ids = []; for (let i = 0; i < (z || []).length; i += 2) ids.push(z[i]);
