@@ -20,6 +20,7 @@ import type { Gain } from '../lib/economy';
 import { saysWord4, outWord4, backWord4 } from '../lib/story';
 import { accountPost4 } from '../lib/banter';
 import { bossNow } from '../lib/rivals';
+import { nextCareerWindow } from '../lib/storyMode';
 import { catchphraseOf } from '../lib/catchphrase';
 import { Icon, Kit, useTyped } from '../ui/game';
 import { Crest } from '../ui/bits';
@@ -230,6 +231,8 @@ function Timeline({ driver, pub, label, landed, flying, fresh, onOpen, onBack, o
   const s = useSave();
   const R = driver.R, cast = driver.cast;
   const boss = driver.mode === 'career' ? bossNow() : null;
+  // Story (lib/storyMode.ts): the DMs that land before day 1 and Vince's clients. The planted contact stays secret.
+  const cw = useMemo(() => { if (driver.mode !== 'career') return null; const w = nextCareerWindow(); return w.seed === driver.seed ? w : null; }, [driver]);
   const pull = usePull(onRefresh);
   const days = Array.from({ length: Math.min(pub.day, R.DAYS) }, (_, k) => Math.min(pub.day, R.DAYS) - k);
   const handle = '@' + (s.nick || t('pl4.tl.you'));
@@ -240,7 +243,12 @@ function Timeline({ driver, pub, label, landed, flying, fresh, onOpen, onBack, o
     <section className="bl-win" aria-label={label}>
       <div className="bl-win__h"><span className="bl-win__k">{t('pl4.tl.pinned')}</span><h1 className="bl-win__t" dir="auto">{label}</h1><DayTicks day={pub.day} days={R.DAYS} /></div>
       {boss && <BossStrip />}
-      <div className="bl-stories">{cast.map((c, i) => <StoryCard key={i} i={i} c={c} pub={pub} driver={driver} landed={landed[i]} onOpen={() => onOpen(i)} />)}</div>
+      <div className="bl-stories">{cast.map((c, i) => <StoryCard key={i} i={i} c={c} pub={pub} driver={driver} landed={landed[i]} tagged={!!cw && cw.tagged.includes(i)} onOpen={() => onOpen(i)} />)}</div>
+      {cw && cw.tips.length > 0 && <div className="bl-tips" aria-label={t('st4.next.before')}>
+        {cw.tips.map((x, k) => { const c = cast[x.i]; const v = { p: c ? c.player.s : '', to: c ? c.to.s : '', o: x.o != null ? outWord4(t.lang, x.o) : '' };
+          const text = x.kind === 'whistle' ? t(x.from === 'priya' ? 'st4.tip.priya' : 'st4.tip.whistle', v) : x.kind === 'pitch' ? t('st4.tip.pitch', v) : t(x.stays ? 'st4.tip.stays' : 'st4.tip.goes', v);
+          return <p key={x.kind + x.i + k} className="bl-tip"><b>{t('st4.who.' + x.from)}</b><span dir="auto">{text}</span></p>; })}
+      </div>}
     </section>
     <section className="bl-feed" aria-label={t('pl4.app.blurt')}>
       {days.map((d) => {
@@ -269,7 +277,7 @@ function BossStrip() {
 }
 
 /** A story as a big card: the player, his club → the linked club in club colours, and its state at a glance. */
-function StoryCard({ i, c, pub, driver, landed, onOpen }: { i: number; c: CastSaga; pub: Pub4; driver: Driver4; landed?: number; onOpen: () => void }) {
+function StoryCard({ i, c, pub, driver, landed, tagged, onOpen }: { i: number; c: CastSaga; pub: Pub4; driver: Driver4; landed?: number; tagged?: boolean; onOpen: () => void }) {
   const t = useT();
   const clues = pub.clues[i] || [], call = pub.calls[i], posts = pub.feed.filter((f) => f.i === i);
   const state = call ? 'posted' : clues.length ? 'read' : 'cold';
@@ -279,7 +287,7 @@ function StoryCard({ i, c, pub, driver, landed, onOpen }: { i: number; c: CastSa
     <span className="bl-story__edge" aria-hidden="true" />
     <Kit club={c.from} player={c.player} size={54} />
     <span className="bl-story__b">
-      <span className="bl-story__n" dir="auto">{c.player.s || c.player.n}</span>
+      <span className="bl-story__n" dir="auto">{c.player.s || c.player.n}{tagged && <small className="bl-story__tag" title={t('st4.next.clientD')}>{t('st4.next.client')}</small>}</span>
       <span className="bl-story__r"><span className="bl-story__from" dir="auto">{c.from.s}</span><Icon n={t.rtl ? 'back' : 'arrow'} size={14} /><ClubChip club={c.to} size="sm" /></span>
       <span className="bl-story__st">
         {state === 'cold' && <span className="bl-story__cold">{t('pl4.card.noDm')}</span>}

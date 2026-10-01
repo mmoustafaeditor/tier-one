@@ -31,6 +31,8 @@ import { bylineOf, rankOf, recordInto, careerWindowKey } from './byline';
 import { rankIndex, RANKS as REP_RANKS, debit, PRICES, type Gain, type RankId } from './economy';
 import { castForSpec, trustFor, liveWindow, lastWindow, type Outcome4, type Driver4 } from './driver';
 import { onCareerDone, toast } from './meta';
+import { setBoss } from './rivals';
+import { t } from './i18n';
 import { earnHook } from './earnhook';
 
 // ---------------------------------------------------------------- the chapters
@@ -546,3 +548,24 @@ export const STORY_SOURCES = ['kitman', 'barber', 'agent', 'spotter', 'physio'] 
 export const srcNamed = (t: (k: string) => string, k: string) => (STORY_SOURCES as readonly string[]).includes(k) ? t('g.story.who.' + k) + ' · ' + t('src.' + k) : t('src.' + k);
 /** Window tiers in Story's words: the grade only (Tier One … Spiked). */
 export const tierKey = (t: Tier) => 'tier.' + t;
+
+// ---------------------------------------------------------------- the boss registry (lib/rivals.ts setBoss)
+// Blurt shows the boss strip at the top of a Career window and the head-to-head on the results thread from this.
+// The boss is the one the window was built against (save.v4.live / last .rules.opts.boss), else the chapter's.
+setBoss({
+  boss: () => {
+    const s = getSave(), c4 = story4Of(s); if (!c4) return null;
+    const v = bossView(s, Math.min(5, c4.ch), c4);
+    return { id: E4.BOSSES[v.id].id, handle: t('rival.' + v.handle), acc: Math.round(v.acc * 10), you: v.chapter.w, them: v.chapter.l };
+  },
+  result: (out) => {
+    const s = getSave(), spec = (liveWindow('career', s) || lastWindow('career', s))?.rules;
+    const c4 = story4Of(s);
+    const b = (spec?.opts?.boss as Boss4 | undefined) || chapterDef(Math.min(5, c4?.ch || 1)).boss;
+    const bid = E4.BOSSES[b].id;
+    const per = out.per as unknown as { right: boolean; scoop: boolean; rivals?: { id: string; right: boolean }[] }[];
+    const you = per.filter((p) => p.right).length + per.filter((p) => p.scoop).length;
+    const them = per.filter((p) => (p.rivals || []).some((f) => f.id === bid && f.right)).length;
+    return { won: you > them, you, them };
+  },
+});

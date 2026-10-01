@@ -16,6 +16,7 @@ import { installTilt, prefersReducedMotion } from './ui/game';
 import { Phone, DeskPanel, AppIcon, appOf, appById, routeOf, isUnlocked, bumpUse, batteryMode, levelInfo, unlockLevel, callLevel, APPS, type AppId } from './ui/phone';
 import { NotifyHost, notify, setTrayNav } from './ui/juice';
 import { onGain, onDriverDone } from './lib/meta';
+import { nextCareerWindow } from './lib/storyMode';
 // Code-split web build (GOTY.md §8.2): the home screen and the lock screen ship with the shell; every app is its own
 // chunk, fetched on first open (the service worker keeps the play loop's chunks cached after its install).
 const MeScreen = lazy(() => import('./screens/Me').then((m) => ({ default: m.MeScreen })));
@@ -42,7 +43,6 @@ import { SocialWatch } from './ui/social';
 import { captureReferral, headlineVars, headlineStyle } from './lib/wallet';
 import './lib/earned'; // registers the earned-looks hook (lib/earnhook.ts) the game events call
 import { checkPrizes } from './lib/awards';
-import { MorningPapers } from './ui/live';
 import { ymdUTC } from './lib/meta';
 import { num } from './lib/i18n';
 // Shell layer: motion tokens, the one design system, then the phone OS (styles/phone.css) and the desk (desktop.css). Loaded after the screen styles.
@@ -179,6 +179,11 @@ export function App() {
   const driver: Driver4 | null = useMemo(() => {
     if (route.n === 'daily') return makeDriver({ mode: 'daily', onDone: onDriverDone });
     if (route.n === 'room') return makeDriver({ mode: 'room', room: route.room, onDone: onDriverDone });
+    if (route.n === 'play' && route.mode === 'career') {
+      // Story (lib/storyMode.ts): the chapter's rules, cast and boss; onStoryDone scores the head-to-head, then onCareerDone.
+      const w = nextCareerWindow(getSave());
+      return makeDriver({ mode: 'career', seed: w.seed, rules: w.rules, cast: w.cast, label: w.label, onDone: w.onDone });
+    }
     if (route.n === 'play') return makeDriver({ mode: route.mode, onDone: onDriverDone });
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -245,7 +250,6 @@ export function App() {
     <Toasts />
     <Suspense fallback={null}>
       <Onboarding go={go} route={locked ? 'lock' : route.n} />
-      <MorningPapers route={route.n} />
       <SceneHost />
       <SocialWatch />
     </Suspense>
