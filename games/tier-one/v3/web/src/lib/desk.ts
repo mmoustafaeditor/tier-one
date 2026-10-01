@@ -10,6 +10,7 @@ import { ymdUTC } from './meta';
 import { totalFavours } from './career';
 import { moment } from './moments';
 import { trackStyle } from './style';
+import type { ResultSaga } from './engine';
 import { ddLiveActive, ddResultsDue, ddCountdown, liveOf, liveDraft, myDDCalls, type LiveSave } from './live';
 import type { DeadlineDay } from './season';
 import type { WireCall, BoardItem } from './wireData';
@@ -166,7 +167,7 @@ onByline((e) => {
       return;
     }
     case 'window': {
-      trackStyle(s, e.w.per, e.w.mode);
+      trackStyle(s, e.w.per.filter((p) => !('scoop' in p)) as ResultSaga[], e.w.mode); // style reads v3 sagas; v4 stories are skipped until lib/style.ts moves
       if (e.w.mode !== 'daily') return;
       const films = (l.streakFilms = l.streakFilms || {});
       for (const m of STREAK_FILMS) if (s.streak.n === m && !films[m]) { films[m] = Date.now(); moment('streak:' + m, { n: m }); }

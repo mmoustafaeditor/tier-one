@@ -37,7 +37,7 @@ export const HOUSE_ID = 'cp.house.default';
 export const HOUSE_KEY = 'cp.house.default';
 export const CUSTOM_ID = 'cp.custom';
 export const CUSTOM_MAX = 24;
-export const CUSTOM_RANK = 'chief';
+export const CUSTOM_RANK = 'insider'; // 4.0 ranks (CONCEPT4 §5: your own line from Insider)
 /** The sound a line lands with (lib/sfx cues that already exist). */
 export const TONE_SFX: Record<CatchTone, Sfx> = { loud: 'stamp.done', cool: 'unlock', dry: 'typewriter', gold: 'fanfare' };
 
