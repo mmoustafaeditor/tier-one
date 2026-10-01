@@ -1,0 +1,163 @@
+// 4.0 shell redesign (CONCEPT4 §17, §18): lock faces, home widgets and Edit home, icon packs, themes, phones and their
+// parts. The words are CONCEPT4.md §3 only. Arabic is Egyptian; Spanish is Spain Spanish.
+export default {
+  en: {
+    eco: { items: { std: { lockface: 'House face', widget: 'Today’s window', iconpack: 'Paper icons', device: 'Your phone' } } },
+    sh: {
+      items: {
+        lf: { ticker: 'Ticker', split: 'Club split', floodlight: 'Floodlight', gilt: 'Gilt', edition: 'Late edition', chronicle: 'The Chronicle' },
+        ip: { outline: 'Outline icons', stamp: 'Stamp icons', retro: 'Retro icons', crest: 'Crest icons' },
+        th: { chalk: 'Chalkboard', programme: 'Matchday programme' },
+        dv: { terrace: 'Terrace', haloone: 'Halo One', brick: 'The Brick', post: 'The Post’s hand-me-down', halo: 'Halo flagship', burner: 'The burner', chronicle: 'The Chronicle phone' },
+        wg: { boss: 'Boss widget', files: 'Secret files widget' },
+      },
+      lock: {
+        rankRep: '{rank} · Rep {rep}', followers: '{n} followers', streak: '{n}-day streak', streak0: 'Play today to start a streak',
+        last: 'Last window · {tier} · {n} points', lastNone: 'Today’s window is open · 5 stories', unlock: 'Swipe up or tap', day: '{d}',
+      },
+      home: {
+        edit: 'Edit home', done: 'Done', hold: 'Hold anywhere to edit', add: 'Add a widget', page: 'Page {n} of {of}', pageAria: 'Go to page {n}',
+        slots: '{used} of {n} slots used', full: 'No room left. A better Screen adds slots.', empty2: 'Page two. Add a widget to fill it.',
+        remove: 'Remove', bigger: 'Make it wide', smaller: 'Make it small', earlier: 'Move earlier', later: 'Move later', toPage: 'Move to page {n}',
+        tabs: { widgets: 'Widgets', face: 'Lock face', icons: 'Icons', theme: 'Theme', phone: 'Phones' },
+        placed: 'On your home', place: 'Add', reach: 'Reach Level {n}', withLook: 'Comes with a look', story: 'Story, Chapter {n}', streak1: 'Play one Daily', rank: 'Reach {rank}',
+        wear: 'Wear it', worn: 'Wearing', tryOn: 'Try it on', trying: 'Trying it on', takeOff: 'Back to mine', buy: 'Buy · {p}', coins: '{n} coins', credits: '{n} credits', short: 'Not enough yet',
+        bought: 'Yours. It’s on.', previewNote: 'Everything here shows on your phone before you pay.', reset: 'Reset layout',
+      },
+      w: {
+        window: { t: 'Today’s window', no: 'No. {n}', closes: 'closes in' },
+        followers: { t: 'Followers', since: '+{n} in {d} days', today: 'Counting from today', aria: 'Followers over the last {d} days' },
+        market: { t: 'Market watch', says: 'Market says {n}% he moves', empty: 'Watch a rumour in Market and it lands here.', off: 'Market is offline. Your watchlist is safe.' },
+        sponsor: { t: 'Sponsor', unit: 'coins', paid: '{n} coins paid', left: '{n} strikes left', clean: 'Clean so far', empty: 'No deal yet. Brands DM you after results.' },
+        boss: { t: 'Boss', roar: 'The Daily Roar', vince: 'Vince Marlow', h2h: 'You {w} · {l} them', none: 'Your first boss is in Story.' },
+        streak: { t: 'Streak', days: 'days', best: 'Best {n}', grace: '{n} grace days banked', zero: 'Play today to start one.' },
+        season: { t: 'Season track', tier: 'Tier {n} of {of}', gold: 'Gold lane on' },
+        files: { t: 'Secret files', open: '{n} of {of} open', next: 'The next one is sealed', all: 'Every file open' },
+        group: { t: 'Group', code: 'Code {c}', empty: 'No group yet. Make a room for friends.' },
+        catch: { t: 'Your line', fires: 'Stamped on every right Drop' },
+      },
+      ph: {
+        title: 'Phones', ranked: 'Ranked windows: every phone plays the same.', perks: 'Parts work in Story and Practice.',
+        name: { pocket: 'Your phone', brick: 'The Brick', post: 'The Post’s hand-me-down', halo: 'Halo flagship', burner: 'The burner', chronicle: 'The Chronicle phone', terrace: 'Terrace', haloone: 'Halo One' },
+        feel: {
+          pocket: 'The one you carry every day.', brick: 'Cracked screen. Boot takes a beat. You have nothing.', post: 'A desk, a nameplate, one extra a window.',
+          halo: 'The long lens. Tony’s photo trick is yours now.', burner: 'Priya’s second line. The tips come in here.', chronicle: 'Back at the desk, with a better phone than Vince.',
+          terrace: 'Green and cream, like the old stand.', haloone: 'This season’s Halo. Sand frame, no notch to speak of.',
+        },
+        part: { screen: 'Screen', battery: 'Battery', camera: 'Camera', sim: 'SIM' },
+        v: {
+          screen: '{n} widget slots', battery: '{n} extras a window', battery0: 'No extras', camera: '{n} spotter photos a window', camera1: '1 spotter photo a window', camera0: 'No camera',
+          sim: 'Tips {n}% right', sim0: 'No second line',
+        },
+        up: '{n} coins', max: 'Full', locked: 'Not on this phone', daily: 'Use for the Daily', story: 'Carry in Story', inDaily: 'Your Daily phone', inStory: 'In your Story pocket',
+        get: 'Story, Chapter {n}', shop: 'Get it · {p}', second: 'Second line', upgraded: '{part} upgraded',
+      },
+    },
+  },
+  ar: {
+    eco: { items: { std: { lockface: 'واجهة البيت', widget: 'نافذة النهارده', iconpack: 'أيقونات ورق', device: 'موبايلك' } } },
+    sh: {
+      items: {
+        lf: { ticker: 'شريط', split: 'ألوان النادي', floodlight: 'كشافات', gilt: 'دهبي', edition: 'طبعة آخر الليل', chronicle: 'الكرونيكل' },
+        ip: { outline: 'أيقونات خطوط', stamp: 'أيقونات ختم', retro: 'أيقونات ريترو', crest: 'أيقونات شعار' },
+        th: { chalk: 'سبورة', programme: 'كتيّب الماتش' },
+        dv: { terrace: 'المدرج', haloone: 'هالو وان', brick: 'الطوبة', post: 'موبايل البوست القديم', halo: 'هالو الفلاجشيب', burner: 'الخط التاني', chronicle: 'موبايل الكرونيكل' },
+        wg: { boss: 'ويدجت الزعيم', files: 'ويدجت الملفات السرية' },
+      },
+      lock: {
+        rankRep: '{rank} · ريب {rep}', followers: '{n} متابع', streak: 'سلسلة {n} يوم', streak0: 'العب النهارده وابدأ سلسلة',
+        last: 'آخر نافذة · {tier} · {n} نقطة', lastNone: 'نافذة النهارده مفتوحة · ٥ قصص', unlock: 'اسحب لفوق أو دوس', day: '{d}',
+      },
+      home: {
+        edit: 'عدّل الشاشة', done: 'تمام', hold: 'دوس مطوّل في أي حتة عشان تعدّل', add: 'زوّد ويدجت', page: 'صفحة {n} من {of}', pageAria: 'روح لصفحة {n}',
+        slots: '{used} من {n} أماكن مستخدمة', full: 'مفيش مكان. شاشة أحسن تزوّد أماكن.', empty2: 'الصفحة التانية. زوّد ويدجت تملاها.',
+        remove: 'شيل', bigger: 'خليها عريضة', smaller: 'خليها صغيرة', earlier: 'قدّمها', later: 'أخّرها', toPage: 'انقلها لصفحة {n}',
+        tabs: { widgets: 'ويدجتس', face: 'شاشة القفل', icons: 'أيقونات', theme: 'ثيم', phone: 'موبايلات' },
+        placed: 'على شاشتك', place: 'زوّد', reach: 'وصّل لليفل {n}', withLook: 'بتيجي مع لوك', story: 'القصة، الفصل {n}', streak1: 'العب ديلي واحد', rank: 'وصّل لـ{rank}',
+        wear: 'البسها', worn: 'لابسها', tryOn: 'جرّبها', trying: 'بتجرّبها', takeOff: 'رجّع بتاعي', buy: 'اشتري · {p}', coins: '{n} كوين', credits: '{n} كريدت', short: 'لسه مش كفاية',
+        bought: 'بقت بتاعتك. ولابسها.', previewNote: 'كل حاجة هنا بتظهر على موبايلك قبل ما تدفع.', reset: 'رجّع الترتيب',
+      },
+      w: {
+        window: { t: 'نافذة النهارده', no: 'رقم {n}', closes: 'بتقفل بعد' },
+        followers: { t: 'المتابعين', since: '+{n} في {d} يوم', today: 'بنعدّ من النهارده', aria: 'المتابعين في آخر {d} يوم' },
+        market: { t: 'مراقبة الماركت', says: 'الماركت بيقول {n}% هيمشي', empty: 'راقب إشاعة في الماركت وهتظهر هنا.', off: 'الماركت فاصل. قايمتك في أمان.' },
+        sponsor: { t: 'الراعي', unit: 'كوين', paid: 'اندفعلك {n} كوين', left: 'فاضل {n} إنذار', clean: 'نضيف لحد دلوقتي', empty: 'مفيش ديل لسه. البراندات بتبعتلك بعد النتايج.' },
+        boss: { t: 'الزعيم', roar: 'ذا ديلي رور', vince: 'فينس مارلو', h2h: 'إنت {w} · هو {l}', none: 'أول زعيم مستنيك في القصة.' },
+        streak: { t: 'السلسلة', days: 'يوم', best: 'أحسن {n}', grace: '{n} أيام سماح متشالة', zero: 'العب النهارده وابدأ واحدة.' },
+        season: { t: 'تراك الموسم', tier: 'درجة {n} من {of}', gold: 'المسار الدهبي شغال' },
+        files: { t: 'الملفات السرية', open: '{n} من {of} مفتوحة', next: 'اللي جاي لسه متختم', all: 'كل الملفات مفتوحة' },
+        group: { t: 'الجروب', code: 'الكود {c}', empty: 'مفيش جروب لسه. اعمل أوضة لصحابك.' },
+        catch: { t: 'جملتك', fires: 'بتتختم على كل دروب صح' },
+      },
+      ph: {
+        title: 'الموبايلات', ranked: 'النوافذ المصنّفة: كل الموبايلات بتلعب زي بعض.', perks: 'القطع بتشتغل في القصة والتمرين.',
+        name: { pocket: 'موبايلك', brick: 'الطوبة', post: 'موبايل البوست القديم', halo: 'هالو الفلاجشيب', burner: 'الخط التاني', chronicle: 'موبايل الكرونيكل', terrace: 'المدرج', haloone: 'هالو وان' },
+        feel: {
+          pocket: 'اللي معاك كل يوم.', brick: 'شاشة مشروخة. بياخد وقت على ما يفتح. معاكش حاجة.', post: 'مكتب، ويافطة باسمك، وحاجة زيادة كل نافذة.',
+          halo: 'العدسة الطويلة. حركة صورة توني بقت بتاعتك.', burner: 'خط بريا التاني. التسريبات بتيجي هنا.', chronicle: 'راجع للمكتب، بموبايل أحسن من فينس.',
+          terrace: 'أخضر وكريمي، زي المدرج القديم.', haloone: 'هالو الموسم ده. فريم رملي ومن غير نوتش تقريبًا.',
+        },
+        part: { screen: 'الشاشة', battery: 'البطارية', camera: 'الكاميرا', sim: 'الشريحة' },
+        v: {
+          screen: '{n} أماكن ويدجت', battery: '{n} إضافات في النافذة', battery0: 'مفيش إضافات', camera: '{n} صور سبوتر في النافذة', camera1: 'صورة سبوتر واحدة في النافذة', camera0: 'مفيش كاميرا',
+          sim: 'التسريبات صح {n}%', sim0: 'مفيش خط تاني',
+        },
+        up: '{n} كوين', max: 'على الآخر', locked: 'مش في الموبايل ده', daily: 'استعمله في الديلي', story: 'شيله في القصة', inDaily: 'موبايل الديلي بتاعك', inStory: 'في جيبك في القصة',
+        get: 'القصة، الفصل {n}', shop: 'خده · {p}', second: 'خط تاني', upgraded: '{part} اتطوّرت',
+      },
+    },
+  },
+  es: {
+    eco: { items: { std: { lockface: 'Pantalla de la casa', widget: 'La ventana de hoy', iconpack: 'Iconos de papel', device: 'Tu móvil' } } },
+    sh: {
+      items: {
+        lf: { ticker: 'Teletipo', split: 'Colores del club', floodlight: 'Focos', gilt: 'Dorado', edition: 'Última edición', chronicle: 'The Chronicle' },
+        ip: { outline: 'Iconos de línea', stamp: 'Iconos de sello', retro: 'Iconos retro', crest: 'Iconos escudo' },
+        th: { chalk: 'Pizarra', programme: 'Programa de partido' },
+        dv: { terrace: 'Grada', haloone: 'Halo One', brick: 'El Ladrillo', post: 'El heredado del Post', halo: 'Halo insignia', burner: 'La segunda línea', chronicle: 'El móvil del Chronicle' },
+        wg: { boss: 'Widget del jefe', files: 'Widget de archivos secretos' },
+      },
+      lock: {
+        rankRep: '{rank} · Rep {rep}', followers: '{n} seguidores', streak: 'Racha de {n} días', streak0: 'Juega hoy y empieza una racha',
+        last: 'Última ventana · {tier} · {n} puntos', lastNone: 'La ventana de hoy está abierta · 5 historias', unlock: 'Desliza arriba o toca', day: '{d}',
+      },
+      home: {
+        edit: 'Editar inicio', done: 'Listo', hold: 'Mantén pulsado para editar', add: 'Añadir un widget', page: 'Página {n} de {of}', pageAria: 'Ir a la página {n}',
+        slots: '{used} de {n} huecos usados', full: 'No queda sitio. Una pantalla mejor da más huecos.', empty2: 'Página dos. Añade un widget.',
+        remove: 'Quitar', bigger: 'Hacerlo ancho', smaller: 'Hacerlo pequeño', earlier: 'Mover antes', later: 'Mover después', toPage: 'Mover a la página {n}',
+        tabs: { widgets: 'Widgets', face: 'Bloqueo', icons: 'Iconos', theme: 'Tema', phone: 'Móviles' },
+        placed: 'En tu inicio', place: 'Añadir', reach: 'Llega al nivel {n}', withLook: 'Viene con un look', story: 'Historia, capítulo {n}', streak1: 'Juega un Daily', rank: 'Llega a {rank}',
+        wear: 'Ponérselo', worn: 'Puesto', tryOn: 'Probar', trying: 'Probándolo', takeOff: 'Volver al mío', buy: 'Comprar · {p}', coins: '{n} monedas', credits: '{n} créditos', short: 'Aún no te llega',
+        bought: 'Es tuyo. Ya lo llevas.', previewNote: 'Todo se ve en tu móvil antes de pagar.', reset: 'Restablecer orden',
+      },
+      w: {
+        window: { t: 'La ventana de hoy', no: 'N.º {n}', closes: 'cierra en' },
+        followers: { t: 'Seguidores', since: '+{n} en {d} días', today: 'Contando desde hoy', aria: 'Seguidores en los últimos {d} días' },
+        market: { t: 'Market en vigilancia', says: 'El Market dice {n}% que se va', empty: 'Vigila un rumor en Market y aparece aquí.', off: 'Market sin conexión. Tu lista está a salvo.' },
+        sponsor: { t: 'Patrocinador', unit: 'monedas', paid: '{n} monedas cobradas', left: 'Quedan {n} strikes', clean: 'Limpio por ahora', empty: 'Aún sin acuerdo. Las marcas te escriben tras los resultados.' },
+        boss: { t: 'Jefe', roar: 'The Daily Roar', vince: 'Vince Marlow', h2h: 'Tú {w} · {l} él', none: 'Tu primer jefe está en Historia.' },
+        streak: { t: 'Racha', days: 'días', best: 'Mejor {n}', grace: '{n} días de gracia guardados', zero: 'Juega hoy y empieza una.' },
+        season: { t: 'Pase de temporada', tier: 'Nivel {n} de {of}', gold: 'Carril Gold activo' },
+        files: { t: 'Archivos secretos', open: '{n} de {of} abiertos', next: 'El siguiente sigue sellado', all: 'Todos abiertos' },
+        group: { t: 'Grupo', code: 'Código {c}', empty: 'Aún sin grupo. Crea una sala con amigos.' },
+        catch: { t: 'Tu frase', fires: 'Sellada en cada Drop acertado' },
+      },
+      ph: {
+        title: 'Móviles', ranked: 'Ventanas clasificatorias: todos los móviles juegan igual.', perks: 'Las piezas funcionan en Historia y Práctica.',
+        name: { pocket: 'Tu móvil', brick: 'El Ladrillo', post: 'El heredado del Post', halo: 'Halo insignia', burner: 'La segunda línea', chronicle: 'El móvil del Chronicle', terrace: 'Grada', haloone: 'Halo One' },
+        feel: {
+          pocket: 'El que llevas cada día.', brick: 'Pantalla rota. Tarda en arrancar. No tienes nada.', post: 'Una mesa, una placa, un extra por ventana.',
+          halo: 'El teleobjetivo. El truco de la foto de Tony ya es tuyo.', burner: 'La segunda línea de Priya. Los chivatazos llegan aquí.', chronicle: 'De vuelta a la mesa, con mejor móvil que Vince.',
+          terrace: 'Verde y crema, como la grada vieja.', haloone: 'El Halo de esta temporada. Marco arena, casi sin muesca.',
+        },
+        part: { screen: 'Pantalla', battery: 'Batería', camera: 'Cámara', sim: 'SIM' },
+        v: {
+          screen: '{n} huecos de widget', battery: '{n} extras por ventana', battery0: 'Sin extras', camera: '{n} fotos de ojeador por ventana', camera1: '1 foto de ojeador por ventana', camera0: 'Sin cámara',
+          sim: 'Chivatazos {n}% acertados', sim0: 'Sin segunda línea',
+        },
+        up: '{n} monedas', max: 'Al máximo', locked: 'No en este móvil', daily: 'Usar en el Daily', story: 'Llevar en Historia', inDaily: 'Tu móvil del Daily', inStory: 'En tu bolsillo de Historia',
+        get: 'Historia, capítulo {n}', shop: 'Conseguir · {p}', second: 'Segunda línea', upgraded: '{part} mejorada',
+      },
+    },
+  },
+};

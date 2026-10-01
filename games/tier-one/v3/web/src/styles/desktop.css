@@ -15,12 +15,20 @@
 @media (min-width: 1024px) {
   :root { --ph-w: 400px; --ph-h: min(860px, calc(100dvh - 48px)); }
   html.os, html.os body { background: var(--os-desk); }
-  html.os body::before { display: block; background: radial-gradient(70% 55% at 50% 0%, rgba(255, 255, 255, .05), transparent 60%), radial-gradient(60% 50% at 100% 100%, rgba(255, 77, 46, .05), transparent 60%); }
+  html.os body::before { display: block; background-image: var(--grain); background-size: 180px; opacity: .18; mix-blend-mode: overlay; }
+  .ph-desk { background: var(--os-desk); }
   .ph-desk { display: grid; grid-template-columns: var(--ph-w) minmax(300px, 420px); justify-content: center; align-items: center; gap: 36px; min-height: 100dvh; padding: 24px; }
   /* the phone: a frame, and `transform` so every fixed overlay (sheets, films, toasts, the dock, the home bar) is contained inside it */
+  /* the device (lib/phones.ts, the equipped `device` look): bezel, frame and corner radius come from the look */
   .ph { width: var(--ph-w); height: var(--ph-h); min-height: 0; border-radius: var(--os-r-phone); overflow: hidden; transform: translateZ(0); contain: layout paint;
-    box-shadow: 0 0 0 10px #1B1C20, 0 0 0 12px #2A2B31, 0 40px 80px -30px rgba(0, 0, 0, .9), inset 0 0 0 1px rgba(255, 255, 255, .06), 0 0 60px -20px color-mix(in srgb, var(--app-c, transparent) 55%, transparent); transition: box-shadow var(--d-reveal) var(--ease-out); }
-  .ph::before { content: ""; position: absolute; z-index: 61; top: 10px; left: 50%; width: 92px; height: 24px; margin-left: -46px; border-radius: 12px; background: #000; pointer-events: none; }
+    box-shadow: 0 0 0 11px var(--dv-bezel), 0 0 0 13px var(--dv-frame), 0 0 0 14px color-mix(in srgb, var(--dv-frame) 50%, #000), 0 3px 0 14px rgba(0, 0, 0, .5), 0 40px 80px -30px rgba(0, 0, 0, .9), 0 0 60px -24px color-mix(in srgb, var(--app-c, transparent) 45%, transparent); transition: box-shadow var(--d-reveal) var(--ease-out), border-radius var(--d-reveal) var(--ease-out); }
+  .ph::before { content: ""; position: absolute; z-index: 61; top: 9px; left: 50%; width: 92px; height: 24px; margin-left: -46px; border-radius: 12px; background: var(--dv-bezel); pointer-events: none; }
+  [data-notch="dot"] .ph::before { width: 12px; height: 12px; margin-left: -6px; top: 10px; border-radius: 50%; }
+  [data-notch="bar"] .ph::before { top: 0; width: 100%; left: 0; margin-left: 0; height: 22px; border-radius: 0; }
+  [data-notch="bar"] .ph-status { padding-top: 14px; height: calc(var(--os-status-h) + 14px); }
+  [data-notch="none"] .ph::before { display: none; }
+  [data-crack] .ph::after { content: ""; position: absolute; z-index: 62; top: 30px; right: 10px; width: 150px; height: 110px; pointer-events: none; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70'><path d='M100 2 L72 20 L80 27 L55 44 L62 49 L34 68 M72 20 L58 14 M55 44 L44 38' fill='none' stroke='white' stroke-opacity='.45' stroke-width='.8'/></svg>") no-repeat 100% 0 / contain; }
+  .lf-bezel { display: none; }
   .ph-status { padding-top: 0; }
   .ph-status__time { padding-inline-start: 6px; }
   .ph__screen { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }

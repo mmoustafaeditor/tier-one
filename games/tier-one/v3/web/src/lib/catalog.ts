@@ -117,6 +117,23 @@ const NEW: Item[] = [
   { id: 'fr.chalk', kind: 'frame', nameKey: 'e4.items.fr.chalk', price: P4('rare'), source: 'store', rarity: 'rare', preview: { k: 'frame', c: '#FBF6EA', c2: '#1B1A17', pat: 'dash' } },
   { id: 'fr.neon', kind: 'frame', nameKey: 'e4.items.fr.neon', price: P4('epic'), source: 'store', rarity: 'epic', set: 'night', preview: { k: 'frame', c: '#35C3E6', c2: '#0E1A20', pat: 'foil' } },
   { id: 'fr.gilt', kind: 'frame', nameKey: 'e4.items.fr.gilt', price: P4('legendary'), source: 'store', rarity: 'legendary', set: 'gilt', preview: { k: 'frame', c: '#F7B928', c2: '#3A2600', pat: 'foil' } },
+  // ---- 4.0 the shell (CONCEPT4 §17/§18): lock faces, icon packs, OS themes, device skins. The same rarity table.
+  // Lock faces: six house faces (std.lockface and lf.edition are free), the chapter face comes with the Chronicle phone.
+  { id: 'lf.ticker', kind: 'lockface', nameKey: 'sh.items.lf.ticker', price: P4('common'), source: 'store', rarity: 'common', set: 'wire', preview: { k: 'lockface', bg: '#101518', ink: '#E9EEF0', accent: '#3FC1E0', motif: 'grid', clock: 'ticker', stamp: 'followers', tray: 'strip' } },
+  { id: 'lf.split', kind: 'lockface', nameKey: 'sh.items.lf.split', price: P4('rare'), source: 'store', rarity: 'rare', preview: { k: 'lockface', bg: '#1B4D2E', ink: '#F3ECDD', accent: '#F2B632', c2: '#EDE4D0', motif: 'plain', clock: 'split', stamp: 'streak', tray: 'cards' } },
+  { id: 'lf.floodlight', kind: 'lockface', nameKey: 'sh.items.lf.floodlight', price: P4('epic'), source: 'store', rarity: 'epic', set: 'night', preview: { k: 'lockface', bg: '#0E0D0B', ink: '#FFFFFF', accent: '#FFD86B', motif: 'halftone', clock: 'numerals', stamp: 'catch', tray: 'strip' } },
+  { id: 'lf.gilt', kind: 'lockface', nameKey: 'sh.items.lf.gilt', price: P4('legendary'), source: 'store', rarity: 'legendary', set: 'gilt', preview: { k: 'lockface', bg: '#15120B', ink: '#F4E7C2', accent: '#D4A23A', motif: 'stripe', clock: 'stacked', stamp: 'handle', tray: 'paper' } },
+  // Icon packs: every app icon changes together (default paper tiles, outline, editorial stamp, club crest, retro).
+  { id: 'ip.outline', kind: 'iconpack', nameKey: 'sh.items.ip.outline', price: P4('common'), source: 'store', rarity: 'common', preview: { k: 'iconpack', style: 'outline', tile: '#14110D', ink: '#F3ECDD' } },
+  { id: 'ip.stamp', kind: 'iconpack', nameKey: 'sh.items.ip.stamp', price: P4('rare'), source: 'store', rarity: 'rare', set: 'broadsheet', preview: { k: 'iconpack', style: 'stamp', tile: '#EDE4D0', ink: '#B3261E' } },
+  { id: 'ip.retro', kind: 'iconpack', nameKey: 'sh.items.ip.retro', price: P4('rare'), source: 'store', rarity: 'rare', preview: { k: 'iconpack', style: 'retro', tile: '#F2B632', ink: '#1A1611' } },
+  { id: 'ip.crest', kind: 'iconpack', nameKey: 'sh.items.ip.crest', price: P4('epic'), source: 'store', rarity: 'epic', preview: { k: 'iconpack', style: 'crest', tile: '#1B4D2E', ink: '#F3ECDD' } },
+  // OS themes (tokens: surface, ink, accent, radius, type): the epic/legendary tier of the shell.
+  { id: 'th.chalk', kind: 'theme', nameKey: 'sh.items.th.chalk', price: P4('rare'), source: 'store', rarity: 'rare', preview: { k: 'theme', desk: ['#17201A', '#1F2A22', '#2A372D'], os: { bg: '#17201A', ink: '#E8EDE4', accent: '#F2E15B', bar: '#1F2A22', radius: 10, face: 'cond' } } },
+  { id: 'th.programme', kind: 'theme', nameKey: 'sh.items.th.programme', price: P4('epic'), source: 'store', rarity: 'epic', set: 'broadsheet', preview: { k: 'theme', desk: ['#F1E9D8', '#E6DCC6', '#D8CCB2'], paper: true, os: { bg: '#F1E9D8', ink: '#1A1714', accent: '#1F4FBF', bar: '#E6DCC6', radius: 18, face: 'editorial' } } },
+  // Device skins (CONCEPT4 §18): the top cosmetic line. Perks are lib/phones.ts, coins only, never on a ranked board.
+  { id: 'dv.terrace', kind: 'device', nameKey: 'sh.items.dv.terrace', price: P4('epic'), source: 'store', rarity: 'epic', preview: { k: 'device', bezel: '#12301E', frame: '#E8E1CF', radius: 40, notch: 'dot', boot: 'quick' } },
+  { id: 'dv.haloone', kind: 'device', nameKey: 'sh.items.dv.haloone', price: P4('legendary'), source: 'store', rarity: 'legendary', set: 'deals', preview: { k: 'device', bezel: '#0B0B0D', frame: '#D9D2C3', radius: 50, notch: 'pill', boot: 'quick' } },
   // byline card designs: the card on Me, in the press box tables and on results
   { id: 'by.redtop', kind: 'byline', nameKey: 'eco.items.by.redtop', price: { coins: 400, credits: 80 }, source: 'store', rarity: 'rare', set: 'redtop', preview: { k: 'byline', bg: '#C8102E', ink: '#FFFFFF', accent: '#FFD35C', rule: 'thick', face: 'cond' } },
   { id: 'by.broadsheet', kind: 'byline', nameKey: 'eco.items.by.broadsheet', price: { coins: 400, credits: 80 }, source: 'store', rarity: 'rare', set: 'broadsheet', preview: { k: 'byline', bg: '#FBF6EA', ink: '#1B1A17', accent: '#1B1A17', rule: 'double', face: 'display' } },
@@ -196,6 +213,17 @@ const EARNED: Item[] = [
   { id: 'dl.tempo', kind: 'wallpaper', nameKey: 'e4.items.dl.tempo', price: {}, source: 'earned', rarity: 'epic', set: 'deals', earn: { via: 'event', ref: 'deal-tempo' }, preview: { k: 'wallpaper', bg: '#141018', ink: '#F4EFE4', accent: '#FF4FA3', motif: 'halftone' } },
   { id: 'dl.nine', kind: 'dropcard', nameKey: 'e4.items.dl.nine', price: {}, source: 'earned', rarity: 'epic', set: 'deals', earn: { via: 'event', ref: 'deal-nine' }, preview: { k: 'dropcard', bg: '#0E2231', ink: '#DDEFF8', accent: '#FFD35C', style: 'brand', mark: 'NINE' } },
   { id: 'dl.halo', kind: 'theme', nameKey: 'e4.items.dl.halo', price: {}, source: 'earned', rarity: 'legendary', set: 'deals', earn: { via: 'event', ref: 'deal-halo' }, preview: { k: 'theme', desk: ['#101014', '#1A1A22', '#26263A'], os: { bg: '#101014', ink: '#FFFFFF', accent: '#9AD6F5', bar: '#1A1A22' } } },
+  // 4.0 the shell: the second free lock face (your first day), the widgets that come with looks, and The Comeback's
+  // phones (CONCEPT4 §18): each chapter hands you a device; the burner is Priya's second SIM in Chapter 4.
+  { id: 'lf.edition', kind: 'lockface', nameKey: 'sh.items.lf.edition', price: {}, source: 'earned', rarity: 'common', earn: { via: 'streak', n: 1 }, preview: { k: 'lockface', bg: '#EDE4D0', ink: '#1A1611', accent: '#B3261E', motif: 'grain', clock: 'stacked', stamp: 'catch', tray: 'paper' } },
+  { id: 'lf.chronicle', kind: 'lockface', nameKey: 'sh.items.lf.chronicle', price: {}, source: 'earned', rarity: 'legendary', set: 'story', earn: { via: 'story', n: 5 }, preview: { k: 'lockface', bg: '#DCD6C8', ink: '#111111', accent: '#8B1A10', motif: 'plain', clock: 'stacked', stamp: 'handle', tray: 'paper' } },
+  { id: 'wg.boss', kind: 'widget', nameKey: 'sh.items.wg.boss', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 1 }, preview: { k: 'widget', w: 'boss' } },
+  { id: 'wg.files', kind: 'widget', nameKey: 'sh.items.wg.files', price: {}, source: 'earned', rarity: 'rare', set: 'rank', earn: { via: 'rank', ref: 'rising' }, preview: { k: 'widget', w: 'files' } },
+  { id: 'dv.brick', kind: 'device', nameKey: 'sh.items.dv.brick', price: {}, source: 'earned', rarity: 'common', set: 'story', earn: { via: 'story', n: 1 }, preview: { k: 'device', bezel: '#2B2925', frame: '#4A453C', radius: 28, notch: 'bar', crack: true, boot: 'beat' } },
+  { id: 'dv.post', kind: 'device', nameKey: 'sh.items.dv.post', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 2 }, preview: { k: 'device', bezel: '#22252A', frame: '#5C6370', radius: 36, notch: 'dot', boot: 'quick' } },
+  { id: 'dv.halo', kind: 'device', nameKey: 'sh.items.dv.halo', price: {}, source: 'earned', rarity: 'epic', set: 'story', earn: { via: 'story', n: 3 }, preview: { k: 'device', bezel: '#0E0E10', frame: '#BFC3C9', radius: 48, notch: 'pill', boot: 'quick' } },
+  { id: 'dv.burner', kind: 'device', nameKey: 'sh.items.dv.burner', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 4 }, preview: { k: 'device', bezel: '#1A1A1A', frame: '#2E2E2E', radius: 18, notch: 'none', boot: 'beat' } },
+  { id: 'dv.chronicle', kind: 'device', nameKey: 'sh.items.dv.chronicle', price: {}, source: 'earned', rarity: 'legendary', set: 'story', earn: { via: 'story', n: 5 }, preview: { k: 'device', bezel: '#15130F', frame: '#8B7A55', radius: 46, notch: 'pill', boot: 'quick' } },
   { id: 'st.ch1', kind: 'flair', nameKey: 'eco.items.st.ch1', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 1 }, preview: { k: 'flair', g: '¶', c: '#2657C9' } },
   { id: 'st.ch2', kind: 'ink', nameKey: 'eco.items.st.ch2', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 2 }, preview: { k: 'ink', c: '#5B3E96' } },
   { id: 'st.ch3', kind: 'frame', nameKey: 'eco.items.st.ch3', price: {}, source: 'earned', rarity: 'epic', set: 'story', earn: { via: 'story', n: 3 }, preview: { k: 'frame', c: '#1B1A17', c2: '#FBF6EA', pat: 'double' } },
@@ -541,6 +569,9 @@ function validatePreview(it: Item): string[] {
     case 'poster': col('c'); col('c2'); break;
     case 'ink': col('c'); break;
     case 'flair': col('c'); break;
+    case 'lockface': col('bg'); col('ink'); col('accent'); col('c2'); if (!['numerals', 'stacked', 'ticker', 'split'].includes(it.preview.clock)) e.push(`${it.id}: bad clock style`); if (!['handle', 'catch', 'followers', 'streak'].includes(it.preview.stamp)) e.push(`${it.id}: bad lock stamp`); if (!['cards', 'strip', 'paper'].includes(it.preview.tray)) e.push(`${it.id}: bad tray style`); break;
+    case 'iconpack': col('tile'); col('ink'); if (!['paper', 'outline', 'stamp', 'crest', 'retro'].includes(it.preview.style)) e.push(`${it.id}: bad icon style`); break;
+    case 'device': col('bezel'); col('frame'); if (!['pill', 'dot', 'bar', 'none'].includes(it.preview.notch)) e.push(`${it.id}: bad notch`); if (!Number.isInteger(it.preview.radius) || it.preview.radius < 0 || it.preview.radius > 64) e.push(`${it.id}: device radius is 0–64`); break;
     case 'catchphrase': if (!/^cp\.[a-z]+\.[a-z]+$/.test(it.preview.key)) e.push(`${it.id}: a catchphrase is an i18n key cp.<group>.<id>`); if (!['loud', 'cool', 'dry', 'gold'].includes(it.preview.tone)) e.push(`${it.id}: bad catchphrase tone`); col('c'); break;
     default: break;
   }

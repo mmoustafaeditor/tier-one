@@ -12,9 +12,18 @@
 //   batteryMode('idle' | 'window' | 'charge') the status-bar battery, driven by the route
 //   bumpUse(app), dockApps(save)              the dock
 //   <StatusBar/>, <Phone/>, <HomeBar/>, <DeskPanel/>
+//   lookStyle(look) → the CSS variables the phone wears (theme tokens, the one accent, the device frame)
+//
+// 4.0 shell redesign (CONCEPT4 §17/§18): the phone wears the player's look. Phone reads lib/phones.ts useLook() (the
+// equipped lock face, wallpaper, OS theme, icon pack and device, plus anything being tried on) and sets the theme
+// tokens, the accent and the device frame as CSS variables on the desk; AppIcon draws the equipped icon pack.
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type PointerEvent as RPointerEvent } from 'react';
 import type { Save } from '../lib/save';
-import { getSave, useSave } from '../lib/save';
+import { getSave, useSave, useSaveSel } from '../lib/save';
+import { item } from '../lib/catalog';
+import { equipped as equippedLook } from '../lib/wallet';
+import { useLook, useTry, type Look } from '../lib/phones';
+import type { IconStyle } from '../lib/kinds';
 import { useT, resetAt, num } from '../lib/i18n';
 import { sfx, haptic } from '../lib/sfx';
 import { prefersReducedMotion } from '../lib/motion';
@@ -117,10 +126,25 @@ const IC: Record<AppId, string> = {
 export function AppGlyph({ id, size = 24 }: { id: AppId; size?: number }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth={id === 'settings' ? 1.8 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={IC[id]} /></svg>;
 }
-/** The tile icon: the app's accent, a drawn glyph, a quiet top light. `locked` greys it. */
-export function AppIcon({ id, size = 60, locked, className = '', style }: { id: AppId; size?: number; locked?: boolean; className?: string; style?: CSSProperties }) {
+/** The icon pack in use (equipped, or the one being tried on). */
+export function useIconPack(): { style: IconStyle; tile: string; ink: string } {
+  const eq = useSaveSel((x) => x.desk?.equip?.iconpack || '');
+  const tr = useTry();
+  const it = (tr.iconpack && item(tr.iconpack)) || (eq ? equippedLook('iconpack', getSave()) : null);
+  return it && it.preview.k === 'iconpack' ? { style: it.preview.style, tile: it.preview.tile, ink: it.preview.ink } : { style: 'paper', tile: '#EDE4D0', ink: '#1A1611' };
+}
+/** The app icon: one drawn family (2px line glyphs on the 24 grid) in the equipped pack's style. Paper (default): a
+ *  paper tile with an ink glyph, the app's colour as a tab and a pressed edge. Outline, stamp, crest and retro restyle
+ *  the same glyphs. `pack`/`tile`/`ink` force a style (pack previews). `locked` greys it. */
+export function AppIcon({ id, size = 60, locked, className = '', style, pack, tile, ink }: { id: AppId; size?: number; locked?: boolean; className?: string; style?: CSSProperties; pack?: IconStyle; tile?: string; ink?: string }) {
   const a = appById(id)!;
-  return <span className={'ph-ic' + (locked ? ' is-locked' : '') + ' ' + className} style={{ ['--a' as string]: a.accent, ['--a-ink' as string]: a.ink || '#fff', ['--sz' as string]: size + 'px', ...style }} aria-hidden="true"><AppGlyph id={id} size={Math.round(size * 0.52)} /></span>;
+  const cur = useIconPack();
+  const st = pack || cur.style;
+  return <span className={'ph-ic ph-ic--' + st + (locked ? ' is-locked' : '') + ' ' + className} data-app={id}
+    style={{ ['--a' as string]: a.accent, ['--a-ink' as string]: a.ink || '#fff', ['--ip-tile' as string]: tile || cur.tile, ['--ip-ink' as string]: ink || cur.ink, ['--sz' as string]: size + 'px', ...style }} aria-hidden="true">
+    {st === 'crest' && <svg className="ph-ic__shield" viewBox="0 0 24 26" aria-hidden="true"><path d="M12 1.2 21.6 4v8.2c0 6.3-4.3 10.3-9.6 12.6C6.7 22.5 2.4 18.5 2.4 12.2V4z" /></svg>}
+    <AppGlyph id={id} size={Math.round(size * (st === 'crest' ? 0.42 : st === 'stamp' ? 0.46 : 0.5))} />
+  </span>;
 }
 
 // ---------------------------------------------------------------- the clock and the battery
@@ -177,7 +201,9 @@ export function Phone({ app, anim, locked, onHome, onBack, canBack, children, si
   const down = (e: RPointerEvent) => { const w = (e.currentTarget as HTMLElement).getBoundingClientRect(); const x = e.clientX - w.left; x0.current = (rtl ? w.width - x : x) <= 24 ? e.clientX : null; };
   const up = (e: RPointerEvent) => { if (x0.current == null) return; const dx = (e.clientX - x0.current) * (rtl ? -1 : 1); x0.current = null; if (dx > 70 && canBack) { sfx('os.close'); onBack(); } };
   const a = app ? appById(app) : null;
-  return <div className="ph-desk">
+  const look = useLook();
+  const dv = look.device.preview.k === 'device' ? look.device.preview : null;
+  return <div className="ph-desk" style={lookStyle(look)} data-tone={toneOf(look)} data-notch={dv?.notch || 'pill'} data-crack={dv?.crack ? '' : undefined}>
     <div className={'ph' + (locked ? ' is-locked' : '') + (app ? ' has-app' : '')} data-app={app || 'home'} data-anim={anim || undefined} style={a ? { ['--app-c' as string]: a.accent } : undefined}>
       <StatusBar />
       <div className="ph__screen" onPointerDown={down} onPointerUp={up} onPointerCancel={() => { x0.current = null; }}>{children}</div>
@@ -185,6 +211,30 @@ export function Phone({ app, anim, locked, onHome, onBack, canBack, children, si
     </div>
     {side && <aside className="ph-side" aria-label="Context">{side}</aside>}
   </div>;
+}
+
+// ---------------------------------------------------------------- the look as tokens
+const lum = (hex: string) => { const n = parseInt(hex.slice(1), 16); const c = [n >> 16, (n >> 8) & 255, n & 255].map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+/** 'light' when the equipped OS theme is a pale surface (the paper themes), so the tokens and glyphs flip. */
+export const toneOf = (look: Look): 'light' | 'dark' => { const o = look.theme.preview.k === 'theme' && look.theme.source !== 'standard' ? look.theme.preview.os : null; return o && lum(o.bg) > 0.4 ? 'light' : 'dark'; };
+/** The CSS variables the phone wears: the one accent, the OS theme's tokens (surface, ink, radius, type) and the device
+ *  frame (bezel, frame, corner radius). Standard theme = the tokens in styles/phone.css. */
+export function lookStyle(look: Look): CSSProperties {
+  const v: Record<string, string> = { '--acc': look.accent };
+  const o = look.theme.preview.k === 'theme' && look.theme.source !== 'standard' ? look.theme.preview.os : null;
+  if (o) {
+    Object.assign(v, {
+      '--os-bg': o.bg, '--os-bg-2': `color-mix(in srgb, ${o.bg} 90%, ${o.ink})`, '--os-bg-3': `color-mix(in srgb, ${o.bg} 80%, ${o.ink})`,
+      '--os-ink': o.ink, '--os-ink-2': `color-mix(in srgb, ${o.ink} 74%, ${o.bg})`, '--os-ink-3': `color-mix(in srgb, ${o.ink} 52%, ${o.bg})`,
+      '--os-line': `color-mix(in srgb, ${o.ink} 13%, transparent)`, '--os-bar': o.bar, '--os-note': `color-mix(in srgb, ${o.bar} 94%, ${o.ink})`, '--os-note-ink': o.ink,
+      '--os-glass': o.bg, '--os-desk': `color-mix(in srgb, ${o.bg} 70%, #000)`, '--os-desk-2': `color-mix(in srgb, ${o.bg} 88%, ${o.ink})`,
+    });
+    if (o.radius != null) { v['--os-r-card'] = o.radius + 'px'; v['--os-r-widget'] = Math.round(o.radius * 1.15) + 'px'; }
+    if (o.face) v['--os-face'] = o.face === 'editorial' ? 'var(--f-display)' : o.face === 'cond' ? 'var(--f-cond)' : 'var(--f-text)';
+  }
+  const d = look.device.preview.k === 'device' ? look.device.preview : null;
+  if (d) Object.assign(v, { '--dv-bezel': d.bezel, '--dv-frame': d.frame, '--os-r-phone': d.radius + 'px' });
+  return v as CSSProperties;
 }
 
 // ---------------------------------------------------------------- today's five (names and clubs; outcomes stay secret)
