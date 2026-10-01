@@ -102,3 +102,77 @@ export const wideOf = (y: number) => sideOf(y);
 export interface Transition { lost: 0 | 1; at: number }
 // A match minute plays in a few real seconds, so the reaction is held for three beats to be visible.
 export const TRANSITION_MS = (beatLen: number) => Math.max(900, beatLen * 3);
+
+// ---------- PR C ----------
+// 6. Pass and shot types. Depths are from the passing side's own goal (0-105), `y` across (0-68).
+export type PassKind = 'short' | 'long' | 'through' | 'cross' | 'cutback';
+export function passKind(df: number, yf: number, dt: number, yt: number, len: number): PassKind {
+  const wideFrom = yf < 17 || yf > W - 17, central = Math.abs(yt - W / 2) < 18;
+  if (df > 92 && wideFrom && dt < df - 2 && dt > 80 && central) return 'cutback';
+  if (df > 66 && wideFrom && dt > 85 && central) return 'cross';
+  if (dt - df > 16 && dt > 60) return 'through';
+  if (len > 30) return 'long';
+  return 'short';
+}
+// Peak height in metres and how much longer than a short pass the ball takes. A through ball is played into space,
+// THROUGH_LEAD metres ahead of the runner.
+export const ARC: Record<PassKind, { h: number; t: number }> = {
+  short: { h: 0, t: 1 }, cutback: { h: 0, t: 0.9 }, through: { h: 0.4, t: 1.1 }, long: { h: 7, t: 1.5 }, cross: { h: 5, t: 1.35 },
+};
+export const THROUGH_LEAD = 5;
+// The ball's height at t (0-1) of a flight with this peak, ending at `end` metres (a shot over the bar).
+export const arcHeight = (peak: number, t: number, end = 0) => 4 * peak * t * (1 - t) + end * t;
+// The engine's shot type (MatchEvent.how) decides the ball that set it up and where the shooter stands.
+export function deliveryOf(how: string | undefined): PassKind | null {
+  return how === 'header' || how === 'corner' || how === 'set' ? 'cross' : how === 'cutback' ? 'cutback' : how === 'through' ? 'through' : null;
+}
+export function shooterSpot(how: string | undefined, sy: number): { d: number; y: number } {
+  if (how === 'pen') return { d: 93.5, y: W / 2 };
+  if (how === 'long' || how === 'fk') return { d: 77, y: W / 2 + (sy - 50) * 0.25 };
+  if (how === 'header' || how === 'corner' || how === 'set') return { d: 95, y: W / 2 + (sy - 50) * 0.1 };
+  return { d: 88, y: W / 2 + (sy - 50) * 0.12 };
+}
+// Where a shot ends up: spread across the goal (7.32 m wide, 2.44 m high); misses go wide or over.
+export const GOAL_HALF = 3.66, BAR = 2.44;
+export function shotTarget(result: 'goal' | 'save' | 'miss' | 'block', r: () => number): { y: number; h: number } {
+  if (result === 'miss') {
+    if (r() < 0.45) return { y: W / 2 + (r() * 2 - 1) * 3, h: BAR + 0.4 + r() * 2 };
+    return { y: W / 2 + (r() < 0.5 ? -1 : 1) * (GOAL_HALF + 0.6 + r() * 5), h: r() * 1.5 };
+  }
+  return { y: W / 2 + (r() * 2 - 1) * (GOAL_HALF - 0.4), h: r() * (BAR - 0.3) };
+}
+
+// 8. Build-up when the engine's minute has no contest to show (a quiet minute): a passing chain in the side's style.
+//   possession: 5-6 short passes, back line → midfield → (a forward); balanced / high press: 3-5 the same way;
+//   direct, counter, park the bus: 2-3, a long ball from the back to a forward and a lay-off; wings: back → wide
+//   defender → wide forward on the same flank → inside to midfield.
+export interface Mate { k: number; line: 'def' | 'mid' | 'fwd'; y: number }
+const PATTERN: Record<string, ('def' | 'mid' | 'fwd' | 'wdef' | 'wfwd')[]> = {
+  possession: ['def', 'def', 'mid', 'def', 'mid', 'mid', 'fwd'],
+  balanced: ['def', 'mid', 'mid', 'fwd', 'mid'],
+  gegenpress: ['def', 'mid', 'mid', 'fwd', 'mid'],
+  direct: ['def', 'fwd', 'mid'], counter: ['def', 'fwd', 'mid'], bus: ['def', 'fwd', 'mid'],
+  wings: ['def', 'wdef', 'wfwd', 'mid'],
+};
+const LEN: Record<string, [number, number]> = { possession: [5, 6], balanced: [3, 5], gegenpress: [3, 5], direct: [2, 3], counter: [2, 3], bus: [2, 3], wings: [3, 4] };
+export function buildUp(philosophy: string, mates: Mate[], from: number, r: () => number): number[] {
+  const pat = PATTERN[philosophy] ?? PATTERN.balanced, [lo, hi] = LEN[philosophy] ?? LEN.balanced;
+  const n = Math.min(pat.length, lo + Math.floor(r() * (hi - lo + 1)));
+  const flank = r() < 0.5 ? -1 : 1;
+  const out: number[] = [];
+  let prev = from;
+  for (let i = 0; i < n; i++) {
+    const want = pat[i];
+    const wide = want === 'wdef' || want === 'wfwd';
+    const line = want === 'wdef' ? 'def' : want === 'wfwd' ? 'fwd' : want;
+    let c = mates.filter((x) => x.line === line && x.k !== prev);
+    if (wide) { const w = c.filter((x) => (x.y - W / 2) * flank > 8); if (w.length) c = w; }
+    // Before the ball goes wide, it starts with a centre-back (not the full-back who gets the next pass).
+    else if (pat[i + 1] === 'wdef') { const m = c.filter((x) => Math.abs(x.y - W / 2) <= 8); if (m.length) c = m; }
+    if (!c.length) c = mates.filter((x) => x.k !== prev);
+    if (!c.length) break;
+    prev = c[Math.floor(r() * c.length)].k;
+    out.push(prev);
+  }
+  return out;
+}
