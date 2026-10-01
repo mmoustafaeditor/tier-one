@@ -502,6 +502,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       const mm = mRef.current;
       if (PITCH_DEBUG) (window as unknown as { __gafferPitch?: unknown }).__gafferPitch = { a, slots: mm.sides.map((sd) => FORMATIONS[sd.tactics.formation].slots.map((x) => x.pos)), pressing: mm.sides.map((sd) => sd.tactics.pressing) };
       const { msPerMinute: ms, running: go, camera: cam } = cfg.current;
+      if (PITCH_DEBUG) (a as unknown as { go?: boolean }).go = go; // the test skips a paused or finished match
       a.time += dt;
       if (a.minute !== minuteKey(mm)) plan(a, mm, ms, worldRef.current);
       if (go) {

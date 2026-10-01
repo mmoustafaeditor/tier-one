@@ -31,12 +31,19 @@ let samples = await p.evaluate(async (secs) => {
   while (performance.now() - t0 < secs * 1000) {
     await new Promise((r) => requestAnimationFrame(r));
     const d = window.__gafferPitch; if (!d) continue;
-    const a = d.a; out.push({ t: a.time, gkT: a.gkT ? { ...a.gkT } : null, mk: a.mk ? [...a.mk] : null, carrier: a.flight ? -1 : a.carrier, tanks: a.ag.map((r) => r.map((g) => g ? [Math.round(g.tank * 1000) / 1000, g.spr ? 1 : 0] : null)), bh: a.bh, sp: a.sp && a.time < a.sp.until ? { ...a.sp } : null, flag: !!a.flag && a.time < a.flag.until, runs: a.runsN, trans: a.trans ? { ...a.trans } : null, beatLen: a.beatLen, poss: a.poss, ball: { ...a.ball }, pos: a.pos.map((s) => s.map((q) => q ? { x: q.x, y: q.y } : null)), spd: a.spd, slots: d.slots, pressing: d.pressing });
+    const a = d.a; out.push({ t: a.time, go: a.go !== false, min: a.minute, gkT: a.gkT ? { ...a.gkT } : null, mk: a.mk ? [...a.mk] : null, carrier: a.flight ? -1 : a.carrier, tanks: a.ag.map((r) => r.map((g) => g ? [Math.round(g.tank * 1000) / 1000, g.spr ? 1 : 0] : null)), bh: a.bh, sp: a.sp && a.time < a.sp.until ? { ...a.sp } : null, flag: !!a.flag && a.time < a.flag.until, runs: a.runsN, trans: a.trans ? { ...a.trans } : null, beatLen: a.beatLen, poss: a.poss, ball: { ...a.ball }, pos: a.pos.map((s) => s.map((q) => q ? { x: q.x, y: q.y } : null)), spd: a.spd, slots: d.slots, pressing: d.pressing });
   }
   const A = window.__gafferPitch?.a;
   return { out, kinds: { ...A?.kinds }, reacts: A?.reacts ?? [], kin: { ...A?.kin } };
 }, SECONDS);
 const kinds = samples.kinds, reacts = samples.reacts, kin = samples.kin; samples = samples.out;
+// Only frames of a match in play: not paused, and its clock still moving (no half-time or full-time freeze, where the
+// pitch stands still and would be measured thousands of times).
+{ const lastMove = []; let at = -1e9, prev = '';
+  for (const x of samples) { if (x.min !== prev) { prev = x.min; at = x.t; } lastMove.push(x.t - at); }
+  const before = samples.length; globalThis.allFrames = before;
+  samples = samples.filter((x, i) => x.go && lastMove[i] < 8000);
+  if (samples.length < before) console.log(`  (left out ${before - samples.length} frames of a stopped match)`); }
 const L = 105, LINE = { GK: 'gk', CB: 'def', LB: 'def', RB: 'def', CDM: 'mid', CM: 'mid', CAM: 'mid', LW: 'fwd', RW: 'fwd', ST: 'fwd' };
 const depth = (side, x) => (side === 0 ? x : L - x);
 const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : NaN; };
@@ -91,7 +98,7 @@ const spdAll = samples.at(-1)?.spd.flat().filter(Boolean) ?? [];
 if (process.env.SHOT) await p.screenshot({ path: process.env.SHOT });
 let fails = 0; const ok = (c, m) => { console.log(`${c ? 'ok  ' : 'FAIL'} ${m}`); if (!c) fails++; };
 console.log(`  ${samples.length} frames over ${SECONDS}s`);
-ok(samples.length > SECONDS * 20, `the pitch keeps 20+ frames a second (${(samples.length / SECONDS).toFixed(0)} fps)`);
+ok(globalThis.allFrames > SECONDS * 20, `the pitch keeps 20+ frames a second (${(globalThis.allFrames / SECONDS).toFixed(0)} fps)`);
 ok(Math.max(...spdAll) / Math.min(...spdAll) >= 1.25, `fastest vs slowest player: ${(Math.max(...spdAll) / Math.min(...spdAll)).toFixed(2)}× speed`);
 ok(med(spread) < 3, `back line out of possession: median spread ${med(spread).toFixed(1)} m (< 3)`);
 ok(med(length) <= 40, `team length out of possession: median ${med(length).toFixed(1)} m (≤ 40)`);
