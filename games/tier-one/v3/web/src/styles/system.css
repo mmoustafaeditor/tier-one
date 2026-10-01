@@ -83,7 +83,7 @@ button.g-row:active, a.g-row:active { transform: scale(.98); }
 /* screens' own sheet bodies sit flat inside the one sheet */
 .sheet--float > .wsheet, .sheet--float.cz-sheet { max-width: none; max-height: none; overflow: visible; margin: 0; border-radius: 0; background: none; box-shadow: none; animation: none; padding-inline: 0; }
 .sheet--float.cz-sheet { max-width: 560px; padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0)); max-height: 92vh; overflow-y: auto; background: var(--card); border-radius: 18px 18px 0 0; }
-.sheet--float > .wsheet .wsheet__band { margin-inline: 0; }
+.sheet--float > .wsheet .wsheet__band { margin-inline: 0; top: 28px; } /* under the sticky handle, never behind it (SAIF-04) */
 
 /* ---------------------------------------------------------------- toasts: wire slips, three deep, swipe or tap to bin */
 .toasts { gap: 8px; padding-inline: 12px; pointer-events: none; }

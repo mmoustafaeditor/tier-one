@@ -15,6 +15,7 @@ import { Icon, GBtn, CountUp, useCountUp } from './game';
 import '../styles/connect.css';
 import { feedSkin } from '../lib/wallet';
 import { CatchLine, Showcase } from './customize';
+import { BadgeRow } from './awards';
 
 // ---------- navigation for components that don't get chrome (the bell lives in every TopBar)
 let navGo: Go | null = null;
@@ -173,6 +174,7 @@ export function BylineCard({ s, style }: { s: Save; style?: CSSProperties }) {
       <CatchLine s={s} className="cn-byline__cp" />
       <Showcase s={s} />
     </div>
+    <BadgeRow s={s} />
   </section>;
 }
 

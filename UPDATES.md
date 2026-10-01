@@ -17,6 +17,10 @@ together with your change.
 
 ---
 
+## 2026-10-01 · mmoustafaeditor · Tier One: leaderboards, prizes and badges (SAIF-03); publish-area overlaps fixed (SAIF-04)
+- **What changed:** New Leaderboards screen (Me › Leaderboards, or "All leaderboards" under the Results board): today, this week and the Wire season, with your rank and the top 25. A top-10 finish in a finished Daily or week pays coins once (Daily 60/40/25/10, week 200/120/80/30, boards with 3+ players), collected on a gold prize card; prizes never change a score. Badges on the byline: board medals, wins over rivals, latest trophies. `lb.top` now takes an optional past `day` (read-only). SAIF-04: the filed stamp on the saga card no longer runs over the route, the post card's stamp clears the send button, and the Wire file sheet's band sits under the sheet handle instead of behind it.
+- **Files:** `api/tier-one/v3/index.js` (`lb.top` `day`), `games/tier-one/v3/web/src/lib/awards.ts` (new), `src/ui/awards.tsx` (new), `src/screens/Boards.tsx` (new), `src/styles/awards.css` (new), `src/i18n/parts/awards.ts` (new), `src/App.tsx`, `src/screens/Me.tsx`, `src/screens/Results.tsx`, `src/ui/connect.tsx`, `src/lib/save.ts` (optional `prizes`), `src/styles/play.css`, `src/styles/system.css`, `games/tier-one/SAIF_IMPROVEMENTS.md`, `UPDATES.md`
+- **Heads-up for the team:** New route `boards` (`?tab=boards`). Prize amounts are first values; tune in `lib/awards.ts` (`PRIZE`). The Wire season board shows rank only (no prize yet).
 ## 2026-10-01 · mmoustafaeditor (Claude Code session) · Closed three of Saif's requests
 - **What changed:** Removed from `.claude/requests.md`: the new Tier One app icon (already on `main`, and in the 3.4.0 / versionCode 19 APK Saif published), Saif's proposal files (already on `main`), and publishing The Gaffer (live at sembagames.app/the-gaffer). Approved by Mostafa.
 - **Files:** `.claude/requests.md`, `UPDATES.md`

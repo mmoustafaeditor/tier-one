@@ -218,6 +218,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
       <div className="sheet__body res3sheet">
         <SheetHead title={t('lb.title')} onClose={close} />
         {modal?.k === 'board' && <Board total={r.total} />}
+        <GBtn kind="dark" size="sm" style={{ marginTop: 12 }} onClick={() => { close(); chrome.go({ n: 'boards' }); }}><Icon n="trophy" size={18} />{t('aw.all')}</GBtn>
       </div>
     </Sheet>
   </div>;
