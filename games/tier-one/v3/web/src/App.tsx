@@ -17,6 +17,10 @@ import { Phone, DeskPanel, AppIcon, appOf, appById, routeOf, isUnlocked, bumpUse
 import { NotifyHost, notify, setTrayNav } from './ui/juice';
 import { onGain, onDriverDone } from './lib/meta';
 import { nextCareerWindow } from './lib/storyMode';
+import { setWatchSource } from './lib/widgets';
+import { watchList } from './lib/wireData';
+// The home screen's Market widget shows the watchlist (lib/wireData.ts save.market.watch).
+setWatchSource(() => watchList(getSave()).map((w) => w.rid));
 // Code-split web build (GOTY.md §8.2): the home screen and the lock screen ship with the shell; every app is its own
 // chunk, fetched on first open (the service worker keeps the play loop's chunks cached after its install).
 const MeScreen = lazy(() => import('./screens/Me').then((m) => ({ default: m.MeScreen })));
