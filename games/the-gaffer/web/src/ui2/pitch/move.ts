@@ -141,3 +141,38 @@ export function shotTarget(result: 'goal' | 'save' | 'miss' | 'block', r: () => 
   }
   return { y: W / 2 + (r() * 2 - 1) * (GOAL_HALF - 0.4), h: r() * (BAR - 0.3) };
 }
+
+// 8. Build-up when the engine's minute has no contest to show (a quiet minute): a passing chain in the side's style.
+//   possession: 5-6 short passes, back line → midfield → (a forward); balanced / high press: 3-5 the same way;
+//   direct, counter, park the bus: 2-3, a long ball from the back to a forward and a lay-off; wings: back → wide
+//   defender → wide forward on the same flank → inside to midfield.
+export interface Mate { k: number; line: 'def' | 'mid' | 'fwd'; y: number }
+const PATTERN: Record<string, ('def' | 'mid' | 'fwd' | 'wdef' | 'wfwd')[]> = {
+  possession: ['def', 'def', 'mid', 'def', 'mid', 'mid', 'fwd'],
+  balanced: ['def', 'mid', 'mid', 'fwd', 'mid'],
+  gegenpress: ['def', 'mid', 'mid', 'fwd', 'mid'],
+  direct: ['def', 'fwd', 'mid'], counter: ['def', 'fwd', 'mid'], bus: ['def', 'fwd', 'mid'],
+  wings: ['def', 'wdef', 'wfwd', 'mid'],
+};
+const LEN: Record<string, [number, number]> = { possession: [5, 6], balanced: [3, 5], gegenpress: [3, 5], direct: [2, 3], counter: [2, 3], bus: [2, 3], wings: [3, 4] };
+export function buildUp(philosophy: string, mates: Mate[], from: number, r: () => number): number[] {
+  const pat = PATTERN[philosophy] ?? PATTERN.balanced, [lo, hi] = LEN[philosophy] ?? LEN.balanced;
+  const n = Math.min(pat.length, lo + Math.floor(r() * (hi - lo + 1)));
+  const flank = r() < 0.5 ? -1 : 1;
+  const out: number[] = [];
+  let prev = from;
+  for (let i = 0; i < n; i++) {
+    const want = pat[i];
+    const wide = want === 'wdef' || want === 'wfwd';
+    const line = want === 'wdef' ? 'def' : want === 'wfwd' ? 'fwd' : want;
+    let c = mates.filter((x) => x.line === line && x.k !== prev);
+    if (wide) { const w = c.filter((x) => (x.y - W / 2) * flank > 8); if (w.length) c = w; }
+    // Before the ball goes wide, it starts with a centre-back (not the full-back who gets the next pass).
+    else if (pat[i + 1] === 'wdef') { const m = c.filter((x) => Math.abs(x.y - W / 2) <= 8); if (m.length) c = m; }
+    if (!c.length) c = mates.filter((x) => x.k !== prev);
+    if (!c.length) break;
+    prev = c[Math.floor(r() * c.length)].k;
+    out.push(prev);
+  }
+  return out;
+}

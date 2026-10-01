@@ -10,7 +10,7 @@ import { FORMATIONS, fullTactics } from '../sim/tactics';
 import { planOf, spotOf, type Spot } from '../sim/engine/phases';
 import type { Position } from '../model/types';
 import type { World } from '../sim/world';
-import { ARC, THROUGH_LEAD, TRANSITION_MS, arcHeight, deliveryOf, lineDepth, passKind, pressShape, pressSpot, runFor, shooterSpot, shotTarget, speedsOf, step, wideOf, type LineState, type PassKind, type PressPlan, type Transition } from './pitch/move';
+import { ARC, THROUGH_LEAD, TRANSITION_MS, arcHeight, buildUp, deliveryOf, lineDepth, passKind, pressShape, pressSpot, runFor, shooterSpot, shotTarget, speedsOf, step, wideOf, type LineState, type PassKind, type PressPlan, type Transition } from './pitch/move';
 
 type Pt = { x: number; y: number };
 
@@ -157,11 +157,16 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
     poss = (1 - f.s) as 0 | 1;
   }
   if (!all.length || (all.length === 1 && all[0].kind === 'kickoff')) {
-    // A quiet minute: keep it moving within the side on the ball.
+    // A quiet minute: the side on the ball builds up in its own style (move.ts buildUp).
     const side = m.ball?.s ?? poss;
     if (side !== poss) all.push({ kind: 'turnover', side });
-    const ks = onPitch(m, side);
-    all.push({ kind: 'pass', side, to: ks[Math.floor(r() * ks.length)] ?? 0 });
+    const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
+    const mates = onPitch(m, side).filter((k) => slots[k].pos !== 'GK' && a.pos[side][k]).map((k) => ({ k, line: LINE[slots[k].pos] as 'def' | 'mid' | 'fwd', y: a.pos[side][k].y }));
+    const phil = fullTactics(m.sides[side].tactics).philosophy;
+    const chain = buildUp(phil, mates, side === a.poss ? a.carrier : -1, r);
+    for (const k of chain) all.push({ kind: 'pass', side, to: k });
+    a.kinds[`chain:${phil}`] = (a.kinds[`chain:${phil}`] ?? 0) + 1;
+    a.kinds[`chainLen:${phil}`] = (a.kinds[`chainLen:${phil}`] ?? 0) + chain.length;
   }
   // The engine's shot types (this minute's shot events, in the same order as the flow's shots): a header or a set
   // piece is set up by a cross from out wide, a cutback by a ball pulled back from the byline, a through shot by a
