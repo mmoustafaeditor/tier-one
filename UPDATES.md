@@ -17,6 +17,16 @@ together with your change.
 
 ---
 
+## 2026-10-01 · saifsaber · The Gaffer, foundation step 4: injuries come from tackles too, and players have a hidden proneness
+- **What changed:**
+  - **Injuries from tackles.** A fouled player can now be hurt by the tackle: rarely by a careless foul, more often by a reckless one, often by serious foul play (`engine/injury.ts`). The roll happens after the minute, on its own random stream.
+  - **Hidden proneness.** Every player has a hidden injury proneness, taken from his id and his physique; a strong player is a little harder to hurt. It makes him likelier to be hurt both in tackles and in the existing background injuries (tiredness, load, pressing).
+  - **Totals unchanged.** The background chance is scaled down so totals stay as they were. Over 2,000 seeded matches (`node sim-tests/build.mjs injuries 2000 0.281`): 0.275 injuries a match against 0.281 before (−2.3%), about a third of them from fouls. The fouled player is hurt in 0.31% of fouls with no card, 0.98% of booked fouls and 7.4% of fouls that are sent off.
+  - **Shown on the pitch.** The injured player goes down at the whistle of that foul and stays down under a medic's cross; otherwise he pulls up mid-minute. The injury event now carries `how: 'foul'` and the offence in `note` when a tackle did it.
+  - **Checks.** The referee test passes, old saves load, and the season (5,784 league matches, 2.77 goals a match) runs. The Node pitch test shows the same numbers as before this step, apart from the injury itself.
+- **Files:** `games/the-gaffer/web/src/sim/engine/injury.ts` (new), `src/sim/engine/referee.ts` (`FoulOut.off`), `src/sim/match.ts`, `src/ui2/pitch/sim.ts`, `src/ui2/Pitch2D.tsx`, `ui-tests/pitch-metrics.mjs`, `sim-tests/injuries.ts` (new)
+- **Heads-up for the team:** Match results change from this step on (who gets hurt, and when), so the 200-match fingerprint is new. Proneness needs no save field. Tier One is untouched.
+
 ## 2026-10-01 · saifsaber · The Gaffer pitch, foundation step 3: the engine tells the pitch when, what, and when the ball goes out
 - **What changed:** The engine's ball path for the pitch (`m.flow`, FULL matches only) now carries more information:
   - each entry has the second within the minute it happens (`t`) and the engine node it happened at (`n`: a cross, a through ball…);
