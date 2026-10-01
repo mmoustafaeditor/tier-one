@@ -106,6 +106,9 @@ function target(m: LiveMatch, a: Anim, side: 0 | 1, k: number): Pt {
     // The whole team moves up with the ball; forwards lead, defenders hold a line behind.
     d += clamp((ballDepth - 35) * 0.6, 0, 30) + { def: 6, mid: 12, fwd: 18, gk: 0 }[line];
     y += (a.ball.y - y) * 0.12;
+    // Phase 3: full-backs and wing-backs push on with the ball, wide, so they can overlap the winger.
+    const push = T.FB_PUSH[sp.ip];
+    if (push) { d += clamp((ballDepth - 40) * push, 0, T.FB_MAX); y += ((y < W / 2 ? 4 : W - 4) - y) * clamp((ballDepth - 40) / 40, 0, 0.7); }
   } else {
     // Out of possession: the engine's block (its height already carries the press and the line) follows the ball.
     d += 6 + (ballDepth - 52) * 0.35 - (line === 'def' ? 2 : 6);
@@ -529,8 +532,21 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
             const d = depthOf(side, tg[k].x);
             const r = runFor(sps[k]?.ip ?? '', { bd, by: a.ball.y, theirLine, d, y: tg[k].y, wide: wideOf(tg[k].y) });
             if (!r) continue;
+            if (PITCH_DEBUG) ((a as unknown as { rd?: unknown[] }).rd ??= []).push([side, k, sps[k]?.ip, Math.round(d), Math.round(r.d), r.run, runs]);
             if (r.run) { if (runs >= 3) continue; runs++; a.runsN = runs; boost[k] = 1.25; }
             tg[k] = { x: toX(side, clamp(r.d, 2, 103)), y: clamp(r.y, 2, W - 2) };
+          }
+          // The carrier's pace: he drives on into space and slows, shielding it, when a man is on him.
+          if (a.carrier >= 0 && a.pos[side][a.carrier]) {
+            const cp = a.pos[side][a.carrier];
+            const dn = Math.min(99, ...onPitch(mm, other).map((j) => (a.pos[other][j] ? dist(a.pos[other][j], cp) : 99)));
+            boost[a.carrier] = dn < T.CARRY_SPACE[0] ? T.CARRY_BOOST[0] : dn > T.CARRY_SPACE[1] ? T.CARRY_BOOST[2] : T.CARRY_BOOST[1];
+            // He carries it towards where the engine has the play, a short step when pressed, a long one into space.
+            const to = tg[a.carrier], gap = dist(to, cp);
+            const step = dn < T.CARRY_SPACE[0] ? T.CARRY_STEP[0] : dn > T.CARRY_SPACE[1] ? T.CARRY_STEP[2] : T.CARRY_STEP[1];
+            const fwd = { x: (side === 0 ? 1 : -1) * 0.5, y: 0 }; // nowhere to go: straight on
+            const ux = gap > 0.5 ? (to.x - cp.x) / gap : fwd.x * 2, uy = gap > 0.5 ? (to.y - cp.y) / gap : 0;
+            tg[a.carrier] = { x: clamp(cp.x + ux * step, 1, L - 1), y: clamp(cp.y + uy * step, 1, W - 1) };
           }
           if (tr && tr.lost !== side && ft.counter) for (const k of ks) {
             if (busy(k) || LINE[slots[k].pos] !== 'fwd') continue;
@@ -669,7 +685,8 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
               g.at = isDef(k) ? a.time + decideMs(a.beatLen) - ((a.time + side * 37) % decideMs(a.beatLen)) : a.time + decideMs(a.beatLen);
             }
           }
-          let sprint = Math.max(pp.press.includes(k) ? (pp.trigger ? 1.6 : 1.3) : 1, boost[k] ?? 1);
+          // (a boost under 1 slows him: a carrier shielding the ball under pressure)
+          let sprint = (boost[k] ?? 1) < 1 ? boost[k] : Math.max(pp.press.includes(k) ? (pp.trigger ? 1.6 : 1.3) : 1, boost[k] ?? 1);
           // The sprint tank: an empty tank caps the boost; sprinting drains it (faster for a small tank), jogging refills.
           const keeperOut = !has && LINE[slots[k].pos] === 'gk'; // the keeper's side-steps aren't sprints
           if (!staging && !keeperOut && g.tank < T.EMPTY) sprint = Math.min(sprint, T.SPRINT);

@@ -35,4 +35,10 @@ export const T = {
   THREAT_K: [0.85, 1, 1.1] as [number, number, number],   // how far from goal attackers get a man
   ZONE_BOX: 16,      // zonal: a defender leaves the line for his man only inside this distance of goal
   SET_ZONAL: [11, 3, 0] as [number, number, number],       // corners: how many defenders hold zones (the rest mark men)
+  // Phase 3: attacking off the ball
+  FB_PUSH: { fullback: 0.4, wingback: 0.6 } as Record<string, number>, // a full-back's push up per metre the ball is past 40 m
+  FB_MAX: 26,        // ... at most this many metres
+  CARRY_SPACE: [4, 10] as [number, number], // the carrier slows inside the first (pressed), drives on beyond the second (space)
+  CARRY_BOOST: [0.55, 0.95, 1.3] as [number, number, number], // his pace: pressed, normal, in space
+  CARRY_STEP: [2, 6, 12] as [number, number, number],         // how far ahead he aims: pressed, normal, in space (m)
 };
