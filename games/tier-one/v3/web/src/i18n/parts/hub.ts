@@ -46,6 +46,9 @@ export default {
         starsN: '{n}★+', heatN: 'Heat {n}+', search: 'Search players or clubs', none: 'No transfers match.', mineNone: 'No calls yet. Pick a player in Market.',
       },
       card: { badges: 'Badges', films: 'Films', more: 'More' },
+      shop: { shop: 'Shop', drops: 'New & limited', more: 'Friends & receipts' },
+      res: { page: 'Front page', calls: 'Your calls' },
+      saga: { ring: 'Sources', clips: 'News ({n})', call: 'Your call' },
     },
   },
   ar: {
@@ -92,6 +95,9 @@ export default {
         starsN: '{n}★+', heatN: 'سخونية {n}+', search: 'دوّر على لاعب أو نادي', none: 'مفيش انتقالات بالشكل ده.', mineNone: 'لسه مفيش توقعات. اختار لاعب من السوق.',
       },
       card: { badges: 'الشارات', films: 'الأفلام', more: 'كمان' },
+      shop: { shop: 'المحل', drops: 'جديد ومحدود', more: 'صحاب وإيصالات' },
+      res: { page: 'الصفحة الأولى', calls: 'قراراتك' },
+      saga: { ring: 'المصادر', clips: 'الأخبار ({n})', call: 'قرارك' },
     },
   },
   es: {
@@ -138,6 +144,9 @@ export default {
         starsN: '{n}★+', heatN: 'Calor {n}+', search: 'Busca jugadores o clubes', none: 'Ningún fichaje coincide.', mineNone: 'Aún no hay predicciones. Elige un jugador en Mercado.',
       },
       card: { badges: 'Insignias', films: 'Películas', more: 'Más' },
+      shop: { shop: 'Tienda', drops: 'Novedades', more: 'Amigos y recibos' },
+      res: { page: 'Portada', calls: 'Tus apuestas' },
+      saga: { ring: 'Fuentes', clips: 'Noticias ({n})', call: 'Tu apuesta' },
     },
   },
 };

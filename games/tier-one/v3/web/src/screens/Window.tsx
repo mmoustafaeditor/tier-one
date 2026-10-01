@@ -16,6 +16,7 @@ import { applyWindow, totalFavours, vinceOf, type CareerReport } from '../lib/ca
 import { storyBeats, pushBeats, beatScene, type Beat } from '../lib/storyMode';
 import { Sheet, useNow, Crest } from '../ui/bits';
 import { SagaFile, RIVAL_IC, type RivalRecord } from './Saga';
+import { Tip } from '../ui/fit';
 import { hereWeGo } from '../lib/share';
 import { Results } from './Results';
 import { playScene, afterScenes, firstToday } from '../lib/scenes';
@@ -175,7 +176,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const favours = view.mode === 'career' ? <FavourTray g={g} i={deskSel} onUse={(k) => act(['f', k, deskSel])} /> : null;
   const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={calling ? null : last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
 
-  return <div className={'g-screen g-screen--wide play' + (dd ? ' is-dd' : '')} ref={rootRef}>
+  return <div className={'g-screen g-screen--wide play fit fit--full' + (dd ? ' is-dd' : '')} ref={rootRef}>
     <WindowFilm src={calling ? calling.c.src : last ? last.c.src : null} dd={dd} />
     <TopBar back={mob ? { label: t('g.win.board'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : title} />
     {dd && <DDHead view={view} onZero={finish} />}
@@ -191,6 +192,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
             <Phones left={view.state.left} max={view.R.CONTACTS} />
           </div>
         </section>}
+        {!dd && <Tip id="board" />}
         {dd ? <DDBoard view={view} g={g} busy={busy} onOpen={setSel} onQuick={(i, o) => postCall(i, o, 1, !!g.calls[i])} />
           : <>
             <div className="sagas stagger">

@@ -22,6 +22,7 @@ import { setCustomCatchphrase, retryCustomCatchphrase, customUnlocked, customLin
 import { getConfig } from '../lib/flags';
 import { Icon, TopBar, GBtn, confetti } from '../ui/game';
 import { Seg } from '../ui/screenbits';
+import { usePaged, Pager } from '../ui/fit';
 import { WalletStrip, Stage, Tile, Thumb, PriceTag, CreditIcon, Countdown, GiftSheet, PacksSheet, itemName, type Try } from '../ui/customize';
 import type { Save } from '../lib/save';
 
@@ -48,6 +49,8 @@ export function CustomizeScreen(chrome: Chrome) {
   const book = tab === 'book';
   const kind: Kind = book ? 'byline' : tab;
   const items = useMemo(() => itemsOf(kind, now), [kind, now]);
+  const [sec, setSec] = useState<'shop' | 'drops' | 'more'>('shop'); // 3.6: one screen, three sections
+  const ip = usePaged(items, 8, kind);
   const feat = useMemo(() => featuredView(now), [now]);
   const set = useMemo(() => seasonSet(season.id), [season.id]);
   const fresh = useMemo(() => newThisWeek(now), [now]);
@@ -101,9 +104,9 @@ export function CustomizeScreen(chrome: Chrome) {
   const goldId = 'gold.' + season.id;
   const haveGold = owns(goldId, s);
 
-  return <div className="g-screen g-screen--wide cz" style={{ ['--sa' as string]: season.accent }}>
-    <TopBar back={{ label: t('eco.act.back'), onClick: () => chrome.go({ n: 'me' }) }} title={t('eco.title')} onMenu={chrome.openSettings} />
-    <div className="cz__grid">
+  return <div className="g-screen g-screen--wide cz fit" style={{ ['--sa' as string]: season.accent }}>
+    <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('hub.row.shop')} onMenu={chrome.openSettings} />
+    <div className="cz__grid fit__body">
       <aside className="cz__side">
         <WalletStrip onGet={() => setPacks(true)} />
         <Stage tab={book ? 'byline' : tab} s={s} tryOn={book ? {} : tryOn} />
@@ -111,14 +114,19 @@ export function CustomizeScreen(chrome: Chrome) {
       </aside>
 
       <div className="cz__main">
+        <div className="g-tabs2 cz-secs" role="tablist">
+          {(['shop', 'drops', 'more'] as const).map((k) => <button key={k} role="tab" aria-selected={sec === k} onClick={() => { sfx('ui.tap'); setSec(k); }}>{t('hub.shop.' + k)}</button>)}
+        </div>
+        {sec === 'shop' && <>
         <Seg<Tab> className="cz-tabs" value={tab} onChange={changeTab} label={t('eco.title')} options={[...KINDS.map((k) => ({ v: k as Tab, label: k === 'catchphrase' ? t('cp.ui.tab') : t('eco.tabs.' + k) })), { v: 'book' as Tab, label: t('eco.tabs.book') }]} />
 
         {book ? <BookView s={s} now={now} onPick={(id) => pick(id)} /> : gold ? <GoldTab have={haveGold} sname={t(season.nameKey)} onBuy={() => doBuy(item(goldId)!, 'credits')} credits={balance('credits', s)} />
           : <>
             <p className="cz-hint">{t('eco.act.tryOn')}</p>
             <div className="cz-tiles" ref={grid} onKeyDown={onKey} role="listbox" aria-label={t('eco.tabs.' + tab)}>
-              {items.map((it, k) => { const p = onSale(it, now) ? priceNow(it, now) : null; return <Tile key={it.id} it={it} s={s} on={equipped(it.kind, s).id === it.id} owned={owns(it.id, s)} selected={sel === it.id} price={p} was={p && (p.coins !== it.price.coins || p.credits !== it.price.credits) ? it.price : undefined} onPick={() => pick(it.id)} tabIndex={sel === it.id || (k === 0 && !items.some((x) => x.id === sel)) ? 0 : -1} />; })}
+              {ip.rows.map((it, k) => { const p = onSale(it, now) ? priceNow(it, now) : null; return <Tile key={it.id} it={it} s={s} on={equipped(it.kind, s).id === it.id} owned={owns(it.id, s)} selected={sel === it.id} price={p} was={p && (p.coins !== it.price.coins || p.credits !== it.price.credits) ? it.price : undefined} onPick={() => pick(it.id)} tabIndex={sel === it.id || (k === 0 && !items.some((x) => x.id === sel)) ? 0 : -1} />; })}
             </div>
+            <Pager p={ip} />
           </>}
 
         {catchTab && <CatchPanel s={s} />}
@@ -149,6 +157,9 @@ export function CustomizeScreen(chrome: Chrome) {
           </div>
         </section>}
 
+        </>}
+
+        {sec === 'drops' && <>
         {/* ---------- drops: new this week, last chance (season sets and vault returns, real dates only) */}
         <section className="cz-rails" aria-labelledby="new-h">
           <div className="g-sec" style={{ marginTop: 6 }}><h2 id="new-h">{t('eco.rails.new')}</h2></div>
@@ -183,6 +194,9 @@ export function CustomizeScreen(chrome: Chrome) {
           <p className="cz-season__note">{t('eco.season.gone')} {t('eco.season.earn')}</p>
         </section>
 
+        </>}
+
+        {sec === 'more' && <>
         {/* ---------- bring a friend */}
         <section className="cz-ref" aria-labelledby="ref-h">
           <h2 id="ref-h">{t('eco.ref.hed')}</h2>
@@ -214,6 +228,7 @@ export function CustomizeScreen(chrome: Chrome) {
         <GBtn kind="dark" size="lg" className="cz-desk" onClick={() => chrome.go({ n: 'front' })}><Icon n="home" />{t('g.res.home')}</GBtn>
 
         <section className="cz-promise"><h2>{t('eco.promise.hed')}</h2><ul>{(t.list('eco.promise.list') as string[]).map((x, k) => <li key={k}><Icon n="check" size={14} />{x}</li>)}</ul></section>
+        </>}
       </div>
     </div>
     {giftFor && <GiftSheet it={giftFor} onClose={() => setGiftFor(null)} onSent={(to, queued) => toast('ach', t(queued ? 'eco.gift.queued' : 'eco.gift.sent', { c: to }))} />}

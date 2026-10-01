@@ -154,3 +154,30 @@ select.tm-chip { appearance: none; -webkit-appearance: none; text-overflow: elli
 .tm-tabs button[aria-selected="true"] { background: var(--m-wire); color: #0B2730; box-shadow: 0 3px 0 #1C8FAD; }
 .tm-tabs .g-badge { min-width: 18px; height: 18px; font-size: 11px; padding: 0 4px; }
 .wire3.fit .kpis3 { margin: 0; }
+
+/* ---------- Results: front page · your calls on phones; both side by side on a desk */
+.res4.fit { gap: 0; }
+.res4.fit > .res4__lead, .res4.fit > .res4__desk { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+.res4.fit > .res4__lead::-webkit-scrollbar, .res4.fit > .res4__desk::-webkit-scrollbar { display: none; }
+.res-tabs { flex: none; margin-bottom: 8px; }
+.res-tabs button { font-size: 15px; }
+.res-tabs button[aria-selected="true"] { background: var(--red); box-shadow: 0 3px 0 var(--red-deep); }
+@media (max-width: 1023.98px) {
+  .res4.fit[data-pane="page"] > .res4__desk, .res4.fit[data-pane="calls"] > .res4__lead { display: none; }
+}
+@media (min-width: 1024px) {
+  .res-tabs { display: none; }
+  .results2.res4.fit.g-screen { max-width: 1200px; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; align-items: stretch; }
+  .play.fit.g-screen { max-width: 1280px; }
+  .play.fit .play__cols { align-items: stretch; }
+}
+
+/* ---------- Shop: three sections; the try-on stage stays beside the shelves on a desk */
+.cz.fit .cz__grid.fit__body { display: grid; align-content: start; gap: 10px; }
+.cz.fit .cz__main { gap: 10px; }
+.cz.fit .cz-hint { display: none; }
+.cz-secs { grid-template-columns: repeat(3, 1fr); }
+.cz-secs button { font-size: 14px; }
+.cz-secs button[aria-selected="true"] { background: var(--gold); color: #1A1305; box-shadow: 0 3px 0 var(--gold-deep); }
+@media (max-width: 1023.98px) { .cz.fit .cz__side .cz-stage, .cz.fit .cz__side > :nth-child(2) { max-height: 30vh; overflow: hidden; } }
+@media (min-width: 1024px) { .cz.fit.g-screen { max-width: 1200px; } }
