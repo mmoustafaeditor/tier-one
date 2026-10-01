@@ -143,8 +143,12 @@ ok(minTank < 0.9, `the sprint tank gets used (lowest ${minTank.toFixed(2)})`);
 // close, the keeper stands on the shooting angle, a carrier in the box finds someone in the way, the line stays narrow
 // enough to cover. Goal at x 0 for side 0, x 105 for side 1.
 const P2 = { mark: [0, 0], markAll: [0, 0], gk: [], block: [0, 0], width: [] };
+// How long the ball has been at the same man's feet: the keeper is judged once he has had a quarter of a second to set
+// himself after the ball moved (a cross-field pass moves the angle faster than any keeper can follow).
+let heldFrom = 0;
 for (let i = 0; i < samples.length; i++) {
-  const s = samples[i];
+  const s = samples[i], pr = samples[i - 1];
+  if (!pr || pr.carrier !== s.carrier || pr.poss !== s.poss) heldFrom = s.t;
   if (afterSet[i] || s.sp || s.carrier < 0) continue; // settled play: someone has the ball at his feet
   const def = (1 - s.poss), att = s.poss, gx = def === 0 ? 0 : L;
   const D = s.pos[def], A = s.pos[att];
@@ -161,7 +165,7 @@ for (let i = 0; i < samples.length; i++) {
   // Keeper: distance from the bisector of the angle the ball makes with the posts, ball within 40 m.
   const gk = D[s.slots[def].indexOf('GK')];
   const db = Math.hypot(s.ball.x - gx, s.ball.y - 34);
-  if (gk && db < 40 && db > 6) {
+  if (gk && db < 40 && db > 6 && s.t - heldFrom >= 250) {
     const p1 = { x: gx, y: 34 - 3.66 }, p2 = { x: gx, y: 34 + 3.66 };
     const d1 = Math.hypot(s.ball.x - p1.x, s.ball.y - p1.y), d2 = Math.hypot(s.ball.x - p2.x, s.ball.y - p2.y);
     const P = { x: gx, y: p1.y + (7.32 * d1) / (d1 + d2) }; // angle bisector theorem

@@ -615,7 +615,9 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
           for (const [mk, tk] of marks) {
             const t = a.pos[other][tk];
             const spot = markSpot(t, ownGoal, a.ball);
-            if (line(mk) === 'def' && dist(t, ownGoal) >= 22 && depthOf(side, t.x) >= ln.depth - 2) tg[mk] = { x: tg[mk].x, y: tg[mk].y * 0.4 + t.y * 0.6 };
+            // A defender keeps the line (and only shadows his man across) when the man is well in front of it, a
+            // midfielder's job; a man close in front of the line, near goal or beyond it, he steps out and marks.
+            if (line(mk) === 'def' && dist(t, ownGoal) >= 22 && depthOf(side, t.x) >= ln.depth + T.STEP_OUT) tg[mk] = { x: tg[mk].x, y: tg[mk].y * 0.4 + t.y * 0.6 };
             else tg[mk] = spot;
           }
           // The keeper: on the shooting angle.

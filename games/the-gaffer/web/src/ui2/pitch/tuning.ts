@@ -22,6 +22,7 @@ export const T = {
   THREAT: 32,        // attackers within this many metres of our goal are marked
   MARK_REACH: 20,    // a marker takes a man within this many metres of him
   MARK_ROLE: 10,     // metres added to a marker's cost when the man isn't his kind of job (see Pitch2D)
+  STEP_OUT: 8,       // a defender steps out of the line to mark a man less than this many metres in front of it
   MARK_TIGHT: 1.4,   // goal-side gap to his man within 20 m of goal
   MARK_LOOSE: 2.6,   // ... and further out
   SLIDE: 0.35,       // how far the line's centre shifts towards the ball's side
