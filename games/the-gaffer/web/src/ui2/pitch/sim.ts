@@ -10,6 +10,7 @@ import type { Position } from '../../model/types';
 import type { World } from '../../sim/world';
 import { T } from './tuning';
 import { timeBeats, upcoming, type Timed } from './director';
+import { shownOf, type HlMode } from '../../sim/highlights';
 import { bodiesOf, decideMs, move, reactMs, type Body } from './body';
 import { assignMarks, blockSpot, inBox, keeperSpot, markSpot, slideY, wideInThird } from './defend';
 import { attackSpots, defendSpots, rushFor, wallSize, wallSpots, type SetPiece } from './setpieces';
@@ -65,6 +66,7 @@ export interface Anim {
   flag: { x: number; until: number } | null; // the assistant's flag is up (offside), at this x on the near touchline
   hurt: { side: 0 | 1; slot: number; until: number } | null; // a player down injured (foundation step 4): he stays down, the medic's cross shows
   hurtAt: { side: 0 | 1; slot: number; at: number }[]; // this minute's injuries, when they happen (ms into the minute)
+  snap?: boolean;         // highlights: a minute not shown — everyone goes straight to his place (the picture cuts)
   ids: string[][];        // who was in each slot when the minute was planned (an injured man's slot after he's gone)
 }
 
@@ -141,7 +143,7 @@ const zonePt = (z: number, r: () => number): Pt => ({ x: (Math.floor(z / 5) + 0.
 const slotNear = (m: LiveMatch, a: Anim, side: 0 | 1, pt: Pt) => onPitch(m, side).sort((x, y) => dist(a.pos[side][x] ?? pt, pt) - dist(a.pos[side][y] ?? pt, pt))[0] ?? 0;
 
 // Plan the minute from the engine's ball path: contests won and lost, fouls, shots. Slow speeds show more of it.
-function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
+function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World, mode?: HlMode) {
   const r = rngFor(`${m.key}:anim`, m.minute);
   a.spd = speedsOf(m, world);
   a.body = bodiesOf(m, world);
@@ -228,10 +230,26 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
     else if (b.kind === 'pass' && b.side !== has) { all[i] = { kind: 'turnover', side: b.side, to: b.to, pt: b.pt, z: b.z, at: b.at }; has = b.side; }
     else if (b.kind === 'turnover') { if (b.side === has && b.to !== undefined) all[i] = { kind: 'pass', side: b.side, to: b.to, pt: b.pt, z: b.z, at: b.at }; has = b.side; }
   }
+  // Highlights (sim/highlights.ts, like FM): only the passage shown, at the engine's own pace; between highlights the
+  // ball is simply where the engine left it. Without a mode, the whole minute is shown compressed (the old way).
+  let beats = all;
+  const shown = mode === undefined ? undefined : shownOf(m, mode);
+  if (shown) {
+    const sec = timeBeats(all, all.map(weightOf), 60000, true).map((x) => x / 1000);
+    const keep = all.map((_, i) => i).filter((i) => (sec[i] >= shown.from && sec[i] <= shown.to) || all[i].kind === 'kickoff');
+    const span = Math.max(1, shown.to - shown.from);
+    beats = keep.map((i) => ({ ...all[i], at: (Math.max(0, sec[i] - shown.from) / span) * 60 }));
+  } else if (shown === null) {
+    beats = [];
+    const last = [...(m.flow ?? [])].reverse().find((f) => f.k === 'w' || f.k === 'l');
+    const side = (m.ball?.s ?? a.poss) as 0 | 1;
+    if (last) a.ball = zonePt(last.z, r);
+    a.poss = side; a.carrier = slotNear(m, a, side, a.ball); a.flight = null; a.sp = null; a.run = null; a.zone = -1; a.inNet = false;
+    a.snap = true;
+  }
   // As many beats as the speed allows; a shot and the move before it always make the cut.
   const n = Math.max(2, Math.round(msPerMinute / 130));
-  let beats = all;
-  if (all.length > n) {
+  if (mode === undefined && all.length > n) {
     const lastShot = all.map((b) => b.kind).lastIndexOf('shot');
     const end = lastShot >= 0 ? lastShot + 1 + (all[lastShot + 1]?.kind === 'corner' ? 1 : 0) : all.length; // a corner won by the shot stays too
     beats = [...(all[0].kind === 'kickoff' ? [all[0]] : []), ...all.slice(Math.max(all[0].kind === 'kickoff' ? 1 : 0, end - n), end)];
@@ -245,7 +263,7 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World) {
   // A set piece gets a longer share of the minute (players need time to take their spots); the minute stays as long.
   const wt = beats.map((b) => weightOf(b));
   a.beatLen = msPerMinute / Math.max(1, wt.reduce((t, x) => t + x, 0));
-  a.starts = timeBeats(beats, wt, msPerMinute, T.ENGINE_CLOCK); // the director (director.ts): even, or the engine's own clock
+  a.starts = timeBeats(beats, wt, msPerMinute, shown ? true : T.ENGINE_CLOCK); // the director (director.ts): a highlight at the engine's own pace
   // Injuries this minute: hurt in a tackle goes down at that foul's whistle, otherwise he pulls up mid-minute. The
   // engine has already made the change: the slot is his replacement's now, or empty when no sub was left (he is shown
   // until he's helped off).
@@ -496,10 +514,13 @@ export function newAnim(m: LiveMatch, world: World): Anim {
 }
 
 // One frame: `dt` ms of display time; `ms` = real ms per match minute (the speed setting); `go` = the match is running.
-export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: number, go: boolean) {
+// `ms`: how long this match minute lasts on screen. `scale`: ms per match minute of PLAY for movement (how fast players
+// run; in highlights a passage plays at real pace, so this stays fixed while `ms` swings between a highlight and the
+// quick clock between them). Missing: the same as `ms` (the old compressed minute).
+export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: number, go: boolean, mode?: HlMode, scale = ms) {
       if (PITCH_DEBUG) (a as unknown as { go?: boolean }).go = go; // the test skips a paused or finished match
       a.time += dt;
-      if (a.minute !== minuteKey(mm)) plan(a, mm, ms, world);
+      if (a.minute !== minuteKey(mm)) plan(a, mm, ms, world, mode);
       if (go) {
         a.clock += dt;
         while (a.beat < a.beats.length && a.clock >= (a.starts[a.beat] ?? a.beat * a.beatLen)) runBeat(a, mm, a.beats[a.beat++]);
@@ -683,7 +704,7 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
         // Phase 1: each player moves with his own body (top speed, acceleration, turning), re-reads the play every
         // decision tick, reacts to a new ball after his own reaction time, and sprints only while his tank lasts.
         const staging = !!a.sp && a.time < a.sp.until;
-        const tau = Math.max(120, ms * 0.9);
+        const tau = Math.max(120, scale * 0.9);
         // The back line moves as one: out of possession its defenders react on their best reader's call.
         const down = (k: number) => !!a.hurt && a.time < a.hurt.until && a.hurt.side === side && a.hurt.slot === k; // injured: stays where he fell
         const isDef = (k: number) => !has && LINE[sps[k]?.opos ?? slots[k].pos] === 'def' && !pp.press.includes(k) && k !== pp.cover && k !== blockK && !down(k); // the blocker sprints to the lane, out of the line
@@ -703,6 +724,8 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           // The keeper side-steps across his goal (no running turn limit, quick feet).
           const B = staging || (!has && LINE[slots[k].pos] === 'gk') ? { ...B0, turn: B0.turn * 4, acc: B0.acc * 1.5 } : isDef(k) ? { ...B0, top: Math.min(B0.top, lineTop), acc: Math.min(B0.acc, lineAcc) } : B0;
           const g = a.ag[side][k] ??= { vx: 0, vy: 0, tx: t.x, ty: t.y + wob, at: 0, tank: 1, pend: false, spr: false };
+          // Between highlights the picture cuts: everyone is simply where he should be for the next scene.
+          if (a.snap) { a.pos[side][k] = { x: t.x, y: t.y }; g.vx = 0; g.vy = 0; g.tx = t.x; g.ty = t.y; g.pend = false; continue; }
           // On the ball, about to receive or shoot, or walking to a set piece: no delay. Everyone else commits to
           // a new target at his decision ticks, and after a new ball only once he has reacted.
           // The keeper never takes his eyes off the ball: he follows it without a reaction delay.
@@ -733,7 +756,7 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           a.pos[side][k] = { x: nk.x, y: nk.y };
           const vmax = (T.VMAX * B.top * sprint) / tau, sp1 = Math.hypot(nk.vx, nk.vy);
           g.spr = !staging && !keeperOut && sprint > T.SPRINT && sp1 > 0.6 * vmax;
-          g.tank = g.spr ? Math.max(0, g.tank - (T.DRAIN * dt) / ms / B.tank) : Math.min(1, g.tank + (T.REFILL * dt) / ms);
+          g.tank = g.spr ? Math.max(0, g.tank - (T.DRAIN * dt) / scale / B.tank) : Math.min(1, g.tank + (T.REFILL * dt) / scale);
           // Measurement (ui-tests/pitch.mjs): how close to his turning and acceleration limits he came.
           if (PITCH_DEBUG && dt > 0 && !(isDef(k) && !staging)) { // (the line's depth is shared, measured by the line test)
             const sp0 = Math.hypot(vx0, vy0);
@@ -747,4 +770,5 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           }
         }
       }
+      a.snap = false; // a cut lasts one frame
 }
