@@ -54,7 +54,7 @@ export function appOf(r: Route): AppId | null {
   switch (r.n) {
     case 'front': return null;
     case 'daily': case 'feed': case 'practice': case 'rivals': return 'blurt';
-    case 'play': return r.mode === 'career' ? 'story' : 'blurt';
+    case 'play': return r.mode === 'career' ? 'story' : r.mode === 'deadline' ? 'live' : r.mode === 'challenge' ? 'groups' : 'blurt';
     case 'room': return 'groups';
     case 'contacts': return 'dms';
     case 'me': case 'pass': case 'customize': return 'lens';
