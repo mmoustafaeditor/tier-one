@@ -6,7 +6,7 @@
 // so each outcome has 40-odd fan lines per language. A Confirmed Done call also draws a reaction to your catchphrase
 // (cp.react.* + cp3.react.*, rivals from rv.<id>.cp.*) and every call gets one fan line quoting it (fan.call.*).
 import type { CastSaga, ResultSaga, Rules, Tier } from './engine';
-import { trList, fill } from './i18n';
+import { trList, tr, fill } from './i18n';
 import { outWord, strWord } from './story';
 
 export type Voice = 'fan' | 'rival' | 'source';
@@ -35,14 +35,21 @@ export class Banter {
     return null;
   }
   num(salt: string, lo: number, hi: number) { return lo + (this.h('n|' + salt) % Math.max(1, hi - lo)); }
+  /** The two clubs in the saga being replied to: about a third of the fans are theirs (bn3.post.handles + bn3.clubFan). */
+  private clubs: string[] = [];
   fan(salt: string): { name: string; handle: string } {
+    const k = this.h('fan|' + salt);
+    const club = this.clubs.length && k % 3 === 0 ? this.clubs[(k >>> 4) % this.clubs.length] : '';
+    const sl = club ? clubSlug(club) : '', H = trList(this.lang, 'bn3.post.handles') as string[] | undefined;
+    if (sl && Array.isArray(H) && H.length) return { name: tr(this.lang, 'bn3.clubFan', { club }), handle: '@' + H[(k >>> 8) % H.length].replace('{club}', sl).slice(0, 15) };
     const F = [...((trList(this.lang, 'bn.fans') as [string, string][] | undefined) || []), ...((trList(this.lang, 'bn3.fans') as [string, string][] | undefined) || [])];
     if (!F.length) return { name: 'Fan', handle: '@fan' };
-    const f = F[this.h('fan|' + salt) % F.length]; return { name: f[0], handle: f[1] };
+    const f = F[k % F.length]; return { name: f[0], handle: f[1] };
   }
 
   thread(p: ResultSaga, c: CastSaga, R: Rules): Thread {
     const i = p.i, call = p.call;
+    this.clubs = [c.to.s, c.from.s, ...(p.truth === 1 && c.alt ? [c.alt.s] : [])];
     const V = { p: c.player.s, d: c.to.s, c: c.from.s, h: c.alt ? c.alt.s : c.to.s, n: 0, call: call ? strWord(this.lang, call.s) + ' ' + outWord(this.lang, call.o) : '', day: call ? call.day : 0, phrase: this.phrase, to: c.to.s, name: this.name };
     const verdict: Verdict = !call ? 'none' : p.excl ? 'excl' : p.right ? 'right' : 'wrong';
     // {d} only where the line makes sense: the move you claimed, or the move that happened. {h} only on a real hijack.
@@ -136,6 +143,9 @@ export function wireReply(lang: string, rid: string, right: boolean, loud: boole
   const s = b.pick('fan.' + pool, '0', (x) => !/\{(d|h|c|n|call|day|phrase|to|name)\}/.test(x)) || '';
   return { ...b.fan('w'), text: fill(s, { p: player || '' }) };
 }
+
+/** A club name as a handle fragment: ASCII letters and digits only ('' when nothing is left, e.g. a non-Latin name). */
+const clubSlug = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').slice(0, 9);
 
 export function compact(n: number, lang: string) {
   try { return new Intl.NumberFormat(lang === 'ar' ? 'ar-EG-u-nu-latn' : lang === 'es' ? 'es-ES' : 'en-GB', { notation: 'compact', maximumFractionDigits: 1 }).format(n); } catch { return String(n); }
