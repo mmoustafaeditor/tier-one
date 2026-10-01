@@ -7,18 +7,18 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { useT, num } from '../lib/i18n';
 import { useSave, getSave, update } from '../lib/save';
 import { v3 } from '../lib/api';
-import { useWire, refreshWire, gradeOf, bestTier, stageOf, windowParts, type Rumour, type WireCall, type WireWindow } from '../lib/wireData';
+import { useWire, refreshWire, gradeOf, stageOf, windowParts, type Rumour, type WireCall, type WireWindow } from '../lib/wireData';
 import { clubById, WORLD, WR } from '../lib/engine';
 import { onWireFiled, onWireRight, toast } from '../lib/meta';
 import { sfx } from '../lib/sfx';
 import { Crest, Sheet } from '../ui/bits';
 import { Icon, Kit, GBtn, TopBar, useCountUp, confetti } from '../ui/game';
-import { HeatMeter, Avatar } from '../ui/screenbits';
+import { Avatar } from '../ui/screenbits';
 import { wireReply } from '../lib/banter';
 import { rumourHed } from './Front';
 import type { Chrome } from '../App';
 import '../styles/football.css';
-import { WireFilm } from '../ui/film';
+import { Tip, usePaged, Pager } from '../ui/fit';
 
 const round1 = (x: number) => Math.round(x * 10) / 10;
 function odds(yes: boolean, s: number, m: number) { const c = yes ? m : 1 - m; return { win: round1(s * (10 * (1 - c) + 2)), lose: round1(s * 10 * c), c }; }
@@ -32,7 +32,6 @@ const WINDOWS: [string, string][] = [['2027-01-01T00:00:00Z', '2027-02-02T23:00:
 type TF = ReturnType<typeof useT>;
 // '2027-01' → 'Winter window 2027' (long) or 'Jan 2027' (short); anything else as it is.
 export const winLabel = (t: TF, w: string, short = false) => { const p = windowParts(w); return p ? t('fb.win.' + p.k + (short ? 'S' : ''), { y: p.y }) : w; };
-const seasonLabel = (t: TF, s?: string) => { const m = /^(\d{4})-(\w+)$/.exec(s || ''); return m ? t('fb.season.' + m[2], { y: m[1] }) : ''; };
 // Coins for a right call, by the player's star level (0 = unrated).
 const STAR_COINS = [15, 25, 40, 70];
 const starOf = (r?: Rumour) => (r && WORLD.players.find((x) => x.id === r.playerId)?.star) || 0;
@@ -44,14 +43,14 @@ function windowLine(now: number, cur?: WireWindow): { k: 'opens' | 'closes'; d: 
   }
   return null;
 }
-type Group = 'star' | 'window' | 'league' | 'team';
-// Where the evidence points, 0–1, from the stage the linked clubs have reached, the best outlet's grade and the heat.
-// Display only: it ranks the featured strip and never touches a price or a score.
-const STAGE_E: Record<string, number> = { interest: 0.25, talks: 0.45, bid: 0.65, agreed: 0.85 };
-function evidenceOf(r: Rumour) {
-  const e = (STAGE_E[stageOf(r)] ?? 0.25) * (1 - 0.08 * bestTier(r)) + 0.15 * Math.min(1, r.heat / 100);
-  return Math.max(0.05, Math.min(0.95, e));
-}
+
+// 3.6 Transfer Market: two tabs (Market · My calls), filter chips (Stars, Heat, League, Team) and a search, five rumours a
+// page. One screen, no page scroll. The file sheet, the settled reel and every number are unchanged.
+type MTab = 'market' | 'mine';
+const STAR_STEPS = [0, 1, 2, 3], HEAT_STEPS = [0, 50, 75];
+const PER = 5;
+const nextOf = (list: number[], v: number) => list[(list.indexOf(v) + 1) % list.length];
+const lgName = (t: TF, k: string) => { const x = t('m.wire.lg.' + k); return x === 'm.wire.lg.' + k ? k : x; };
 
 export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
   const t = useT();
@@ -72,159 +71,83 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 30e3); return () => clearInterval(i); }, []);
   const win = windowLine(now, w.window);
-  const [group, setGroup] = useState<Group>('star');
-  const keyOf = (r: Rumour) => group === 'star' ? String(starOf(r)) : group === 'team' ? r.currentClubName || '—' : group === 'window' ? r.window || '—' : clubById(r.currentClubId)?.l || '—';
-  const groups: [string, Rumour[]][] = [];
-  for (const r of rs) { const k = keyOf(r); const g = groups.find((x) => x[0] === k); if (g) g[1].push(r); else groups.push([k, [r]]); }
-  groups.sort((a, b) => group === 'star' ? Number(b[0]) - Number(a[0]) : group === 'window' ? (a[0] === w.window.id ? -1 : b[0] === w.window.id ? 1 : a[0].localeCompare(b[0])) : b[1].length - a[1].length || a[0].localeCompare(b[0]));
+  const [tab, setTab] = useState<MTab>('market');
+  const [stars, setStars] = useState(0);
+  const [heat, setHeat] = useState(0);
+  const [league, setLeague] = useState('');
+  const [team, setTeam] = useState('');
+  const [q, setQ] = useState('');
+  const [searching, setSearching] = useState(false);
+  const leagues = [...new Set(rs.map((r) => clubById(r.currentClubId)?.l || '').filter(Boolean))].sort();
+  const teams = [...new Set(rs.map((r) => r.currentClubName).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const needle = q.trim().toLowerCase();
+  const list = rs.filter((r) => starOf(r) >= stars && r.heat >= heat
+    && (!league || clubById(r.currentClubId)?.l === league)
+    && (!team || r.currentClubName === team || r.linked.some((l) => l.name === team))
+    && (!needle || [r.playerName, r.currentClubName, ...r.linked.map((l) => l.name)].some((x) => (x || '').toLowerCase().includes(needle))))
+    .sort((a, b) => b.heat - a.heat);
+  const pg = usePaged(list, PER, [stars, heat, league, team, needle].join('|'));
   const open = (id: string, yes?: boolean) => { sfx('sheet.open'); setPre(yes); setSel(id); };
   const m = w.mine;
-  const openCalls = m ? m.calls.filter((c) => !c.done).length : 0;
+  const calls = m?.calls || [];
+  const cp = usePaged(calls, PER);
+  const openCalls = calls.filter((c) => !c.done).length;
   const left = Math.max(0, WR.WIRE.DAILY_CALLS - w.callsToday);
-  // The how-to is open on the first visit and folded after that (the summary stays, one tap away).
-  const [howOpen, setHowOpen] = useState(() => !getSave().stats['wire:how']);
-  useEffect(() => { if (!getSave().stats['wire:how']) update((x) => { x.stats['wire:how'] = 1; }); }, []);
+  const paper = calls.filter((c) => !c.done).reduce((a, c) => a + (c.paper || 0), 0);
 
-  return <div className="g-screen g-screen--wide wire3">
-    <TopBar onHelp={() => chrome.go({ n: 'howto' })} onMenu={chrome.openSettings} />
-    <div className="stagger g-stack">
-      <section className="g-hero g-hero--wire wire3__hero" style={{ ['--i' as string]: 0 }}>
-        <WireFilm layer="inline" />
-        <span className="g-hero__art" aria-hidden="true"><Icon n="wire" /></span>
-        <span className="g-mono g-hero__k"><i className="g-dot" />{t('g.wire.k')}</span>
-        <h1 className="g-hero__t">{t('g.wire.hed')}</h1>
-        <p className="g-hero__s"><b>{t('m.wire.real')}</b> {t('m.wire.realSub', { a: STAR_COINS[1], b: STAR_COINS[3] })}</p>
-        <div className="wwin">
-          <span className="wwin__now"><i className="g-dot" />{t('fb.now', { w: winLabel(t, w.window.id), d: t('fb.dates') })}</span>
-          {win && <span className="g-chip g-chip--gold"><Icon n="clock" size={14} />{t('m.wire.' + win.k, { t: win.d ? t('m.wire.leftDh', { d: win.d, h: win.h }) : t('m.wire.leftHm', { h: win.h, m: win.m }) })}</span>}
+  return <div className="g-screen wire3 fit">
+    <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('hub.mode.market')} onHelp={() => chrome.go({ n: 'howto' })} />
+    <div className="fit__body">
+      <Tip id="market" />
+      <div className="tm-head">
+        <div className="g-tabs2 tm-tabs" role="tablist" style={{ flex: 1 }}>
+          {(['market', 'mine'] as const).map((k) => <button key={k} role="tab" aria-selected={tab === k} onClick={() => { sfx('ui.tap'); setTab(k); }}>{t('hub.market.tabs.' + k)}{k === 'mine' && openCalls > 0 ? <b className="g-badge">{openCalls}</b> : null}</button>)}
         </div>
-        <details className="wire3__how" open={howOpen} onToggle={(e) => setHowOpen(e.currentTarget.open)}>
-          <summary><Icon n="help" size={16} />{t('m.wire.how')}</summary>
-          <ol className="wire3__steps">{(t.list('g.wire.how') as string[]).map((x, k) => <li key={k}><span className="g-num">{k + 1}</span>{x}</li>)}</ol>
-          <p className="wwin__note">{t('fb.closed')}</p>
-        </details>
+        <button className="g-icbtn" style={{ width: 44, height: 44 }} aria-label={t('hub.board')} onClick={() => chrome.go({ n: 'boards', period: 'wire', from: { n: 'wire' } })}><Icon n="trophy" /></button>
+      </div>
+
+      {tab === 'market' ? <>
+        {searching ? <div className="tm-filters">
+          <input className="tm-search" style={{ flex: 1, width: 'auto' }} autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('hub.market.search')} aria-label={t('hub.market.search')} />
+          <button className="tm-chip" aria-label={t('common.close')} onClick={() => { setQ(''); setSearching(false); }}><Icon n="x" size={16} /></button>
+        </div> : <div className="tm-filters" role="group" aria-label={t('m.wire.group')}>
+          <button className="tm-chip" aria-pressed={stars > 0} onClick={() => { sfx('ui.tap'); setStars(nextOf(STAR_STEPS, stars)); }}><Icon n="star" size={14} />{stars ? t('hub.market.starsN', { n: stars }) : t('hub.market.stars')}</button>
+          <button className="tm-chip" aria-pressed={heat > 0} onClick={() => { sfx('ui.tap'); setHeat(nextOf(HEAT_STEPS, heat)); }}><Icon n="flame" size={14} />{heat ? t('hub.market.heatN', { n: heat }) : t('hub.market.heat')}</button>
+          <select className="tm-chip" aria-pressed={!!league} aria-label={t('hub.market.league')} value={league} onChange={(e) => setLeague(e.target.value)}>
+            <option value="">{t('hub.market.league')}</option>
+            {leagues.map((k) => <option key={k} value={k}>{lgName(t, k)}</option>)}
+          </select>
+          <select className="tm-chip" aria-pressed={!!team} aria-label={t('hub.market.team')} value={team} onChange={(e) => setTeam(e.target.value)}>
+            <option value="">{t('hub.market.team')}</option>
+            {teams.map((k) => <option key={k} value={k}>{k}</option>)}
+          </select>
+          <button className="tm-chip" aria-pressed={!!needle} aria-label={t('hub.market.search')} onClick={() => { sfx('ui.tap'); setSearching(true); }}><Icon n="eye" size={14} /></button>
+        </div>}
+        {!w.rumours && <p className="g-empty">{w.loading ? t('common.loading') : t('wire.needNet')}</p>}
+        {w.rumours && !w.online && <p className="g-empty">{t('wire.needNet')}</p>}
+        {w.rumours && !list.length && <p className="g-empty">{t('hub.market.none')}</p>}
+        <div className="tm-list">{pg.rows.map((r) => <RumRow key={r.id} r={r} onOpen={() => open(r.id)} />)}</div>
+        <Pager p={pg} />
+      </> : <>
+        <SettledReel />
         <div className="kpis3">
           <span><b className="g-num">{m ? num(Math.round(m.cred)) : '–'}</b><small className="g-mono">{t('wire.cred')}</small></span>
           <span><b className="g-num">{m && m.resolved > 0 ? pct(m.hitRate) + '%' : '–'}</b><small className="g-mono">{t('wire.hit')}</small></span>
-          <span><b className="g-num">{openCalls}</b><small className="g-mono">{t('wire.open')}</small></span>
+          <span><b className={'g-num ' + (paper < 0 ? 'neg' : 'pos')}>{num(round1(paper), true)}</b><small className="g-mono">{t('g.wire.pnl')}</small></span>
           <span><b className="g-num">{left}<em>/{WR.WIRE.DAILY_CALLS}</em></b><small className="g-mono">{t('common.today')}</small></span>
         </div>
-      </section>
-
-      <SettledReel style={{ ['--i' as string]: 1 }} />
-      <LiveCalls onOpen={(id) => open(id)} style={{ ['--i' as string]: 1 }} />
-
-      {rs.length > 0 && <MostWrong rs={rs} onOpen={open} style={{ ['--i' as string]: 2 }} />}
-      <div className="g-sec" style={{ ['--i' as string]: 2 }}><h2>{t('g.wire.wall')}</h2><span className="g-mono">{w.asOf ? t('wire.asOfD', { d: w.asOf }) : t('g.wire.wallAside')}</span></div>
-      {!w.rumours && <p className="g-empty" style={{ ['--i' as string]: 2 }}>{w.loading ? t('common.loading') : t('wire.needNet')}</p>}
-      {w.rumours && !w.online && <p className="g-empty">{t('wire.needNet')}</p>}
-      {rs.length > 0 && <div className="pick pick--seg" style={{ ['--i' as string]: 3 }} role="group" aria-label={t('m.wire.group')}>
-        <span className="g-mono pick__k">{t('m.wire.group')}</span>
-        <span className="pick__seg">{(['star', 'window', 'league', 'team'] as const).map((g) => <button key={g} className="pick__c" aria-pressed={group === g} onClick={() => { sfx('ui.tap'); setGroup(g); }}>{g === 'window' ? t('fb.by') : t('m.wire.by.' + g)}</button>)}</span>
-      </div>}
-      {groups.map(([k, list]) => <details key={group + k} className="g-more g-more--desk wire3__grp" style={{ ['--i' as string]: 3 }}>
-        <summary>{group === 'star' ? (Number(k) ? '★'.repeat(Number(k)) + ' ' + t('m.wire.stars', { n: k }) : t('m.wire.unrated')) : group === 'window' ? (k === w.window.id ? t('fb.thisWin') + ' · ' : '') + winLabel(t, k) : group === 'league' ? t('m.wire.lg.' + k) === 'm.wire.lg.' + k ? k : t('m.wire.lg.' + k) : k} <span className="g-mono">· {list.length}</span></summary>
-        <div className="wall" style={{ padding: '0 10px 12px' }}>
-          {list.map((r, j) => <RumourCard key={r.id} r={r} k={j} onOpen={(yes) => open(r.id, yes)} />)}
-        </div>
-      </details>)}
-
-      <WireBoard style={{ ['--i' as string]: 4 }} />
+        {win && <span className="g-chip g-chip--gold" style={{ alignSelf: 'flex-start' }}><Icon n="clock" size={14} />{t('m.wire.' + win.k, { t: win.d ? t('m.wire.leftDh', { d: win.d, h: win.h }) : t('m.wire.leftHm', { h: win.h, m: win.m }) })}</span>}
+        {calls.length ? <div className="tm-list">{cp.rows.map((c) => <CallRow key={c.rid} c={c} onOpen={() => open(c.rid)} />)}</div>
+          : <div className="live__empty g-card g-card--desk"><span className="live__ic"><Icon n="target" /></span><span>{t('hub.market.mineNone')}</span></div>}
+        <Pager p={cp} />
+      </>}
     </div>
     {cur && <RumourSheet key={cur.id} r={cur} pre={pre} onClose={() => setSel(undefined)} />}
   </div>;
 }
 
-// ---------- the Wire leaderboard (season credibility, settled on the server)
-function WireBoard({ style }: { style?: CSSProperties }) {
-  const t = useT();
-  const s = useSave();
-  const w = useWire();
-  const [rows, setRows] = useState<{ nick: string; score: number; me: boolean }[] | null>(null);
-  const [me, setMe] = useState<{ rank: number; score: number } | null>(null);
-  useEffect(() => { v3<{ rows: { nick: string; score: number; me: boolean }[]; me?: { rank: number; score: number } }>('lb.top', { period: 'wire', dev: s.dev }).then((r) => { if (r.ok) { setRows(r.rows); setMe(r.me || null); } }); }, [s.dev]);
-  return <section className="wboard" style={style}>
-    <div className="g-sec"><h2>{t('m.wire.board')}</h2><span className="g-mono">{me ? t('m.wire.you', { r: me.rank }) : seasonLabel(t, w.mine?.season) || t('m.wire.boardAside')}</span></div>
-    {rows && rows.length ? <div className="ltable g-card">
-      <div className="ltable__h g-mono"><span>#</span><span>{t('league.reporter')}</span><span /><span>{t('wire.cred')}</span></div>
-      {rows.slice(0, 10).map((p, k) => <div key={k} className={'lrow' + (p.me ? ' is-me' : '') + (k === 0 ? ' is-top' : '')}>
-        <span className="lrow__n g-num">{k === 0 ? <Icon n="crown" size={18} /> : k + 1}</span>
-        <span className="lrow__who"><b>{p.me ? t('common.you') : p.nick}</b></span><span className="lrow__x" /><b className="lrow__p g-num">{num(Math.round(p.score))}</b>
-      </div>)}
-    </div> : <p className="g-empty">{rows ? t('m.wire.boardEmpty') : t('wire.needNet')}</p>}
-  </section>;
-}
-
-// ---------- live calls strip
-function LiveCalls({ onOpen, style }: { onOpen: (id: string) => void; style?: CSSProperties }) {
-  const t = useT();
-  const w = useWire();
-  const calls = w.mine?.calls || [];
-  const paper = calls.filter((c) => !c.done).reduce((a, c) => a + (c.paper || 0), 0);
-  return <section className="live" style={style}>
-    <div className="g-sec"><h2>{t('g.wire.live')}</h2>{calls.length > 0 && <span className={'live__pnl' + (paper < 0 ? ' is-neg' : '')}><small className="g-mono">{t('g.wire.pnl')}</small><b className="g-num">{num(round1(paper), true)}</b></span>}</div>
-    {calls.length ? <div className="live__row">{calls.map((c) => <CallChip key={c.rid} c={c} onOpen={() => onOpen(c.rid)} />)}</div>
-      : <div className="live__empty g-card g-card--desk"><span className="live__ic"><Icon n="target" /></span><span>{t('g.wire.empty')}</span></div>}
-  </section>;
-}
-function CallChip({ c, onOpen }: { c: WireCall; onOpen: () => void }) {
-  const t = useT();
-  const now = c.mNow ?? c.m;
-  const v = c.done ? c.pts || 0 : c.paper || 0;
-  return <button className={'cchip' + (c.done ? ' is-done' + (c.outcome !== 'void' ? (c.right ? ' is-right' : ' is-wrong') : '') : '')} onClick={() => { sfx('ui.tap'); onOpen(); }}>
-    <span className="cchip__top"><span className={'yn-tag ' + (c.yes ? 'is-yes' : 'is-no')}>{c.yes ? t('wire.yesS') : t('wire.noS')}</span><span className="g-mono">{t('str.' + STR[c.s - 1])}</span></span>
-    <b className="cchip__name">{c.player || '—'}</b>
-    {c.done ? <span className="cchip__res">{c.outcome === 'void' ? <span className="g-mono">{t('wire.voidS')}</span> : <span className={'g-stamp is-slam ' + (c.right ? 'g-stamp--done' : '')} style={{ ['--rot' as string]: '-4deg', fontSize: 14 }}>{c.right ? t('wire.right') : t('wire.wrong')}</span>}</span>
-      : <HeatLine a={c.m} b={now} yes={c.yes} />}
-    <span className="cchip__foot"><span className="g-mono">{c.done ? t('g.wire.settledPts') : pct(c.m) + '% → ' + pct(now) + '%'}</span><b className={'g-num ' + (v < 0 ? 'neg' : 'pos')}>{c.done ? <Roll v={v} /> : num(round1(v), true)}</b></span>
-  </button>;
-}
-function HeatLine({ a, b, yes }: { a: number; b: number; yes: boolean }) {
-  const good = yes ? b >= a : b <= a;
-  return <svg className="heatline3" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><line x1="2" x2="118" y1={24 - a * 22} y2={24 - a * 22} stroke="currentColor" strokeOpacity=".35" strokeDasharray="3 3" /><path d={`M2 ${24 - a * 22} L116 ${24 - b * 22}`} stroke={good ? 'var(--c-done)' : 'var(--red)'} strokeWidth="2.5" fill="none" strokeLinecap="round" /><circle cx="116" cy={24 - b * 22} r="3.5" fill={good ? 'var(--c-done)' : 'var(--red)'} /></svg>;
-}
-
-// ---------- "Most wrong right now": the three open rumours where the Market and the evidence disagree most.
-// Ranked by |market − evidence| (display only), skipping anything you've already called. Each card is one tap from
-// the file sheet with YES or NO pre-picked, so the first view of the Wire always has a call within reach.
-function MostWrong({ rs, onOpen, style }: { rs: Rumour[]; onOpen: (id: string, yes?: boolean) => void; style?: CSSProperties }) {
-  const t = useT();
-  const w = useWire();
-  const called = new Set((w.mine?.calls || []).map((c) => c.rid));
-  const list = rs
-    .filter((r) => { const b = w.board[r.id]; return (!b || b.state === 'open') && !b?.mine && !called.has(r.id); })
-    .map((r) => { const b = w.board[r.id]; const m = b ? b.market : WR.marketOf(r); const e = evidenceOf(r); return { r, m, yes: e > m, edge: Math.abs(m - e) }; })
-    .sort((a, b) => b.edge - a.edge).slice(0, 3);
-  if (!list.length) return null;
-  return <div className="wfeat" style={style}>
-    <div className="g-sec"><h2>{t('m.wire.featured')}</h2></div>
-    <p className="wfeat__sub">{t('m.wire.featuredSub')}</p>
-    <div className="wfeat__row">
-      {list.map(({ r, m, yes }, k) => {
-        const from = clubById(r.currentClubId);
-        const p = WORLD.players.find((x) => x.id === r.playerId);
-        const st = stageOf(r);
-        return <article key={r.id} className="wfeat__c g-card" style={{ ['--k' as string]: k }} aria-label={r.playerName}>
-          <div className="wfeat__top">
-            <Kit club={from} player={p} size={48} />
-            <div className="wfeat__who"><span className={'stage stage--' + st}>{t('g.wire.stage.' + st)}</span><b className="wfeat__hed">{rumourHed(t, r)}</b></div>
-          </div>
-          <div className="wfeat__mkt">
-            <span><b className="g-num">{pct(m)}<small>%</small></b><small className="g-mono">{t('g.wire.market')}</small></span>
-            <span className={'wfeat__lean ' + (yes ? 'is-yes' : 'is-no')}><span><Icon n={yes ? 'check' : 'x'} size={14} />{t('m.wire.lean.' + (yes ? 'yes' : 'no'))}</span><em>{t('m.wire.pays', { n: odds(yes, 2, m).win })}</em></span>
-          </div>
-          <div className="rum__file">
-            <button className="yn yn--yes" onClick={() => onOpen(r.id, true)}><Icon n="check" /><span><b>{t('wire.yesS')}</b><small>{t('g.wire.yesSub')}</small></span></button>
-            <button className="yn yn--no" onClick={() => onOpen(r.id, false)}><Icon n="x" /><span><b>{t('wire.noS')}</b><small>{t('g.wire.noSub')}</small></span></button>
-          </div>
-        </article>;
-      })}
-    </div>
-  </div>;
-}
-
-// ---------- a rumour on the wall
-function RumourCard({ r, k, onOpen }: { r: Rumour; k: number; onOpen: (yes?: boolean) => void }) {
+// ---------- one rumour, one row: kit, name, the headline, stars · heat · stage, the Market price
+function RumRow({ r, onOpen }: { r: Rumour; onOpen: () => void }) {
   const t = useT();
   const w = useWire();
   const b = w.board[r.id];
@@ -233,31 +156,34 @@ function RumourCard({ r, k, onOpen }: { r: Rumour; k: number; onOpen: (yes?: boo
   const from = clubById(r.currentClubId);
   const p = WORLD.players.find((x) => x.id === r.playerId);
   const st = stageOf(r);
-  const g = gradeOf(bestTier(r));
-  const open = !b || b.state === 'open';
-  const pv = (mine?.done ? mine.pts : mine?.paper) || 0;
-  return <article className={'rum g-card' + (mine ? ' is-called' : '')} style={{ ['--tilt' as string]: [-0.6, 0.5, -0.3, 0.7][k % 4] + 'deg' }}>
-    <span className="rum__pin" aria-hidden="true" />
-    <button className="rum__head" onClick={() => onOpen()}>
-      <span className="rum__kit"><Kit club={from} player={p} size={58} /></span>
-      <span className="rum__main">
-        <span className="rum__chips"><span className={'stage stage--' + st}>{t('g.wire.stage.' + st)}</span><span className={'grade3 grade3--' + g.toLowerCase()}>{g}</span><span className="g-mono rum__win">{winLabel(t, r.window, true)}</span></span>
-        <span className="rum__hed">{rumourHed(t, r)}</span>
-        <span className="rum__route"><Crest club={from} size={20} /><Icon n={t.rtl ? 'back' : 'arrow'} size={14} />{r.linked.slice(0, 3).map((l, i) => <Crest key={i} club={l.clubId ? clubById(l.clubId) : undefined} size={20} />)}{r.linked.length > 3 && <span className="g-mono">+{r.linked.length - 3}</span>}</span>
-      </span>
-      <span className="rum__mkt"><b className="g-num">{pct(m)}<small>%</small></b><span className="g-mono">{t('g.wire.market')}</span></span>
-    </button>
-    <HeatMeter v={r.heat} label={t('g.wire.heat')} />
-    {mine ? <button className="rum__mine" onClick={() => onOpen()}>
-      <span className={'g-stamp ' + (mine.done ? (mine.right ? 'g-stamp--done' : '') : 'g-stamp--wire')} style={{ ['--rot' as string]: '-5deg' }}>{t('g.wire.you', { s: mine.yes ? t('wire.yesS') : t('wire.noS') })}</span>
-      <span className="rum__pnl"><small className="g-mono">{mine.done ? t('g.wire.settledPts') : t('g.wire.pnl')}</small><b className={'g-num ' + (pv < 0 ? 'neg' : 'pos')}>{num(round1(pv), true)}</b></span>
-    </button>
-      : open ? <div className="rum__file">
-        <button className="yn yn--yes" onClick={() => onOpen(true)}><Icon n="check" /><span><b>{t('wire.yesS')}</b><small>{t('g.wire.yesSub')}</small></span></button>
-        <button className="yn yn--no" onClick={() => onOpen(false)}><Icon n="x" /><span><b>{t('wire.noS')}</b><small>{t('g.wire.noSub')}</small></span></button>
-      </div>
-        : <p className="rum__closed g-mono"><Icon n="lock" size={14} />{t('g.wire.closed')}</p>}
-  </article>;
+  const star = starOf(r);
+  return <button className={'tm-row' + (mine ? ' is-called' : '')} onClick={onOpen} aria-label={r.playerName}>
+    <Kit club={from} player={p} size={40} />
+    <span className="tm-row__b">
+      <span className="tm-row__n" dir="auto">{r.playerName}</span>
+      <span className="tm-row__h" dir="auto">{rumourHed(t, r)}</span>
+      <span className="tm-row__m">{star ? <span>{'★'.repeat(star)}</span> : null}<span><Icon n="flame" size={11} />{r.heat}</span><span className={'stage stage--' + st}>{t('g.wire.stage.' + st)}</span>{mine && <span className={'yn-tag ' + (mine.yes ? 'is-yes' : 'is-no')}>{mine.yes ? t('wire.yesS') : t('wire.noS')}</span>}</span>
+    </span>
+    <span className="tm-row__p"><b className="g-num">{pct(m)}<small>%</small></b><small>{t('g.wire.market')}</small></span>
+  </button>;
+}
+function HeatLine({ a, b, yes }: { a: number; b: number; yes: boolean }) {
+  const good = yes ? b >= a : b <= a;
+  return <svg className="heatline3" viewBox="0 0 120 26" preserveAspectRatio="none" aria-hidden="true"><line x1="2" x2="118" y1={24 - a * 22} y2={24 - a * 22} stroke="currentColor" strokeOpacity=".35" strokeDasharray="3 3" /><path d={`M2 ${24 - a * 22} L116 ${24 - b * 22}`} stroke={good ? 'var(--c-done)' : 'var(--red)'} strokeWidth="2.5" fill="none" strokeLinecap="round" /><circle cx="116" cy={24 - b * 22} r="3.5" fill={good ? 'var(--c-done)' : 'var(--red)'} /></svg>;
+}
+// ---------- one of your calls
+function CallRow({ c, onOpen }: { c: WireCall; onOpen: () => void }) {
+  const t = useT();
+  const now = c.mNow ?? c.m;
+  const v = c.done ? c.pts || 0 : c.paper || 0;
+  return <button className="tm-row" onClick={() => { sfx('ui.tap'); onOpen(); }}>
+    <span className={'yn-tag ' + (c.yes ? 'is-yes' : 'is-no')}>{c.yes ? t('wire.yesS') : t('wire.noS')}</span>
+    <span className="tm-row__b">
+      <span className="tm-row__n" dir="auto">{c.player || '—'}</span>
+      <span className="tm-row__m"><span>{t('str.' + STR[c.s - 1])}</span><span>{c.done ? (c.outcome === 'void' ? t('wire.voidS') : c.right ? t('wire.right') : t('wire.wrong')) : pct(c.m) + '% → ' + pct(now) + '%'}</span></span>
+    </span>
+    <span className="tm-row__p"><b className={'g-num ' + (v < 0 ? 'neg' : 'pos')}>{num(round1(v), true)}</b><small>{c.done ? t('g.wire.settledPts') : t('g.wire.pnl')}</small></span>
+  </button>;
 }
 
 // ---------- the file: a bottom sheet

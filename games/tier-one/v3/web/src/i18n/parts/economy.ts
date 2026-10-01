@@ -27,11 +27,11 @@ export default {
       preview: { by: 'By {n}', followers: 'Followers', rep: 'Rep', hot: 'Hot hand', card: 'Scoop card', hed: 'Done deal', sub: 'Filed before the rivals, right on Deadline Day.', stamp: 'Exclusive', pass: 'Press', mast: 'Newsroom', film: 'Moment film', poster: 'Done deal', ring: 'Incoming call', caller: 'The agent', desk: 'The desk', post: 'Confirmed · Done', filed: 'Filed', table: 'Weekly table' },
       items: {
         std: { byline: 'Newsprint card', frame: 'Standard frame', ink: 'House red', theme: 'The newsroom desk', ringtone: 'Desk phone', flair: 'No flair', masthead: 'Plain masthead', presspass: 'Vermilion pass', poster: 'Black frame', sharecard: 'The classic card', paper: 'Tier One', gold: 'No Gold' },
-        by: { redtop: 'Red-top card', broadsheet: 'Broadsheet card', wire: 'Wire card', night: 'Late-edition card', gilt: 'Gilt card' },
+        by: { redtop: 'Red-top card', broadsheet: 'Broadsheet card', wire: 'Market card', night: 'Late-edition card', gilt: 'Gilt card' },
         mh: { gothic: 'Gothic masthead', redtop: 'Red-top masthead', wire: 'Ticker masthead', gilt: 'Gilt masthead' },
         pp: { pitch: 'Pitch-green pass', midnight: 'Midnight pass', chrome: 'Chrome pass', gilt: 'Gilt pass' },
         po: { ticket: 'Ticket-stub frame', tape: 'Crime-scene frame', neon: 'Neon frame', gilt: 'Gilt frame' },
-        sc: { redtop: 'Red-top card', broadsheet: 'Broadsheet card', night: 'Late-edition card', wire: 'Wire card', gilt: 'Gilt card' },
+        sc: { redtop: 'Red-top card', broadsheet: 'Broadsheet card', night: 'Late-edition card', wire: 'Market card', gilt: 'Gilt card' },
         paper: { name: 'Name your paper', nameD: 'One purchase. Your name on the masthead, share cards and the newsroom table. Rename whenever you like.' },
         gold: 'Gold · {s} {y}', goldD: 'Eight Gold-lane looks and +10% coins this season.',
         season: {
@@ -111,11 +111,11 @@ export default {
       preview: { by: 'Por {n}', followers: 'Seguidores', rep: 'Rep', hot: 'Racha', card: 'Tarjeta de exclusiva', hed: 'Done deal', sub: 'Publicada antes que los rivales, acertada el día de cierre.', stamp: 'Exclusiva', pass: 'Prensa', mast: 'Redacción', film: 'Película del momento', poster: 'Done deal', ring: 'Llamada entrante', caller: 'El agente', desk: 'La mesa', post: 'Confirmado · Hecho', filed: 'Publicado', table: 'Tabla semanal' },
       items: {
         std: { byline: 'Tarjeta de papel prensa', frame: 'Marco estándar', ink: 'Rojo de la casa', theme: 'La mesa de redacción', ringtone: 'Teléfono de mesa', flair: 'Sin adorno', masthead: 'Cabecera sencilla', presspass: 'Carné bermellón', poster: 'Marco negro', sharecard: 'La tarjeta clásica', paper: 'Tier One', gold: 'Sin Oro' },
-        by: { redtop: 'Tarjeta sensacionalista', broadsheet: 'Tarjeta sábana', wire: 'Tarjeta Wire', night: 'Tarjeta de última edición', gilt: 'Tarjeta dorada' },
+        by: { redtop: 'Tarjeta sensacionalista', broadsheet: 'Tarjeta sábana', wire: 'Tarjeta Mercado', night: 'Tarjeta de última edición', gilt: 'Tarjeta dorada' },
         mh: { gothic: 'Cabecera gótica', redtop: 'Cabecera sensacionalista', wire: 'Cabecera teletipo', gilt: 'Cabecera dorada' },
         pp: { pitch: 'Carné verde césped', midnight: 'Carné medianoche', chrome: 'Carné cromado', gilt: 'Carné dorado' },
         po: { ticket: 'Marco de entrada', tape: 'Marco policial', neon: 'Marco neón', gilt: 'Marco dorado' },
-        sc: { redtop: 'Tarjeta sensacionalista', broadsheet: 'Tarjeta sábana', night: 'Tarjeta de última edición', wire: 'Tarjeta Wire', gilt: 'Tarjeta dorada' },
+        sc: { redtop: 'Tarjeta sensacionalista', broadsheet: 'Tarjeta sábana', night: 'Tarjeta de última edición', wire: 'Tarjeta Mercado', gilt: 'Tarjeta dorada' },
         paper: { name: 'Ponle nombre a tu periódico', nameD: 'Una compra. Tu nombre en la cabecera, las tarjetas y la tabla de la redacción. Cámbialo cuando quieras.' },
         gold: 'Oro · {s} {y}', goldD: 'Ocho looks del carril Oro y +10% de monedas esta temporada.',
         season: {

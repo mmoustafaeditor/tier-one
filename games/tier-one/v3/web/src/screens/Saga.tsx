@@ -18,6 +18,7 @@ import { stampBeat } from '../film/surfaces/manifest';
 import type { View } from '../lib/driver';
 import { vinceOf } from '../lib/career';
 import { srcNamed } from '../lib/storyMode';
+import { Tip } from '../ui/fit';
 import { catchphraseOf } from '../lib/catchphrase';
 
 // Your head-to-head ledger against one rival (GOTY.md §1.3). Filled by the connect lane's rivalRecord(id).
@@ -43,7 +44,11 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
   const [clips, setClips] = useState(true);
   const [utOpen, setUtOpen] = useState(false);
   const [going, setGoing] = useState(false);
+  // 3.6 one-screen file: Sources · News · Your call, one pane at a time. Making or changing a call opens Your call.
+  const [pane, setPane] = useState<'ring' | 'clips' | 'call'>('ring');
   useEffect(() => { setO(null); setS(1); setUtOpen(false); setGoing(false); }, [i, call ? call.o + ':' + call.s : '']);
+  useEffect(() => { setPane('ring'); }, [i]);
+  useEffect(() => { if (going || utOpen) setPane('call'); }, [going, utOpen]);
   // Nothing is pre-picked: the call is yours.
   const selO = o;
   const pv = selO != null && (cs === 'ok' || canUt) && !(call && call.o === selO) ? E.preview(g, i, selO, s) : null;
@@ -78,6 +83,23 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     : s !== 2 ? <span className="stake__no">{t('calls.stake.loud')}</span>
     : <span className="stake__no">{t('calls.stake.two')}</span>;
 
+  const rivalsRace = <>
+    <section className="rivals race">
+      <div className="g-sec"><h2>{t('calls.race.h')}</h2></div>
+      <div className="rivals__row">
+        {g.R.RIVALS.map((r) => {
+          const mine = livePosts.filter((p) => p.id === r.id), rec = rivalRecord?.(r.id), name = t('rival.' + r.id);
+          return <div key={r.id + (mine.length ? ':' + mine[0].claim : '')} className={'rv' + (mine.length ? ' is-posted rv--' + OUTS[mine[0].claim] : '')}>
+            <span className={'rv-av rv-av--' + r.id}>{RIVAL_IC[r.id]}</span>
+            <span className="rv__n">{name}</span>
+            {mine.length ? <span className={'g-chip g-chip--' + OUTS[mine[0].claim]}>{outWord(t.lang, mine[0].claim)} · {t('g.saga.dayShort', { n: mine[0].day })}</span> : <span className="rv__when g-mono">{t('g.saga.rivalWhen', { a: r.days[0], b: r.days[1] })}</span>}
+            {rec && <span className="rv__rec g-mono" aria-label={t('calls.race.recAria', { w: rec.w, l: rec.l, d: rec.d, r: name })}>{t('calls.race.rec', { w: rec.w, l: rec.l, d: rec.d })}</span>}
+          </div>;
+        })}
+      </div>
+    </section>
+  </>;
+
   return <div className="file2">
     <div className={'pcard g-card' + (justFiled ? ' is-filed' : '')}>
       {call && <Beat stem={stampBeat(OUTS[call.o])} trigger={justFiled || null} className="fl-beat--stamp" />}
@@ -95,6 +117,12 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     {view.mode === 'career' && vinceOf(g.R)?.i === i && <div className="vince-banner"><Icon n="eye" size={18} /><span><b>{t('g.story.vince.chip')}</b> {t('g.story.vince.banner')}</span></div>}
     {g.tips && i in g.tips && <div className="g-chip g-chip--gold tipchip">{t(g.tips[i] ? 'career.tipFake' : 'career.tipReal', { p: c.player.s })}</div>}
 
+    <Tip id="player" />
+    <div className="sg-tabs" role="tablist">
+      {(['ring', 'clips', 'call'] as const).map((k) => <button key={k} role="tab" aria-selected={pane === k} onClick={() => { sfx('ui.tap'); setPane(k); }}>{k === 'clips' ? t('hub.saga.clips', { n: curReads.length + livePosts.length }) : t('hub.saga.' + k)}</button>)}
+    </div>
+
+    {pane === 'ring' && <>
     <section className="know g-card">
       <div className="know__h"><h2>{t('g.saga.know')}</h2><span className="g-mono">{t('g.saga.reports', { n: curReads.length + livePosts.length })}</span></div>
       {ln.none && <p className="know__none">{t('g.saga.knowNone')}</p>}
@@ -132,7 +160,10 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
       </div>
       {favours}
     </section>
+    </>}
 
+    {pane === 'clips' && <>
+    {!(curReads.length > 0 || livePosts.length > 0) && <p className="know__none">{t('g.saga.knowNone')}</p>}
     {(curReads.length > 0 || livePosts.length > 0) && <section className="clips">
       <button className="clips__h" onClick={() => setClips(!clips)} aria-expanded={clips}><span>{t('g.saga.clippings', { n: curReads.length + livePosts.length })}</span><Icon n={clips ? 'x' : 'news'} size={18} /></button>
       {clips && <ol className="clips__l">
@@ -152,6 +183,18 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
       </ol>}
     </section>}
 
+    {rivalsRace}
+    </>}
+
+    {pane !== 'call' && cs === 'ok' && !call && !going && <div className="callgate">
+      <p className="callgate__q">{t('d2.call.lead', { p: c.player.s })}</p>
+      <div className="callgate__b">
+        <GBtn kind="paper" onClick={() => onLater?.()}><Icon n="clock" />{t('d2.call.later')}</GBtn>
+        <GBtn onClick={() => setGoing(true)} sound="page.turn"><Icon n="pen" />{t('d2.call.make')}</GBtn>
+      </div>
+    </div>}
+
+    {pane === 'call' && <>
     <section className={'callbox g-card' + (dd ? ' is-dd' : '')} id={'file-' + i}>
       <div className="callbox__h"><h2>{call ? (utOpen ? t('g.saga.changeCall') : t('g.saga.yourCall')) : t('g.saga.makeCall')}</h2>{post7 != null && <span className="g-chip g-chip--red">{t('dd.posts', { n: post7 })}</span>}</div>
       {call && <p className="callbox__filed">{t('g.saga.filedLine', { s: strWord(t.lang, call.s), o: outWord(t.lang, call.o), d: call.day })}{canUt ? ' ' + t('saga.uturnNote', { p: g.R.UT_PEN[call.s] }) : call.ut ? ' ' + t('saga.uturnUsed') : ''}</p>}
@@ -187,23 +230,10 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
       {cs === 'nosource' && !call && <p className="callbox__none"><Icon n="phone" size={16} /> {t('g.saga.noStory')}</p>}
     </section>
 
-    <section className="rivals race">
-      <div className="g-sec"><h2>{t('calls.race.h')}</h2></div>
-      <div className="rivals__row">
-        {g.R.RIVALS.map((r) => {
-          const mine = livePosts.filter((p) => p.id === r.id), rec = rivalRecord?.(r.id), name = t('rival.' + r.id);
-          return <div key={r.id + (mine.length ? ':' + mine[0].claim : '')} className={'rv' + (mine.length ? ' is-posted rv--' + OUTS[mine[0].claim] : '')}>
-            <span className={'rv-av rv-av--' + r.id}>{RIVAL_IC[r.id]}</span>
-            <span className="rv__n">{name}</span>
-            {mine.length ? <span className={'g-chip g-chip--' + OUTS[mine[0].claim]}>{outWord(t.lang, mine[0].claim)} · {t('g.saga.dayShort', { n: mine[0].day })}</span> : <span className="rv__when g-mono">{t('g.saga.rivalWhen', { a: r.days[0], b: r.days[1] })}</span>}
-            {rec && <span className="rv__rec g-mono" aria-label={t('calls.race.recAria', { w: rec.w, l: rec.l, d: rec.d, r: name })}>{t('calls.race.rec', { w: rec.w, l: rec.l, d: rec.d })}</span>}
-          </div>;
-        })}
-      </div>
-    </section>
 
     <button className="howbtn" onClick={() => setHow(!how)} aria-expanded={how}><Icon n="help" size={16} />{t('g.saga.how')}</button>
     {how && <HowScored g={g} i={i} view={view} />}
+    </>}
   </div>;
 }
 

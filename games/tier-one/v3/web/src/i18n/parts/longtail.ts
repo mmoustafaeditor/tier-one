@@ -5,8 +5,8 @@ export default {
   en: {
     cp: {
       house: {
-        default: 'Book it.', pen: 'Pen on paper.', dusted: 'Done. Dusted.', announce: 'Announce him.', sealed: 'Signed, sealed, his.',
-        medical: 'Medical booked.', bags: 'Bags are packed.', front: 'Clear the front page.', shirt: 'Shirt’s printed.', inkdry: 'The ink is dry.', wheels: 'Wheels up.',
+        default: 'It’s happening.', pen: 'Pen down.', dusted: 'Bags packed.', announce: 'Live now.', sealed: 'All agreed. All done.',
+        medical: 'Medical done.', bags: 'Bags are packed.', front: 'Clear the front page.', shirt: 'Shirt’s ready.', inkdry: 'The ink is dry.', wheels: 'Wheels up.',
       },
       sig: { shades: 'Sunglasses on. Medical.', pens: 'Pens are out.', boots: 'Boots in the car.', photos: 'Photos at the training ground.', shut: 'Window shut. Job done.', kettle: 'Put the kettle on.' },
       season: { rumour: 'Smoke, meet fire.', winter: 'January sales are open.', spring: 'The pen is warming up.', summer: 'Pre-season photos first thing.' },
@@ -38,10 +38,10 @@ export default {
           ddlive: 'Play Deadline Day Live', event: 'Win the event', anniversary: 'Play on the anniversary', pass: 'Season track', gold: 'Gold lane',
         },
         never: 'Earned only: never bought, never gifted.',
-        sets: { lines: 'Catchphrases', story: 'The Story', rank: 'The ranks', streak: 'Streaks', rivalry: 'Rivalry trophies', referral: 'Bring a friend', ddlive: 'Deadline Day Live', redtop: 'Red-top', broadsheet: 'Broadsheet', wire: 'Wire', night: 'Late edition', gilt: 'Gilt', event: 'Weekly events', other: 'The rest' },
+        sets: { lines: 'Catchphrases', story: 'The Story', rank: 'The ranks', streak: 'Streaks', rivalry: 'Rivalry trophies', referral: 'Bring a friend', ddlive: 'Deadline Day Live', redtop: 'Red-top', broadsheet: 'Broadsheet', wire: 'Transfer Market', night: 'Late edition', gilt: 'Gilt', event: 'Weekly events', other: 'The rest' },
       },
       items: {
-        std: { headline: 'Wood type', lamp: 'Desk lamp', ringpack: 'One ring for all', feedskin: 'The wire', frontpage: 'Two-column front', catchphrase: 'Book it.' },
+        std: { headline: 'Wood type', lamp: 'Desk lamp', ringpack: 'One ring for all', feedskin: 'The wire', frontpage: 'Two-column front', catchphrase: 'It’s happening.' },
         hd: { serif: 'Broadsheet serif', slab: 'Red-top slab', mono: 'Wire mono', stencil: 'Stencil' },
         lp: { amber: 'Amber lamp', dawn: 'Dawn lamp', neon: 'Neon lamp', gilt: 'Gilt lamp' },
         rp: { newsroom: 'Newsroom rings', newsroomD: 'Every source has its own ring. Know who it is before the card lands.', stadium: 'Stadium rings', stadiumD: 'Whistles, sirens and a heartbeat: one per source.' },
@@ -66,8 +66,8 @@ export default {
   ar: {
     cp: {
       house: {
-        default: 'احجزها.', pen: 'القلم على الورق.', dusted: 'خلصت. اتقفلت.', announce: 'أعلنوه.', sealed: 'اتمضت، اتختمت، بتاعته.',
-        medical: 'الكشف الطبي اتحجز.', bags: 'الشنط جاهزة.', front: 'فضّوا الصفحة الأولى.', shirt: 'القميص اتطبع.', inkdry: 'الحبر نشف.', wheels: 'الطيارة طلعت.',
+        default: 'خلاص، هتحصل.', pen: 'القلم نزل.', dusted: 'الشنط جاهزة.', announce: 'على الهوا دلوقتي.', sealed: 'كله اتفق. كله خلص.',
+        medical: 'الكشف الطبي خلص.', bags: 'الشنط جاهزة.', front: 'فضّوا الصفحة الأولى.', shirt: 'القميص جاهز.', inkdry: 'الحبر نشف.', wheels: 'الطيارة طلعت.',
       },
       sig: { shades: 'النضارة الشمس. كشف طبي.', pens: 'الأقلام طلعت.', boots: 'الجزمة في العربية.', photos: 'صور في ملعب التدريب.', shut: 'الميركاتو قفل. الشغلانة خلصت.', kettle: 'حطّوا الشاي.' },
       season: { rumour: 'الدخان وصل للنار.', winter: 'أوكازيون يناير فتح.', spring: 'القلم بيسخّن.', summer: 'صور التحضيرات من الصبح.' },
@@ -99,15 +99,15 @@ export default {
           ddlive: 'العب يوم الديدلاين لايف', event: 'اكسب الحدث', anniversary: 'العب في يوم الذكرى', pass: 'تراك الموسم', gold: 'مسار الجولد',
         },
         never: 'بتتكسب بس: لا بتتشتري ولا بتتهادى.',
-        sets: { lines: 'الجمل', story: 'القصة', rank: 'الرتب', streak: 'السلاسل', rivalry: 'كاسات المنافسة', referral: 'هات صاحب', ddlive: 'يوم الديدلاين لايف', redtop: 'التابلويد', broadsheet: 'البرودشيت', wire: 'الوكالة', night: 'الطبعة المتأخرة', gilt: 'المدهّب', event: 'أحداث الأسبوع', other: 'الباقي' },
+        sets: { lines: 'الجمل', story: 'القصة', rank: 'الرتب', streak: 'السلاسل', rivalry: 'كاسات المنافسة', referral: 'هات صاحب', ddlive: 'يوم الديدلاين لايف', redtop: 'التابلويد', broadsheet: 'البرودشيت', wire: 'سوق الانتقالات', night: 'الطبعة المتأخرة', gilt: 'المدهّب', event: 'أحداث الأسبوع', other: 'الباقي' },
       },
       items: {
-        std: { headline: 'خط خشب', lamp: 'لمبة المكتب', ringpack: 'رنّة واحدة للكل', feedskin: 'الوكالة', frontpage: 'صفحة بعمودين', catchphrase: 'احجزها.' },
-        hd: { serif: 'سيريف البرودشيت', slab: 'سلاب التابلويد', mono: 'مونو الوكالة', stencil: 'ستنسل' },
+        std: { headline: 'خط خشب', lamp: 'لمبة المكتب', ringpack: 'رنّة واحدة للكل', feedskin: 'سوق الانتقالات', frontpage: 'صفحة بعمودين', catchphrase: 'خلاص، هتحصل.' },
+        hd: { serif: 'سيريف البرودشيت', slab: 'سلاب التابلويد', mono: 'مونو سوق الانتقالات', stencil: 'ستنسل' },
         lp: { amber: 'لمبة كهرمان', dawn: 'لمبة الفجر', neon: 'لمبة نيون', gilt: 'لمبة مدهّبة' },
         rp: { newsroom: 'رنّات غرفة الأخبار', newsroomD: 'كل مصدر له رنّته. تعرف مين قبل ما الكارت ينزل.', stadium: 'رنّات الاستاد', stadiumD: 'صفّارات وسرينة ونبض قلب: واحدة لكل مصدر.' },
         fs: { memo: 'فيد المذكرة', ticker: 'فيد الشريط', redtop: 'فيد التابلويد', night: 'فيد الطبعة المتأخرة' },
-        fp: { broadsheet: 'صفحة برودشيت', redtop: 'صفحة تابلويد', wire: 'صفحة الوكالة', gilt: 'صفحة مدهّبة' },
+        fp: { broadsheet: 'صفحة برودشيت', redtop: 'صفحة تابلويد', wire: 'صفحة سوق الانتقالات', gilt: 'صفحة مدهّبة' },
         st: { ch1: 'علامة الفصل الأول', ch2: 'حبر الفصل التاني', ch3: 'برواز الفصل التالت', ch4: 'بوستر الفصل الرابع', ch5: 'كارت الكرونيكل' },
         rk: { chief: 'باس الشيف', tierone: 'كارت تير وان' },
         sk: { 30: 'حبر التلاتين يوم', 100: 'باس المية يوم' },
@@ -127,8 +127,8 @@ export default {
   es: {
     cp: {
       house: {
-        default: 'Resérvalo.', pen: 'Boli y papel.', dusted: 'Hecho. Cerrado.', announce: 'Anunciadlo.', sealed: 'Firmado, sellado, suyo.',
-        medical: 'Reconocimiento reservado.', bags: 'Maletas hechas.', front: 'Liberad la portada.', shirt: 'La camiseta ya está impresa.', inkdry: 'La tinta ya está seca.', wheels: 'Avión en el aire.',
+        default: 'Se viene.', pen: 'Firma puesta.', dusted: 'Maletas hechas.', announce: 'En directo.', sealed: 'Todo pactado. Todo hecho.',
+        medical: 'Reconocimiento hecho.', bags: 'Maletas hechas.', front: 'Liberad la portada.', shirt: 'La camiseta, lista.', inkdry: 'La tinta ya está seca.', wheels: 'Avión en el aire.',
       },
       sig: { shades: 'Gafas de sol. Reconocimiento.', pens: 'Sacad los bolis.', boots: 'Las botas, en el coche.', photos: 'Fotos en la ciudad deportiva.', shut: 'Mercado cerrado. Trabajo hecho.', kettle: 'Poned la cafetera.' },
       season: { rumour: 'Humo, te presento al fuego.', winter: 'Rebajas de enero abiertas.', spring: 'El boli se calienta.', summer: 'Fotos de pretemporada a primera hora.' },
@@ -163,7 +163,7 @@ export default {
         sets: { lines: 'Frases', story: 'La historia', rank: 'Los rangos', streak: 'Rachas', rivalry: 'Trofeos de rivalidad', referral: 'Trae a un amigo', ddlive: 'Deadline Day en directo', redtop: 'Sensacionalista', broadsheet: 'Sábana', wire: 'Agencia', night: 'Última edición', gilt: 'Dorado', event: 'Eventos semanales', other: 'El resto' },
       },
       items: {
-        std: { headline: 'Tipos de madera', lamp: 'Lámpara de mesa', ringpack: 'Un tono para todos', feedskin: 'La agencia', frontpage: 'Portada a dos columnas', catchphrase: 'Resérvalo.' },
+        std: { headline: 'Tipos de madera', lamp: 'Lámpara de mesa', ringpack: 'Un tono para todos', feedskin: 'La agencia', frontpage: 'Portada a dos columnas', catchphrase: 'Se viene.' },
         hd: { serif: 'Serifa de sábana', slab: 'Slab sensacionalista', mono: 'Mono de agencia', stencil: 'Plantilla' },
         lp: { amber: 'Lámpara ámbar', dawn: 'Lámpara del alba', neon: 'Lámpara de neón', gilt: 'Lámpara dorada' },
         rp: { newsroom: 'Tonos de redacción', newsroomD: 'Cada fuente con su tono. Sabes quién es antes de ver la tarjeta.', stadium: 'Tonos de estadio', stadiumD: 'Silbatos, sirenas y un latido: uno por fuente.' },

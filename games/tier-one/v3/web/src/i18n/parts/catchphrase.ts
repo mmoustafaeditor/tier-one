@@ -1,5 +1,5 @@
 // Catchphrases (GOTY.md §12): your line replaces "DONE DEAL". A Confirmed call that lands fires it (stamp, share
-// card, film title). cp.house.<id>: the ten house originals (default "Book it."); cp.unlock.<id>: how each one is
+// card, film title). cp.house.<id>: the ten house originals (default "It’s happening."); cp.unlock.<id>: how each one is
 // earned, matching the catalog's earn rules in lib/catalog.ts (rank, streak, chapter); cp.react.*: fans and rivals reacting, templated on {phrase} (+ {p} player, {name} you).
 // Nothing here is anyone else's catchphrase: every line is an original (docs/LEGAL_NAMES.md).
 // Merge note: the longtail lane may add this file with the same keys; keep theirs and add these lines.
@@ -8,8 +8,8 @@ export default {
     cp: {
       ui: { title: 'Your catchphrase', pick: 'Use this one', using: 'In use', locked: 'Locked', fresh: 'New catchphrase: {phrase}', card: 'Catchphrase card' },
       house: {
-        default: 'Book it.', bookit: 'Book it.', pen: 'Pen on paper.', dusted: 'Done. Dusted.', announce: 'Announce him.', medical: 'Medical booked.',
-        ink: 'Ink’s dry.', shirt: 'Shirt’s printed.', gates: 'Through the gates.', sealed: 'Signed. Sealed.', lockin: 'Lock it in.',
+        default: 'It’s happening.', bookit: 'It’s happening.', pen: 'Pen down.', dusted: 'Bags packed.', announce: 'Live now.', medical: 'Medical done.',
+        ink: 'Sunglasses on.', shirt: 'Shirt’s ready.', gates: 'Plane’s landed.', sealed: 'All agreed. All done.', lockin: 'Clock’s stopped.',
       },
       unlock: {
         default: 'Yours from day one.', bookit: 'Yours from day one.', pen: 'Reach Stringer rank.', dusted: 'Reach Correspondent rank.', announce: 'Reach Chief rank.', sealed: 'Reach Tier One rank.',
@@ -33,8 +33,8 @@ export default {
     cp: {
       ui: { title: 'جملتك المشهورة', pick: 'استخدم دي', using: 'مستخدمة', locked: 'مقفولة', fresh: 'جملة جديدة: {phrase}', card: 'كارت الجملة' },
       house: {
-        default: 'اتقفلت.', bookit: 'اتقفلت.', pen: 'القلم على الورق.', dusted: 'خلصت. وانتهت.', announce: 'أعلنوا عنه.', medical: 'الكشف اتحجز.',
-        ink: 'الحبر نشف.', shirt: 'القميص اتطبع.', gates: 'عدّى البوابة.', sealed: 'مضى. واتختم.', lockin: 'ثبّتها.',
+        default: 'خلاص، هتحصل.', bookit: 'خلاص، هتحصل.', pen: 'القلم نزل.', dusted: 'الشنط جاهزة.', announce: 'على الهوا دلوقتي.', medical: 'الكشف الطبي خلص.',
+        ink: 'النضارة اتلبست.', shirt: 'القميص جاهز.', gates: 'الطيارة نزلت.', sealed: 'كله اتفق. كله خلص.', lockin: 'الساعة وقفت.',
       },
       unlock: {
         default: 'بتاعتك من أول يوم.', bookit: 'بتاعتك من أول يوم.', pen: 'وصّل لرتبة مراسل حر.', dusted: 'وصّل لرتبة مراسل.', announce: 'وصّل لرتبة كبير المراسلين.', sealed: 'وصّل لرتبة تير وان.',
@@ -58,8 +58,8 @@ export default {
     cp: {
       ui: { title: 'Tu frase', pick: 'Usar esta', using: 'En uso', locked: 'Bloqueada', fresh: 'Frase nueva: {phrase}', card: 'Tarjeta de frase' },
       house: {
-        default: 'Cerrado.', bookit: 'Cerrado.', pen: 'Boli y firma.', dusted: 'Hecho. Atado.', announce: 'Anunciadlo.', medical: 'Reconocimiento reservado.',
-        ink: 'La tinta está seca.', shirt: 'Camiseta impresa.', gates: 'Ya está dentro.', sealed: 'Firmado. Sellado.', lockin: 'Atado y bien atado.',
+        default: 'Se viene.', bookit: 'Se viene.', pen: 'Firma puesta.', dusted: 'Maletas hechas.', announce: 'En directo.', medical: 'Reconocimiento hecho.',
+        ink: 'Gafas de sol puestas.', shirt: 'La camiseta, lista.', gates: 'El avión ha aterrizado.', sealed: 'Todo pactado. Todo hecho.', lockin: 'Reloj parado.',
       },
       unlock: {
         default: 'Tuya desde el primer día.', bookit: 'Tuya desde el primer día.', pen: 'Llega al rango Colaborador.', dusted: 'Llega al rango Corresponsal.', announce: 'Llega al rango Jefe.', sealed: 'Llega al rango Tier One.',

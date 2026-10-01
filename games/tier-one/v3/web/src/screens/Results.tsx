@@ -27,14 +27,14 @@ import type { Chrome } from '../App';
 import '../styles/results.css';
 import { flushDeferredScenes, playScene, afterScenes, firstToday } from '../lib/scenes';
 import { windowKey, bylineOf, repTier, REP_TIERS, type WindowSummary } from '../lib/byline';
-import { ChallengeButton as SocialChallengeButton } from '../ui/social';
 import { catchphraseOf } from '../lib/catchphrase';
 import { ShareToX } from '../ui/sharex';
 import { shareStyle } from '../lib/wallet';
 
 /** SLOT (social lane, ui/social.tsx): `<ChallengeButton/>`. Assign the real component here; it renders beside Share.
  *  Props: { view, result }. */
-const ChallengeButton: ComponentType<{ view: View; result: Result }> | null = ({ view }) => <SocialChallengeButton view={view} />;
+// 3.6: Multiplayer is Rooms only, so the challenge link is off (the slot stays for the social lane).
+const ChallengeButton: ComponentType<{ view: View; result: Result }> | null = null;
 
 const TIER_C: Record<string, string> = { T1: 'gold', T2: 'done', T3: 'done', T4: 'off', SPIKED: '' };
 const LEAGUE_PTS: Record<string, number> = { T1: 30, T2: 20, T3: 12, T4: 6, SPIKED: 2 };
@@ -52,6 +52,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   // a day, the short cut after). Read before useRecordWindow records the window, so revisits skip it.
   const [film, setFilm] = useState(() => stage === 0 && view.mode !== 'room' && !matchMedia('(prefers-reduced-motion: reduce)').matches && !(getSave().byline?.keys || []).includes(windowKey(view)));
   const [modal, setModal] = useState<Modal>(null);
+  const [pane, setPane] = useState<'page' | 'calls'>('page'); // 3.6: one screen on phones, front page · your calls
   const root = useRef<HTMLDivElement>(null);
   const byline = useRecordWindow(view, beat, start?.pp); // One Byline (lib/byline.ts)
   const what = view.mode === 'daily' ? t('g.win.daily', { n: view.no || '' }) : view.mode === 'room' ? t('nav.rooms') + ' · ' + t('rooms.round', { n: (view.room?.round || 0) + 1 }) : view.mode === 'career' ? t('g.tabs.story') : t('nav.practice');
@@ -112,8 +113,11 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   const replies = threads.reduce((a, th) => a + th.replies.length, 0);
   const share = useShare(view, r, what, hed, bestDest, bc);
 
-  return <div className="g-screen results2 res4" ref={root} onClick={skip}>
+  return <div className="g-screen results2 res4 fit fit--full" data-pane={pane} ref={root} onClick={skip}>
     <TopBar back={{ label: t('g.tabs.home'), onClick: home }} />
+    {stage >= PROG && <div className="g-tabs2 res-tabs" role="tablist">
+      {(['page', 'calls'] as const).map((k) => <button key={k} role="tab" aria-selected={pane === k} onClick={(e) => { e.stopPropagation(); sfx('ui.tap'); setPane(k); }}>{t('hub.res.' + k)}</button>)}
+    </div>}
 
     {stage === 0 && !film && <div className="press" aria-hidden="true"><div className="press__roll" /><div className="press__sheet" /><p className="g-mono">{t('g.res.rolling')}</p></div>}
 

@@ -6,7 +6,7 @@
 export default {
   en: {
     g: { story: {
-      k: 'Story mode', chapterOf: 'Chapter {n} of 5', chapter: 'Chapter {n}', epilogue: 'Epilogue', prologue: 'Prologue',
+      k: 'Career', chapterOf: 'Chapter {n} of 5', chapter: 'Chapter {n}', epilogue: 'Epilogue', prologue: 'Prologue',
       cover: {
         title: 'The Comeback', hook: 'One wrong “Done deal” cost you everything. Someone fed you that tip on purpose.',
         hook2: 'Rebuild your name, from a free blog to the front page, and find out who burned you.',
@@ -67,7 +67,7 @@ export default {
         chip: 'Vince’s play', banner: 'One source on this saga has been fed Vince’s line and will repeat it, whatever the truth. Watch what they do, not what they say.',
         introD: 'One saga a window. One source fed a fake.',
         who: { agent: 'the agent', barber: 'the barber', spotter: 'the airport spotter', kitman: 'the kit man', physio: 'the physio' },
-        howto: ['Vince’s play (Story, chapter 4 on)', 'In Story mode, from chapter 4, one saga per window is marked Vince’s play. One of its sources (the agent, the barber or the airport spotter) has been fed a planted story and repeats the rumour mill’s wrong version, whatever the truth. Scoring doesn’t change. After the window, Mags’s note names who lied. Never in the Daily, rooms or Practice.'],
+        howto: ['Vince’s play (Career, chapter 4 on)', 'In Career, from chapter 4, one saga per window is marked Vince’s play. One of its sources (the agent, the barber or the airport spotter) has been fed a planted story and repeats the rumour mill’s wrong version, whatever the truth. Scoring doesn’t change. After the window, Mags’s note names who lied. Never in the Daily, rooms or Practice.'],
       },
       film: {
         prologueT: 'The fall', finaleK: 'Finale', finaleT: 'Deadline Day, again',

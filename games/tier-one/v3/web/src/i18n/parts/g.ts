@@ -4,14 +4,14 @@ export default {
     g: {
       coins: '{n} coins', level: 'Level {n}', lv: 'Lv {n}',
       bar: { daily: 'Daily', career: 'Career', room: 'Room', toPlay: 'Play today', ch: 'Chapter {c}', noRank: 'Unranked', start: 'Start', rank: '#{r}' },
-      tabs: { home: 'Home', story: 'Story', wire: 'Wire', friends: 'Friends', me: 'Me' },
+      tabs: { home: 'Home', story: 'Career', wire: 'Transfer Market', friends: 'Multiplayer', me: 'Press Card' },
       home: {
         noName: 'New reporter', freelance: 'Out of work since Deadline Day', xp: 'XP {a}/{b}', followers: '{n} followers', streak: 'Streak',
         dailyNo: 'The Daily · No. {n}', todaysFive: 'Today’s five', filed: 'Filed.', tag: 'Five transfer sagas. Some are lying. Break them first or get ratio’d trying.',
         filedSub: '{p} points {r}', weekAria: 'This week', dow: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
         play: 'Open the phones', resume: 'Back to day {d}', seePage: 'See your front page', fair: 'Same five for everyone · about 6 min', tomorrow: 'New five at {t}',
         missions: 'Today’s missions', missionsReset: 'Reset at {t}', claimed: 'Claimed', modes: 'Your desk',
-        storyK: 'Story mode', storyNew: 'Someone fed you a fake. Find out who.', storySub: '{name}',
+        storyK: 'Career', storyNew: 'Someone fed you a fake. Find out who.', storySub: '{name}',
         wireK: 'Real rumours', wireSub: 'Call real transfers before they happen', wireLive: '{n} calls live',
         roomsK: 'Play friends', roomsSub: 'Same board, one table', leaguePos: '{r} in your league',
         practiceK: 'No pressure', practiceSub: 'Coach shows the odds',
@@ -21,7 +21,7 @@ export default {
       missions: {
         daily: 'Play today’s Daily', right3: 'Get {n} calls right', excl: 'Land an exclusive', confRight: 'Be right on a Confirmed call',
         physio: 'Ring the physio {n} times', spotter: 'Ring the airport spotter {n} times', barber: 'Ring the barber {n} times', agent: 'Ring the agent {n} times',
-        practice: 'Play a Practice board', story: 'Play a Story window', wire: 'File a call on the Wire', twist: 'Be right on a twisted saga', room: 'Play a Friends room',
+        practice: 'Play a Practice board', story: 'Play a Career window', wire: 'File a call on the Transfer Market', twist: 'Be right on a twisted saga', room: 'Play a room',
       },
       story: { ch: {
         blog: { name: 'Ch. 1 · The Blog' }, post: { name: 'Ch. 2 · The Evening Post' }, nationals: { name: 'Ch. 3 · The Nationals' },
@@ -31,7 +31,7 @@ export default {
       } },
       me: {
         pressCard: 'Press card', level: 'Level', maxed: 'Max level', streak: 'Day streak', best: 'Best {n}', dailies: 'Dailies', t1s: '{n} × Tier 1', bestScore: 'Best score', points: 'points',
-        followers: 'Followers', rep: 'Credibility {n}', noStory: 'Start Story mode', pass: 'Pass & store', training: 'Replay the training',
+        followers: 'Followers', rep: 'Credibility {n}', noStory: 'Start your Career', pass: 'Pass & store', training: 'Replay the training',
       },
     },
   },
@@ -39,7 +39,7 @@ export default {
     g: {
       coins: '{n} عملة', level: 'المستوى {n}', lv: 'مستوى {n}',
       bar: { daily: 'اليومي', career: 'المسيرة', room: 'الأوضة', toPlay: 'العب النهارده', ch: 'الفصل {c}', noRank: 'من غير ترتيب', start: 'ابدأ', rank: '#{r}' },
-      tabs: { home: 'الرئيسية', story: 'القصة', wire: 'الوكالة', friends: 'الصحاب', me: 'أنا' },
+      tabs: { home: 'الرئيسية', story: 'المسيرة', wire: 'سوق الانتقالات', friends: 'جماعي', me: 'كارنيه الصحافة' },
       home: {
         noName: 'صحفي جديد', freelance: 'قاعد من غير شغل من آخر يوم', xp: 'خبرة {a}/{b}', followers: '{n} متابع', streak: 'السلسلة',
         dailyNo: 'التحدي اليومي · رقم {n}', todaysFive: 'خمسة النهارده', filed: 'اتقفل.', tag: 'خمس صفقات. فيهم كدب. اكشفهم الأول ولا هتبقى تريند بالغلط.',
@@ -56,7 +56,7 @@ export default {
       missions: {
         daily: 'العب تحدي النهارده', right3: 'صيب في {n} توقعات', excl: 'اعمل سبق صحفي', confRight: 'صيب في توقع «مؤكد»',
         physio: 'كلم أخصائي العلاج {n} مرات', spotter: 'كلم مراقب المطار {n} مرات', barber: 'كلم الحلاق {n} مرات', agent: 'كلم الوكيل {n} مرات',
-        practice: 'العب لوحة تدريب', story: 'العب فترة في القصة', wire: 'سجل توقع في الوكالة', twist: 'صيب في صفقة اتقلبت', room: 'العب أوضة مع صحابك',
+        practice: 'العب لوحة تدريب', story: 'العب فترة في القصة', wire: 'سجل توقع في سوق الانتقالات', twist: 'صيب في صفقة اتقلبت', room: 'العب أوضة مع صحابك',
       },
       story: { ch: {
         blog: { name: 'ف١ · البلوج' }, post: { name: 'ف٢ · الإيفننج بوست' }, nationals: { name: 'ف٣ · الجرايد الكبيرة' },
@@ -73,7 +73,7 @@ export default {
     g: {
       coins: '{n} monedas', level: 'Nivel {n}', lv: 'Nv {n}',
       bar: { daily: 'Diario', career: 'Carrera', room: 'Sala', toPlay: 'Juega hoy', ch: 'Capítulo {c}', noRank: 'Sin puesto', start: 'Empezar', rank: '#{r}' },
-      tabs: { home: 'Inicio', story: 'Historia', wire: 'Teletipo', friends: 'Amigos', me: 'Yo' },
+      tabs: { home: 'Inicio', story: 'Carrera', wire: 'Mercado', friends: 'Multijugador', me: 'Carné de prensa' },
       home: {
         noName: 'Nuevo periodista', freelance: 'En paro desde el último día de mercado', xp: 'XP {a}/{b}', followers: '{n} seguidores', streak: 'Racha',
         dailyNo: 'El Diario · N.º {n}', todaysFive: 'Los cinco de hoy', filed: 'Enviado.', tag: 'Cinco culebrones de fichajes. Alguno miente. Dalo antes que nadie o hazte viral por errar.',
@@ -90,7 +90,7 @@ export default {
       missions: {
         daily: 'Juega el Diario de hoy', right3: 'Acierta {n} exclusivas', excl: 'Consigue una exclusiva', confRight: 'Acierta un «Confirmado»',
         physio: 'Llama al fisio {n} veces', spotter: 'Llama al del aeropuerto {n} veces', barber: 'Llama al barbero {n} veces', agent: 'Llama al agente {n} veces',
-        practice: 'Juega una práctica', story: 'Juega una ventana de historia', wire: 'Apuesta en el Teletipo', twist: 'Acierta un culebrón con giro', room: 'Juega una sala con amigos',
+        practice: 'Juega una práctica', story: 'Juega una ventana de historia', wire: 'Apuesta en el Mercado de fichajes', twist: 'Acierta un culebrón con giro', room: 'Juega una sala con amigos',
       },
       story: { ch: {
         blog: { name: 'Cap. 1 · El blog' }, post: { name: 'Cap. 2 · El Evening Post' }, nationals: { name: 'Cap. 3 · Los nacionales' },

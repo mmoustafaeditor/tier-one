@@ -6,20 +6,20 @@ export default {
     live: {
       desk: {
         title: 'The desk', k: 'Assignments', editor: 'Editor', all: 'Open the desk', open: 'Open', clear: 'Desk clear. Keep your hand warm off the record.',
-        t: { ddlive: 'Deadline Day Live', ddresults: 'Deadline Day: results', daily: 'Today’s brief', resume: 'Your window', wire: 'The live desk', career: 'The story', room: 'The press box', wireSettling: 'The live desk', mission: 'Expenses', practice: 'Off the record' },
+        t: { ddlive: 'Deadline Day Live', ddresults: 'Deadline Day: results', daily: 'Today’s brief', resume: 'Your window', wire: 'The live desk', career: 'The story', room: 'Rooms', wireSettling: 'The live desk', mission: 'Expenses', practice: 'Off the record' },
         s: {
           ddlive: 'The real board is open. {n} of 5 filed · {left} to the whistle.', ddresults: 'The global table is in. See where you finished.', daily: 'Five sagas, same for everyone. Break them first.', dailyResume: 'Day {d} is waiting. Finish the window.',
-          resume: 'Your {m} window is on day {d}.', wire: '{p}: {f} followers.', career: 'Story window {w} is ready when you are.', room: 'Your room has news.', roomOpen: '{n} rounds open in your rooms.',
+          resume: 'Your {m} window is on day {d}.', wire: '{p}: {f} followers.', career: 'Career window {w} is ready when you are.', room: 'Your room has news.', roomOpen: '{n} rounds open in your rooms.',
           wireSettling: '{n} of your calls are about to settle.', mission: '{n} missions ready to claim.', practice: 'A board with the coach. No stake.',
         },
-        b: { ddlive: 'Go live', ddresults: 'See the table', daily: 'Open the phones', resume: 'Resume', wire: 'See the call', career: 'Open Story', room: 'Open the room', wireSettling: 'Watch them', mission: 'Claim', practice: 'Practice' },
+        b: { ddlive: 'Go live', ddresults: 'See the table', daily: 'Open the phones', resume: 'Resume', wire: 'See the call', career: 'Open Career', room: 'Open the room', wireSettling: 'Watch them', mission: 'Claim', practice: 'Practice' },
         voice: {
           ddlive: ['It’s the day. Everyone’s on the same board. Don’t be the last name on it.', 'Real deadline, real sagas, one room. Call it before 23:00.', 'The whole newsroom is on this. So are the rivals. Go.', 'No rehearsals today. The board is live until the whistle.'],
           daily: ['Five names on your desk. Ring someone before you post.', 'Same five for everyone. First right call wins the day.', 'Your brief’s on the desk. The barber is lying about one of them.', 'Don’t sit on it. The rivals post at dawn.'],
           resume: ['You left a window open. Windows don’t close themselves.', 'Back to it. The story moved while you were gone.', 'Half a window is no window. Finish it.', 'Your desk is still warm. Sit down.'],
           wire: ['One of yours settled. Read it before you gloat, or before they do.', 'Real football moved. Check your name against it.', 'A call landed or it didn’t. Either way, read the wire.', 'Settled overnight. Your followers already know.'],
-          career: ['The paper wants copy. Your chapter won’t write itself.', 'Story desk. Sources are waiting by the phone.', 'One window closer to the front page. Or further.', 'Your editor has an opinion. Go and earn a better one.'],
-          room: ['Your friends have posted. Don’t let them set the table.', 'The press box is talking. Get in there.', 'A round is open. Same board as your mates, no excuses.', 'Rooms don’t wait. Neither do friends with a scoop.'],
+          career: ['The paper wants copy. Your chapter won’t write itself.', 'Career desk. Sources are waiting by the phone.', 'One window closer to the front page. Or further.', 'Your editor has an opinion. Go and earn a better one.'],
+          room: ['Your friends have posted. Don’t let them set the table.', 'Your room is talking. Get in there.', 'A round is open. Same board as your mates, no excuses.', 'Rooms don’t wait. Neither do friends with a scoop.'],
           wireSettling: ['Fees agreed. Your calls are about to be marked.', 'Watch the wire: paperwork lands today.', 'Nothing to file, everything to lose. Stay on it.', 'Your live calls are on the line. Literally.'],
           mission: ['Expenses signed off. Go and collect.', 'Coins on the desk. They don’t bank themselves.', 'Missions done. Claim them before midnight.', 'Paid for a job well done. Pick it up.'],
           practice: ['Quiet day. Keep your hand warm off the record.', 'Nothing due. A practice board never hurt anyone.', 'No stake, no excuse. Sharpen up.', 'Slow desk. The coach has a board for you.'],
@@ -35,7 +35,7 @@ export default {
       brief: {
         title: 'Today’s brief', k: 'Daily No. {n}', five: 'Today’s five', style: 'Your style', stake: 'The stake', presence: '{n} reporters on this board now', presenceOne: 'You’re first on this board today',
         stakeLine: 'Streak {n}. Miss today and {r} takes your slot on the table.', stakeNone: 'No streak yet. A slot on the table starts today.', stakeLost: '{r} took your slot. Your {n}-day streak is theirs. Take it back today.', stakeSafe: 'Streak {n}, filed today. Your slot is safe.',
-        dd: 'Deadline Day Live is on. Play the Daily, then go live.', go: 'Open the phones', styleNote: { rookie: 'A style shows after {m} calls. This is number {n}.', sniper: 'Keep filing early. The early points are yours.', contrarian: 'The rivals post at dawn. Read them, then disagree with a source in hand.', loudmouth: 'Half your calls are Confirmed. Make sure two circles agree first.', quiet: 'You file at Talks. A Confirmed call with two circles pays three times more.', earlybird: 'You file by day 3. Ring before you post; the early rule still needs a source.', nightowl: 'You file late. The early bonus is going to someone else every window.', uturner: 'One in five is a repost. Sleep on it once before you publish.', believer: 'You trust the reads. Watch the barber: reliability one bar.', sceptic: 'You win without the sources. Costly when you’re wrong at Confirmed.', steady: 'Steady hand. Try one exclusive: first right Confirmed call on a saga.' },
+        dd: 'Deadline Day Live is on. Play the Daily, then go live.', go: 'Open the phones', styleNote: { rookie: 'A style shows after {m} calls. This is number {n}.', sniper: 'Keep filing early. The early points are yours.', contrarian: 'The rivals post at dawn. Read them, then disagree with a source in hand.', loudmouth: 'Half your calls are Confirmed. Make sure two circles agree first.', quiet: 'You file at In talks. A Confirmed call with two circles pays three times more.', earlybird: 'You file by day 3. Ring before you post; the early rule still needs a source.', nightowl: 'You file late. The early bonus is going to someone else every window.', uturner: 'One in five is a repost. Sleep on it once before you publish.', believer: 'You trust the reads. Watch the barber: reliability one bar.', sceptic: 'You win without the sources. Costly when you’re wrong at Confirmed.', steady: 'Steady hand. Try one exclusive: first right Confirmed call on a saga.' },
       },
       stake: { title: 'Your slot on the table', line: 'Streak {n} · play before {t} or {r} takes it', lost: '{r} took your slot. {n} days. Take it back today.', safe: 'Streak {n} · filed today', none: 'No streak. A slot opens today.', play: 'Play the Daily', grace: '{n} grace days banked' },
       style: {
@@ -44,7 +44,7 @@ export default {
         sniper: { t: 'The Sniper', line: 'Files early, rarely wrong.' },
         contrarian: { t: 'The Contrarian', line: 'Goes against the rivals and gets away with it.' },
         loudmouth: { t: 'The Loudmouth', line: 'Confirmed, always. Right most of the time.' },
-        quiet: { t: 'The Quiet One', line: 'Files at Talks. Never ratio’d, never famous.' },
+        quiet: { t: 'The Quiet One', line: 'Files at In talks. Never ratio’d, never famous.' },
         earlybird: { t: 'The Early Bird', line: 'Files by day 3, before the rivals wake up.' },
         nightowl: { t: 'The Night Owl', line: 'Files late, often with the clock running.' },
         uturner: { t: 'The U-Turner', line: 'Deletes and reposts. Fans keep the receipts.' },
@@ -56,7 +56,7 @@ export default {
         live: 'LIVE', k: 'Deadline Day · {w}', title: 'Deadline Day Live', sub: 'Every reporter in the game calls the same five real sagas. The room’s calls show as counts, never names. The table lands at midnight UTC.',
         closes: 'Window shuts 23:00', boardCloses: 'Board closes at midnight UTC', over: 'Board closed', reporters: '{n} reporters on the board', reportersOne: 'You’re first on the board', filed: '{n} of {m} filed',
         room: 'The room says', roomNone: 'No calls yet. Be first.', outs: { done: 'Done · {c}', hijack: 'Hijack', stays: 'Stays' }, outS: { done: 'Done', hijack: 'Hijack', stays: 'Stays' }, outD: { done: 'joins {c}', hijack: 'joins someone else', stays: 'stays at {c}' },
-        file: 'File it', filedStamp: 'Filed', ut: 'Delete & repost', locked: 'Locked', stake: 'Right +{w} · Wrong −{l}', early: 'Early bird: ×1.25 until 12:00 UTC', earlyOn: 'Early bird on', loud: ['Talks', 'Advanced', 'Confirmed'],
+        file: 'File it', filedStamp: 'Filed', ut: 'Delete & repost', locked: 'Locked', stake: 'Right +{w} · Wrong −{l}', early: 'Early bird: ×1.25 until 12:00 UTC', earlyOn: 'Early bird on', loud: ['In talks', 'Advanced', 'Confirmed'],
         results: 'Results', resultsSub: '{s} of {n} settled. The rest settle as the paperwork lands.', resultsFinal: 'All five settled.', pending: 'Pending', table: 'The global table', you: 'You: #{r} of {n} · {p} pts', youNone: 'You filed nothing on this board.', tableEmpty: 'Nobody filed. A quiet deadline.',
         ticker: 'DD LIVE', tickerOpen: 'Open the board', tickerRes: 'Results are in', open: 'Open the board', seeResults: 'See the results', back: 'Home',
         how: 'How it’s scored', howBody: ['Right: +10 / +22 / +40 by loudness. Wrong: −4 / −12 / −30. Filed before 12:00 UTC: right calls pay ×1.25.', 'Outcomes come from the real data: joined the linked club (Done), joined another club (Hijack), or stayed (Stays). A saga that can’t be settled scores nobody.', 'One call per saga, one Delete & repost. Counts only on the ticker: nobody sees your name until the table.'],
@@ -65,12 +65,12 @@ export default {
         fair: 'One shared board · same five for everyone · counts, never names',
       },
       feed: {
-        slotTaken: '{rival} took your slot on the table: your {n}-day streak is theirs. Play today and take it back.', favour: 'Your Wire call on {p} landed. The editor noticed: a favour is on your Story desk.',
-        flair: 'Promoted to {m}. Your share card carries it from now.', credit: 'Tier 1: a Wire credit banked ({n}). It covers your next wrong Wire call.', style: 'Style earned: {m}.',
+        slotTaken: '{rival} took your slot on the table: your {n}-day streak is theirs. Play today and take it back.', favour: 'Your market call on {p} landed. The editor noticed: a favour is on your Career desk.',
+        flair: 'Promoted to {m}. Your share card carries it from now.', credit: 'Tier 1: a market credit banked ({n}). It covers your next wrong market call.', style: 'Style earned: {m}.',
       },
     },
-    cn: { feed: { wireShield: 'Your Wire call on {p} missed, but a Tier 1 credit covered it: no followers lost.' } },
-    g: { story: { beat: { wireLanded: 'Saw your Wire call on {p} land. Real football. There’s a favour on your desk.' } } },
+    cn: { feed: { wireShield: 'Your market call on {p} missed, but a Tier 1 credit covered it: no followers lost.' } },
+    g: { story: { beat: { wireLanded: 'Saw your market call on {p} land. Real football. There’s a favour on your desk.' } } },
     film: {
       name: { ddlive: 'Deadline Day Live', style: 'Your style', streak: 'Streak' },
       m: { live: {
@@ -96,10 +96,10 @@ export default {
           ddlive: ['النهارده اليوم. الكل على نفس اللوحة. متبقاش آخر اسم فيها.', 'ديدلاين حقيقي، صفقات حقيقية، أوضة واحدة. قولها قبل ١١ بالليل.', 'الجرنال كله على الموضوع ده. والمنافسين كمان. يلا.', 'مفيش بروفات النهارده. اللوحة شغالة لحد الصفارة.'],
           daily: ['خمس أسامي على مكتبك. كلّم حد قبل ما تنشر.', 'نفس الخمسة للكل. أول توقّع صح بياخد اليوم.', 'البرييف على المكتب. الحلاق بيكدب في واحد منهم.', 'متقعدش عليه. المنافسين بينشروا الفجر.'],
           resume: ['سيبت فترة مفتوحة. الفترات مش بتقفل لوحدها.', 'ارجع لها. القصة اتحركت وانت غايب.', 'نص فترة مش فترة. كمّلها.', 'مكتبك لسه دافي. اقعد.'],
-          wire: ['واحد من توقعاتك اتحسم. اقراه قبل ما تفرح، أو قبل ما هم يفرحوا.', 'الكورة الحقيقية اتحركت. راجع اسمك عليها.', 'التوقّع صاب أو غلط. في الحالتين اقرا الوكالة.', 'اتحسم بالليل. متابعينك عرفوا خلاص.'],
+          wire: ['واحد من توقعاتك اتحسم. اقراه قبل ما تفرح، أو قبل ما هم يفرحوا.', 'الكورة الحقيقية اتحركت. راجع اسمك عليها.', 'التوقّع صاب أو غلط. في الحالتين اقرا سوق الانتقالات.', 'اتحسم بالليل. متابعينك عرفوا خلاص.'],
           career: ['الجرنال عايز خبر. الفصل مش هيتكتب لوحده.', 'مكتب القصة. المصادر مستنية جنب التليفون.', 'فترة أقرب للصفحة الأولى. أو أبعد.', 'رئيس التحرير له رأي. روح اكسب رأي أحسن.'],
           room: ['صحابك نشروا. متسيبهمش يرتّبوا الجدول.', 'المقصورة بتتكلم. ادخل.', 'فيه جولة مفتوحة. نفس اللوحة زي صحابك، مفيش أعذار.', 'الأوض مش بتستنى. ولا الصحاب اللي معاهم سبق.'],
-          wireSettling: ['اتفقوا على المبالغ. توقعاتك على وشك تتصحّح.', 'تابع الوكالة: الورق بينزل النهارده.', 'مفيش حاجة تسجّلها، وكل حاجة ممكن تخسرها. خليك عليها.', 'توقعاتك الحية على الخط. حرفيًا.'],
+          wireSettling: ['اتفقوا على المبالغ. توقعاتك على وشك تتصحّح.', 'تابع سوق الانتقالات: الورق بينزل النهارده.', 'مفيش حاجة تسجّلها، وكل حاجة ممكن تخسرها. خليك عليها.', 'توقعاتك الحية على الخط. حرفيًا.'],
           mission: ['المصاريف اتوقّعت. روح حصّل.', 'كوينز على المكتب. مش هتتحط في البنك لوحدها.', 'المهمات خلصت. استلمها قبل نص الليل.', 'اتدفعلك على شغل حلو. خده.'],
           practice: ['يوم هادي. سخّن إيدك خارج التسجيل.', 'مفيش حاجة مستحقة. لوحة تدريب عمرها ما ضرّت حد.', 'مفيش رهان، مفيش عذر. اشحذ نفسك.', 'المكتب هادي. المدرب معاه لوحة ليك.'],
         },
@@ -144,12 +144,12 @@ export default {
         fair: 'لوحة واحدة مشتركة · نفس الخمسة للكل · أرقام، مش أسامي',
       },
       feed: {
-        slotTaken: '{rival} خد مكانك في الجدول: سلسلة الـ{n} يوم بقت بتاعته. العب النهارده ورجّعها.', favour: 'توقّعك في الوكالة على {p} طلع صح. رئيس التحرير لاحظ: فيه جميل على مكتب القصة.',
-        flair: 'اترقّيت لـ{m}. كارت المشاركة بتاعك هيشيلها من دلوقتي.', credit: 'المستوى الأول: رصيد وكالة اتحفظ ({n}). بيغطّي أول توقّع غلط ليك في الوكالة.', style: 'لقب جديد: {m}.',
+        slotTaken: '{rival} خد مكانك في الجدول: سلسلة الـ{n} يوم بقت بتاعته. العب النهارده ورجّعها.', favour: 'توقّعك في سوق الانتقالات على {p} طلع صح. رئيس التحرير لاحظ: فيه جميل على مكتب القصة.',
+        flair: 'اترقّيت لـ{m}. كارت المشاركة بتاعك هيشيلها من دلوقتي.', credit: 'المستوى الأول: رصيد سوق اتحفظ ({n}). بيغطّي أول توقّع غلط ليك في سوق الانتقالات.', style: 'لقب جديد: {m}.',
       },
     },
-    cn: { feed: { wireShield: 'توقّعك في الوكالة على {p} غلط، بس رصيد المستوى الأول غطّاه: مفيش متابعين راحوا.' } },
-    g: { story: { beat: { wireLanded: 'شفت توقّعك في الوكالة على {p} طلع صح. كورة حقيقية. فيه جميل على مكتبك.' } } },
+    cn: { feed: { wireShield: 'توقّعك في سوق الانتقالات على {p} غلط، بس رصيد المستوى الأول غطّاه: مفيش متابعين راحوا.' } },
+    g: { story: { beat: { wireLanded: 'شفت توقّعك في سوق الانتقالات على {p} طلع صح. كورة حقيقية. فيه جميل على مكتبك.' } } },
     film: {
       name: { ddlive: 'يوم الحسم لايف', style: 'أسلوبك', streak: 'السلسلة' },
       m: { live: {
@@ -223,12 +223,12 @@ export default {
         fair: 'Un tablero compartido · los mismos cinco para todos · recuentos, nunca nombres',
       },
       feed: {
-        slotTaken: '{rival} se quedó tu sitio en la tabla: tu racha de {n} días es suya. Juega hoy y recupérala.', favour: 'Tu apuesta del Teletipo sobre {p} acertó. El director se ha fijado: hay un favor en tu mesa de Historia.',
-        flair: 'Ascendido a {m}. Tu tarjeta para compartir lo lleva desde ahora.', credit: 'Tier 1: un crédito del Teletipo guardado ({n}). Cubre tu próxima apuesta fallida.', style: 'Estilo ganado: {m}.',
+        slotTaken: '{rival} se quedó tu sitio en la tabla: tu racha de {n} días es suya. Juega hoy y recupérala.', favour: 'Tu apuesta del Mercado de fichajes sobre {p} acertó. El director se ha fijado: hay un favor en tu mesa de Historia.',
+        flair: 'Ascendido a {m}. Tu tarjeta para compartir lo lleva desde ahora.', credit: 'Tier 1: un crédito del Mercado de fichajes guardado ({n}). Cubre tu próxima apuesta fallida.', style: 'Estilo ganado: {m}.',
       },
     },
-    cn: { feed: { wireShield: 'Tu apuesta del Teletipo sobre {p} falló, pero un crédito de Tier 1 la cubrió: sin seguidores perdidos.' } },
-    g: { story: { beat: { wireLanded: 'Vi tu apuesta del Teletipo sobre {p}. Fútbol real. Tienes un favor en la mesa.' } } },
+    cn: { feed: { wireShield: 'Tu apuesta del Mercado de fichajes sobre {p} falló, pero un crédito de Tier 1 la cubrió: sin seguidores perdidos.' } },
+    g: { story: { beat: { wireLanded: 'Vi tu apuesta del Mercado de fichajes sobre {p}. Fútbol real. Tienes un favor en la mesa.' } } },
     film: {
       name: { ddlive: 'Día del cierre en directo', style: 'Tu estilo', streak: 'Racha' },
       m: { live: {
