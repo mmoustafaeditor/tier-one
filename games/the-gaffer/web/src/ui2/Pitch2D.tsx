@@ -7,7 +7,7 @@ import type { LiveMatch } from '../sim/match';
 import { FORMATIONS } from '../sim/tactics';
 import type { World } from '../sim/world';
 import { L, W } from './pitch/move';
-import { newAnim, setPitchDebug, tick, type Anim } from './pitch/sim';
+import { downIn, newAnim, setPitchDebug, tick, type Anim } from './pitch/sim';
 
 const PITCH_DEBUG = typeof location !== 'undefined' && /[?&]pitchdebug\b/.test(location.search);
 setPitchDebug(PITCH_DEBUG);
@@ -150,7 +150,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       for (const side of [0, 1] as const) {
         dots.current[side].forEach((g, k) => {
           if (!g) return;
-          const on = !!mm.sides[side].onPitch[k];
+          const on = !!mm.sides[side].onPitch[k] || downIn(a, side, k);
           g.style.display = on ? '' : 'none';
           const p = a.pos[side][k];
           if (on && p) {
