@@ -406,7 +406,7 @@ export const NEW_FR: NewStrings = {
     applied: 'Changement fait',
     noTips: 'Je ne toucherais à rien.',
     shape: (f: string) => `Système ${f}`,
-    reason: { chase: 'pour revenir au score', protect: 'pour garder l’avance', red: 'après le rouge', tenmen: 'contre dix', tip: '', read: 'après lecture de la première période' },
+    reason: { chase: 'pour revenir au score', protect: 'pour garder l’avance', red: 'après le rouge', tenmen: 'contre dix', tip: '', read: 'après lecture de la première période', wx3: 'à cause du vent', wx4: 'à cause de la chaleur' },
     changeLine: '{c} : {what}{why}.',
     talkLine: 'Causerie de {c} à la pause : « {what} ».',
     c: {

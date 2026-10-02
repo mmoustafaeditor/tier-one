@@ -123,6 +123,8 @@ export function Analysis({ a }: { a: Aftermath }) {
           </svg>
           <p className="small muted">{T.whereNote}</p>
           <div className="an-stats">
+            {/* Which number is whose: ours on the leading side of every row, theirs on the far side. */}
+            <div className="between small"><b>{cn(us, lang)}</b><b>{cn(opp, lang)}</b></div>
             <Stat l={T.poss} a={pct(ana.poss[me], ana.poss[them])} b={pct(ana.poss[them], ana.poss[me])} unit="%" />
             {[0, 1, 2].map((ln) => <Stat key={ln} l={`${T.entries} · ${T.lanes[ln]}`} a={ana.ent[me * 3 + ln]} b={ana.ent[them * 3 + ln]} />)}
             <Stat l={T.build} a={ana.bu[me * 2]} b={ana.bu[them * 2]} sub={[T.of(ana.bu[me * 2], ana.bu[me * 2 + 1]), T.of(ana.bu[them * 2], ana.bu[them * 2 + 1])]} />
@@ -151,7 +153,7 @@ export function Analysis({ a }: { a: Aftermath }) {
                 </svg>
                 <p className="small muted">{T.heat}</p>
                 <div className="an-kv">
-                  <span>{T.duels}<b className="ltr">{p ? T.of(p.won, p.won + p.lost) : '–'}</b></span>
+                  <span>{T.duels}<b>{p ? T.of(p.won, p.won + p.lost) : '–'}</b></span>
                   <span>{T.shots(p?.shots ?? 0)}<b className="ltr">{T.xg} {(p?.xg ?? 0).toFixed(2)}</b></span>
                   <span>{T.goals}<b>{p?.goals ?? 0}</b></span>
                   <span>{T.assists}<b>{p?.assists ?? 0}</b></span>
@@ -183,7 +185,7 @@ function Stat({ l, a, b, unit = '', sub }: { l: string; a: number; b: number; un
     <div className="an-stat">
       <div className="between"><b className="ltr">{a}{unit}</b><span>{l}</span><b className="ltr">{b}{unit}</b></div>
       <div className="an-split"><i style={{ width: `${(100 * a) / t}%` }} /><i className="them" style={{ width: `${(100 * b) / t}%` }} /></div>
-      {sub && <div className="between small muted"><span className="ltr">{sub[0]}</span><span className="ltr">{sub[1]}</span></div>}
+      {sub && <div className="between small muted"><span>{sub[0]}</span><span>{sub[1]}</span></div>}
     </div>
   );
 }

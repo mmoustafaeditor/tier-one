@@ -28,7 +28,7 @@ import { RS, RSN, TUNE_REF, callFoul, callGoal, callOffside, ensureRef, foulFact
 import { PERIOD_END, afterTick, isExtraBreak, isHalfTime, knockout, needsExtra, periodOver, playOver, tick } from './engine/clock';
 import { SUBS } from './competitions';
 import { BG, HURT, proneness } from './engine/injury';
-import { WX, weatherFor, type Wx } from './engine/weather';
+import { WX, weatherFor, weatherPlan, type Wx } from './engine/weather';
 import { AI_COH, cohLevel, cohesionOfClub } from './cohesion';
 import { staffEdge } from './norms';
 
@@ -456,6 +456,8 @@ function aiDecisions(m: LiveMatch, i: 0 | 1, get: Lookup) {
   const o = (1 - i) as 0 | 1;
   const diff = m.goals[i] - m.goals[o];
   const t = s.tactics;
+  // Kick-off: the AI manager sets up for the weather (engine/weather.ts weatherPlan), logged like any other change.
+  if (s.ai && m.minute === 1 && !m.plus && m.wx) setTactics(m, i, weatherPlan(fullTactics(t), m.wx) as Partial<Tactics>, `wx${m.wx}`);
   // Score-state reactions at half-time and with a quarter of an hour to go.
   if (s.ai && (m.minute === 46 || m.minute === 76)) {
     if (diff < 0) {
