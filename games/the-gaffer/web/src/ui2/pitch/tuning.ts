@@ -72,6 +72,7 @@ export const T = {
   RUN_DEEP: 8,       // how much further the best mover takes it than the worst (m)
   WORK: [0.8, 1.2] as [number, number],      // recovery and counter-press pace: lowest work rate, highest
   CALM_KEEP: 0.3,    // pressed on the ball: the most composed keeps this much more pace than the least
+  COVER_DROP: 4,     // B3: the cover role sits this far behind the back line (m)
   TOUCH_FRESH: 2.5,  // a ball lost within this many beats of the pass reaching him: a heavy first touch (A3)
   TOUCH_LOOSE: [1, 3] as [number, number], // how far it gets away from him: the best touch, the worst (m)
   TOUCH_SPEED: 6,    // the pace it gets away at (m per second of play)

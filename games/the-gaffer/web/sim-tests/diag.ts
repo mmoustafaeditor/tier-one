@@ -70,7 +70,7 @@ if (process.env.WX === '3') console.log(`${(kinds.wind ?? 0) > 0 ? 'ok  ' : 'FAI
 // far from the ball with nothing to show why.
 const lossN = ['intercept', 'touch', 'tackle', 'far', 'loose'].map((k) => kinds[`loss:${k}`] ?? 0), lossAll = lossN.reduce((x, y) => x + y, 0);
 const farPct = pct(lossN[3], lossAll);
-console.log(`lost balls: ${lossAll}; intercepted ${pct(lossN[0], lossAll)}%, heavy touch ${pct(lossN[1], lossAll)}%, tackled ${pct(lossN[2], lossAll)}%, collected and played on (no challenge named) ${pct(lossN[4], lossAll)}%; won or collected 6+ m from the ball ${farPct}%`);
+console.log(`lost balls: ${lossAll}; intercepted ${pct(lossN[0], lossAll)}%, heavy touch ${pct(lossN[1], lossAll)}%, tackled ${pct(lossN[2], lossAll)}%, collected and played on (no challenge named) ${pct(lossN[4], lossAll)}%; won or collected 6+ m from the ball ${farPct}% (${kinds['loss:farLoose'] ?? 0} of them loose balls)`);
 console.log(`${farPct <= 5 ? 'ok  ' : 'FAIL'} every lost ball shows why: ${100 - farPct}% (≥ 95%)`);
 console.log(`${bounced >= 90 ? 'ok  ' : 'FAIL'} long balls that bounce: ${bounced}% of ${kinds.long ?? 0} (≥ 90%); curled crosses and shots: ${kinds.bend ?? 0}`);
 console.log(`${offPct <= 5 ? 'ok  ' : 'FAIL'} passes reach their man: ${100 - offPct}% (≥ 95%)`);

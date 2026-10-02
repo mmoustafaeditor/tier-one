@@ -131,6 +131,7 @@ function target(m: LiveMatch, a: Anim, side: 0 | 1, k: number): Pt {
     y += (a.ball.y - y) * 0.28;
     y += (W / 2 - y) * 0.2;
     if (sp.oop === 'press_forward') y += (a.ball.y - y) * 0.5;
+    if (sp.oop === 'tuck_in') y += (W / 2 - y) * 0.3; // (B3: narrows into midfield)
   }
   // The player about to shoot makes his run into the box; the carrier heads for the engine's zone.
   if (a.shooter && a.shooter.side === side && a.shooter.slot === k) ({ d, y } = shooterSpot(a.shooter.how, sy));
@@ -519,6 +520,7 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
       const ks2 = onPitch(m, b.side).filter((x) => a.pos[b.side][x]);
       const near = a.poss === b.side && had >= 0 && a.pos[b.side][had] ? had : ks2.sort((x, y) => dist(a.pos[b.side][x], a.ball) - dist(a.pos[b.side][y], a.ball))[0];
       const by = near !== undefined && near !== k && a.pos[b.side][near] ? near : k, why = dist(a.ball, a.pos[b.side][by]) > 6 ? 'loss:far' : 'loss:loose';
+      if (why === 'loss:far') a.kinds['loss:farLoose'] = (a.kinds['loss:farLoose'] ?? 0) + 1;
       a.kinds[why] = (a.kinds[why] ?? 0) + 1;
       if (by !== k) {
         const sec = a.secMs ?? 40;
@@ -898,11 +900,17 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           for (const k of ks) {
             if (!free(k)) continue;
             const d = depthOf(side, tg[k].x);
-            if (line(k) === 'def') tg[k] = { x: toX(side, ln.depth), y: tg[k].y };
+            if (line(k) === 'def') tg[k] = { x: toX(side, ln.depth - (sps[k]?.oop === 'cover' ? T.COVER_DROP : 0)), y: tg[k].y }; // (B3: the cover man sits behind the line)
             else if (line(k) === 'mid') tg[k] = { x: toX(side, clamp(d, ln.depth + 8, ln.depth + 16)), y: tg[k].y };
             else if (line(k) === 'fwd') tg[k] = { x: toX(side, Math.min(d, ln.depth + 38)), y: tg[k].y };
           }
           for (const k of pp.press) tg[k] = pressSpot(a.ball, ownGoal, 1.8);
+          // B3: a winger told to press their full-back goes at him when the ball reaches him on his flank in their half.
+          for (const k of ks) {
+            if (sps[k]?.oop !== 'press_fullback' || pp.press.includes(k) || !a.pos[side][k]) continue;
+            const bd = depthOf(side, a.ball.x), sameFlank = (a.ball.y < W / 2) === (a.pos[side][k].y < W / 2);
+            if (bd > 55 && sameFlank && Math.abs(a.ball.y - W / 2) > 14) { tg[k] = pressSpot(a.ball, ownGoal, 2.2); boost[k] = Math.max(boost[k] ?? 1, 1.4); rush.add(k); }
+          }
           if (pp.cover >= 0 && pp.press.length) tg[pp.cover] = pressSpot(a.ball, ownGoal, 7);
           // Phase 2: the defence as a group (ui2/pitch/defend.ts). The line slides across towards the ball, compact.
           const lineKs = ks.filter((k) => line(k) === 'def' && free(k));
@@ -988,6 +996,13 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           const early = nb0?.kind === 'pass' && nb0.side === other && manOf(nb1) !== undefined && manOf(nb1) === nb0.to;
           const nb = early ? nb1 : nb0;
           const vs = nb && ((nb.kind === 'duel' && nb.side === other) ? nb.vs : nb.kind === 'turnover' && nb.side === side && nb.vs !== undefined ? nb.to : nb.kind === 'foul' && nb.side === other ? nb.by : undefined);
+          // A ball about to change sides with no challenge named (a clearance, a keeper's ball, a loose one): the nearest
+          // man of the side that gets it goes to it now, so it isn't collected from 20 m away.
+          if (vs === undefined && nb0?.kind === 'turnover' && nb0.side === side && nb0.vs === undefined) {
+            const at = a.flight ? a.flight.to : a.ball;
+            const near = ks.filter((k) => a.pos[side][k] && LINE[slots[k]?.pos] !== 'gk').sort((p, q) => dist(a.pos[side][p], at) - dist(a.pos[side][q], at))[0];
+            if (near !== undefined) { tg[near] = { ...at }; boost[near] = Math.max(boost[near] ?? 1, 1.4); rush.add(near); }
+          }
           if (vs !== undefined && a.pos[side][vs] && LINE[slots[vs]?.pos] !== 'gk') {
             const recv = early && nb0.kind === 'pass' ? a.pos[other][nb0.to] : undefined;
             const toward = a.flight && a.poss === other ? a.flight.to : recv ?? a.ball;

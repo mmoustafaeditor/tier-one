@@ -96,6 +96,15 @@ export function runFor(role: string, c: RunCtx): Run | null {
       return c.bd > 70 ? { d: 88, y: W / 2 + (c.y < W / 2 ? -6 : 6), run: true } : null;
     case 'playmaker': return { d: Math.max(6, c.bd - 8), y: c.y + (c.by - c.y) * 0.4, run: false };
     case 'holder': return { d: Math.min(c.d, Math.max(6, c.bd - 15)), y: c.y + (W / 2 - c.y) * 0.3, run: false };
+    // B3 roles. The mezzala goes into the half-space on his side and on into the box; the wide playmaker comes inside to
+    // receive; the deep-lying forward drops off their line to link; the poacher lives on their last man; the libero
+    // steps out of the back line into midfield; the half-back drops between the centre-backs to start it.
+    case 'mezzala': return c.bd > 50 ? { d: Math.min(c.bd + 10, 88), y: W / 2 + (c.y < W / 2 ? -1 : 1) * 15, run: c.bd > 62 } : null;
+    case 'wide_playmaker': return c.wide ? { d: Math.max(c.d - 4, Math.min(c.bd - 2, 78)), y: W / 2 + c.wide * 14, run: false } : null;
+    case 'deep_forward': return c.bd > 30 ? { d: Math.max(c.bd - 2, c.theirLine - 12), y: W / 2 + (c.by - W / 2) * 0.3, run: false } : null;
+    case 'poacher': return { d: Math.min(c.theirLine - 0.5, 96), y: W / 2 + (c.y - W / 2) * 0.5, run: c.bd > 55 };
+    case 'libero': return c.bd > 25 && c.bd < 75 ? { d: Math.max(c.d, c.bd - 8), y: W / 2 + (c.by - W / 2) * 0.3, run: false } : null;
+    case 'half_back': return c.bd > 15 ? { d: Math.max(4, Math.min(c.d, c.bd - 22)), y: W / 2, run: false } : null;
     default: return null;
   }
 }
