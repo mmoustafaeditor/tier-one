@@ -60,7 +60,13 @@ const offPct = pct(agg.landNoOne, agg.flights);
 // The ball's flight (A1): every long ball bounces once before its man takes it; crosses and shots curl.
 const bounced = pct(kinds.bounce ?? 0, kinds.long ?? 0);
 if (process.env.WX === '3') console.log(`${(kinds.wind ?? 0) > 0 ? 'ok  ' : 'FAIL'} balls in the air the wind moves: ${kinds.wind ?? 0}`);
+// How each lost ball is shown (A3): intercepted on its way, a heavy first touch, a tackle at the man; never won by a man
+// far from the ball with nothing to show why.
+const lossN = ['intercept', 'touch', 'tackle', 'far', 'loose'].map((k) => kinds[`loss:${k}`] ?? 0), lossAll = lossN.reduce((x, y) => x + y, 0);
+const farPct = pct(lossN[3], lossAll);
+console.log(`lost balls: ${lossAll}; intercepted ${pct(lossN[0], lossAll)}%, heavy touch ${pct(lossN[1], lossAll)}%, tackled ${pct(lossN[2], lossAll)}%, collected and played on (no challenge named) ${pct(lossN[4], lossAll)}%; won or collected 6+ m from the ball ${farPct}%`);
+console.log(`${farPct <= 5 ? 'ok  ' : 'FAIL'} every lost ball shows why: ${100 - farPct}% (≥ 95%)`);
 console.log(`${bounced >= 90 ? 'ok  ' : 'FAIL'} long balls that bounce: ${bounced}% of ${kinds.long ?? 0} (≥ 90%); curled crosses and shots: ${kinds.bend ?? 0}`);
 console.log(`${offPct <= 5 ? 'ok  ' : 'FAIL'} passes reach their man: ${100 - offPct}% (≥ 95%)`);
 console.log(`${agg.jumps === 0 ? 'ok  ' : 'FAIL'} the ball never jumps without a pass (${agg.jumps})`);
-process.exit(offPct <= 5 && agg.jumps === 0 && bounced >= 90 ? 0 : 1);
+process.exit(offPct <= 5 && agg.jumps === 0 && bounced >= 90 && farPct <= 5 ? 0 : 1);

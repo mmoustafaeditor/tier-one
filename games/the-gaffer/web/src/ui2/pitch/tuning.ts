@@ -66,6 +66,9 @@ export const T = {
   IDLE_DEAD: 1.4,
   IDLE_LIVE: 0.9,    // in play, men off the ball keep moving this much (m) around where they want to be
   CARRY_AIM: 0.55,   // the carrier heads this share of the way to his next step each frame (he keeps going with it)    // while the ball is dead, players jostle and drift this far (m) around their spot
+  TOUCH_FRESH: 2.5,  // a ball lost within this many beats of the pass reaching him: a heavy first touch (A3)
+  TOUCH_LOOSE: [1, 3] as [number, number], // how far it gets away from him: the best touch, the worst (m)
+  TOUCH_SPEED: 6,    // the pace it gets away at (m per second of play)
   BALL_VMAX: 32,     // no ball flies faster than this (m per second of play): a hard-hit shot or clearance
   BALL_ROLL: 9,      // a ball not yet at its man's feet rolls on to him at this pace (m per second of play)
 };
