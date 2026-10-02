@@ -425,7 +425,17 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     // goes past the man who closed him and carries it on a few metres, or is forced back and keeps it.
     if (!a.pos[b.side][b.who]) return;
     // (a ball still on its way to him lands first: he takes it on from there)
-    if (!a.flight && (a.carrier !== b.who || a.poss !== b.side)) { a.poss = b.side; a.carrier = b.who; a.ball = { ...a.pos[b.side][b.who] }; }
+    if (!a.flight && (a.carrier !== b.who || a.poss !== b.side)) {
+      // Not his yet: at the start of a highlight the picture cuts to him; otherwise the ball is played to him (no jump).
+      if (a.beat - 1 === 0) { a.poss = b.side; a.carrier = b.who; a.ball = { ...a.pos[b.side][b.who] }; }
+      else {
+        const to = a.pos[b.side][b.who];
+        a.carrier = -1;
+        fly(a, { x: to.x + (b.side === 0 ? 1 : -1), y: to.y }, Math.max(120, (dist(a.ball, to) / SPEED.short) * (a.secMs ?? 40)), () => { a.poss = b.side; a.carrier = b.who; });
+        const fl = a.flight as Anim['flight']; // (set by fly just above)
+        if (fl) fl.recv = [b.side, b.who];
+      }
+    }
     if (b.z !== undefined) a.zone = b.z;
     a.kinds[b.won ? 'duel:won' : 'duel:held'] = (a.kinds[b.won ? 'duel:won' : 'duel:held'] ?? 0) + 1;
     const p = a.pos[b.side][b.who], zc = b.z !== undefined ? zoneCentre(b.z) : p;
