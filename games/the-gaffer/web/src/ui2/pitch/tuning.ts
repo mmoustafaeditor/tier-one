@@ -66,5 +66,6 @@ export const T = {
   IDLE_DEAD: 1.4,
   IDLE_LIVE: 0.9,    // in play, men off the ball keep moving this much (m) around where they want to be
   CARRY_AIM: 0.55,   // the carrier heads this share of the way to his next step each frame (he keeps going with it)    // while the ball is dead, players jostle and drift this far (m) around their spot
+  BALL_VMAX: 32,     // no ball flies faster than this (m per second of play): a hard-hit shot or clearance
   BALL_ROLL: 9,      // a ball not yet at its man's feet rolls on to him at this pace (m per second of play)
 };
