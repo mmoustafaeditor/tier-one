@@ -21,7 +21,7 @@ import {
 } from './tactics';
 import { TUNE, buildModel, patchSub, rates as modelRates, type Model, type Rates, type SideInput } from './engine/model';
 import { newTally, playMinute, type Ball, type Flow, type PassTally, type Rules, type Tally } from './engine/play';
-import { aiPrep, aiRead, reslot } from './engine/story';
+import { aiPrep, aiReact, aiRead, reslot } from './engine/story';
 import { autoRoles, carryRoles, planFor, planOf, slotLoad } from './engine/phases';
 import { EV } from './engine/model';
 import { RS, RSN, TUNE_REF, callFoul, callGoal, callOffside, ensureRef, foulFactor, initRef, misconduct, refereeFor, restartOnTurnover, settle, wasteBooking, type Acts, type RefState } from './engine/referee';
@@ -472,6 +472,8 @@ function aiDecisions(m: LiveMatch, i: 0 | 1, get: Lookup) {
   if (s.ai && m.minute === 1 && !m.plus && !m.sides[o].ai && m.full) aiPrep(m, i, get);
   // Facing a human at half-time, the AI reads the first half and makes the one change that helps it most.
   if (s.ai && m.minute === 46 && !m.sides[o].ai && m.full) aiRead(m, i, get);
+  // ... and reacts during the match, at any minute: after conceding, or when it is being pinned back (story.ts aiReact).
+  if (s.ai && !m.sides[o].ai && m.full) aiReact(m, i, get);
   // Fresh legs around the hour: swap the most tired outfield players when the bench has someone nearly as good.
   // gf-ref: in three windows (two changes at each of the first two), and one in extra time.
   const plan = m.minute === 60 || m.minute === 72 ? 2 : m.minute === 82 || m.minute === 100 ? 1 : 0;

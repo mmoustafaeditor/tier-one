@@ -428,7 +428,7 @@ export const NEW_EN = {
     noTips: 'I wouldn’t change a thing.',
     shape: (f: string) => `Shape ${f}`,
     // tactic changes in the commentary
-    reason: { chase: 'chasing the game', protect: 'protecting the lead', red: 'after the red card', tenmen: 'against ten men', tip: '', read: 'reading the first half', prep: 'set up for this opponent', wx3: 'in the wind', wx4: 'in the heat' } as Record<string, string>,
+    reason: { chase: 'chasing the game', protect: 'protecting the lead', red: 'after the red card', tenmen: 'against ten men', tip: '', read: 'reading the first half', prep: 'set up for this opponent', wx3: 'in the wind', wx4: 'in the heat', conceded: 'after conceding', pinned: 'being pinned back' } as Record<string, string>,
     changeLine: '{c}: {what}{why}.',
     talkLine: '{c} have their half-time talk: “{what}”.',
     // commentary pools: a chance is a build-up clause and a finish; lines never repeat within a match

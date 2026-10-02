@@ -183,6 +183,32 @@ export function aiPrep(m: LiveMatch, side: 0 | 1, get: Lookup) {
     setTactics(m, side, tip.patch, `prep:${tip.theme}:${tip.ours ? 1 : 0}`);
   }
 }
+// During the match against a human (B1, like FM's AI on the touchline): it reacts when it has just conceded or when it
+// is being pinned back (the other side's xG over the last quarter of an hour well above its own), at any minute, not
+// only at half-time and the 76th. One change, the one the engine rates best (no new shape), at least GAP minutes after
+// its last change, and never the same instruction twice within HOLD minutes: no flip-flopping. A red card already has
+// its own reaction (match.ts), and half-time and the 76th keep theirs.
+const LIVE_KEYS = new Set(['mentality', 'pressing', 'passing', 'line', 'width', 'tempo', 'counter', 'build', 'cpress', 'trap']);
+export const AI_LIVE = { ON: true, MIN: 0.03, GAP: 10, HOLD: 20, FROM: 10, TO: 87, XG15: 0.6 };
+export function aiReact(m: LiveMatch, side: 0 | 1, get: Lookup): string | null {
+  const o = (1 - side) as 0 | 1, now = m.minute;
+  if (!AI_LIVE.ON || m.plus || now < AI_LIVE.FROM || now > AI_LIVE.TO || now === 46 || now === 76) return null;
+  const mine = m.events.filter((e) => e.kind === 'tactic' && e.side === side && !e.plus);
+  if (mine.some((e) => now - e.min < AI_LIVE.GAP)) return null;
+  const last = m.events.filter((e) => e.min === now - 1 && !e.plus);
+  const xg = (sd: 0 | 1) => m.events.filter((e) => e.side === sd && e.xg && !e.plus && e.min > now - 16).reduce((a, e) => a + (e.xg ?? 0), 0);
+  const why = last.some((e) => e.kind === 'goal' && e.side === o) ? 'conceded' : xg(o) - xg(side) >= AI_LIVE.XG15 ? 'pinned' : null;
+  if (!why) return null;
+  // Instructions it changed recently stay as they are.
+  const held = new Set(mine.filter((e) => now - e.min < AI_LIVE.HOLD).map((e) => (e.note ?? '').split(':')[0]));
+  // Team instructions only, as a manager shouts from the touchline (no new roles or shape mid-game; it also keeps the
+  // reaction quick), and nothing it changed recently.
+  const ok = (p: Partial<Tactics>) => Object.keys(p).every((k) => LIVE_KEYS.has(k) && !held.has(k));
+  const tip = suggest(m, side, get, 1, AI_LIVE.MIN, ok)[0];
+  if (!tip) return null;
+  setTactics(m, side, tip.patch, `${why}:${tip.theme}`);
+  return why;
+}
 export function applyTip(m: LiveMatch, side: 0 | 1, tip: Tip, get: Lookup) {
   if (tip.patch.formation) reshape(m, side, tip.patch.formation, get, 'tip');
   else setTactics(m, side, tip.patch, 'tip');
