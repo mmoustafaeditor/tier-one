@@ -5,12 +5,22 @@ import { useT } from './lib/i18n';
 import { sfx } from './lib/sfx';
 import { checkPurchase } from './lib/monet';
 import { Toasts } from './ui/bits';
-import { bootPlatform } from './lib/account';
+import { bootPlatform, detectPlatform } from './lib/account';
 import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
-import { Home } from './screens/Home';
+import { Home, dailyLiveDay } from './screens/Home';
 import { Icon, installTilt, prefersReducedMotion, TopBar } from './ui/game';
 // Surface films (GOTY.md §9, ui/film.tsx): filmed page turns in go(); the ambient loops are placed by each screen.
 import { filmTurn } from './ui/film';
+// 3.8 shell (launch brief §28–§29, §32–§33, §54): the chrome decides what the top bar shows per route, the five
+// destinations live in ui/chrome.tsx, the morning briefing and the notification ask mount here, and the funnel's
+// route-based events are sent from go() so no screen has to remember to.
+import { TABS, tabOf, setChromeRoute } from './ui/chrome';
+import { MorningPapers } from './ui/morning';
+import { PushAsk } from './ui/notify';
+import { trackAppOpen, funnel } from './lib/analytics';
+import { onByline } from './lib/byline';
+import { ymdUTC } from './lib/meta';
+import { dailyNoToday } from './screens/Front';
 // Code-split web build (GOTY.md §8.2): Home ships with the shell; every other screen, the settings sheet, onboarding
 // and the scene host (with the films) are their own chunks, fetched on first use (the service worker keeps the play
 // loop's chunks cached after its install; nothing is evaluated early, so idle time stays free for scrolling).
@@ -39,12 +49,11 @@ import { SocialWatch } from './ui/social';
 import { captureReferral, headlineVars, headlineStyle } from './lib/wallet';
 import './lib/earned'; // registers the earned-looks hook (lib/earnhook.ts) the game events call
 import { checkPrizes } from './lib/awards';
-import { MorningPapers } from './ui/live';
 // Shell layer (GOTY.md §4): motion tokens + view transitions, then the tablet/desktop layouts. Loaded after the screen styles.
 import './styles/motion.css';
 import './styles/desktop.css';
-import './styles/system.css'; // the one design system (docs/DESIGN_SYSTEM.md): last word on the shared parts
-import './styles/fit.css'; // 3.6: one-screen pages (no page scroll), the four-mode Home, pagers and tips
+import './styles/system.css'; // the one design system (docs/spec/M-ui-design-system.md): tokens, then the last word on the shared parts
+import './styles/fit.css'; // one-screen pages (no page scroll), pagers and tips
 
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
@@ -52,12 +61,6 @@ export type Route =
   | { n: 'boards'; period?: 'daily' | 'weekly' | 'rooms' | 'wire'; from?: Route } | { n: 'today' } | { n: 'missions' }
   | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
-
-const TABS: { n: Route['n']; k: string; icon: string; c: string }[] = [
-  { n: 'front', k: 'g.tabs.home', icon: 'home', c: 'var(--red)' }, { n: 'story', k: 'g.tabs.story', icon: 'story', c: 'var(--m-story)' }, { n: 'wire', k: 'g.tabs.wire', icon: 'wire', c: 'var(--m-wire)' },
-  { n: 'rooms', k: 'g.tabs.friends', icon: 'friends', c: 'var(--m-rooms)' }, { n: 'me', k: 'g.tabs.me', icon: 'me', c: 'var(--gold)' },
-];
-const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' || r.n === 'newsroom' ? 'rooms' : r.n === 'pass' || r.n === 'rivals' || r.n === 'contacts' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' || r.n === 'ddlive' || r.n === 'editor' || r.n === 'today' || r.n === 'missions' || r.n === 'boards' || r.n === 'customize' ? 'front' : r.n);
 
 function initialRoute(): Route {
   const q = new URLSearchParams(location.search);
@@ -74,13 +77,24 @@ function initialRoute(): Route {
 
 export function App() {
   // Only the fields the shell reads: a save update elsewhere (a call, coins, a mission) doesn't re-render the whole App.
-  const s = useSaveSel((x) => ({ lang: x.lang, edition: x.edition, theme: x.theme, reduced: x.reduced, onboarded: x.onboarded }), shallowEq);
+  const s = useSaveSel((x) => ({ lang: x.lang, edition: x.edition, theme: x.theme, reduced: x.reduced, onboarded: x.onboarded, careerLive: !!(x.career && x.career.live) }), shallowEq);
   const t = useT();
-  const [route, setRoute] = useState<Route>(initialRoute);
+  const [route, setRoute] = useState<Route>(() => { const r = initialRoute(); setChromeRoute(r.n); return r; });
   const [settings, setSettings] = useState(false);
   useEffect(() => { checkPurchase(); bootPlatform(__APP_VERSION__).catch(() => { /* offline: the game runs on the local save */ }); }, []);
   useEffect(() => { captureReferral(); }, []);
   useEffect(() => { const id = setTimeout(() => { checkPrizes(); }, 2500); return () => clearTimeout(id); }, []); // SAIF-03: yesterday's / last week's placing // ?ref=CODE (lib/wallet.ts): both players earn credits after the friend's first window
+
+  // ---- the funnel (brief §54): app open + D1/D7/D30, onboarding started/completed, Daily finished, Career started
+  useEffect(() => { trackAppOpen({ platform: detectPlatform(), onboarded: getSave().onboarded, pwa: matchMedia('(display-mode: standalone)').matches }); }, []);
+  const wasOnboarded = useRef(s.onboarded);
+  useEffect(() => {
+    if (!s.onboarded) funnel.onboardingStarted();
+    else if (!wasOnboarded.current) funnel.onboardingCompleted({ tutorial: !getSave().tut?.done });
+    wasOnboarded.current = s.onboarded;
+  }, [s.onboarded]);
+  useEffect(() => { if (s.careerLive) funnel.careerStarted(); }, [s.careerLive]);
+  useEffect(() => onByline((e) => { if (e.kind === 'window' && e.w.mode === 'daily') funnel.dailyFinished({ no: e.w.no || 0, tier: String(e.w.tier || ''), total: Number(e.w.total || 0) }); }), []);
 
   // Language, direction and edition live on <html> so tokens.css and :lang(ar) rules apply everywhere.
   useEffect(() => {
@@ -97,12 +111,18 @@ export function App() {
   const routeRef = useRef(route); routeRef.current = route;
   const go: Go = useCallback((r: Route) => {
     const reduce = prefersReducedMotion();
+    const from = routeRef.current;
+    // Route-based funnel events, sent once here rather than from every button that leads somewhere.
+    if (r.n === 'today' || (r.n === 'daily' && from.n !== 'today')) funnel.dailyViewed(dailyNoToday());
+    if (r.n === 'daily') { const sv = getSave(); if (!sv.daily[ymdUTC()] && !dailyLiveDay(sv)) funnel.dailyStarted(dailyNoToday()); }
+    if (r.n === 'customize' && from.n !== 'customize') funnel.storeOpened(from.n);
+    setChromeRoute(r.n);
     const swap = () => { setRoute(r); window.scrollTo(0, 0); };
     const d = document as Document & { startViewTransition?: (f: () => void) => { finished: Promise<void> } };
     const h = document.documentElement;
     sfx('page.turn');
     h.dataset.route = r.n;
-    const dir = reduce ? 'none' : vtDir(routeRef.current, r);
+    const dir = reduce ? 'none' : vtDir(from, r);
     // Filmed page turn (GOTY.md §9): on capable devices the sheet sweeps over the page and the route swaps while it
     // covers the frame; the View Transition / CSS slide below is the fallback whenever the clip isn't there.
     if (!reduce && filmTurn(dir, swap, h.dir === 'rtl')) { h.dataset.vt = 'none'; return; }
@@ -200,13 +220,14 @@ export function App() {
     <Suspense fallback={<RouteStage />}>{screen}</Suspense>
     {!inWindow && <nav className="g-tabs" aria-label="Sections" style={{ ['--tab-i' as string]: Math.max(0, TABS.findIndex((x) => x.n === tab)), ['--tab-c' as string]: TABS.find((x) => x.n === tab)?.c }}>
       <span className="g-tabs__brand" aria-hidden="true">T<b>1</b></span>
-      {TABS.map((x) => <a key={x.n} href={'?tab=' + x.n} style={{ ['--tab-c' as string]: x.c }} aria-current={tab === x.n ? 'page' : undefined} onClick={(e) => { e.preventDefault(); go({ n: x.n } as Route); }}><Icon n={x.icon} /><span>{t(x.k)}</span></a>)}
+      {TABS.map((x) => <a key={x.n} href={'?tab=' + x.n} style={{ ['--tab-c' as string]: x.c }} aria-current={tab === x.n ? 'page' : undefined} onClick={(e) => { e.preventDefault(); if (tab === x.n && route.n === x.n) return; go({ n: x.n } as Route); }}><Icon n={x.icon} /><span>{t(x.k)}</span></a>)}
     </nav>}
     <Toasts />
     <Suspense fallback={null}>
       {settings && <SettingsSheet open={settings} onClose={() => setSettings(false)} go={go} />}
       {!s.onboarded && <Onboarding go={go} />}
       <MorningPapers route={route.n} />
+      <PushAsk route={route.n} />
       <SceneHost />
       <SocialWatch />
     </Suspense>

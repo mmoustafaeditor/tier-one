@@ -1,7 +1,8 @@
-/* Tier One 3.3: tablet and desktop layouts (GOTY.md §4). Loaded last (from App.tsx), CSS only, on the classes the
-   screens already render. Phones are untouched: everything here sits inside a min-width query.
+/* Tier One: tablet and desktop layouts (brief §44: never a stretched phone). Loaded from App.tsx, CSS only, on the
+   classes the screens already render. Phones are untouched: everything here sits inside a min-width query.
      700–1023  tablet: one centred column, a little roomier; the tab bar floats as a pill.
-     ≥1024     desktop: a left rail replaces the tabs; max content width 1280; screens use their width. */
+     ≥1024     desktop: a left rail replaces the tabs; reading width is controlled per screen (760 for one-column pages,
+               1100 for Home's two-column desk, 1280 for the board + Player File split that the core lane renders). */
 
 :root { --rail-w: 92px; --rail-top: 84px; --rail-item: 74px; }
 
@@ -13,13 +14,12 @@
   .g-screen { max-width: 760px; padding-inline: 24px; padding-bottom: calc(var(--tabs-h) + 28px + env(safe-area-inset-bottom, 0)); }
   .g-screen--wide { max-width: 1000px; }
   .g-top { margin-inline: -24px; padding-inline: 24px; }
-  .home .desk__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .home .dcard { min-height: 132px; padding: 14px; }
+  .hm-card { min-height: 68px; }
 }
 
 /* ================= desktop ================= */
 @media (min-width: 1024px) {
-  /* ---------- the rail: same five tabs, icon over label, the active one's pill slides in its mode colour */
+  /* ---------- the rail: the same five destinations, icon over label, the active one's pill in its mode colour */
   #root:has(> .g-tabs) { padding-inline-start: var(--rail-w); }
   .g-tabs { inset-block: 0; inset-inline: 0 auto; width: var(--rail-w); height: auto; display: flex; flex-direction: column; align-items: stretch;
     padding: calc(var(--rail-top) + env(safe-area-inset-top, 0)) 0 env(safe-area-inset-bottom, 0); padding-inline-start: env(safe-area-inset-left, 0);
@@ -34,32 +34,33 @@
     transform: translateY(calc(var(--tab-i, 0) * var(--rail-item))); transition: transform var(--d-ui2) var(--ease-spring), background-color var(--d-ui2), box-shadow var(--d-ui2); }
   .g-tabs a:focus-visible { outline-offset: -8px; }
 
-  /* ---------- screens: no tab bar below any more, so they end at their content */
+  /* ---------- screens: no tab bar below any more, so they end at their content; reading width controlled */
   .g-screen { padding-inline: 28px; padding-bottom: 40px; max-width: 880px; }
   .g-screen--wide { max-width: 1280px; }
   .g-top { margin-inline: -28px; padding-inline: 28px; padding-top: 14px; }
   .toasts { inset-inline-start: var(--rail-w); }
 
-  /* ---------- Home: a real desk. 1 = the assignment (tall), 2 = the cards (2×2) and the strip, 3 = the feed, rivals and
-     contacts down the side (rendered only at this width). Row 4 is the flexible one, so the hero's height never pushes
-     gaps into column 2. */
-  .home.g-screen { max-width: 1280px; }
-  .home .desk__grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .95fr) minmax(280px, .8fr); grid-template-rows: auto auto auto 1fr auto; gap: 16px 22px; align-items: start; }
-  .home .desk__grid > .desk-by { grid-column: 1 / 3; grid-row: 1; }
-  .home .desk__grid > .desk__hero { grid-column: 1; grid-row: 2 / span 3; }
-  .home .desk__grid > .desk__cards { grid-column: 2; grid-row: 2; grid-template-columns: 1fr 1fr; }
-  .home .desk__grid > .desk__strip { grid-column: 2; grid-row: 3; }
-  .home .desk__grid > .desk__links { grid-column: 1 / 3; grid-row: 5; }
-  .home .desk__grid > .desk__side { grid-column: 3; grid-row: 1 / span 5; position: sticky; top: 76px; }
-  .home .dcard { min-height: 132px; }
-  .home .five__kit .g-kit { --kit: 52px !important; }
+  /* ---------- Home: a real desk, two columns. The Daily hero on the left (tall); the season strip, the four cards and
+     Missions · Shop stacked on the right. Still one viewport. */
+  .home.hm.g-screen { max-width: 1100px; }
+  .hm .fit__body { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); grid-template-rows: auto minmax(0, 1fr); gap: 16px 24px; align-items: start; }
+  .hm .fit__body > .fit-tip { grid-column: 1 / -1; }
+  .hm .fit__body > .hm-hero { grid-column: 1; grid-row: 2 / span 3; align-self: stretch; }
+  .hm .fit__body > .hm-season { grid-column: 2; }
+  .hm .fit__body > .hm-cards { grid-column: 2; grid-template-columns: 1fr; }
+  .hm .fit__body > .hm-row { grid-column: 2; }
+  .hm-hero__kit { width: 64px; height: 64px; }
+  .hm-hero__kit .g-kit { --kit: 50px !important; }
+  .hm-hero__s { font-size: 17px; }
+  .hm-card { min-height: 64px; }
 
-  /* ---------- the window: board on the left, the saga file docked as a right pane that scrolls on its own */
+  /* ---------- the window: board on the left, the Player File docked as a right pane that scrolls on its own (core lane
+     renders .play__cols / .play__file; this only lays them out) */
   .play.g-screen--wide { max-width: 1280px; }
   .play__cols { grid-template-columns: minmax(340px, 400px) minmax(0, 1fr); gap: 28px; }
   .play__file { position: sticky; top: 72px; max-height: calc(100dvh - 88px); overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; scrollbar-width: thin; padding: 2px 6px 24px; margin-inline-end: -6px; }
 
-  /* ---------- results: the front page (verdict, share, your name) on one side; the calls, doors and actions on the other */
+  /* ---------- results: the front page on one side; the calls, doors and actions on the other */
   .results2.res4.g-screen { max-width: 1200px; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); grid-template-rows: auto auto auto; column-gap: 28px; align-items: start; }
   .results2.res4 > * { max-width: none; grid-column: 1 / -1; }
   .results2.res4 > .g-top { grid-row: 1; }
@@ -69,13 +70,13 @@
   .results2.res4 > .results2__skip { grid-row: 3; }
   .results2.res4 .vcard { margin-top: 0; }
 
-  /* ---------- Wire: hero across; your live calls beside the leaderboard; then the wall (already a card grid) across */
+  /* ---------- Transfer Market: hero across; your live calls beside the leaderboard; then the wall across */
   .wire3 .g-stack:has(> .live) { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr); gap: 16px 24px; align-items: start; }
   .wire3 .g-stack:has(> .live) > * { grid-column: 1 / -1; }
   .wire3 .g-stack:has(> .live) > .live { grid-column: 1; grid-row: 2; }
   .wire3 .g-stack:has(> .live) > .wboard { grid-column: 2; grid-row: 2; }
 
-  /* ---------- Story, Friends, Pass, Me, Practice, How to: wider sheets; their own 2-column grids take over */
+  /* ---------- Career, Rooms, the season track, My Press Card, Practice, How to: wider sheets; their own grids take over */
   .sm.g-screen--wide { max-width: 1200px; }
   .sm-cols { gap: 24px; }
   .rooms3.g-screen { max-width: 1080px; }
@@ -83,8 +84,8 @@
   .pass3__cols { gap: 24px; }
   .me.g-screen { max-width: 1000px; }
   .me .shelf { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .me .me__links { grid-template-columns: repeat(4, 1fr); }
   .practice3.g-screen, .howto3.g-screen { max-width: 1000px; }
+  .howto3 .stepc { max-width: 640px; margin-inline: auto; }
 }
 
 @media (min-width: 1440px) {

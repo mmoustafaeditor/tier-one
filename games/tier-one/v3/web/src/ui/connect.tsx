@@ -18,6 +18,7 @@ import { CatchLine, Showcase, itemName } from './customize';
 import { notesOf, markNotesRead, type Note, type NoteKind } from '../lib/notes';
 import { item } from '../lib/catalog';
 import { BadgeRow } from './awards';
+import { Portrait } from './portrait';
 
 // ---------- navigation for components that don't get chrome (the bell lives in every TopBar)
 let navGo: Go | null = null;
@@ -185,10 +186,9 @@ export function BylineCard({ s, style }: { s: Save; style?: CSSProperties }) {
   const floor = REP_TIERS[ti][1], ceil = nxt ? nxt[1] : 100;
   const into = nxt ? Math.round((100 * (b.rep - floor)) / (ceil - floor)) : 100;
   const name = s.nick || t('g.home.noName');
-  const initials = name.split(/\s+/).map((x) => x[0]).join('').slice(0, 2).toUpperCase();
   return <section className={'cn-byline cn-tier--' + tier} style={style} aria-label={t('cn.me.byline')}>
     <div className="cn-byline__top">
-      <span className="cn-byline__av" aria-hidden="true">{initials}</span>
+      <Portrait id="me" name={name} size={56} shape="round" className="cn-byline__av" />
       <div className="cn-byline__id">
         <p className="cn-byline__by" dir="auto">{t('share.by', { n: name })}</p>
         <span className={'g-stamp cn-byline__stamp is-slam'}>{t('cn.tier.' + tier)}</span>
