@@ -263,7 +263,17 @@ export function LineChart({ series, x, h = 160, yMax, yMin = 0, step, markers = 
       </svg>
       <div className="chart-y" aria-hidden="true">{ticks.map((t, i) => <span key={i} style={{ top: Y(t) - 7 }}>{fmt(Math.round(t * 10) / 10)}</span>)}</div>
       <div className="chart-x" aria-hidden="true">{x.map((l, i) => (l ? <span key={i} style={{ insetInlineStart: `${((i / Math.max(1, n - 1)) * (W - P.l - P.r) + P.l) / W * 100}%` }}>{l}</span> : null))}</div>
-      {markers.map((m, i) => <span key={i} className="chart-mark" style={{ insetInlineStart: `${((m.i / Math.max(1, n - 1)) * (W - P.l - P.r) + P.l) / W * 100}%` }}>{m.label}</span>)}
+      {(() => {
+        // Labels of markers close together (two goals minutes apart) would print over each other: the later one keeps
+        // its line but not its label, and the shown label counts them ("GOAL ×2").
+        const at = (k: number) => ((k / Math.max(1, n - 1)) * (W - P.l - P.r) + P.l) / W * 100;
+        const shown: { pct: number; label: string; n: number }[] = [];
+        for (const m of [...markers].sort((a, b) => a.i - b.i)) {
+          const last = shown[shown.length - 1];
+          if (last && at(m.i) - last.pct < 12) last.n++; else shown.push({ pct: at(m.i), label: m.label, n: 1 });
+        }
+        return shown.map((m, i) => <span key={i} className="chart-mark" style={{ insetInlineStart: `${m.pct}%` }}>{m.label}{m.n > 1 ? ` ×${m.n}` : ''}</span>);
+      })()}
       {hover !== null && (
         <div className="tip" style={{ opacity: 1, insetInlineStart: `min(calc(100% - 140px), max(0px, calc(${((hover / Math.max(1, n - 1)) * (W - P.l - P.r) + P.l) / W * 100}% - 60px)))` }}>
           <b>{tipX ? tipX(hover) : x[hover]}</b>
