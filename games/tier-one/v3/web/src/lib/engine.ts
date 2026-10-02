@@ -12,7 +12,7 @@ export interface Twist { i: number; day: number; voided: Call | null; pen: numbe
 export interface Pub { day: number; left: number; posts7: number; over: boolean; clues: Clue[][]; calls: (Call | null)[]; pens: number[]; feed: Post[]; twist: Twist | null; noTwist: boolean; tips?: Record<number, number> }
 export interface Source { cost: number; from: number; kind: 'own' | 'street'; says?: string[]; M?: number[][]; rel?: number; map?: number[] }
 export interface Rules {
-  SAGAS: number; DAYS: number; CONTACTS: number; DD_CONTACTS: number; DD_POSTS: number; DD_SECONDS: number; DD_SNAP: number;
+  SAGAS: number; DAYS: number; CONTACTS: number; ROLLOVER?: number; DD_CONTACTS: number; DD_POSTS: number; DD_SECONDS: number; DD_SNAP: number;
   PRIOR: number[]; BASE: number[]; LOSS: number[]; EARLY: number[]; EXCL: number[]; UT_PEN: number[];
   SOURCES: Record<string, Source>; LEAK: Source; TIERS: { T1: number; T2: number; T3: number; T4: number };
   CIRCLE: Record<string, string>; TALLY: Record<string, number[][]>; CLAIM_TALLY: Record<string, number>;
