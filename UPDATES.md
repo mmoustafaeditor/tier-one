@@ -7,6 +7,11 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-02 · mmoustafaeditor (Claude Code session) · Tier One 3.8.0 launch rework (web)
+- **What changed:** The owner's 60-part launch brief (docs/LAUNCH_BRIEF.md) applied: simulation-audited game math (Exclusive +30, Tier 1 200 / Tier 2 130; sim in games/tier-one/v3/sim/sim3.mjs, spec docs/spec/D); qualitative source reliability in ranked play, "independent sources agree / echo chamber", the Player File rebuilt, the Exclusive moment, Deadline Day phases with a fair clock, Results as the share card, onboarding in play, Practice as the learning lab; Home around THE DAILY hero, design tokens and icon family, Morning Papers, contextual push ask, analytics funnel; Career as five emergent stages (20 windows, no conspiracy plot), visible club relations, contacts as relationships; Rooms math (cap 16, 7 rounds, recap card); Transfer Market on server-managed calendar.mjs (no hard-coded dates); one economy, one Store, real credit earning, missions that reward play; the owner's character pack in public/art (fictional cast, 512px WebP, reaction moods). Specs in games/tier-one/v3/docs/spec/.
+- **Files:** `games/tier-one/v3/**`, `api/tier-one/v3/**`, `api/tier-one/v4/**`, `tier-one/` build.
+- **Heads-up for the team:** shipped without the integrator's cleanup/spec/QA pass (owner's credit call); `scripts/social-api.test.mjs` newsrooms test fails because newsrooms were cut from the UI/server (test is obsolete). Android feed untouched.
+
 ## 2026-10-01 · mmoustafaeditor (Claude Code session) · Tier One 3.7.0: top bar, mini My Press Card, missions box, shop sections (web)
 - **What changed:** Bell shows only key notifications (new Daily, your calls, new in Shop); coins + credits in the top bar open the Shop; level off the top bar; Home has a mini My Press Card (stats per mode) and a Missions box (top 3), tiles Daily Challenge / Career Mode / Multiplayer / Transfer Market / Shop; Missions page by mode (daily + weekly); Shop split into Game customization and Game modes; "My Press Card" and "Career Mode" renames.
 - **Files:** `games/tier-one/v3/web/src/**`, `tier-one/` build.

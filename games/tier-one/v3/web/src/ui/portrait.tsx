@@ -88,8 +88,12 @@ export function portraitPlaceholderSVG(kind: PortraitKind, id: string, opts: { t
     + `<path d="M12 98q38-20 76 0" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/></g></svg>`;
 }
 
-export interface PortraitProps { kind: PortraitKind; id: string; size?: number; club?: WClub; mood?: Mood; name?: string; className?: string; style?: CSSProperties; round?: boolean }
-export function Portrait({ kind, id, size = 56, club, mood, name, className = '', style, round }: PortraitProps) {
+export interface PortraitProps { kind?: PortraitKind; id: string; size?: number; club?: WClub; mood?: Mood; name?: string; className?: string; style?: CSSProperties; round?: boolean; shape?: 'round' | 'square' | 'circle' }
+// Callers that only know an id (HowTo, Settings, the press card, Morning Papers) get the kind inferred from it.
+const KIND_OF: Record<string, PortraitKind> = { kitman: 'source', barber: 'source', agent: 'source', spotter: 'source', physio: 'source', leak: 'source', pressoffice: 'source', tabloid: 'rival', itk: 'rival', insider: 'rival', editor: 'staff', you: 'staff', mags: 'staff' };
+export function Portrait({ kind: kindIn, id, size = 56, club, mood, name, className = '', style, round: roundIn, shape }: PortraitProps) {
+  const kind: PortraitKind = kindIn || KIND_OF[id] || 'player';
+  const round = roundIn ?? (shape === 'round' || shape === 'circle');
   const src = useArt(kind, id, mood);
   const label = name || '';
   const st: CSSProperties = { ['--pt' as string]: size + 'px', ...style };
