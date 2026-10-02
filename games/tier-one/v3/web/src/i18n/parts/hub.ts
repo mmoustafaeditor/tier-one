@@ -16,7 +16,7 @@ export default {
       mode: { daily: 'Daily Challenge', career: 'Career Mode', multi: 'Multiplayer', market: 'Transfer Market' },
       sub: {
         dailyPlay: 'Today’s five · closes in {t}', dailyFiled: 'Filed · {p} pts', dailyResume: 'Back to day {d}',
-        careerNew: 'Start your comeback', careerAt: 'Chapter {c} · window {n}', careerLive: 'Window in progress',
+        careerNew: 'Start your comeback', careerAt: 'Stage {c} · window {n}', careerLive: 'Window in progress',
         multiNone: 'Play friends in a room', multiN: '{n} rooms', multi1: '1 room',
         marketCalls: '{n} calls live', marketNone: 'Call real transfers before they happen',
       },
@@ -83,7 +83,7 @@ export default {
       mode: { daily: 'تحدي النهارده', career: 'وضع المسيرة', multi: 'جماعي', market: 'سوق الانتقالات' },
       sub: {
         dailyPlay: 'خمسة النهارده · بيقفل بعد {t}', dailyFiled: 'اتنشر · {p} نقطة', dailyResume: 'ارجع لليوم {d}',
-        careerNew: 'ابدأ رجوعك', careerAt: 'الفصل {c} · الفترة {n}', careerLive: 'فترة شغالة',
+        careerNew: 'ابدأ رجوعك', careerAt: 'المرحلة {c} · الفترة {n}', careerLive: 'فترة شغالة',
         multiNone: 'العب مع صحابك في أوضة', multiN: '{n} أوض', multi1: 'أوضة واحدة',
         marketCalls: '{n} توقعات شغالة', marketNone: 'توقع الانتقالات الحقيقية قبل ما تحصل',
       },
@@ -150,7 +150,7 @@ export default {
       mode: { daily: 'Reto diario', career: 'Modo Carrera', multi: 'Multijugador', market: 'Mercado de fichajes' },
       sub: {
         dailyPlay: 'Los cinco de hoy · cierra en {t}', dailyFiled: 'Publicado · {p} pts', dailyResume: 'Vuelve al día {d}',
-        careerNew: 'Empieza tu regreso', careerAt: 'Capítulo {c} · ventana {n}', careerLive: 'Ventana en curso',
+        careerNew: 'Empieza tu regreso', careerAt: 'Etapa {c} · ventana {n}', careerLive: 'Ventana en curso',
         multiNone: 'Juega con amigos en una sala', multiN: '{n} salas', multi1: '1 sala',
         marketCalls: '{n} predicciones en juego', marketNone: 'Predice fichajes reales antes de que pasen',
       },
