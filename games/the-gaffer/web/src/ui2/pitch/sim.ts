@@ -11,7 +11,7 @@ import type { World } from '../../sim/world';
 import { T } from './tuning';
 import { timeBeats, upcoming, type Timed } from './director';
 import { shownOf, squeeze, type HlMode } from '../../sim/highlights';
-import { bodiesOf, decideMs, move, reactMs, type Body } from './body';
+import { bodiesOf, decideMs, hash, move, reactMs, type Body } from './body';
 import { assignMarks, blockSpot, inBox, keeperSpot, markSpot, slideY, wideInThird } from './defend';
 import { attackSpots, defendSpots, rushFor, wallSize, wallSpots, type SetPiece } from './setpieces';
 import { moveOfficials, newOfficials, officialTargets, type Officials } from './officials';
@@ -70,6 +70,7 @@ export interface Anim {
   back: [number, number]; // when each side last played the ball backwards (a time, for the back line's step-up)
   trans: Transition | null; // the last turnover: who lost it and when (counter-press, recovery runs, breaks)
   runsN: number;          // real runs off the ball this frame (for the measurement test)
+  runStat?: Record<string, [number, number]>; // per player: role runs on offer, runs made (pitch debug only, A4 test)
   kinds: Record<string, number>; // passes, shots and set pieces shown, by type (for the measurement test)
   sp: SetPiece | null;    // a set piece being staged (corner, free kick, goal kick)
   flag: { x: number; until: number } | null; // the assistant's flag is up (offside), at this x on the near touchline
@@ -771,6 +772,8 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
         for (const k of ks) tg[k] = target(mm, a, side, k);
         const tg0 = (s2: 0 | 1, k: number) => target(mm, a, s2, k); // where a player is heading (the shooter: his run into the box)
         const ft = fullTactics(mm.sides[side].tactics);
+        // Work rate (A4): how hard he gets back or presses after the ball is lost.
+        const workOf = (sd: 0 | 1, k: number) => T.WORK[0] + (T.WORK[1] - T.WORK[0]) * (a.body[sd]?.[k]?.work ?? 0.5);
         const tr = a.trans && a.time - a.trans.at < TRANSITION_MS(a.beatLen) ? a.trans : null;
         const boost: number[] = [];
         // Sprints (body.ts move, urgent): flat out until close, as a real sprint is — an overlap, a counter-press, a
@@ -797,7 +800,17 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
             const ip = sps[k]?.ip ?? '', ctx = { bd, by: a.ball.y, theirLine, d, y: tg[k].y, wide: wideOf(tg[k].y) };
             const r = runFor(ip, ctx) ?? (soon && fbRole(ip) && depthOf(side, soon.pt.x) > bd ? runFor(ip, { ...ctx, bd: depthOf(side, soon.pt.x), by: soon.pt.y }) : null);
             if (!r) continue;
-            if (r.run) { if (runs >= 3) continue; runs++; a.runsN = runs; boost[k] = 1.25; if (fbRole(ip)) rush.add(k); }
+            if (r.run) {
+              if (runs >= 3) continue;
+              // Movement off the ball (A4): whether he sees the run this beat (a better mover more often), and how far he
+              // takes it. One decision per beat, so he doesn't flicker between going and staying.
+              const ob = a.body[side]?.[k]?.offBall ?? 0.5, id = a.ids[side]?.[k] ?? `${side}:${k}`;
+              const sees = (hash(`${id}:${a.minute}:${a.beat}`) % 1000) / 1000 < T.RUN_SEE[0] + (T.RUN_SEE[1] - T.RUN_SEE[0]) * ob;
+              if (PITCH_DEBUG) { const st = ((a.runStat ??= {})[id] ??= [0, 0]); st[0]++; if (sees) st[1]++; }
+              if (!sees) continue;
+              runs++; a.runsN = runs; boost[k] = 1.25; if (fbRole(ip)) rush.add(k);
+              r.d += (ob - 0.5) * T.RUN_DEEP;
+            }
             tg[k] = { x: toX(side, clamp(r.d, 2, 103)), y: clamp(r.y, 2, W - 2) };
           }
           // Timing runs against the offside line (phase 3): nobody goes beyond their second-last man before the pass. The
@@ -852,7 +865,9 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           else if (a.carrier >= 0 && a.pos[side][a.carrier] && tg[a.carrier]) { // (a carrier sent off or subbed has no target)
             const cp = a.pos[side][a.carrier];
             const dn = Math.min(99, ...onPitch(mm, other).map((j) => (a.pos[other][j] ? dist(a.pos[other][j], cp) : 99)));
-            boost[a.carrier] = dn < T.CARRY_SPACE[0] ? T.CARRY_BOOST[0] : dn > T.CARRY_SPACE[1] ? T.CARRY_BOOST[2] : T.CARRY_BOOST[1];
+            // Pressed, a composed player keeps more of his pace (A4).
+            const calm = a.body[side]?.[a.carrier]?.calm ?? 0.5;
+            boost[a.carrier] = dn < T.CARRY_SPACE[0] ? T.CARRY_BOOST[0] + (calm - 0.5) * T.CALM_KEEP : dn > T.CARRY_SPACE[1] ? T.CARRY_BOOST[2] : T.CARRY_BOOST[1];
             // He carries it towards where the engine has the play, a short step when pressed, a long one into space.
             const to = tg[a.carrier], gap = dist(to, cp);
             const step = dn < T.CARRY_SPACE[0] ? T.CARRY_STEP[0] : dn > T.CARRY_SPACE[1] ? T.CARRY_STEP[2] : T.CARRY_STEP[1];
@@ -947,15 +962,15 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
             const field = ks.filter((k) => LINE[slots[k].pos] !== 'gk' && a.pos[side][k]);
             if (ft.cpress === 2 || (ft.cpress !== 0 && ft.pressing === 2)) {
               for (const k of [...field].sort((p, q) => Math.hypot(a.pos[side][p].x - a.ball.x, a.pos[side][p].y - a.ball.y) - Math.hypot(a.pos[side][q].x - a.ball.x, a.pos[side][q].y - a.ball.y)).slice(0, 3)) {
-                tg[k] = { ...a.ball }; boost[k] = 1.6; rush.add(k);
+                tg[k] = { ...a.ball }; boost[k] = 1.6 * workOf(side, k); rush.add(k);
               }
             } else {
               const bdep = depthOf(side, a.ball.x);
               // The back line drops as one (to 5 m behind the ball at most); the others ahead of the ball race back.
               const lineTo = Math.min(ln.depth, bdep - 5);
               for (const k of field) {
-                if (line(k) === 'def' && free(k)) { tg[k] = { x: toX(side, lineTo), y: tg[k].y }; if (depthOf(side, a.pos[side][k].x) > lineTo) boost[k] = 1.4; }
-                else if (depthOf(side, a.pos[side][k].x) > bdep) { tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), bdep - 5)), y: tg[k].y }; boost[k] = 1.4; rush.add(k); }
+                if (line(k) === 'def' && free(k)) { tg[k] = { x: toX(side, lineTo), y: tg[k].y }; if (depthOf(side, a.pos[side][k].x) > lineTo) boost[k] = 1.4 * workOf(side, k); }
+                else if (depthOf(side, a.pos[side][k].x) > bdep) { tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), bdep - 5)), y: tg[k].y }; boost[k] = 1.4 * workOf(side, k); rush.add(k); }
                 // Everyone stays tied to the dropped line: midfield within 16 m of it, forwards within 38 m.
                 if (free(k) && line(k) !== 'def') tg[k] = { x: toX(side, Math.min(depthOf(side, tg[k].x), lineTo + (line(k) === 'mid' ? 16 : 38))), y: tg[k].y };
               }

@@ -66,6 +66,11 @@ export const T = {
   IDLE_DEAD: 1.4,
   IDLE_LIVE: 0.9,    // in play, men off the ball keep moving this much (m) around where they want to be
   CARRY_AIM: 0.55,   // the carrier heads this share of the way to his next step each frame (he keeps going with it)    // while the ball is dead, players jostle and drift this far (m) around their spot
+  // Hidden traits (A4, body.ts):
+  RUN_SEE: [0.62, 1.08] as [number, number], // the chance he makes his role's run in a beat: worst mover, best (above 1: always)
+  RUN_DEEP: 8,       // how much further the best mover takes it than the worst (m)
+  WORK: [0.8, 1.2] as [number, number],      // recovery and counter-press pace: lowest work rate, highest
+  CALM_KEEP: 0.3,    // pressed on the ball: the most composed keeps this much more pace than the least
   TOUCH_FRESH: 2.5,  // a ball lost within this many beats of the pass reaching him: a heavy first touch (A3)
   TOUCH_LOOSE: [1, 3] as [number, number], // how far it gets away from him: the best touch, the worst (m)
   TOUCH_SPEED: 6,    // the pace it gets away at (m per second of play)
