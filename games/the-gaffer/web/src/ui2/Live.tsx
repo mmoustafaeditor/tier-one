@@ -11,7 +11,7 @@ import { planOf, rolesArrays } from '../sim/engine/phases';
 import { ROLES, roleFit, rolesFor, POOR_FIT } from '../sim/engine/roles';
 import { TX } from '../lang-tac-all';
 import { PERIOD_END, clockOf, isExtraBreak, isHalfTime, playOver } from '../sim/engine/clock';
-import { RATES, RATE_MAX, RATE_MIN, RATE_STEP, minuteMs, shownOf, squeeze, type HlMode } from '../sim/highlights';
+import { RATES, RATE_MAX, RATE_MIN, RATE_STEP, minuteMs, shownOf, type HlMode } from '../sim/highlights';
 import { RSN, RS } from '../sim/engine/referee';
 import { Banner, CommentaryFeed, MomentIcon, RefLine, VarBanner, bannerOf, momentText, refOf } from './Officials';
 import { applyTip, explain, suggest, winChance, type Point, type Tip } from '../sim/engine/story';
@@ -46,8 +46,6 @@ export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFini
   // What the match shows (sim/highlights.ts, like FM): a highlight plays at `speed` × real time (the speed bar), the
   // clock runs on quickly between highlights; players run at a fixed scale for that speed.
   const [hl, setHl] = useState<HlMode>(hl0);
-  const savedAt = useRef(Date.now());
-  const saveDue = useRef(false);
   const [yell, setYell] = useState<{ l: string; at: number } | null>(null); // the last shout, shown on the pitch for a moment
   const prevTo = useRef(-1); // where the previous minute's highlight ended (a move carried over shows from its start)
   const minMs = minuteMs(m, hl, speed, prevTo.current);
@@ -83,22 +81,10 @@ export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFini
       const k = fresh.some((e) => e.kind === 'goal') ? 2600 : fresh.some((e) => e.kind === 'red') ? 2200 : fresh.some((e) => e.kind === 'pen') ? 1600
         : fresh.some((e) => e.kind === 'yellow') ? 900 : whistle ? 1800 : 0;
       setHold(Math.round(k * holdK(speed)));
-      if (whistle) { onSave(n); if (!reduced()) sfx('whistle'); }
-      // A save in play every 5 match minutes, but never more than once every 10 real seconds: between highlights the
-      // clock runs fast and saving the whole career that often froze slow phones ...
-      else if (n.minute % 5 === 0 && !n.plus) saveDue.current = true;
-      // ... and the save waits for a minute between highlights (the picture is cutting anyway), so the moment it takes
-      // never lands in a passage being watched. In Full match every minute is shown: then it goes after 10 seconds.
-      // In Full match every minute is shown: the save waits for a stoppage (a goal, a card, a corner or a free kick being
-      // set up, the ball out of play) so the moment it takes falls where play has stopped anyway, or 15 minutes at most.
-      const stop = (n.flow ?? []).find((f) => (f.k === 'c' || f.k === 'f' || f.k === 'g' || f.k === 'gk') && f.t !== undefined);
-      const late = Date.now() - savedAt.current > 45000;
-      if (saveDue.current && !whistle && Date.now() - savedAt.current > 10000 && (hl === 4 ? stop || late : !shownOf(n, hl))) {
-        saveDue.current = false; savedAt.current = Date.now();
-        // (at the stoppage's own moment in the minute on screen, a beat after it)
-        if (hl === 4 && stop) { const sq = squeeze(n); setTimeout(() => onSave(n), Math.round((sq.at(stop.t! + 1.5) / sq.len) * minuteMs(n, 4, speed))); }
-        else onSave(n);
-      }
+      if (whistle && !reduced()) sfx('whistle');
+      // Saved every minute: during play only the match is saved, on its own (App saveLive: a small record written in a
+      // millisecond or two), so it never stalls the pitch and a reload loses at most a minute.
+      onSave(n);
     }, minMs + hold);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -169,7 +155,7 @@ export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFini
   // A shout from the touchline (it can come mid-highlight): the change is made now and saved at the next quiet moment
   // (saving the career mid-passage would stall a slow phone), and a bubble on the pitch says what was shouted.
   const shout = (l: string, k: string, v: number) => {
-    const n = clone(m); setTactics(n, me, { [k]: v } as Partial<Tactics>, 'shout'); onUpdate(n); saveDue.current = true;
+    const n = clone(m); setTactics(n, me, { [k]: v } as Partial<Tactics>, 'shout'); onUpdate(n); // (saved with the minute)
     setYell({ l, at: Date.now() });
   };
   const ft = fullTactics(s.tactics);
