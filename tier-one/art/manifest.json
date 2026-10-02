@@ -1,34 +1,36 @@
 {
-  "v": 1,
-  "_readme": "Owner-approved Tier One character pack (2 Oct 2026): fictional cast, 512x512 WebP, transparent. Keys <id> and <id>@<mood>; names, clubs and statuses are live text, never baked into art.",
-  "base": "art/",
-  "player": {},
-  "source": {
-    "kitman": "kitman.webp",
-    "kitman@hesitant": "kitman-react.webp",
-    "barber": "barber.webp",
-    "barber@hesitant": "barber-react.webp",
-    "agent": "agent.webp",
-    "agent@hesitant": "agent-react.webp",
-    "spotter": "spotter.webp",
-    "spotter@shock": "spotter-react.webp",
-    "physio": "physio.webp",
-    "physio@hesitant": "physio-react.webp",
-    "leak": "leak.webp",
-    "leak@hesitant": "leak-react.webp"
-  },
-  "rival": {
-    "tabloid": "tabloid.webp",
-    "tabloid@mischief": "tabloid-react.webp",
-    "itk": "itk.webp",
-    "itk@hesitant": "itk-react.webp",
-    "insider": "insider.webp",
-    "insider@confident": "insider-react.webp"
-  },
-  "staff": {
-    "editor": "editor.webp",
-    "editor@stern": "editor-react.webp",
-    "you": "you.webp",
-    "you@joy": "you-react.webp"
-  }
+ "v": 1,
+ "_readme": "Owner-approved Tier One character pack (2 Oct 2026): fictional cast, 512x512 WebP, transparent. Keys <id> and <id>@<mood>; names, clubs and statuses are live text, never baked into art.",
+ "base": "art/",
+ "player": {
+  "p-mohamed-salah": "players/p-mohamed-salah.webp"
+ },
+ "source": {
+  "kitman": "kitman.webp",
+  "kitman@hesitant": "kitman-react.webp",
+  "barber": "barber.webp",
+  "barber@hesitant": "barber-react.webp",
+  "agent": "agent.webp",
+  "agent@hesitant": "agent-react.webp",
+  "spotter": "spotter.webp",
+  "spotter@shock": "spotter-react.webp",
+  "physio": "physio.webp",
+  "physio@hesitant": "physio-react.webp",
+  "leak": "leak.webp",
+  "leak@hesitant": "leak-react.webp"
+ },
+ "rival": {
+  "tabloid": "tabloid.webp",
+  "tabloid@mischief": "tabloid-react.webp",
+  "itk": "itk.webp",
+  "itk@hesitant": "itk-react.webp",
+  "insider": "insider.webp",
+  "insider@confident": "insider-react.webp"
+ },
+ "staff": {
+  "editor": "editor.webp",
+  "editor@stern": "editor-react.webp",
+  "you": "you.webp",
+  "you@joy": "you-react.webp"
+ }
 }

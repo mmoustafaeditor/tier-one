@@ -1,7 +1,6 @@
 # Tier One player art · batch 01 (40 players)
 
-Made for ChatGPT image generation. Same look as the owner's character pack (the Kit Man, the Barber, the Agent…) and the
-UI handoff screenshots: premium adult anime-inspired illustration, ink linework, soft cel shading, warm newsroom light.
+Made for ChatGPT image generation. Same look as the owner's Mohamed Salah portrait: painterly anime-inspired, warm floodlight rim light, night stadium bokeh.
 
 ## How to use
 
@@ -16,14 +15,16 @@ UI handoff screenshots: premium adult anime-inspired illustration, ink linework,
 
 ## Style prompt (paste first)
 
-> You are illustrating football player portraits for a premium mobile game called Tier One. Keep one consistent style
-> for every image in this chat. Style: original premium adult anime-inspired portrait, recognisable facial features and
-> accurate adult appearance of the named footballer, expressive but grounded face, clean ink linework, soft cel shading,
-> warm newsroom lighting. Palette: deep charcoal, warm off-white and one restrained coral accent; no neon, no purple,
-> no gradients. Framing: head and shoulders, centred face, slight turn toward camera, neutral confident expression.
-> Clothing: a plain football shirt in the club's two colours given below, with no badge, crest, sponsor, logo, number
-> or text. Background: fully transparent. Output: 1024×1024 PNG. No text, letters, watermarks or endorsement cues.
-> Match the look of the earlier Tier One character pack (the Kit Man, the Barber, the Agent, the Airport Spotter).
+Reference: the owner's Mohamed Salah portrait (already in the game as `p-mohamed-salah`). Every image must match it.
+
+> You are painting football player portraits for a premium game called Tier One. Keep exactly one style for every
+> image in this chat, matching the Mohamed Salah portrait we made: a painterly, semi-realistic anime-inspired
+> illustration of the named footballer, recognisable face and accurate adult appearance, confident relaxed expression,
+> looking slightly off camera. Warm golden rim light on hair and face, soft cinematic shading, visible brush texture.
+> Background: a dark night stadium with blurred warm floodlight bokeh. Framing: head and upper chest, face in the upper
+> half, shoulders filling the bottom. Clothing: a plain football shirt in the club colours given, no badge, crest,
+> sponsor, logo, number or stripes of text. Square 1024×1024 image. Do NOT add any name banner, caption, title, letters
+> or watermark anywhere in the image.
 
 ## Per-player line (one message each)
 

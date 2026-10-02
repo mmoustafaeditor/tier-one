@@ -3623,5 +3623,6 @@
 {"id":"p-eldor-shomurodov","name":"Eldor Shomurodov","shortName":"Shomurodov","nationality":"UZB","birthDate":null,"position":"FW","clubId":"tur-basaksehir","shirtNumber":14,"contractEnd":null,"loan":null,"refs":{},"confidence":"medium"},
 {"id":"p-abbosbek-fayzullaev","name":"Abbosbek Fayzullaev","shortName":"Fayzullaev","nationality":"UZB","birthDate":null,"position":"MF","clubId":"tur-basaksehir","shirtNumber":10,"contractEnd":null,"loan":null,"refs":{},"confidence":"medium"},
 {"id":"p-yusuf-sar","name":"Yusuf Sarı","shortName":"Yusuf","nationality":"TUR","birthDate":null,"position":"FW","clubId":"tur-basaksehir","shirtNumber":11,"contractEnd":null,"loan":null,"refs":{},"confidence":"medium"},
-{"id":"p-berat-ozdemir","name":"Berat Özdemir","shortName":"Berat","nationality":"TUR","birthDate":null,"position":"MF","clubId":"tur-basaksehir","shirtNumber":8,"contractEnd":null,"loan":null,"refs":{},"confidence":"medium"}
+{"id":"p-berat-ozdemir","name":"Berat Özdemir","shortName":"Berat","nationality":"TUR","birthDate":null,"position":"MF","clubId":"tur-basaksehir","shirtNumber":8,"contractEnd":null,"loan":null,"refs":{},"confidence":"medium"},
+{"id":"p-mohamed-salah","name":"Mohamed Salah","shortName":"Salah","nationality":"EGY","birthDate":"1992-06-15","position":"FW","clubId":"eng-liverpool","shirtNumber":11,"contractEnd":"2027-06-30","loan":null,"refs":{"wiki":"Mohamed Salah","wikidata":"Q1354960"},"confidence":"high"}
 ]

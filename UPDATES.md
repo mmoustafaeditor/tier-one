@@ -7,6 +7,13 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-02 · Tier One 3.9.4 — painted player art, Salah
+
+- Removed the drawn SVG "anime" faces (owner: not the style). Players without art now show a quiet silhouette with their initials in the club colour.
+- First painted portrait in: Mohamed Salah (owner's ChatGPT image, cropped to the portrait, 512px WebP). Salah added to Liverpool's roster; the age cap for the roster went from 33 to 36 so veteran stars count.
+- Player art shows as a framed tile on the Player File and fills round avatars face-first.
+- docs/art/PLAYER_PACK_01.md rewritten to the Salah style (painterly anime, warm floodlight rim light, night stadium bokeh, square, no caption); the importer keeps the top square of tall images.
+
 ## 2026-10-02 · Tier One 3.9.3 — roster live now, rival journalists tab, Your call fits, player art batch 01 ready
 
 - The trimmed roster (top 5 per club, Turkish league added) now applies to every Daily and room immediately (owner: user testing only).

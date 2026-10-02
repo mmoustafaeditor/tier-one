@@ -14,7 +14,6 @@
 // manifest variant "<id>@<mood>" when the owner supplied one. Reduced motion: no animation here at all.
 import { useEffect, useState, type CSSProperties } from 'react';
 import { hash } from '../lib/kit';
-import { animePlayerSVG } from './anime';
 import { WORLD } from '../lib/engine';
 import type { WClub } from '../lib/engine';
 
@@ -60,7 +59,15 @@ export function portraitPlaceholderSVG(kind: PortraitKind, id: string, opts: { t
   const h = hash(kind + ':' + id);
   const skin = SKIN[h % SKIN.length], hair = HAIR[(h >>> 3) % HAIR.length];
   const build = (h >>> 6) % 3, cut = (h >>> 8) % 4, brow = (h >>> 11) % 2, beard = kind !== 'staff' && (h >>> 13) % 3 === 0;
-  if (kind === 'player') { const p = WORLD.players.find((x) => x.id === id); return animePlayerSVG(id, { c1: opts.tint, c2: opts.tint2, nat: p?.nat, mood: opts.mood, label: opts.label }); }
+  // Players without art yet: a quiet silhouette in the club colour with the initials (the painted pack replaces it).
+  if (kind === 'player') {
+    const p = WORLD.players.find((x) => x.id === id);
+    const ini = esc((p ? p.n : id.replace(/^p-/, '')).split(/[\s-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase());
+    const c1 = opts.tint || '#3A4A55', g = 'pl' + (h % 100000);
+    return `<svg viewBox="0 0 100 100" role="img" aria-label="${esc(opts.label || '')}"><defs><radialGradient id="${g}" cx="50%" cy="30%" r="75%"><stop offset="0" stop-color="#2D363D"/><stop offset="1" stop-color="#151B1F"/></radialGradient></defs>`
+      + `<rect width="100" height="100" fill="url(#${g})"/><circle cx="50" cy="40" r="17" fill="#3A444B"/><path d="M16 100c3-20 17-30 34-30s31 10 34 30z" fill="${c1}" opacity=".85"/><path d="M16 100c3-20 17-30 34-30s31 10 34 30z" fill="#151B1F" opacity=".35"/>`
+      + `<text x="50" y="46" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-weight="600" font-size="15" fill="#EFE7D7">${ini}</text></svg>`;
+  }
   const tint = opts.tint || SRC_C[id] || '#3A342A', tint2 = opts.tint2 || '#F4EFE4';
   const mood = opts.mood || 'neutral';
   const uid = 'pt' + (h % 100000);

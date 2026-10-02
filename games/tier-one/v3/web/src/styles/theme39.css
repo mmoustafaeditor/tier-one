@@ -108,3 +108,6 @@ html, body { background: var(--desk); color: var(--on-desk); }
 .sg-tabs button[aria-selected="true"] { color: var(--on-desk); box-shadow: inset 0 -3px 0 var(--red); }
 /* low-end and the APK: no grain under reduced data */
 @media (prefers-reduced-data: reduce) { .g-card::before { display: none; } }
+
+/* painted player art fills its frame, face in view */
+.g-portrait.is-art[data-kind="player"] img { object-fit: cover; object-position: 50% 18%; }

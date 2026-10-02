@@ -40,7 +40,7 @@ export function compactWorld(snap, perClub = 9, buyerExtra = 2) {
   for (const p of snap.players) {
     if (!clubIds.has(p.clubId) || p.position === 'GK' || (p.loan && p.loan.direction === 'out')) continue;
     const age = ageOn(p.birthDate, snap.meta && snap.meta.asOf);
-    if (age && (age < 18 || age > 33)) continue;
+    if (age && (age < 18 || age > 36)) continue;
     let w = (p.position === 'FW' ? 3 : p.position === 'MF' ? 2.5 : 1) + (KEY_SHIRTS.has(p.shirtNumber) ? 3 : 0) + (p.captain ? 2 : 0)
       + (p.refs && p.refs.wikidata ? 1 : 0) + (p.shirtNumber > 0 && p.shirtNumber < 30 ? 1 : 0) - (p.confidence === 'high' ? 0 : 2)
       + (marquee.has(p.id + '>' + p.clubId) ? 3 : 0) + (onWire.has(p.id) ? 3 : 0);

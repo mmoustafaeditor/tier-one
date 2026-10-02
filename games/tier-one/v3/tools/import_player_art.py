@@ -25,7 +25,11 @@ def main(src):
         stem = os.path.splitext(os.path.basename(f))[0].lower()
         react = stem.endswith('-react'); pid = stem[:-6] if react else stem
         if pid not in IDS: unknown.append(os.path.basename(f)); continue
-        im = Image.open(f).convert('RGBA'); im.thumbnail((512, 512), Image.LANCZOS)
+        im = Image.open(f).convert('RGBA')
+        w, h = im.size
+        if h > w: im = im.crop((0, 0, w, w))  # a tall image (e.g. with a caption band below): keep the top square, the face
+        elif w > h: x = (w - h) // 2; im = im.crop((x, 0, x + h, h))
+        im = im.resize((512, 512), Image.LANCZOS)
         out = 'players/' + pid + ('-react' if react else '') + '.webp'
         im.save(os.path.join(ART, out), 'WEBP', quality=86, method=6)
         if react: m['player'][pid + '@joy'] = out; m['player'][pid + '@confident'] = out
