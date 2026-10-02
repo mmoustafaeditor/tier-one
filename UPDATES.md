@@ -42,6 +42,11 @@ together with your change.
 
 ---
 
+## 2026-10-02 · saifsaber · The Gaffer: AI managers adapt to the wind and the heat; analysis screen checked in Arabic
+- **What changed:** At kick-off an AI manager sets up for the weather, and the commentary says so ("… in the wind"): in the wind it keeps the ball on the ground, plays narrower and takes corners short; in the heat it keeps the ball. Measured over 2,000 matches of each (`sim-tests/wxai.ts`): in the wind the adapting side takes 1.58 points a match against 1.50 without, and in the heat 1.55 against 1.53; goals move under 3%. Heavy rain and snow change nothing on purpose: going direct on a heavy pitch was measured to cost more than the long-ball edge gives back. Clear days, rain and snow play exactly as before. The analysis screen was checked in Arabic: "47 من 55" printed backwards (fixed), Arabic plurals for 3–10, a line naming whose number is whose on Territory, and goal labels close together on xG charts merge ("GOAL ×2") instead of overlapping.
+- **Files:** `games/the-gaffer/web/src/sim/engine/weather.ts` (`weatherPlan`), `src/sim/match.ts`, `src/lang-new{,-ar,-es,-fr}.ts`, `src/ui2/Analysis.tsx`, `src/ui2/kit.tsx`, `src/lang-ana.ts`, `sim-tests/wxai.ts` (new)
+- **Heads-up for the team:** The engine fingerprint changes (AI tactics differ in wind and heat). While measuring, a counter-attacking setting helped AI sides by about +0.1 xG a match in every weather, clear included: the AI's tactic choice has room to improve, separate from the weather. Tier One is untouched.
+
 ## 2026-10-02 · saifsaber · The Gaffer: post-match analysis (like FM's Analysis screen)
 - **What changed:** The full-time screen has a **Match analysis** button (EN/AR/ES/FR). It opens three tabs, all read from what the engine recorded (`sim/analysis.ts`, added to the aftermath; in memory only, not in the save):
   - **Chances.** A shot map: each shot in its zone, sized by xG, filled for a goal, us and/or them. Shots, on target, big chances and xG per side. Where the chances came from, by kind (in the box, cut-backs, through balls, counters, won high, from distance, headers / corners, free-kick crosses, free kicks, penalties), with count, xG and goals.
