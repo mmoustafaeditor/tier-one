@@ -1,8 +1,8 @@
 {
   "game": "the-gaffer",
   "version": "2.2.0",
-  "build": 29849282,
+  "build": 29849336,
   "minShell": 2,
-  "bytes": 2825271,
-  "sha256": "df4bfc3a6f7534e6069bc97f9348e24e1ed1bff35d3409534645192b4a091fc4"
+  "bytes": 2825917,
+  "sha256": "526420b9a6e3437575a243f93bd777b60c06ea9367c0821aa6e06be1fe7035b1"
 }
