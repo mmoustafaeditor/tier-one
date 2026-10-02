@@ -15,6 +15,16 @@ import { chainOf } from './passes';
 // gk goal kick (the side `s` restarts), c a corner to `s`, o `s` caught offside. t: seconds into the minute when it
 // happens; n: the engine node it happened at (model.ts N: the kind of action, e.g. a cross or a through ball).
 export interface Flow { s: 0 | 1; z: number; k: string; p?: string; q?: string; ty?: string; t?: number; n?: number }
+// The passes of a FULL match, counted (passes.ts plays them; nothing reads this back into a result). pl[id]: [attempted,
+// completed, key passes (the ball to a shooter), long balls, crosses, received]; side: [attempted, completed] × 2;
+// ln["a>b"]: passes a completed to b (the pass map).
+export interface PassTally { pl: Record<string, number[]>; side: number[]; ln: Record<string, number> }
+export const newPassTally = (): PassTally => ({ pl: {}, side: [0, 0, 0, 0], ln: {} });
+// A contest lost with the ball handed over: how often the pass into it is what failed. Into a through ball, a cross,
+// a long ball or a set-piece delivery it always is (cut out, won in the air, cleared); in midfield and around the box
+// most are interceptions; on the wing (a dribble) and in build-up (pressed on the ball) fewer. The rest are tackles.
+const FAILS: Record<number, number> = { [N.THR]: 1, [N.CRS]: 1, [N.LONG]: 1, [N.SETH]: 1, [N.CRN]: 1, [N.P0]: 0.75, [N.P1]: 0.75, [N.P2]: 0.75, [N.F1]: 0.75, [N.CTR]: 0.6, [N.B]: 0.5, [N.F0]: 0.35, [N.F2]: 0.35, [N.RHIGH]: 0.5 };
+
 export interface Tally {
   poss: [number, number];   // in-play seconds on the ball
   zone: number[];           // [side*30 + zone]: seconds on the ball per zone (absolute: col from the home goal × 5 + row)
@@ -80,11 +90,21 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
   // Who has the ball (for the passes): the last man the previous minute's path left it with.
   const last = m.flow?.[m.flow.length - 1];
   let hold: string | undefined = last && last.s === b.s ? (last.k === 'p' ? last.q : last.k === 'w' || last.k === 'l' || last.k === 'r' ? last.p : undefined) : undefined;
+  const ps = full && rp ? (m.ps ??= newPassTally()) : null;
+  const tallyPass = (s: 0 | 1, p: string, q: string, ty: string, d: 1 | -1, done = true) => {
+    if (!ps) return;
+    const a = (ps.pl[p] ??= [0, 0, 0, 0, 0, 0]), b = (ps.pl[q] ??= [0, 0, 0, 0, 0, 0]);
+    if (done) { a[0] += d; if (ty === 'l') a[3] += d; if (ty === 'x') a[4] += d; ps.side[s * 2] += d; }
+    a[1] += d; b[5] += d; ps.side[s * 2 + 1] += d; ps.ln[`${p}>${q}`] = (ps.ln[`${p}>${q}`] ?? 0) + d;
+  };
+  let lastPass: { s: 0 | 1; p: string; q: string; ty: string; node: number } | null = null; // this node's last pass (a failed one is taken back)
   const passes = (s: 0 | 1, M: Model, node: number, target: string | undefined, t0: number, t1: number): { t: number; ty: string } | undefined => {
     if (!full || !rp) return;
     const t = m.sides[s].tactics;
     const c = chainOf(rp, M.actors[s], node, hold, target, t0, t1, t.passing ?? 1, t.tempo ?? 1);
-    for (const x of c.passes) flow.push({ s, z: 0, k: 'p', p: x.p, q: x.q, ty: x.ty, t: x.t, n: node });
+    for (const x of c.passes) { flow.push({ s, z: 0, k: 'p', p: x.p, q: x.q, ty: x.ty, t: x.t, n: node }); tallyPass(s, x.p, x.q, x.ty, 1); }
+    const lp = c.passes[c.passes.length - 1];
+    lastPass = lp ? { s, p: lp.p, q: lp.q, ty: lp.ty, node } : null;
     hold = c.holder;
     return c.passes.length ? c.passes[c.passes.length - 1] : undefined;
   };
@@ -117,6 +137,10 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       if (assist === shooter) assist = undefined;
       const how = SHOTS[i];
       const passT = passes(s, M, nodeIx, shooter, clockAt(secs, budget, 0), clockAt(secs, budget, 0) + 0.4);
+      // The ball that set the shot up is a key pass (this node's own pass to the shooter, or the last one into him).
+      const lp0 = lastPass as { p: string; q: string } | null; // (set inside passes() above)
+      const kp = passT && lp0?.q === shooter ? lp0 : null;
+      if (ps && kp) { const a = (ps.pl[kp.p] ??= [0, 0, 0, 0, 0, 0]); a[2]++; }
       hold = undefined;
       // (the shot is struck once the ball has reached him: its moment on the pitch, not its result)
       const shotT = Math.min(60, Math.max(clockAt(secs, budget, node.t), passT === undefined ? 0 : passT.t + (FLIGHT[passT.ty] ?? 1.4)));
@@ -215,6 +239,8 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
           : kept ? { s, z, k: 'r', p: aId, q: dId, t: clockAt(secs, budget, node.t), n: nodeIx }
           : { s: o, z, k: 'l', p: dId, q: aId, t: clockAt(secs, budget, node.t), n: nodeIx });
         hold = won || kept ? aId : dId;
+        const lp = lastPass as { s: 0 | 1; p: string; q: string; ty: string; node: number } | null;
+        if (!won && !kept && lp && lp.node === nodeIx && lp.q === aId && rp && rp() < (FAILS[nodeIx] ?? 0)) tallyPass(lp.s, lp.p, lp.q, lp.ty, -1, false);
       }
       if (cornerAfter) { flow.push(cornerAfter); hold = cornerAfter.p; cornerAfter = null; }
       if (full && edge.to === N.CTR) tl.ctr[s]++;

@@ -20,7 +20,7 @@ import {
   FORMATIONS, aiTactics, autoXI, availableIn, formOf, fullTactics, setPieces, slotValue, xiFor, DEFAULT_TACTICS, type FormationId, type Tactics,
 } from './tactics';
 import { TUNE, buildModel, patchSub, rates as modelRates, type Model, type Rates, type SideInput } from './engine/model';
-import { newTally, playMinute, type Ball, type Flow, type Rules, type Tally } from './engine/play';
+import { newTally, playMinute, type Ball, type Flow, type PassTally, type Rules, type Tally } from './engine/play';
 import { aiRead, reslot } from './engine/story';
 import { autoRoles, carryRoles, planFor, planOf, slotLoad } from './engine/phases';
 import { EV } from './engine/model';
@@ -96,6 +96,7 @@ export interface LiveMatch {
   ball?: Ball;         // who has the ball, where in the possession graph, clock carry
   tl?: Tally;          // possession, territory, phase counters, momentum, fitness curve
   flow?: Flow[];       // the ball's path in the last minute (for the pitch)
+  ps?: PassTally;      // the passes of a FULL match, counted (engine/play.ts; the analysis, ratings and numbers read it)
   rev?: number;        // bumps on every change the model depends on (subs, cards, tactics)
   dirty?: boolean;     // the model must be rebuilt now (a red card mid-minute)
   base?: { stats: [TeamStats, TeamStats]; xg: [number, number]; from: number }; // a v1 match resumed on v2
