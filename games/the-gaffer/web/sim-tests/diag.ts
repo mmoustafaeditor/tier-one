@@ -10,6 +10,7 @@ const w = generateWorld(7); const get = (id: string) => playerOf(w, id)!;
 const top = w.clubs.filter((c) => ['eng1', 'esp1', 'ita1', 'ger1', 'fra1'].includes(c.leagueId));
 const N = +(process.argv[2] ?? 6), SHOW = +(process.argv[3] ?? 4);
 const FRAME = 1000 / 60;
+const kinds: Record<string, number> = {};
 const agg = { passages: 0, flights: 0, len: [] as number[], landNoOne: 0, jumps: 0, swapNoFlight: 0, beatsPer: [] as number[], passesBeforeShot: [] as number[], shotsFromNowhere: 0, shots: 0, secs: [] as number[] };
 let shown = 0;
 for (let i = 0; i < N; i++) {
@@ -37,6 +38,7 @@ for (let i = 0; i < N; i++) {
       if (a.poss !== prevPoss && !a.flight && !lastFlight) { agg.swapNoFlight++; }
       prevBall = { ...a.ball }; prevCarrier = a.carrier; prevPoss = a.poss;
     }
+    if (playOver(m)) for (const [k, v] of Object.entries(a.kinds as Record<string, number>)) kinds[k] = (kinds[k] ?? 0) + v;
     if (sh) {
       agg.passages++; agg.beatsPer.push(a.beats.length); agg.secs.push(ms / 1000);
       if (shown < SHOW) { shown++; const h = highlightOf(m); console.log(`\n=== match ${i}, minute ${m.minute}: level ${h.level}, engine seconds ${h.from}-${h.to}, ${(ms / 1000).toFixed(1)} s on screen, ${a.beats.length} beats`); console.log('flow:', (m.flow ?? []).map((f: any) => `${f.t}s:${f.k}${f.n !== undefined ? '@' + f.n : ''}`).join(' ')); for (const l of log) console.log('  ' + l); }
@@ -54,6 +56,9 @@ console.log(`ball jumped 3+ m in a frame without a pass: ${agg.jumps} times`);
 console.log(`shots: ${agg.shots}; passes in the move before a shot: median ${med(agg.passesBeforeShot)}; 0-1 passes: ${pct(agg.shotsFromNowhere, agg.shots)}%`);
 // What a viewer must never see (engine passes since 2026-10-02): a pass landing away from its man, a ball jumping.
 const offPct = pct(agg.landNoOne, agg.flights);
+// The ball's flight (A1): every long ball bounces once before its man takes it; crosses and shots curl.
+const bounced = pct(kinds.bounce ?? 0, kinds.long ?? 0);
+console.log(`${bounced >= 90 ? 'ok  ' : 'FAIL'} long balls that bounce: ${bounced}% of ${kinds.long ?? 0} (≥ 90%); curled crosses and shots: ${kinds.bend ?? 0}`);
 console.log(`${offPct <= 5 ? 'ok  ' : 'FAIL'} passes reach their man: ${100 - offPct}% (≥ 95%)`);
 console.log(`${agg.jumps === 0 ? 'ok  ' : 'FAIL'} the ball never jumps without a pass (${agg.jumps})`);
-process.exit(offPct <= 5 && agg.jumps === 0 ? 0 : 1);
+process.exit(offPct <= 5 && agg.jumps === 0 && bounced >= 90 ? 0 : 1);

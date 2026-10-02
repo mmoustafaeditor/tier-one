@@ -15,7 +15,7 @@ import { bodiesOf, decideMs, move, reactMs, type Body } from './body';
 import { assignMarks, blockSpot, inBox, keeperSpot, markSpot, slideY, wideInThird } from './defend';
 import { attackSpots, defendSpots, rushFor, wallSize, wallSpots, type SetPiece } from './setpieces';
 import { moveOfficials, newOfficials, officialTargets, type Officials } from './officials';
-import { ARC, L, THROUGH_LEAD, TRANSITION_MS, W, arcHeight, buildUp, deliveryOf, lineDepth, passKind, pressShape, pressSpot, runFor, shooterSpot, shotTarget, speedsOf, wideOf, type LineState, type PassKind, type PressPlan, type Pt, type Transition } from './move';
+import { ARC, L, THROUGH_LEAD, TRANSITION_MS, W, bendAt, buildUp, heightAt, travelShare, deliveryOf, lineDepth, passKind, pressShape, pressSpot, runFor, shooterSpot, shotTarget, speedsOf, wideOf, type LineState, type PassKind, type PressPlan, type Pt, type Transition } from './move';
 
 // Measurement hook (ui-tests): set by the page with ?pitchdebug, or by a Node test.
 let PITCH_DEBUG = false;
@@ -39,7 +39,7 @@ export interface Anim {
   ball: Pt;
   poss: 0 | 1;
   carrier: number;        // slot of the ball carrier in the possessing side (-1 = loose)
-  flight: { from: Pt; to: Pt; t: number; dur: number; then: () => void; h: number; end: number; recv?: [0 | 1, number] } | null; // recv: aimed at this man (it bends to meet him)
+  flight: { from: Pt; to: Pt; t: number; dur: number; then: () => void; h: number; end: number; bounce?: boolean; bend?: number; recv?: [0 | 1, number] } | null; // recv: aimed at this man (it bends to meet him)
   bh: number;             // the ball's height in metres (lofted passes, crosses, shots over the bar)
   beats: Beat[];
   beat: number;
@@ -342,8 +342,10 @@ const weightOf = (b: Beat) => (b.kind === 'corner' ? 4 : b.kind === 'pen' ? 4 : 
 const SHOT_EV = new Set(['goal', 'nogoal', 'save', 'block', 'miss']);
 const minuteKey = (m: LiveMatch) => `${m.minute}+${m.plus ?? 0}`;
 
-function fly(a: Anim, to: Pt, dur: number, then: () => void, h = 0, end = 0) {
-  a.flight = { from: { ...a.ball }, to, t: 0, dur: Math.max(60, dur), then, h, end };
+function fly(a: Anim, to: Pt, dur: number, then: () => void, h = 0, end = 0, path: { bounce?: boolean; bend?: number } = {}) {
+  a.flight = { from: { ...a.ball }, to, t: 0, dur: Math.max(60, dur), then, h, end, ...path };
+  if (path.bounce) a.kinds.bounce = (a.kinds.bounce ?? 0) + 1;
+  if (path.bend) a.kinds.bend = (a.kinds.bend ?? 0) + 1;
 }
 const nearestOf = (m: LiveMatch, a: Anim, side: 0 | 1, pt: Pt) => onPitch(m, side).filter((k) => a.pos[side][k]).sort((x, y) => dist(a.pos[side][x], pt) - dist(a.pos[side][y], pt))[0];
 
@@ -524,7 +526,10 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     // He runs onto it: where the ball will land is where he goes while it travels.
     if (b.from !== undefined && !toShooter) a.run = { side: b.side, slot: b.to, pt: land };
     a.lastPass = { side: b.side, to: b.to, at: a.time, type, eng: b.from !== undefined };
-    fly(a, land, real ? Math.max(120, real) : travel * arc.t, () => { a.carrier = b.to; if (a.run?.side === b.side && a.run.slot === b.to && b.from !== undefined) a.run = null; }, arc.h);
+    // A long ball bounces once before he takes it; a cross curls (in- or out-swinging, a bigger bend on a longer ball).
+    const rb = rngFor(`${m.key}:bend`, m.minute * 100 + a.beat);
+    const path = type === 'long' ? { bounce: true } : type === 'cross' ? { bend: (rb() < 0.5 ? -1 : 1) * (1.5 + rb() * 2) * Math.min(1.4, dist(a.ball, land) / 28) } : {};
+    fly(a, land, real ? Math.max(120, real) : travel * arc.t, () => { a.carrier = b.to; if (a.run?.side === b.side && a.run.slot === b.to && b.from !== undefined) a.run = null; }, arc.h, 0, path);
     if (b.from !== undefined && a.flight) a.flight.recv = [b.side, b.to];
     return;
   }
@@ -548,7 +553,9 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     return;
   }
   const t = shotTarget(b.result, r);
-  if (b.result === 'goal') fly(a, { x: goalX, y: t.y }, travel * 0.8, () => { a.inNet = true; a.shooter = null; }, lift, t.h);
+  // A shot curls a little; one from distance or a free kick bends more (its own stream: the shot's draws are unchanged).
+  const rb = rngFor(`${m.key}:bend`, m.minute * 100 + a.beat), curl = { bend: (rb() < 0.5 ? -1 : 1) * (b.how === 'long' || b.how === 'fk' ? 1 + rb() * 1.5 : 0.2 + rb() * 0.6) };
+  if (b.result === 'goal') fly(a, { x: goalX, y: t.y }, travel * 0.8, () => { a.inNet = true; a.shooter = null; }, lift, t.h, curl);
   else if (b.result === 'miss') fly(a, { x: goalX + fwd * 2, y: t.y }, travel * 0.8, () => {
     // A goal kick: the keeper places it on the six-yard box.
     a.shooter = null; a.poss = other;
@@ -557,7 +564,7 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     a.kinds.goalkick = (a.kinds.goalkick ?? 0) + 1;
     // The ball is fetched and placed on the six-yard box, where the keeper takes it (no jump to his hands).
     fly(a, spot, travel * 0.8, () => { a.carrier = gk; });
-  }, lift, t.h);
+  }, lift, t.h, curl);
   else {
     const gk = gkSlot(m, other);
     const keeper = a.pos[other][gk] ?? { x: goalX, y: W / 2 };
@@ -571,7 +578,7 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
         fly(a, out, travel * 0.45, () => { a.poss = other; a.carrier = nearestOf(m, a, other, out) ?? gk; });
         a.kinds.parry = (a.kinds.parry ?? 0) + 1;
       } else { a.poss = other; a.carrier = gk; }
-    }, lift, t.h);
+    }, lift, t.h, curl);
   }
 }
 
@@ -688,9 +695,14 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           const g = dist(f.to, want), st = (T.BALL_HOME * dt) / (a.secMs ?? 40);
           if (g > 0.2) f.to = g <= st ? want : { x: f.to.x + ((want.x - f.to.x) / g) * st, y: f.to.y + ((want.y - f.to.y) / g) * st };
         }
-        const e = f.t < 0.5 ? 2 * f.t * f.t : 1 - (-2 * f.t + 2) ** 2 / 2;
+        // Fast off the foot and slowing (more on the ground than in the air); a curl bends it off the line and back.
+        const e = travelShare(f.t, f.h > 0 || !!f.end);
         a.ball = { x: f.from.x + (f.to.x - f.from.x) * e, y: f.from.y + (f.to.y - f.from.y) * e };
-        a.bh = arcHeight(f.h, f.t, f.end);
+        if (f.bend) {
+          const dx = f.to.x - f.from.x, dy = f.to.y - f.from.y, d = Math.hypot(dx, dy), o = bendAt(f.bend, e);
+          if (d > 1) a.ball = { x: a.ball.x - (dy / d) * o, y: a.ball.y + (dx / d) * o };
+        }
+        a.bh = heightAt(f, f.t);
         if (f.t >= 1) { a.flight = null; if (!f.end) a.bh = 0; f.then(); }
       } else if (a.sp && a.time < a.sp.until && (a.sp.kind !== 'gk' || dist(a.ball, a.sp.at) < 1)) {
         a.ball = { ...a.sp.at }; a.bh = 0; // a dead ball sits on its spot until it's taken
