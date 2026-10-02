@@ -3,7 +3,7 @@
 import type { Career, Player, Position } from '../model/types';
 import { squadOf, type World } from './world';
 
-export type FormationId = '4-3-3' | '4-4-2' | '4-2-3-1' | '3-5-2' | '5-3-2' | '4-1-4-1';
+export type FormationId = '4-3-3' | '4-4-2' | '4-2-3-1' | '3-5-2' | '5-3-2' | '4-1-4-1' | '3-4-3' | '4-3-1-2' | '3-4-2-1' | '4-2-2-2' | '5-4-1' | '4-4-1-1';
 
 export interface Tactics {
   formation: FormationId;
@@ -59,7 +59,8 @@ export const PRESETS: Record<Philosophy, Instructions> = {
 // deep block adds a fourth midfielder, a counter keeps two up. Everything else defends in the shape it attacks in.
 export function oopFor(ip: FormationId, ph: Philosophy): FormationId {
   if (ip === '3-5-2') return ph === 'gegenpress' ? '3-5-2' : '5-3-2';
-  if (ph === 'bus' || ph === 'wings') return ip === '5-3-2' ? '5-3-2' : '4-1-4-1';
+  if (ip === '3-4-3' || ip === '3-4-2-1') return ph === 'gegenpress' ? ip : '5-4-1';
+  if (ph === 'bus' || ph === 'wings') return ip === '5-3-2' || ip === '5-4-1' ? ip : '4-1-4-1';
   if (ph === 'counter') return ip === '4-3-3' || ip === '4-2-3-1' ? '4-4-2' : ip;
   return ip;
 }
@@ -90,14 +91,27 @@ export interface Slot { pos: Position; x: number; y: number }
 
 const s = (pos: Position, x: number, y: number): Slot => ({ pos, x, y });
 const BACK4 = [s('GK', 50, 7), s('RB', 86, 26), s('CB', 63, 21), s('CB', 37, 21), s('LB', 14, 26)];
+const BACK3 = [s('GK', 50, 7), s('CB', 72, 21), s('CB', 50, 19), s('CB', 28, 21)];
 
 export const FORMATIONS: Record<FormationId, { slots: Slot[]; attack: number; defence: number }> = {
   '4-3-3': { slots: [...BACK4, s('CDM', 50, 41), s('CM', 70, 53), s('CM', 30, 53), s('RW', 85, 77), s('ST', 50, 85), s('LW', 15, 77)], attack: 1, defence: 0 },
-  '4-4-2': { slots: [...BACK4, s('RW', 86, 56), s('CM', 62, 50), s('CM', 38, 50), s('LW', 14, 56), s('ST', 62, 82), s('ST', 38, 82)], attack: 0, defence: 0.5 },
+  // (B2: the wide men higher and the centre pair a little deeper than the old flat 4-4, which was 7% weaker than every
+  // other shape with players who suit it; sim-tests/formations.ts)
+  '4-4-2': { slots: [...BACK4, s('RW', 86, 62), s('CM', 62, 45), s('CM', 38, 45), s('LW', 14, 62), s('ST', 62, 82), s('ST', 38, 82)], attack: 0, defence: 0.5 },
   '4-2-3-1': { slots: [...BACK4, s('CDM', 62, 41), s('CDM', 38, 41), s('RW', 83, 66), s('CAM', 50, 64), s('LW', 17, 66), s('ST', 50, 86)], attack: 0.5, defence: 0.5 },
   '3-5-2': { slots: [s('GK', 50, 7), s('CB', 72, 21), s('CB', 50, 19), s('CB', 28, 21), s('RB', 89, 50), s('CDM', 50, 40), s('CM', 68, 56), s('CM', 32, 56), s('LB', 11, 50), s('ST', 62, 82), s('ST', 38, 82)], attack: 1, defence: -0.5 },
   '5-3-2': { slots: [s('GK', 50, 7), s('RB', 88, 32), s('CB', 70, 20), s('CB', 50, 18), s('CB', 30, 20), s('LB', 12, 32), s('CM', 70, 52), s('CDM', 50, 45), s('CM', 30, 52), s('ST', 62, 80), s('ST', 38, 80)], attack: -1, defence: 1.5 },
   '4-1-4-1': { slots: [...BACK4, s('CDM', 50, 39), s('RW', 85, 60), s('CM', 63, 55), s('CM', 37, 55), s('LW', 15, 60), s('ST', 50, 84)], attack: -0.5, defence: 1 },
+  // Plan "خطة قفل الفجوات" B2: six more shapes (FM has many more). Wing-backs are the RB/LB slots pushed up. Where each
+  // man stands was chosen so that no shape is a free win: with players who suit it, every shape is within a few per cent
+  // of the others' expected points (sim-tests/formations.ts; the engine favours a crowded middle, so narrow shapes keep
+  // their wide men wide).
+  '3-4-3': { slots: [...BACK3, s('RB', 89, 48), s('CM', 62, 47), s('CM', 38, 47), s('LB', 11, 48), s('RW', 82, 78), s('ST', 50, 86), s('LW', 18, 78)], attack: 1, defence: -0.5 },
+  '4-3-1-2': { slots: [...BACK4, s('CDM', 50, 40), s('CM', 74, 55), s('CM', 26, 55), s('CAM', 50, 58), s('ST', 66, 84), s('ST', 34, 84)], attack: 0.5, defence: 0 },
+  '3-4-2-1': { slots: [...BACK3, s('RB', 89, 48), s('CM', 62, 38), s('CM', 38, 38), s('LB', 11, 48), s('CAM', 62, 76), s('CAM', 38, 76), s('ST', 50, 86)], attack: 0.5, defence: 0 },
+  '4-2-2-2': { slots: [...BACK4, s('CDM', 62, 44), s('CDM', 38, 44), s('RW', 78, 62), s('LW', 22, 62), s('ST', 66, 84), s('ST', 34, 84)], attack: 1, defence: 0 },
+  '5-4-1': { slots: [s('GK', 50, 7), s('RB', 88, 32), s('CB', 70, 20), s('CB', 50, 18), s('CB', 30, 20), s('LB', 12, 32), s('RW', 84, 58), s('CM', 62, 40), s('CM', 38, 40), s('LW', 16, 58), s('ST', 50, 84)], attack: -1.5, defence: 2 },
+  '4-4-1-1': { slots: [...BACK4, s('RW', 86, 64), s('CM', 62, 44), s('CM', 38, 44), s('LW', 14, 64), s('CAM', 50, 70), s('ST', 50, 85)], attack: 0, defence: 0.5 },
 };
 export const FORMATION_IDS = Object.keys(FORMATIONS) as FormationId[];
 // "4-2-3-1" must read left to right in Arabic too: wrap it in Unicode LTR isolate marks.
@@ -195,18 +209,41 @@ export function setPieces(xi: Player[], tac: UserTactics | Tactics, season: numb
   };
 }
 
+// The shape an AI club plays (B2): its style lists the shapes that suit it, its squad rules out the ones it can't fill
+// (two strikers, a playmaker, four centre-backs, two wide men), and its own fixed draw picks among the rest, so a club
+// keeps its identity. Every shape is within a few per cent of the others with players who suit it.
+const STYLE_SHAPES: Record<Philosophy, FormationId[]> = {
+  balanced: ['4-3-3', '4-2-3-1', '4-4-2', '4-1-4-1'],
+  possession: ['4-3-3', '4-2-3-1', '3-4-2-1', '4-1-4-1'],
+  gegenpress: ['4-3-3', '4-2-2-2', '3-4-3', '4-2-3-1'],
+  counter: ['4-4-1-1', '4-4-2', '4-2-3-1', '4-3-3'],
+  bus: ['5-4-1', '4-1-4-1', '5-3-2'],
+  wings: ['4-3-3', '4-4-2', '3-4-3'],
+  direct: ['4-4-2', '4-2-2-2', '4-3-1-2', '4-3-3'],
+};
+function aiShape(count: (ps: Position[]) => number, ph: Philosophy, seed: number): FormationId {
+  const n = { wing: count(['LW', 'RW']), st: count(['ST']), cam: count(['CAM']), cb: count(['CB']) };
+  const can = (f: FormationId) => {
+    const sl = FORMATIONS[f].slots, need = (ps: Position[]) => sl.filter((x) => ps.includes(x.pos)).length;
+    return n.st >= need(['ST']) && n.cam >= need(['CAM']) && n.cb >= need(['CB']) + 1 && n.wing >= need(['LW', 'RW']);
+  };
+  const ok = STYLE_SHAPES[ph].filter(can);
+  return ok.length ? ok[seed % ok.length] : '4-3-3';
+}
 // AI clubs: a formation that suits the squad, a philosophy that suits the club, and a plan for this opponent.
 // `opp` (the other squad) lets the AI read the matchup the way a manager would: pace in behind slow defenders,
 // sit deep and break against a much stronger side, keep the ball against a weaker one.
 // `style`: the club's manager's favourite philosophy (v2.1); without one the squad decides as before.
-export function aiTactics(squad: Player[], myLevel: number, theirLevel: number, opp?: Player[], style?: Philosophy): Tactics {
+export function aiTactics(squad: Player[], myLevel: number, theirLevel: number, opp?: Player[], style?: Philosophy, who = ''): Tactics {
   const count = (ps: Position[]) => squad.filter((p) => ps.includes(p.position) && available(p)).length;
-  const formation: FormationId = count(['LW', 'RW']) >= 3 ? '4-3-3' : count(['ST']) >= 3 ? '4-4-2' : count(['CAM']) >= 2 ? '4-2-3-1' : '4-1-4-1';
   const gap = myLevel - theirLevel;
   // Big sides keep the ball or press; small ones sit deep or break; the rest mix it (fixed per squad, so a club has an identity).
   const seed = squad.reduce((s, p) => s + p.id.length + p.shirtNumber, 0);
   const philosophy: Philosophy = style ?? (myLevel >= 82 ? (['possession', 'gegenpress', 'wings'] as const)[seed % 3]
     : myLevel <= 68 ? (['bus', 'counter', 'direct'] as const)[seed % 3] : PHILOSOPHIES[1 + (seed % 6)]);
+  // `who`: the club and its manager, so the shape is his (a new manager may bring another one, as in FM).
+  let hs = 2166136261; for (let i = 0; i < who.length; i++) hs = Math.imul(hs ^ who.charCodeAt(i), 16777619) >>> 0;
+  const formation = aiShape(count, philosophy, who ? hs : Math.floor(seed / 7));
   const t: Tactics = { formation, ...PRESETS[philosophy], philosophy, oop: oopFor(formation, philosophy) };
   t.mentality = Math.max(-2, Math.min(2, t.mentality + (gap > 5 ? 1 : gap < -6 ? -1 : 0)));
   if (opp?.length) {

@@ -122,7 +122,7 @@ const level = squadStrength;
 function side(w: World, c: Career | null, clubId: string, oppLevel: number, form: number, opp: Player[], cup?: string): SideState {
   const squad = squadOf(w, clubId);
   const mine = c?.clubId === clubId;
-  const tactics: Tactics = mine ? (c!.tactics ?? DEFAULT_TACTICS) : aiTactics(squad, level(squad), oppLevel, opp, w.managers?.[clubId]?.style);
+  const tactics: Tactics = mine ? (c!.tactics ?? DEFAULT_TACTICS) : aiTactics(squad, level(squad), oppLevel, opp, w.managers?.[clubId]?.style, `${clubId}:${w.managers?.[clubId]?.name ?? ''}`);
   // gf-ref: suspensions are per competition (a cup ban doesn't keep a player out of the league, and back).
   const xi = mine ? xiFor(w, c!, cup).xi : autoXI(squad, tactics.formation, cup);
   // Tactics v3: an AI manager gives each player the role that suits him (and the club's style) in each phase.
