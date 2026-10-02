@@ -143,11 +143,17 @@ function opsOk(token) {
 }
 
 // ---------------------------------------------------------------- the world (real squads from the data snapshot)
+// 3.9: from TRIM_FROM the cast comes from the trimmed world (top 5 per club, Turkish league added). A Daily is judged
+// by its own date, so a board already in play keeps its cast; rooms switch by the server's date.
+const TRIM_FROM = '2026-10-03';
 let worldCache = null;
-function world() {
+function world(day) {
   const snap = loadSnapshot();
-  if (!worldCache || worldCache.snap !== snap) worldCache = { snap, w: compactWorld(snap) };
-  return worldCache.w;
+  const trim = (day || new Date().toISOString().slice(0, 10)) >= TRIM_FROM;
+  if (!worldCache || worldCache.snap !== snap) worldCache = { snap, full: null, trim: null };
+  const k = trim ? 'trim' : 'full';
+  if (!worldCache[k]) worldCache[k] = trim ? compactWorld(snap, 5, 0) : compactWorld(snap);
+  return worldCache[k];
 }
 const saltedSeed = (base) => base + ':' + hashStr((SALT || DEV_SALT) + '|' + base).toString(36) + hashStr(base + '|' + (SALT || DEV_SALT)).toString(36);
 function publicCast(cast, withAlt) {
@@ -161,7 +167,7 @@ const scopeBase = (sc) => (sc.kind === 'd' ? 'daily-' + sc.day : 'room-' + sc.co
 const sessKey = (sc, who) => 't1v3:s:' + (sc.kind === 'd' ? 'd:' + sc.day : 'r:' + sc.code + ':' + sc.round) + ':' + who;
 function boardFor(sc) {
   const seed = saltedSeed(scopeBase(sc));
-  return { seed, board: buildBoard(seed, RULES), cast: buildCast(seed, world(), { n: RULES.SAGAS }) };
+  return { seed, board: buildBoard(seed, RULES), cast: buildCast(seed, world(sc.kind === 'd' ? sc.day : undefined), { n: RULES.SAGAS }) };
 }
 function ddLeft(sess, g) {
   if (g.day !== RULES.DAYS || !sess.ddAt) return null;
@@ -311,7 +317,7 @@ const actions = {
     const day = clean(b.day, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || day >= today() || day < '2026-09-01') return { error: 'day' };
     const seed = saltedSeed('daily-' + day);
-    return { day, no: dailyNo(day), seed, cast: publicCast(buildCast(seed, world(), { n: RULES.SAGAS }), true) };
+    return { day, no: dailyNo(day), seed, cast: publicCast(buildCast(seed, world(day), { n: RULES.SAGAS }), true) };
   },
 
   // ---- leaderboards ----

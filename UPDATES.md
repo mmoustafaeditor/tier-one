@@ -7,6 +7,12 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-02 · Tier One 3.9.2 — Market to the handoff, anime players, trimmed database
+
+- Market rebuilt to the owner's screenshot: tabs Rumours · Transfers · My calls · Players, serif headline, search, two dropdown filters, paper rows. Transfers shows confirmed moves from the data snapshot with the date, fee and the club's announcement link. Players searches the game's database. The editor's note, the free-agents entry and the fairness line sit under the list. One screen; only the list scrolls.
+- Every player now has an original anime-style portrait (ui/anime.ts, SVG, stable per player id, club shirt, mood variants). Stylised characters, not likenesses; real art can still replace them through art/manifest.json.
+- Player database cut to the top 5 per club across the Premier League, LaLiga, Serie A, Bundesliga, Ligue 1, the Egyptian and Saudi leagues, plus a new Turkish Süper Lig (five clubs, 22 players, entered from general knowledge, confidence medium). 1,026 players became 562. The server uses the trimmed world for Dailies from 2026-10-03, so today's boards keep their cast; rooms switch on the same date.
+
 ## 2026-10-02 · Tier One 3.9.1 — Player File matches the handoff
 
 - Rebuilt the Player File to the owner's screenshot: paper header with the player's portrait large on the right (breathing), "Forward · Age 27", route, "Simulated story"; a dark evidence card with four bars and the independent circles (Club, Travel, Camp…); underline tabs Sources · What they said · Your call; one row per source with its portrait, what it knows, reliability · circle, and Ring · N pts / Called / Day N.

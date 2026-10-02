@@ -8,7 +8,7 @@ export const BUYERS = [
   'eng-arsenal', 'eng-chelsea', 'eng-liverpool', 'eng-man-city', 'eng-man-utd', 'eng-newcastle', 'eng-tottenham', 'eng-aston-villa',
   'esp-real-madrid', 'esp-barcelona', 'esp-atletico', 'ita-inter', 'ita-milan', 'ita-juventus', 'ita-napoli', 'ita-roma',
   'ger-bayern', 'ger-dortmund', 'ger-leverkusen', 'ger-leipzig', 'fra-psg', 'fra-marseille', 'fra-monaco',
-  'ksa-al-hilal', 'ksa-al-nassr', 'ksa-al-ittihad', 'ksa-al-ahli',
+  'ksa-al-hilal', 'ksa-al-nassr', 'ksa-al-ittihad', 'ksa-al-ahli', 'tur-galatasaray', 'tur-fenerbahce',
 ];
 const KEY_SHIRTS = new Set([7, 8, 9, 10, 11]);
 const TOP5 = new Set(['eng1', 'esp1', 'ita1', 'ger1', 'fra1']);
@@ -26,7 +26,9 @@ const ageOn = (birth, asOf) => {
 };
 
 // Compact, public world: clubs + the players a saga can be about. Small enough to bundle into the app.
-export function compactWorld(snap, perClub = 9) {
+// 3.9 (owner): the cut is the top 5 star players per club (perClub 5, no extra for buying clubs); the server switches on
+// TRIM_FROM so boards already being played keep their cast.
+export function compactWorld(snap, perClub = 9, buyerExtra = 2) {
   const buyers = new Set(BUYERS);
   const clubs = snap.clubs.map((c) => ({ id: c.id, n: c.name, s: c.shortName, k: c.code, l: c.leagueId, c1: c.colors.primary, c2: c.colors.secondary }));
   const clubIds = new Set(clubs.map((c) => c.id));
@@ -47,7 +49,7 @@ export function compactWorld(snap, perClub = 9) {
   }
   const players = [];
   for (const c of clubs) {
-    const list = (byClub.get(c.id) || []).sort((a, b) => b.w - a.w || a.p.id.localeCompare(b.p.id)).slice(0, perClub + (buyers.has(c.id) ? 2 : 0));
+    const list = (byClub.get(c.id) || []).sort((a, b) => b.w - a.w || a.p.id.localeCompare(b.p.id)).slice(0, perClub + (buyers.has(c.id) ? buyerExtra : 0));
     for (const { p, age } of list) {
       const star = buyers.has(c.id) ? (KEY_SHIRTS.has(p.shirtNumber) || p.captain ? 3 : 2) : KEY_SHIRTS.has(p.shirtNumber) ? 2 : 1;
       players.push({ id: p.id, n: p.name, s: p.shortName || p.name, c: c.id, pos: p.position, no: p.shirtNumber || 0, nat: p.nationality || '', age, star });

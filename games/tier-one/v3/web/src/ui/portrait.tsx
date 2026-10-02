@@ -14,6 +14,8 @@
 // manifest variant "<id>@<mood>" when the owner supplied one. Reduced motion: no animation here at all.
 import { useEffect, useState, type CSSProperties } from 'react';
 import { hash } from '../lib/kit';
+import { animePlayerSVG } from './anime';
+import { WORLD } from '../lib/engine';
 import type { WClub } from '../lib/engine';
 
 export type PortraitKind = 'player' | 'source' | 'rival' | 'staff';
@@ -58,6 +60,7 @@ export function portraitPlaceholderSVG(kind: PortraitKind, id: string, opts: { t
   const h = hash(kind + ':' + id);
   const skin = SKIN[h % SKIN.length], hair = HAIR[(h >>> 3) % HAIR.length];
   const build = (h >>> 6) % 3, cut = (h >>> 8) % 4, brow = (h >>> 11) % 2, beard = kind !== 'staff' && (h >>> 13) % 3 === 0;
+  if (kind === 'player') { const p = WORLD.players.find((x) => x.id === id); return animePlayerSVG(id, { c1: opts.tint, c2: opts.tint2, nat: p?.nat, mood: opts.mood, label: opts.label }); }
   const tint = opts.tint || SRC_C[id] || '#3A342A', tint2 = opts.tint2 || '#F4EFE4';
   const mood = opts.mood || 'neutral';
   const uid = 'pt' + (h % 100000);
@@ -73,7 +76,7 @@ export function portraitPlaceholderSVG(kind: PortraitKind, id: string, opts: { t
   const brows = mood === 'stern' ? 'M36 52l10 3M64 52l-10 3' : mood === 'shock' ? 'M36 48q6-5 12 0M52 48q6-5 12 0' : mood === 'hesitant' ? 'M36 50q6 3 12 1M52 51q6-2 12 1' : brow ? 'M36 51q6-3 12 0M52 51q6-3 12 0' : 'M36 52h12M52 52h12';
   const eyes = mood === 'joy' ? 'M39 60q4-4 8 0M53 60q4-4 8 0' : mood === 'mischief' ? 'M39 60q4 2 8 0M53 60q4 2 8 0' : '';
   const eyeDots = mood === 'joy' || mood === 'mischief' ? '' : `<circle cx="43" cy="60" r="${mood === 'shock' ? 3.2 : 2.4}" fill="#15130F"/><circle cx="57" cy="60" r="${mood === 'shock' ? 3.2 : 2.4}" fill="#15130F"/><circle cx="44" cy="59" r=".8" fill="#fff"/><circle cx="58" cy="59" r=".8" fill="#fff"/>`;
-  const collar = kind === 'player' ? `<path d="M22 100c4-14 14-20 28-20s24 6 28 20z" fill="${tint}"/><path d="M44 80l6 8 6-8" fill="none" stroke="${tint2}" stroke-width="2.5"/>` : `<path d="M22 100c4-14 14-20 28-20s24 6 28 20z" fill="#2C271F"/><path d="M50 82l-6 18h12z" fill="${tint}"/>`;
+  const collar = `<path d="M22 100c4-14 14-20 28-20s24 6 28 20z" fill="#2C271F"/><path d="M50 82l-6 18h12z" fill="${tint}"/>`; void tint2;
   return `<svg viewBox="0 0 100 100" role="img" aria-label="${esc(opts.label || '')}"><defs><radialGradient id="${uid}" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="${tint}" stop-opacity=".55"/><stop offset="1" stop-color="${tint}" stop-opacity=".12"/></radialGradient><clipPath id="${uid}c"><rect width="100" height="100" rx="18"/></clipPath></defs>`
     + `<g clip-path="url(#${uid}c)"><rect width="100" height="100" fill="#211D17"/><rect width="100" height="100" fill="url(#${uid})"/>`
     + `<circle cx="50" cy="44" r="36" fill="${tint}" opacity=".12"/>${collar}`

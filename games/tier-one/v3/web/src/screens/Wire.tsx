@@ -5,7 +5,8 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useT, num, fmtDate } from '../lib/i18n';
 import { useSave, getSave, update } from '../lib/save';
-import { v3 } from '../lib/api';
+import { v3, data } from '../lib/api';
+import { Portrait } from '../ui/portrait';
 import { useWire, refreshWire, gradeOf, stageOf, windowParts, windowLine, stakeOf, WIRE, marketOf, type Rumour, type WireCall, type FreeAgent, type BoardItem } from '../lib/wireData';
 import { clubById, WORLD } from '../lib/engine';
 import { onWireFiled, onWireRight, toast } from '../lib/meta';
@@ -17,7 +18,8 @@ import { wireReply } from '../lib/banter';
 import { rumourHed } from './Front';
 import type { Chrome } from '../App';
 import '../styles/football.css';
-import { Tip, usePaged, Pager } from '../ui/fit';
+import '../styles/market39.css';
+import { usePaged, Pager } from '../ui/fit';
 
 const round1 = (x: number) => Math.round(x * 10) / 10;
 const STR = ['talks', 'advanced', 'confirmed'];
@@ -34,9 +36,7 @@ const dayStr = (t: TF, iso: string) => (iso ? fmtDate(Date.parse(iso.length === 
 const GAME_URL = 'https://www.sembagames.app/tier-one';
 
 type MTab = 'market' | 'mine' | 'table';
-const STAR_STEPS = [0, 1, 2, 3], HEAT_STEPS = [0, 50, 75];
-const PER = 5;
-const nextOf = (list: number[], v: number) => list[(list.indexOf(v) + 1) % list.length];
+void Pager; void usePaged;
 const lgName = (t: TF, k: string) => { const x = t('m.wire.lg.' + k); return x === 'm.wire.lg.' + k ? k : x; };
 
 export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
@@ -59,15 +59,13 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 30e3); return () => clearInterval(i); }, []);
   const win = windowLine(now, w.calendar);
   const [tab, setTab] = useState<MTab>('market');
-  const [stars, setStars] = useState(0);
+  const [stars] = useState(0);
   const [heat, setHeat] = useState(0);
   const [league, setLeague] = useState('');
-  const [team, setTeam] = useState('');
+  const [team] = useState('');
   const [fa, setFa] = useState(false);
   const [q, setQ] = useState('');
-  const [searching, setSearching] = useState(false);
   const leagues = [...new Set(rs.map((r) => clubById(r.currentClubId)?.l || '').filter(Boolean))].sort();
-  const teams = [...new Set(rs.map((r) => r.currentClubName).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   const needle = q.trim().toLowerCase();
   const faIds = new Set(w.freeAgents.map((x) => x.id));
   const list = rs.filter((r) => starOf(r) >= stars && r.heat >= heat
@@ -77,76 +75,119 @@ export function WireScreen({ rid, ...chrome }: Chrome & { rid?: string }) {
     && (!needle || [r.playerName, r.currentClubName, ...r.linked.map((l) => l.name)].some((x) => (x || '').toLowerCase().includes(needle))))
     .sort((a, b) => b.heat - a.heat);
   const faList = fa ? w.freeAgents.filter((x) => !needle || x.n.toLowerCase().includes(needle) || (x.lastClub || '').toLowerCase().includes(needle)) : [];
-  const pg = usePaged(list, PER, [stars, heat, league, team, fa, needle].join('|'));
-  const fp = usePaged(faList, PER, [fa, needle].join('|'));
   const open = (id: string, yes?: boolean) => { sfx('sheet.open'); setPre(yes); setSel(id); };
   const m = w.mine;
   const calls = m?.calls || [];
-  const cp = usePaged(calls, PER);
   const openCalls = calls.filter((c) => !c.done).length;
   const left = Math.max(0, w.limits.daily - w.callsToday);
   const paper = calls.filter((c) => !c.done).reduce((a, c) => a + (c.paper || 0), 0);
   const fresh = calls.filter((c) => c.done && !getSave().stats['ws:' + c.rid]);
-  const asOf = w.asOf ? t('mk.squadAsOf', { d: dayStr(t, w.asOf) }) : t('mk.dataOff');
   const winChip = win ? t('m.wire.' + win.k, { t: win.d ? t('m.wire.leftDh', { d: win.d, h: win.h }) : t('m.wire.leftHm', { h: win.h, m: win.m }) }) : '';
 
-  return <div className="g-screen wire3 fit">
-    <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('hub.mode.market')} onHelp={() => chrome.go({ n: 'howto' })} />
+  const [view, setView] = useState<'rum' | 'tr' | 'mine' | 'pl'>(tab === 'mine' ? 'mine' : 'rum');
+  const go = (k: 'rum' | 'tr' | 'mine' | 'pl') => { sfx('ui.tap'); setView(k); setTab(k === 'mine' ? 'mine' : 'market'); };
+  const hed = view === 'tr' ? t('u39.mk.hed.tr') : t('u39.mk.hed.' + view);
+  const fresh2 = w.asOf ? t('u39.mk.refresh', { d: dayStr(t, w.asOf) }) : t('mk.dataOff');
+  return <div className="g-screen wire3 mk39 fit">
+    <TopBar back={{ label: t('u39.tabs.desk'), onClick: () => chrome.go({ n: 'front' }) }} onHelp={() => chrome.go({ n: 'howto' })} />
     <div className="fit__body">
-      <Tip id="market" />
-      <div className="tm-head">
-        <div className="g-tabs2 tm-tabs tm-tabs--3" role="tablist" style={{ flex: 1 }}>
-          {(['market', 'mine', 'table'] as const).map((k) => <button key={k} role="tab" aria-selected={tab === k} onClick={() => { sfx('ui.tap'); setTab(k); }}>{t('mk.tabs.' + k)}{k === 'mine' && openCalls > 0 ? <b className="g-badge">{openCalls}</b> : null}</button>)}
-        </div>
+      <div className="mk39__tabs" role="tablist">
+        {(['rum', 'tr', 'mine', 'pl'] as const).map((k) => <button key={k} role="tab" aria-selected={view === k} onClick={() => go(k)}>{t('u39.mk.tabs.' + k)}{k === 'mine' && openCalls > 0 ? <b className="g-badge">{openCalls}</b> : null}</button>)}
       </div>
+      <h1 className="mk39__hed g-hed">{hed}</h1>
+      {view !== 'mine' && <label className="mk39__search"><Icon n="eye" size={18} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('u39.mk.search')} aria-label={t('u39.mk.search')} />{q && <button type="button" aria-label={t('common.close')} onClick={() => setQ('')}><Icon n="x" size={16} /></button>}</label>}
+      {view === 'rum' && <div className="mk39__filters">
+        <select value={league} onChange={(e) => setLeague(e.target.value)} aria-label={t('hub.market.league')}><option value="">{t('u39.mk.allLeagues')}</option>{leagues.map((k) => <option key={k} value={k}>{lgName(t, k)}</option>)}</select>
+        <select value={fa ? 'fa' : heat ? 'hot' : 'all'} onChange={(e) => { const v = e.target.value; setFa(v === 'fa'); setHeat(v === 'hot' ? 60 : 0); }} aria-label={t('m.wire.group')}>
+          <option value="all">{t('u39.mk.all')}</option><option value="hot">{t('u39.mk.hot')}</option><option value="fa">{t('u39.mk.fa')}{w.freeAgents.length ? ' (' + w.freeAgents.length + ')' : ''}</option>
+        </select>
+      </div>}
+      {view !== 'pl' && <p className="mk39__date g-mono">{view === 'mine' ? t('mk.settle', { h: w.calendar.settleGraceH }) : fresh2}{winChip ? ' · ' + winChip : ''}</p>}
+      {!w.market.open && view === 'rum' && <p className="mk-closed"><Icon n="lock" size={14} /> {t('mk.closed')} {w.market.note || t('mk.closedWhy.' + (w.market.why || 'flag'))}</p>}
 
-      {tab === 'market' ? <>
-        {searching ? <div className="tm-filters">
-          <input className="tm-search" style={{ flex: 1, width: 'auto' }} autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('hub.market.search')} aria-label={t('hub.market.search')} />
-          <button className="tm-chip" aria-label={t('common.close')} onClick={() => { setQ(''); setSearching(false); }}><Icon n="x" size={16} /></button>
-        </div> : <div className="tm-filters" role="group" aria-label={t('m.wire.group')}>
-          <button className="tm-chip" aria-pressed={stars > 0} onClick={() => { sfx('ui.tap'); setStars(nextOf(STAR_STEPS, stars)); }}><Icon n="star" size={14} />{stars ? t('hub.market.starsN', { n: stars }) : t('hub.market.stars')}</button>
-          <button className="tm-chip" aria-pressed={heat > 0} onClick={() => { sfx('ui.tap'); setHeat(nextOf(HEAT_STEPS, heat)); }}><Icon n="flame" size={14} />{heat ? t('hub.market.heatN', { n: heat }) : t('hub.market.heat')}</button>
-          <select className="tm-chip" aria-pressed={!!league} aria-label={t('hub.market.league')} value={league} onChange={(e) => setLeague(e.target.value)}>
-            <option value="">{t('hub.market.league')}</option>
-            {leagues.map((k) => <option key={k} value={k}>{lgName(t, k)}</option>)}
-          </select>
-          <select className="tm-chip" aria-pressed={!!team} aria-label={t('hub.market.team')} value={team} onChange={(e) => setTeam(e.target.value)}>
-            <option value="">{t('hub.market.team')}</option>
-            {teams.map((k) => <option key={k} value={k}>{k}</option>)}
-          </select>
-          <button className="tm-chip" aria-pressed={fa} onClick={() => { sfx('ui.tap'); setFa(!fa); }}>{t('mk.fa')}{w.freeAgents.length ? <b className="g-badge">{w.freeAgents.length}</b> : null}</button>
-          <button className="tm-chip" aria-pressed={!!needle} aria-label={t('hub.market.search')} onClick={() => { sfx('ui.tap'); setSearching(true); }}><Icon n="eye" size={14} /></button>
-        </div>}
-        <p className="mk-fresh g-mono"><span>{asOf}</span>{winChip && <span><Icon n="clock" size={11} />{winChip}</span>}{w.calendar.source === 'default' && !w.online ? <span>{t('mk.calOff')}</span> : null}</p>
-        {!w.market.open && <p className="mk-closed"><Icon n="lock" size={14} /> {t('mk.closed')} {w.market.note || t('mk.closedWhy.' + (w.market.why || 'flag'))}</p>}
-        {!w.rumours && <p className="g-empty">{w.loading ? t('common.loading') : t('wire.needNet')}</p>}
-        {w.rumours && !w.online && <p className="g-empty">{t('wire.needNet')}</p>}
-        {fa ? <>
-          {w.rumours && !list.length && !faList.length && <p className="g-empty">{t('mk.faNone', { d: dayStr(t, w.asOf) })}</p>}
-          <div className="tm-list">{pg.rows.map((r) => <RumRow key={r.id} r={r} onOpen={() => open(r.id)} />)}{pg.page === pg.pages - 1 && fp.rows.map((x) => <FARow key={x.id} x={x} />)}</div>
-          {faList.length > 0 && <p className="mk-fresh g-mono"><span>{t('mk.faNote')}</span></p>}
-          <Pager p={list.length ? pg : fp} />
-        </> : <>
-          {w.rumours && !list.length && <p className="g-empty">{t('hub.market.none')}</p>}
-          <div className="tm-list">{pg.rows.map((r) => <RumRow key={r.id} r={r} onOpen={() => open(r.id)} />)}</div>
-          <Pager p={pg} />
+      <div className="mk39__list">
+        {view === 'rum' && <>
+          {!w.rumours && <p className="g-empty">{w.loading ? t('common.loading') : t('wire.needNet')}</p>}
+          {w.rumours && !list.length && !faList.length && <p className="g-empty">{fa ? t('mk.faNone', { d: dayStr(t, w.asOf) }) : t('hub.market.none')}</p>}
+          {list.slice(0, 40).map((r) => <RumRow key={r.id} r={r} onOpen={() => open(r.id)} />)}
+          {faList.slice(0, 40).map((x) => <FARow key={x.id} x={x} />)}
         </>}
-      </> : tab === 'mine' ? (fresh.length ? <SettledReel /> : <>
-        <div className="kpis3">
-          <span><b className="g-num">{m ? num(Math.round(m.cred)) : '–'}</b><small className="g-mono">{t('mk.kpi.cred')}</small></span>
-          <span><b className="g-num">{m && m.resolved > 0 ? pct(m.hitRate) + '%' : '–'}</b><small className="g-mono">{t('mk.kpi.hit')}</small></span>
-          <span><b className={'g-num ' + (paper < 0 ? 'neg' : 'pos')}>{num(round1(paper), true)}</b><small className="g-mono">{t('mk.kpi.paper')}</small></span>
-          <span><b className="g-num">{left}<em>/{w.limits.daily}</em></b><small className="g-mono">{t('mk.kpi.today')}</small></span>
-        </div>
-        <p className="mk-fresh g-mono"><span>{t('mk.settle', { h: w.calendar.settleGraceH })}</span>{winChip && <span><Icon n="clock" size={11} />{winChip}</span>}</p>
-        {calls.length ? <div className="tm-list">{cp.rows.map((c) => <CallRow key={c.rid} c={c} onOpen={() => open(c.rid)} />)}</div>
-          : <div className="live__empty g-card g-card--desk"><span className="live__ic"><Icon n="target" /></span><span>{t('hub.market.mineNone')}</span></div>}
-        <Pager p={cp} />
-      </>) : <MarketTable />}
+        {view === 'tr' && <Transfers q={needle} />}
+        {view === 'pl' && <Players q={needle} rs={rs} onOpen={(id) => open(id)} />}
+        {view === 'mine' && (fresh.length ? <SettledReel /> : tab === 'table' ? <MarketTable /> : <>
+          <div className="kpis3">
+            <span><b className="g-num">{m ? num(Math.round(m.cred)) : '–'}</b><small className="g-mono">{t('mk.kpi.cred')}</small></span>
+            <span><b className="g-num">{m && m.resolved > 0 ? pct(m.hitRate) + '%' : '–'}</b><small className="g-mono">{t('mk.kpi.hit')}</small></span>
+            <span><b className={'g-num ' + (paper < 0 ? 'neg' : 'pos')}>{num(round1(paper), true)}</b><small className="g-mono">{t('mk.kpi.paper')}</small></span>
+            <span><b className="g-num">{left}<em>/{w.limits.daily}</em></b><small className="g-mono">{t('mk.kpi.today')}</small></span>
+          </div>
+          {calls.length ? calls.slice(0, 40).map((c) => <CallRow key={c.rid} c={c} onOpen={() => open(c.rid)} />)
+            : <p className="g-empty">{t('hub.market.mineNone')}</p>}
+          <button type="button" className="mk39__row" onClick={() => { sfx('ui.tap'); setTab('table'); }}><Icon n="trophy" size={22} /><span><b>{t('u39.mk.table')}</b></span><Icon n={t.rtl ? 'back' : 'arrow'} size={18} /></button>
+        </>)}
+        {view === 'tr' && <>
+          <div className="mk39__note"><Portrait kind="staff" id="editor" size={56} round /><b>{t('u39.mk.note')}</b></div>
+          <button type="button" className="mk39__row" onClick={() => { sfx('ui.tap'); setFa(true); setHeat(0); setView('rum'); }}><Icon n="card" size={24} /><span><b>{t('u39.mk.faRow')}</b><small>{t('u39.mk.faSub')}</small></span><Icon n={t.rtl ? 'back' : 'arrow'} size={18} /></button>
+        </>}
+        <p className="mk39__fair"><Icon n="help" size={16} />{t('u39.mk.fair')}</p>
+      </div>
     </div>
     {cur && <RumourSheet key={cur.id} r={cur} pre={pre} onClose={() => setSel(undefined)} />}
   </div>;
+}
+
+// ---------- 3.9 Transfers: confirmed moves from the data snapshot (/api/data/transfers), newest first, with the source
+type Tr = { id: string; playerId: string; playerName: string; fromClubId: string | null; fromName: string | null; toClubId: string | null; toName: string | null; date: string; type: string; feeText?: string; sources?: string[] };
+let trCache: { at: number; list: Tr[]; asOf: string } | null = null;
+function Transfers({ q }: { q: string }) {
+  const t = useT();
+  const [st, setSt] = useState<{ list: Tr[]; asOf: string } | 'off' | null>(trCache);
+  const [ty, setTy] = useState('');
+  const [lg, setLg] = useState('');
+  useEffect(() => {
+    if (trCache && Date.now() - trCache.at < 6e5) return;
+    data<{ transfers: Tr[]; asOf?: string; meta?: { asOf?: string } }>('transfers?limit=200').then((r) => {
+      if (!r || !r.transfers) { setSt((x) => x || 'off'); return; }
+      trCache = { at: Date.now(), list: r.transfers, asOf: r.asOf || r.meta?.asOf || '' }; setSt(trCache);
+    });
+  }, []);
+  if (st === null) return <p className="g-empty">{t('common.loading')}</p>;
+  if (st === 'off') return <p className="g-empty">{t('u39.mk.trOff')}</p>;
+  const lgs = [...new Set(st.list.flatMap((x) => [clubById(x.fromClubId || '')?.l, clubById(x.toClubId || '')?.l]).filter(Boolean) as string[])].sort();
+  const rows = st.list.filter((x) => (!ty || x.type === ty) && (!lg || clubById(x.fromClubId || '')?.l === lg || clubById(x.toClubId || '')?.l === lg)
+    && (!q || [x.playerName, x.fromName, x.toName].some((v) => (v || '').toLowerCase().includes(q)))).slice(0, 40);
+  return <>
+    <div className="mk39__filters">
+      <select value={lg} onChange={(e) => setLg(e.target.value)} aria-label={t('hub.market.league')}><option value="">{t('u39.mk.allLeagues')}</option>{lgs.map((k) => <option key={k} value={k}>{lgName(t, k)}</option>)}</select>
+      <select value={ty} onChange={(e) => setTy(e.target.value)} aria-label={t('u39.mk.tabs.tr')}><option value="">{t('u39.mk.all')}</option>{['transfer', 'loan', 'free', 'undisclosed'].map((k) => <option key={k} value={k}>{t('u39.mk.ty.' + k)}</option>)}</select>
+    </div>
+    {!rows.length && <p className="g-empty">{t('u39.mk.trNone')}</p>}
+    {rows.map((x) => {
+      const from = clubById(x.fromClubId || ''), to = clubById(x.toClubId || ''); const p = WORLD.players.find((y) => y.id === x.playerId);
+      const src = (x.sources || [])[0];
+      return <div key={x.id} className="mk39__card">
+        <Kit club={to || from} player={p} size={56} />
+        <span className="mk39__b">
+          <span className="mk39__top"><b dir="auto">{x.playerName}</b><span className="mk39__pill is-ok">{t('u39.mk.confirmed')}</span></span>
+          <span className="mk39__route"><bdi>{x.fromName || '—'}</bdi><Icon n={t.rtl ? 'back' : 'arrow'} size={14} /><bdi>{x.toName || '—'}</bdi></span>
+          <small>{t('u39.mk.announced', { d: dayStr(t, x.date) })}{x.feeText ? ' · ' + x.feeText : ''}</small>
+          {src && <a className="mk39__src" href={src} target="_blank" rel="noopener noreferrer"><Icon n="news" size={14} />{t('u39.mk.source')}</a>}
+        </span>
+      </div>;
+    })}
+  </>;
+}
+// ---------- 3.9 Players: the game's player database (top leagues), search by name or club; on-Market players open
+function Players({ q, rs, onOpen }: { q: string; rs: Rumour[]; onOpen: (rid: string) => void }) {
+  const t = useT();
+  const live = new Map(rs.map((r) => [r.playerId, r.id]));
+  const rows = WORLD.players.filter((p) => !q || p.n.toLowerCase().includes(q) || (clubById(p.c)?.n || '').toLowerCase().includes(q))
+    .sort((a, b) => (live.has(b.id) ? 1 : 0) - (live.has(a.id) ? 1 : 0) || b.star - a.star || a.n.localeCompare(b.n)).slice(0, 40);
+  if (!rows.length) return <p className="g-empty">{t('u39.mk.plNone')}</p>;
+  return <>{rows.map((p) => { const c = clubById(p.c); const rid = live.get(p.id);
+    const body = <><Portrait kind="player" id={p.id} club={c} size={56} round /><span className="mk39__b"><span className="mk39__top"><b dir="auto">{p.n}</b>{rid && <span className="mk39__pill">{t('u39.mk.onMarket')}</span>}</span><small>{[c?.n, t('pos.' + p.pos), p.age ? String(p.age) : ''].filter(Boolean).join(' · ')}</small></span>{rid && <Icon n={t.rtl ? 'back' : 'arrow'} size={18} />}</>;
+    return rid ? <button key={p.id} type="button" className="mk39__card is-btn" onClick={() => onOpen(rid)}>{body}</button> : <div key={p.id} className="mk39__card">{body}</div>;
+  })}</>;
 }
 
 // ---------- one rumour, one row: kit (the portrait slot), name, the headline, stars · heat · stage · status, the price
@@ -157,13 +198,11 @@ function RumRow({ r, onOpen }: { r: Rumour; onOpen: () => void }) {
   const mine = b?.mine || (w.mine?.calls || []).find((c) => c.rid === r.id) || null;
   const m = b ? b.market : marketOf(r);
   const from = clubById(r.currentClubId);
-  const p = WORLD.players.find((x) => x.id === r.playerId);
   const st = stageOf(r);
   const star = starOf(r);
   const closed = b && b.state !== 'open';
-  return <button className={'tm-row' + (mine ? ' is-called' : '')} onClick={onOpen} aria-label={r.playerName}>
-    {/* Portrait slot (Addendum A): swap for <Portrait kind="player" id={r.playerId} club={from} size={40} /> once ui/portrait.tsx lands. */}
-    <Kit club={from} player={p} size={40} />
+  return <button className={'tm-row mk39__card is-btn' + (mine ? ' is-called' : '')} onClick={onOpen} aria-label={r.playerName}>
+    <Portrait kind="player" id={r.playerId} club={from} size={56} round />
     <span className="tm-row__b">
       <span className="tm-row__n" dir="auto">{r.playerName}</span>
       <span className="tm-row__h" dir="auto">{rumourHed(t, r)}</span>
@@ -183,8 +222,8 @@ function StatusChip({ b }: { b?: BoardItem }) {
 function FARow({ x }: { x: FreeAgent }) {
   const t = useT();
   const last = x.lastClubId ? clubById(x.lastClubId) : undefined;
-  return <div className="tm-row mk-fa" aria-label={x.n}>
-    <Kit club={last} player={WORLD.players.find((p) => p.id === x.id)} size={40} />
+  return <div className="tm-row mk-fa mk39__card" aria-label={x.n}>
+    <Portrait kind="player" id={x.id} club={last} size={56} round />
     <span className="tm-row__b">
       <span className="tm-row__n" dir="auto">{x.n}</span>
       <span className="tm-row__h">{t('mk.faSince', { d: dayStr(t, x.since) })}{x.lastClub ? ' · ' + t('mk.faLast', { c: x.lastClub }) : ''}</span>
