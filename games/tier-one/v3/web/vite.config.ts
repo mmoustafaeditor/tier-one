@@ -1,5 +1,5 @@
 import { defineConfig, type Plugin } from 'vite';
-import { mkdirSync, copyFileSync, readFileSync, writeFileSync, rmSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { mkdirSync, copyFileSync, readFileSync, writeFileSync, rmSync, readdirSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { dirname, resolve, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -98,12 +98,11 @@ const publishWeb = (): Plugin => ({
     const bytes = files.reduce((n, f) => n + statSync(resolve(out, f)).size, 0);
     const html = readFileSync(resolve(out, 'index.html'));
     writeFileSync(resolve(out, 'version.json'), versionInfo({ kind: 'web', bytes, sha256: sha(html), files: files.length }));
-    // /tier-one: replace index.html, assets/, icons/, sw.js, manifest and version.json; leave films/ and apk/ alone.
+    // /tier-one: replace index.html, assets/, icons/, sw.js, manifest and version.json; leave apk/ alone.
     if (process.env.T1_NOMIN) return; // a readable build for profiling (npm run perf) never goes live
     mkdirSync(SITE, { recursive: true });
     for (const d of ['assets', 'icons']) rmSync(resolve(SITE, d), { recursive: true, force: true });
     for (const f of walk(out)) { mkdirSync(dirname(resolve(SITE, f)), { recursive: true }); copyFileSync(resolve(out, f), resolve(SITE, f)); }
-    for (const d of ['films']) { mkdirSync(resolve(SITE, d), { recursive: true }); if (!existsSync(resolve(SITE, d, '.gitkeep'))) writeFileSync(resolve(SITE, d, '.gitkeep'), ''); }
   },
 });
 

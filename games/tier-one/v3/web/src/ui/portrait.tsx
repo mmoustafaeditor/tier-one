@@ -101,6 +101,9 @@ export function Portrait({ kind: kindIn, id, size = 56, club, mood, name, classN
   return <span className={'g-portrait' + (round ? ' is-round' : '') + ' ' + className} style={st} data-kind={kind} data-id={id} role={label ? 'img' : undefined} aria-label={label || undefined} aria-hidden={label ? undefined : true}
     dangerouslySetInnerHTML={{ __html: portraitPlaceholderSVG(kind, id, { tint: club?.c1, tint2: club?.c2, mood, label }) }} />;
 }
+/** One accent colour per source (the Leak and the staff share the violet); used by clip cards and the call screen. */
+const SRC_ACC: Record<string, string> = { kitman: '#2FBF71', barber: '#FF9A1F', agent: '#F7B928', spotter: '#35C3E6', physio: '#FF5A7A' };
+export const accentOf = (src: string) => SRC_ACC[src] || '#A77BFF';
 /** Which placeholder mood a source's read suggests (a hesitant Off, a confident Done): expression only, never a rule. */
 export function moodFor(src: string, o: number): Mood {
   if (src === 'barber') return o === 3 ? 'mischief' : 'confident';

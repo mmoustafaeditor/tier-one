@@ -10,8 +10,6 @@ import { sfx, buzz } from '../lib/sfx';
 import { leanOf, outWord, strWord, postLine, vars, evidenceOf } from '../lib/story';
 import { Icon, Kit, GBtn, TopBar, shake } from '../ui/game';
 import { Portrait } from '../ui/portrait';
-import { CallScene } from '../ui/CallScene';
-import { PostScene } from '../ui/PostScene';
 import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } from '../lib/meta';
 import { applyWindow, totalFavours, vinceOf, type CareerReport } from '../lib/career';
 import { storyBeats, pushBeats, beatScene, type Beat } from '../lib/storyMode';
@@ -21,12 +19,7 @@ import { Tip } from '../ui/fit';
 import { hereWeGo } from '../lib/share';
 import { Results } from './Results';
 import { playScene, afterScenes, seen } from '../lib/scenes';
-// Surface films (GOTY.md §9, ui/film.tsx): the source's place behind the file, the city on Deadline Day, the clock
-// behind the countdown, the phone pick-up before a call, the stamp under a filed call. All additive: nothing without clips.
-import { WindowFilm, ResultsFilm, DDClockFilm, Beat as FilmBeat, playBeat, warmBeat } from '../ui/film';
-import { pickupBeat, stampBeat, SRCS as FILM_SRCS } from '../film/surfaces/manifest';
 import type { Chrome } from '../App';
-import { DayEnd } from '../film/calls/DayEnd'; // GOTY.md §10: the 1.5 s day end between window days (additive)
 // The editor's desk (GOTY.md §7.1): the Daily brief before day 1 and the Deadline Day Live ticker (ui/live.tsx).
 import { DailyBriefSheet, DDLiveTicker } from '../ui/live';
 import { LivePresence } from '../ui/social';
@@ -51,7 +44,6 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const [sel, setSel] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [last, setLast] = useState<{ i: number; c: Clue } | null>(null);
-  const [dayEnd, setDayEnd] = useState<{ k: number; day: number } | null>(null);
   const [night, setNight] = useState<Night | null>(null);
   const [report, setReport] = useState<CareerReport | null>(null);
   const [beat, setBeat] = useState<Beat | null>(null);
@@ -65,7 +57,6 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const recorded = useRef(false);
   const ddLate = useRef(false);
   const deskSel = sel ?? 0;
-  const sceneUp = useSceneUp();
 
   const settle = useCallback((v: View) => {
     if (!v.done || !v.result || recorded.current) return;
@@ -117,15 +108,10 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   };
   const ask = async (i: number, src: string) => {
     buzz(12);
-    // The phone lifts off the counter (beat-pickup-<src>, 0.6 s) while the ask goes to the engine; the call film follows
-    // once both are done. Without the clip the beat resolves at once and the flow is exactly as before.
-    const beat = playBeat(pickupBeat(src));
+    // 3.9: the call screen (UI39.md §call) opens on the answer: the source's portrait, their sound, then what they said.
     const out = await act(['a', i, src]);
-    await beat.done;
     if (out && out.answer) { setLast({ i, c: out.answer }); setCalling({ i, c: out.answer }); }
   };
-  // Beats are preloaded with the screen: the six pick-ups, once the board is up (a no-op when film is gated).
-  useEffect(() => { if (view && !view.done) FILM_SRCS.forEach((s) => warmBeat(pickupBeat(s))); }, [!!view && !view.done]);
   const postCall = async (i: number, o: number, s: number, ut: boolean) => {
     const prev = g && g.calls[i] ? { ...g.calls[i]! } : null;
     const out = await act(ut ? ['u', i, o, s] : ['c', i, o, s]);
@@ -152,7 +138,6 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     const posts = st.feed.filter((f) => f.day === before.day);
     const twist = st.twist && !before.twist ? st.twist : null;
     setNight({ day: st.day, posts, twist, noTwist: st.noTwist && !before.noTwist, dd: st.day === view.R.DAYS });
-    setDayEnd({ k: Date.now(), day: st.day });
   };
   // Deadline Day opens with its film (the full cut the first time ever, the short skippable cut after, §40); the clock
   // only starts once it ends, so the film never eats the sixty seconds.
@@ -171,7 +156,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <GBtn style={{ marginTop: 18 }} onClick={load}><Icon n="phone" />{t('common.retry')}</GBtn>
       <GBtn kind="paper" style={{ marginTop: 12 }} onClick={() => chrome.go({ n: 'practice' })}>{t('daily.practiceInstead')}</GBtn></div></div>;
   if (!view || !g) return <div className="g-screen play"><TopBar bare back={{ label: t('g.tabs.home'), onClick: home }} /><div className="loading-press"><span /><p className="g-mono">{t('common.loading')}</p></div></div>;
-  if (view.done && view.result) return <><Results view={view} chrome={chrome} report={report} start={startRef.current} beat={beat} ddLast15={ddLate.current} /><ResultsFilm /></>;
+  if (view.done && view.result) return <Results view={view} chrome={chrome} report={report} start={startRef.current} beat={beat} ddLast15={ddLate.current} />;
 
   const dd = view.state.day === view.R.DAYS;
   const mob = sel != null;
@@ -185,7 +170,6 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const dayTitle = <span className="play__title"><span>{title}</span><span className="g-mono">{t('c38.win.day', { n: view.state.day, m: view.R.DAYS })}</span></span>;
 
   return <div className={'g-screen g-screen--wide play fit fit--full' + (dd ? ' is-dd' : '')} ref={rootRef}>
-    <WindowFilm src={calling ? calling.c.src : last ? last.c.src : null} dd={dd} />
     <TopBar bare back={mob ? { label: t('c38.file.back'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : dayTitle} />
     {dd && <DDHead view={view} onZero={finish} />}
     <div className="play__cols">
@@ -213,16 +197,17 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <aside className={'play__file' + (mob ? '' : ' only-desk')}>{file}</aside>
     </div>
 
-    {tutor && !sceneUp && !calling && !night && !posting && !burst && <TutorCoach g={g} sel={sel} onDone={() => endTut(false)} onFinish={() => { endTut(false); fastForward(); }} />}
-    {calling && view.cast[calling.i] && createPortal(<CallScene src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} mode={view.mode} onDone={() => setCalling(null)} />, document.body)}
+    {tutor && !calling && !night && !posting && !burst && <TutorCoach g={g} sel={sel} onDone={() => endTut(false)} onFinish={() => { endTut(false); fastForward(); }} />}
+    {/* 3.9 (UI39.md): the call screen and the published-post screen replace the films here; until the daily lane lands
+        them the answer goes straight to the file and the post is filed at once. */}
+    {calling && view.cast[calling.i] && (() => { setTimeout(() => setCalling(null), 0); return null; })()}
     {burst && createPortal(<Burst key={burst.k} kind={burst.kind} hwg={burst.hwg} />, document.body)}
-    {posting && view.cast[posting.i] && createPortal(<PostScene key={posting.k} c={view.cast[posting.i]} o={posting.o} s={posting.s} ut={posting.ut} prev={posting.prev} onDone={() => { const p = posting; setPosting(null); setFiledAt((f) => ({ ...f, [p.i]: Date.now() })); shake(rootRef.current); }} />, document.body)}
+    {posting && view.cast[posting.i] && (() => { const p = posting; setTimeout(() => { setPosting(null); setFiledAt((f) => ({ ...f, [p.i]: Date.now() })); shake(rootRef.current); }, 0); return null; })()}
 
     <Sheet open={confirmEnd} onClose={() => setConfirmEnd(false)} label={t('daily.endConfirmOk')}>
       <div className="sheet__body"><h2 className="g-h2">{t('daily.endConfirm', { n: view.state.day, c: view.state.left })}</h2><p className="g-sub" style={{ marginTop: 8 }}>{t('daily.contactsNote')}</p>
         <GBtn kind="dark" style={{ marginTop: 16 }} onClick={endDay}><Icon n="moon" />{t('daily.endConfirmOk')}</GBtn><GBtn kind="paper" style={{ marginTop: 12 }} onClick={() => setConfirmEnd(false)}>{t('common.cancel')}</GBtn></div>
     </Sheet>
-    {dayEnd && createPortal(<DayEnd key={dayEnd.k} day={dayEnd.day} lang={t.lang} rtl={t.rtl} label={t('g.win.dayH', { n: dayEnd.day })} kicker={t('mo.dawn')} onDone={() => setDayEnd(null)} />, document.body)}
     {night && createPortal(<NightScene night={night} view={view} onGo={() => (night.dd ? startDD() : setNight(null))} />, document.body)}
     {view.mode === 'daily' && !night && !calling && <DailyBriefSheet view={view} go={chrome.go} />}
   </div>;
@@ -250,7 +235,6 @@ function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Ga
   const posted = E.livePosts(g, i).length;
   const vince = view.mode === 'career' && vinceOf(view.R)?.i === i;
   return <button className={'scard' + (open ? ' is-open' : '') + (call ? ' is-called' : '') + (hint ? ' is-hint' : '')} style={{ ['--i' as string]: i }} onClick={onOpen} aria-label={c.player.n}>
-    {call && <FilmBeat stem={stampBeat(OUTS[call.o])} trigger={filed || null} className="fl-beat--stamp" />}
     <span className="scard__face"><Portrait kind="player" id={c.player.id} club={c.from} size={52} /><Kit club={c.from} player={c.player} size={22} style={{ position: 'absolute', insetInlineEnd: -5, bottom: -5 }} /></span>
     <span className="scard__b">
       <span className="scard__n" dir="auto">{c.player.n}</span>
@@ -287,16 +271,6 @@ const TUT_KEY: Record<TutStep, string> = { open: 'g.tut.open', ring: 'c38.tut.ri
 const TUT_TOP = 64, TUT_GAP = 12, TUT_PAD = 6, TUT_HEAD = 52; // sticky bar, tip gap, ring padding, headroom for a section heading
 const isDesk = () => window.matchMedia('(min-width: 960px)').matches;
 const q = (sel: string) => document.querySelector<HTMLElement>(sel);
-// True while a film (the cold open, a source intro, a moment) is on screen: the tutor waits for it to end.
-function useSceneUp() {
-  const [up, setUp] = useState(() => !!q('.film'));
-  useEffect(() => {
-    const mo = new MutationObserver(() => setUp(!!q('.film')));
-    mo.observe(document.body, { childList: true, subtree: true });
-    return () => mo.disconnect();
-  }, []);
-  return up;
-}
 function tutStep(g: Game, sel: number | null): TutStep {
   const desk = isDesk(), i = sel ?? 0;
   if (g.calls.some(Boolean)) return !desk && sel != null ? 'back' : 'result';
@@ -508,7 +482,6 @@ function DDHead({ view, onZero }: { view: View; onZero: () => void }) {
   const open = view.cast.filter((_, i) => !view.state.calls[i]).length;
   const note = phase === 'normal' ? t('dd.note') : phase === 'heart' ? t('c38.dd.phase.heart') : phase === 'quick' ? t('c38.dd.phase.quick') : phase === 'tick' ? t('c38.dd.phase.tick') : t('c38.dd.phase.pulse');
   return <div className={'ddh ph-' + phase + (phase === 'pulse' ? ' is-pulse' : '') + (phase === 'tick' ? ' is-last' : '') + (phase === 'heart' || phase === 'quick' ? ' is-hot' : '')} style={{ ['--ddp' as string]: String(1 - ms / (total * 1000)) }}>
-    <DDClockFilm />
     <div className="ddh__band"><b>{t('dd.band')}</b><span>{t('dd.posts', { n: view.R.DD_POSTS - view.state.posts7 })} · {open ? t('c38.dd.open', { n: open }) : t('c38.dd.allFiled')}</span></div>
     <div className="ddh__clock" role="timer" aria-live="off" aria-label={sec + 's'}><span className="ddh__s">{String(sec).padStart(2, '0')}</span><span className="ddh__cs">.{cs}</span></div>
     <div className="ddh__bar"><i style={{ width: (100 * ms) / (total * 1000) + '%' }} /><span className="ddh__marks" aria-hidden="true">{[30, view.R.DD_SNAP, 10, 5].map((m) => <i key={m} style={{ insetInlineStart: (100 * m) / total + '%' }} />)}</span></div>

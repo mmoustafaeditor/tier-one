@@ -21,7 +21,6 @@ import { GBtn, Kit, TopBar } from '../ui/game';
 import { chapterOf } from '../lib/storyMode';
 import type { Chrome } from '../App';
 import { dailyFeed } from '../lib/byline';
-import { HomeFilm } from '../ui/film';
 import { lampStyle } from '../lib/wallet';
 import { Tip } from '../ui/fit';
 import { dailyNoToday } from './Front';
@@ -75,7 +74,6 @@ export function Home(chrome: Chrome) {
       go: () => chrome.go(s.practice.live ? { n: 'play', mode: 'practice', key: Date.now() } : { n: 'practice' }) },
   ];
   return <div className="g-screen home hm fit" data-lamp={lamp.on ? lamp.warmth : undefined} style={lamp.on ? (lamp.vars as CSSProperties) : undefined}>
-    <HomeFilm tone={lamp.on ? 'night' : undefined} />
     <TopBar onMenu={chrome.openSettings} />
     <div className="fit__body hm__body">
       <Tip id="home" />

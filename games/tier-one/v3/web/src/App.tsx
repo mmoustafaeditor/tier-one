@@ -9,8 +9,6 @@ import { bootPlatform, detectPlatform } from './lib/account';
 import { remoteDriver, localDriver, type Driver, type RoomRef } from './lib/driver';
 import { Home, dailyLiveDay } from './screens/Home';
 import { Icon, installTilt, prefersReducedMotion, TopBar } from './ui/game';
-// Surface films (GOTY.md §9, ui/film.tsx): filmed page turns in go(); the ambient loops are placed by each screen.
-import { filmTurn } from './ui/film';
 // 3.8 shell (launch brief §28–§29, §32–§33, §54): the chrome decides what the top bar shows per route, the five
 // destinations live in ui/chrome.tsx, the morning briefing and the notification ask mount here, and the funnel's
 // route-based events are sent from go() so no screen has to remember to.
@@ -34,7 +32,6 @@ const RoomsScreen = lazy(() => import('./screens/Rooms').then((m) => ({ default:
 const HowTo = lazy(() => import('./screens/HowTo').then((m) => ({ default: m.HowTo })));
 const SettingsSheet = lazy(() => import('./screens/Settings').then((m) => ({ default: m.SettingsSheet })));
 const Onboarding = lazy(() => import('./screens/Onboarding').then((m) => ({ default: m.Onboarding })));
-const SceneHost = lazy(() => import('./lib/scenes').then((m) => ({ default: m.SceneHost })));
 const FeedScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.FeedScreen })));
 const RivalsScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.RivalsScreen })));
 const ContactsScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.ContactsScreen })));
@@ -122,9 +119,6 @@ export function App() {
     sfx('page.turn');
     h.dataset.route = r.n;
     const dir = reduce ? 'none' : vtDir(from, r);
-    // Filmed page turn (GOTY.md §9): on capable devices the sheet sweeps over the page and the route swaps while it
-    // covers the frame; the View Transition / CSS slide below is the fallback whenever the clip isn't there.
-    if (!reduce && filmTurn(dir, swap, h.dir === 'rtl')) { h.dataset.vt = 'none'; return; }
     h.dataset.vt = dir;
     if (!reduce && d.startViewTransition) {
       try { d.startViewTransition(() => flushSync(swap)).finished.finally(() => { if (h.dataset.vt !== 'none') delete h.dataset.vt; }); return; } catch { /* fall through */ }
@@ -153,7 +147,7 @@ export function App() {
       if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
       const el = e.target as HTMLElement | null;
       if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
-      const modal = document.querySelector('[role="dialog"], [aria-modal="true"], .scrim, .g-overlay, .call-scene, .post-scene');
+      const modal = document.querySelector('[role="dialog"], [aria-modal="true"], .scrim, .g-overlay');
       if (e.key === 'Escape') {
         if (modal) return; // sheets and scenes close themselves
         const back = document.querySelector<HTMLButtonElement>('.g-top__back, .bar__back');
@@ -226,7 +220,6 @@ export function App() {
       {!s.onboarded && <Onboarding go={go} />}
       <MorningPapers route={route.n} />
       <PushAsk route={route.n} />
-      <SceneHost />
       <SocialWatch />
     </Suspense>
   </>;

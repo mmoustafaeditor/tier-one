@@ -14,14 +14,9 @@ import { useT, num } from '../lib/i18n';
 import { leanOf, voiceLine, postLine, saysWord, outWord, strWord, vars, varsH, evidenceOf, heatOf, relKey } from '../lib/story';
 import { Glyph, Lines, Crest } from '../ui/bits';
 import { Icon, Kit, SrcIcon, GBtn } from '../ui/game';
-import { Portrait, moodFor } from '../ui/portrait';
-import { accentOf } from '../film/calls/CallFilm';
+import { Portrait, moodFor, accentOf } from '../ui/portrait';
 import { sfx, buzz } from '../lib/sfx';
 import { hereWeGo } from '../lib/share';
-// Surface films (GOTY.md §9, ui/film.tsx): the press warming under the thumb while publishing is held, the stamp coming
-// down under a filed call's CSS slam. Additive: nothing renders without the clips.
-import { Beat } from '../ui/film';
-import { stampBeat } from '../film/surfaces/manifest';
 import type { View } from '../lib/driver';
 import { vinceOf } from '../lib/career';
 import { srcNamed } from '../lib/storyMode';
@@ -112,7 +107,6 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
   return <div className="file2 file3">
     {/* ---- header: who, where from, where to, how hot ---- */}
     <header className={'pcard pcard3 g-card' + (justFiled ? ' is-filed' : '')}>
-      {call && <Beat stem={stampBeat(OUTS[call.o])} trigger={justFiled || null} className="fl-beat--stamp" />}
       <div className="pcard3__art">
         <Portrait kind="player" id={c.player.id} club={c.from} size={84} name={t('c38.art.portrait', { n: c.player.n })} />
         <Kit club={c.from} player={c.player} size={34} style={{ position: 'absolute', insetInlineEnd: -6, bottom: -6 }} />
@@ -284,7 +278,6 @@ function HoldPublish({ disabled, onCommit, children, label, shine, gold }: { dis
     style={{ ['--hold' as string]: String(k) }} disabled={disabled} aria-label={t('calls.hold.aria', { l: label })} title={t('c38.pub.hold')}
     onPointerDown={down} onPointerUp={up} onPointerLeave={stop} onPointerCancel={stop} onContextMenu={(e) => e.preventDefault()}
     onClick={(e) => { if (e.detail === 0) commit(); }}>
-    <Beat stem="beat-press-warm" held={k > 0 && k < 1} className="fl-beat--press" />
     <span className="hold__fill" aria-hidden="true" />{shine && <span className="shine" />}{children}
   </button>;
 }

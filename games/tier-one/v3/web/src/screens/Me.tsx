@@ -14,7 +14,6 @@ import { TopBar } from '../ui/game';
 import { usePaged, Pager } from '../ui/fit';
 import type { Chrome } from '../App';
 import { BylineCard, tn } from '../ui/connect';
-import { ScenesGallery } from '../film/ScenesGallery';
 import { StyleCard } from '../ui/live';
 import { ProtectNudge } from '../ui/account';
 
@@ -29,7 +28,7 @@ export function MeScreen(chrome: Chrome) {
   const top = BOOK_SRC.map((src) => ({ src, e: bookOf(s, src) })).sort((a, b) => b.e.xp - a.e.xp)[0];
   const lv = levelOf(s.pp); // the season level: the one level number (lib/progress.ts)
   const due = unpaid(s).length;
-  const [sheet, setSheet] = useState<null | 'badges' | 'style' | 'films'>(null);
+  const [sheet, setSheet] = useState<null | 'badges' | 'style'>(null);
   const tiles: { k: string; ic: string; t: string; sub: string; go: () => void; badge?: number; tone?: string }[] = [
     { k: 'boards', ic: 'trophy', t: t('aw.title'), sub: due ? t('aw.hubDue', { n: due }) : t('aw.hubSub'), badge: due, go: () => chrome.go({ n: 'boards', from: { n: 'me' } }) },
     { k: 'badges', ic: 'star', t: t('hub.card.badges'), sub: t('ach.aside', { n: got.length, m: ACH_IDS.length }), go: () => setSheet('badges') },
@@ -38,7 +37,6 @@ export function MeScreen(chrome: Chrome) {
     { k: 'rivals', ic: 'reply', t: t('cn.me.rivals'), sub: rec.w + rec.l + rec.d ? t('cn.me.rivalsSub', { w: rec.w, l: rec.l }) : t('cn.me.rivalsNone'), go: () => chrome.go({ n: 'rivals' }), tone: rec.w > rec.l ? 'up' : rec.l > rec.w ? 'down' : '' },
     { k: 'contacts', ic: 'phone', t: t('cn.me.contacts'), sub: t('cn.me.contactsSub', { s: t('src.' + top.src), n: top.e.lv }), go: () => chrome.go({ n: 'contacts' }) },
     { k: 'pass', ic: 'crown', t: t('sh.me.season'), sub: t('sh.me.seasonSub', { n: lv.n, m: MAX_LV }), go: () => chrome.go({ n: 'pass' }) },
-    { k: 'films', ic: 'film', t: t('cn.me.films'), sub: t('film.gallery.aside'), go: () => setSheet('films') },
     { k: 'howto', ic: 'help', t: t('nav.howto'), sub: t('g.me.training'), go: () => chrome.go({ n: 'howto' }) },
   ];
   const pg = usePaged(tiles, 6);
@@ -79,9 +77,6 @@ export function MeScreen(chrome: Chrome) {
     </Sheet>
     <Sheet open={sheet === 'style'} onClose={() => setSheet(null)} label={t('film.name.style')}>
       <div className="sheet__body"><StyleCard /></div>
-    </Sheet>
-    <Sheet open={sheet === 'films'} onClose={() => setSheet(null)} label={t('cn.me.films')}>
-      <div className="sheet__body me__films"><ScenesGallery /></div>
     </Sheet>
   </div>;
 }
