@@ -26,3 +26,18 @@ export function weatherFor(key: string, country: string): Wx {
   for (let i = 0; i < w.length; i++) { u -= w[i]; if (u < 0) return i as Wx; }
   return 0;
 }
+
+// How an AI manager adapts to the day (like FM's AI), kept to what the engine shows really pays (sim-tests/wxai.ts):
+// in the wind, long balls and crosses die, so it keeps the ball on the ground, plays narrower and takes corners
+// short; in the heat it keeps the ball and makes the other side run. Heavy rain and snow change nothing: going
+// direct on a heavy pitch was measured to cost more than the long-ball edge (WX.long) gives back, and a lower press
+// in the heat costs more chances than the legs it saves. Clear skies and light rain change nothing either.
+type Knobs = { passing: number; build: number; width: number; routine: number };
+export function weatherPlan(t: Knobs, wx: Wx): Partial<Record<'passing' | 'build' | 'width' | 'routine', number>> {
+  const p: Record<string, number> = {};
+  if (wx === 3 || wx === 4) { p.passing = Math.min(1, t.passing); p.build = Math.min(1, t.build); }
+  if (wx === 3) { p.width = Math.min(1, t.width); if (t.routine === 1) p.routine = 2; }
+  // Only what actually changes (a knob already there is not a change to log).
+  for (const k of Object.keys(p)) if (p[k] === (t as Record<string, number>)[k]) delete p[k];
+  return p;
+}
