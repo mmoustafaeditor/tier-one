@@ -25,12 +25,20 @@ const SALT = process.env.T1V3_SALT || (TOKEN ? createHash('sha256').update('t1v3
 const DEV_SALT = 'dev-only-salt-set-T1V3_SALT';
 
 const DAY = 86400, DAY_MS = DAY * 1000;
-const SESSION_TTL = 3 * DAY, ROOM_TTL = 21 * DAY, /* a room nobody opens for 21 days closes itself */ LB_DAY_TTL = 40 * DAY, LB_WEEK_TTL = 60 * DAY;
+const SESSION_TTL = 3 * DAY, ROOM_TTL = 21 * DAY, /* a room nobody opens for 21 days closes itself (spec H §6) */ LB_DAY_TTL = 40 * DAY, LB_WEEK_TTL = 60 * DAY;
 const DAILY_EPOCH = Date.parse('2026-09-01T00:00:00Z'); // Daily No. 1
 const DD_GRACE_MS = 4000;            // network grace on the Deadline Day clock
-const LB_TOP = 25, MAX_ROOM = 24, ROUND_OPEN_H = 48;
-// 3.4 the press box (GOTY.md §7.3): weekly rooms on the real calendar, room feeds, challenges, newsrooms, live presence.
-const WEEK_OPEN_H = 7 * 24, ROOM_FEED = 60, TAUNTS = 8, TAUNT_GAP = 45;
+const LB_TOP = 25;
+// 3.8 Multiplayer rooms (brief §16–17, docs/spec/H-multiplayer-system.md): a group chat of football obsessives.
+//   MAX_ROOM 16      hard cap (recommended 2–12): the recap card and the table stay readable; 24 was tournament scale.
+//   ROOM_ROUNDS      3 (a taster) · 7 (default: a week of daily boards, or a 7-week season) · 14 (a long season).
+//   ROUND_OPEN_H 48  a daily-cadence round stays open two days so every time zone and a missed evening still count.
+//   WEEK_OPEN_H      a weekly round is open Monday to Sunday night on the real calendar.
+//   TAUNT_GAP 30     one taunt every 30 s per reporter: banter flows, spam doesn't (fixes the 45 s / "a minute" mismatch).
+//   ROOM_TTL 21 d    idle expiry: three weekly rounds nobody opened means the group has moved on; a finished room
+//                    stays readable (table, recaps) for 21 days after the last visit, then goes.
+const MAX_ROOM = 16, ROUND_OPEN_H = 48, ROOM_ROUNDS = [3, 7, 14], ROOM_ROUNDS_DEFAULT = 7;
+const WEEK_OPEN_H = 7 * 24, ROOM_FEED = 60, TAUNTS = 8, TAUNT_GAP = 30;
 const CH_TTL = 8 * DAY, CH_OPEN_MS = 24 * 3600e3, CH_MAX_RES = 20, CH_LOG_MAX = 160, CH_MINE = 20;
 const NR_TTL = 200 * DAY, NR_MAX = 20, NR_TOP = 10;
 const LIVE_WINDOW_S = 10 * 60, LIVE_TTL = 2 * DAY;
@@ -162,9 +170,11 @@ async function settle(sc, who, sess, g, cast, nick) {
   } else {
     const key = 'room:v3:' + sc.code + ':p:' + who, p = await getJ(key);
     if (p) { p.results[sc.round] = { score: r.total, tier: r.tier, ex: r.ex, row: res.row, at: Date.now() }; await setJ(key, p, ROOM_TTL); }
-    // The room feed: the call lands, and every HERE WE GO gets its own gold card.
-    const hwg = hwgOf(r).map((i) => cast.sagas[i] && cast.sagas[i].player ? cast.sagas[i].player.s || cast.sagas[i].player.n : '').filter(Boolean);
-    await roomFeed(sc.code, { t: 'filed', pid: who, nick, round: sc.round, score: r.total, tier: r.tier, ex: r.ex, row: res.row, hwg });
+    // The room feed: the call lands; exclusives are named (gold is for exclusives only, brief §8). `hwg` stays for 3.7 clients.
+    const nameOf = (i) => (cast.sagas[i] && cast.sagas[i].player ? cast.sagas[i].player.s || cast.sagas[i].player.n : '');
+    const hwg = hwgOf(r).map(nameOf).filter(Boolean);
+    const excl = r.per.filter((p) => p.excl).map((p) => nameOf(p.i)).filter(Boolean);
+    await roomFeed(sc.code, { t: 'filed', pid: who, nick, round: sc.round, score: r.total, tier: r.tier, ex: r.ex, row: res.row, hwg, excl });
   }
   sess.res = res;
   return res;
@@ -379,18 +389,20 @@ const actions = {
     return { calls: list, cred, hitRate: hitRate(hits, n), resolved: doneL.length, season: season(now) };
   },
 
-  // ---- Friends rooms: Daily rules exactly, one shared board per round, scored here ----
-  // 3.4: a room is a press box. `cadence` 'weekly' (default) runs one round per ISO week from the Monday of creation,
-  // open all week; 'daily' is the 2.x room (a round a day, open 48 h). Players carry a public id, flair and rep tier.
+  // ---- Multiplayer rooms (3.8, spec H): Daily rules exactly, one shared board per round, scored here ----
+  // A room is a group chat with a table. `cadence` 'weekly' (default: a season, one round per ISO week from the Monday
+  // of creation, open all week) or 'daily' (a sprint: a round a day, each open 48 h). Rounds 3 / 7 / 14. A seat is a
+  // { pid, sec } pair the client keeps; the public id (one way from the device) is what friend ledgers key on, and
+  // what stops one device taking two seats in the same room (one seat per reporter: you can't scout your own board).
   async 'room.create'(b) {
     const nick = clean(b.nick, 16), name = clean(b.name, 28) || 'Tier One room';
-    const rounds = [5, 10, 20].includes(Number(b.rounds)) ? Number(b.rounds) : 5;
+    const rounds = ROOM_ROUNDS.includes(Number(b.rounds)) ? Number(b.rounds) : ROOM_ROUNDS_DEFAULT;
     const cadence = b.cadence === 'daily' ? 'daily' : 'weekly';
     if (!nick || !nickOk(nick)) return { error: 'nick' };
     for (let i = 0; i < 8; i++) {
       const c = code(5), pid = code(10), sec = secret();
       const created = cadence === 'weekly' ? mondayOf(today()) : Date.parse(today() + 'T00:00:00Z');
-      const room = { code: c, name, rounds, created, host: pid, cadence, season: season(Date.now()), v: 2 };
+      const room = { code: c, name, rounds, created, host: pid, cadence, season: season(Date.now()), v: 3 };
       if (await one('SET', 'room:v3:' + c, JSON.stringify(room), 'EX', ROOM_TTL, 'NX')) {
         await redis([['SET', 'room:v3:' + c + ':p:' + pid, JSON.stringify(roomPlayer(pid, nick, sec, b)), 'EX', ROOM_TTL], ['SADD', 'room:v3:' + c + ':players', pid], ['EXPIRE', 'room:v3:' + c + ':players', ROOM_TTL]]);
         await roomFeed(c, { t: 'open', pid, nick, name });
@@ -399,12 +411,20 @@ const actions = {
     }
     return { error: 'busy' };
   },
+  // Join by code or invite link, any time before the last round closes. Rounds already closed count as missed (0).
   async 'room.join'(b) {
     const c = roomCode(b.code), nick = clean(b.nick, 16);
     if (!nick || !nickOk(nick)) return { error: 'nick' };
-    const [meta, count] = await redis([['GET', 'room:v3:' + c], ['SCARD', 'room:v3:' + c + ':players']]);
+    const [meta, ids] = await redis([['GET', 'room:v3:' + c], ['SMEMBERS', 'room:v3:' + c + ':players']]);
     if (!meta) return { error: 'not found' };
-    if (Number(count) >= MAX_ROOM) return { error: 'full' };
+    const room = JSON.parse(meta);
+    if (roomOver(room)) return { error: 'over' };
+    if ((ids || []).length >= MAX_ROOM) return { error: 'full' };
+    const dev = devId(b.dev);
+    if (dev && ids && ids.length) {
+      const pub = pubId(dev), docs = await one('MGET', ...ids.map((id) => 'room:v3:' + c + ':p:' + id));
+      if (docs.some((d) => { try { return JSON.parse(d).pub === pub; } catch { return false; } })) return { error: 'seated' };
+    }
     const pid = code(10), sec = secret();
     await redis([['SET', 'room:v3:' + c + ':p:' + pid, JSON.stringify(roomPlayer(pid, nick, sec, b)), 'EX', ROOM_TTL], ['SADD', 'room:v3:' + c + ':players', pid], ['EXPIRE', 'room:v3:' + c + ':players', ROOM_TTL]]);
     await roomFeed(c, { t: 'join', pid, nick });
@@ -497,36 +517,71 @@ const actions = {
     const out = await redis(cmds);
     return { day: today(), now: Number(out[out.length - 1]) || 0 };
   },
-  // With { pid, sec } the caller's card is refreshed first (nick, flair, rep tier, public id, last seen).
+  // With { pid, sec } the caller's card is refreshed first (nick, flair, rep tier, public id, last seen). A seat that
+  // no longer exists (kicked) answers 'seat' so the client can drop the room with the right note. Opening the room
+  // also settles the Press Box: every round that has closed (or that everyone filed) gets its recap card in the feed once.
   async 'room.get'(b) {
     const c = roomCode(b.code);
+    const meta = await getJ('room:v3:' + c);
+    if (!meta) return { error: 'not found' };
     if (b.pid && b.sec) {
       const key = 'room:v3:' + c + ':p:' + clean(b.pid, 12), p = await getJ(key);
-      if (p && p.sec === b.sec) {
+      if (!p) return { error: 'seat' };
+      if (p.sec === b.sec) {
         const nick = clean(b.nick, 16);
         Object.assign(p, { seen: Date.now(), flair: flairOf(b.flair), tier: tierOf(b.tier) }, devId(b.dev) ? { pub: pubId(devId(b.dev)) } : {}, nick && nickOk(nick) ? { nick } : {});
         await setJ(key, p, ROOM_TTL);
       }
     }
+    await roomRecaps(c, meta);
     const room = await readRoom(c);
     if (room) await redis([['EXPIRE', 'room:v3:' + c, ROOM_TTL], ['EXPIRE', 'room:v3:' + c + ':players', ROOM_TTL], ['EXPIRE', 'room:v3:' + c + ':feed', ROOM_TTL]]); // in use: the 21-day idle clock restarts
     return room ? { room } : { error: 'not found' };
   },
-  // Leave a room: your card goes; a host hands over to the next player; the last one out closes the room.
+  // Leave a room: your seat goes; a leaving host hands over to the longest-seated player; the last one out closes the room.
   async 'room.leave'(b) {
     const c = roomCode(b.code), pid = clean(b.pid, 12);
     const [meta, doc] = await redis([['GET', 'room:v3:' + c], ['GET', 'room:v3:' + c + ':p:' + pid]]);
     if (!meta || !doc) return { ok: true };
     const p = JSON.parse(doc); if (!b.sec || b.sec !== p.sec) return { error: 'forbidden' };
-    await redis([['SREM', 'room:v3:' + c + ':players', pid], ['DEL', 'room:v3:' + c + ':p:' + pid]]);
-    const left = await one('SMEMBERS', 'room:v3:' + c + ':players');
-    if (!left || !left.length) { await redis([['DEL', 'room:v3:' + c], ['DEL', 'room:v3:' + c + ':players'], ['DEL', 'room:v3:' + c + ':feed']]); return { ok: true, closed: true }; }
-    const room = JSON.parse(meta);
-    if (room.host === pid) { room.host = left[0]; await one('SET', 'room:v3:' + c, JSON.stringify(room), 'KEEPTTL'); }
+    const out = await unseat(c, JSON.parse(meta), pid);
+    if (out.closed) return { ok: true, closed: true };
     await roomFeed(c, { t: 'leave', pid, nick: p.nick });
     return { ok: true };
   },
-  // The room feed: a taunt from the pool (i18n `so.taunts[k]`), aimed at one reporter or the room. One per 45 s.
+  // Host only: show a reporter the door (a leaked link, a stranger). Their seat and results go; the feed says so.
+  async 'room.kick'(b) {
+    const c = roomCode(b.code), pid = clean(b.pid, 12), who = clean(b.who, 12);
+    const [meta, doc, target] = await redis([['GET', 'room:v3:' + c], ['GET', 'room:v3:' + c + ':p:' + pid], ['GET', 'room:v3:' + c + ':p:' + who]]);
+    if (!meta || !doc) return { error: 'not found' };
+    const room = JSON.parse(meta), me = JSON.parse(doc);
+    if (!b.sec || b.sec !== me.sec) return { error: 'forbidden' };
+    if (room.host !== pid || who === pid) return { error: 'host' };
+    if (!target) return { room: await readRoom(c) };
+    const t = JSON.parse(target);
+    await unseat(c, room, who);
+    await roomFeed(c, { t: 'kick', pid, nick: me.nick, toNick: t.nick, to: who });
+    return { room: await readRoom(c) };
+  },
+  // Host only, once the season is over: run it back. A fresh room with the same name and settings; the old feed
+  // carries the new code so everyone can follow (nothing moves on its own: a new room is a new choice).
+  async 'room.rematch'(b) {
+    const c = roomCode(b.code), pid = clean(b.pid, 12);
+    const [meta, doc] = await redis([['GET', 'room:v3:' + c], ['GET', 'room:v3:' + c + ':p:' + pid]]);
+    if (!meta || !doc) return { error: 'not found' };
+    const room = JSON.parse(meta), me = JSON.parse(doc);
+    if (!b.sec || b.sec !== me.sec) return { error: 'forbidden' };
+    if (room.host !== pid) return { error: 'host' };
+    if (!roomOver(room)) return { error: 'not over' };
+    if (room.next) return { error: 'done', code: room.next };
+    const made = await actions['room.create']({ ...b, nick: me.nick, name: room.name, rounds: room.rounds, cadence: room.cadence });
+    if (made.error) return made;
+    room.next = made.room.code;
+    await one('SET', 'room:v3:' + c, JSON.stringify(room), 'KEEPTTL');
+    await roomFeed(c, { t: 'rematch', pid, nick: me.nick, code: made.room.code, name: room.name });
+    return made;
+  },
+  // The room feed: a taunt from the pool (i18n `so.room.taunts[k]`), aimed at one reporter or the room. One per 30 s.
   async 'room.post'(b) {
     const c = roomCode(b.code), pid = clean(b.pid, 12);
     const [meta, doc] = await redis([['GET', 'room:v3:' + c], ['GET', 'room:v3:' + c + ':p:' + pid]]);
@@ -535,31 +590,25 @@ const actions = {
     const k = int(b.k, 0, TAUNTS - 1);
     let to = null, toNick = '';
     if (b.to) { const td = await getJ('room:v3:' + c + ':p:' + clean(b.to, 12)); if (td) { to = td.pid; toNick = td.nick; } }
-    if (!(await one('SET', 'room:v3:' + c + ':gap:' + pid, '1', 'EX', TAUNT_GAP, 'NX'))) return { error: 'slow' };
+    if (!(await one('SET', 'room:v3:' + c + ':gap:' + pid, '1', 'EX', TAUNT_GAP, 'NX'))) return { error: 'slow', gap: TAUNT_GAP };
     await roomFeed(c, { t: 'taunt', pid, nick: p.nick, k, to, toNick });
     return { feed: await readFeed(c) };
   },
-  // Spectate (§7.3): everyone's calls for one round, day by day. Only once you've filed and the round is over for all.
+  // The round on film and the Press Box recap: everyone's calls for one settled round. A round is settled when its
+  // clock has run out, or when every seat has filed; until then nobody (filed or not) sees another reporter's calls,
+  // so the board stays spoiler-free for whoever still has time to play it.
   async 'room.round'(b) {
     const c = roomCode(b.code), pid = clean(b.pid, 12), round = int(b.round, 0, 19);
     const [meta, doc, ids] = await redis([['GET', 'room:v3:' + c], ['GET', 'room:v3:' + c + ':p:' + pid], ['SMEMBERS', 'room:v3:' + c + ':players']]);
     if (!meta || !doc) return { error: 'not found' };
     const room = JSON.parse(meta), me = JSON.parse(doc);
     if (!b.sec || b.sec !== me.sec) return { error: 'forbidden' };
-    if (round >= room.rounds || !(me.results && me.results[round])) return { error: 'not yet' };
+    if (round >= room.rounds) return { error: 'round' };
     const docs = await one('MGET', ...ids.map((id) => 'room:v3:' + c + ':p:' + id));
     const players = docs.filter(Boolean).map((d) => JSON.parse(d));
-    const closed = Date.now() > roundOpens(room, round) + roomOpenH(room) * 3600e3;
-    if (!closed && players.some((p) => !(p.results && p.results[round]))) return { error: 'not yet', waiting: players.filter((p) => !(p.results && p.results[round])).length };
-    const sess = await one('MGET', ...players.map((p) => sessKey({ kind: 'r', code: c, round }, p.pid)));
-    let cast = null;
-    const rows = players.map((p, k) => {
-      let s = null; try { s = JSON.parse(sess[k]); } catch { s = null; }
-      const res = s && s.res; if (!res) return null;
-      if (!cast) cast = res.cast;
-      return { pid: p.pid, nick: p.nick, pub: p.pub || p.pid, flair: p.flair || '', tier: p.tier || '', score: res.total, tier2: res.tier, ex: res.ex, row: res.row, per: res.per.map((x) => ({ i: x.i, call: x.call ? { day: x.call.day, o: x.call.o, s: x.call.s, ut: !!x.call.ut } : null, right: x.right, excl: x.excl, pts: x.pts, truth: x.truth })) };
-    }).filter(Boolean);
-    return { code: c, round, cast, players: rows, days: RULES.DAYS };
+    if (!roundSettled(room, players, round)) return { error: 'not yet', waiting: players.filter((p) => !(p.results && p.results[round])).length };
+    const rr = await roundRows(c, room, players, round);
+    return { code: c, round, cast: rr.cast, players: rr.rows, days: RULES.DAYS, recap: recapOf(rr.rows, rr.cast) };
   },
 
   // ---- Beat my board (§7.3): a finished window becomes a 24 h challenge link. The seed of a live Daily never leaves
@@ -704,7 +753,7 @@ const actions = {
     }).filter(Boolean).sort((a, b2) => b2.pts - a.pts || a.joined - b2.joined);
     const total = members.reduce((a, m) => a + m.pts, 0), lastTotal = members.reduce((a, m) => a + m.last, 0);
     const wk = 't1v3:nr:w:' + week;
-    await redis([['ZADD', wk, total, c], ['EXPIRE', wk, LG_TTL], ['SET', 't1v3:nr:name:' + c, JSON.stringify({ name: nr.name, n: members.length }), 'EX', NR_TTL]]);
+    await redis([['ZADD', wk, total, c], ['EXPIRE', wk, NR_TTL], ['SET', 't1v3:nr:name:' + c, JSON.stringify({ name: nr.name, n: members.length }), 'EX', NR_TTL]]);
     const rank = 1 + Number(await one('ZCOUNT', wk, '(' + total, '+inf'));
     const lastRank = lastTotal > 0 ? 1 + Number(await one('ZCOUNT', 't1v3:nr:w:' + prev, '(' + lastTotal, '+inf')) : null;
     const { hostDev, ...pubNr } = nr;
@@ -809,6 +858,69 @@ async function wireCalls(dev) {
   return out;
 }
 const roomPlayer = (pid, nick, sec, b) => ({ pid, nick, joined: Date.now(), seen: Date.now(), results: [], sec, pub: devId(b.dev) ? pubId(devId(b.dev)) : pid, flair: flairOf(b.flair), tier: tierOf(b.tier) });
+// ---- room helpers (spec H) ----
+const roundCloses = (room, k) => roundOpens(room, k) + roomOpenH(room) * 3600e3;
+const roomOver = (room) => Date.now() > roundCloses(room, room.rounds - 1);
+const filed = (p, k) => !!(p.results && p.results[k]);
+const roundSettled = (room, players, k) => Date.now() > roundCloses(room, k) || (players.length > 0 && players.every((p) => filed(p, k)));
+// Take a seat out of a room. The last seat out closes the room; a leaving host hands over to the longest-seated player.
+async function unseat(c, room, pid) {
+  await redis([['SREM', 'room:v3:' + c + ':players', pid], ['DEL', 'room:v3:' + c + ':p:' + pid]]);
+  const left = await one('SMEMBERS', 'room:v3:' + c + ':players');
+  if (!left || !left.length) { await redis([['DEL', 'room:v3:' + c], ['DEL', 'room:v3:' + c + ':players'], ['DEL', 'room:v3:' + c + ':feed']]); return { closed: true }; }
+  if (room.host === pid) {
+    const docs = await one('MGET', ...left.map((id) => 'room:v3:' + c + ':p:' + id));
+    const seats = docs.map((d) => { try { return JSON.parse(d); } catch { return null; } }).filter(Boolean).sort((a, b) => (a.joined || 0) - (b.joined || 0));
+    room.host = seats.length ? seats[0].pid : left[0];
+    await one('SET', 'room:v3:' + c, JSON.stringify(room), 'KEEPTTL');
+  }
+  return { closed: false };
+}
+// Everyone's scored calls for one round, read from the stored sessions (the server's own results, never the client's).
+async function roundRows(c, room, players, round) {
+  const sess = players.length ? await one('MGET', ...players.map((p) => sessKey({ kind: 'r', code: c, round }, p.pid))) : [];
+  let cast = null;
+  const rows = players.map((p, k) => {
+    let s = null; try { s = JSON.parse(sess[k]); } catch { s = null; }
+    const res = s && s.res; if (!res) return null;
+    if (!cast) cast = res.cast;
+    const at = (p.results && p.results[round] && p.results[round].at) || 0; // when the seat filed (settle() stamps it): the last tie-breaker
+    return { pid: p.pid, nick: p.nick, pub: p.pub || p.pid, flair: p.flair || '', tier: p.tier || '', score: res.total, tier2: res.tier, ex: res.ex, row: res.row, at, per: res.per.map((x) => ({ i: x.i, call: x.call ? { day: x.call.day, o: x.call.o, s: x.call.s, ut: !!x.call.ut } : null, right: x.right, excl: x.excl, pts: x.pts, truth: x.truth })) };
+  }).filter(Boolean).sort((a, b) => b.score - a.score || b.ex - a.ex || a.at - b.at);
+  return { cast, rows };
+}
+// THE PRESS BOX · ROUND N: the table, the biggest scoop (the best single call, exclusives first), the disaster of the
+// round (the worst single call), the first exclusive (earliest day, then earliest filed). Names are the players'
+// short names from the cast; outcome and strength indexes let the client word it in its own language.
+function recapOf(rows, cast) {
+  const name = (i) => (cast && cast[i] && cast[i].player ? cast[i].player.s || cast[i].player.n : '#' + (i + 1));
+  let scoop = null, disaster = null, first = null;
+  for (const p of rows) for (const x of p.per) {
+    if (!x.call) continue;
+    const e = { nick: p.nick, pid: p.pid, p: name(x.i), o: x.call.o, s: x.call.s, day: x.call.day, pts: x.pts, right: !!x.right, excl: !!x.excl, truth: x.truth, at: p.at };
+    if (x.right && (!scoop || Number(e.excl) - Number(scoop.excl) > 0 || (e.excl === scoop.excl && e.pts > scoop.pts))) scoop = e;
+    if (!x.right && x.pts < 0 && (!disaster || e.pts < disaster.pts)) disaster = e;
+    if (x.excl && (!first || e.day < first.day || (e.day === first.day && e.at < first.at))) first = e;
+  }
+  return { table: rows.map((p) => ({ pid: p.pid, nick: p.nick, score: p.score, ex: p.ex, tier: p.tier2 })), scoop, disaster, first, filed: rows.length };
+}
+// Post each newly settled round's recap into the feed, once (a marker key per round, set NX).
+async function roomRecaps(c, room) {
+  const ids = (await one('SMEMBERS', 'room:v3:' + c + ':players')) || [];
+  if (!ids.length) return;
+  const docs = await one('MGET', ...ids.map((id) => 'room:v3:' + c + ':p:' + id));
+  const players = docs.map((d) => { try { return JSON.parse(d); } catch { return null; } }).filter(Boolean);
+  const due = []; for (let k = 0; k < room.rounds; k++) if (roundSettled(room, players, k)) due.push(k);
+  if (!due.length) return;
+  const marks = await one('MGET', ...due.map((k) => 'room:v3:' + c + ':recap:' + k));
+  for (let j = 0; j < due.length; j++) {
+    const k = due[j]; if (marks[j]) continue;
+    if (!(await one('SET', 'room:v3:' + c + ':recap:' + k, '1', 'EX', ROOM_TTL, 'NX'))) continue;
+    const rr = await roundRows(c, room, players, k);
+    const rc = recapOf(rr.rows, rr.cast);
+    await roomFeed(c, { t: 'recap', pid: '', nick: '', round: k, top: rc.table.slice(0, 3), scoop: rc.scoop && { nick: rc.scoop.nick, p: rc.scoop.p, excl: rc.scoop.excl, pts: rc.scoop.pts }, disaster: rc.disaster && { nick: rc.disaster.nick, p: rc.disaster.p, o: rc.disaster.o, s: rc.disaster.s, truth: rc.disaster.truth, pts: rc.disaster.pts }, filed: rc.filed });
+  }
+}
 async function readFeed(c) {
   const raw = await one('LRANGE', 'room:v3:' + c + ':feed', 0, ROOM_FEED - 1);
   return (raw || []).map((x) => { try { return JSON.parse(x); } catch { return null; } }).filter(Boolean);
@@ -821,6 +933,7 @@ async function readRoom(c) {
   room.players = docs.filter(Boolean).map((d) => { const p = JSON.parse(d); delete p.sec; p.pub = p.pub || p.pid; return p; });
   room.cadence = room.cadence || 'daily';
   room.now = Date.now(); room.roundHours = roomOpenH(room); room.stepMs = roomStep(room);
+  room.max = MAX_ROOM; room.over = roomOver(room); room.tauntGap = TAUNT_GAP;
   room.feed = (feedRaw || []).map((x) => { try { return JSON.parse(x); } catch { return null; } }).filter(Boolean);
   return room;
 }
