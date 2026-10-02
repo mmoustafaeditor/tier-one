@@ -330,6 +330,16 @@ export const DEADLINE_DAYS: DeadlineDay[] = WIRE_WINDOWS.map((w) => ({
   id: 'dd-' + w.deadline, day: w.deadline, window: w.id, key: w.key,
   opensAt: Date.parse(w.deadline + 'T00:00:00Z'), closesAt: Date.parse(w.deadline + 'T00:00:00Z') + DAY, windowClosesAt: Date.parse(w.closes),
 }));
+/** 3.8 (§19): the server's calendar replaces the build-time table above, in place, so every reader of WIRE_WINDOWS /
+ *  DEADLINE_DAYS sees the live dates (lib/wireData.ts › loadCalendar applies it on boot and whenever it refreshes). */
+export function applyWireCalendar(windows: WireWindowDef[]) {
+  if (!windows.length) return;
+  WIRE_WINDOWS.splice(0, WIRE_WINDOWS.length, ...windows);
+  DEADLINE_DAYS.splice(0, DEADLINE_DAYS.length, ...windows.map((w) => ({
+    id: 'dd-' + w.deadline, day: w.deadline, window: w.id, key: w.key,
+    opensAt: Date.parse(w.deadline + 'T00:00:00Z'), closesAt: Date.parse(w.deadline + 'T00:00:00Z') + DAY, windowClosesAt: Date.parse(w.closes),
+  })));
+}
 /** The deadline day running right now (UTC date), or null. */
 export const deadlineDayAt = (ms = Date.now()): DeadlineDay | null => DEADLINE_DAYS.find((d) => ms >= d.opensAt && ms < d.closesAt) || null;
 /** The next deadline day after `ms`, or null once the table runs out. */

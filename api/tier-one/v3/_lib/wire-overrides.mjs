@@ -2,7 +2,7 @@
 // How stale rumours resolve without an entry here (wire.mjs › rumourState):
 // - a transfer on record from the rumour's club since it was first seen → settles MOVED (automatic);
 // - `status: "dead"` in the snapshot → settles NO on its lastSeen date;
-// - window closed + 72 h with no move → settles NO;
+// - window closed (calendar.mjs, per league when configured) + settleGraceH (72 h) with no move → settles NO;
 // - a rumour that has left the snapshot (a refresh dropped it) → VOID once its window closes (stake back).
 // Summer 2026 (window closed 1 Sep 2026): the 29 Sep 2026 snapshot carries no 2026-summer rumours; every summer saga
 // that is still alive was re-filed for Winter 2027 (e.g. Lamine Camara, Folarin Balogun, whose deadline-day moves

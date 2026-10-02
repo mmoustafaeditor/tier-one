@@ -56,6 +56,36 @@ export function compactWorld(snap, perClub = 9) {
   return { asOf: (snap.meta && snap.meta.asOf) || '', mode: snap.mode || 'real', clubs, players, buyers: BUYERS.filter((id) => clubIds.has(id)) };
 }
 
+// ---------- player status from the snapshot (LAUNCH_BRIEF Addendum B, the part that needs no provider).
+// 'club' (on a covered club's roster) · 'loan' (on the roster on loan from elsewhere) · 'free' (positive evidence
+// only: a recorded release / "unattached" with no later move, and no roster line) · 'unknown' (not in the snapshot).
+// A blank club never means free agent; a player we don't know is 'unknown', never 'free'.
+const FREE_WORDS = /^(unattached|free agent|released|without (a )?club|sin equipo|svincolato|senza contratto|libre)$/i;
+export function playerStatus(snap, playerId) {
+  const p = snap.players.find((x) => x.id === playerId);
+  if (p) return { status: p.loan && p.loan.direction === 'in' ? 'loan' : 'club', clubId: p.clubId, from: p.loan && p.loan.direction === 'in' ? p.loan.fromClubId || null : null, fromName: p.loan && p.loan.direction === 'in' ? p.loan.fromName || null : null };
+  const fa = freeAgentsOf(snap).find((x) => x.id === playerId);
+  return fa ? { status: 'free', clubId: null, since: fa.since, lastClubId: fa.lastClubId, lastClub: fa.lastClub } : { status: 'unknown', clubId: null };
+}
+let faCache = null;
+/** Free agents the snapshot can vouch for (sorted by release date, newest first). Empty when the data has none. */
+export function freeAgentsOf(snap) {
+  if (faCache && faCache.snap === snap) return faCache.list;
+  const onRoster = new Set(snap.players.map((p) => p.id));
+  const byPlayer = new Map();
+  for (const t of snap.transfers || []) { if (!t.playerId) continue; if (!byPlayer.has(t.playerId)) byPlayer.set(t.playerId, []); byPlayer.get(t.playerId).push(t); }
+  const list = [];
+  for (const [pid, ts] of byPlayer) {
+    if (onRoster.has(pid)) continue;
+    const last = ts.filter((t) => t.date).sort((a, b) => b.date.localeCompare(a.date))[0];
+    if (!last || last.toClubId || !FREE_WORDS.test(String(last.toName || '').trim())) continue;
+    list.push({ id: pid, n: last.playerName || pid, since: last.date, lastClubId: last.fromClubId || null, lastClub: last.fromName || null });
+  }
+  list.sort((a, b) => b.since.localeCompare(a.since));
+  faCache = { snap, list };
+  return list;
+}
+
 // The cast of one window. opts.n sagas; opts.pool = 'top' (Daily: top-5 leagues + Saudi/Egypt giants) or 'small'
 // (Career's early ranks: players at clubs that don't buy). Deterministic in (seed, world).
 export function buildCast(seed, world, opts = {}) {

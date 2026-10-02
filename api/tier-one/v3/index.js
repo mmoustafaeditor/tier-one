@@ -12,9 +12,11 @@ import { RULES, buildBoard, newGame, apply, replay, pub, resolve, isOver, finish
 import { compactWorld, buildCast } from './_lib/world.mjs';
 import { hashStr } from './_lib/rng.mjs';
 import { WIRE, marketOf, rumourState, wirePoints, hitRate, ghostRumour } from './_lib/wire.mjs';
+import { CALENDAR_DEFAULT, mergeCalendar, validateCalendar, currentWindow, deadlineDays, nextDeadline, lastDeadline, marketOpen, publicCalendar } from './_lib/calendar.mjs';
+import { playerStatus, freeAgentsOf } from './_lib/world.mjs';
 import { loadSnapshot } from '../../data/_lib/store.js';
 import OVERRIDES from './_lib/wire-overrides.mjs';
-import { createHash } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 
 
 
@@ -118,6 +120,26 @@ function parseAct(a) {
   if (k === 'a' && Number.isInteger(a[1]) && typeof a[2] === 'string' && /^[a-z]{3,8}$/.test(a[2])) return ['a', a[1], a[2]];
   if ((k === 'c' || k === 'u') && [a[1], a[2], a[3]].every(Number.isInteger)) return [k, a[1], a[2], a[3]];
   return null;
+}
+
+// ---------------------------------------------------------------- the transfer calendar (LAUNCH_BRIEF §19)
+// calendar.mjs defaults + the ops override in KV (t1v3:cal), read at most once a minute per warm instance. Every
+// window date, deadline day and the Market's open/closed switch comes from here; nothing below types a date.
+const CAL_KEY = 't1v3:cal', CAL_TTL_MS = 60e3;
+let calCache = { at: 0, cal: mergeCalendar(CALENDAR_DEFAULT, null) };
+async function calendar(force = false) {
+  if (!force && Date.now() - calCache.at < CAL_TTL_MS) return calCache.cal;
+  let override = null;
+  try { override = await getJ(CAL_KEY); } catch { override = null; }
+  calCache = { at: Date.now(), cal: mergeCalendar(CALENDAR_DEFAULT, override) };
+  return calCache.cal;
+}
+// OPS_TOKEN (env): the one secret that lets an operator change the calendar. Constant-time compare; no token, no ops.
+function opsOk(token) {
+  const want = process.env.OPS_TOKEN || '';
+  if (!want || want.length < 16) return false;
+  const a = Buffer.from(String(token || '')), b = Buffer.from(want);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 // ---------------------------------------------------------------- the world (real squads from the data snapshot)
@@ -309,23 +331,41 @@ const actions = {
     return out;
   },
 
-  // ---- The Wire ----
-  // The Wire's own layer over /api/data/rumours (the client reads the rumours there): Market, state, crowd split, my call.
+  // ---- The Transfer Market (LAUNCH_BRIEF §18–§19, spec I) ----
+  // The public calendar: windows, deadline days, flags, Market availability. Cacheable; the client reads it on boot.
+  async 'wire.calendar'() { return { calendar: publicCalendar(await calendar(), Date.now()) }; },
+  // Ops: replace or clear the calendar override (OPS_TOKEN). `set` is shape-checked by calendar.mjs › validateCalendar;
+  // `clear: true` drops the override. Either way the live, merged calendar comes back so the operator can read it.
+  async 'ops.calendar'(b) {
+    if (!opsOk(b.token)) return { error: 'ops' };
+    if (b.clear) await one('DEL', CAL_KEY);
+    else if (b.set != null) {
+      const v = validateCalendar(b.set); if (!v.ok) return { error: 'calendar', field: v.error };
+      await one('SET', CAL_KEY, JSON.stringify({ ...v.value, setAt: new Date().toISOString() }));
+    }
+    const cal = await calendar(true);
+    return { calendar: publicCalendar(cal, Date.now()), override: await getJ(CAL_KEY) };
+  },
+  // The Market's own layer over /api/data/rumours (the client reads the rumours there): price, state, the room's split,
+  // my call, the player's roster status, the calendar and the snapshot's free agents (Addendum B, data permitting).
   async 'wire.board'(b) {
-    const snap = loadSnapshot(), now = Date.now(), dev = devId(b.dev);
+    const snap = loadSnapshot(), now = Date.now(), dev = devId(b.dev), cal = await calendar();
     const rs = snap.rumours.filter((r) => r.status === 'open');
     const splits = rs.length ? await redis(rs.map((r) => ['HGETALL', 't1v3:w:split:' + r.id])) : [];
     const mine = dev ? await wireCalls(dev) : {};
     const items = {};
-    rs.forEach((r, k) => { const sp = hashObj(splits[k]); items[r.id] = { market: marketOf(r), state: rumourState(r, snap, OVERRIDES, now).state, split: { yes: Number(sp.yes) || 0, no: Number(sp.no) || 0 }, mine: mine[r.id] || null }; });
+    rs.forEach((r, k) => { const sp = hashObj(splits[k]); const ps = playerStatus(snap, r.playerId); items[r.id] = { market: marketOf(r), state: rumourState(r, snap, OVERRIDES, now, cal).state, split: { yes: Number(sp.yes) || 0, no: Number(sp.no) || 0 }, mine: mine[r.id] || null, ps: ps.status, loanFrom: ps.fromName || null }; });
     const dk = dev ? Number(await one('GET', 't1v3:w:n:' + dev + ':' + today())) || 0 : 0;
-    return { asOf: snap.meta.asOf, names: snap.mode, items, callsToday: dk, limits: { daily: WIRE.DAILY_CALLS, open: WIRE.OPEN_CALLS }, window: WIRE.CURRENT };
+    const fa = freeAgentsOf(snap).slice(0, 40).map((x) => ({ id: x.id, n: x.n, since: x.since, lastClub: x.lastClub, lastClubId: x.lastClubId }));
+    return { asOf: snap.meta.asOf, names: snap.mode, items, callsToday: dk, limits: { daily: WIRE.DAILY_CALLS, open: WIRE.OPEN_CALLS, correctMin: WIRE.CORRECT_MIN }, window: currentWindow(cal, now), calendar: publicCalendar(cal, now), market: marketOpen(cal), freeAgents: fa };
   },
   async 'wire.file'(b) {
     const dev = devId(b.dev); if (!dev) return { error: 'dev' };
+    const cal = await calendar();
+    if (!marketOpen(cal).open) return { error: 'closed' };
     const snap = loadSnapshot(), r = snap.rumours.find((x) => x.id === clean(b.rid, 120));
     if (!r) return { error: 'rumour' };
-    if (rumourState(r, snap, OVERRIDES).state !== 'open') return { error: 'frozen' };
+    if (rumourState(r, snap, OVERRIDES, Date.now(), cal).state !== 'open') return { error: 'frozen' };
     const yes = !!b.yes, s = int(b.s, 1, 3);
     const club = yes && b.club ? (b.club === 'other' || (r.linked || []).some((l) => l.clubId === b.club) ? clean(b.club, 60) : null) : null;
     const fee = yes && WIRE.FEE_BANDS.includes(b.fee) ? b.fee : null;
@@ -336,47 +376,51 @@ const actions = {
     const [n] = await redis([['INCR', dk], ['EXPIRE', dk, 2 * DAY]]);
     if (Number(n) > WIRE.DAILY_CALLS) return { error: 'daily cap' };
     const m = marketOf(r), sp = hashObj(await one('HGETALL', 't1v3:w:split:' + r.id));
-    const yesN = Number(sp.yes) || 0, clubN = club ? Number(sp['c:' + club]) || 0 : 0;
-    const cClub = club ? (yesN >= 5 ? clubN / yesN : 1 / ((r.linked || []).length + 1)) : null;
-    const call = { rid: r.id, pn: r.playerName, yes, s, club, fee, m, c: yes ? m : 1 - m, cClub, at: Date.now(), nick: nickOf(b.nick, dev) };
+    const yesN = Number(sp.yes) || 0, noN = Number(sp.no) || 0, clubN = club ? Number(sp['c:' + club]) || 0 : 0;
+    const cClub = club ? (yesN >= WIRE.CROWD_MIN ? clubN / yesN : 1 / ((r.linked || []).length + 1)) : null;
+    // The room at lock: the share of reporters already on your side (null until ROOM_MIN have filed). Drives "against the room".
+    const cRoom = yesN + noN >= WIRE.ROOM_MIN ? (yes ? yesN : noN) / (yesN + noN) : null;
+    const call = { rid: r.id, pn: r.playerName, yes, s, club, fee, m, c: yes ? m : 1 - m, cClub, cRoom, at: Date.now(), nick: nickOf(b.nick, dev) };
     const cmds = [['HSET', 't1v3:w:calls:' + dev, r.id, JSON.stringify(call)], ['HINCRBY', 't1v3:w:split:' + r.id, yes ? 'yes' : 'no', 1]];
     if (club) cmds.push(['HINCRBY', 't1v3:w:split:' + r.id, 'c:' + club, 1]);
     await redis(cmds);
     return { call };
   },
-  // One correction within 15 minutes, only while the rumour's status hasn't changed.
+  // One correction within CORRECT_MIN minutes, only while the rumour's status hasn't changed. The price stays locked.
   async 'wire.correct'(b) {
     const dev = devId(b.dev); if (!dev) return { error: 'dev' };
     const calls = await wireCalls(dev), old = calls[clean(b.rid, 120)];
     if (!old) return { error: 'not found' };
     if (old.corrected || Date.now() - old.at > WIRE.CORRECT_MIN * 60e3) return { error: 'locked' };
-    const snap = loadSnapshot(), r = snap.rumours.find((x) => x.id === old.rid);
-    if (!r || rumourState(r, snap, OVERRIDES).state !== 'open') return { error: 'frozen' };
+    const snap = loadSnapshot(), r = snap.rumours.find((x) => x.id === old.rid), cal = await calendar();
+    if (!r || rumourState(r, snap, OVERRIDES, Date.now(), cal).state !== 'open') return { error: 'frozen' };
     const yes = !!b.yes, s = int(b.s, 1, 3), m = old.m;
     const club = yes && b.club ? (b.club === 'other' || (r.linked || []).some((l) => l.clubId === b.club) ? clean(b.club, 60) : null) : null;
     const call = { ...old, yes, s, club, fee: yes && WIRE.FEE_BANDS.includes(b.fee) ? b.fee : null, c: yes ? m : 1 - m, corrected: true };
+    if (old.yes !== yes && old.cRoom != null) call.cRoom = 1 - old.cRoom;
     const cmds = [['HSET', 't1v3:w:calls:' + dev, r.id, JSON.stringify(call)]];
     if (old.yes !== yes) cmds.push(['HINCRBY', 't1v3:w:split:' + r.id, old.yes ? 'yes' : 'no', -1], ['HINCRBY', 't1v3:w:split:' + r.id, yes ? 'yes' : 'no', 1]);
+    if (old.club !== club) { if (old.club) cmds.push(['HINCRBY', 't1v3:w:split:' + r.id, 'c:' + old.club, -1]); if (club) cmds.push(['HINCRBY', 't1v3:w:split:' + r.id, 'c:' + club, 1]); }
     await redis(cmds);
     return { call };
   },
-  // My calls, settled against the snapshot as they're read (resolution is automatic; overrides correct it).
+  // My calls, settled against the snapshot as they're read (resolution is automatic; overrides correct it). Settled
+  // Cred goes on the season board (t1v3:cred:<season>) at settlement time. The old "heat points" (a market move toward
+  // you paid an invisible weekly league) are gone: nothing pays for a price twitch, only for being right.
   async 'wire.mine'(b) {
     const dev = devId(b.dev); if (!dev) return { error: 'dev' };
-    const snap = loadSnapshot(), calls = await wireCalls(dev), now = Date.now(), nick = nickOf(b.nick, dev);
+    const snap = loadSnapshot(), calls = await wireCalls(dev), now = Date.now(), nick = nickOf(b.nick, dev), cal = await calendar();
     const byId = new Map(snap.rumours.map((r) => [r.id, r]));
     const writes = [];
     for (const c of Object.values(calls)) {
       const r = byId.get(c.rid) || ghostRumour(c.rid);
       if (r.status !== 'gone') { c.player = r.playerName; c.from = r.currentClubName; c.linked = r.linked; c.mNow = marketOf(r); }
       else { c.player = c.pn || ''; c.mNow = c.m; }
-      // Heat points: the first time the market moves 15 points toward your side after lock.
-      if (!c.heat && !c.done && (c.yes ? c.mNow - c.m : c.m - c.mNow) >= WIRE.HEAT_MOVE) { c.heat = c.s; writes.push(c); }
       if (c.done) continue;
-      const st = rumourState(r, snap, OVERRIDES, now);
-      if (st.state === 'open' || st.state === 'frozen') { c.paper = wirePoints(c, { state: c.yes ? 'moved' : 'stayed', at: now, club: c.club, fee: c.fee }).pts; continue; }
+      const st = rumourState(r, snap, OVERRIDES, now, cal);
+      if (st.state === 'open' || st.state === 'frozen') { c.paper = wirePoints(c, { state: c.yes ? 'moved' : 'stayed', at: now, club: c.club, fee: c.fee }).pts; c.frozen = st.state === 'frozen'; continue; }
       const w = wirePoints(c, st);
-      Object.assign(c, { done: true, outcome: st.state, outClub: st.club, outFee: st.fee, pts: w.pts, right: w.right, parts: w.parts, settledAt: now });
+      Object.assign(c, { done: true, outcome: st.state, outClub: st.club, outFee: st.fee, pts: w.pts, right: w.right, parts: w.parts, room: w.room, settledAt: now });
       writes.push(c);
       if (st.state !== 'void') await one('ZINCRBY', 't1v3:cred:' + season(now), w.pts, dev);
     }
@@ -386,7 +430,8 @@ const actions = {
     const hits = doneL.filter((c) => c.right).reduce((a, c) => a + c.s, 0), n = doneL.reduce((a, c) => a + c.s, 0);
     const cred = Number(await one('ZSCORE', 't1v3:cred:' + season(now), dev)) || 0;
     if (list.length) await one('SET', 't1v3:cred:' + season(now) + ':e:' + dev, JSON.stringify({ nick }), 'EX', 200 * DAY);
-    return { calls: list, cred, hitRate: hitRate(hits, n), resolved: doneL.length, season: season(now) };
+    const beat = doneL.filter((c) => c.room === 'beat').length;
+    return { calls: list, cred, hitRate: hitRate(hits, n), resolved: doneL.length, beat, season: season(now) };
   },
 
   // ---- Multiplayer rooms (3.8, spec H): Daily rules exactly, one shared board per round, scored here ----
@@ -435,9 +480,9 @@ const actions = {
   // everyone, a live tally of what the room is calling (counts, never names) and a global table after midnight UTC ----
   // Board: today's five, my calls, the tally. `day` is only honoured off the calendar with T1_DD_PREVIEW (dev/tests).
   async 'live.dd.board'(b) {
-    const dev = devId(b.dev);
-    const day = ddDay(b); if (!day) return { error: 'not live', next: nextDD() };
-    const board = await ddBoard(day);
+    const dev = devId(b.dev), cal = await calendar();
+    const day = ddDay(b, cal); if (!day) return { error: 'not live', next: nextDD(cal) };
+    const board = await ddBoard(day, cal);
     const mine = dev ? (await getJ(ddCallKey(day, dev))) : null;
     const tally = await ddTally(day);
     return { ...board, live: day === today() || ddPreview(), mine: mine ? mine.calls : {}, ...tally };
@@ -445,9 +490,10 @@ const actions = {
   // One call per saga; one U-turn per saga after that. Loudness 1–3 sets the stake (DD_RIGHT / DD_WRONG).
   async 'live.dd.call'(b) {
     const dev = devId(b.dev); if (!dev) return { error: 'dev' };
-    const day = ddDay(b); if (!day) return { error: 'not live', next: nextDD() };
+    const cal = await calendar();
+    const day = ddDay(b, cal); if (!day) return { error: 'not live', next: nextDD(cal) };
     if (day !== today() && !ddPreview()) return { error: 'closed' };
-    const board = await ddBoard(day);
+    const board = await ddBoard(day, cal);
     const rid = clean(b.rid, 120), saga = board.sagas.find((s) => s.rid === rid); if (!saga) return { error: 'saga' };
     const o = int(b.o, 0, DD_OUT.length - 1), s = int(b.s, 1, 3);
     const key = ddCallKey(day, dev), doc = (await getJ(key)) || { calls: {} };
@@ -465,18 +511,19 @@ const actions = {
   },
   // What the room is calling: counts per outcome per saga, and how many reporters are on the board. No names.
   async 'live.dd.tally'(b) {
-    const day = ddDay(b) || lastDD(); if (!day) return { error: 'none' };
-    const board = await ddBoard(day);
+    const cal = await calendar();
+    const day = ddDay(b, cal) || lastDD(cal); if (!day) return { error: 'none' };
+    const board = await ddBoard(day, cal);
     return { day, closesAt: board.closesAt, ...(await ddTally(day)) };
   },
   // After midnight UTC: each saga's real outcome (from the data snapshot, pending until it settles) and the global table.
   async 'live.dd.results'(b) {
-    const dev = devId(b.dev), d = clean(b.day, 10);
-    const day = DD_DAYS[d] ? d : lastDD(); if (!day) return { error: 'none' };
-    const board = await ddBoard(day), now = Date.now();
+    const dev = devId(b.dev), d = clean(b.day, 10), cal = await calendar();
+    const day = ddDays(cal)[d] ? d : lastDD(cal); if (!day) return { error: 'none' };
+    const board = await ddBoard(day, cal), now = Date.now();
     if (now < board.closesAt && !ddPreview()) return { error: 'early', day, closesAt: board.closesAt };
     const snap = loadSnapshot();
-    const outs = board.sagas.map((sg) => ddOutcome(sg, snap, now));
+    const outs = board.sagas.map((sg) => ddOutcome(sg, snap, now, cal));
     const settled = outs.filter((o) => o.o != null).length;
     const mk = 't1v3:dd:res:' + day, meta = await getJ(mk + ':meta');
     // The table is rebuilt only when another saga has settled (a handful of times at most), then read from the store.
@@ -782,9 +829,10 @@ const actions = {
 };
 
 // ---------------------------------------------------------------- Deadline Day Live helpers
-// The real deadline days (UTC dates) and the Wire window each belongs to. The client's copy is the source of truth for
-// the calendar: games/tier-one/v3/web/src/lib/season.ts › DEADLINE_DAYS. Keep the two lists identical.
-const DD_DAYS = { '2027-02-02': '2027-01', '2027-09-01': '2027-summer' };
+// The real deadline days come from the calendar (calendar.mjs defaults + the ops override), never from a table here.
+// DD_DAYS stays exported for the tests as the build-time default; the handlers use ddDays(cal).
+const DD_DAYS = deadlineDays(CALENDAR_DEFAULT);
+const ddDays = (cal) => deadlineDays(cal);
 const DD_TTL = 40 * DAY, DD_SAGAS = 5, DD_POOL = 12, DD_EARLY_H = 12;
 // Points: right +10 / +22 / +40 by loudness (Talks / Advanced / Confirmed), ×1.25 when filed before 12:00 UTC (the early
 // bird); wrong −4 / −12 / −30. Uncalled sagas score 0. A void saga (gone from the data) scores nobody.
@@ -792,19 +840,20 @@ const DD_RIGHT = [10, 22, 40], DD_WRONG = [4, 12, 30], DD_EARLY_X = 1.25;
 const DD_OUT = ['done', 'hijack', 'stays'];
 const ddPreview = () => !!process.env.T1_DD_PREVIEW && process.env.VERCEL_ENV !== 'production';
 const ddCallKey = (day, dev) => 't1v3:dd:calls:' + day + ':' + dev;
-const nextDD = (day = today()) => Object.keys(DD_DAYS).filter((d) => d > day).sort()[0] || null;
-const lastDD = (day = today()) => Object.keys(DD_DAYS).filter((d) => d <= day).sort().pop() || null;
-function ddDay(b) {
-  const d = clean(b && b.day, 10);
-  if (DD_DAYS[d] && (d === today() || ddPreview())) return d;
-  return DD_DAYS[today()] ? today() : null;
+const nextDD = (cal, day = today()) => nextDeadline(cal, day);
+const lastDD = (cal, day = today()) => lastDeadline(cal, day);
+function ddDay(b, cal) {
+  if (!cal.flags.ddLive) return null;
+  const days = ddDays(cal), d = clean(b && b.day, 10);
+  if (days[d] && (d === today() || ddPreview())) return d;
+  return days[today()] ? today() : null;
 }
 // The five sagas of the day: the hottest open rumours of the window, then a seeded shuffle of that pool so the five aren't
 // just the Wire's top of the page. Built once and stored, so a snapshot refresh mid-day can't change the board.
-async function ddBoard(day) {
+async function ddBoard(day, cal) {
   const key = 't1v3:dd:board:' + day;
   const cached = await getJ(key); if (cached) return cached;
-  const snap = loadSnapshot(), win = DD_DAYS[day];
+  const snap = loadSnapshot(), win = ddDays(cal)[day];
   const usable = (r) => r.status === 'open' && r.linked && r.linked.length && r.linked[0].clubId;
   let rs = snap.rumours.filter((r) => usable(r) && r.window === win);
   if (rs.length < DD_SAGAS) rs = snap.rumours.filter(usable);
@@ -834,9 +883,9 @@ async function ddTally(day) {
 }
 // A saga's real outcome: done (joined the linked club), hijack (joined someone else), stays (no move), or pending while the
 // snapshot hasn't caught up. The Wire's own resolution (wire.mjs rumourState) decides; nothing here is hand-typed.
-function ddOutcome(saga, snap, now) {
+function ddOutcome(saga, snap, now, cal) {
   const r = snap.rumours.find((x) => x.id === saga.rid) || ghostRumour(saga.rid);
-  const st = rumourState(r, snap, OVERRIDES, now);
+  const st = rumourState(r, snap, OVERRIDES, now, cal);
   if (st.state === 'moved') return { o: saga.to && st.club === saga.to.id ? 0 : 1, club: st.club || null, at: st.at };
   if (st.state === 'stayed') return { o: 2, club: null, at: st.at };
   if (st.state === 'void') return { o: null, void: true };
@@ -848,10 +897,10 @@ function ddPoints(call, out, opensAt) {
   const early = (call.utAt || call.at) < opensAt + DD_EARLY_H * 3600e3;
   return { pts: right ? Math.round(DD_RIGHT[s - 1] * (early ? DD_EARLY_X : 1)) : -DD_WRONG[s - 1], right, early };
 }
-export { DD_DAYS, DD_OUT, DD_RIGHT, DD_WRONG, DD_EARLY_X, ddPoints };
+export { DD_DAYS, ddDays, DD_OUT, DD_RIGHT, DD_WRONG, DD_EARLY_X, ddPoints };
 
 const hashObj = (h) => { if (!h) return {}; if (!Array.isArray(h)) return h; const o = {}; for (let i = 0; i < h.length; i += 2) o[h[i]] = h[i + 1]; return o; };
-const stripView = ({ player, from, linked, mNow, paper, ...c }) => c;
+const stripView = ({ player, from, linked, mNow, paper, frozen, ...c }) => c;
 async function wireCalls(dev) {
   const h = hashObj(await one('HGETALL', 't1v3:w:calls:' + dev)), out = {};
   for (const [k, v] of Object.entries(h)) { try { out[k] = JSON.parse(v); } catch { /* skip */ } }
