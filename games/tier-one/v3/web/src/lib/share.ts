@@ -29,6 +29,63 @@ export function shareText(t: T, v: { what: string; tier: string; pts: string; ro
   return t('share.text', v);
 }
 
+// ---------- 3.8 the viral object (LAUNCH_BRIEF §10, §38). Spoiler-free: the symbols say right/wrong/exclusive, never
+// Done/Hijack/Off/Fake. Example:
+//   TIER ONE #147 · TIER 1 · 186 PTS
+//   ■■★□·
+//   2 Exclusives · Top 8% · 11-day streak
+//   Perfect five
+//   sembagames.app/tier-one
+export interface ViralCtx {
+  mode: 'daily' | 'room' | 'practice' | 'career'; no?: number; what: string; r: Pick<Result, 'total' | 'tier' | 'ex' | 'right' | 'called' | 'row' | 'rank' | 'players' | 'per'>;
+  streak?: number; streakBest?: number; firstT1?: boolean; ddLast15?: boolean; promoted?: string | null; roomWon?: boolean; daysTotal: number;
+}
+/** Top X%: rank over players, rounded up to the nearest whole percent (never "Top 0%"). Null when the table is too small. */
+export function topPct(rank?: number | null, players?: number): number | null {
+  if (!rank || !players || players < 10) return null;
+  return Math.max(1, Math.ceil((100 * rank) / players));
+}
+/** The achievement lines a result earns (c38.share.line.*), most impressive first; at most three ride on a share. */
+export function achievementKeys(c: ViralCtx): { k: string; v?: Record<string, string | number> }[] {
+  const r = c.r, out: { k: string; v?: Record<string, string | number> }[] = [];
+  if (r.tier === 'SPIKED') out.push({ k: 'spiked' });
+  if (c.firstT1) out.push({ k: 'firstT1' });
+  if (r.called >= 5 && r.right === r.called) out.push({ k: 'perfect' });
+  if (r.ex >= 3) out.push({ k: 'three' });
+  else if (r.ex >= 1 && r.per.some((p) => p.excl && !p.firstRight)) out.push({ k: 'first' });
+  const rivalsBeaten = new Set(r.per.flatMap((p) => (p.right ? p.posts.filter((x) => !x.right).map((x) => x.id) : [])));
+  const rivalsWon = new Set(r.per.flatMap((p) => (!p.right && p.call ? p.posts.filter((x) => x.right).map((x) => x.id) : [])));
+  if (rivalsBeaten.size >= 3 && rivalsWon.size === 0) out.push({ k: 'beatAll' });
+  if (c.ddLast15) out.push({ k: 'dd' });
+  if (c.roomWon) out.push({ k: 'room' });
+  if (c.promoted) out.push({ k: 'promoted', v: { rank: c.promoted } });
+  if (c.streak && c.streak >= 100) out.push({ k: 'streak100' });
+  else if (c.streak && c.streak >= 30) out.push({ k: 'streak30' });
+  else if (c.streak && c.streakBest && c.streak >= 7 && c.streak === c.streakBest) out.push({ k: 'longest' });
+  const early = r.per.filter((p) => p.right && p.call && p.call.s === 2 && p.call.day <= 2).sort((a, b) => a.call!.day - b.call!.day)[0];
+  if (early && early.call) out.push({ k: 'early', v: { d: early.call.day } });
+  const miss = r.per.find((p) => !p.right && p.call && p.call.s === 2);
+  if (miss && r.tier !== 'SPIKED' && out.length === 0) out.push({ k: 'miss', v: { o: '' } });
+  return out.filter((x) => x.k !== 'miss').slice(0, 3);
+}
+/** The lines of the result card (the share text and the on-screen object are the same thing). */
+export function viralLines(t: T, c: ViralCtx): { head: string; row: string; meta: string; lines: string[]; url: string } {
+  const r = c.r;
+  const tierW = t('tier.' + r.tier).toUpperCase();
+  const head = c.mode === 'daily' && c.no ? t('c38.share.head', { no: c.no, tier: tierW, pts: String(r.total) }) : t('c38.share.headRoom', { what: c.what, tier: tierW, pts: String(r.total) });
+  const meta: string[] = [];
+  if (r.ex > 0) meta.push(r.ex === 1 ? t('c38.share.exclOne') : t('c38.share.excl', { n: r.ex }));
+  const tp = topPct(r.rank, r.players);
+  if (tp != null) meta.push(t('c38.share.top', { p: tp }));
+  if (c.mode === 'daily' && c.streak && c.streak >= 2) meta.push(t('c38.share.streak', { n: c.streak }));
+  const lines = achievementKeys(c).map((x) => t('c38.share.line.' + x.k, x.v));
+  return { head, row: r.row || '', meta: meta.join(' · '), lines, url: 'sembagames.app/tier-one' };
+}
+export function viralText(t: T, c: ViralCtx): string {
+  const v = viralLines(t, c);
+  return [v.head, v.row, v.meta, ...v.lines, 'https://' + v.url].filter(Boolean).join('\n');
+}
+
 function img(svg: string): Promise<HTMLImageElement | null> {
   return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
 }

@@ -216,21 +216,23 @@ export function useTyped(text: string, cps = 38, on = true) {
 // ---------- top bar (3.7): the bell (important notes only), coins and credits side by side (each opens the Shop on
 // what it buys), help where a screen has it, Settings where a screen passes it. No level here: it lives on Home's
 // My Press Card and in Career Mode.
-export function TopBar({ back, title, onHelp, onMenu, children }: { back?: { label: string; onClick: () => void }; title?: ReactNode; onHelp?: () => void; onMenu?: () => void; children?: ReactNode }) {
+// `bare` (3.8, LAUNCH_BRIEF §28): during play only the day, calls and sagas matter, so the wallet and the bell stay
+// off the window, the player file, Deadline Day and the first results reveal. Back is always top-left (owner rule).
+export function TopBar({ back, title, onHelp, onMenu, children, bare }: { back?: { label: string; onClick: () => void }; title?: ReactNode; onHelp?: () => void; onMenu?: () => void; children?: ReactNode; bare?: boolean }) {
   const s = useSave(); const t = useT();
   const cr = s.wallet?.credits || 0;
   const shop = (cur: 'coins' | 'credits') => { sfx('ui.tap'); navTo({ n: 'customize', cur }); };
-  return <header className="g-top">
+  return <header className={'g-top' + (bare ? ' g-top--bare' : '')}>
     {back ? <button className="g-top__back" onClick={() => { sfx('ui.tap'); back.onClick(); }}><Icon n={t.rtl ? 'arrow' : 'back'} size={20} />{back.label}</button>
       : <span className="g-top__logo">Tier One</span>}
     {title && <span className="g-top__title">{title}</span>}
     <span className="g-top__end">
       {children}
-      <Bell />
-      <span className="g-wal" role="group" aria-label={t('pass.wallet')}>
+      {!bare && <Bell />}
+      {!bare && <span className="g-wal" role="group" aria-label={t('pass.wallet')}>
         <button type="button" className="g-wal__b" onClick={() => shop('coins')} aria-label={t('hub.top.coins', { n: s.credits })}><span className="g-coin" /><Roll n={s.credits} from0={false} /></button>
         <button type="button" className="g-wal__b g-wal__b--c" onClick={() => shop('credits')} aria-label={t('hub.top.credits', { n: cr })}><span className="cz-cred" style={{ ['--sz' as string]: '16px' }} aria-hidden="true"><b>C</b></span><Roll n={cr} from0={false} /></button>
-      </span>
+      </span>}
       {onHelp && <button className="g-icbtn" onClick={onHelp} aria-label={t('nav.howto')}><Icon n="help" /></button>}
       {onMenu && <button className="g-icbtn" onClick={onMenu} aria-label={t('common.settings')}><Icon n="menu" /></button>}
     </span>
