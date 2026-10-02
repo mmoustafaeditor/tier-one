@@ -15,7 +15,7 @@ let goals = 0;
 for (let i = 0; i < N; i++) {
   const m = startMatch(w, null, top[(i * 7) % top.length].id, top[(i * 13 + 5) % top.length].id, `fp-${i}`, 1, true);
   simulate(m, get);
-  const { flow: _flow, ...rest } = m;
+  const { flow: _flow, ps: _ps, ...rest } = m; // (the flow and the pass count are information only)
   h.update(JSON.stringify(rest));
   goals += m.goals[0] + m.goals[1];
 }

@@ -2,7 +2,7 @@
 // shot, from FULL matches; and that the passes never move a result (the same matches with and without them).
 // Usage: node sim-tests/build.mjs passes [matches=40]
 import { generateWorld, playerOf } from '../src/sim/world';
-import { startMatch, stepMinute, type LiveMatch } from '../src/sim/match';
+import { simulate, startMatch, stepMinute, type LiveMatch } from '../src/sim/match';
 import { playOver } from '../src/sim/engine/clock';
 import { buildModel } from '../src/sim/engine/model';
 import { standOf } from '../src/sim/engine/passes';
@@ -43,6 +43,27 @@ for (let i = 0; i < N; i++) {
 }
 void standOf; void lens;
 const pct = (x: number, y: number) => Math.round((100 * x) / Math.max(1, y));
+// The count (m.ps) the analysis, ratings and numbers read: completion, key passes, and that it adds up.
+{
+  let att = 0, cmp = 0, key = 0, shots = 0, sums = 0, bad = 0;
+  const byPos: Record<string, [number, number]> = {};
+  for (let i = 0; i < Math.min(N, 20); i++) {
+    const m: LiveMatch = startMatch(w, null, top[(i * 7) % top.length].id, top[(i * 13 + 5) % top.length].id, `ps-${i}`, 1, true);
+    simulate(m, get);
+    const ps = m.ps!;
+    att += ps.side[0] + ps.side[2]; cmp += ps.side[1] + ps.side[3];
+    for (const [id, a] of Object.entries(ps.pl)) { key += a[2]; const pos = get(id).position; const b = (byPos[pos] ??= [0, 0]); b[0] += a[0]; b[1] += a[1]; if (a[1] > a[0] || a.some((v) => v < 0)) bad++; }
+    const lnSum = Object.values(ps.ln).reduce((t, v) => t + v, 0);
+    if (lnSum !== ps.side[1] + ps.side[3]) sums++;
+    shots += m.events.filter((e) => e.kind === 'goal' || e.kind === 'save' || e.kind === 'miss' || e.kind === 'block').length;
+  }
+  const n = Math.min(N, 20);
+  console.log(`  counted: ${(att / n).toFixed(0)} passes a match, ${pct(cmp, att)}% completed, ${(key / n).toFixed(1)} key passes for ${(shots / n).toFixed(1)} shots`);
+  console.log(`  by position (passes a match per player is in the analysis): ${Object.entries(byPos).map(([k, v]) => `${k} ${pct(v[1], v[0])}%`).join(', ')}`);
+  ok(sums === 0, `the pass map adds up to the completed passes (${sums} matches off)`);
+  ok(bad === 0, `no player completes more than he tries, nothing negative (${bad})`);
+  ok(pct(cmp, att) >= 74 && pct(cmp, att) <= 90, `completion like football's (74-90%): ${pct(cmp, att)}%`);
+}
 const med = (xs: number[]) => [...xs].sort((p, q) => p - q)[Math.floor(xs.length / 2)] ?? 0;
 console.log(`  ${N} matches: ${(passes / N).toFixed(0)} passes a match (both sides), ${(passes / minutes).toFixed(1)} a minute`);
 console.log(`  kinds: ${Object.entries(kinds).map(([k, v]) => `${k} ${(v / N).toFixed(1)}`).join(', ')} a match`);

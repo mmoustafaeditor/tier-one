@@ -68,6 +68,14 @@ export function matchRatings(m: LiveMatch, get: (id: string) => Player): Ratings
     if (e.kind === 'yellow') add(e.playerId, -0.3);
     if (e.kind === 'red') add(e.playerId, -1.8);
   }
+  // Passing (the engine's pass count, a FULL match since it was added): each pass that finds its man a little, each one
+  // that doesn't a little more the other way, and the ball that sets up a shot most of all.
+  // Centred on the match's own average, so the passing only tells players apart (the average rating stays where it was).
+  if (m.ps) {
+    const term = Object.entries(m.ps.pl).filter(([id]) => rating[id] !== undefined).map(([id, a]) => [id, 0.004 * a[1] - 0.02 * Math.max(0, a[0] - a[1]) + 0.1 * a[2]] as const);
+    const mean = term.reduce((t, [, v]) => t + v, 0) / Math.max(1, term.length);
+    for (const [id, v] of term) rating[id] += v - mean;
+  }
   // Subs who came on late get pulled towards 6.5.
   for (const e of m.events) if (e.kind === 'sub' && e.inId && rating[e.inId] !== undefined) {
     const share = Math.max(0.2, (90 - e.min) / 90);
