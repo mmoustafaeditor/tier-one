@@ -487,6 +487,7 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     const ks = onPitch(m, b.side);
     const k = b.to ?? ks.sort((x, y) => dist(a.pos[b.side][x], a.ball) - dist(a.pos[b.side][y], a.ball))[0];
     if (k === undefined || !a.pos[b.side][k]) return;
+    const had = a.carrier; // (who had it, before it runs loose)
     a.carrier = -1;
     a.trans = { lost: (1 - b.side) as 0 | 1, at: a.time };
     if (b.z !== undefined) a.zone = b.z;
@@ -496,7 +497,36 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     // At the start of a highlight the picture cuts to the man who won it (as for a duel), rather than the ball crossing
     // the pitch to him in a blink.
     if (a.beat - 1 === 0) { a.flight = null; a.poss = b.side; a.carrier = k; a.ball = { ...a.pos[b.side][k] }; return; }
-    fly(a, a.pos[b.side][k], travel * (b.vs !== undefined ? 0.25 : 0.6), () => { a.poss = b.side; a.carrier = k; });
+    const win = a.pos[b.side][k], other = (1 - b.side) as 0 | 1, lost = b.vs;
+    const take = () => { a.poss = b.side; a.carrier = k; };
+    // How it was lost, so the viewer sees why (A3): cut out on its way (an interception); a heavy first touch off a pass
+    // that had just reached him (it gets away from him towards the man who takes it; a better touch, less far); or
+    // taken off him by a tackle.
+    const lp = a.lastPass, arrived = !a.flight && a.poss === other && lost !== undefined && had === lost;
+    if (a.flight) a.kinds['loss:intercept'] = (a.kinds['loss:intercept'] ?? 0) + 1;
+    else if (arrived && lp && lp.side === other && lp.to === lost && a.time - lp.at < T.TOUCH_FRESH * a.beatLen && a.pos[other][lost]) {
+      const q = a.pos[other][lost], d = dist(q, win), far = T.TOUCH_LOOSE[0] + (T.TOUCH_LOOSE[1] - T.TOUCH_LOOSE[0]) * (1 - (a.body[other]?.[lost]?.touch ?? 0.5));
+      const off = d > 0.5 ? { x: q.x + ((win.x - q.x) / d) * Math.min(far, d), y: q.y + ((win.y - q.y) / d) * Math.min(far, d) } : q;
+      a.kinds['loss:touch'] = (a.kinds['loss:touch'] ?? 0) + 1;
+      a.carrier = -1;
+      fly(a, off, (far / T.TOUCH_SPEED) * (a.secMs ?? 40), () => fly(a, win, Math.max(60, travel * 0.2), take));
+      return;
+    } else if (lost === undefined) {
+      // No challenge named (a keeper's ball after a save, a clearance, a restart the path didn't show): the man of
+      // that side who has it, or the nearest to the loose ball, collects it and plays it to the man the engine names.
+      const ks2 = onPitch(m, b.side).filter((x) => a.pos[b.side][x]);
+      const near = a.poss === b.side && had >= 0 && a.pos[b.side][had] ? had : ks2.sort((x, y) => dist(a.pos[b.side][x], a.ball) - dist(a.pos[b.side][y], a.ball))[0];
+      const by = near !== undefined && near !== k && a.pos[b.side][near] ? near : k, why = dist(a.ball, a.pos[b.side][by]) > 6 ? 'loss:far' : 'loss:loose';
+      a.kinds[why] = (a.kinds[why] ?? 0) + 1;
+      if (by !== k) {
+        const sec = a.secMs ?? 40;
+        const pass = () => { a.poss = b.side; a.carrier = -1; fly(a, win, Math.max(60, (dist(a.ball, win) / SPEED.short) * sec), take); };
+        if (dist(a.ball, a.pos[b.side][by]) < 1.5) pass();
+        else fly(a, a.pos[b.side][by], Math.max(60, (dist(a.ball, a.pos[b.side][by]) / SPEED.short) * sec), pass);
+        return;
+      }
+    } else { const why = dist(a.ball, win) > 6 ? 'loss:far' : 'loss:tackle'; a.kinds[why] = (a.kinds[why] ?? 0) + 1; }
+    fly(a, win, travel * (b.vs !== undefined ? 0.25 : 0.6), take);
     return;
   }
   if (b.kind === 'pass') {
@@ -933,7 +963,10 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           }
           // The man in the next contest (the engine names him): he closes the carrier, or the man the ball is going to,
           // so the tackle or the dribble past him happens where the ball is.
-          const nb = a.beats[a.beat];
+          // He reads it a beat early: while the pass to the man who will lose it is on its way, he is already closing
+          // him (A3), so the ball is won where it is, not by a man arriving from 30 m away.
+          const nb0 = a.beats[a.beat], nb1 = a.beats[a.beat + 1];
+          const nb = nb0 && nb0.kind === 'pass' && nb0.side === other && nb1?.kind === 'turnover' && nb1.side === side && nb1.vs !== undefined && nb1.vs === nb0.to ? nb1 : nb0;
           const vs = nb && ((nb.kind === 'duel' && nb.side === other) ? nb.vs : nb.kind === 'turnover' && nb.side === side && nb.vs !== undefined ? nb.to : nb.kind === 'foul' && nb.side === other ? nb.by : undefined);
           if (vs !== undefined && a.pos[side][vs] && LINE[slots[vs]?.pos] !== 'gk') {
             const toward = a.flight && a.poss === other ? a.flight.to : a.ball;
