@@ -378,6 +378,16 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .pitchwrap { position: relative; }
 .view-chips { margin-bottom: var(--s-3); }
 .hlsel { width: 100%; margin: 0 0 var(--s-3); }
+/* Touchline shouts right under the pitch, so they can be used while a highlight plays; one row that scrolls sideways. */
+.shoutbar { display: flex; gap: var(--s-2); overflow-x: auto; padding: var(--s-2) 0; scrollbar-width: none; }
+.shoutbar::-webkit-scrollbar { display: none; }
+.shoutbar .chip { flex: none; }
+.yell { position: absolute; inset-inline-start: 50%; top: 10%; transform: translateX(-50%); padding: 6px 12px; border-radius: 999px;
+  background: rgba(0, 0, 0, .72); color: #fff; font-weight: 700; font-size: 14px; white-space: nowrap; pointer-events: none;
+  animation: yell 2.4s ease-out forwards; }
+[dir="rtl"] .yell { transform: translateX(50%); }
+@keyframes yell { 0% { opacity: 0; margin-top: 8px; } 10% { opacity: 1; margin-top: 0; } 80% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .yell { animation: yell 2.4s steps(1, end) forwards; } }
 .live-tip { display: grid; gap: var(--s-2); }
 .skipbtn { white-space: nowrap; }
 .subcols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }

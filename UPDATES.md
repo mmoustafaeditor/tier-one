@@ -42,6 +42,11 @@ together with your change.
 
 ---
 
+## 2026-10-02 · saifsaber · The Gaffer: touchline shouts right under the pitch, usable during highlights
+- **What changed:** The six shouts ("Press them", "Get it wide", "Drop off" …) moved from a panel far below the pitch to a row right under it, so they can be used while a highlight plays. A shout shows a "📣 Press them" bubble on the pitch for a moment, and the players' shape on the pitch follows the new instruction straight away (the pitch reads its spots from the tactics). The save after a shout waits for the next quiet moment instead of happening mid-passage (no stall on slow phones: 0 frames over 50 ms in the browser test). The "From the touchline" panel now only appears for the assistant's tip or Plan B.
+- **Files:** `games/the-gaffer/web/src/ui2/Live.tsx`, `src/styles/app.css`
+- **Heads-up for the team:** None. Tier One is untouched.
+
 ## 2026-10-02 · saifsaber · The Gaffer: AI managers adapt to the wind and the heat; analysis screen checked in Arabic
 - **What changed:** At kick-off an AI manager sets up for the weather, and the commentary says so ("… in the wind"): in the wind it keeps the ball on the ground, plays narrower and takes corners short; in the heat it keeps the ball. Measured over 2,000 matches of each (`sim-tests/wxai.ts`): in the wind the adapting side takes 1.58 points a match against 1.50 without, and in the heat 1.55 against 1.53; goals move under 3%. Heavy rain and snow change nothing on purpose: going direct on a heavy pitch was measured to cost more than the long-ball edge gives back. Clear days, rain and snow play exactly as before. The analysis screen was checked in Arabic: "47 من 55" printed backwards (fixed), Arabic plurals for 3–10, a line naming whose number is whose on Territory, and goal labels close together on xG charts merge ("GOAL ×2") instead of overlapping.
 - **Files:** `games/the-gaffer/web/src/sim/engine/weather.ts` (`weatherPlan`), `src/sim/match.ts`, `src/lang-new{,-ar,-es,-fr}.ts`, `src/ui2/Analysis.tsx`, `src/ui2/kit.tsx`, `src/lang-ana.ts`, `sim-tests/wxai.ts` (new)

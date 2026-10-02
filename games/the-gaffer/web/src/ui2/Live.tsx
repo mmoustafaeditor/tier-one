@@ -45,6 +45,7 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
   const [hl, setHl] = useState<HlMode>(hl0);
   const savedAt = useRef(Date.now());
   const saveDue = useRef(false);
+  const [yell, setYell] = useState<{ l: string; at: number } | null>(null); // the last shout, shown on the pitch for a moment
   const minMs = minuteMs(m, hl, RATES[speed]);
   const scale = Math.round((2400 * RATES[1]) / RATES[speed]);
   const [view, setView] = useState(0);
@@ -148,7 +149,12 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
     [R.statsExtra[0], m.stats[me][6], m.stats[o][6]] as const, [R.statsExtra[1], rs(me, 'off'), rs(o, 'off')] as const,
     [R.statsExtra[2], rs(me, 'fk'), rs(o, 'fk')] as const, [R.statsExtra[3], rs(me, 'ti'), rs(o, 'ti')] as const, [R.statsExtra[4], rs(me, 'gk'), rs(o, 'gk')] as const];
   const us = me === 0 ? home : away, them = me === 0 ? away : home;
-  const shout = (k: string, v: number) => change((n) => setTactics(n, me, { [k]: v } as Partial<Tactics>, 'shout'));
+  // A shout from the touchline (it can come mid-highlight): the change is made now and saved at the next quiet moment
+  // (saving the career mid-passage would stall a slow phone), and a bubble on the pitch says what was shouted.
+  const shout = (l: string, k: string, v: number) => {
+    const n = clone(m); setTactics(n, me, { [k]: v } as Partial<Tactics>, 'shout'); onUpdate(n); saveDue.current = true;
+    setYell({ l, at: Date.now() });
+  };
   const ft = fullTactics(s.tactics);
   return (
     <div className="sc-live">
@@ -191,8 +197,17 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
           <select className="sel hlsel" value={hl} aria-label={R.hlTitle} title={R.hlTitle} onChange={(e) => { const v = +e.target.value as HlMode; setHl(v); onHl?.(v); }}>
             {R.hl.map((l, i) => <option key={l} value={i}>{R.hlTitle}: {l}</option>)}
           </select>
-          {view === 0 && hl !== 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={minMs} mode={hl} scale={scale} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} /></div>
+          {view === 0 && hl !== 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={minMs} mode={hl} scale={scale} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} />
+              {yell && <div key={yell.at} className="yell" aria-live="polite" onAnimationEnd={() => setYell(null)}>📣 {yell.l}</div>}</div>
             : <ZonePitch m={m} me={me} mode={view || 1} /> /* commentary only: the zone map, no pitch */}
+          {!done && (
+            <div className="shoutbar" role="group" aria-label={x.live.touchline}>
+              {x.live.shouts.map(([l, k, v]) => {
+                const on = (ft as unknown as Record<string, number>)[k] === v;
+                return <button key={l} className="chip" aria-pressed={on} onClick={() => shout(l, k, v)}>{l}</button>;
+              })}
+            </div>
+          )}
           <div className="mom-h"><b>{x.live.momentum}</b><span>{x.live.momentumKey(cn(us, lang), cn(them, lang))}</span></div>
           <Momentum data={mom} rtl={g.rtl} label={x.live.momentum} />
         </Panel>
@@ -218,15 +233,9 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
               ))}
             </div>
           </Panel>
-          {!done && (
+          {!done && (tip || c.planB) && (
             <Panel i={5} label={x.live.touchline}>
               <PanelHead title={x.live.touchline} right={<span className="eyebrow">{x.live.takes}</span>} />
-              <div className="shouts">
-                {x.live.shouts.map(([l, k, v]) => {
-                  const on = (ft as unknown as Record<string, number>)[k] === v;
-                  return <button key={l} aria-pressed={on} onClick={() => shout(k, v)}>{l}</button>;
-                })}
-              </div>
               {tip && (
                 <div className="advice live-tip">
                   <span className="staff" aria-hidden="true">AS</span>
