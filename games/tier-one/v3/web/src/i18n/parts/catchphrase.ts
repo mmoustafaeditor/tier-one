@@ -9,12 +9,12 @@ export default {
       ui: { title: 'Your catchphrase', pick: 'Use this one', using: 'In use', locked: 'Locked', fresh: 'New catchphrase: {phrase}', card: 'Catchphrase card' },
       house: {
         default: 'It’s happening.', bookit: 'It’s happening.', pen: 'Pen down.', dusted: 'Bags packed.', announce: 'Live now.', medical: 'Medical done.',
-        ink: 'Sunglasses on.', shirt: 'Shirt’s ready.', gates: 'Plane’s landed.', sealed: 'All agreed. All done.', lockin: 'Clock’s stopped.',
+        shirt: 'Shirt’s ready.', sealed: 'All agreed. All done.', inkdry: 'The ink is dry.', wheels: 'Wheels up.', bags: 'Bags are packed.', front: 'Clear the front page.',
       },
       unlock: {
         default: 'Yours from day one.', bookit: 'Yours from day one.', pen: 'Reach Stringer rank.', dusted: 'Reach Correspondent rank.', announce: 'Reach Chief rank.', sealed: 'Reach Tier One rank.',
         medical: 'Hit a 7-day streak.', bags: 'Hit a 30-day streak.', front: 'Hit a 100-day streak.', shirt: 'Finish Story chapter 1.', inkdry: 'Finish Story chapter 3.', wheels: 'Finish Story chapter 5.',
-        custom: 'Reach Chief rank to write your own line.', ink: 'Finish Story chapter 3.', gates: 'Reach Tier 1 in a window.', lockin: 'Beat all three rivals in one window.',
+        custom: 'Reach Chief rank to write your own line.',
       },
       react: {
         fan: {
@@ -34,12 +34,12 @@ export default {
       ui: { title: 'جملتك المشهورة', pick: 'استخدم دي', using: 'مستخدمة', locked: 'مقفولة', fresh: 'جملة جديدة: {phrase}', card: 'كارت الجملة' },
       house: {
         default: 'خلاص، هتحصل.', bookit: 'خلاص، هتحصل.', pen: 'القلم نزل.', dusted: 'الشنط جاهزة.', announce: 'على الهوا دلوقتي.', medical: 'الكشف الطبي خلص.',
-        ink: 'النضارة اتلبست.', shirt: 'القميص جاهز.', gates: 'الطيارة نزلت.', sealed: 'كله اتفق. كله خلص.', lockin: 'الساعة وقفت.',
+        shirt: 'القميص جاهز.', sealed: 'كله اتفق. كله خلص.', inkdry: 'الحبر نشف.', wheels: 'الطيارة قامت.', bags: 'الشنط اتحزمت.', front: 'فضّوا الصفحة الأولى.',
       },
       unlock: {
         default: 'بتاعتك من أول يوم.', bookit: 'بتاعتك من أول يوم.', pen: 'وصّل لرتبة مراسل حر.', dusted: 'وصّل لرتبة مراسل.', announce: 'وصّل لرتبة كبير المراسلين.', sealed: 'وصّل لرتبة تير وان.',
         medical: 'سلسلة ٧ أيام.', bags: 'سلسلة ٣٠ يوم.', front: 'سلسلة ١٠٠ يوم.', shirt: 'خلّص الفصل ١ في القصة.', inkdry: 'خلّص الفصل ٣ في القصة.', wheels: 'خلّص الفصل ٥ في القصة.',
-        custom: 'وصّل لرتبة كبير المراسلين واكتب جملتك بنفسك.', ink: 'خلّص الفصل ٣ في القصة.', gates: 'وصّل للتير ١ في فترة.', lockin: 'اكسب التلات منافسين في فترة واحدة.',
+        custom: 'وصّل لرتبة كبير المراسلين واكتب جملتك بنفسك.',
       },
       react: {
         fan: {
@@ -59,12 +59,12 @@ export default {
       ui: { title: 'Tu frase', pick: 'Usar esta', using: 'En uso', locked: 'Bloqueada', fresh: 'Frase nueva: {phrase}', card: 'Tarjeta de frase' },
       house: {
         default: 'Se viene.', bookit: 'Se viene.', pen: 'Firma puesta.', dusted: 'Maletas hechas.', announce: 'En directo.', medical: 'Reconocimiento hecho.',
-        ink: 'Gafas de sol puestas.', shirt: 'La camiseta, lista.', gates: 'El avión ha aterrizado.', sealed: 'Todo pactado. Todo hecho.', lockin: 'Reloj parado.',
+        shirt: 'La camiseta, lista.', sealed: 'Todo pactado. Todo hecho.', inkdry: 'La tinta está seca.', wheels: 'Despegamos.', bags: 'Maletas hechas.', front: 'Despejad la portada.',
       },
       unlock: {
         default: 'Tuya desde el primer día.', bookit: 'Tuya desde el primer día.', pen: 'Llega al rango Colaborador.', dusted: 'Llega al rango Corresponsal.', announce: 'Llega al rango Jefe.', sealed: 'Llega al rango Tier One.',
         medical: 'Racha de 7 días.', bags: 'Racha de 30 días.', front: 'Racha de 100 días.', shirt: 'Termina el capítulo 1 de la Historia.', inkdry: 'Termina el capítulo 3 de la Historia.', wheels: 'Termina el capítulo 5 de la Historia.',
-        custom: 'Llega al rango Jefe para escribir tu propia frase.', ink: 'Termina el capítulo 3 de la Historia.', gates: 'Llega a Tier 1 en un mercado.', lockin: 'Gana a los tres rivales en un mercado.',
+        custom: 'Llega al rango Jefe para escribir tu propia frase.',
       },
       react: {
         fan: {

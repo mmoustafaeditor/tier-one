@@ -1,6 +1,7 @@
-// Leaderboards (SAIF-03, 3.6 tabs): Daily · Rooms · Transfer Market. Your rank up top, the top rows paged below, prizes
-// for a finished day or week collected here. Daily and Transfer Market are the server's own boards (`lb.top`); Rooms is
-// your place in each room you hold a seat in. Prizes are coins and never a score. One screen, no page scroll.
+// Leaderboards: Daily · Rooms · Transfer Market. Your rank up top, the top rows paged below, yesterday's Daily prize
+// collected here. Daily and Transfer Market are the server's own boards (`lb.top`); Rooms is your place in each room
+// you hold a seat in. Prizes are coins and never a score. One screen, no page scroll.
+// 3.8: the weekly board and its prizes are gone with the invisible weekly league (brief §35).
 import { useEffect, useState } from 'react';
 import { useT, num } from '../lib/i18n';
 import { useSave, getSave } from '../lib/save';
@@ -19,10 +20,10 @@ type Board = { rows: { nick: string; score: number; tier?: string; me: boolean }
 type Tab = 'daily' | 'rooms' | 'wire';
 const TABS: Tab[] = ['daily', 'rooms', 'wire'];
 
-export function BoardsScreen({ period: p0, from, ...chrome }: Chrome & { period?: Period | 'rooms'; from?: Route }) {
+export function BoardsScreen({ period: p0, from, ...chrome }: Chrome & { period?: Period | 'rooms' | 'weekly'; from?: Route }) {
   const t = useT();
   const s = useSave();
-  const [tab, setTab] = useState<Tab>(p0 === 'wire' ? 'wire' : p0 === 'rooms' || p0 === 'weekly' ? 'rooms' : 'daily');
+  const [tab, setTab] = useState<Tab>(p0 === 'wire' ? 'wire' : p0 === 'rooms' ? 'rooms' : 'daily');
   const [boards, setBoards] = useState<Partial<Record<Period, Board | 'off'>>>({});
   useEffect(() => { checkPrizes(); }, []);
   useEffect(() => {
@@ -31,7 +32,6 @@ export function BoardsScreen({ period: p0, from, ...chrome }: Chrome & { period?
   }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
   const b = tab === 'rooms' ? undefined : boards[tab];
   const me = b && b !== 'off' ? b.me : undefined;
-  const prize = tab === 'daily' ? PRIZE.daily : null;
   const play = () => chrome.go(tab === 'wire' ? { n: 'wire' } : { n: 'daily' });
   const rows = b && b !== 'off' ? b.rows : [];
   const pg = usePaged(rows, 6, tab);
@@ -56,7 +56,7 @@ export function BoardsScreen({ period: p0, from, ...chrome }: Chrome & { period?
               {b !== 'off' && <GBtn kind="dark" size="sm" onClick={play}><Icon n={tab === 'wire' ? 'wire' : 'news'} size={18} />{t('aw.play.' + tab)}</GBtn>}</div>
           </>}
         </section>
-        {prize && <p className="aw-ladder"><Icon n="gift" size={16} />{t('aw.ladder.daily', { a: prize[0], b: prize[1], c: prize[2], d: prize[3] })}</p>}
+        {tab === 'daily' && <p className="aw-ladder"><Icon n="gift" size={16} />{t('aw.ladder.daily', { a: PRIZE[0], b: PRIZE[1], c: PRIZE[2], d: PRIZE[3] })}</p>}
 
         {b === undefined ? <p className="g-mono aw-wait">{t('common.loading')}</p>
           : rows.length > 0 && <ol className="aw-list g-card" start={pg.page * 6 + 1}>

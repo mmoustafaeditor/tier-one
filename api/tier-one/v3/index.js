@@ -1,4 +1,4 @@
-// Tier One v3 online (Vercel function, Node 18+): the server-held Daily, leaderboards, The Wire, weekly leagues and
+// Tier One v3 online (Vercel function, Node 18+): the server-held Daily, leaderboards, The Wire and
 // Friends rooms. POST /api/tier-one/v3 { action, ... } -> { ok:true, ... } | { ok:false, error }
 //
 // Storage: Upstash Redis over REST, same env as api/online.js (KV_REST_API_URL + KV_REST_API_TOKEN, or
@@ -25,7 +25,7 @@ const SALT = process.env.T1V3_SALT || (TOKEN ? createHash('sha256').update('t1v3
 const DEV_SALT = 'dev-only-salt-set-T1V3_SALT';
 
 const DAY = 86400, DAY_MS = DAY * 1000;
-const SESSION_TTL = 3 * DAY, ROOM_TTL = 21 * DAY, /* a room nobody opens for 21 days closes itself */ LB_DAY_TTL = 40 * DAY, LB_WEEK_TTL = 60 * DAY, LG_TTL = 70 * DAY;
+const SESSION_TTL = 3 * DAY, ROOM_TTL = 21 * DAY, /* a room nobody opens for 21 days closes itself */ LB_DAY_TTL = 40 * DAY, LB_WEEK_TTL = 60 * DAY;
 const DAILY_EPOCH = Date.parse('2026-09-01T00:00:00Z'); // Daily No. 1
 const DD_GRACE_MS = 4000;            // network grace on the Deadline Day clock
 const LB_TOP = 25, MAX_ROOM = 24, ROUND_OPEN_H = 48;
@@ -35,7 +35,7 @@ const CH_TTL = 8 * DAY, CH_OPEN_MS = 24 * 3600e3, CH_MAX_RES = 20, CH_LOG_MAX = 
 const NR_TTL = 200 * DAY, NR_MAX = 20, NR_TOP = 10;
 const LIVE_WINDOW_S = 10 * 60, LIVE_TTL = 2 * DAY;
 const REP_TIERS = ['blogger', 'stringer', 'correspondent', 'chief', 'tierone'];
-const LEAGUE = { SIZE: 30, UP: 6, DOWN: 6, DIVS: ['stringer', 'reporter', 'correspondent', 'editor', 'tierone'], TIER_PTS: { T1: 30, T2: 20, T3: 12, T4: 6, SPIKED: 2 }, WIRE_CAP: 150 };
+// 3.8: the weekly league (divisions of 30, promotion on Sunday night) is gone: it never had a screen (LAUNCH_BRIEF §35).
 const RATE_MAX = 900, RATE_WINDOW = 3600;
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -155,7 +155,6 @@ async function settle(sc, who, sess, g, cast, nick) {
     const first = await one('SET', 't1v3:lb:once:' + sc.day + ':' + who, '1', 'EX', LB_DAY_TTL, 'NX');
     if (first) cmds.push(['ZINCRBY', wk, r.total, who], ['EXPIRE', wk, LB_WEEK_TTL], ['SET', wk + ':e:' + who, JSON.stringify({ nick, row: res.row, tier: r.tier }), 'EX', LB_WEEK_TTL]);
     await redis(cmds);
-    if (first) await leagueAdd(who, nick, sc.day, LEAGUE.TIER_PTS[r.tier] || 0, 'daily');
     Object.assign(res, await rankInfo(sc.day, who));
     // First to break it (GOTY.md §7.3): the act-time candidate stands only if that Confirmed call survived to the end.
     const fk = 't1v3:live:first:' + sc.day, brk = await getJ(fk);
@@ -362,17 +361,14 @@ const actions = {
       if (r.status !== 'gone') { c.player = r.playerName; c.from = r.currentClubName; c.linked = r.linked; c.mNow = marketOf(r); }
       else { c.player = c.pn || ''; c.mNow = c.m; }
       // Heat points: the first time the market moves 15 points toward your side after lock.
-      if (!c.heat && !c.done && (c.yes ? c.mNow - c.m : c.m - c.mNow) >= WIRE.HEAT_MOVE) { c.heat = c.s; writes.push(c); await leagueAdd(dev, nick, today(), c.s, 'wire'); }
+      if (!c.heat && !c.done && (c.yes ? c.mNow - c.m : c.m - c.mNow) >= WIRE.HEAT_MOVE) { c.heat = c.s; writes.push(c); }
       if (c.done) continue;
       const st = rumourState(r, snap, OVERRIDES, now);
       if (st.state === 'open' || st.state === 'frozen') { c.paper = wirePoints(c, { state: c.yes ? 'moved' : 'stayed', at: now, club: c.club, fee: c.fee }).pts; continue; }
       const w = wirePoints(c, st);
       Object.assign(c, { done: true, outcome: st.state, outClub: st.club, outFee: st.fee, pts: w.pts, right: w.right, parts: w.parts, settledAt: now });
       writes.push(c);
-      if (st.state !== 'void') {
-        await one('ZINCRBY', 't1v3:cred:' + season(now), w.pts, dev);
-        await leagueAdd(dev, nick, today(), w.pts, 'wire');
-      }
+      if (st.state !== 'void') await one('ZINCRBY', 't1v3:cred:' + season(now), w.pts, dev);
     }
     if (writes.length) await redis(writes.map((c) => ['HSET', 't1v3:w:calls:' + dev, c.rid, JSON.stringify(stripView(c))]));
     const list = Object.values(calls).sort((a, b) => b.at - a.at);
@@ -381,18 +377,6 @@ const actions = {
     const cred = Number(await one('ZSCORE', 't1v3:cred:' + season(now), dev)) || 0;
     if (list.length) await one('SET', 't1v3:cred:' + season(now) + ':e:' + dev, JSON.stringify({ nick }), 'EX', 200 * DAY);
     return { calls: list, cred, hitRate: hitRate(hits, n), resolved: doneL.length, season: season(now) };
-  },
-
-  // ---- weekly league (DESIGN §4.6): Daily tier points + Wire points + Heat, divisions of 30 ----
-  async 'league.me'(b) {
-    const dev = devId(b.dev); if (!dev) return { error: 'dev' };
-    const me = await leagueSeat(dev, nickOf(b.nick, dev), today());
-    const gk = groupKey(me.week, me.div, me.grp);
-    const z = await one('ZREVRANGE', gk, 0, LEAGUE.SIZE - 1, 'WITHSCORES');
-    const ids = []; for (let i = 0; i < (z || []).length; i += 2) ids.push(z[i]);
-    const docs = ids.length ? await one('MGET', ...ids.map((d) => 't1v3:lg:seat:' + me.week + ':' + d)) : [];
-    const rows = ids.map((d, i) => { let doc = null; try { doc = JSON.parse(docs[i]); } catch { doc = null; } return { nick: (doc && doc.nick) || 'Journo', pts: Number(z[2 * i + 1]) || 0, daily: (doc && doc.daily) || 0, wire: (doc && doc.wire) || 0, me: d === dev }; });
-    return { week: me.week, div: me.div, divs: LEAGUE.DIVS, up: me.div < LEAGUE.DIVS.length - 1 ? LEAGUE.UP : 0, down: me.div > 0 ? LEAGUE.DOWN : 0, size: LEAGUE.SIZE, rows, last: me.last || null };
   },
 
   // ---- Friends rooms: Daily rules exactly, one shared board per round, scored here ----
@@ -853,39 +837,6 @@ async function nrTop(week) {
   const codes = []; for (let i = 0; i < (z || []).length; i += 2) codes.push(z[i]);
   const docs = codes.length ? await one('MGET', ...codes.map((c) => 't1v3:nr:name:' + c)) : [];
   return codes.map((c, i) => { let d = null; try { d = JSON.parse(docs[i]); } catch { d = null; } return { code: c, name: (d && d.name) || c, n: (d && d.n) || 0, pts: Number(z[2 * i + 1]) || 0 }; });
-}
-
-// League seats: first activity in a week seats you in a group of 30 in your division; last week's finish moves you.
-const groupKey = (week, div, grp) => 't1v3:lg:' + week + ':g:' + div + ':' + grp;
-async function leagueSeat(dev, nick, day) {
-  const week = isoWeek(day), sk = 't1v3:lg:seat:' + week + ':' + dev;
-  const seat = await getJ(sk);
-  if (seat) return seat;
-  let div = Number(await one('GET', 't1v3:lg:div:' + dev)) || 0, last = null;
-  const prev = await getJ('t1v3:lg:seat:' + prevWeek(day) + ':' + dev);
-  if (prev && !prev.moved) {
-    const gk = groupKey(prev.week, prev.div, prev.grp);
-    const [sc, n] = await redis([['ZSCORE', gk, dev], ['ZCARD', gk]]);
-    const rank = sc == null ? null : 1 + Number(await one('ZCOUNT', gk, '(' + Number(sc), '+inf'));
-    if (rank) {
-      const size = Number(n) || 0;
-      if (rank <= LEAGUE.UP && div < LEAGUE.DIVS.length - 1) div++;
-      else if (size >= LEAGUE.UP + LEAGUE.DOWN && rank > size - LEAGUE.DOWN && div > 0) div--;
-      last = { rank, size, from: prev.div, to: div };
-    }
-  }
-  const n = Number(await one('INCR', 't1v3:lg:' + week + ':n:' + div));
-  const s = { week, div, grp: Math.floor((n - 1) / LEAGUE.SIZE), nick, daily: 0, wire: 0, last };
-  await redis([['SET', sk, JSON.stringify(s), 'EX', LG_TTL], ['SET', 't1v3:lg:div:' + dev, String(div), 'EX', 400 * DAY], ['ZADD', groupKey(week, div, s.grp), 'NX', 0, dev], ['EXPIRE', groupKey(week, div, s.grp), LG_TTL]]);
-  return s;
-}
-async function leagueAdd(dev, nick, day, pts, kind) {
-  const s = await leagueSeat(dev, nick, day);
-  let add = pts;
-  if (kind === 'wire') { const room = Math.max(0, LEAGUE.WIRE_CAP - s.wire); add = Math.max(-s.wire, Math.min(room, pts)); s.wire = Math.round((s.wire + add) * 10) / 10; }
-  else s.daily += pts;
-  if (!add) return;
-  await redis([['ZINCRBY', groupKey(s.week, s.div, s.grp), add, dev], ['SET', 't1v3:lg:seat:' + s.week + ':' + dev, JSON.stringify(s), 'EX', LG_TTL]]);
 }
 
 export { actions, parseAct, saltedSeed, isoWeek, dailyNo, OUT, pubId };

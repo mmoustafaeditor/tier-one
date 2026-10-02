@@ -133,7 +133,8 @@ const NEW: Item[] = [
 ];
 
 // ---------------------------------------------------------------- earned-only items (never purchasable, never gifted)
-// Story chapter completions, the Tier One rank, long streaks, rivalry trophies, a referred trio, Deadline Day Live.
+// Story chapter completions, the Tier One rank, long streaks, rivalry trophies, Deadline Day Live. (3.8: the referral
+// lamp is gone: a referrer's count needs server confirmation that does not exist yet; nothing unobtainable is listed.)
 // lib/earned.ts evaluates `earn` against the save and grants into save.owned; the collection book shows how.
 const EARNED: Item[] = [
   { id: 'st.ch1', kind: 'flair', nameKey: 'eco.items.st.ch1', price: {}, source: 'earned', rarity: 'rare', set: 'story', earn: { via: 'story', n: 1 }, preview: { k: 'flair', g: '¶', c: '#2657C9' } },
@@ -148,7 +149,6 @@ const EARNED: Item[] = [
   { id: 'rv.tabloid', kind: 'flair', nameKey: 'eco.items.rv.tabloid', price: {}, source: 'earned', rarity: 'epic', set: 'rivalry', earn: { via: 'rivalry', ref: 'tabloid' }, preview: { k: 'flair', g: '♛', c: '#C8102E' } },
   { id: 'rv.itk', kind: 'flair', nameKey: 'eco.items.rv.itk', price: {}, source: 'earned', rarity: 'epic', set: 'rivalry', earn: { via: 'rivalry', ref: 'itk' }, preview: { k: 'flair', g: '♛', c: '#35C3E6' } },
   { id: 'rv.insider', kind: 'flair', nameKey: 'eco.items.rv.insider', price: {}, source: 'earned', rarity: 'epic', set: 'rivalry', earn: { via: 'rivalry', ref: 'insider' }, preview: { k: 'flair', g: '♛', c: '#7147D6' } },
-  { id: 'rf.3', kind: 'lamp', nameKey: 'eco.items.rf.3', price: {}, source: 'earned', rarity: 'rare', set: 'referral', earn: { via: 'referral', n: 3 }, preview: { k: 'lamp', glow: '#7FCB6A', pool: '#15260F', warmth: 'cool' } },
   { id: 'dd.2027-02-02', kind: 'masthead', nameKey: 'eco.items.dd.winter', nameVars: { y: '’27' }, price: {}, source: 'earned', rarity: 'epic', set: 'ddlive', earn: { via: 'ddlive', ref: '2027-02-02' }, preview: { k: 'masthead', bg: '#0E2231', ink: '#FFD35C', face: 'cond', rule: 'thick', orn: '⏱' } },
   { id: 'dd.2027-09-01', kind: 'poster', nameKey: 'eco.items.dd.summer', nameVars: { y: '’27' }, price: {}, source: 'earned', rarity: 'epic', set: 'ddlive', earn: { via: 'ddlive', ref: '2027-09-01' }, preview: { k: 'poster', c: '#FFD35C', c2: '#2A1206', style: 'neon' } },
   // house catchphrases you earn by playing (GOTY §12): rank, streaks, story chapters. `cp.custom` is the line you write
@@ -300,18 +300,18 @@ export function storeCatalog(ms = Date.now()): Item[] {
   const seen = new Set<string>();
   return [...seasonStore().map(fromLegacy), ...NEW, ...seasonSet(seasonAt(ms).id), ...vault].filter((x) => onSale(x, ms) && !seen.has(x.id) && seen.add(x.id));
 }
-/** Every item that can exist right now (for a tab): the standard look, the store, this season's set, the earned ones. */
+/** Every item that can exist right now (for a tab): the standard look, the store, this season's set, the earned ones.
+ *  The 3.7 weekly-event looks (ev.*) are not listed: the events are gone (brief §34); an owner's copy still resolves
+ *  through item() and shows under Owned. */
 export function itemsOf(kind: Kind, ms = Date.now()): Item[] {
   const sid = seasonAt(ms).id;
   const vault = VAULT.filter((v) => v.to > ms - 90 * DAY).map((v) => item(v.id)).filter((x): x is Item => !!x);
-  const all = [STD[kind], ...seasonStore().map(fromLegacy), ...NEW.filter((x) => dropped(x, ms)), ...seasonSet(sid), ...vault, ...EARNED, ...seasonCosmeticsAll()];
+  const all = [STD[kind], ...seasonStore().map(fromLegacy), ...NEW.filter((x) => dropped(x, ms)), ...seasonSet(sid), ...vault, ...EARNED];
   const seen = new Set<string>();
   return all.filter((x) => x.kind === kind && !seen.has(x.id) && seen.add(x.id));
 }
-// The weekly-event rewards and the current season's track items (earned, never sold) so an owner can equip them.
-function seasonCosmeticsAll(): Item[] {
-  return ['ev.rival', 'ev.medical', 'ev.frenzy', 'ev.barber', 'ev.local'].map((id) => seasonCosmetic(id)).filter((c): c is Cosmetic => !!c).map(fromLegacy);
-}
+/** What a save owns, as catalog items, in catalog order (standard looks excluded). Unknown ids are skipped. */
+export const ownedCatalog = (owned: string[], kind?: Kind): Item[] => owned.map((id) => item(id)).filter((x): x is Item => !!x && !isStandard(x.id) && (!kind || x.kind === kind));
 /** Items that are part of a named set (evergreen families, seasons, earned families). */
 export const setOf = (set: string, ms = Date.now()): Item[] => KINDS.flatMap((k) => itemsOf(k, ms)).filter((x) => x.set === set);
 
@@ -334,9 +334,9 @@ export const vaultNow = (ms = Date.now()): Item[] => VAULT.filter((v) => ms >= v
 // stay in the book: gone items show "may return from the vault"). Ownership is decided by the caller (wallet.owns).
 /** The book lists season sets up to the end of the 2026/27 football year (the summer window closes 1 Sep 2027). */
 export const SEASON_BOOK_END = utc(2027, 9, 2);
-export const BOOK_ORDER = ['lines', 'story', 'rank', 'streak', 'rivalry', 'referral', 'ddlive', 'redtop', 'broadsheet', 'wire', 'night', 'gilt', 'event'];
+export const BOOK_ORDER = ['lines', 'story', 'rank', 'streak', 'rivalry', 'ddlive', 'redtop', 'broadsheet', 'wire', 'night', 'gilt'];
 export function bookSets(ms = Date.now()): { set: string; season: boolean; items: Item[] }[] {
-  const all = [...NEW.filter((x) => x.source !== 'standard'), ...EARNED, ...seasonCosmeticsAll(), ...seasonStore().map(fromLegacy)];
+  const all = [...NEW.filter((x) => x.source !== 'standard'), ...EARNED, ...seasonStore().map(fromLegacy)];
   const map = new Map<string, Item[]>();
   const add = (it: Item) => { const k = it.set || 'other'; const l = map.get(k) || []; if (!l.some((x) => x.id === it.id)) l.push(it); map.set(k, l); };
   all.forEach(add);
@@ -361,8 +361,10 @@ const hash = (s: string) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; 
 const off = (n: number) => Math.max(1, Math.round((n * (1 - FEATURED_OFF)) / 5) * 5);
 export const featuredPrice = (p: Price): Price => ({ ...(p.coins != null ? { coins: off(p.coins) } : {}), ...(p.credits != null ? { credits: off(p.credits) } : {}) });
 export interface Featured { item: Item; was: Price; price: Price; pinned: boolean }
+const FEAT_EPOCH = utc(2026, 9, 7); // the Monday the rotation started; each week avoids the week before, from here
+const featCache = new Map<string, string[]>();
 export function featuredView(ms = Date.now()): { items: Featured[]; ends: number; week: string } {
-  const w = isoWeek(ms), prev = isoWeek(w.start - 864e5);
+  const w = isoWeek(ms);
   const pool = storeCatalog(ms).filter((x) => x.kind !== 'gold' && x.kind !== 'paper' && !x.window);
   const pick = (key: string, avoid: Set<string>) => {
     const out: Item[] = []; const kinds = new Set<Kind>();
@@ -370,8 +372,15 @@ export function featuredView(ms = Date.now()): { items: Featured[]; ends: number
     for (const it of order) { if (out.length >= 3) break; if (kinds.has(it.kind) || avoid.has(it.id)) continue; kinds.add(it.kind); out.push(it); }
     return out;
   };
-  const last = new Set(pick('t1feat:' + prev.key, new Set()).map((x) => x.id));
-  const rot = pick('t1feat:' + w.key, last);
+  // Walk forward from the epoch so "never the same item two weeks running" holds exactly, whatever week is asked for.
+  let prevIds: string[] = [];
+  for (let t0 = Math.max(FEAT_EPOCH, w.start - 60 * 7 * 864e5); t0 <= w.start; t0 += 7 * 864e5) {
+    const k = isoWeek(t0).key;
+    const hit = featCache.get(k);
+    prevIds = hit || pick('t1feat:' + k, new Set(prevIds)).map((x) => x.id);
+    if (!hit && pool.length) featCache.set(k, prevIds);
+  }
+  const rot = prevIds.map((id) => pool.find((x) => x.id === id)).filter((x): x is Item => !!x);
   const pinned = pool.filter((x) => x.featured && !rot.includes(x));
   return { week: w.key, ends: w.end, items: [...pinned.map((item) => ({ item, was: item.price, price: item.price, pinned: true })), ...rot.map((item) => ({ item, was: item.price, price: featuredPrice(item.price), pinned: false }))] };
 }

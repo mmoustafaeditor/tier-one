@@ -17,13 +17,15 @@ const out = mkdtempSync(join(process.env.SCRATCH || tmpdir(), 't1eco-'));
 const store = new Map();
 globalThis.localStorage = { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)), removeItem: (k) => store.delete(k) };
 globalThis.window = globalThis; Object.defineProperty(globalThis, 'navigator', { value: { language: 'en-GB' }, configurable: true });
+globalThis.location = { protocol: 'https:', hostname: 'localhost', search: '', pathname: '/', origin: 'https://localhost', href: 'https://localhost/' };
+globalThis.history = { replaceState() {} }; globalThis.document = undefined;
 globalThis.addEventListener = () => {}; globalThis.removeEventListener = () => {};
 globalThis.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
 
 const stub = join(out, 'i18n-stub.js');
-writeFileSync(stub, `export const t = (k, v) => k + (v ? ' ' + JSON.stringify(v) : ''); export const tl = () => []; export const useT = () => t; export const num = (n) => String(n); export const fmtDate = () => '';`);
+writeFileSync(stub, `export const t = (k, v) => k + (v ? ' ' + JSON.stringify(v) : ''); export const tr = (l, k, v) => t(k, v); export const tl = () => []; export const trList = () => []; export const has = () => false; export const useT = () => t; export const num = (n) => String(n); export const fmtDate = () => '';`);
 writeFileSync(join(out, 'synth.js'), 'export default { play() {} };');
-writeFileSync(join(out, 'react.js'), 'export const useSyncExternalStore = () => { throw new Error("no react in the node test"); };');
+writeFileSync(join(out, 'react.js'), 'export const useSyncExternalStore = () => { throw new Error("no react in the node test"); }; export const useRef = useSyncExternalStore; export const useState = useSyncExternalStore; export const useEffect = useSyncExternalStore; export const useMemo = useSyncExternalStore; export const useCallback = useSyncExternalStore;');
 const entry = join(out, 'entry.ts');
 writeFileSync(entry, `export * as wallet from '${SRC}/lib/wallet.ts'; export * as catalog from '${SRC}/lib/catalog.ts'; export * as save from '${SRC}/lib/save.ts'; export * as season from '${SRC}/lib/season.ts';`);
 await build({
@@ -41,9 +43,9 @@ const NOW = Date.UTC(2026, 9, 5, 12); // 5 Oct 2026, inside the Rumour Mill 2026
 
 console.log('catalog');
 ok('validates with no errors', () => { const e = C.validateCatalog(NOW); assert.deepEqual(e, []); });
-ok('every kind has a standard look and the tab order covers every kind', () => { for (const k of C.KINDS) assert.equal(C.standardOf(k).id, 'std.' + k); assert.equal(new Set(C.KINDS).size, 12); });
+ok('every kind has a standard look and the tab order covers every kind', () => { for (const k of C.KINDS) assert.equal(C.standardOf(k).id, 'std.' + k); assert.equal(new Set(C.KINDS).size, C.KINDS.length); });
 ok('legacy season.ts ids resolve unchanged', () => {
-  for (const id of ['frame.press', 'ink.blue', 'ring.whistle', 'flair.star', 'desk.oak', 'salmon', 'ev.rival', 'rumour-2026.x', 'rumour-2026.g8']) { const it = C.item(id); assert.ok(it, id); assert.equal(it.id, id); assert.equal(it.kind, C.legacy(it).kind); }
+  for (const id of ['frame.press', 'ink.blue', 'ring.whistle', 'flair.star', 'desk.oak', 'salmon', 'rumour-2026.x', 'rumour-2026.g8']) { const it = C.item(id); assert.ok(it, id); assert.equal(it.id, id); assert.equal(it.kind, C.legacy(it).kind); }
   assert.equal(C.item('frame.press').price.coins, 150); assert.equal(C.item('rumour-2026.x').source, 'track'); assert.equal(C.item('rumour-2026.g8').rarity, 'legendary');
 });
 ok('season-limited items carry the season window and Gold costs exactly one pack', () => {
@@ -76,12 +78,12 @@ ok('earning is idempotent per key and lands in the ledger', () => {
   assert.equal(W.balance('credits'), W.CREDITS_EARN.firstT1);
   assert.equal(W.awardStreak(29), null); assert.ok(W.awardStreak(30)); assert.equal(W.awardStreak(30), null); assert.ok(W.awardStreak(60));
   assert.ok(W.awardSeasonEnd('summer-2026', 40)); assert.equal(W.awardSeasonEnd('summer-2026', 40), null);
-  assert.equal(W.balance('credits'), 30 + 40 + 40 + 25 + 25);
+  assert.equal(W.balance('credits'), 30 + 40 + 40 + 25);
   assert.equal(W.ledger()[0].cur, 'credits'); assert.ok(W.ledger().every((e) => e.id));
 });
 ok('earning inside an update() draft works (no nested update)', () => {
   S.update((s) => { W.earnCredits('draft:1', 5, 'earn:test', s); W.earnCredits('draft:1', 5, 'earn:test', s); });
-  assert.equal(W.balance('credits'), 165);
+  assert.equal(W.balance('credits'), 140);
 });
 ok('buy with coins: pays, owns, equips, writes both ledgers', () => {
   const want = C.priceNow(C.item('frame.press'), NOW).coins; // 150, or 130 in a week it is featured

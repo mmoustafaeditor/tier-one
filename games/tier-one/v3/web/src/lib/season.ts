@@ -1,7 +1,10 @@
-// Seasons and the cosmetic economy (GOTY.md §3). Real-calendar seasons, each with its own 40-level track fed by the
-// same Press Points as the account level, a free and a Gold lane, a cosmetics catalogue, and a weekly event.
-// The fairness line: nothing here reaches a Daily board, its sources or its score. Everything is cosmetic or coins.
-// Weekly-event rule deltas are data only; the Practice/Career integrator applies them to local windows.
+// Seasons and the season track (LAUNCH_BRIEF §20, §22, §23; docs/spec/E-economy.md, K-store.md). Real-calendar
+// seasons, each with its own 40-level track fed by Season XP (lib/progress.ts), a free lane (coins every third level,
+// the season's frame at 40) and the Season Pass lane (eight looks, bought with credits; cosmetics only), plus the
+// legacy cosmetics catalogue that lib/catalog.ts wraps. The fairness line: nothing here reaches a Daily board, its
+// sources or its score. Everything is cosmetic or coins.
+// 3.8: the weekly events are gone (their modifiers never applied; brief §34) and the Pass lane no longer pays coins or a
+// +10% coin bonus (brief §22: premium buys identity, never progression). Owned event looks (ev.*) still resolve.
 import { update, getSave, type Save } from './save';
 import type { Result, Tier } from './engine';
 import type { Sfx } from './sfx';
@@ -9,7 +12,6 @@ import { t } from './i18n';
 
 const DAY = 864e5;
 const utc = (y: number, m: number, d: number) => Date.UTC(y, m - 1, d);
-const hash = (s: string) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; };
 export const today = (ms = Date.now()) => new Date(ms).toISOString().slice(0, 10);
 
 // ---------- Seasons on the real calendar (UTC dates, inclusive)
@@ -25,9 +27,9 @@ export interface Season {
   start: number; end: number; // ms, end is exclusive (00:00 UTC the day after the last day)
   days: number; daysLeft: number; ppPerLv: number;
 }
-// XP per season level. The track should take a committed player (Daily + missions, about 100 XP a day) roughly three
-// quarters of the season to finish, so short windows get cheaper levels: Winter 60, Summer 150, Rumour Mill 230,
-// Spring 260. Rounded to 10 and never under 60.
+// XP per season level. An Engaged player (a Daily a day, missions, some Career: about 85 XP a day, docs/spec/E-economy.md)
+// finishes the track at roughly 90% of the season; a Casual player (three Dailies a week) reaches level 10–12.
+// Short windows get cheaper levels: Winter 60, Summer 150, Rumour Mill 230, Spring 260. Rounded to 10, never under 60.
 const perLevel = (days: number) => Math.max(60, Math.round((days * 0.75 * 100) / (MAX_SLV - 1) / 10) * 10);
 export const MAX_SLV = 40;
 
@@ -52,10 +54,11 @@ export const nextSeason = (ms = Date.now()) => seasonAt(seasonAt(ms).end + DAY /
 
 // ---------- Season state in the save
 export interface SeasonSave {
-  id: string; pp: number; gold: boolean; claimed: string[]; // claimed: 'f<lv>' free lane, 'g<lv>' Gold lane
+  id: string; pp: number; gold: boolean; claimed: string[]; // claimed: 'f<lv>' free lane, 'g<lv>' Season Pass lane
   best?: Tier; top?: { pts: number; mode: string; at: number } | null; seen?: boolean;
 }
 export interface SeasonRecap { id: string; lv: number; pp: number; gold: boolean; best?: Tier; top?: { pts: number; mode: string; at: number } | null; banked: number; seen?: boolean }
+/** 3.7 weekly-event progress. The system is gone (brief §34); the field stays typed so old saves load unchanged. */
 export interface WeekEvState { wk: string; n: number; got?: boolean }
 
 export function seasonLevel(pp: number, per: number) {
@@ -64,8 +67,12 @@ export function seasonLevel(pp: number, per: number) {
   return { n, into, need: per, pct: Math.round((into / per) * 100), max: n >= MAX_SLV };
 }
 
-// Rolls the season over when the calendar moves on: the old season becomes a recap (its unclaimed free coins are
-// banked for the player, not lost) and the track starts again at level 1. Safe to call any time; mutates `s`.
+// Season-end credits (lib/wallet.ts awardSeasonEnd) are paid through a hook so this module never imports the wallet.
+let seasonEndHook: ((sid: string, lv: number, s: Save) => void) | null = null;
+export const setSeasonEndHook = (f: typeof seasonEndHook) => { seasonEndHook = f; };
+
+// Rolls the season over when the calendar moves on: the old season becomes a recap (its unclaimed rewards are banked
+// for the player, not lost) and the track starts again at level 1. Safe to call any time; mutates `s`.
 export function syncSeason(s: Save, ms = Date.now()): SeasonSave {
   const cur = seasonAt(ms);
   if (s.season && s.season.id === cur.id) return s.season;
@@ -74,45 +81,43 @@ export function syncSeason(s: Save, ms = Date.now()): SeasonSave {
     const lv = def ? seasonLevel(old.pp, def.ppPerLv).n : 1;
     let banked = 0;
     for (let L = 1; L <= lv; L++) { const r = freeReward(old.id, L); if (r && r.coins && !old.claimed.includes('f' + L)) banked += r.coins; }
-    for (let L = 1; L <= lv && old.gold; L++) { const r = goldReward(old.id, L); if (r && r.coins && !old.claimed.includes('g' + L)) banked += r.coins; }
-    // Unclaimed cosmetics from the old season are granted too: they were earned.
+    // Unclaimed looks from the old season are granted too: they were earned.
     for (let L = 1; L <= lv; L++) {
       const f = freeReward(old.id, L); if (f?.cos && !s.owned.includes(f.cos)) s.owned.push(f.cos);
       const g = old.gold ? goldReward(old.id, L) : null; if (g?.cos && !s.owned.includes(g.cos)) s.owned.push(g.cos);
     }
-    if (banked) pay(s, banked, 'season:' + old.id, false);
+    if (banked) pay(s, banked, 'season:' + old.id);
     s.seasonLog = [{ id: old.id, lv, pp: old.pp, gold: old.gold, best: old.best, top: old.top || null, banked }, ...(s.seasonLog || [])].slice(0, 12);
+    try { seasonEndHook?.(old.id, lv, s); } catch { /* credits are idempotent; a failed hook retries on the next sync */ }
   }
   s.season = { id: cur.id, pp: 0, gold: false, claimed: [] };
   return s.season;
 }
+/** The Season Pass (the premium lane) is owned this season. Cosmetic only: it changes nothing a player earns. */
 export const isGold = (s: Save = getSave()) => !!s.season && s.season.id === seasonAt().id && s.season.gold;
-// +10% coins for Gold holders, on coins earned by playing. Rounded up so small rewards still show it.
-export const goldBonus = (s: Save, d: number) => (d > 0 && isGold(s) ? Math.ceil(d * 1.1) : d);
 
-// Called wherever Press Points are earned (lib/meta.ts addPP): the season track moves with the account level.
+// Called wherever Season XP is earned (lib/meta.ts addPP): the season track moves with it.
 export function addSeasonPP(s: Save, n: number) { if (n > 0) syncSeason(s).pp += n; }
 
-function pay(s: Save, d: number, why: string, bonus = true) {
-  const n = bonus ? goldBonus(s, d) : d;
-  s.credits += n; s.ledger = [{ at: Date.now(), d: n, why }, ...s.ledger].slice(0, 30);
-  s.stats.earned = (s.stats.earned || 0) + Math.max(0, n);
-  return n;
+function pay(s: Save, d: number, why: string) {
+  s.credits += d; s.ledger = [{ at: Date.now(), d, why }, ...s.ledger].slice(0, 30);
+  s.stats.earned = (s.stats.earned || 0) + Math.max(0, d);
+  return d;
 }
 
 // ---------- The two lanes (40 levels)
 export interface Reward { lane: 'free' | 'gold'; lv: number; coins?: number; cos?: string }
-// Free: coins every third level (10 → 25 as you climb, 235 in all) and the season's exclusive frame at 40.
+/** Free lane: coins every third level (15 → 30 as you climb, 300 a season) and the season's own frame at 40. */
 export function freeReward(sid: string, lv: number): Reward | null {
   if (lv === MAX_SLV) return { lane: 'free', lv, cos: sid + '.x' };
-  if (lv % 3 === 0) return { lane: 'free', lv, coins: lv < 10 ? 10 : lv < 20 ? 15 : lv < 30 ? 20 : 25 };
+  if (lv % 3 === 0) return { lane: 'free', lv, coins: lv < 10 ? 15 : lv < 20 ? 20 : lv < 30 ? 25 : 30 };
   return null;
 }
-// Gold: a cosmetic every fifth level (8 a season) and 10 coins on the other even levels (160 in all).
+export const FREE_LANE_COINS = Array.from({ length: MAX_SLV }, (_, k) => freeReward('x', k + 1)?.coins || 0).reduce((a, b) => a + b, 0);
+/** Season Pass lane: a look every fifth level (8 a season). Looks only: no coins, no bonus. */
 const GOLD_SLOTS: Record<number, string> = { 5: 'g1', 10: 'g2', 15: 'g3', 20: 'g4', 25: 'g5', 30: 'g6', 35: 'g7', 40: 'g8' };
 export function goldReward(sid: string, lv: number): Reward | null {
   if (GOLD_SLOTS[lv]) return { lane: 'gold', lv, cos: sid + '.' + GOLD_SLOTS[lv] };
-  if (lv % 2 === 0) return { lane: 'gold', lv, coins: 10 };
   return null;
 }
 export function trackView(s: Save = getSave(), ms = Date.now()) {
@@ -129,7 +134,7 @@ export function trackView(s: Save = getSave(), ms = Date.now()) {
   const ready = rows.filter((r) => r.reached && ((r.free && !r.freeClaimed) || (st.gold && r.gold && !r.goldClaimed))).length;
   return { def, st, lv, rows, ready, gold: st.gold };
 }
-// Claims one reward; returns what was paid (coins after the Gold bonus, or the cosmetic id), or null.
+// Claims one reward; returns what was paid (coins, or the cosmetic id), or null.
 export function claimReward(lane: 'free' | 'gold', L: number): { coins?: number; cos?: string } | null {
   let out: { coins?: number; cos?: string } | null = null;
   update((s) => {
@@ -144,14 +149,25 @@ export function claimReward(lane: 'free' | 'gold', L: number): { coins?: number;
   });
   return out;
 }
+/** Claims every reward reached and unclaimed; returns the coins paid and the looks granted. */
+export function claimAllRewards(): { coins: number; cos: string[] } {
+  const tv = trackView();
+  let coins = 0; const cos: string[] = [];
+  for (const row of tv.rows) {
+    if (!row.reached) continue;
+    if (row.free && !row.freeClaimed) { const r = claimReward('free', row.lv); if (r?.coins) coins += r.coins; if (r?.cos) cos.push(r.cos); }
+    if (tv.gold && row.gold && !row.goldClaimed) { const r = claimReward('gold', row.lv); if (r?.cos) cos.push(r.cos); }
+  }
+  return { coins, cos };
+}
 
-// ---------- Cosmetics
+// ---------- Cosmetics (the legacy kinds; lib/catalog.ts wraps these ids unchanged)
 export type CosKind = 'frame' | 'ink' | 'theme' | 'ringtone' | 'flair';
 export const COS_KINDS: CosKind[] = ['frame', 'ink', 'theme', 'ringtone', 'flair'];
 export type FramePat = 'solid' | 'double' | 'dash' | 'foil' | 'tape';
 export interface Cosmetic {
   id: string; kind: CosKind;
-  price: number | 'gold' | 'track' | 'event'; // coins, the Gold lane, the free lane's level 40, or a weekly event
+  price: number | 'gold' | 'track' | 'event'; // coins, the Season Pass lane, the free lane's level 40, or a 3.7 weekly event (owners only)
   season?: string;         // season id for season items
   nameKey: string; nameVars?: Record<string, string | number>;
   c?: string; c2?: string; // frame colours, ink colour, flair colour
@@ -161,7 +177,7 @@ export interface Cosmetic {
   desk?: [string, string, string]; // desk theme: --desk, --desk-2, --desk-3
   paper?: boolean;         // legacy paper themes (styles/app.css), not generated here
 }
-// Evergreen items sold for coins, the old paper themes, and the weekly-event rewards.
+// Evergreen items sold for coins, the old paper themes, and the 3.7 event rewards (kept so owners keep them).
 const BASE: Cosmetic[] = [
   { id: 'salmon', kind: 'theme', price: 400, nameKey: 'pass.items.salmon.0', paper: true },
   { id: 'tabloid', kind: 'theme', price: 400, nameKey: 'pass.items.tabloid.0', paper: true },
@@ -179,7 +195,7 @@ const BASE: Cosmetic[] = [
   { id: 'ring.type', kind: 'ringtone', price: 120, nameKey: 'season.cos.ringType', sfx: 'typewriter' },
   { id: 'flair.pen', kind: 'flair', price: 100, nameKey: 'season.cos.flairPen', g: '✎', c: '#F4EFE4' },
   { id: 'flair.star', kind: 'flair', price: 100, nameKey: 'season.cos.flairStar', g: '★', c: '#F7B928' },
-  // Weekly-event rewards (one per event, earned by playing that week; never sold).
+  // 3.7 weekly-event rewards: the events are gone; anyone who earned one keeps it (never sold, never listed otherwise).
   { id: 'ev.rival', kind: 'flair', price: 'event', nameKey: 'season.cos.evRival', g: '⚔', c: '#FF5A36' },
   { id: 'ev.medical', kind: 'ink', price: 'event', nameKey: 'season.cos.evMedical', c: '#2BB3A3' },
   { id: 'ev.frenzy', kind: 'frame', price: 'event', nameKey: 'season.cos.evFrenzy', c: '#FF5A36', c2: '#15130F', pat: 'dash' },
@@ -276,64 +292,15 @@ export function installThemeCSS(extra: string[] = []) {
 }
 installThemeCSS(goldPreview().filter((c) => c.kind === 'theme').map((c) => c.id));
 
-// Buying with coins (the store). Returns false when short or not for sale.
-export function buyCosmetic(id: string): boolean {
-  const c = cosmetic(id); const s = getSave();
-  if (!c || typeof c.price !== 'number' || s.owned.includes(id) || s.credits < c.price) return false;
-  const price = c.price;
-  update((x) => { x.credits -= price; x.ledger = [{ at: Date.now(), d: -price, why: 'shop:' + id }, ...x.ledger].slice(0, 30); x.owned.push(id); });
-  equip(id, c.kind);
-  if (c.kind === 'theme') installThemeCSS();
-  return true;
-}
-
-// ---------- Weekly events (Practice and Career only; seeded by ISO week)
+// ---------- ISO weeks (the featured rotation in lib/catalog.ts keys on them)
 export function isoWeek(d: Date | number = Date.now()) {
   const x = new Date(typeof d === 'number' ? d : d.getTime());
-  const t = Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate());
-  const dow = (new Date(t).getUTCDay() + 6) % 7; // Monday 0
-  const thu = t - dow * DAY + 3 * DAY;
+  const t0 = Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate());
+  const dow = (new Date(t0).getUTCDay() + 6) % 7; // Monday 0
+  const thu = t0 - dow * DAY + 3 * DAY;
   const y = new Date(thu).getUTCFullYear();
   const wk = 1 + Math.floor((thu - Date.UTC(y, 0, 1)) / (7 * DAY));
-  return { key: y + '-W' + String(wk).padStart(2, '0'), start: t - dow * DAY, end: t - dow * DAY + 7 * DAY };
-}
-export type EventRules = { rivalGoal?: 'itk'; n?: number } & { physioFrom?: number } & { ddSeconds?: number } & { barberRel?: number } & { league?: string };
-export interface WeekEvent {
-  id: 'rival' | 'medical' | 'frenzy' | 'barber' | 'local'; wk: string; nameKey: string; descKey: string;
-  rules: EventRules; reward: string; goal: number; // goal: windows played (or ITK beaten, for Rival Week)
-  start: number; end: number; accent: string;
-}
-const EVENTS: Omit<WeekEvent, 'wk' | 'start' | 'end' | 'rules' | 'nameKey' | 'descKey'>[] = [
-  { id: 'rival', reward: 'ev.rival', goal: 3, accent: '#FF5A36' },
-  { id: 'medical', reward: 'ev.medical', goal: 3, accent: '#2BB3A3' },
-  { id: 'frenzy', reward: 'ev.frenzy', goal: 3, accent: '#FF3B1F' },
-  { id: 'barber', reward: 'ev.barber', goal: 3, accent: '#C9A27A' },
-  { id: 'local', reward: 'ev.local', goal: 3, accent: '#2FBF71' },
-];
-const LEAGUES = ['eng1', 'esp1', 'ita1', 'ger1', 'fra1'];
-const eventIdx = (wk: string) => hash('t1ev:' + wk) % EVENTS.length;
-// Deterministic by ISO week, and never the same event two weeks running.
-export function weekEvent(date: Date | number = Date.now()): WeekEvent {
-  const w = isoWeek(date), prev = isoWeek(w.start - DAY);
-  let i = eventIdx(w.key);
-  if (i === eventIdx(prev.key)) i = (i + 1 + (hash(w.key) >>> 7) % (EVENTS.length - 1)) % EVENTS.length;
-  const e = EVENTS[i];
-  const rules: EventRules = e.id === 'rival' ? { rivalGoal: 'itk', n: 3 } : e.id === 'medical' ? { physioFrom: 3 } : e.id === 'frenzy' ? { ddSeconds: 90 }
-    : e.id === 'barber' ? { barberRel: 0.6 } : { league: LEAGUES[hash('t1lg:' + w.key) % LEAGUES.length] };
-  return { ...e, wk: w.key, nameKey: 'season.ev.' + e.id + '.n', descKey: 'season.ev.' + e.id + '.d', rules, start: w.start, end: w.end };
-}
-export function weekEventView(s: Save = getSave(), ms = Date.now()) {
-  const ev = weekEvent(ms), st = s.weekEv && s.weekEv.wk === ev.wk ? s.weekEv : { wk: ev.wk, n: 0 };
-  return { ev, n: Math.min(ev.goal, st.n), got: !!st.got || s.owned.includes(ev.reward), daysLeft: Math.max(1, Math.ceil((ev.end - ms) / DAY)) };
-}
-// ITK beaten on a saga: you called it right, and ITK either called it wrong or posted after you.
-const beatItk = (r: Result) => r.per.filter((p) => p.right && p.call && p.posts.some((f) => f.id === 'itk' && (!f.right || f.day > p.call!.day))).length;
-function eventProgress(s: Save, r: Result, mode: string) {
-  if (mode !== 'practice' && mode !== 'story') return;
-  const ev = weekEvent();
-  if (!s.weekEv || s.weekEv.wk !== ev.wk) s.weekEv = { wk: ev.wk, n: 0 };
-  s.weekEv.n += ev.id === 'rival' ? beatItk(r) : 1;
-  if (s.weekEv.n >= ev.goal && !s.weekEv.got) { s.weekEv.got = true; if (!s.owned.includes(ev.reward)) s.owned.push(ev.reward); s.stats.m_evWon = (s.stats.m_evWon || 0) + 1; }
+  return { key: y + '-W' + String(wk).padStart(2, '0'), start: t0 - dow * DAY, end: t0 - dow * DAY + 7 * DAY };
 }
 
 // ---------- Hooks from lib/progress.ts trackWindow (every finished window): the recap's best tier and top call.
@@ -343,7 +310,6 @@ export function seasonWindow(s: Save, r: Result, mode: string) {
   if (!st.best || TIER_RANK[r.tier] > TIER_RANK[st.best]) st.best = r.tier;
   const top = r.per.reduce((m, p) => (p.right && p.call && p.pts > m ? p.pts : m), 0);
   if (top > 0 && (!st.top || top > st.top.pts)) st.top = { pts: top, mode, at: Date.now() };
-  eventProgress(s, r, mode);
 }
 export const pendingRecap = (s: Save = getSave()) => (s.seasonLog && s.seasonLog[0] && !s.seasonLog[0].seen ? s.seasonLog[0] : null);
 export const dismissRecap = () => update((s) => { if (s.seasonLog && s.seasonLog[0]) s.seasonLog[0].seen = true; });
@@ -353,6 +319,7 @@ export const ensureSeason = () => { const s = getSave(); if (!s.season || s.seas
 // The Wire's windows and their deadline days. `deadline` is the UTC date the 24 h Deadline Day Live board runs on;
 // `closes` is when the real window shuts (UK 23:00 in winter, 18:00 in summer, in UTC). The server's copy is
 // api/tier-one/v3/index.js › DD_DAYS (and wire.mjs › WIRE.CURRENT for the live window); keep them in step.
+// Brief §19 asks for these to become server configuration: the market lane owns that move; this table is the fallback.
 export interface WireWindowDef { id: string; opens: string; closes: string; deadline: string; key: 'winter' | 'summer' }
 export const WIRE_WINDOWS: WireWindowDef[] = [
   { id: '2027-01', key: 'winter', opens: '2027-01-01T00:00:00Z', closes: '2027-02-02T23:00:00Z', deadline: '2027-02-02' },
