@@ -1,5 +1,5 @@
-// Diagnosis of what a viewer sees in highlights (Extended): per passage, how many touches before the shot, pass lengths,
-// balls that land with nobody there, ball jumps without a pass, possession changing hands without a contest.
+// Diagnosis of what a viewer sees in highlights (Extended): per passage, how many touches before the shot, pass lengths
+// by kind, passes that land away from their man, ball jumps without a pass. Fails if a viewer would see either.
 import { generateWorld, playerOf } from '../src/sim/world';
 import { startMatch, stepMinute } from '../src/sim/match';
 import { playOver } from '../src/sim/engine/clock';
@@ -51,3 +51,8 @@ console.log(`ball moves: ${agg.flights}; median length ${med(agg.len).toFixed(0)
 console.log(`ball landed 4+ m from the man who then has it: ${pct(agg.landNoOne, agg.flights)}% of moves`);
 console.log(`ball jumped 3+ m in a frame without a pass: ${agg.jumps} times`);
 console.log(`shots: ${agg.shots}; passes in the move before a shot: median ${med(agg.passesBeforeShot)}; 0-1 passes: ${pct(agg.shotsFromNowhere, agg.shots)}%`);
+// What a viewer must never see (engine passes since 2026-10-02): a pass landing away from its man, a ball jumping.
+const offPct = pct(agg.landNoOne, agg.flights);
+console.log(`${offPct <= 5 ? 'ok  ' : 'FAIL'} passes reach their man: ${100 - offPct}% (≥ 95%)`);
+console.log(`${agg.jumps === 0 ? 'ok  ' : 'FAIL'} the ball never jumps without a pass (${agg.jumps})`);
+process.exit(offPct <= 5 && agg.jumps === 0 ? 0 : 1);

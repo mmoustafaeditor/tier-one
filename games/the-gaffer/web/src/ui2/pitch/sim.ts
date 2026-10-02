@@ -14,6 +14,7 @@ import { shownOf, type HlMode } from '../../sim/highlights';
 import { bodiesOf, decideMs, move, reactMs, type Body } from './body';
 import { assignMarks, blockSpot, inBox, keeperSpot, markSpot, slideY, wideInThird } from './defend';
 import { attackSpots, defendSpots, rushFor, wallSize, wallSpots, type SetPiece } from './setpieces';
+import { moveOfficials, newOfficials, officialTargets, type Officials } from './officials';
 import { ARC, L, THROUGH_LEAD, TRANSITION_MS, W, arcHeight, buildUp, deliveryOf, lineDepth, passKind, pressShape, pressSpot, runFor, shooterSpot, shotTarget, speedsOf, wideOf, type LineState, type PassKind, type PressPlan, type Pt, type Transition } from './move';
 
 // Measurement hook (ui-tests): set by the page with ?pitchdebug, or by a Node test.
@@ -48,6 +49,7 @@ export interface Anim {
   msPM: number;           // real ms per match minute (the speed setting) when the minute was planned
   secMs?: number;         // screen ms per second of play in this minute (a highlight: its passage at its own pace)
   lastPass?: { side: 0 | 1; to: number; at: number; type?: string; eng?: boolean }; // the last pass played (for the measurement tests)
+  off: Officials;         // the referee, his assistants and an on-field review (ui2/pitch/officials.ts)
   inNet: boolean;
   shooter: { side: 0 | 1; slot: number; how?: string } | null; // runs into the box (or to the edge of it) before a shot
   run: { side: 0 | 1; slot: number; pt: Pt } | null; // the carrier heads for the zone the engine says the play is in
@@ -313,6 +315,13 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World, mode?: H
     if (slot < 0 || !a.pos[e.side][slot]) continue;
     const fi = e.how === 'foul' ? beats.findIndex((b) => b.kind === 'foul' && b.side === e.side) : -1;
     a.hurtAt.push({ side: e.side, slot, at: fi >= 0 ? a.starts[fi] : msPerMinute * 0.5 });
+  }
+  // VAR: an on-field review this minute (the engine's 'var' event, ':ofr'): the referee goes to the monitor a couple of
+  // seconds after the incident it's about (the last shot, foul or penalty of the minute shown).
+  a.off.review = null;
+  if (m.events.some((e) => live(e) && e.kind === 'var' && (e.note ?? '').includes(':ofr'))) {
+    const i = beats.map((b) => b.kind).reduce((x, k, j) => (k === 'shot' || k === 'foul' || k === 'pen' ? j : x), -1);
+    if (i >= 0) { const from = a.starts[i] + 1.5 * (a.secMs ?? 40); a.off.review = { from, until: Math.min(msPerMinute * 0.98, from + Math.max(2600, 9 * (a.secMs ?? 40))) }; }
   }
   a.ids = [[...m.sides[0].onPitch], [...m.sides[1].onPitch]];
   a.minute = minuteKey(m);
@@ -589,6 +598,7 @@ export function newAnim(m: LiveMatch, world: World): Anim {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], starts: [], msPM: 1000, beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
       spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null, hurt: null, hurtAt: [], ids: [[...m.sides[0].onPitch], [...m.sides[1].onPitch]], seen: [[], []],
+      off: newOfficials(),
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -924,6 +934,15 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
             }
           }
         }
+      }
+      // The officials (officials.ts): the referee on his diagonal, each assistant level with his half's offside line.
+      {
+        const lastDef = ([0, 1] as const).map((sd) => {
+          const xs = onPitch(mm, sd).map((k) => a.pos[sd][k]?.x).filter((x): x is number => x !== undefined).sort((p, q) => (sd === 0 ? p - q : q - p));
+          return xs[1] ?? (sd === 0 ? 0 : L);
+        }) as [number, number];
+        const rv = a.off.review, reviewing = !!rv && a.clock >= rv.from && a.clock < rv.until;
+        moveOfficials(a.off, officialTargets(a.ball, a.poss, lastDef, reviewing), dt, a.secMs ?? scale / 60, !!a.snap);
       }
       a.snap = false; // a cut lasts one frame
 }
