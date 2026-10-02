@@ -12,6 +12,7 @@ import { Icon, Kit, GBtn, TopBar, shake } from '../ui/game';
 import { Portrait } from '../ui/portrait';
 import { CallScreen } from '../ui/CallScreen';
 import '../styles/call.css';
+import '../styles/file39.css';
 import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } from '../lib/meta';
 import { applyWindow, totalFavours, vinceOf, type CareerReport } from '../lib/career';
 import { storyBeats, pushBeats, beatScene, type Beat } from '../lib/storyMode';
@@ -262,7 +263,7 @@ const TUT_STEPS = ['open', 'ring', 'second', 'read', 'what', 'loud', 'back', 're
 type TutStep = (typeof TUT_STEPS)[number];
 // What each step points at (a union of several boxes when the step is about more than one control).
 const TUT_TARGET: Record<TutStep, string[]> = {
-  open: ['.sagas .scard.is-hint'], ring: ['.file2 .src[data-src="kitman"]', '.file2 .srcs'], second: ['.file2 .srcs'], read: ['.file2 .evsum', '.file3__bar'],
+  open: ['.sagas .scard.is-hint'], ring: ['.file2 .src[data-src="kitman"]', '.file2 .src39'], second: ['.file2 .src39'], read: ['.file2 .ev39', '.file3__bar'],
   what: ['.callform .outs'], loud: ['.callform .vols', '.callbox .publish'], back: ['.play .g-top__back'], result: ['.play__cols > main > .g-btn'],
 };
 // The words for each step: the 3.8 lines where the step changed, the 3.6 lines where it did not.

@@ -7,6 +7,11 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-02 · Tier One 3.9.1 — Player File matches the handoff
+
+- Rebuilt the Player File to the owner's screenshot: paper header with the player's portrait large on the right (breathing), "Forward · Age 27", route, "Simulated story"; a dark evidence card with four bars and the independent circles (Club, Travel, Camp…); underline tabs Sources · What they said · Your call; one row per source with its portrait, what it knows, reliability · circle, and Ring · N pts / Called / Day N.
+- Fixed the cut-off page on phones: the file is one screen tall, only the tab pane scrolls, and Back to board · Make the call stay on screen.
+
 ## 2026-10-02 · Tier One 3.9.0 "Newsroom" (first pass)
 
 - Removed every drawn film and cutscene (call films, post films, day-end, page turns, the cutscene host, the Film setting).

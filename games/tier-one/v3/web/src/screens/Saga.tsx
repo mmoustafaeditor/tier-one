@@ -11,16 +11,15 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { E, OUTS, type Game, type Clue } from '../lib/engine';
 import { useT, num } from '../lib/i18n';
-import { leanOf, voiceLine, postLine, saysWord, outWord, strWord, vars, varsH, evidenceOf, heatOf, relKey } from '../lib/story';
-import { Glyph, Lines, Crest } from '../ui/bits';
-import { Icon, Kit, SrcIcon, GBtn } from '../ui/game';
+import { leanOf, voiceLine, postLine, saysWord, outWord, strWord, vars, varsH, evidenceOf, relKey, GRADE } from '../lib/story';
+import { Glyph, Lines } from '../ui/bits';
+import { Icon, SrcIcon, GBtn } from '../ui/game';
 import { Portrait, moodFor, accentOf } from '../ui/portrait';
 import { sfx, buzz } from '../lib/sfx';
 import { hereWeGo } from '../lib/share';
 import type { View } from '../lib/driver';
 import { vinceOf } from '../lib/career';
 import { srcNamed } from '../lib/storyMode';
-import { Tip } from '../ui/fit';
 import { catchphraseOf } from '../lib/catchphrase';
 
 // Your head-to-head ledger against one rival (GOTY.md §1.3). Filled by the connect lane's rivalRecord(id).
@@ -31,6 +30,7 @@ export interface SagaProps {
   /** Optional: the record shown under each rival avatar in the race strip. Nothing renders when absent or null. */
   rivalRecord?: (id: string) => RivalRecord | null | undefined;
 }
+const CIRC_IC: Record<string, string> = { club: 'shield', agent: 'briefcase', travel: 'plane', street: 'scissors', office: 'fax', insider: 'eye' };
 export const RIVAL_IC: Record<string, string> = { tabloid: 'BB', itk: '?', insider: 'PP' };
 /** A rival's face: the art slot (Addendum A), with the old initials as the accessible label. */
 export const RivalFace = ({ id, size = 34, name }: { id: string; size?: number; name?: string }) => <Portrait kind="rival" id={id} size={size} round name={name} className={'rv-av rv-av--' + id} />;
@@ -62,7 +62,6 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
   const srcs = E.sourcesFor(g.R, i);
   const post7 = g.day === g.R.DAYS ? g.R.DD_POSTS - g.posts7 : null;
   const maxT = Math.max(3, ...ln.tally);
-  const heat = heatOf(g, i);
   // The quote that just came in (after the call film): the newest read matching the last answer, for this saga.
   const newK = last && last.i === i ? curReads.map((r, k) => (r.src === last.c.src && r.day === last.c.day && r.r === last.c.r ? k : -1)).reduce((a, b) => Math.max(a, b), -1) : -1;
   const newRef = useRef<HTMLLIElement>(null);
@@ -72,10 +71,6 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     return () => clearTimeout(id);
   }, [newK, last]);
 
-  const backers = (k: number) => [
-    ...curReads.filter((r) => { const w = E.weights(g.R, r.src, r.r); return w[k] > 0 && w[k] === Math.max(...w); }).map((r) => ({ k: r.src, rival: false })),
-    ...livePosts.filter((p) => p.claim === k).map((p) => ({ k: p.id, rival: true })),
-  ];
   const post = () => { if (selO == null) return; onPost(selO, s, !!call); };
   // §7: the Exclusive line, one sentence, always explained.
   const beatenBy = selO != null ? livePosts.find((p) => p.claim === selO) : undefined;
@@ -85,8 +80,6 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     : s !== 2 ? t('c38.pub.exNeedConf')
     : t('c38.pub.exNeedTwo', { n: E.circlesFor(g, i, selO!).size });
   const canCall = cs === 'ok' || canUt;
-  const evWord = t('c38.ev.' + ev.word);
-  const evLine = ev.word === 'none' ? '' : ev.echo ? t('c38.ev.echo') : ev.agree >= 2 ? t('c38.ev.agree', { n: ev.agree }) : t('c38.ev.one');
 
   const rivalsRace = <section className="rivals race">
     <div className="g-sec"><h2>{t('calls.race.h')}</h2></div>
@@ -105,76 +98,68 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
   </section>;
 
   return <div className="file2 file3">
-    {/* ---- header: who, where from, where to, how hot ---- */}
-    <header className={'pcard pcard3 g-card' + (justFiled ? ' is-filed' : '')}>
-      <div className="pcard3__art">
-        <Portrait kind="player" id={c.player.id} club={c.from} size={84} name={t('c38.art.portrait', { n: c.player.n })} />
-        <Kit club={c.from} player={c.player} size={34} style={{ position: 'absolute', insetInlineEnd: -6, bottom: -6 }} />
+    {/* ---- header (3.9, screenshot 03): the file card, the player's portrait large on the right ---- */}
+    <header className={'pf39 g-card' + (justFiled ? ' is-filed' : '')}>
+      <div className="pf39__txt">
+        <span className="pf39__k g-mono">{t('u39.file.k')} · {t('c38.file.sagaNo', { n: i + 1, m: view.cast.length })}</span>
+        <h1 className="pf39__n" dir="auto">{c.player.n}</h1>
+        <span className="pf39__m">{[t('pos.' + c.player.pos), c.player.age > 0 ? t('u39.file.age', { n: c.player.age }) : ''].filter(Boolean).join(' · ')}</span>
+        <span className="pf39__route"><bdi>{c.from.s}</bdi><Icon n={t.rtl ? 'back' : 'arrow'} size={16} /><bdi><b>{c.to.s}</b></bdi></span>
+        <em className="pf39__sim">{t('u39.file.sim')}</em>
       </div>
-      <div className="pcard__main">
-        <div className="g-mono pcard__k">
-          <span>{t('c38.file.sagaNo', { n: i + 1, m: view.cast.length })}</span>
-          <span className={'pcard3__heat heat--' + heat} title={t('c38.file.heat')}><Icon n="flame" size={12} />{t.list('c38.file.heatN')[heat]}</span>
-          {c.player.star >= 3 ? <span className="g-chip g-chip--gold pcard__star"><Icon n="star" />{t('g.saga.star')}</span> : null}
-        </div>
-        <h1 className="pcard__n" dir="auto">{c.player.n}</h1>
-        <div className="pcard__m g-mono">{[t('pos.' + c.player.pos), c.player.age > 0 ? String(c.player.age) : '', c.player.nat].filter(Boolean).join(' · ')}</div>
-        <div className="pcard__route"><Crest club={c.from} size={24} /><span className="pcard3__club">{c.from.s}</span><span className="pcard__arrow"><Icon n={t.rtl ? 'back' : 'arrow'} size={16} /></span><Crest club={c.to} size={24} /><span className="pcard__to"><bdi><b>{c.to.s}</b>?</bdi></span></div>
-      </div>
-      {call && <span key={call.o + ':' + call.s + ':' + (justFiled || 0)} className={'pcard__stamp g-stamp g-stamp--' + (hereWeGo(call) ? 'gold' : OUTS[call.o]) + (justFiled ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : strWord(t.lang, call.s) + ' · ' + outWord(t.lang, call.o)}</span>}
+      <span className="pf39__art" aria-hidden="true"><Portrait kind="player" id={c.player.id} club={c.from} size={150} /></span>
+      {call && <span key={call.o + ':' + call.s + ':' + (justFiled || 0)} className={'pf39__stamp g-stamp g-stamp--' + (hereWeGo(call) ? 'gold' : OUTS[call.o]) + (justFiled ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : strWord(t.lang, call.s) + ' · ' + outWord(t.lang, call.o)}</span>}
     </header>
 
     {tw && <div className="stoppress"><b>{t('g.saga.stopPress')}</b><span>{t('saga.twistBanner', { p: c.player.s })} {t('saga.twistNote')}</span></div>}
     {view.mode === 'career' && vinceOf(g.R)?.i === i && <div className="vince-banner"><Icon n="eye" size={18} /><span><b>{t('g.story.vince.chip')}</b> {t('g.story.vince.banner')}</span></div>}
     {g.tips && i in g.tips && <div className="g-chip g-chip--gold tipchip">{t(g.tips[i] ? 'career.tipFake' : 'career.tipReal', { p: c.player.s })}</div>}
 
-    {/* ---- evidence summary: bars, circle markers, one word, one line ---- */}
-    <section className={'know evsum g-card ev--' + ev.word}>
-      <div className="know__h">
-        <h2>{t('c38.ev.summary')}</h2>
-        <span className={'evsum__word evw--' + ev.word}>{evWord}</span>
+    {/* ---- evidence (3.9): four bars on the left, the independent circles on the right ---- */}
+    <section className={'ev39 ev--' + ev.word} aria-label={t('c38.ev.summary')}>
+      <div className="ev39__bars">
+        <h2 className="ev39__h">{t('c38.ev.summary')}</h2>
+        {[0, 1, 2, 3].map((k) => <div key={k} className={'ev39__r oc--' + OUTS[k] + (!ln.none && ln.o === k ? ' is-lead' : '')}>
+          <span>{outWord(t.lang, k)}</span><span className="ev39__bar"><i style={{ width: (100 * ln.tally[k]) / maxT + '%' }} /></span>
+        </div>)}
       </div>
-      {ln.none ? <p className="know__none">{t('g.saga.knowNone')}</p> : <p className={'evsum__line' + (ev.echo ? ' is-echo' : ev.agree >= 2 ? ' is-two' : '')}><Icon n={ev.echo ? 'eye' : ev.agree >= 2 ? 'check' : 'phone'} size={14} />{evLine}{!ev.echo && !ln.split && <> · {t('c38.ev.leans', { o: outWord(t.lang, ln.o) })}</>}</p>}
-      <div className="know__rows">
-        {[0, 1, 2, 3].map((k) => {
-          const b = backers(k), cn = E.circlesFor(g, i, k).size;
-          return <div key={k} className={'know__r oc--' + OUTS[k] + (!ln.none && ln.o === k ? ' is-lead' : '') + (ln.tally[k] ? '' : ' is-zero')}>
-            <span className="know__o"><Glyph o={k} /><b>{outWord(t.lang, k)}</b></span>
-            <span className="know__bar"><i style={{ width: (100 * ln.tally[k]) / maxT + '%' }} /></span>
-            <span className="know__who">{b.slice(0, 4).map((x, n) => x.rival ? <RivalFace key={n} id={x.k} size={22} /> : <SrcIcon key={n} k={x.k} size={22} />)}{cn >= 2 && <span className="g-chip g-chip--done know__two" title={t('c38.ev.circles', { n: cn })}><Icon n="check" />{cn}</span>}</span>
-          </div>;
-        })}
+      <div className="ev39__circ">
+        {(() => { const cs = Array.from(new Set(curReads.map((r) => g.R.CIRCLE[r.src]).filter(Boolean))); return <>
+          <span className="ev39__cn"><b className="g-num">{cs.length}</b> {t(cs.length === 1 ? 'u39.file.circle1' : 'u39.file.circles')}</span>
+          <span className="ev39__icons">{cs.slice(0, 3).map((x) => <span key={x} className="ev39__ci"><i><Icon n={CIRC_IC[x] || 'eye'} size={20} /></i><small>{t('u39.file.circ.' + x)}</small></span>)}</span>
+          {view.posterior && <span className="ev39__coach g-mono">{view.posterior(i).map((p, k) => `${outWord(t.lang, k)[0]} ${Math.round(p * 100)}%`).join(' · ')}</span>}
+        </>; })()}
       </div>
-      {view.posterior && <p className="know__coach g-mono"><Icon n="eye" size={12} /> {t('c38.ev.coach')} · {view.posterior(i).map((p, k) => `${outWord(t.lang, k)} ${Math.round(p * 100)}%`).join(' · ')}</p>}
     </section>
 
-    <Tip id="player" />
-    <div className="sg-tabs" role="tablist">
+    <div className="sg-tabs sg39" role="tablist">
       {(['ring', 'clips', 'call'] as const).map((k) => <button key={k} role="tab" aria-selected={pane === k} onClick={() => { sfx('ui.tap'); setPane(k); }}>
         {k === 'ring' ? t('c38.file.tabs.sources') : k === 'clips' ? t('u39.said.tab') + (curReads.length + livePosts.length ? ` (${curReads.length + livePosts.length})` : '') : t('c38.file.tabs.call')}
       </button>)}
     </div>
 
-    {pane === 'ring' && <section className="srcsec">
-      <div className="g-sec"><h2>{t('g.saga.ring')}</h2><span className="g-mono phones-left"><span className="phones">{Array.from({ length: Math.min(8, Math.max(g.left, 0)) }, (_, k) => <Icon key={k} n="phone" size={13} />)}</span>{t('g.saga.left', { n: g.left })}</span></div>
-      <div className="srcs srcs3">
-        {srcs.map((k) => {
-          const st = E.askState(g, i, k), so = E.srcOf(g.R, i, k)!;
-          const asked = curReads.filter((r) => r.src === k);
-          const lastR = asked[asked.length - 1];
-          const lw = lastR ? E.weights(g.R, k, lastR.r) : null;
-          const lo = lw ? lw.indexOf(Math.max(...lw)) : 0;
-          const street = g.R.CIRCLE[k] === 'street';
-          return <button key={k} className={'src src3' + (st === 'ok' ? '' : ' is-' + st)} data-src={k} disabled={st !== 'ok' || busy} onClick={() => onAsk(k)} aria-label={t(view.mode === 'career' ? '' : 'g.src.' + k) || k}>
-            <span className="src__cost">{st === 'closed' ? <Icon n="lock" size={11} /> : <><Icon n="phone" size={11} />{so.cost}</>}</span>
-            <span className="src3__face"><Portrait kind="source" id={k} size={44} mood={lastR ? moodFor(k, lo) : 'neutral'} /><SrcIcon k={k} size={18} /></span>
-            <span className="src__n">{view.mode === 'career' ? srcNamed(t, k) : t('g.src.' + k)}</span>
-            {lastR && lw ? <><span className={'g-chip src__says g-chip--' + OUTS[lo]}>{saysWord(t.lang, k, lastR.r, c)}</span><span className="src3__called g-mono">{t('c38.file.called', { d: lastR.day })}</span></>
-              : st === 'closed' ? <span className="src__opens">{t('c38.file.opens', { n: so.from })}</span>
-              : <span className="src3__rel">{t(relKey(k))}{street ? <em>{t('c38.rel.once')}</em> : null}</span>}
-          </button>;
-        })}
-      </div>
+    <div className="pf39__pane">
+    {pane === 'ring' && <section className="src39" aria-label={t('g.saga.ring')}>
+      <p className="src39__left g-mono">{t('g.saga.left', { n: g.left })}</p>
+      {srcs.map((k) => {
+        const st = E.askState(g, i, k), so = E.srcOf(g.R, i, k)!;
+        const asked = curReads.filter((r) => r.src === k);
+        const lastR = asked[asked.length - 1];
+        const lw = lastR ? E.weights(g.R, k, lastR.r) : null;
+        const lo = lw ? lw.indexOf(Math.max(...lw)) : 0;
+        const grade = GRADE[k] || 'C', circ = g.R.CIRCLE[k];
+        return <div key={k} className={'src39__row' + (lastR ? ' is-called' : '') + (st === 'closed' ? ' is-closed' : '')} data-src={k}>
+          <span className="src39__face"><Portrait kind="source" id={k} size={64} mood={lastR ? moodFor(k, lo) : 'neutral'} /></span>
+          <span className="src39__b">
+            <b>{view.mode === 'career' ? srcNamed(t, k) : t('src.' + k)}</b>
+            <small>{lastR ? saysWord(t.lang, k, lastR.r, c) : t(relKey(k))}</small>
+            <span className="src39__rel"><em className={'g' + grade}>{t('c38.rel.short.' + k)}</em>{circ ? ' · ' + t('u39.file.circ.' + circ) : ''}</span>
+          </span>
+          {lastR && st !== 'ok' ? <span className="src39__act is-done"><Icon n="check" size={16} />{t('u39.file.called')}</span>
+            : st === 'closed' ? <span className="src39__act is-shut"><Icon n="lock" size={14} />{t('u39.file.opens', { n: so.from })}</span>
+            : <button type="button" className="src39__act is-ring src" data-src={k} disabled={st !== 'ok' || busy} onClick={() => onAsk(k)}><Icon n="phone" size={16} />{t(so.cost === 1 ? 'u39.file.ring' : 'u39.file.rings', { n: so.cost })}</button>}
+        </div>;
+      })}
       {favours}
     </section>}
 
@@ -236,7 +221,8 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     {how && <HowScored g={g} i={i} view={view} />}
     </>}
 
-    {/* ---- sticky: Back to Board · Make the Call ---- */}
+    </div>
+    {/* ---- footer: Make the call · Back to board ---- */}
     <div className="file3__bar">
       <button type="button" className="file3__back" onClick={() => { sfx('ui.tap'); onLater?.(); }}><Icon n={t.rtl ? 'arrow' : 'back'} size={18} />{t('c38.file.back')}</button>
       {pane !== 'call' && (canCall ? <GBtn size="sm" sound="page.turn" className="file3__go" onClick={() => { if (call) setUtOpen(true); setPane('call'); }}><Icon n="pen" size={18} />{call ? t('c38.file.change') : t('c38.file.call')}</GBtn>
