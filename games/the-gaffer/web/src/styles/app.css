@@ -538,6 +538,13 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .an-split { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 4px; background: rgba(127,127,127,.15); }
 .an-split i { display: block; background: var(--dv-us); }
 .an-split i.them { background: var(--dv-them); }
+/* The pass network */
+.an-link { stroke: var(--dv-us); stroke-linecap: round; }
+.an-link.them { stroke: var(--dv-them); }
+.an-node { fill: var(--dv-us); stroke: rgba(0,0,0,.55); stroke-width: .3; }
+.an-node.them { fill: var(--dv-them); }
+.an-num { font-size: 2.2px; font-weight: 800; fill: #fff; pointer-events: none; }
+.an-rows { display: flex; flex-direction: column; gap: 6px; margin: var(--s-2) 0 var(--s-3); }
 .an-pick { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--s-3); font-size: .85rem; }
 .an-kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); margin: var(--s-3) 0; }
 .an-kv span { display: flex; flex-direction: column; font-size: .8rem; }

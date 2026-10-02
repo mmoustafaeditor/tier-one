@@ -135,7 +135,9 @@ export function Analysis({ a }: { a: Aftermath }) {
         </>
       )}
 
-      {tab === 2 && (
+      {tab === 2 && (ana.passes ? <Passes p={ana.passes} me={me} us={cn(us, lang)} them={cn(opp, lang)} T={T} who={(id) => { const pl = w.players.find((x) => x.id === id); return { num: pl?.shirtNumber ?? '', name: pl ? pl.name[lang] ?? pl.name.en : '' }; }} /> : <p className="small muted">{T.noPass}</p>)}
+
+      {tab === 3 && (
         <>
           <label className="an-pick">{T.pick}
             <select className="sel" value={pid} onChange={(e) => setPid(e.target.value)}>
@@ -160,11 +162,12 @@ export function Analysis({ a }: { a: Aftermath }) {
                   <span>{T.fouls}<b>{p?.fouls ?? 0}</b></span>
                   {!!p?.saves && <span>{T.saves}<b>{p.saves}</b></span>}
                   <span>{T.rating}<b>{r ? r.rating.toFixed(1) : '–'}</b></span>
+                  {ana.passes?.pl[pid] && <span>{T.passes}<b>{T.completed(ana.passes.pl[pid][1], ana.passes.pl[pid][0])}</b></span>}
+                  {ana.passes?.pl[pid] && <span>{T.key}<b>{ana.passes.pl[pid][2]}</b></span>}
                 </div>
               </>
             );
           })()}
-          <p className="small muted">{T.noPass}</p>
         </>
       )}
     </Panel>
@@ -187,5 +190,42 @@ function Stat({ l, a, b, unit = '', sub }: { l: string; a: number; b: number; un
       <div className="an-split"><i style={{ width: `${(100 * a) / t}%` }} /><i className="them" style={{ width: `${(100 * b) / t}%` }} /></div>
       {sub && <div className="between small muted"><span>{sub[0]}</span><span>{sub[1]}</span></div>}
     </div>
+  );
+}
+
+// The passes: both sides' totals, the pass network of one side, and who was on the ball most.
+function Passes({ p, me, us, them, T, who }: { p: NonNullable<Ana['passes']>; me: 0 | 1; us: string; them: string; T: (typeof AN)['en']; who: (id: string) => { num: number | string; name: string } }) {
+  const [sd, setSd] = useState<0 | 1>(0); // 0 us, 1 them
+  const side = (sd === 0 ? me : 1 - me) as 0 | 1;
+  const pct = (a: number, b: number) => Math.round((100 * a) / Math.max(1, b));
+  const o = (1 - me) as 0 | 1;
+  const net = p.net[side];
+  const mx = Math.max(1, ...net.nodes.map((n) => n.n)), lx = Math.max(1, ...net.links.map((l) => l.n));
+  // We attack left to right; the other side right to left.
+  const X = (n: { x: number; y: number }) => (side === me ? n.x : L - n.x), Y = (n: { x: number; y: number }) => (side === me ? n.y : W - n.y);
+  const at = new Map(net.nodes.map((n) => [n.id, n]));
+  const top = net.nodes.map((n) => ({ id: n.id, a: p.pl[n.id] })).filter((x) => x.a).sort((a, b) => b.a[1] - a.a[1]).slice(0, 6);
+  return (
+    <>
+      <div className="an-stats">
+        <div className="between small"><b>{us}</b><b>{them}</b></div>
+        <Stat l={T.passes} a={p.side[me * 2]} b={p.side[o * 2]} />
+        <Stat l={`${T.passes} · ${T.acc}`} a={pct(p.side[me * 2 + 1], p.side[me * 2])} b={pct(p.side[o * 2 + 1], p.side[o * 2])} unit="%" />
+      </div>
+      <h3 className="h3">{T.net}</h3>
+      <div className="chips an-side">{[us, them].map((l, i) => <button key={l} className="chip" aria-pressed={sd === i} onClick={() => setSd(i as 0 | 1)}>{l}</button>)}</div>
+      <svg className="an-pitch" viewBox={`-1 -1 ${L + 2} ${W + 2}`} role="img" aria-label={T.netNote}>
+        <PitchLines />
+        {net.links.filter((l) => l.n >= 2).slice(0, 24).map((l) => { const a = at.get(l.a)!, b = at.get(l.b)!; return <line key={`${l.a}|${l.b}`} x1={X(a)} y1={Y(a)} x2={X(b)} y2={Y(b)} className={`an-link${side === me ? '' : ' them'}`} strokeWidth={0.25 + 1.6 * (l.n / lx)} style={{ opacity: 0.3 + 0.6 * (l.n / lx) }} />; })}
+        {net.nodes.map((n) => <g key={n.id} transform={`translate(${X(n)} ${Y(n)})`}><circle r={1.4 + 2.4 * Math.sqrt(n.n / mx)} className={`an-node${side === me ? '' : ' them'}`} /><text y=".9" textAnchor="middle" className="an-num">{who(n.id).num}</text><title>{`${who(n.id).name}: ${n.n}`}</title></g>)}
+      </svg>
+      <p className="small muted">{T.netNote}</p>
+      <h3 className="h3">{T.top}</h3>
+      <div className="an-rows">
+        {top.map(({ id, a }) => (
+          <div key={id} className="between small"><span>{who(id).num} · {who(id).name}</span><span className="ltr">{a[1]}/{a[0]} · {pct(a[1], a[0])}%{a[2] ? ` · 🔑${a[2]}` : ''}</span></div>
+        ))}
+      </div>
+    </>
   );
 }

@@ -22,11 +22,13 @@ import { useGame, clubOf, cn, sn, matchLabel } from './game';
 import { Pitch2D } from './Pitch2D';
 import { pointText, tipWhat, tipWhy } from './why';
 import { sfx, soundOn, setSound } from './sfx';
+import { AN } from '../lang-ana';
 
 const clone = (m: LiveMatch): LiveMatch => JSON.parse(JSON.stringify(m));
 // A watched match shows highlights like FM (sim/highlights.ts): the pace sets the highlight speed (× real time).
 // Instant plays to the whistle at once.
 // The pause after a big moment shortens as the match speed goes up (1 at the normal pace).
+const pctOf = (a: number, b: number) => Math.round((100 * a) / Math.max(1, b));
 const holdK = (rate: number) => Math.pow(RATES[1] / rate, 0.6);
 const PHASE_MS = 1500;
 const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -157,7 +159,10 @@ export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFini
   const o = (1 - me) as 0 | 1;
   const stats = [...x.live.stats.map((l, k) => [l, m.stats[me][k], m.stats[o][k]] as const),
     [R.statsExtra[0], m.stats[me][6], m.stats[o][6]] as const, [R.statsExtra[1], rs(me, 'off'), rs(o, 'off')] as const,
-    [R.statsExtra[2], rs(me, 'fk'), rs(o, 'fk')] as const, [R.statsExtra[3], rs(me, 'ti'), rs(o, 'ti')] as const, [R.statsExtra[4], rs(me, 'gk'), rs(o, 'gk')] as const];
+    [R.statsExtra[2], rs(me, 'fk'), rs(o, 'fk')] as const, [R.statsExtra[3], rs(me, 'ti'), rs(o, 'ti')] as const, [R.statsExtra[4], rs(me, 'gk'), rs(o, 'gk')] as const,
+    // The engine's pass count (a FULL match since it was added): passes, and the share that found their man.
+    ...(m.ps ? [[AN[g.ui].passes, m.ps.side[me * 2], m.ps.side[o * 2]] as const, [`${AN[g.ui].passes} · ${AN[g.ui].acc}`, pctOf(m.ps.side[me * 2 + 1], m.ps.side[me * 2]), pctOf(m.ps.side[o * 2 + 1], m.ps.side[o * 2])] as const] : [])];
+  const pctRow = m.ps ? stats.length - 1 : -1;
   const us = me === 0 ? home : away, them = me === 0 ? away : home;
   // A shout from the touchline (it can come mid-highlight): the change is made now and saved at the next quiet moment
   // (saving the career mid-passage would stall a slow phone), and a bubble on the pitch says what was shouted.
@@ -236,9 +241,9 @@ export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFini
             <div className="stats">
               {stats.map(([l, a, b], k) => (
                 <div key={l} className="st">
-                  <b>{a}{k === 0 ? '%' : ''}</b>
+                  <b>{a}{k === 0 || k === pctRow ? '%' : ''}</b>
                   <div className="mid"><span>{l}</span><div className="bars" style={{ ['--u' as string]: `${Math.max(1, a)}fr`, ['--t' as string]: `${Math.max(1, b)}fr` }}><i /><i /></div></div>
-                  <b>{b}{k === 0 ? '%' : ''}</b>
+                  <b>{b}{k === 0 || k === pctRow ? '%' : ''}</b>
                 </div>
               ))}
             </div>
