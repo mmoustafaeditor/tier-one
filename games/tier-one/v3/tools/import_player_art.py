@@ -36,6 +36,12 @@ def main(src):
         else: m['player'][pid] = out
         done += 1
     json.dump(m, open(mpath, 'w'), indent=1, ensure_ascii=False)
+    # the playable roster is exactly the players with art (owner, 3.9.6): keep api/tier-one/v3/_lib/art-roster.mjs in step
+    ids = sorted(k for k in m['player'] if '@' not in k)
+    rp = os.path.join(HERE, '..', '..', '..', '..', 'api', 'tier-one', 'v3', '_lib', 'art-roster.mjs')
+    head = open(rp).readline() if os.path.exists(rp) else '// the playable roster: players with painted art\n'
+    open(rp, 'w').write(head + 'export default ' + json.dumps(ids, indent=0) + ';\n')
+    print('roster file updated:', len(ids), 'players; now run: cd games/tier-one/v3/web && node scripts/build-world.mjs')
     print(f'imported {done} images; manifest has {len([k for k in m["player"] if "@" not in k])} players')
     if unknown: print('not in the roster (check the file name):', ', '.join(unknown))
 

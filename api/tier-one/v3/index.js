@@ -16,6 +16,7 @@ import { CALENDAR_DEFAULT, mergeCalendar, validateCalendar, currentWindow, deadl
 import { playerStatus, freeAgentsOf } from './_lib/world.mjs';
 import { loadSnapshot } from '../../data/_lib/store.js';
 import OVERRIDES from './_lib/wire-overrides.mjs';
+import ART_IDS from './_lib/art-roster.mjs';
 import { createHash, timingSafeEqual } from 'node:crypto';
 
 
@@ -145,6 +146,7 @@ function opsOk(token) {
 // ---------------------------------------------------------------- the world (real squads from the data snapshot)
 // 3.9: from TRIM_FROM the cast comes from the trimmed world (top 5 per club, Turkish league added). A Daily is judged
 // by its own date, so a board already in play keeps its cast; rooms switch by the server's date.
+const ART_ROSTER = new Set(ART_IDS);
 const TRIM_FROM = '2000-01-01'; // owner (user testing, no live players): the trimmed roster applies everywhere now
 let worldCache = null;
 function world(day) {
@@ -152,7 +154,7 @@ function world(day) {
   const trim = (day || new Date().toISOString().slice(0, 10)) >= TRIM_FROM;
   if (!worldCache || worldCache.snap !== snap) worldCache = { snap, full: null, trim: null };
   const k = trim ? 'trim' : 'full';
-  if (!worldCache[k]) worldCache[k] = trim ? compactWorld(snap, 5, 0) : compactWorld(snap);
+  if (!worldCache[k]) worldCache[k] = trim ? compactWorld(snap, 5, 0, ART_ROSTER) : compactWorld(snap);
   return worldCache[k];
 }
 const saltedSeed = (base) => base + ':' + hashStr((SALT || DEV_SALT) + '|' + base).toString(36) + hashStr(base + '|' + (SALT || DEV_SALT)).toString(36);

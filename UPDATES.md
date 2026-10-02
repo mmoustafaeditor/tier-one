@@ -7,6 +7,13 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-02 · Tier One 3.9.6 — roster = the owner's art pack
+
+- Imported the owner's player art pack: 227 painted portraits (512px WebP, public/art/players/, loaded on demand, not precached).
+- The playable database is now exactly those 227 players (api/tier-one/v3/_lib/art-roster.mjs), for the server's Daily/rooms and the app's Practice/Career: England 69, Italy 63, Spain 57, France 26, Egypt 12; no German, Saudi or Turkish players until their art arrives. All clubs stay as transfer destinations.
+- Checked: 300 test boards, every saga's player has a portrait.
+- New batches: python3 games/tier-one/v3/tools/import_player_art.py <zip> imports the images and updates the roster file, then rebuild world.json and the web build.
+
 ## 2026-10-02 · Tier One 3.9.5 — no drawn faces
 
 - Owner: image files only, nothing drawn in code. Players without a painted portrait now show only their initials on a plain tile; the silhouette is gone. Painted art arrives through art/manifest.json (Salah is the first).

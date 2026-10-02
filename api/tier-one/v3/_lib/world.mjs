@@ -28,7 +28,7 @@ const ageOn = (birth, asOf) => {
 // Compact, public world: clubs + the players a saga can be about. Small enough to bundle into the app.
 // 3.9 (owner): the cut is the top 5 star players per club (perClub 5, no extra for buying clubs); the server switches on
 // TRIM_FROM so boards already being played keep their cast.
-export function compactWorld(snap, perClub = 9, buyerExtra = 2) {
+export function compactWorld(snap, perClub = 9, buyerExtra = 2, only = null) {
   const buyers = new Set(BUYERS);
   const clubs = snap.clubs.map((c) => ({ id: c.id, n: c.name, s: c.shortName, k: c.code, l: c.leagueId, c1: c.colors.primary, c2: c.colors.secondary }));
   const clubIds = new Set(clubs.map((c) => c.id));
@@ -38,9 +38,10 @@ export function compactWorld(snap, perClub = 9, buyerExtra = 2) {
   // Players live on the Wire stay in the world too, so Career/Practice can put them on a board (ON THE WIRE chips).
   const onWire = new Set((snap.rumours || []).filter((r) => r.status === 'open').map((r) => r.playerId));
   for (const p of snap.players) {
+    if (only && !only.has(p.id)) continue;
     if (!clubIds.has(p.clubId) || p.position === 'GK' || (p.loan && p.loan.direction === 'out')) continue;
     const age = ageOn(p.birthDate, snap.meta && snap.meta.asOf);
-    if (age && (age < 18 || age > 36)) continue;
+    if (!only && age && (age < 18 || age > 36)) continue;
     let w = (p.position === 'FW' ? 3 : p.position === 'MF' ? 2.5 : 1) + (KEY_SHIRTS.has(p.shirtNumber) ? 3 : 0) + (p.captain ? 2 : 0)
       + (p.refs && p.refs.wikidata ? 1 : 0) + (p.shirtNumber > 0 && p.shirtNumber < 30 ? 1 : 0) - (p.confidence === 'high' ? 0 : 2)
       + (marquee.has(p.id + '>' + p.clubId) ? 3 : 0) + (onWire.has(p.id) ? 3 : 0);
@@ -49,7 +50,7 @@ export function compactWorld(snap, perClub = 9, buyerExtra = 2) {
   }
   const players = [];
   for (const c of clubs) {
-    const list = (byClub.get(c.id) || []).sort((a, b) => b.w - a.w || a.p.id.localeCompare(b.p.id)).slice(0, perClub + (buyers.has(c.id) ? buyerExtra : 0));
+    const list = (byClub.get(c.id) || []).sort((a, b) => b.w - a.w || a.p.id.localeCompare(b.p.id)).slice(0, only ? 99 : perClub + (buyers.has(c.id) ? buyerExtra : 0));
     for (const { p, age } of list) {
       const star = buyers.has(c.id) ? (KEY_SHIRTS.has(p.shirtNumber) || p.captain ? 3 : 2) : KEY_SHIRTS.has(p.shirtNumber) ? 2 : 1;
       players.push({ id: p.id, n: p.name, s: p.shortName || p.name, c: c.id, pos: p.position, no: p.shirtNumber || 0, nat: p.nationality || '', age, star });
