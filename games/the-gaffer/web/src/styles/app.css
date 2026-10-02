@@ -378,6 +378,10 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .pitchwrap { position: relative; }
 .view-chips { margin-bottom: var(--s-3); }
 .hlsel { width: 100%; margin: 0 0 var(--s-3); }
+/* The match speed bar (like FM's): a slider with the speed beside it. */
+.spdbar { display: flex; align-items: center; gap: var(--s-2); flex: 1 1 120px; min-width: 96px; max-width: 220px; }
+.spdbar input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent, #6ee7b7); height: 28px; }
+.spdbar b { font-size: 13px; min-width: 2.6em; text-align: end; }
 /* Touchline shouts right under the pitch, so they can be used while a highlight plays; one row that scrolls sideways. */
 .shoutbar { display: flex; gap: var(--s-2); overflow-x: auto; padding: var(--s-2) 0; scrollbar-width: none; }
 .shoutbar::-webkit-scrollbar { display: none; }

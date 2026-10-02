@@ -15,6 +15,7 @@ import { Crest, I } from './kit';
 import { Chips, Panel } from './shell';
 import { GameCtx, cn, type Game } from './game';
 import { LiveScreen } from './Live';
+import { rateOf } from '../sim/highlights';
 
 const newSeed = () => (Math.random() * 2 ** 31) >>> 0;
 
@@ -44,7 +45,7 @@ export function QuickMatch({ t, x, ui, onExit }: { t: Strings; x: XStrings; ui: 
     return (
       <GameCtx.Provider value={g}>
         <div className="shell solo"><main className="main"><div className="page">
-          <LiveScreen m={game.m} locked={false} speed0={loadPrefs().pace ?? 1} hl0={loadPrefs().hl ?? 2} onUpdate={(m) => setGame({ ...game, m })} onSave={() => undefined}
+          <LiveScreen m={game.m} locked={false} rate0={rateOf(loadPrefs())} hl0={loadPrefs().hl ?? 2} onUpdate={(m) => setGame({ ...game, m })} onSave={() => undefined}
             onFinish={() => setGame(null)} />
         </div></main></div>
       </GameCtx.Provider>

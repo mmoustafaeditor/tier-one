@@ -15,6 +15,7 @@ import { Panel, PanelHead, Seg, Sheet, Switch } from './shell';
 import { LangSwitch } from './Title';
 import { useGame, cn } from './game';
 import { soundOn, setSound } from './sfx';
+import { RATES, rateOf } from '../sim/highlights';
 
 export function SettingsScreen({ prefs, onPrefs, onTitle, slot, onDelete, onImported }: {
   prefs: Prefs; onPrefs: (p: Prefs) => void; onTitle: () => void; slot: number;
@@ -69,7 +70,8 @@ export function SettingsScreen({ prefs, onPrefs, onTitle, slot, onDelete, onImpo
             {RF[g.ui].hl.map((l, i) => <option key={l} value={i}>{l}</option>)}
           </select>
           <div className="setrow"><span className="grow"><b>{RF[g.ui].hlSpeed}</b></span></div>
-          <Seg label={S.speed} value={prefs.pace ?? 1} onChange={(pace) => onPrefs({ ...prefs, pace })}
+          {/* The default match speed (the bar on the match screen goes finer): the nearest of slow, normal, fast. */}
+          <Seg label={S.speed} value={([0, 1, 2] as const).reduce((b, i) => (Math.abs(RATES[i] - rateOf(prefs)) < Math.abs(RATES[b] - rateOf(prefs)) ? i : b), 1 as 0 | 1 | 2)} onChange={(pace) => onPrefs({ ...prefs, pace, rate: RATES[pace] })}
             options={RF[g.ui].speeds.map((l, i) => ({ v: i as 0 | 1 | 2, label: <span className="ltr">{l}</span> }))} />
           <div className="setrow">
             <span className="grow"><b>{S.sound}</b></span>

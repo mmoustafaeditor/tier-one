@@ -8,7 +8,8 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   { const lastMove = []; let at = -1e9, prev = '';
     for (const x of samples) { if (x.min !== prev) { prev = x.min; at = x.t; } lastMove.push(x.t - at); }
     const before = samples.length; allFrames = before;
-    samples = samples.filter((x, i) => x.go && lastMove[i] < 8000);
+    // (a minute that runs longer on screen, as in Full match, is still in play until its own end)
+    samples = samples.filter((x, i) => x.go && lastMove[i] < Math.max(8000, (x.msPM ?? 0) * 1.2));
     if (samples.length < before) console.log(`  (left out ${before - samples.length} frames of a stopped match)`); }
   const L = 105, LINE = { GK: 'gk', CB: 'def', LB: 'def', RB: 'def', CDM: 'mid', CM: 'mid', CAM: 'mid', LW: 'fwd', RW: 'fwd', ST: 'fwd' };
   const depth = (side, x) => (side === 0 ? x : L - x);

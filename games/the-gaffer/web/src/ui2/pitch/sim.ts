@@ -10,7 +10,7 @@ import type { Position } from '../../model/types';
 import type { World } from '../../sim/world';
 import { T } from './tuning';
 import { timeBeats, upcoming, type Timed } from './director';
-import { shownOf, type HlMode } from '../../sim/highlights';
+import { shownOf, squeeze, type HlMode } from '../../sim/highlights';
 import { bodiesOf, decideMs, move, reactMs, type Body } from './body';
 import { assignMarks, blockSpot, inBox, keeperSpot, markSpot, slideY, wideInThird } from './defend';
 import { attackSpots, defendSpots, rushFor, wallSize, wallSpots, type SetPiece } from './setpieces';
@@ -269,7 +269,9 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World, mode?: H
     const sec = timeBeats(all, all.map(weightOf), 60000, true).map((x) => x / 1000);
     const keep = all.map((_, i) => i).filter((i) => (sec[i] >= shown.from && sec[i] <= shown.to) || all[i].kind === 'kickoff');
     const span = Math.max(1, shown.to - shown.from);
-    beats = keep.map((i) => ({ ...all[i], at: (Math.max(0, sec[i] - shown.from) / span) * 60 }));
+    // Full match: dead time squeezed (highlights.ts squeeze), the same way the minute's length is.
+    const sq = mode === 4 ? squeeze(m) : null;
+    beats = keep.map((i) => ({ ...all[i], at: sq ? (sq.at(sec[i]) / sq.len) * 60 : (Math.max(0, sec[i] - shown.from) / span) * 60 }));
   } else if (shown === null) {
     beats = [];
     const last = [...(m.flow ?? [])].reverse().find((f) => f.k === 'w' || f.k === 'l' || f.k === 'r' || f.k === 'p');
@@ -300,7 +302,7 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World, mode?: H
   a.beat = 0;
   a.clock = 0;
   a.msPM = msPerMinute;
-  a.secMs = msPerMinute / Math.max(1, shown ? shown.to - shown.from : 60);
+  a.secMs = msPerMinute / Math.max(1, mode === 4 ? squeeze(m).len : shown ? shown.to - shown.from : 60);
   // A set piece gets a longer share of the minute (players need time to take their spots); the minute stays as long.
   const wt = beats.map((b) => weightOf(b));
   a.beatLen = msPerMinute / Math.max(1, wt.reduce((t, x) => t + x, 0));
@@ -336,7 +338,8 @@ function fly(a: Anim, to: Pt, dur: number, then: () => void, h = 0, end = 0) {
 const nearestOf = (m: LiveMatch, a: Anim, side: 0 | 1, pt: Pt) => onPitch(m, side).filter((k) => a.pos[side][k]).sort((x, y) => dist(a.pos[side][x], pt) - dist(a.pos[side][y], pt))[0];
 
 // How long this beat has until the next one (the director times beats unevenly; a.beat is already past this one).
-const gapOf = (a: Anim) => Math.max(60, (a.starts[a.beat] ?? a.msPM) - (a.starts[a.beat - 1] ?? 0));
+// (from now: a beat that ran late, after a shot waited for its pass, has only what's left until the next one)
+const gapOf = (a: Anim) => Math.max(60, (a.starts[a.beat] ?? a.msPM) - Math.max(a.clock, a.starts[a.beat - 1] ?? 0));
 function runBeat(a: Anim, m: LiveMatch, b: Beat) {
   const gap = gapOf(a);
   const travel = Math.min(420, gap * 0.7);
@@ -615,6 +618,14 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
       if (PITCH_DEBUG) (a as unknown as { go?: boolean }).go = go; // the test skips a paused or finished match
       a.time += dt;
       if (a.minute !== minuteKey(mm)) plan(a, mm, ms, world, mode);
+      // The minute's length on screen changed mid-minute (another highlight mode or speed): the rest of it keeps pace.
+      else if (go && ms > 0 && a.msPM > 0 && Math.abs(ms - a.msPM) > 1) {
+        const k = ms / a.msPM;
+        a.starts = a.starts.map((x) => x * k); a.clock *= k; a.msPM = ms; a.beatLen *= k;
+        if (a.secMs) a.secMs *= k;
+        if (a.off.review) a.off.review = { from: a.off.review.from * k, until: a.off.review.until * k };
+        a.hurtAt = a.hurtAt.map((x) => ({ ...x, at: x.at * k }));
+      }
       if (go) {
         a.clock += dt;
         while (a.beat < a.beats.length && a.clock >= (a.starts[a.beat] ?? a.beat * a.beatLen)) {
@@ -880,14 +891,19 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
         for (const k of ks) {
           let t = tg[k];
           if (down(k)) t = a.pos[side][k] ?? t;
-          else if (has && k === a.carrier && !staging) t = { x: t.x * 0.3 + a.pos[side][k].x * 0.7 + (side === 0 ? 0.4 : -0.4), y: t.y * 0.3 + a.pos[side][k].y * 0.7 };
-          // A little life in everyone's feet, except a keeper set on the shooting angle (he stays on it).
-          const wob = !has && LINE[slots[k].pos] === 'gk' ? 0 : Math.sin(a.time / 700 + k * 1.7 + side * 3) * 0.5;
+          else if (has && k === a.carrier && !staging) t = { x: t.x * T.CARRY_AIM + a.pos[side][k].x * (1 - T.CARRY_AIM) + (side === 0 ? 0.4 : -0.4), y: t.y * T.CARRY_AIM + a.pos[side][k].y * (1 - T.CARRY_AIM) };
+          // A little life in everyone's feet, except a keeper set on the shooting angle (he stays on it); more while the
+          // ball is dead (a set piece being set up, a stoppage): men jostle and drift, nobody stands like a statue.
+          const deadBall = staging || a.beat >= a.beats.length || a.beats[a.beat - 1]?.kind === 'foul';
+          const amp = !has && LINE[slots[k].pos] === 'gk' ? 0 : deadBall ? T.IDLE_DEAD : T.IDLE_LIVE;
+          const wob = Math.sin(a.time / 700 + k * 1.7 + side * 3) * amp;
+          const wobX = Math.sin(a.time / 1100 + k * 2.3 + side) * amp * (deadBall ? 0.8 : 0.5);
           const p = a.pos[side][k] ?? t;
           const B0 = a.body[side]?.[k] ?? { top: 1, acc: 1, turn: 1, reads: 0.5, tank: 0.7 };
           // In the line: the line's pace. Walking to a set piece: no turning limit (he's not running at speed).
           // The keeper side-steps across his goal (no running turn limit, quick feet).
           const B = staging || (!has && LINE[slots[k].pos] === 'gk') ? { ...B0, turn: B0.turn * 4, acc: B0.acc * 1.5 } : isDef(k) ? { ...B0, top: Math.min(B0.top, lineTop), acc: Math.min(B0.acc, lineAcc) } : B0;
+          if (wobX) t = { x: t.x + wobX, y: t.y };
           const g = a.ag[side][k] ??= { vx: 0, vy: 0, tx: t.x, ty: t.y + wob, at: 0, tank: 1, pend: false, spr: false };
           // Between highlights the picture cuts: everyone is simply where he should be for the next scene.
           if (a.snap) { a.pos[side][k] = { x: t.x, y: t.y }; g.vx = 0; g.vy = 0; g.tx = t.x; g.ty = t.y; g.pend = false; continue; }
