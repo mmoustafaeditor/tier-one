@@ -17,7 +17,9 @@ import { earnHook } from './earnhook';
 
 // ---------------------------------------------------------------- types (stored in the save; all optional there)
 export type BMode = 'daily' | 'career' | 'room' | 'wire' | 'practice';
-export interface Byline { followers: number; rep: number; hot: number; best: number; keys?: string[]; last?: WindowSummary }
+export interface Byline { followers: number; rep: number; hot: number; best: number; keys?: string[]; last?: WindowSummary;
+  /** 3.8: the exact reputation (repStep moves by fractions near the top); `rep` is its rounded, displayed value. */
+  repX?: number }
 export interface BookEntry { xp: number; lv: number; coffee?: string; asks?: number; hits?: number }
 export type RivalResult = 'w' | 'l' | 'd';
 // 3.4 friend rivals (§7.3, lib/social.ts) share this shape under the `friend:<pub>` id namespace: `name` is the friend's
@@ -35,24 +37,52 @@ export interface WindowSummary {
   snap?: CareerSnap;
 }
 
-// ---------------------------------------------------------------- §1.1 numbers
-export const MODE_F: Record<BMode, number> = { daily: 1, career: 1, room: 0.8, wire: 1.5, practice: 0.25 };
-export const BASE_RIGHT = [40, 90, 220];
-export const BASE_WRONG = [20, 60, 260];
-export const EXCL_BONUS = 300;
-export const HOT_CAP = 10;
-// The one ladder. The five tiers are the five Career ranks (lib/career.ts RANKS reads its rep gates from here), so the
-// byline's word and the story's word are the same word: a new name starts at rep 50, a Blogger; 55 makes a Stringer.
+// ---------------------------------------------------------------- §1.1 numbers (3.8: spec J, brief §20–§21)
+// FOLLOWERS = how famous you are. REPUTATION = how trusted you are. Practice is off the record: neither moves.
+export const MODE_F: Record<BMode, number> = { daily: 1, career: 1, room: 0.8, wire: 1.5, practice: 0 };
+export const BASE_RIGHT = [30, 80, 200];
+export const BASE_WRONG = [15, 50, 200];
+export const EXCL_BONUS = 400;
+/** ×1 / ×1.5 / ×2 for a 1★ / 2★ / 3★ (superstar) player; an unrated player counts as 1★. */
+export const STAR_F = [1, 1, 1.5, 2];
+/** +10% per day left when the call was filed (day 1 of 7 → ×1.6; Deadline Day → ×1). */
+export const EARLY_F = 0.1;
+/** The hot hand, kept but quiet: +10% per right call in a row, capped at ×1.5. */
+export const HOT_CAP = 5;
+// The one ladder, read as words on the Press Card: a new name starts at rep 50, a Blogger; 55 makes a Stringer. Since
+// 3.8 reputation settles near your weighted accuracy (repStep), so Tier One (85) means "right about 85% of the time at
+// the volume you file at", not "played a lot". Career's stage gates (lib/career.ts STAGES) are lower than these words.
 export const REP_TIERS = [['blogger', 0], ['stringer', 55], ['correspondent', 65], ['chief', 75], ['tierone', 85]] as const;
 export type RepTier = typeof REP_TIERS[number][0];
 export const repTier = (rep: number): RepTier => [...REP_TIERS].reverse().find(([, m]) => rep >= m)![0];
 export const hotMult = (hot: number) => 1 + 0.1 * Math.min(hot, HOT_CAP);
-/** Followers for one resolved call (§1.1). `s` is loudness 0 Talks · 1 Advanced · 2 Confirmed. */
-export function followerDelta(mode: BMode, s: number, right: boolean, excl: boolean, hot: number): number {
+export interface FollowerOpts { star?: number; daysLeft?: number; reach?: number }
+/** Followers for one resolved call (§21): base × early × star × reach × hot; an exclusive adds 400 × star × reach;
+ *  a wrong call costs 15 / 50 / 200 × star × reach (a wrong Confirmed on a superstar at Tier One reach: −800).
+ *  `s` is loudness 0 In talks · 1 Advanced · 2 Confirmed. */
+export function followerDelta(mode: BMode, s: number, right: boolean, excl: boolean, hot: number, o: FollowerOpts = {}): number {
   const st = Math.max(0, Math.min(2, s));
-  if (right) return Math.round((BASE_RIGHT[st] + (excl ? EXCL_BONUS : 0)) * MODE_F[mode] * hotMult(hot));
-  return -Math.round(BASE_WRONG[st] * MODE_F[mode] * 0.5);
+  const sf = STAR_F[Math.max(0, Math.min(3, Math.round(o.star ?? 1)))], reach = o.reach ?? 1, early = 1 + EARLY_F * Math.max(0, o.daysLeft ?? 0);
+  if (right) return Math.round((BASE_RIGHT[st] * early + (excl ? EXCL_BONUS : 0)) * sf * reach * MODE_F[mode] * hotMult(hot));
+  return -Math.round(BASE_WRONG[st] * sf * reach * MODE_F[mode]);
 }
+/** Reputation after one resolved call. Right: +1 / +1 / +2 (+1 for an exclusive) scaled by (100 − rep) / 50; wrong:
+ *  0 / −1 / −3 scaled by rep / 50. The scaling makes rep settle where your record puts it instead of climbing with
+ *  volume: a 75% Advanced caller sits near 71, an 88% expert near 85, a 60% caller near 60 (spec J §2). */
+export const REP_GAIN = [1, 1, 2], REP_GAIN_EXCL = 1, REP_LOSS = [0, 1, 3];
+export function repStep(rep: number, s: number, right: boolean, excl = false): number {
+  const st = Math.max(0, Math.min(2, s));
+  if (right) return Math.min(100, rep + (REP_GAIN[st] + (excl ? REP_GAIN_EXCL : 0)) * (100 - rep) / 50);
+  return Math.max(0, rep - REP_LOSS[st] * rep / 50);
+}
+/** The exact reputation behind the displayed integer (a save from before 3.8 has none: its integer is exact). */
+export const repExact = (b: Byline) => (typeof b.repX === 'number' && Math.abs(b.repX - b.rep) < 1 ? b.repX : b.rep);
+function setRep(b: Byline, x: number) { b.repX = Math.round(x * 1000) / 1000; b.rep = Math.max(0, Math.min(100, Math.round(b.repX))); }
+// ---------------------------------------------------------------- §1.2 contact relationships (brief §15), as words
+export const TRUST_WORDS = ['cold', 'familiar', 'trusted', 'inner', 'direct'] as const;
+export type TrustWord = typeof TRUST_WORDS[number];
+/** Cold · Familiar · Trusted · Inner Circle · Direct Line for a Contacts Book level 1–5 (i18n `cr38.trust.<word>`). */
+export const trustWord = (lv: number): TrustWord => TRUST_WORDS[Math.max(0, Math.min(4, lv - 1))];
 export const freshByline = (): Byline => ({ followers: 0, rep: 50, hot: 0, best: 0 });
 export const bylineOf = (s: Save): Byline => s.byline || freshByline();
 // Follower milestones pay coins once, whichever mode crosses them (was Career-only before 3.4).
@@ -83,17 +113,13 @@ export function bookCosmetics(src: string, s: Save = getSave()) {
 }
 /** The nickname a Lv4+ contact calls you, or '' (i18n `cn.nick.<src>`). */
 export const contactNick = (src: string, s: Save = getSave()) => (bookCosmetics(src, s).nick ? t('cn.nick.' + src) : '');
-/** Career and Practice only: Lv3 first ask each window costs 1 less (min 1); Lv5 one free second-opinion re-ask per window.
- *  Always zero for the Daily and rooms. */
+/** Career and Practice only: Trusted (3) opens the spotter / physio a day early and trims a source's mistakes;
+ *  Direct Line (5) gives one free second opinion per window. Always off for the Daily and rooms. (3.8 removed the
+ *  "first ask costs 1 less" perk: it was shown but never applied, brief §35.) */
 export function bookPerks(src: string, mode: BMode | string, s: Save = getSave()) {
   const on = mode === 'career' || mode === 'practice';
   const lv = lvOfXp(bookOf(s, src).xp);
-  return { discount: on && lv >= 3 ? 1 : 0, secondOpinion: on && lv >= 5 };
-}
-/** What an ask costs with the Lv3 perk: `firstThisWindow` = this source hasn't been asked yet in this window. */
-export function askCost(src: string, base: number, mode: BMode | string, firstThisWindow: boolean, s: Save = getSave()) {
-  const p = bookPerks(src, mode, s);
-  return firstThisWindow && p.discount ? Math.max(1, base - p.discount) : base;
+  return { early: on && lv >= 3 && (src === 'spotter' || src === 'physio'), fewerMistakes: on && lv >= 2, secondOpinion: on && lv >= 5 };
 }
 export const coffeeToday = (s: Save, src: string) => bookOf(s, src).coffee === ymdUTC();
 
@@ -155,6 +181,8 @@ export interface WindowIn {
   per: ResultSaga[];
   cast?: CastSaga[];
   tier?: Tier; total?: number;
+  /** Days in the window (early bonus: days left when filed) and the publication reach (Career stage); 7 and ×1 by default. */
+  days?: number; reach?: number;
   /** Press Points before the window (for the level-up feed item). */
   ppBefore?: number;
   /** A Career story beat to mirror into the feed. */
@@ -214,16 +242,18 @@ export function recordInto(s: Save, w: WindowIn, toasts: [string, string][] = []
   const mode: BMode = w.mode;
   const name = (i: number) => w.cast?.[i]?.player.s || w.cast?.[i]?.player.n || '';
   const sum: WindowSummary = { key: w.key, mode, followers: 0, rep: 0, hot: b.hot, hotBefore: b.hot, levels: [], xp: {}, rivals: [], snap };
-  // 1.1 followers / rep / hot hand, in the order the calls were filed
+  // 1.1 followers / rep / hot hand, in the order the calls were filed. Practice is off the record: none of them move.
   const calls = w.per.filter((p) => p.call).sort((a, c) => a.call!.day - c.call!.day || a.i - c.i);
-  for (const p of calls) {
-    const d = followerDelta(mode, p.call!.s, p.right, p.excl, b.hot);
+  const rep0 = b.rep;
+  let rx = repExact(b);
+  if (mode !== 'practice') for (const p of calls) {
+    const d = followerDelta(mode, p.call!.s, p.right, p.excl, b.hot, { star: w.cast?.[p.i]?.player.star, daysLeft: Math.max(0, (w.days ?? 7) - p.call!.day), reach: w.reach });
     sum.followers += d;
-    if (p.right) { b.hot++; b.best = Math.max(b.best, b.hot); sum.rep += 1; }
-    else { b.hot = 0; if (p.call!.s === 2) sum.rep -= 2; }
+    rx = repStep(rx, p.call!.s, p.right, p.excl);
+    if (p.right) { b.hot++; b.best = Math.max(b.best, b.hot); } else b.hot = 0;
   }
   b.followers = Math.max(0, b.followers + sum.followers);
-  const rep0 = b.rep; b.rep = Math.max(0, Math.min(100, b.rep + sum.rep)); sum.rep = b.rep - rep0;
+  setRep(b, rx); sum.rep = b.rep - rep0;
   sum.hot = b.hot;
   if (b.hot > sum.hotBefore && [3, 5, 10, 15, 20].some((m) => sum.hotBefore < m && b.hot >= m)) pushFeed(s, { kind: 'hot', key: 'cn.feed.hot', v: { n: b.hot }, to: { n: 'me' }, tone: 'gold' });
   if (repTier(rep0) !== repTier(b.rep)) pushFeed(s, { kind: 'level', key: b.rep > rep0 ? 'cn.feed.tierUp' : 'cn.feed.tierDown', v: { rt: repTier(b.rep) }, to: { n: 'me' }, tone: b.rep > rep0 ? 'gold' : 'bad' });
@@ -246,10 +276,10 @@ export function recordInto(s: Save, w: WindowIn, toasts: [string, string][] = []
     for (let lv = lv0 + 1; lv <= e.lv; lv++) levelUp(s, src, lv, sum, toasts);
   }
 
-  // 1.3 rival ledgers
+  // 1.3 rival ledgers (not in Practice: off the record means no scalps to farm)
   const rv = (s.rivals = s.rivals || {});
   const touched = new Map<string, { r: RivalResult; p: string }>();
-  for (const p of w.per) for (const id of RIVALS) {
+  if (mode !== 'practice') for (const p of w.per) for (const id of RIVALS) {
     const r = duel(p, id); if (!r) continue;
     const rec = (rv[id] = rv[id] || { w: 0, l: 0, d: 0, streak: 0, last: '' });
     if (r === 'w') { rec.w++; rec.streak = rec.streak > 0 ? rec.streak + 1 : 1; }
@@ -313,7 +343,7 @@ function missionFeed(s: Save) {
 }
 
 // ---------------------------------------------------------------- the Wire (§1.6): resolved real-football calls
-export interface WireResolved { rid: string; right?: boolean | null; done?: boolean; s: number; at: number; player?: string; pts?: number }
+export interface WireResolved { rid: string; right?: boolean | null; done?: boolean; s: number; at: number; player?: string; pts?: number; star?: number }
 /** Call with the player's Wire calls whenever they refresh; each resolved call is recorded once. */
 export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: string) => string | undefined) {
   const b0 = getSave().byline;
@@ -329,9 +359,9 @@ export function recordWireResolution(calls: WireResolved[], nameOf?: (rid: strin
       const st = Math.max(0, Math.min(2, (c.s || 1) - 1));
       // §7.1: a Wire credit (earned by a Daily Tier 1) shields one wrong call's followers and rep; the hot hand still resets.
       const shielded = !c.right && !!wireShield && wireShield(s, c);
-      const d = shielded ? 0 : followerDelta('wire', st, !!c.right, false, b.hot);
-      if (c.right) { b.hot++; b.best = Math.max(b.best, b.hot); b.rep = Math.min(100, b.rep + 1); official = nameOf?.(c.rid) || c.player || ''; }
-      else { b.hot = 0; if (st === 2 && !shielded) b.rep = Math.max(0, b.rep - 2); }
+      const d = shielded ? 0 : followerDelta('wire', st, !!c.right, false, b.hot, { star: c.star, daysLeft: 0 });
+      if (c.right) { b.hot++; b.best = Math.max(b.best, b.hot); setRep(b, repStep(repExact(b), st, true)); official = nameOf?.(c.rid) || c.player || ''; }
+      else { b.hot = 0; if (!shielded) setRep(b, repStep(repExact(b), st, false)); }
       b.followers = Math.max(0, b.followers + d);
       payMilestones(s);
       // Old backlog lands quietly; the newest few make the feed.

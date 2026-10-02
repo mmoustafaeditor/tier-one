@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import { migrate, fresh, update, getSave, trustToXp, SAVE_V } from '../src/lib/save';
 import { E, castFor } from '../src/lib/engine';
-import { newCareer, castOpts, careerRules, applyWindow, RANKS, careerTrust } from '../src/lib/career';
+import { newCareer, castOpts, careerRules, applyWindow, RANKS, STAGES, careerTrust } from '../src/lib/career';
 import { bylineOf, bookOf, rivalOf, RIVALS, recordWindow, recordWireResolution, careerDelta, lastDelta, REP_TIERS, repTier, followerDelta, lvOfXp, careerSnapshot } from '../src/lib/byline';
 import { chapterOf, storyBeats, pushBeats } from '../src/lib/storyMode';
 import { practiceRules } from '../src/lib/driver';
@@ -85,8 +85,9 @@ test('a v0 save with a career runs the whole chain', () => {
   assert.equal(s.v, 3); assert.equal(s.byline!.rep, 58); assert.equal(s.byline!.followers, 1200); assert.ok(!('rep' in (s.career as Any)));
   assert.equal((s.slots![0] as Any).career, s.career, 'v1→v2 put the career in slot 1');
 });
-test('rep tiers are the career rank gates', () => {
-  RANKS.forEach((r, i) => assert.equal(r.gate[1], REP_TIERS[i][1]));
+test('stage gates (spec F §2): 20 windows to a finished first career, reputation gates below the byline words', () => {
+  assert.deepEqual(RANKS.map((r) => r.gate[0]), [0, 3, 7, 12, 17], 'cumulative windows: 3 + 4 + 5 + 5, then 3 at Tier One');
+  RANKS.forEach((r, i) => { assert.ok(r.gate[1] <= REP_TIERS[i][1], 'a stage never asks for more rep than its byline word'); if (i) assert.ok(r.gate[1] >= RANKS[i - 1].gate[1]); });
   assert.equal(repTier(50), 'blogger'); assert.equal(repTier(55), 'stringer'); assert.equal(repTier(85), 'tierone');
 });
 
@@ -115,11 +116,12 @@ test('a Career window moves the byline, the book and the ledger through applyWin
   update((s) => { rep = applyWindow(s.career!, g, res, cast, s.milestones); pushBeats(s, storyBeats(s.career!, { ...res, cast }, rep, { seen: {} })); });
   const s1 = getSave(), b = bylineOf(s1), c = s1.career!;
   assert.ok(rep); const r = rep as ReturnType<typeof applyWindow>;
-  // followers: the GOTY §1.1 maths with the Career factor (×1), in the order filed; both calls are day 1
+  // followers: the spec J §3 maths (base × early × star × reach × hot) at the Blog's reach, in the order filed; both calls are day 1
   const order = res.per.filter((p) => p.call).sort((a, x) => a.call!.day - x.call!.day || a.i - x.i);
-  let hot = 0, want = 0; for (const p of order) { want += followerDelta('career', p.call!.s, p.right, p.excl, hot); hot = p.right ? hot + 1 : 0; }
+  let hot = 0, want = 0; for (const p of order) { want += followerDelta('career', p.call!.s, p.right, p.excl, hot, { star: cast[p.i].player.star, daysLeft: R.DAYS - p.call!.day, reach: STAGES[0].reach }); hot = p.right ? hot + 1 : 0; }
+  assert.ok(want !== 0, 'a right and a wrong Confirmed on day 1 do not cancel: early pays, wrong costs flat');
   assert.equal(r.followers, want); assert.equal(b.followers, 1000 + want); assert.equal(r.followersAfter, b.followers);
-  assert.equal(r.repBefore, 50); assert.equal(b.rep, 49, '+1 right, −2 wrong Confirmed'); assert.equal(r.repAfter, 49);
+  assert.equal(r.repBefore, 50); assert.equal(b.rep, 49, 'spec J §2: +2 × (100−50)/50 right Confirmed, −3 × 52/50 wrong Confirmed → 48.9'); assert.equal(r.repAfter, 49);
   assert.equal(c.history[0].repAfter, 49, 'history records the one rep');
   assert.ok(!('rep' in (c as Any)) && !('followers' in (c as Any)) && !('contacts' in (c as Any)), 'the career stores no numbers of its own');
   assert.equal(c.windows, 1); assert.equal(c.right, 1); assert.equal(c.calls, 2);
@@ -151,14 +153,14 @@ test('the Daily and the Wire move the same numbers', () => {
   const p = res.per.find((x) => x.i === right.i)!;
   const sum = recordWindow({ mode: 'daily', key: 'daily:401', per: res.per, cast, tier: res.tier, total: res.total, no: 401 })!;
   const b1 = bylineOf(getSave());
-  assert.equal(sum.followers, followerDelta('daily', 1, true, p.excl, 0)); assert.equal(b1.followers, 1000 + sum.followers); assert.equal(b1.rep, 51); assert.equal(b1.hot, 1);
+  assert.equal(sum.followers, followerDelta('daily', 1, true, p.excl, 0, { star: cast[right.i].player.star, daysLeft: E.RULES.DAYS - p.call!.day })); assert.equal(b1.followers, 1000 + sum.followers); assert.equal(b1.rep, 51); assert.equal(b1.hot, 1);
   assert.ok(bookOf(getSave(), 'agent').xp >= 10, 'the same book');
   assert.equal(recordWindow({ mode: 'daily', key: 'daily:401', per: res.per, cast, tier: res.tier, total: res.total })!.followers, sum.followers, 'idempotent');
   assert.equal(bylineOf(getSave()).followers, b1.followers);
   // the Wire: real football, ×1.5, hot hand 1
   recordWireResolution([{ rid: 'w1', right: true, done: true, s: 3, at: Date.now() }], () => 'Rodrygo');
   const b2 = bylineOf(getSave());
-  assert.equal(b2.followers, b1.followers + followerDelta('wire', 2, true, false, 1)); assert.equal(b2.rep, 52); assert.equal(b2.hot, 2);
+  assert.equal(b2.followers, b1.followers + followerDelta('wire', 2, true, false, 1)); assert.equal(b2.rep, 53, 'a right Confirmed at 51: +2 × 49/50 = 52.96'); assert.equal(b2.hot, 2);
   // Practice never changes the Daily: its rules only gain the Lv5 second opinion
   assert.equal(practiceRules(getSave()).AGAIN, undefined);
   update((s) => { s.book!.kitman = { xp: 560, lv: 5 }; });
@@ -174,7 +176,7 @@ test('promotion reads the reputation the window earned', () => {
   const { g, res } = playWindow(seed, [{ i: right.i, o: right.truth, s: 0 }], [[right.i, 'kitman']], R);
   let rep: ReturnType<typeof applyWindow> | null = null;
   update((s) => { rep = applyWindow(s.career!, g, res, cast, s.milestones); });
-  assert.equal(bylineOf(getSave()).rep, 55); assert.equal((rep as unknown as Any).promoted, 1, 'window 8 and rep 55: Stringer'); assert.equal(getSave().career!.rank, 1);
+  assert.equal(bylineOf(getSave()).rep, 55); assert.equal((rep as unknown as Any).promoted, 1, 'window 8 (≥ 3) and rep 55: the Local Desk'); assert.equal(getSave().career!.rank, 1);
   assert.equal(repTier(bylineOf(getSave()).rep), 'stringer', 'the byline says the same word');
   assert.ok(getSave().feed!.some((f) => f.key === 'cn.feed.tierUp'));
 });
