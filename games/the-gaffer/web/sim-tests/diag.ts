@@ -15,9 +15,10 @@ let shown = 0;
 for (let i = 0; i < N; i++) {
   let m = startMatch(w, null, top[(i * 7) % top.length].id, top[(i * 13 + 5) % top.length].id, `diag-${i}`, 1, true);
   const a: any = newAnim(m, w);
+  let prevTo = -1;
   while (!playOver(m)) {
     const n = JSON.parse(JSON.stringify(m)); stepMinute(n, get); m = n;
-    const ms = minuteMs(m, 2, RATES[1]); const sh = shownOf(m, 2);
+    const ms = minuteMs(m, 2, RATES[1], prevTo); const sh = shownOf(m, 2, prevTo); prevTo = sh ? sh.to : -1; // (as the live screen: a move carried over from the minute before)
     let lastFlight: any = null, prevBall = { ...a.ball }, prevCarrier = a.carrier, prevPoss = a.poss, passes = 0;
     const log: string[] = [];
     for (let t = 0; t < ms; t += FRAME) {

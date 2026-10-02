@@ -36,12 +36,15 @@ function play(i: number, out: Frame[], acc: { kinds: Record<string, number>; rea
   if (MARKING !== undefined) for (const s of m.sides) s.tactics = { ...s.tactics, marking: MARKING, setMark: MARKING }; // env MARKING=0|1|2
   const a: Anim = newAnim(m, w);
   const t0 = i * 1e8; // frames of different matches never share a time
+  let prevTo = -1;
   while (!playOver(m) && m.minute < MINS) {
     const n = clone(m);
     stepMinute(n, get);
     m = n;
-    const ms = MODE === undefined ? MS : minuteMs(m, MODE, RATES[1]);
-    const seen = MODE === undefined || !!shownOf(m, MODE);
+    const ms = MODE === undefined ? MS : minuteMs(m, MODE, RATES[1], prevTo);
+    const sh = MODE === undefined ? null : shownOf(m, MODE, prevTo);
+    const seen = MODE === undefined || !!sh;
+    prevTo = sh ? sh.to : -1; // (as the live screen: a move carried over from the minute before)
     for (let t = 0; t < ms; t += FRAME) {
       tick(a, m, w, FRAME, ms, true, MODE, MODE === undefined ? ms : MS); // highlights: players run at the normal pace's scale
       if (!seen) continue;

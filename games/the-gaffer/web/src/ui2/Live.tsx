@@ -49,7 +49,8 @@ export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFini
   const savedAt = useRef(Date.now());
   const saveDue = useRef(false);
   const [yell, setYell] = useState<{ l: string; at: number } | null>(null); // the last shout, shown on the pitch for a moment
-  const minMs = minuteMs(m, hl, speed);
+  const prevTo = useRef(-1); // where the previous minute's highlight ended (a move carried over shows from its start)
+  const minMs = minuteMs(m, hl, speed, prevTo.current);
   const scale = Math.round((2400 * RATES[1]) / speed);
   const [view, setView] = useState(0);
   const [changes, setChanges] = useState(false);
@@ -72,6 +73,7 @@ export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFini
     const id = setTimeout(() => {
       const n = clone(m);
       const before = n.events.length, seq = n.ref?.seq ?? 0;
+      prevTo.current = shownOf(m, hl, prevTo.current)?.to ?? -1;
       stepMinute(n, get);
       onUpdate(n);
       const fresh = n.events.slice(before);

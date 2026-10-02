@@ -49,6 +49,8 @@ export interface Anim {
   msPM: number;           // real ms per match minute (the speed setting) when the minute was planned
   secMs?: number;         // screen ms per second of play in this minute (a highlight: its passage at its own pace)
   lastPass?: { side: 0 | 1; to: number; at: number; type?: string; eng?: boolean }; // the last pass played (for the measurement tests)
+  prev?: { all: Beat[]; sec: number[] }; // the minute before: its beats and their engine seconds (a move that carries over)
+  prevTo?: number;        // where the minute before's highlight ended (-1: it had none)
   off: Officials;         // the referee, his assistants and an on-field review (ui2/pitch/officials.ts)
   downs: { side: 0 | 1; slot: number; until: number }[]; // men brought down by a foul (on the ground for a moment)
   inNet: boolean;
@@ -265,14 +267,18 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World, mode?: H
   // Highlights (sim/highlights.ts, like FM): only the passage shown, at the engine's own pace; between highlights the
   // ball is simply where the engine left it. Without a mode, the whole minute is shown compressed (the old way).
   let beats = all;
-  const shown = mode === undefined ? undefined : shownOf(m, mode);
+  const shown = mode === undefined ? undefined : shownOf(m, mode, a.prevTo ?? -1);
   if (shown) {
     const sec = timeBeats(all, all.map(weightOf), 60000, true).map((x) => x / 1000);
     const keep = all.map((_, i) => i).filter((i) => (sec[i] >= shown.from && sec[i] <= shown.to) || all[i].kind === 'kickoff');
     const span = Math.max(1, shown.to - shown.from);
     // Full match: dead time squeezed (highlights.ts squeeze), the same way the minute's length is.
     const sq = mode === 4 ? squeeze(m) : null;
-    beats = keep.map((i) => ({ ...all[i], at: sq ? (sq.at(sec[i]) / sq.len) * 60 : (Math.max(0, sec[i] - shown.from) / span) * 60 }));
+    // A move that began in the minute before: its end (what this minute's passage starts with) is played first.
+    const pre = !sq && shown.from < 0 && a.prev ? a.prev.all.map((b, i) => ({ b, s: a.prev!.sec[i] - 60 })).filter((x) => x.s >= shown.from && x.b.kind !== 'kickoff') : [];
+    beats = [...pre.map((x) => ({ ...x.b, at: ((x.s - shown.from) / span) * 60 })),
+      ...keep.map((i) => ({ ...all[i], at: sq ? (sq.at(sec[i]) / sq.len) * 60 : (Math.max(0, sec[i] - shown.from) / span) * 60 }))];
+    if (pre.length) a.kinds.carried = (a.kinds.carried ?? 0) + 1;
   } else if (shown === null) {
     beats = [];
     const last = [...(m.flow ?? [])].reverse().find((f) => f.k === 'w' || f.k === 'l' || f.k === 'r' || f.k === 'p');
@@ -328,6 +334,9 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World, mode?: H
   }
   a.ids = [[...m.sides[0].onPitch], [...m.sides[1].onPitch]];
   a.minute = minuteKey(m);
+  // For the next minute: this one's beats on the engine's clock, and where its highlight ended.
+  a.prev = { all, sec: timeBeats(all, all.map(weightOf), 60000, true).map((x) => x / 1000) };
+  a.prevTo = shown ? shown.to : -1;
 }
 const weightOf = (b: Beat) => (b.kind === 'corner' ? 4 : b.kind === 'pen' ? 4 : b.kind === 'foul' ? (wallSize(depthOf(b.side, b.pt.x), b.pt.y) ? 4 : 1.5) : b.kind === 'offside' || b.kind === 'out' ? 1.5 : 1);
 const SHOT_EV = new Set(['goal', 'nogoal', 'save', 'block', 'miss']);
