@@ -145,7 +145,7 @@ function opsOk(token) {
 // ---------------------------------------------------------------- the world (real squads from the data snapshot)
 // 3.9: from TRIM_FROM the cast comes from the trimmed world (top 5 per club, Turkish league added). A Daily is judged
 // by its own date, so a board already in play keeps its cast; rooms switch by the server's date.
-const TRIM_FROM = '2026-10-03';
+const TRIM_FROM = '2000-01-01'; // owner (user testing, no live players): the trimmed roster applies everywhere now
 let worldCache = null;
 function world(day) {
   const snap = loadSnapshot();

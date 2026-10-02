@@ -69,3 +69,31 @@
 @media (max-height: 700px) { .pf39 { min-height: 128px; } .pf39__art .g-portrait { height: 128px !important; } .pf39__sim { display: none; } .ev39 { padding: 8px 12px; } .ev39__h { font-size: 17px; margin-bottom: 2px; } .ev39__r { font-size: 13px; } }
 :root.reduce .pf39__art .g-portrait { animation: none; }
 @media (prefers-reduced-motion: reduce) { .pf39__art .g-portrait { animation: none; } }
+
+/* 3.9.3 Your call fits one screen: the evidence card steps aside and the header shrinks to one line; the form tightens. */
+.file3.is-call .ev39 { display: none; }
+.file3.is-call .pf39 { min-height: 0; grid-template-columns: minmax(0, 1fr) 64px; }
+.file3.is-call .pf39__txt { padding: 8px 0 8px 14px; gap: 1px; }
+.file3.is-call .pf39__k, .file3.is-call .pf39__m, .file3.is-call .pf39__sim { display: none; }
+.file3.is-call .pf39__n { font-size: 24px; }
+.file3.is-call .pf39__route { margin-top: 0; font-size: 14px; }
+.file3.is-call .pf39__art { width: 64px; margin: 0; }
+.file3.is-call .pf39__art .g-portrait { width: 64px !important; height: 64px !important; }
+.file3.is-call .pf39__stamp { top: 6px; inset-inline-end: 72px; }
+.file3 .callbox { padding: 12px; }
+.file3 .callbox__h h2 { font-size: 20px; }
+.file3 .step { margin: 8px 0 6px; font-size: 13px; }
+.file3 .outs { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.file3 .out { align-items: center; padding: 8px 4px; gap: 4px; }
+.file3 .out svg { width: 20px; height: 20px; }
+.file3 .out b { font-family: var(--f-text); font-stretch: 100%; font-weight: 700; font-size: 14px; text-transform: none; letter-spacing: 0; }
+.file3 .out span { display: none; }
+.file3 .out[aria-pressed="true"], .file3 .vol[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--red); background: var(--red-wash); }
+.file3 .vols { gap: 6px; }
+.file3 .vol { padding: 7px 4px; }
+.file3 .vol__d { display: none; }
+.file3 .stake3 { margin-top: 8px; font-size: 13px; }
+.file3 .stake3 p { margin: 2px 0; }
+.file3 .callbox .publish { min-height: 52px; margin-top: 10px; font-size: 18px; }
+.file3 .stake3__coach, .file3.is-call .howbtn { display: none; }
+@media (max-width: 360px) { .file3 .outs { grid-template-columns: 1fr 1fr; } }

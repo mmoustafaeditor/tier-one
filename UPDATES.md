@@ -7,6 +7,13 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-02 · Tier One 3.9.3 — roster live now, rival journalists tab, Your call fits, player art batch 01 ready
+
+- The trimmed roster (top 5 per club, Turkish league added) now applies to every Daily and room immediately (owner: user testing only).
+- The Player File's second tab is now "Rival journalists": the rivals' race and their posts first, then what your sources said.
+- Your call fits one screen: the evidence card steps aside and the header shrinks while you choose; outcomes sit in one row of four, the stake words tightened, Publish always visible. The source-call screen is capped to one screen too.
+- Player art batch 01: docs/art/PLAYER_PACK_01.md (40 real players, ChatGPT style prompt matching the character pack) and tools/import_player_art.py (PNG/zip → 512px WebP + manifest). No art imported yet: the drawn placeholder shows until the owner sends the images.
+
 ## 2026-10-02 · Tier One 3.9.2 — Market to the handoff, anime players, trimmed database
 
 - Market rebuilt to the owner's screenshot: tabs Rumours · Transfers · My calls · Players, serif headline, search, two dropdown filters, paper rows. Transfers shows confirmed moves from the data snapshot with the date, fee and the club's announcement link. Players searches the game's database. The editor's note, the free-agents entry and the fairness line sit under the list. One screen; only the list scrolls.

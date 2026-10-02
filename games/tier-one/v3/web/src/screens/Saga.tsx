@@ -97,7 +97,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     </div>
   </section>;
 
-  return <div className="file2 file3">
+  return <div className={'file2 file3' + (pane === 'call' ? ' is-call' : '')}>
     {/* ---- header (3.9, screenshot 03): the file card, the player's portrait large on the right ---- */}
     <header className={'pf39 g-card' + (justFiled ? ' is-filed' : '')}>
       <div className="pf39__txt">
@@ -164,6 +164,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     </section>}
 
     {pane === 'clips' && <>
+      {rivalsRace}
       {!(curReads.length > 0 || livePosts.length > 0) && <p className="know__none">{t('u39.said.none')}</p>}
       {(curReads.length > 0 || livePosts.length > 0) && <section className="clips is-open">
         <ol className="clips__l">
@@ -178,10 +179,9 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
               </div>
             </li> };
           }),
-            ...livePosts.map((p, k) => ({ d: p.day + .5, el: <li key={'p' + k} className="clip clip--rival"><RivalFace id={p.id} name={t('rival.' + p.id)} /><div><div className="clip__h"><b>{t('rival.' + p.id)}</b><span className="g-mono">{t('common.day', { n: p.day })}</span><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div><p>{postLine(t.lang, c, p)}</p><span className="clip__adds g-mono">{t(relKey(p.id))}</span></div></li> }))].sort((a, b) => b.d - a.d).map((x) => x.el)}
+            ...livePosts.map((p, k) => ({ d: p.day + 100, el: <li key={'p' + k} className="clip clip--rival"><RivalFace id={p.id} name={t('rival.' + p.id)} /><div><div className="clip__h"><b>{t('rival.' + p.id)}</b><span className="g-mono">{t('common.day', { n: p.day })}</span><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div><p>{postLine(t.lang, c, p)}</p><span className="clip__adds g-mono">{t(relKey(p.id))}</span></div></li> }))].sort((a, b) => b.d - a.d).map((x) => x.el)}
         </ol>
       </section>}
-      {rivalsRace}
     </>}
 
     {pane === 'call' && <>

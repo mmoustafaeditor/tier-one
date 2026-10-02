@@ -51,3 +51,13 @@
 @media (max-height: 640px) { .call39 { gap: 6px; } .call39__hed { font-size: 26px; } .call39__quote { min-height: 92px; } }
 .call39.is-still *, :root.reduce .call39 * { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { .call39 * { animation: none !important; } }
+/* 3.9.3: everything on one phone screen, the button always visible */
+.call39 { height: 100dvh; gap: 8px; overflow: hidden; }
+.call39__hed { font-size: clamp(24px, 7.5vw, 32px); }
+.call39__stage { max-height: 32dvh; }
+.call39__face { max-height: 32dvh; }
+.call39__quote { min-height: 0; padding: 10px 14px 10px 46px; }
+.call39__quote blockquote { font-size: clamp(16px, 4.6vw, 20px); }
+.call39__mark { font-size: 52px; }
+.call39__who { padding: 8px 10px; }
+.call39__go { min-height: 52px; }

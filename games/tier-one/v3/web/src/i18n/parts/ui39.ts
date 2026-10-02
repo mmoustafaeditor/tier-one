@@ -3,7 +3,7 @@ export default {
   en: { m: { wire: { lg: { tur1: 'Süper Lig' } } }, u39: {
     call: { k: 'On the line', back: 'Back to the story', about: 'About {p} · Day {d}', added: 'Evidence added to your file', cost: '{n} contact point', costN: '{n} contact points', free: 'Free call', skip: 'Show the full line',
       hed: { kitman: 'A word from inside the club', barber: 'Chair talk', agent: "From the player's camp", spotter: 'Eyes on the terminal', physio: 'Inside the treatment room', leak: 'Off the press office' } },
-    said: { tab: 'What they said', none: 'Nobody has said anything about him yet. Ring a source.' },
+    said: { tab: 'Rival journalists', none: 'No rival journalist has posted about him yet.' },
     tabs: { desk: 'Desk', daily: 'Daily', career: 'Career', market: 'Market', me: 'Profile' },
     file: { k: 'Player file', sim: 'Simulated story', age: 'Age {n}', circles: 'independent circles', circle1: 'independent circle', ring: 'Ring · {n} pt', rings: 'Ring · {n} pts', called: 'Called', opens: 'Day {n}', circ: { club: 'Club', agent: 'Camp', travel: 'Travel', street: 'Street', office: 'Office', insider: 'Insider' } },
     mk: { tabs: { rum: 'Rumours', tr: 'Transfers', mine: 'My calls', pl: 'Players' }, hed: { rum: "Who's moving", tr: 'Real football. Real moves', mine: 'Your calls', pl: 'Every player' },
@@ -16,7 +16,7 @@ export default {
   ar: { m: { wire: { lg: { tur1: 'الدوري التركي' } } }, u39: {
     call: { k: 'على الخط', back: 'ارجع للقصة', about: 'عن {p} · اليوم {d}', added: 'الدليل اتضاف لملفك', cost: '{n} نقطة اتصال', costN: '{n} نقط اتصال', free: 'مكالمة ببلاش', skip: 'اعرض الكلام كله',
       hed: { kitman: 'كلمة من جوه النادي', barber: 'كلام الكرسي', agent: 'من معسكر اللاعب', spotter: 'عينه على صالة الوصول', physio: 'من جوه أوضة العلاج', leak: 'من المكتب الإعلامي' } },
-    said: { tab: 'قالوا إيه', none: 'محدش قال حاجة عنه لسه. كلّم مصدر.' },
+    said: { tab: 'الصحفيين المنافسين', none: 'مفيش صحفي منافس كتب عنه لسه.' },
     tabs: { desk: 'المكتب', daily: 'اليومي', career: 'المسيرة', market: 'السوق', me: 'البروفايل' },
     file: { k: 'ملف اللاعب', sim: 'قصة متخيّلة', age: 'السن {n}', circles: 'دواير مستقلة', circle1: 'دايرة مستقلة', ring: 'اتصل · {n} نقطة', rings: 'اتصل · {n} نقط', called: 'اتكلمت', opens: 'يوم {n}', circ: { club: 'النادي', agent: 'المعسكر', travel: 'السفر', street: 'الشارع', office: 'المكتب', insider: 'من جوه' } },
     mk: { tabs: { rum: 'إشاعات', tr: 'انتقالات', mine: 'توقعاتي', pl: 'لاعيبة' }, hed: { rum: 'مين ماشي', tr: 'كورة حقيقية. انتقالات حقيقية', mine: 'توقعاتك', pl: 'كل اللاعيبة' },
@@ -29,7 +29,7 @@ export default {
   es: { m: { wire: { lg: { tur1: 'Superliga turca' } } }, u39: {
     call: { k: 'En línea', back: 'Volver a la historia', about: 'Sobre {p} · Día {d}', added: 'Prueba añadida a tu expediente', cost: '{n} punto de contacto', costN: '{n} puntos de contacto', free: 'Llamada gratis', skip: 'Ver la frase entera',
       hed: { kitman: 'Una palabra desde dentro del club', barber: 'Charla de sillón', agent: 'Desde el entorno del jugador', spotter: 'Ojos en la terminal', physio: 'Dentro de la sala de fisio', leak: 'Desde la oficina de prensa' } },
-    said: { tab: 'Lo que dijeron', none: 'Nadie ha dicho nada de él todavía. Llama a una fuente.' },
+    said: { tab: 'Periodistas rivales', none: 'Ningún periodista rival ha publicado sobre él todavía.' },
     tabs: { desk: 'Mesa', daily: 'Diario', career: 'Carrera', market: 'Mercado', me: 'Perfil' },
     file: { k: 'Expediente', sim: 'Historia simulada', age: '{n} años', circles: 'círculos independientes', circle1: 'círculo independiente', ring: 'Llamar · {n} pt', rings: 'Llamar · {n} pts', called: 'Llamado', opens: 'Día {n}', circ: { club: 'Club', agent: 'Entorno', travel: 'Viajes', street: 'Calle', office: 'Oficina', insider: 'Interno' } },
     mk: { tabs: { rum: 'Rumores', tr: 'Fichajes', mine: 'Mis apuestas', pl: 'Jugadores' }, hed: { rum: 'Quién se mueve', tr: 'Fútbol real. Fichajes reales', mine: 'Tus apuestas', pl: 'Todos los jugadores' },
