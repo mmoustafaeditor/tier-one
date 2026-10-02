@@ -7,7 +7,9 @@ import { END, EV, F_GK, N, QUAL, QUAL_W, SHOTS, START, TUNE, shotEdges, type Due
 import type { LiveMatch, MatchEvent } from '../match';
 import { chainOf } from './passes';
 
-// The ball's path for the pitch (FULL only; nothing reads it back). k: p a pass (`p` to `q`, `ty` its kind: passes.ts),
+// The ball's path for the pitch (FULL only; nothing reads it back). Every stoppage carries its cause: a foul who
+// brought down whom, a corner who put it out, a throw-in or goal kick who touched it last.
+// k: p a pass (`p` to `q`, `ty` its kind: passes.ts),
 // w a contest won by the attacker `p` against `q`, l lost: the defender `p` (side `s`) takes the ball off `q`, r lost but
 // the ball kept: `p` is forced back by `q` and his side keeps it, f foul, g goal, v save, b block, m miss, ti throw-in,
 // gk goal kick (the side `s` restarts), c a corner to `s`, o `s` caught offside. t: seconds into the minute when it
@@ -98,6 +100,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
     let won: boolean | undefined;
     let aId: string | undefined, dId: string | undefined;
     let ax: number | undefined;
+    const lastOn = hold; // who had the ball as this action began (for who put it out)
     if (node.shot !== undefined) {
       // A shot: the shooter from the chance's table, his finishing against their keeper.
       const i = node.shot, tab = at.shooters[i];
@@ -132,7 +135,8 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       if (edge.to === N.CRN) {
         const taker = m.sides[s].pieces.corners;
         rules.event({ min: m.minute, side: s, kind: 'corner', playerId: m.sides[s].onPitch.includes(taker) ? taker : '' });
-        if (full) flow.push({ s, z: absZone(s, 5, z % 5 < 2 ? 0 : 4), k: 'c', p: m.sides[s].onPitch.includes(taker) ? taker : undefined, t: shotT, n: nodeIx });
+        // (put out by the keeper's save or the man who blocked it)
+        if (full) flow.push({ s, z: absZone(s, 5, z % 5 < 2 ? 0 : 4), k: 'c', p: m.sides[s].onPitch.includes(taker) ? taker : undefined, q: edge.ev === EV.SAVE ? at.keeper : edge.ev === EV.BLOCK ? b.d : undefined, t: shotT, n: nodeIx });
         hold = m.sides[s].onPitch.includes(taker) ? taker : undefined;
       }
     } else {
@@ -150,7 +154,8 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         edge = pickEdge(r, won ? node.win! : node.lose!);
       } else if (!edge) edge = node.alt[node.alt.length - 1];
       // The passes in this action, before what ends it (a contest's own come with it, below).
-      if (full && won === undefined) passes(s, M, nodeIx, undefined, clockAt(secs, budget, 0), clockAt(secs, budget, node.t) - 0.5);
+      const foulEdge = edge.ev === EV.FOUL || edge.ev === EV.TFOUL || edge.ev === EV.PENFOUL;
+      if (full && won === undefined && !foulEdge) passes(s, M, nodeIx, undefined, clockAt(secs, budget, 0), clockAt(secs, budget, node.t) - 0.5);
       // Fouls: the defender in the contest (or one of them) brings the attacker down.
       if (edge.ev === EV.FOUL || edge.ev === EV.TFOUL || edge.ev === EV.PENFOUL) {
         // gf-ref: a foul that leads to the free-kick node is placed now: in the box (a penalty) or outside it.
@@ -161,6 +166,8 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         const j = dId ? -1 : pickW(r, d.wf ?? d.wd); // [tactics v3] the aggressive roles in the contest foul more
         const fouler = dId ?? d.d[j]?.id ?? '';
         const victim = aId ?? d.a[pickW(r, d.wa)]?.id;
+        // The ball goes to the man who is brought down (passes.ts: its own stream, so nothing above moves).
+        if (full && won === undefined) passes(s, M, nodeIx, victim, clockAt(secs, budget, 0), clockAt(secs, budget, node.t) - 1);
         const fz = absZone(s, box ? 5 : COL[nodeIx] ?? 3, 2);
         let go: FoulGo = box ? 'pen' : 'fk';
         if (fouler) {
@@ -175,12 +182,13 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         else if (go === 'adv') { to = nodeIx; dt = 0; }
         else if (go === 'on') { to = N.FCH; dt = 0; }
         else { to = END; dt = TUNE.dead.FOUL; }
-        if (full) { flow.push({ s, z: fz, k: 'f', p: victim, t: clockAt(secs, budget, node.t), n: nodeIx }); hold = go === 'turn' ? undefined : victim; }
+        if (full) { flow.push({ s, z: fz, k: 'f', p: victim, q: fouler || undefined, t: clockAt(secs, budget, node.t), n: nodeIx }); hold = go === 'turn' ? undefined : victim; }
       }
       if (edge.ev === EV.CORNER || (edge.to === N.CRN && edge.ev === undefined)) {
         const taker = m.sides[s].pieces.corners;
         rules.event({ min: m.minute, side: s, kind: 'corner', playerId: m.sides[s].onPitch.includes(taker) ? taker : '' });
-        if (full) cornerAfter = { s, z: absZone(s, 5, ax !== undefined && rowOf(ax) >= 2 ? 4 : 0), k: 'c', p: m.sides[s].onPitch.includes(taker) ? taker : undefined, t: clockAt(secs, budget, node.t), n: nodeIx }; // after the contest that put it out
+        // after the contest that put it out: the defender in it (`q`) blocked or headed it behind
+        if (full) cornerAfter = { s, z: absZone(s, 5, ax !== undefined && rowOf(ax) >= 2 ? 4 : 0), k: 'c', p: m.sides[s].onPitch.includes(taker) ? taker : undefined, q: dId, t: clockAt(secs, budget, node.t), n: nodeIx };
       }
       if (edge.ev === EV.OFFSIDE) {
         const d = node.duel!;
@@ -223,7 +231,8 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       const st = to - END;
       const out = rules.turnover?.(s, nodeIx, st, edge.ev); // gf-ref: throw-ins and goal kicks
       // The pitch shows the restart: a throw-in on the touchline level with the action, a goal kick from the other side's box.
-      if (full && out) flow.push({ s: o, z: out === 'gk' ? absZone(o, 0, 2) : absZone(s, COL[nodeIx] ?? 3, (flow.length & 1) * 4), k: out, t: clockAt(secs, budget, 0), n: nodeIx });
+      // (`p`: the man of the side that put it out who touched it last: the one in the contest, or the one on the ball)
+      if (full && out) flow.push({ s: o, z: out === 'gk' ? absZone(o, 0, 2) : absZone(s, COL[nodeIx] ?? 3, (flow.length & 1) * 4), k: out, p: aId ?? lastOn ?? undefined, t: clockAt(secs, budget, 0), n: nodeIx });
       if (full && st === 2) { tl.hi[o]++; threat[o] += 0.05; }
       b.s = o; b.n = START[st]; b.a = undefined; b.d = undefined;
       // A restart or a ball won without a contest: the next chain starts from where play does (a goal kick: the keeper).

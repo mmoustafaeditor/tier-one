@@ -63,5 +63,8 @@ export const T = {
   DUEL_CLOSE: 1.4,   // the man in the next contest closes the carrier to this distance (m) before it
   RECV_RUN: 6,       // how fast (m/s of play) a man runs onto a pass: the ball is aimed where he can be when it arrives
   BALL_HOME: 7,      // a pass bends towards its moving receiver at most this fast (m per second of play)
+  IDLE_DEAD: 1.4,
+  IDLE_LIVE: 0.9,    // in play, men off the ball keep moving this much (m) around where they want to be
+  CARRY_AIM: 0.55,   // the carrier heads this share of the way to his next step each frame (he keeps going with it)    // while the ball is dead, players jostle and drift this far (m) around their spot
   BALL_ROLL: 9,      // a ball not yet at its man's feet rolls on to him at this pace (m per second of play)
 };

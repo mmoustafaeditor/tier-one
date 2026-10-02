@@ -50,7 +50,7 @@ function play(i: number, out: Frame[], acc: { kinds: Record<string, number>; rea
         m: i, t: t0 + x.time, go: true, min: x.minute, gkT: x.gkT ? { ...x.gkT } : null, mk: x.mk ? [...x.mk] : null, carrier: x.flight ? -1 : x.carrier,
         tanks: x.ag.map((r: any[]) => r.map((g) => (g ? [Math.round(g.tank * 1000) / 1000, g.spr ? 1 : 0] : null))), bh: x.bh,
         sp: x.sp && x.time < x.sp.until ? { ...x.sp, until: t0 + x.sp.until } : null, flag: !!x.flag && x.time < x.flag.until, runs: x.runsN,
-        trans: x.trans ? { ...x.trans, at: t0 + x.trans.at } : null, beatLen: x.beatLen, poss: x.poss, ball: { ...x.ball },
+        trans: x.trans ? { ...x.trans, at: t0 + x.trans.at } : null, beatLen: x.beatLen, msPM: x.msPM, poss: x.poss, ball: { ...x.ball },
         pos: x.pos.map((s: any[]) => s.map((q) => (q ? { x: q.x, y: q.y } : null))), spd: x.spd,
         slots: m.sides.map((sd) => FORMATIONS[sd.tactics.formation].slots.map((z) => z.pos)), pressing: m.sides.map((sd) => sd.tactics.pressing),
       });

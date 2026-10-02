@@ -11,7 +11,7 @@ import { planOf, rolesArrays } from '../sim/engine/phases';
 import { ROLES, roleFit, rolesFor, POOR_FIT } from '../sim/engine/roles';
 import { TX } from '../lang-tac-all';
 import { PERIOD_END, clockOf, isExtraBreak, isHalfTime, playOver } from '../sim/engine/clock';
-import { RATES, minuteMs, shownOf, type HlMode } from '../sim/highlights';
+import { RATES, RATE_MAX, RATE_MIN, RATE_STEP, minuteMs, shownOf, squeeze, type HlMode } from '../sim/highlights';
 import { RSN, RS } from '../sim/engine/referee';
 import { Banner, CommentaryFeed, MomentIcon, RefLine, VarBanner, bannerOf, momentText, refOf } from './Officials';
 import { applyTip, explain, suggest, winChance, type Point, type Tip } from '../sim/engine/story';
@@ -26,28 +26,29 @@ import { sfx, soundOn, setSound } from './sfx';
 const clone = (m: LiveMatch): LiveMatch => JSON.parse(JSON.stringify(m));
 // A watched match shows highlights like FM (sim/highlights.ts): the pace sets the highlight speed (× real time).
 // Instant plays to the whistle at once.
-const HOLD_K = [1.25, 1, 0.55];
+// The pause after a big moment shortens as the match speed goes up (1 at the normal pace).
+const holdK = (rate: number) => Math.pow(RATES[1] / rate, 0.6);
 const PHASE_MS = 1500;
 const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFinish, onSpeed, onHl }: {
-  m: LiveMatch; locked: boolean; speed0: 0 | 1 | 2; hl0?: HlMode; onUpdate: (m: LiveMatch) => void; onSave: (m: LiveMatch) => void; onFinish: (m: LiveMatch) => void;
-  onSpeed?: (s: 0 | 1 | 2) => void; onHl?: (h: HlMode) => void;
+export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFinish, onRate, onHl }: {
+  m: LiveMatch; locked: boolean; rate0: number; hl0?: HlMode; onUpdate: (m: LiveMatch) => void; onSave: (m: LiveMatch) => void; onFinish: (m: LiveMatch) => void;
+  onRate?: (r: number) => void; onHl?: (h: HlMode) => void;
 }) {
   const g = useGame();
   const { w, c, x, lang } = g;
   const get = (id: string) => playerOf(w, id)!;
   const me = Math.max(0, isUserSide(m, c)) as 0 | 1;
   const [paused, setPaused] = useState(false);
-  const [speed, setSpeed] = useState<number>(speed0);
-  // What the match shows (sim/highlights.ts, like FM): a highlight plays at RATES[speed] × real time, the clock runs on
-  // quickly between highlights; players run at a fixed scale for that speed.
+  const [speed, setSpeed] = useState<number>(rate0);
+  // What the match shows (sim/highlights.ts, like FM): a highlight plays at `speed` × real time (the speed bar), the
+  // clock runs on quickly between highlights; players run at a fixed scale for that speed.
   const [hl, setHl] = useState<HlMode>(hl0);
   const savedAt = useRef(Date.now());
   const saveDue = useRef(false);
   const [yell, setYell] = useState<{ l: string; at: number } | null>(null); // the last shout, shown on the pitch for a moment
-  const minMs = minuteMs(m, hl, RATES[speed]);
-  const scale = Math.round((2400 * RATES[1]) / RATES[speed]);
+  const minMs = minuteMs(m, hl, speed);
+  const scale = Math.round((2400 * RATES[1]) / speed);
   const [view, setView] = useState(0);
   const [changes, setChanges] = useState(false);
   const [htSeen, setHtSeen] = useState(m.minute > 45);
@@ -77,14 +78,23 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
       const whistle = isHalfTime(n) || playOver(n) || isExtraBreak(n);
       const k = fresh.some((e) => e.kind === 'goal') ? 2600 : fresh.some((e) => e.kind === 'red') ? 2200 : fresh.some((e) => e.kind === 'pen') ? 1600
         : fresh.some((e) => e.kind === 'yellow') ? 900 : whistle ? 1800 : 0;
-      setHold(Math.round(k * HOLD_K[speed]));
+      setHold(Math.round(k * holdK(speed)));
       if (whistle) { onSave(n); if (!reduced()) sfx('whistle'); }
       // A save in play every 5 match minutes, but never more than once every 10 real seconds: between highlights the
       // clock runs fast and saving the whole career that often froze slow phones ...
       else if (n.minute % 5 === 0 && !n.plus) saveDue.current = true;
       // ... and the save waits for a minute between highlights (the picture is cutting anyway), so the moment it takes
       // never lands in a passage being watched. In Full match every minute is shown: then it goes after 10 seconds.
-      if (saveDue.current && !whistle && Date.now() - savedAt.current > 10000 && (hl === 4 || !shownOf(n, hl))) { saveDue.current = false; savedAt.current = Date.now(); onSave(n); }
+      // In Full match every minute is shown: the save waits for a stoppage (a goal, a card, a corner or a free kick being
+      // set up, the ball out of play) so the moment it takes falls where play has stopped anyway, or 15 minutes at most.
+      const stop = (n.flow ?? []).find((f) => (f.k === 'c' || f.k === 'f' || f.k === 'g' || f.k === 'gk') && f.t !== undefined);
+      const late = Date.now() - savedAt.current > 45000;
+      if (saveDue.current && !whistle && Date.now() - savedAt.current > 10000 && (hl === 4 ? stop || late : !shownOf(n, hl))) {
+        saveDue.current = false; savedAt.current = Date.now();
+        // (at the stoppage's own moment in the minute on screen, a beat after it)
+        if (hl === 4 && stop) { const sq = squeeze(n); setTimeout(() => onSave(n), Math.round((sq.at(stop.t! + 1.5) / sq.len) * minuteMs(n, 4, speed))); }
+        else onSave(n);
+      }
     }, minMs + hold);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,7 +103,7 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
   useEffect(() => {
     if (!banner) return;
     const last = banner.i === banner.ph.length - 1;
-    const id = setTimeout(() => setBanner((b) => (b && b.i + 1 < b.ph.length ? { ...b, i: b.i + 1 } : null)), Math.round(PHASE_MS * HOLD_K[speed] * (last ? 1.6 : 1)));
+    const id = setTimeout(() => setBanner((b) => (b && b.i + 1 < b.ph.length ? { ...b, i: b.i + 1 } : null)), Math.round(PHASE_MS * holdK(speed) * (last ? 1.6 : 1)));
     return () => clearTimeout(id);
   }, [banner, speed]);
 
@@ -115,7 +125,7 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
   useEffect(() => { if (!flash) return; const id = setTimeout(() => setFlash(null), reduced() ? 1200 : 2200); return () => clearTimeout(id); }, [flash]);
 
   const change = (f: (n: LiveMatch) => void) => { const n = clone(m); f(n); onUpdate(n); onSave(n); };
-  const pickSpeed = (i: 0 | 1 | 2) => { setSpeed(i); onSpeed?.(i); };
+  const pickSpeed = (r: number) => { setSpeed(r); onRate?.(r); };
   const [feed, setFeed] = useState(0);
   // While the banner is up the scoreboard shows the goal as the crowd saw it, then the ruling.
   const shown: [number, number] = banner?.adj && banner.i < banner.ph.length - 1 ? [m.goals[0] + banner.adj[0], m.goals[1] + banner.adj[1]] : m.goals;
@@ -256,9 +266,11 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
         {!done ? (
           <>
             <button className="icon-btn" aria-label={paused ? x.live.play : x.live.pause} onClick={() => setPaused(!paused)}><I n={paused ? 'play' : 'pause'} /></button>
-            <div className="seg" role="group" aria-label={x.live.speed}>
-              {R.speeds.map((l, i) => <button key={l} aria-pressed={speed === i} onClick={() => pickSpeed(i as 0 | 1 | 2)}>{l}</button>)}
-            </div>
+            {/* The match speed bar, like FM's: slower to study a move, faster to get through it. */}
+            <label className="spdbar" title={x.live.speed}>
+              <input type="range" min={RATE_MIN} max={RATE_MAX} step={RATE_STEP} value={speed} aria-label={x.live.speed} aria-valuetext={`×${speed}`} onChange={(e) => pickSpeed(+e.target.value)} />
+              <b className="ltr">×{speed}</b>
+            </label>
             <span className="grow" />
             <button className="btn btn--ghost btn--sm skipbtn" title={x.live.skip} onClick={() => { const n = clone(m); n.sides[me].autoSubs = true; simulate(n, get); setBanner(null); onUpdate(n); onSave(n); }}>{R.instant}</button>
             <button className="btn btn--accent" onClick={() => setChanges(true)}><I n="swap" />{x.live.changes}</button>

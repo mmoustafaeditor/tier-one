@@ -11,6 +11,8 @@ export interface Officials {
   ref: Pt;
   ar: [Pt, Pt];                // [0] top touchline (right half), [1] bottom touchline (left half)
   review: { from: number; until: number } | null; // an on-field review (minute clock, ms)
+  whistle?: { at: Pt; until: number };          // a foul: the referee runs to where it was (anim time, ms)
+  card?: { red: boolean; from: number; until: number }; // ... and shows the card the engine gave (anim time, ms)
 }
 export const MONITOR: Pt = { x: L / 2 + 4, y: W + 2.6 };
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -19,10 +21,10 @@ export const newOfficials = (): Officials => ({ ref: { x: L / 2 - 8, y: W / 2 + 
 
 // Where each official wants to be. `lastDef[s]`: the depth (x) of side s's second-last defender, its own goal at x 0
 // (side 0) or x L (side 1). `reviewing`: the referee is at the monitor.
-export function officialTargets(ball: Pt, attacking: 0 | 1, lastDef: [number, number], reviewing: boolean): { ref: Pt; ar: [Pt, Pt] } {
+export function officialTargets(ball: Pt, attacking: 0 | 1, lastDef: [number, number], reviewing: boolean, foul?: Pt): { ref: Pt; ar: [Pt, Pt] } {
   // The referee: behind and to the side of play (left diagonal, as most referees run it), keeping out of the middle.
   const back = attacking === 0 ? -1 : 1;
-  const ref = reviewing ? { x: MONITOR.x - 1.6, y: W - 0.5 } : {
+  const ref = reviewing ? { x: MONITOR.x - 1.6, y: W - 0.5 } : foul ? { x: clamp(foul.x + (foul.x < L / 2 ? 3 : -3), 1, L - 1), y: clamp(foul.y + 2.5, 1, W - 1) } : {
     x: clamp(ball.x + back * 9, 8, L - 8),
     y: clamp(ball.y + (ball.y < W / 2 ? 11 : -11), 4, W - 4),
   };

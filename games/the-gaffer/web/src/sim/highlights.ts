@@ -46,12 +46,37 @@ export function shownOf(m: LiveMatch, mode: HlMode): { from: number; to: number 
   return h.level >= NEED[mode] ? { from: h.from, to: h.to } : null;
 }
 
+// Full match, like FM: live play runs at the chosen speed; dead time (a corner or a free kick being set up, the ball
+// out of play, a goal celebrated) is shown at DEAD_K of its length, so the picture never stands still for long. A stretch
+// with no action for more than LIVE_GAP seconds of the engine's clock counts as dead beyond that. `at(t)` maps the
+// engine's second to the minute's seconds on screen (at the chosen speed: × 1000 / rate ms), `len` = the minute's length.
+const DEAD_K = 0.3, LIVE_GAP = 7;
+export function squeeze(m: LiveMatch): { at: (t: number) => number; len: number } {
+  const ts = [0, ...(m.flow ?? []).map((f) => f.t).filter((t): t is number => t !== undefined).map((t) => Math.max(0, Math.min(60, t))).sort((a, b) => a - b), 60];
+  const knots: [number, number][] = [[0, 0]];
+  for (let i = 1; i < ts.length; i++) {
+    const g = ts[i] - ts[i - 1], live = Math.min(g, LIVE_GAP);
+    knots.push([ts[i], knots[knots.length - 1][1] + live + (g - live) * DEAD_K]);
+  }
+  const len = knots[knots.length - 1][1];
+  const at = (t: number) => {
+    for (let i = 1; i < knots.length; i++) if (t <= knots[i][0]) { const [a0, b0] = knots[i - 1], [a1, b1] = knots[i]; return a1 > a0 ? b0 + ((t - a0) / (a1 - a0)) * (b1 - b0) : b1; }
+    return len;
+  };
+  return { at, len: Math.max(1, len) };
+}
+
 // How long the minute takes on screen (ms): a highlight plays at `rate` × real time (FM's "match speed during
-// highlights"); between highlights the clock runs on quickly.
+// highlights"); between highlights the clock runs on quickly; a full match squeezes its dead time (squeeze above).
 export const BETWEEN_MS = 260;
 export function minuteMs(m: LiveMatch, mode: HlMode, rate: number): number {
+  if (mode === 4) return Math.round((squeeze(m).len * 1000) / rate);
   const s = shownOf(m, mode);
   return s ? Math.round(((s.to - s.from) * 1000) / rate) : BETWEEN_MS;
 }
 // The highlight speed for each pace setting (× real time): slow, normal, fast.
 export const RATES = [1.5, 2.5, 4];
+// The match speed bar (like FM's): any speed from RATE_MIN to RATE_MAX × real time, in RATE_STEP steps; the normal pace
+// is RATES[1]. A saved pace (0-2) from before the bar is read as its rate.
+export const RATE_MIN = 1, RATE_MAX = 6, RATE_STEP = 0.5;
+export const rateOf = (p: { rate?: number; pace?: 0 | 1 | 2 }) => p.rate ?? RATES[p.pace ?? 1];

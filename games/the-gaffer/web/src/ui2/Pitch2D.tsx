@@ -102,6 +102,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   const refRef = useRef<SVGGElement | null>(null);              // the referee
   const arRef = useRef<(SVGGElement | null)[]>([null, null]);  // the assistants: top (right half), bottom (left half)
   const monRef = useRef<SVGGElement | null>(null);              // the VAR monitor (shown during an on-field review)
+  const cardRef = useRef<SVGGElement | null>(null);             // a card the referee is showing
   const hurtRef = useRef<SVGGElement | null>(null);
   const netRef = useRef<SVGTextElement | null>(null);
   const anim = useRef<Anim | null>(null);
@@ -168,6 +169,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
             order.push([p.y, g]);
           }
           g.classList.toggle('carrier', on && a.poss === side && a.carrier === k);
+          g.classList.toggle('down', on && a.downs.some((d) => d.side === side && d.slot === k && a.time < d.until)); // brought down by a foul
         });
       }
       // Far players are drawn first, so nearer ones overlap them.
@@ -190,6 +192,12 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       // The officials: the referee, the assistants on their touchlines, the VAR monitor when there's a review.
       const place = (el: SVGGElement | null, x: number, y: number) => { if (!el) return; const [ox, oy, os] = pr(fx(x), y); el.setAttribute('transform', `translate(${ox.toFixed(2)} ${oy.toFixed(2)}) scale(${os.toFixed(3)})`); };
       place(refRef.current, a.off.ref.x, a.off.ref.y);
+      // The card the referee shows (held up above him).
+      if (cardRef.current) {
+        const cd = a.off.card, up = !!cd && a.time >= cd.from && a.time < cd.until;
+        cardRef.current.setAttribute('opacity', up ? '1' : '0');
+        if (up) { cardRef.current.querySelector('rect')?.setAttribute('fill', cd!.red ? '#e53935' : '#ffd400'); place(cardRef.current, a.off.ref.x, a.off.ref.y); }
+      }
       place(arRef.current[0], a.off.ar[0].x, a.off.ar[0].y);
       place(arRef.current[1], a.off.ar[1].x, a.off.ar[1].y);
       const rv = a.off.review, reviewing = !!rv && a.clock >= rv.from && a.clock < rv.until;
@@ -231,6 +239,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       </g>
       {!!m.wx && <Weather kind={m.wx} h={vh} />}
       <g ref={hurtRef} className="g-hurt" opacity="0"><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx=".5" fill="#fff" stroke="#c62828" strokeWidth=".25" /><path d="M-.35 -.95h.7v.6h.6v.7h-.6v.6h-.7v-.6h-.6v-.7h.6z" fill="#d32f2f" /></g>
+      <g ref={cardRef} className="g-card" opacity="0"><rect x=".9" y="-5.4" width="2" height="2.8" rx=".25" fill="#ffd400" stroke="#111" strokeWidth=".15" /><path d="M.6 -1.2 L1.6 -2.8" stroke="#fff" strokeWidth=".35" /></g>
       <g ref={monRef} className="g-var" opacity="0"><rect x="-2.6" y="-1.6" width="5.2" height="3.2" rx=".4" fill="#0b1220" stroke="#9fb3c8" strokeWidth=".25" /><text y=".7" textAnchor="middle" fontSize="1.9" fontWeight="800" fill="#fff">VAR</text></g>
       <g ref={flagRef} className="g-flag" opacity="0"><path d="M0 0V-4.2" stroke="#222" strokeWidth=".35" /><path d="M0 -4.2h2.6l-.5 1 .5 1H0z" fill="#ffd400" stroke="#7a6400" strokeWidth=".15" /></g>
       <text ref={netRef} className="g-goal" x={L / 2} y={vh / 2 + 4} textAnchor="middle" opacity="0">{goalWord}</text>

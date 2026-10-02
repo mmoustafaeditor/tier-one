@@ -8,7 +8,8 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   { const lastMove = []; let at = -1e9, prev = '';
     for (const x of samples) { if (x.min !== prev) { prev = x.min; at = x.t; } lastMove.push(x.t - at); }
     const before = samples.length; allFrames = before;
-    samples = samples.filter((x, i) => x.go && lastMove[i] < 8000);
+    // (a minute that runs longer on screen, as in Full match, is still in play until its own end)
+    samples = samples.filter((x, i) => x.go && lastMove[i] < Math.max(8000, (x.msPM ?? 0) * 1.2));
     if (samples.length < before) console.log(`  (left out ${before - samples.length} frames of a stopped match)`); }
   const L = 105, LINE = { GK: 'gk', CB: 'def', LB: 'def', RB: 'def', CDM: 'mid', CM: 'mid', CAM: 'mid', LW: 'fwd', RW: 'fwd', ST: 'fwd' };
   const depth = (side, x) => (side === 0 ? x : L - x);
@@ -96,7 +97,8 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   if (process.env.DBG) for (const c of corners) { const st = samples.find((x) => x.sp && x.sp.until === c.sp.until); console.log('start', st.t, JSON.stringify(st.pos[c.sp.side].map((q) => q && Math.round(depth(c.sp.side, q.x))))); }
   if (process.env.DBG) for (const c of corners) console.log(JSON.stringify({ sp: c.sp, t: c.t, beatLen: c.beatLen, att: c.pos[c.sp.side].map((q) => q && [Math.round(depth(c.sp.side, q.x)), Math.round(q.y)]) }));
   ok(corners.every((s) => boxN(s, s.sp.side) >= 4), `corners: 4+ attackers in the box (${corners.map((s) => boxN(s, s.sp.side)).join(', ') || 'none this run'})`);
-  ok(fks.every((s) => wallN(s) >= 3), `free kicks in range: a wall of 3+ at 9.15 m (${fks.map(wallN).join(', ') || 'none this run'})`);
+  // (central: 3+; out wide, where it will be crossed, 2: setpieces.ts wallSize)
+  ok(fks.every((s) => wallN(s) >= (Math.abs(s.sp.at.y - 34) > 18 ? 2 : 3)), `free kicks in range: a wall at 9.15 m of 3+ (2 out wide) (${fks.map(wallN).join(', ') || 'none this run'})`);
   // Phase 1 (body): turning and acceleration stay within each player's limits; better readers react sooner; nobody
   // sprints on an empty tank, and the tank does get used.
   console.log(`  body: max turn ${(kin.turn ?? 0).toFixed(2)} and max acceleration ${(kin.acc ?? 0).toFixed(2)} of the limit; ${reacts.length} reactions logged`);
