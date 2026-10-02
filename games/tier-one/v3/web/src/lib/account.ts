@@ -8,6 +8,7 @@ import { useSyncExternalStore } from 'react';
 import { v4, setV4Auth } from './api';
 import { getSave } from './save';
 import { loadConfig, flag } from './flags';
+import { track, flushTelemetry } from './analytics';
 import { pullOnBoot, watch, resetBase, canSync } from './sync';
 
 export const AUTH_KEY = 'tierone_v4_auth', ACCOUNT_KEY = 'tierone_v4_account';
@@ -82,22 +83,8 @@ export function detectPlatform(): 'web' | 'android' | 'pwa' | 'desktop' {
   return typeof matchMedia === 'function' && matchMedia('(pointer: fine)').matches ? 'desktop' : 'web';
 }
 
-// ---------------------------------------------------------------- telemetry queue (no PII; names like 'window.start')
-const queue: { t: number; name: string; props?: Record<string, string | number | boolean> }[] = [];
-let tmTimer = 0;
-export function track(name: string, props?: Record<string, string | number | boolean>) {
-  if (!flag('telemetry', true)) return;
-  queue.push({ t: Date.now(), name, props });
-  if (queue.length >= 40) flushTelemetry();
-  else if (!tmTimer && typeof window !== 'undefined') tmTimer = window.setTimeout(flushTelemetry, 15000);
-}
-export async function flushTelemetry(keepalive = false) {
-  clearTimeout(tmTimer); tmTimer = 0;
-  if (!queue.length) return;
-  const events = queue.splice(0, 50);
-  const r = await v4('telemetry.batch', { events }, { keepalive, timeoutMs: 6000 });
-  if (!r.ok && r.code === 'NET' && queue.length < 200) queue.unshift(...events);
-}
+// ---------------------------------------------------------------- telemetry: lib/analytics.ts (3.8, brief §54) owns the queue
+export { track, flushTelemetry } from './analytics';
 
 /** The platform boot sequence. Call once, after the save has loaded; never blocks the first paint (fire and forget). */
 export async function bootPlatform(clientVer: string): Promise<AccountState> {
@@ -112,7 +99,7 @@ export async function bootPlatform(clientVer: string): Promise<AccountState> {
     setState({ sync });
     watch();
   } else setState({ sync: 'skipped' });
-  window.addEventListener('pagehide', () => { flushTelemetry(true); });
   track('boot', { platform: detectPlatform(), created: state.created });
+  void flushTelemetry();
   return state;
 }
