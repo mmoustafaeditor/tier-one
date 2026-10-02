@@ -7,19 +7,20 @@ import type { Driver, View } from '../lib/driver';
 import { useT, fmtDate } from '../lib/i18n';
 import { getSave, update, useSave } from '../lib/save';
 import { sfx, buzz } from '../lib/sfx';
-import { leanOf, outWord, strWord, postLine, vars } from '../lib/story';
+import { leanOf, outWord, strWord, postLine, vars, evidenceOf } from '../lib/story';
 import { Icon, Kit, GBtn, TopBar, shake } from '../ui/game';
+import { Portrait } from '../ui/portrait';
 import { CallScene } from '../ui/CallScene';
 import { PostScene } from '../ui/PostScene';
 import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } from '../lib/meta';
 import { applyWindow, totalFavours, vinceOf, type CareerReport } from '../lib/career';
 import { storyBeats, pushBeats, beatScene, type Beat } from '../lib/storyMode';
 import { Sheet, useNow, Crest } from '../ui/bits';
-import { SagaFile, RIVAL_IC, type RivalRecord } from './Saga';
+import { SagaFile, RivalFace, type RivalRecord } from './Saga';
 import { Tip } from '../ui/fit';
 import { hereWeGo } from '../lib/share';
 import { Results } from './Results';
-import { playScene, afterScenes, firstToday } from '../lib/scenes';
+import { playScene, afterScenes, seen } from '../lib/scenes';
 // Surface films (GOTY.md §9, ui/film.tsx): the source's place behind the file, the city on Deadline Day, the clock
 // behind the countdown, the phone pick-up before a call, the stamp under a filed call. All additive: nothing without clips.
 import { WindowFilm, ResultsFilm, DDClockFilm, Beat as FilmBeat, playBeat, warmBeat } from '../ui/film';
@@ -134,7 +135,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
         // Deadline Day: the clock is running, so the quick burst instead of the full post.
         const hwg = hereWeGo({ o, s });
         sfx(hwg ? 'publish.hwg' : (['publish.talks', 'publish.advanced', 'publish.confirmed'] as const)[s]); setTimeout(() => sfx('stamp.done'), 120); buzz(s === 2 ? [20, 40, 30] : 18);
-        setFiledAt((f) => ({ ...f, [i]: Date.now() })); setBurst({ k: Date.now(), kind: s, hwg }); setTimeout(() => setBurst(null), 1700); shake(rootRef.current);
+        setFiledAt((f) => ({ ...f, [i]: Date.now() })); setBurst({ k: Date.now(), kind: s, hwg }); setTimeout(() => setBurst(null), 1100); shake(rootRef.current);
       } else setPosting({ i, o, s, ut, k: Date.now(), prev, hwg: hereWeGo({ o, s }) });
       if (view && view.state.day === view.R.DAYS && view.ddEndsAt && view.ddEndsAt - Date.now() <= 15000) ddLate.current = true;
     }
@@ -153,32 +154,39 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     setNight({ day: st.day, posts, twist, noTwist: st.noTwist && !before.noTwist, dd: st.day === view.R.DAYS });
     setDayEnd({ k: Date.now(), day: st.day });
   };
-  // Deadline Day opens with its film (full once a day, the short cut after); the clock only starts once it ends.
-  const startDD = () => { setNight(null); playScene(firstToday('deadline') ? 'deadline' : 'deadline-short'); afterScenes(async () => { const v = await driver.dd(); setView(v); }); };
+  // Deadline Day opens with its film (the full cut the first time ever, the short skippable cut after, §40); the clock
+  // only starts once it ends, so the film never eats the sixty seconds.
+  const startDD = () => { setNight(null); playScene(seen('deadline') ? 'deadline-short' : 'deadline'); afterScenes(async () => { const v = await driver.dd(); setView(v); }); };
   const finish = useCallback(async () => { const v = await driver.finish(); setView(v); settle(v); sfx('dd.whistle'); }, [driver, settle]);
+  // The training board's consequence (§31): the week plays out at once (rivals post, the twist lands, the window
+  // shuts) and the results land, so the first five minutes end on "I published, and this is what it cost / paid".
+  const fastForward = useCallback(async () => { setSel(null); setNight(null); const v = await driver.finish(); setView(v); settle(v); }, [driver, settle]);
 
   // ---------- states
   const home = () => chrome.go(view?.mode === 'career' ? { n: 'story' } : view?.mode === 'practice' ? { n: 'practice' } : view?.mode === 'room' ? { n: 'rooms' } : { n: 'front' });
   const title = view?.mode === 'daily' ? t('g.win.daily', { n: view.no || '' }) : view?.mode === 'room' ? t('rooms.round', { n: (view.room?.round || 0) + 1 }) : view?.mode === 'career' ? t('g.tabs.story') : t('nav.practice');
-  if (err) return <div className="g-screen play"><TopBar back={{ label: t('g.tabs.home'), onClick: home }} />
+  if (err) return <div className="g-screen play"><TopBar bare back={{ label: t('g.tabs.home'), onClick: home }} />
     <div className="g-card" style={{ marginTop: 20 }}><h1 className="g-h1">{t('g.win.offlineH')}</h1>
       <p className="g-sub" style={{ marginTop: 10 }}>{err === 'offline' ? t('err.offline') : t('daily.needNet')}</p>
       <GBtn style={{ marginTop: 18 }} onClick={load}><Icon n="phone" />{t('common.retry')}</GBtn>
       <GBtn kind="paper" style={{ marginTop: 12 }} onClick={() => chrome.go({ n: 'practice' })}>{t('daily.practiceInstead')}</GBtn></div></div>;
-  if (!view || !g) return <div className="g-screen play"><TopBar back={{ label: t('g.tabs.home'), onClick: home }} /><div className="loading-press"><span /><p className="g-mono">{t('common.loading')}</p></div></div>;
-  if (view.done && view.result) return <><Results view={view} chrome={chrome} report={report} start={startRef.current} beat={beat} /><ResultsFilm /></>;
+  if (!view || !g) return <div className="g-screen play"><TopBar bare back={{ label: t('g.tabs.home'), onClick: home }} /><div className="loading-press"><span /><p className="g-mono">{t('common.loading')}</p></div></div>;
+  if (view.done && view.result) return <><Results view={view} chrome={chrome} report={report} start={startRef.current} beat={beat} ddLast15={ddLate.current} /><ResultsFilm /></>;
 
   const dd = view.state.day === view.R.DAYS;
   const mob = sel != null;
   const tutor = view.mode === 'practice' && view.label === 'tutorial' && !(sv.tut && sv.tut.done);
-  // The tutorial ends here either way; the hand-off to the Story also drops the training board, so nothing nags to resume it.
+  // The tutorial ends here either way; the hand-off also drops the training board, so nothing nags to resume it.
   const endTut = (handoff: boolean) => update((x) => { x.tut = { ...(x.tut || {}), done: true }; if (handoff) x.practice.live = null; });
   const favours = view.mode === 'career' ? <FavourTray g={g} i={deskSel} onUse={(k) => act(['f', k, deskSel])} /> : null;
-  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={() => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } }} last={calling ? null : last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
+  const toBoard = () => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } };
+  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={toBoard} last={calling ? null : last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
+  // §28: during play the top bar carries only the way back and where you are (the wallet and the bell stay off).
+  const dayTitle = <span className="play__title"><span>{title}</span><span className="g-mono">{t('c38.win.day', { n: view.state.day, m: view.R.DAYS })}</span></span>;
 
   return <div className={'g-screen g-screen--wide play fit fit--full' + (dd ? ' is-dd' : '')} ref={rootRef}>
     <WindowFilm src={calling ? calling.c.src : last ? last.c.src : null} dd={dd} />
-    <TopBar back={mob ? { label: t('g.win.board'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : title} />
+    <TopBar bare back={mob ? { label: t('c38.file.back'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : dayTitle} />
     {dd && <DDHead view={view} onZero={finish} />}
     <div className="play__cols">
       <main className={mob ? 'only-desk' : ''}>
@@ -187,12 +195,12 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
         {!dd && <section className="dayhead">
           <DayStrip day={view.state.day} days={view.R.DAYS} />
           <div className="dayhead__row">
-            <div><div className="g-mono dayhead__k">{view.mode === 'daily' ? t('g.win.dailyK', { date: fmtDate(Date.now(), t.lang) }) : view.mode === 'career' ? t('career.ranks.' + (sv.career?.rank || 0)) : view.mode === 'room' ? t('nav.rooms') : t('practice.kicker')}</div>
+            <div><div className="g-mono dayhead__k">{view.mode === 'daily' ? t('g.win.dailyK', { date: fmtDate(Date.now(), t.lang) }) : view.mode === 'career' ? t('career.ranks.' + (sv.career?.rank || 0)) : view.mode === 'room' ? t('nav.rooms') : tutor ? t('c38.onb.training') : t('c38.pr.k')}</div>
               <h1 className="g-h2 dayhead__h">{t('g.win.dayH', { n: view.state.day })}</h1></div>
             <Phones left={view.state.left} max={view.R.CONTACTS} />
           </div>
         </section>}
-        {!dd && <Tip id="board" />}
+        {!dd && !tutor && <Tip id="board" />}
         {dd ? <DDBoard view={view} g={g} busy={busy} onOpen={setSel} onQuick={(i, o) => postCall(i, o, 1, !!g.calls[i])} />
           : <>
             <div className="sagas stagger">
@@ -205,7 +213,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <aside className={'play__file' + (mob ? '' : ' only-desk')}>{file}</aside>
     </div>
 
-    {tutor && !sceneUp && !calling && !night && !posting && !burst && <TutorCoach g={g} sel={sel} onDone={() => endTut(false)} onStory={() => { endTut(true); chrome.go({ n: 'story' }); }} />}
+    {tutor && !sceneUp && !calling && !night && !posting && !burst && <TutorCoach g={g} sel={sel} onDone={() => endTut(false)} onFinish={() => { endTut(false); fastForward(); }} />}
     {calling && view.cast[calling.i] && createPortal(<CallScene src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} mode={view.mode} onDone={() => setCalling(null)} />, document.body)}
     {burst && createPortal(<Burst key={burst.k} kind={burst.kind} hwg={burst.hwg} />, document.body)}
     {posting && view.cast[posting.i] && createPortal(<PostScene key={posting.k} c={view.cast[posting.i]} o={posting.o} s={posting.s} ut={posting.ut} prev={posting.prev} onDone={() => { const p = posting; setPosting(null); setFiledAt((f) => ({ ...f, [p.i]: Date.now() })); shake(rootRef.current); }} />, document.body)}
@@ -234,24 +242,27 @@ function Phones({ left, max }: { left: number; max: number }) {
     <span className="g-mono">{left ? t('g.win.callsLeft', { n: left }) : t('g.win.noCalls')}</span>
   </div>;
 }
+// A saga on the board (§28): who, where to, and the evidence in one word (Strong / Split / Weak, "2 agree", Echo).
 function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Game; i: number; open: boolean; onOpen: () => void; filed?: number; hint?: boolean }) {
   const t = useT();
-  const c = view.cast[i], call = g.calls[i], ln = leanOf(g, i);
-  const circ = ln.none ? 0 : E.circlesFor(g, i, ln.o).size;
+  const c = view.cast[i], call = g.calls[i], ln = leanOf(g, i), ev = evidenceOf(g, i);
   const tw = g.twist && g.twist.i === i;
   const posted = E.livePosts(g, i).length;
   const vince = view.mode === 'career' && vinceOf(view.R)?.i === i;
   return <button className={'scard' + (open ? ' is-open' : '') + (call ? ' is-called' : '') + (hint ? ' is-hint' : '')} style={{ ['--i' as string]: i }} onClick={onOpen} aria-label={c.player.n}>
     {call && <FilmBeat stem={stampBeat(OUTS[call.o])} trigger={filed || null} className="fl-beat--stamp" />}
-    <Kit club={c.from} player={c.player} size={58} />
+    <span className="scard__face"><Portrait kind="player" id={c.player.id} club={c.from} size={52} /><Kit club={c.from} player={c.player} size={22} style={{ position: 'absolute', insetInlineEnd: -5, bottom: -5 }} /></span>
     <span className="scard__b">
-      <span className="scard__n">{c.player.n}</span>
+      <span className="scard__n" dir="auto">{c.player.n}</span>
       <span className="scard__r"><Crest club={c.from} size={18} /><Icon n={t.rtl ? 'back' : 'arrow'} size={14} /><Crest club={c.to} size={18} /><span>{c.to.s}</span></span>
       <span className="scard__st">
         {tw && <span key="tw" className="g-chip g-chip--red chip-in">{t('stamp.twist')}</span>}
         {vince && <span key="vp" className="g-chip vince-chip" title={t('g.story.vince.banner')}><Icon n="eye" />{t('g.story.vince.chip')}</span>}
-        {!call && (ln.none ? <span className="g-chip">{t('g.win.notRung')}</span> : <span key={'ln' + ln.o + (ln.split ? 's' : '') + circ} className={'g-chip chip-in g-chip--' + OUTS[ln.o]}>{ln.split ? t('daily.split') : t('daily.lean', { o: outWord(t.lang, ln.o) })}{circ >= 2 ? ' ✓✓' : ''}</span>)}
-        {posted > 0 && !call && <span key={'rv' + posted} className="g-chip scard__riv chip-in"><Icon n="bolt" />{t('g.win.rivalPosted', { n: posted })}</span>}
+        {!call && (ln.none ? <span className="g-chip">{t('g.win.notRung')}</span>
+          : <span key={'ev' + ev.word + ln.o + ev.agree + (ev.echo ? 'e' : '')} className={'g-chip chip-in scard__ev evw--' + ev.word + (ev.echo ? ' is-echo' : '') + ' g-chip--' + OUTS[ln.o]}>
+            {ev.echo ? <><Icon n="eye" />{t('c38.ev.' + ev.word)}</> : <>{t('c38.ev.' + ev.word)}{!ln.split && <> · {outWord(t.lang, ln.o)}</>}{ev.agree >= 2 ? <> · {t('c38.ev.circles', { n: ev.agree })}</> : null}</>}
+          </span>)}
+        {posted > 0 && !call && <span key={'rv' + posted} className="g-chip scard__riv chip-in"><Icon n="bolt" />{posted === 1 ? t('c38.ev.rivalOne') : t('c38.ev.rival', { n: posted })}</span>}
       </span>
     </span>
     <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + (hereWeGo(call) ? 'gold scard__hwg' : OUTS[call.o]) + (filed ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : outWord(t.lang, call.o)}</span> : <Icon n={t.rtl ? 'back' : 'arrow'} size={22} />}</span>
@@ -262,13 +273,17 @@ function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Ga
 // the DOM (is the call panel open, what's pressed), so the tip always matches what's on screen. A coach mark sits above
 // or below its target with a spotlight around it and never over it; the page scrolls so both fit. Day one ends with the
 // hand-off to the Story: the story lane decides what plays next (its prologue), nothing here knows its internals.
-const TUT_STEPS = ['open', 'ring', 'second', 'go', 'what', 'loud', 'back', 'sleep'] as const;
+// 3.8 (LAUNCH_BRIEF §31): open a file → ring the Kit Man → ring a second kind of source → read the evidence and make the
+// call → what happens → how sure, hold Publish → (phones: back to the board) → the consequence: fast-forward the week.
+const TUT_STEPS = ['open', 'ring', 'second', 'read', 'what', 'loud', 'back', 'result'] as const;
 type TutStep = (typeof TUT_STEPS)[number];
 // What each step points at (a union of several boxes when the step is about more than one control).
 const TUT_TARGET: Record<TutStep, string[]> = {
-  open: ['.sagas .scard.is-hint'], ring: ['.file2 .srcs'], second: ['.file2 .srcs'], go: ['.callgate__b'],
-  what: ['.callform .outs'], loud: ['.callform .vols', '.callbox .publish'], back: ['.play .g-top__back'], sleep: ['.play__cols > main > .g-btn'],
+  open: ['.sagas .scard.is-hint'], ring: ['.file2 .src[data-src="kitman"]', '.file2 .srcs'], second: ['.file2 .srcs'], read: ['.file2 .evsum', '.file3__bar'],
+  what: ['.callform .outs'], loud: ['.callform .vols', '.callbox .publish'], back: ['.play .g-top__back'], result: ['.play__cols > main > .g-btn'],
 };
+// The words for each step: the 3.8 lines where the step changed, the 3.6 lines where it did not.
+const TUT_KEY: Record<TutStep, string> = { open: 'g.tut.open', ring: 'c38.tut.ring', second: 'c38.tut.second', read: 'c38.tut.read', what: 'g.tut.what', loud: 'g.tut.loud', back: 'g.tut.back', result: 'c38.tut.result' };
 const TUT_TOP = 64, TUT_GAP = 12, TUT_PAD = 6, TUT_HEAD = 52; // sticky bar, tip gap, ring padding, headroom for a section heading
 const isDesk = () => window.matchMedia('(min-width: 960px)').matches;
 const q = (sel: string) => document.querySelector<HTMLElement>(sel);
@@ -284,14 +299,14 @@ function useSceneUp() {
 }
 function tutStep(g: Game, sel: number | null): TutStep {
   const desk = isDesk(), i = sel ?? 0;
-  if (g.calls.some(Boolean)) return !desk && sel != null ? 'back' : 'sleep';
+  if (g.calls.some(Boolean)) return !desk && sel != null ? 'back' : 'result';
   if (sel == null && !desk) return 'open';
   if (q('.callform')) return q('.callform .out[aria-pressed="true"]') ? 'loud' : 'what';
   const reads = E.curReads(g, i).length, ln = leanOf(g, i);
   if (!reads) return 'ring';
   const more = g.left > 0 && !!q('.file2 .src:not(:disabled)');
   if (more && (ln.none || (E.circlesFor(g, i, ln.o).size < 2 && reads < 2))) return 'second';
-  return 'go';
+  return 'read';
 }
 type Box = { top: number; left: number; bottom: number; right: number };
 const boxOf = (step: TutStep): Box | null => {
@@ -310,7 +325,7 @@ const scrollerOf = (step: TutStep): HTMLElement | null => {
 // The band of the viewport the target can be seen in: under the sticky bar, or the scroll box's own visible area.
 const viewBand = (sc: HTMLElement | null) => (sc ? { top: sc.getBoundingClientRect().top, bottom: sc.getBoundingClientRect().bottom } : { top: TUT_TOP, bottom: innerHeight - 8 });
 
-function TutorCoach({ g, sel, onDone, onStory }: { g: Game; sel: number | null; onDone: () => void; onStory: () => void }) {
+function TutorCoach({ g, sel, onDone, onFinish }: { g: Game; sel: number | null; onDone: () => void; onFinish: () => void }) {
   const t = useT();
   const [, bump] = useState(0);
   const tip = useRef<HTMLDivElement>(null), ring = useRef<HTMLDivElement>(null);
@@ -383,16 +398,16 @@ function TutorCoach({ g, sel, onDone, onStory }: { g: Game; sel: number | null; 
     return () => { document.removeEventListener('scroll', on, { capture: true }); removeEventListener('resize', re); document.removeEventListener('animationend', anim, true); document.removeEventListener('transitionend', anim, true); cancelAnimationFrame(raf); };
   }, [place, focus]);
 
-  const last = step === 'sleep';
+  const last = step === 'result';
   return createPortal(<>
     <div ref={ring} className="tutor-ring" aria-hidden="true" />
     <div ref={tip} className={'tutor' + (last ? ' tutor--last' : '')} role="status" data-step={step} key={step}>
       <span className="tutor__n" aria-label={t('g.tut.step', { n, m: list.length })}>{n}/{list.length}</span>
       <div className="tutor__b">
-        <b>{t('g.tut.' + step)}</b><p>{t('g.tut.' + step + 'P')}</p>
+        <b>{t(TUT_KEY[step])}</b><p>{t(TUT_KEY[step] + 'P')}</p>
         {last && <div className="tutor__acts">
-          <button type="button" className="tutor__go" onClick={() => { sfx('open'); onStory(); }}><Icon n="story" size={18} />{t('g.tut.story')}</button>
-          <button type="button" className="tutor__ok" onClick={() => { sfx('ui.tap'); onDone(); }}>{t('g.tut.keep')}</button>
+          <button type="button" className="tutor__go" onClick={() => { sfx('open'); onFinish(); }}><Icon n="bolt" size={18} />{t('c38.tut.ff')}</button>
+          <button type="button" className="tutor__ok" onClick={() => { sfx('ui.tap'); onDone(); }}>{t('c38.tut.keep')}</button>
         </div>}
       </div>
       {!last && <button type="button" className="tutor__skip" onClick={() => { sfx('ui.tap'); onDone(); }}>{t('g.tut.skip')}</button>}
@@ -400,11 +415,11 @@ function TutorCoach({ g, sel, onDone, onStory }: { g: Game; sel: number | null; 
   </>, document.body);
 }
 
-// A publish goes out: reactions float up off the page.
+// A publish goes out (Deadline Day): reactions float up off the page. Pointer events pass through: input is never blocked.
 function Burst({ kind, hwg }: { kind: number; hwg?: boolean }) {
   const t = useT();
   const bits = ['share', 'flame', 'eye', 'share', 'star', 'flame', 'eye', 'bolt', 'share', 'flame'];
-  return <div className={'burst' + (hwg ? ' is-hwg' : '')} aria-hidden="true">
+  return <div className={'burst' + (hwg ? ' is-hwg' : '')} aria-hidden="true" style={{ pointerEvents: 'none' }}>
     <span className="burst__word">{hwg ? catchphraseOf().text.toUpperCase() : t('g.win.published.' + kind)}</span>
     {bits.map((b, k) => <i key={k} style={{ left: 10 + (k * 83) % 80 + '%', animationDelay: k * 70 + 'ms' }}><Icon n={b} /></i>)}
   </div>;
@@ -413,7 +428,8 @@ function Burst({ kind, hwg }: { kind: number; hwg?: boolean }) {
 // Overnight (GOTY.md §2): dusk to dawn, then each rival post lands as a BREAKING card with the rival's avatar and a
 // taunt that fits your call (and the ledger when the connect lane provides one). A twist glitches the screen and slams
 // STOP PRESS. ~2 s at most; a tap skips straight to the end state; reduced motion shows it static.
-const NIGHT_SKY = 700, NIGHT_STEP = 140, NIGHT_TWIST = 450;
+// 3.8 (§40): the sky turns in 450 ms, the cards land 110 ms apart (≤ 550 ms), a twist takes 350 ms more; a tap skips.
+const NIGHT_SKY = 450, NIGHT_STEP = 110, NIGHT_TWIST = 350;
 function tauntFor(t: ReturnType<typeof useT>, g: Game, p: Post): string {
   const mine = g.calls[p.i], rec = rivalRecordOf(p.id);
   let mood = !mine ? 'beat' : mine.o === p.claim ? 'copy' : 'clash';
@@ -428,7 +444,7 @@ function NightScene({ night, view, onGo }: { night: Night; view: View; onGo: () 
   const [stage, setStage] = useState(reduced ? 2 : 0);
   const [skip, setSkip] = useState(reduced);
   const lead = night.twist ? NIGHT_TWIST : 0;
-  const cardsMs = Math.min(night.posts.length * NIGHT_STEP, 700);
+  const cardsMs = Math.min(night.posts.length * NIGHT_STEP, 550);
   useEffect(() => {
     if (stage >= 2) return;
     if (stage === 0) {
@@ -451,7 +467,7 @@ function NightScene({ night, view, onGo }: { night: Night; view: View; onGo: () 
       {stage >= 1 && night.twist && <div className="twistcard"><span className={'g-stamp g-stamp--xl' + (skip ? '' : ' is-slam')} style={{ ['--sc' as string]: '#fff' }}>{t('g.saga.stopPress')}</span><b>{t('night.twist', { p: view.cast[night.twist.i].player.s })}</b><p>{t('night.twistBody')}</p></div>}
       {stage >= 1 && night.dd && <p className="night2__dd">{t('night.ddBody')}</p>}
       {stage >= 1 && night.posts.length > 0 && <div className="breaks">{night.posts.map((p, k) => { const c = view.cast[p.i]; const tn = tauntFor(t, g, p); return <div key={k} className="brk" style={{ animationDelay: skip ? '0ms' : lead + Math.min(k, 5) * NIGHT_STEP + 'ms' }}>
-        <span className={'rv-av rv-av--' + p.id}>{RIVAL_IC[p.id]}</span>
+        <RivalFace id={p.id} size={42} name={t('rival.' + p.id)} />
         <div className="brk__b">
           <div className="brk__h"><span className="brk__tag">{t('calls.night.breaking')}</span><b>{t('rival.' + p.id)}</b><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div>
           <p>{postLine(t.lang, c, p)}</p>
@@ -465,41 +481,57 @@ function NightScene({ night, view, onGo }: { night: Night; view: View; onGo: () 
   </div>;
 }
 
-// ---------- Deadline Day: a red takeover, a heartbeat, one-tap posts.
+// ---------- Deadline Day (3.8, LAUNCH_BRIEF §9): a red takeover with five phases on one fair clock.
+//   60 s normal urgency · 30 s the heartbeat · 15 s Quick Post (one tap files the lean at Advanced) · 10 s the ticking
+//   doubles · 5 s the clock pulses · 0 the whistle. The deadline comes from the server's own count (lib/driver.ts,
+//   latency-corrected) and the server keeps a few seconds of grace, so a slow line never robs a post that was sent in
+//   time. Under reduced motion the shake and pulse are off (styles) and the phone stays still; the phases still sound.
+//   Nothing here ever blocks input: the clock is a separate layer and the board below stays live to the last tenth.
+type DDPhase = 'normal' | 'heart' | 'quick' | 'tick' | 'pulse';
+const ddPhase = (sec: number, R: View['R']): DDPhase => (sec <= 5 ? 'pulse' : sec <= 10 ? 'tick' : sec <= R.DD_SNAP ? 'quick' : sec <= 30 ? 'heart' : 'normal');
 function DDHead({ view, onZero }: { view: View; onZero: () => void }) {
   const t = useT();
   const now = useNow(100, true);
   const end = view.ddEndsAt || now + view.R.DD_SECONDS * 1000;
   const ms = Math.max(0, end - now), sec = Math.floor(ms / 1000), cs = Math.floor((ms % 1000) / 100);
   const fired = useRef(false), lastTick = useRef(99);
+  const phase = ddPhase(sec, view.R);
   useEffect(() => {
     if (sec !== lastTick.current && ms > 0) {
       lastTick.current = sec;
-      if (sec <= 10) { sfx('dd.tick'); buzz(8); } else if (sec <= 30) sfx('dd.heart');
+      if (phase === 'pulse') { sfx('dd.pulse'); buzz(14); } else if (phase === 'tick') { sfx('dd.tick'); buzz(8); } else if (phase !== 'normal') sfx('dd.heart');
+      if (sec === 15 || sec === 10 || sec === 5) buzz([20, 30, 20]);
     }
     if (ms <= 0 && !fired.current) { fired.current = true; onZero(); }
-  }, [sec, ms, onZero]);
+  }, [sec, ms, onZero, phase]);
   const total = view.R.DD_SECONDS;
-  return <div className={'ddh' + (sec <= 10 ? ' is-last' : sec <= 30 ? ' is-hot' : '')} style={{ ['--ddp' as string]: String(1 - ms / (total * 1000)) }}>
+  const open = view.cast.filter((_, i) => !view.state.calls[i]).length;
+  const note = phase === 'normal' ? t('dd.note') : phase === 'heart' ? t('c38.dd.phase.heart') : phase === 'quick' ? t('c38.dd.phase.quick') : phase === 'tick' ? t('c38.dd.phase.tick') : t('c38.dd.phase.pulse');
+  return <div className={'ddh ph-' + phase + (phase === 'pulse' ? ' is-pulse' : '') + (phase === 'tick' ? ' is-last' : '') + (phase === 'heart' || phase === 'quick' ? ' is-hot' : '')} style={{ ['--ddp' as string]: String(1 - ms / (total * 1000)) }}>
     <DDClockFilm />
-    <div className="ddh__band"><b>{t('dd.band')}</b><span>{t('dd.posts', { n: view.R.DD_POSTS - view.state.posts7 })}</span></div>
+    <div className="ddh__band"><b>{t('dd.band')}</b><span>{t('dd.posts', { n: view.R.DD_POSTS - view.state.posts7 })} · {open ? t('c38.dd.open', { n: open }) : t('c38.dd.allFiled')}</span></div>
     <div className="ddh__clock" role="timer" aria-live="off" aria-label={sec + 's'}><span className="ddh__s">{String(sec).padStart(2, '0')}</span><span className="ddh__cs">.{cs}</span></div>
-    <div className="ddh__bar"><i style={{ width: (100 * ms) / (total * 1000) + '%' }} /></div>
-    <p className="ddh__note">{t('dd.note')}</p>
+    <div className="ddh__bar"><i style={{ width: (100 * ms) / (total * 1000) + '%' }} /><span className="ddh__marks" aria-hidden="true">{[30, view.R.DD_SNAP, 10, 5].map((m) => <i key={m} style={{ insetInlineStart: (100 * m) / total + '%' }} />)}</span></div>
+    <p className="ddh__note" aria-live="polite">{note}{view.ddGraceMs ? <span className="ddh__sync g-mono"> · {t('c38.dd.synced', { n: Math.round(view.ddGraceMs / 1000) })}</span> : null}</p>
   </div>;
 }
+// The board on Deadline Day: unresolved sagas first and marked, one tap posts the lean (Advanced); Quick Post in the last
+// DD_SNAP seconds only changes the words and the glow, never the controls, so nothing has to be relearned at 14 s.
 function DDBoard({ view, g, busy, onOpen, onQuick }: { view: View; g: Game; busy: boolean; onOpen: (i: number) => void; onQuick: (i: number, o: number) => void }) {
   const t = useT();
   const now = useNow(250, true);
   const quick = !!view.ddEndsAt && view.ddEndsAt - now <= view.R.DD_SNAP * 1000;
-  return <div className="ddb">
-    <div className="g-sec"><h2>{quick ? t('dd.quick') : t('dd.stillOpen')}</h2><span className="g-mono">{quick ? t('dd.quickNote') : t('dd.stillAside')}</span></div>
-    {view.cast.map((c, i) => {
-      const call = g.calls[i], ln = leanOf(g, i), cs = E.callState(g, i);
+  const order = view.cast.map((_, i) => i).sort((a, b) => Number(!!g.calls[a]) - Number(!!g.calls[b]) || a - b);
+  const open = order.filter((i) => !g.calls[i]).length;
+  return <div className={'ddb' + (quick ? ' is-quick' : '')}>
+    <div className="g-sec"><h2>{quick ? t('c38.dd.quick') : t('dd.stillOpen')}</h2><span className="g-mono">{quick ? t('c38.dd.quickNote') : open ? t('c38.dd.open', { n: open }) : t('c38.dd.allFiled')}</span></div>
+    {order.map((i) => {
+      const c = view.cast[i];
+      const call = g.calls[i], ln = leanOf(g, i), ev = evidenceOf(g, i), cs = E.callState(g, i);
       const canPost = cs === 'ok' && !ln.none;
       const canUt = !!call && E.canUturn(g, i) && !ln.none && ln.o !== call.o;
-      return <div key={i} className={'ddc' + (quick && canPost ? ' is-quick' : '')}>
-        <button className="ddc__who" onClick={() => onOpen(i)}><Kit club={c.from} player={c.player} size={44} /><span><b>{c.player.s} → {c.to.s}</b><span className="g-mono">{call ? t('dd.filed', { s: strWord(t.lang, call.s), o: outWord(t.lang, call.o) }) : ln.none ? t('dd.noLean') : t('daily.lean', { o: outWord(t.lang, ln.o) }) + ' · ' + t('daily.circles', { n: E.circlesFor(g, i, ln.o).size })}</span></span></button>
+      return <div key={i} className={'ddc' + (quick && canPost ? ' is-quick' : '') + (!call ? ' is-open' : '')}>
+        <button className="ddc__who" onClick={() => onOpen(i)}><Kit club={c.from} player={c.player} size={44} /><span><b>{c.player.s} → {c.to.s}</b><span className="g-mono">{call ? t('dd.filed', { s: strWord(t.lang, call.s), o: outWord(t.lang, call.o) }) : ln.none ? t('dd.noLean') : t('c38.ev.' + ev.word) + (ln.split ? '' : ' · ' + outWord(t.lang, ln.o)) + (ev.agree >= 2 ? ' · ' + t('c38.ev.circles', { n: ev.agree }) : '')}</span>{!call && <span className="ddc__tag">{t('c38.dd.unresolved')}</span>}</span></button>
         {canPost ? <button className={'ddc__go oc--' + OUTS[ln.o]} disabled={busy} onClick={() => onQuick(i, ln.o)}>{t('g.win.ddPost', { o: outWord(t.lang, ln.o) })}</button>
           : canUt ? <button className="ddc__go" disabled={busy} onClick={() => onQuick(i, ln.o)}>{t('dd.uturn', { o: outWord(t.lang, ln.o) })}</button>
           : call ? <span className={'g-stamp g-stamp--' + OUTS[call.o]}>{outWord(t.lang, call.o)}</span>

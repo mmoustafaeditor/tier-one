@@ -66,3 +66,44 @@ export function nextMove(g: Game, i: number): { kind: 'ask'; src: string } | { k
 export function streetCount(g: Game, i: number) {
   return E.curReads(g, i).filter((c) => g.R.CIRCLE[c.src] === 'street').length + E.livePosts(g, i).filter((f) => g.R.CIRCLE[f.id] === 'street').length;
 }
+
+// ---------- 3.8 (LAUNCH_BRIEF §5–§6): the evidence in words, never in percentages.
+/** The qualitative reliability line for a source or rival (c38.rel.<key>). Ranked modes show only this. */
+export const relKey = (src: string) => 'c38.rel.' + (src in GRADE ? src : 'barber');
+export type EvidenceWord = 'none' | 'weak' | 'split' | 'strong';
+export interface Evidence { word: EvidenceWord; lean: Lean; circles: number; echo: boolean; reads: number; rivals: number; agree: number }
+/**
+ * What the file says at a glance: Strong (two independent circles back the lean and nothing close contests it),
+ * Split (two outcomes within reach of each other), Weak (one circle, or only street voices), None (no reads).
+ * `echo`: two or more street voices repeating the same line (the barber and the gossip rivals share one circle).
+ * `agree`: how many independent circles back the lean (what "N independent sources agree" prints).
+ */
+export function evidenceOf(g: Game, i: number): Evidence {
+  const lean = leanOf(g, i);
+  const reads = E.curReads(g, i).length, rivals = E.livePosts(g, i).length;
+  const circles = lean.none ? 0 : E.circlesFor(g, i, lean.o).size;
+  const streetAgree = E.curReads(g, i).filter((c) => g.R.CIRCLE[c.src] === 'street' && E.weights(g.R, c.src, c.r)[lean.o] > 0).length + E.livePosts(g, i).filter((f) => g.R.CIRCLE[f.id] === 'street' && f.claim === lean.o).length;
+  const echo = !lean.none && streetAgree >= 2;
+  const word: EvidenceWord = lean.none ? 'none' : lean.split ? 'split' : circles >= 2 ? 'strong' : 'weak';
+  return { word, lean, circles, echo, reads, rivals, agree: circles };
+}
+/** How hot a saga is on the board (0–3): rival posts and a twist raise it. Feel only. */
+export function heatOf(g: Game, i: number): number {
+  const posts = E.livePosts(g, i).length, tw = g.twist && g.twist.i === i ? 1 : 0;
+  return Math.min(3, posts + tw);
+}
+/**
+ * §30 "Why was this source misleading?": one line per read on a finished saga (c38.why.*). Explains the source's
+ * nature (street echo, agent bias, Off/Fake blindness, kit man's "whether, not where"), the twist, or an honest miss.
+ */
+export function whyKey(R: Game['R'], read: { src: string; r: number; day: number; right: boolean }, truth: number, tw: number): string {
+  if (tw && read.day < tw) return 'c38.why.twist';
+  if (read.right) return 'c38.why.right';
+  const so = E.srcOf(R, 0, read.src) || R.SOURCES[read.src];
+  if (so && so.kind === 'street') return 'c38.why.street';
+  if (read.src === 'agent') return read.r === 0 ? 'c38.why.agentDone' : 'c38.why.agentNeg';
+  if (read.src === 'spotter' && truth >= 2) return 'c38.why.spotterOF';
+  if (read.src === 'physio' && truth >= 2) return 'c38.why.physioOF';
+  if (read.src === 'kitman') return 'c38.why.kitman';
+  return 'c38.why.honest';
+}

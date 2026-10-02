@@ -22,10 +22,12 @@ import { Icon, Kit, GBtn, TopBar, CountUp, confetti, shake, SrcIcon, useCountUp 
 import { Avatar } from '../ui/screenbits';
 import { useRecordWindow } from '../ui/connect';
 import { Sheet } from '../ui/bits';
-import { renderCard, shareText, hereWeGoOf } from '../lib/share';
+import { renderCard, hereWeGoOf, viralLines, viralText, type ViralCtx } from '../lib/share';
+import { whyKey } from '../lib/story';
+import { Portrait } from '../ui/portrait';
 import type { Chrome } from '../App';
 import '../styles/results.css';
-import { flushDeferredScenes, playScene, afterScenes, firstToday } from '../lib/scenes';
+import { flushDeferredScenes, playScene, afterScenes, seen } from '../lib/scenes';
 import { windowKey, bylineOf, repTier, REP_TIERS, type WindowSummary } from '../lib/byline';
 import { catchphraseOf } from '../lib/catchphrase';
 import { ShareToX } from '../ui/sharex';
@@ -41,15 +43,16 @@ export interface Start { pp: number; credits: number; streak: number }
 type Modal = null | { k: 'thread'; i: number } | { k: 'replies' } | { k: 'breakdown' } | { k: 'board' };
 const verdictOf = (p: ResultSaga) => (!p.call ? 'none' : p.excl ? 'excl' : p.right ? 'right' : 'wrong');
 
-export function Results({ view, chrome, report, start, beat }: { view: View; chrome: Chrome; report: CareerReport | null; start?: Start; beat?: Beat | null }) {
+export function Results({ view, chrome, report, start, beat, ddLast15 }: { view: View; chrome: Chrome; report: CareerReport | null; start?: Start; beat?: Beat | null; ddLast15?: boolean }) {
   const t = useT();
   const s = useSave();
   const r = view.result!;
   const cast = (r.cast && r.cast.length ? r.cast : view.cast) as CastSaga[];
   const [stage, setStage] = useState(s.reduced ? 99 : 0);
-  // "The paper's out" film replaces the press stage the first time a Daily/Career/Practice window lands (full cut once
-  // a day, the short cut after). Read before useRecordWindow records the window, so revisits skip it.
-  const [film, setFilm] = useState(() => stage === 0 && view.mode !== 'room' && !matchMedia('(prefers-reduced-motion: reduce)').matches && !(getSave().byline?.keys || []).includes(windowKey(view)));
+  const tutorial = view.mode === 'practice' && view.label === 'tutorial';
+  // "The paper's out" (§40): the full film plays the first time a window ever lands; after that the presses roll for
+  // half a second and the page is up. Nobody waits through the same film twice. Revisits (recorded windows) skip it.
+  const [film, setFilm] = useState(() => stage === 0 && view.mode !== 'room' && !tutorial && !seen('paper') && !matchMedia('(prefers-reduced-motion: reduce)').matches && !(getSave().byline?.keys || []).includes(windowKey(view)));
   const [modal, setModal] = useState<Modal>(null);
   const [pane, setPane] = useState<'page' | 'calls'>('page'); // 3.6: one screen on phones, front page · your calls
   const root = useRef<HTMLDivElement>(null);
@@ -74,25 +77,31 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   useEffect(() => {
     if (!film || filmOn.current) return;
     filmOn.current = true; // once, even under StrictMode's double effects
-    playScene(firstToday('paper') ? 'paper' : 'paper-short', { hed, what, paper: view.mode === 'career' ? s.career?.paper || undefined : undefined });
+    playScene('paper', { hed, what, paper: view.mode === 'career' ? s.career?.paper || undefined : undefined });
     afterScenes(() => { setFilm(false); setStage((x) => Math.max(x, 1)); });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // The reveal (§40): presses 500 ms, the verdict card 450, each call 260, the tier stamp 600. About 2.9 s for five
+  // sagas, and a tap skips to the end at any point.
   useEffect(() => {
     if (stage >= PROG || film) return;
-    const ms = stage === 0 ? 900 : stage === 1 ? 650 : stage < TIER ? 380 : 800;
+    const ms = stage === 0 ? 500 : stage === 1 ? 450 : stage < TIER ? 260 : 600;
     const id = setTimeout(() => setStage(stage + 1), ms);
     if (stage === 0) sfx('typewriter');
     if (stage === 1) sfx('reveal');
-    if (stage >= 2 && stage < TIER) { const v = verdictOf(r.per[stage - 2]); if (v !== 'none') sfx(v === 'excl' ? 'star' : v === 'right' ? 'good' : 'bad', stage - 2); }
+    if (stage >= 2 && stage < TIER) { const v = verdictOf(r.per[stage - 2]); if (v !== 'none') sfx(v === 'excl' ? 'excl.stamp' : v === 'right' ? 'good' : 'bad', stage - 2); }
     return () => clearTimeout(id);
   }, [stage, film]);
+  // The tier lands. Gold (and the fanfare) is Tier 1's alone (§8): Tier 2 gets a green stamp, no confetti.
   useEffect(() => {
     if (stage !== TIER) return;
     if (r.tier === 'T1') { sfx('fanfare'); confetti(); buzz([30, 60, 30, 60, 80]); }
     else if (r.tier === 'SPIKED') { sfx('sad'); shake(root.current); buzz(120); }
-    else { sfx('stamp.done'); buzz(30); if (r.tier === 'T2') confetti(['#2FBF71', '#F4EFE4', '#F7B928'], 60); }
+    else { sfx('stamp.done'); buzz(30); }
   }, [stage]);
   const skip = () => { if (stage < PROG) setStage(99); };
+  // §8 the Exclusive moment: once the page is up, the stamp slams with its own sound and the follower spike beside it.
+  const [exclUp, setExclUp] = useState(false);
+  useEffect(() => { if (stage >= PROG && r.ex > 0 && !exclUp) { const id = setTimeout(() => { setExclUp(true); sfx('excl.stamp'); buzz([20, 40, 20, 60]); }, 250); return () => clearTimeout(id); } }, [stage >= PROG]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const best = [...r.per].sort((a, b) => b.pts - a.pts)[0];
   const bc = best ? cast[best.i] : cast[0];
@@ -110,10 +119,15 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
   };
   const cur = modal && modal.k === 'thread' ? threads.find((x) => x.i === modal.i) : null;
   const replies = threads.reduce((a, th) => a + th.replies.length, 0);
-  const share = useShare(view, r, what, hed, bestDest, bc);
+  // §10 the viral object: the same lines on screen, in the share sheet and on the clipboard.
+  const vctx: ViralCtx = { mode: view.mode, no: view.no, what, r, daysTotal: view.R.DAYS, streak: s.streak.n, streakBest: s.streak.best, firstT1: r.tier === 'T1' && (s.stats.t1 || 0) <= 1, ddLast15, promoted: report && report.promoted != null ? t('career.ranks.' + report.promoted) : null };
+  const viral = viralLines(t, vctx);
+  const share = useShare(view, r, what, hed, bestDest, bc, viralText(t, vctx));
+  const exclSaga = r.per.find((p) => p.excl);
+  const exclGain = byline && byline.followers > 0 ? byline.followers : 0;
 
   return <div className="g-screen results2 res4 fit fit--full" data-pane={pane} ref={root} onClick={skip}>
-    <TopBar back={{ label: t('g.tabs.home'), onClick: home }} />
+    <TopBar bare={stage < PROG} back={{ label: t('g.tabs.home'), onClick: home }} />
     {stage >= PROG && <div className="g-tabs2 res-tabs" role="tablist">
       {(['page', 'calls'] as const).map((k) => <button key={k} role="tab" aria-selected={pane === k} onClick={(e) => { e.stopPropagation(); sfx('ui.tap'); setPane(k); }}>{t('hub.res.' + k)}</button>)}
     </div>}
@@ -131,26 +145,44 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
               <h1 className="vcard__hed">{hed}</h1>
             </div>
             <div className="vcard__stampwrap">
-              {stage >= TIER ? <span className={'vcard__stamp g-stamp is-slam g-stamp--' + (TIER_C[r.tier] || '')}>{t('tier.' + r.tier)}</span> : <Kit club={bestDest} player={bc.player} size={72} />}
+              {stage >= TIER ? <span className={'vcard__stamp g-stamp is-slam g-stamp--' + (TIER_C[r.tier] || '')}>{t('tier.' + r.tier)}</span> : <Portrait kind="player" id={bc.player.id} club={bestDest} size={72} />}
             </div>
           </div>
           <div className="vcard__score">
-            <div className="vcard__pts"><b className={'g-num' + (r.total < 0 ? ' neg' : '')}><CountUp to={r.total} ms={900 + n * 380} tick /></b><span className="g-mono">{t('results.total')}</span></div>
+            <div className="vcard__pts"><b className={'g-num' + (r.total < 0 ? ' neg' : '')}><CountUp to={r.total} ms={700 + n * 220} tick /></b><span className="g-mono">{t('results.total')}</span></div>
             <div><b className="g-num">{r.right}/{r.called}</b><span className="g-mono">{t('career.right')}</span></div>
             {r.ex > 0 && <div><b className="g-num">{r.ex}</b><span className="g-mono">{t('results.exclusives')}</span></div>}
             {r.rank ? <div><b className="g-num">#{r.rank}</b><span className="g-mono">{r.players ? t('hr.res.ofN', { n: r.players }) : t('hr.res.rank')}</span></div> : null}
           </div>
           {stage >= TIER && <div className="vcard__pub">
-            <p className="vcard__quip">{verdict.quip}</p>
+            <p className="vcard__quip">{r.tier === 'SPIKED' ? t('c38.share.line.spiked') : verdict.quip}</p>
             {verdict.idiom && <p className="vcard__idiom"><span className="g-mono">{t('bn.ui.pub')}</span> {verdict.idiom}</p>}
           </div>}
+          {/* §8 the Exclusive: gold, its own stamp and sound, the follower spike, who you beat to it */}
+          {exclUp && exclSaga && <div className="exclm" role="status">
+            <span className="g-stamp g-stamp--gold is-slam exclm__stamp">{t('c38.excl.stamp')}</span>
+            <div className="exclm__b">
+              <b>{r.ex > 1 ? t('c38.excl.lines', { n: r.ex }) : t('c38.excl.line')}</b>
+              <span className="g-mono">{cast[exclSaga.i].player.s} · {t('g.saga.dayShort', { n: exclSaga.call?.day || 0 })}{exclGain > 0 ? ' · ' + t('c38.excl.followers', { n: exclGain.toLocaleString('en') }) : ''}</span>
+            </div>
+            <button type="button" className="exclm__share" onClick={(e) => { e.stopPropagation(); share.send(); }} aria-label={t('c38.excl.share')}><Icon n="share" size={18} /></button>
+          </div>}
         </article>
+
+        {/* ---- the result card: what travels (§10) ---- */}
+        {stage >= PROG && <section className={'vobj' + (r.tier === 'T1' ? ' is-t1' : r.tier === 'SPIKED' ? ' is-spiked' : '')} aria-label={t('c38.share.card')} onClick={(e) => e.stopPropagation()}>
+          <div className="vobj__head g-mono">{viral.head}</div>
+          <div className="vobj__row" aria-label={r.row || ''}>{Array.from(viral.row).map((ch, k) => <i key={k} className={'vobj__c vobj__c--' + (ch === '★' ? 'x' : ch === '■' ? 'r' : ch === '□' ? 'w' : 'n')}>{ch}</i>)}</div>
+          {viral.meta && <div className="vobj__meta">{viral.meta}</div>}
+          {viral.lines.length > 0 && <div className="vobj__lines">{viral.lines.map((l, k) => <span key={k}>{l}</span>)}</div>}
+          <button type="button" className="vobj__copy" onClick={share.copy} aria-label={t('c38.res.copyAria')}><Icon n="news" size={15} />{share.msg || t('c38.share.copy')}</button>
+        </section>}
 
         {stage >= PROG && <div className="res4__share stagger">
           <GBtn size="sm" sound="open" onClick={share.send}><Icon n="share" />{t('bn.ui.share')}</GBtn>
           <ShareToX r={r} cast={cast} seed={seed} v={{ hed, what, tier: t('tier.' + r.tier), pts: num(r.total), row: r.row || '' }} card={share.card} />
           {ChallengeButton ? <ChallengeButton view={view} result={r} /> : null}
-          <button className="res4__save" onClick={share.save}>{share.msg || t('results.saveImg')}</button>
+          <button className="res4__save" onClick={share.save}>{t('results.saveImg')}</button>
         </div>}
 
         {/* ---- how your name moved: ONE strip ---- */}
@@ -176,14 +208,16 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
             <button className="door" onClick={() => chrome.go({ n: 'feed' })}><Icon n="news" /><span>{t('cn.feed.title')}</span></button>
           </nav>
           <div className="prog__acts" style={{ ['--i' as string]: 1 }}>
-            <GBtn size="lg" shine primary onClick={view.mode === 'daily' ? () => chrome.go({ n: 'practice' }) : again}><Icon n={view.mode === 'daily' ? 'target' : 'phone'} />{view.mode === 'daily' ? t('g.res.practice') : view.mode === 'career' ? t('g.res.nextWindow') : view.mode === 'room' ? t('bn.ui.openRoom') : t('results.again')}</GBtn>
-            <GBtn kind="dark" onClick={home}><Icon n="home" />{t('g.res.home')}</GBtn>
+            {tutorial ? <GBtn size="lg" shine primary sound="open" onClick={home}><Icon n="phone" />{t('c38.tut.home')}</GBtn>
+              : <GBtn size="lg" shine primary onClick={view.mode === 'daily' ? () => chrome.go({ n: 'practice' }) : again}><Icon n={view.mode === 'daily' ? 'target' : 'phone'} />{view.mode === 'daily' ? t('g.res.practice') : view.mode === 'career' ? t('g.res.nextWindow') : view.mode === 'room' ? t('bn.ui.openRoom') : t('results.again')}</GBtn>}
+            {!tutorial && <GBtn kind="dark" onClick={home}><Icon n="home" />{t('g.res.home')}</GBtn>}
           </div>
+          {tutorial && <p className="g-mono prog__tomorrow">{t('c38.tut.done')}</p>}
           {view.mode === 'daily' && <p className="g-mono prog__tomorrow">{t('results.tomorrow', { t: resetAt() })}</p>}
         </section>}
       </div>
     </>}
-    {stage < PROG && stage > 0 && <p className="g-mono results2__skip">{t('g.call.tapSkip')}</p>}
+    {stage < PROG && stage > 0 && <p className="g-mono results2__skip">{t('c38.res.skip')}</p>}
 
     {/* ---- the sheets ---- */}
     <Sheet open={!!cur} onClose={close} label={t('bn.ui.allReplies')}>
@@ -194,7 +228,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
           <Replies list={cur.replies} replyTo={me.handle} />
         </div> : <Tweet th={cur} p={r.per[cur.i]} c={cast[cur.i]} me={me} k={0} top={99} still />}
         <div className="res3sheet__sub g-mono">{t('bn.ui.breakdown')}</div>
-        <SagaRow p={r.per[cur.i]} c={cast[cur.i]} R={view.R} k={0} startOpen />
+        <SagaRow p={r.per[cur.i]} c={cast[cur.i]} R={view.R} k={0} startOpen coach={view.mode === 'practice'} />
       </div>}
     </Sheet>
     <Sheet open={modal?.k === 'replies'} onClose={close} label={t('bn.ui.allReplies')} wide>
@@ -213,7 +247,7 @@ export function Results({ view, chrome, report, start, beat }: { view: View; chr
       <div className="sheet__body res3sheet">
         <SheetHead title={t('bn.ui.breakdown')} aside={t('bn.ui.breakdownAside')} onClose={close} />
         <p className="res3sheet__tier">{t('tierLine.' + r.tier)}{r.tier !== 'T1' ? ' ' + t('results.t1Need', { n: view.R.TIERS.T1 }) : ''}</p>
-        <section className="ledger2">{r.per.map((p, k) => <SagaRow key={p.i} p={p} c={cast[p.i]} R={view.R} k={k} />)}</section>
+        <section className="ledger2">{r.per.map((p, k) => <SagaRow key={p.i} p={p} c={cast[p.i]} R={view.R} k={k} coach={view.mode === 'practice'} />)}</section>
         {view.mode === 'daily' && r.par != null && <p className="g-mono res3sheet__par">{t('results.par', { n: num(r.par) })}{r.weekRank ? ' · ' + t('results.week', { r: r.weekRank, n: r.weekPlayers || 1 }) : ''}</p>}
       </div>
     </Sheet>
@@ -374,8 +408,9 @@ function Board({ total }: { total: number }) {
   </div>;
 }
 
-// ---------- one saga's truth and every point (inside the sheets)
-function SagaRow({ p, c, R, k, startOpen }: { p: ResultSaga; c: CastSaga; R: View['R']; k: number; startOpen?: boolean }) {
+// ---------- one saga's truth and every point (inside the sheets). `coach` (Practice, §30): under every read, why it
+// pointed where it did: the street echo, the agent's bias, Off/Fake blindness, the kit man's "whether, not where".
+function SagaRow({ p, c, R, k, startOpen, coach }: { p: ResultSaga; c: CastSaga; R: View['R']; k: number; startOpen?: boolean; coach?: boolean }) {
   const t = useT();
   const [open, setOpen] = useState(!!startOpen);
   const hj = p.truth === 1 && c.alt ? ' · ' + t('results.hijackTo', { c: c.alt.s }) : '';
@@ -399,9 +434,11 @@ function SagaRow({ p, c, R, k, startOpen }: { p: ResultSaga; c: CastSaga; R: Vie
       {p.parts.pen > 0 && <Line l={t('results.pen', { s: p.call && p.call.from ? strWord(t.lang, p.call.from.s) + ' ' + outWord(t.lang, p.call.from.o) : '' })} v={-p.parts.pen} />}
       {why && <p className="rrow__why">{why}</p>}
       <p className="rrow__spin">{t('results.spin', { o: outWord(t.lang, p.spin) })}</p>
-      {(p.reads.length > 0 || p.posts.length > 0) && <ul className="rrow__reads">
-        {p.reads.map((x, j) => <li key={j} className={x.right ? 'ok' : 'no'}><span>{t('src.' + x.src)} · {t('common.day', { n: x.day })}</span><span>{saysWord(t.lang, x.src, x.r, c)}</span><Icon n={x.right ? 'check' : 'x'} size={16} /></li>)}
-        {p.posts.map((x, j) => <li key={'p' + j} className={x.right ? 'ok' : 'no'}><span>{t('rival.' + x.id)} · {t('common.day', { n: x.day })}</span><span>{outWord(t.lang, x.claim)}</span><Icon n={x.right ? 'check' : 'x'} size={16} /></li>)}
+      {(p.reads.length > 0 || p.posts.length > 0) && <ul className={'rrow__reads' + (coach ? ' is-coach' : '')}>
+        {p.reads.map((x, j) => <li key={j} className={x.right ? 'ok' : 'no'}><span>{t('src.' + x.src)} · {t('common.day', { n: x.day })}</span><span>{saysWord(t.lang, x.src, x.r, c)}</span><Icon n={x.right ? 'check' : 'x'} size={16} />
+          {coach && !x.right && <em className="rrow__why2">{t(whyKey(R, x, p.truth, p.tw))}</em>}</li>)}
+        {p.posts.map((x, j) => <li key={'p' + j} className={x.right ? 'ok' : 'no'}><span>{t('rival.' + x.id)} · {t('common.day', { n: x.day })}</span><span>{outWord(t.lang, x.claim)}</span><Icon n={x.right ? 'check' : 'x'} size={16} />
+          {coach && !x.right && R.CIRCLE[x.id] === 'street' && <em className="rrow__why2">{t('c38.why.rivalStreet')}</em>}</li>)}
       </ul>}
     </div>}
   </div>;
@@ -409,14 +446,13 @@ function SagaRow({ p, c, R, k, startOpen }: { p: ResultSaga; c: CastSaga; R: Vie
 const Line = ({ l, v, hot }: { l: string; v: number; hot?: boolean }) => <div className="rrow__line"><span>{l}</span><b className={v < 0 ? 'neg' : hot ? 'hot' : ''}>{num(v, true)}</b></div>;
 
 // ---------- share: the scoop card as an image where the device can share files, the text otherwise
-function useShare(view: View, r: Result, what: string, hed: string, bestDest: CastSaga['to'], bc: CastSaga) {
+function useShare(view: View, r: Result, what: string, hed: string, bestDest: CastSaga['to'], bc: CastSaga, text: string) {
   const t = useT();
   const s = useSave();
   const [msg, setMsg] = useState('');
   const best = [...r.per].sort((a, b) => b.pts - a.pts)[0];
-  const sub = best && best.right && best.call ? (best.call.day >= view.R.DAYS ? t('results.calledItDD') : t('results.calledIt', { n: view.R.DAYS - best.call.day })) : r.called ? t('tierLine.' + r.tier) : t('results.nothing');
+  const sub = best && best.right && best.call ? (best.call.day >= view.R.DAYS ? t('results.calledItDD') : t('results.calledIt', { n: view.R.DAYS - best.call.day })) : r.called ? (r.tier === 'SPIKED' ? t('c38.share.line.spiked') : t('tierLine.' + r.tier)) : t('results.nothing');
   const url = 'sembagames.app/tier-one';
-  const text = shareText(t, { what, tier: t('tier.' + r.tier), pts: num(r.total), row: r.row || '', url: 'https://' + url });
   const hwgIdx = hereWeGoOf(r);
   const card = () => ({ style: shareStyle(), hed, sub, kick: t('tier.' + r.tier) + (r.ex ? ' · ' + r.ex + '× ' + t('stamp.exclusive') : ''), no: what, date: fmtDate(Date.now(), t.lang, { day: 'numeric', month: 'short', year: 'numeric' }), by: t('share.by', { n: s.nick || 'Tier One' }), url, stats: [[num(r.total, true), t('results.total')], [`${r.right}/${r.per.length}`, t('career.right')], [String(r.ex), t('results.exclusives')]] as [string, string][], stamp: r.ex ? t('stamp.exclusive') : t('tier.' + r.tier), stampKind: r.ex ? 'exclusive' : r.tier === 'T1' ? 'exclusive' : r.tier === 'SPIKED' ? 'dead' : 'done', club: bestDest, no2: bc.player.no, who: bc.player.id, rtl: t.rtl, hwg: hwgIdx >= 0 ? catchphraseOf().text.toUpperCase() + ' · ' + bc.player.s : undefined });
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 2400); };
@@ -428,13 +464,18 @@ function useShare(view: View, r: Result, what: string, hed: string, bestDest: Ca
       const nav = navigator as Navigator & { canShare?: (d: unknown) => boolean };
       if (file && nav.canShare && nav.canShare({ files: [file] })) { await nav.share({ files: [file], text }); return; }
       if (nav.share) { await nav.share({ text }); return; }
-      await navigator.clipboard.writeText(text); flash(t('common.copied'));
+      await navigator.clipboard.writeText(text); flash(t('c38.share.copied'));
     } catch { /* cancelled */ }
+  };
+  // The result text alone (the Wordle move): straight to the clipboard, no sheet.
+  const copy = async (e?: React.MouseEvent) => {
+    e?.stopPropagation(); onShared();
+    try { await navigator.clipboard.writeText(text); flash(t('c38.share.copied')); } catch { flash(text); }
   };
   const save = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const blob = await renderCard(card()); if (!blob) return;
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tier-one-scoop.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); onShared();
   };
-  return { send, save, msg, card };
+  return { send, save, copy, msg, card };
 }

@@ -227,3 +227,22 @@
   .lv-live i, .lv-asg, .lv-asg.is-hot .g-btn, .lv-saga, .lv-stake.is-risk .lv-stake__ic svg, .lv-tick .g-ticker__track { animation: none; }
   .lv-tally__seg { transition: none; }
 }
+
+/* ---------- 3.8 Practice as the learning lab (LAUNCH_BRIEF §30) and Deadline Day Live on one screen ---------- */
+.pr3 .fit__body { gap: 8px; }
+.pr3__hero { padding: 12px 14px; }
+.pr3__hero .g-hero__t { font-size: clamp(22px, 5.4vw, 30px); }
+.pr3__hero .g-hero__s { font-size: 13px; }
+.pr3__acts { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.pr3 .coach3 { padding: 10px 12px; }
+.pr3__tools { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; color: var(--on-desk-2); font-size: 9.5px; }
+.pr3__tools li { display: flex; align-items: center; gap: 6px; line-height: 1.25; }
+.pr3__tools svg { flex: none; color: var(--m-practice); }
+.pr3__code { padding: 10px 12px; }
+.pr3__sec { margin: 2px 2px 0; }
+.pr3__past .past { padding: 6px 2px 6px; }
+.lv-ddscreen__body { gap: 10px; }
+.lv-ddscreen.fit .lv-sagas { gap: 8px; }
+.lv-ddscreen.fit .lv-ddhero { padding: 12px 14px; }
+.lv-ddscreen.fit .lv-ddhero .g-hero__t { font-size: clamp(22px, 5vw, 30px); }
+.lv-ddscreen.fit .lv-ddhero__clock .g-num { font-size: clamp(40px, 10vw, 64px); }

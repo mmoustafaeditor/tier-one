@@ -18,7 +18,9 @@ import { Icon, Kit, confetti } from './game';
 import { PostFilm, type PostFilmKind } from '../film/calls/PostFilm';
 import '../film/calls/callfilms.css';
 
-const T0 = 120, PER = 20, TYPE_MAX = 720, PRESS = 120, SENT_GAP = 100, HOLD = 1200, HOLD_UT = 900, OUT = 300, CUT = 260;
+// 3.8 (LAUNCH_BRIEF §40): an important result, so the whole post lands in ≤ 2.0 s (≤ 2.5 s for a repost): the typing
+// is capped at 560 ms and the hold after the send is 800 ms.
+const T0 = 100, PER = 18, TYPE_MAX = 560, PRESS = 110, SENT_GAP = 90, HOLD = 800, HOLD_UT = 700, OUT = 260, CUT = 240;
 // Delete & repost prelude: strike, "Deleted", the ratio pile-on, then the old post drops away.
 const UT_STRIKE = 100, UT_DEL = 200, UT_R0 = 280, UT_RSTEP = 110, UT_AWAY = 660, UT_PRE = 800;
 const fill = (s: string, v: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (m, k) => (v[k] != null ? String(v[k]) : m));

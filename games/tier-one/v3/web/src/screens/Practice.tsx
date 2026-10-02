@@ -1,5 +1,7 @@
-// Practice (DESIGN §5): off the record, any seed, Coach mode shows the exact odds. Replays past Dailies once their
-// seed is published (the day after). 3.1: a green hero with one big button, a Coach toggle card, compact replays.
+// Practice (LAUNCH_BRIEF §30, 3.8): OFF THE RECORD, the learning lab. Nothing here affects your reputation. Coach mode
+// prints the exact odds on every file; every finished board explains why each source misled you; past Dailies replay
+// as everyone played them; a board code is the same board for a friend. One screen, no scrolling; the week-event
+// banner is gone from here (§34: its modifiers never applied, and its button looped back to this page).
 import { useState } from 'react';
 import { useT, fmtDate } from '../lib/i18n';
 import { useSave, update } from '../lib/save';
@@ -7,7 +9,7 @@ import { randomSeed } from '../lib/driver';
 import { v3 } from '../lib/api';
 import { ymdUTC } from '../lib/meta';
 import { sfx } from '../lib/sfx';
-import { Icon, GBtn, TopBar, Kit } from '../ui/game';
+import { Icon, GBtn, TopBar } from '../ui/game';
 import type { Chrome } from '../App';
 
 const FIRST_DAILY = '2026-09-01';
@@ -33,26 +35,31 @@ export function PracticeScreen(chrome: Chrome) {
   // Replays use the server's published seed (daily.seed), which exists from the first Daily (1 Sep 2026) up to yesterday.
   const pastDays = [1, 2, 3, 4, 5, 6, 7].filter((d) => ymdUTC(Date.now() - d * 864e5) >= FIRST_DAILY);
   const clean = code.trim().toUpperCase().replace(/[^A-Z0-9-]/g, '');
-  return <div className="g-screen practice3">
+  return <div className="g-screen practice3 pr3 fit">
     <TopBar back={{ label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) }} title={t('nav.practice')} onMenu={chrome.openSettings} />
-    <div className="stagger g-stack">
-      <section className="g-hero g-hero--practice" style={{ ['--i' as string]: 0 }}>
+    <div className="fit__body">
+      <section className="g-hero g-hero--practice pr3__hero">
         <span className="g-hero__art" aria-hidden="true"><Icon n="target" /></span>
-        <span className="g-mono g-hero__k">{t('g.practice.k')} · {t('g.practice.played', { n: s.practice.played })}</span>
-        <h1 className="g-hero__t">{t('g.practice.hed')}</h1>
-        <p className="g-hero__s">{t('g.practice.sub')}</p>
-        <div className="pkits" aria-hidden="true">{[0, 1, 2, 3, 4].map((k) => <span key={k} style={{ ['--r' as string]: [-7, 4, -2, 6, -4][k] + 'deg', animationDelay: 100 + k * 70 + 'ms' }}><Kit mystery size={44} /></span>)}</div>
-        {s.practice.live && <GBtn kind="dark" onClick={() => chrome.go({ n: 'play', mode: 'practice', key: Date.now() })} style={{ marginBottom: 12 }}><Icon n="uturn" size={22} />{t('practice.resume')}<small>{s.practice.live.label || s.practice.live.seed}</small></GBtn>}
-        <GBtn kind="green" size="lg" shine pulse={!s.practice.live} sound="open" onClick={() => begin(randomSeed())}><Icon n="bolt" size={24} />{t('practice.random')}</GBtn>
+        <span className="g-mono g-hero__k">{t('c38.pr.k')} · {t('g.practice.played', { n: s.practice.played })}</span>
+        <h1 className="g-hero__t">{t('c38.pr.hed')}</h1>
+        <p className="g-hero__s">{t('c38.pr.sub')}</p>
+        <div className="pr3__acts">
+          {s.practice.live && <GBtn kind="dark" onClick={() => chrome.go({ n: 'play', mode: 'practice', key: Date.now() })}><Icon n="uturn" size={22} />{t('practice.resume')}<small>{s.practice.live.label || s.practice.live.seed}</small></GBtn>}
+          <GBtn kind="green" size="lg" shine pulse={!s.practice.live} sound="open" onClick={() => begin(randomSeed())}><Icon n="bolt" size={24} />{t('practice.random')}</GBtn>
+        </div>
       </section>
 
-      <button className={'coach3 g-card g-card--desk' + (s.practice.coach ? ' is-on' : '')} style={{ ['--i' as string]: 1 }} onClick={() => { sfx('ui.tap'); update((x) => { x.practice.coach = !x.practice.coach; }); }} role="switch" aria-checked={s.practice.coach}>
+      <button className={'coach3 g-card g-card--desk' + (s.practice.coach ? ' is-on' : '')} onClick={() => { sfx('ui.tap'); update((x) => { x.practice.coach = !x.practice.coach; }); }} role="switch" aria-checked={s.practice.coach}>
         <span className="coach3__ic"><Icon n="eye" /></span>
-        <span className="coach3__t"><b>{t('practice.coach')}</b><small>{s.practice.coach ? t('g.practice.coachOn') : t('g.practice.coachOff')}</small><span className="coach3__d">{t('practice.coachD')}</span></span>
+        <span className="coach3__t"><b>{t('practice.coach')}</b><small>{s.practice.coach ? t('c38.pr.coachOn') : t('c38.pr.coachOff')}</small></span>
         <span className={'g-toggle' + (s.practice.coach ? ' is-on' : '')} aria-hidden="true"><span /></span>
       </button>
 
-      <form className="seedform g-card" style={{ ['--i' as string]: 2 }} onSubmit={(e) => { e.preventDefault(); if (clean.length >= 4) { sfx('open'); begin(clean); } }}>
+      <ul className="pr3__tools g-mono" aria-label={t('c38.pr.tools')}>
+        {(['t1', 't2', 't3', 't4'] as const).map((k, i) => <li key={k}><Icon n={['eye', 'help', 'news', 'ticket'][i]} size={14} />{t('c38.pr.' + k)}</li>)}
+      </ul>
+
+      <form className="seedform g-card pr3__code" onSubmit={(e) => { e.preventDefault(); if (clean.length >= 4) { sfx('open'); begin(clean); } }}>
         <span className="seedform__h"><span className="rcard__ic rcard__ic--green"><Icon n="ticket" /></span><span><b className="g-h2">{t('g.practice.codeT')}</b><small className="g-sub">{t('practice.codeD')}</small></span></span>
         <div className="seedform__row">
           <input className="codebox codebox--sm" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="K7Q2PX" maxLength={20} aria-label={t('practice.code')} autoCapitalize="characters" spellCheck={false} />
@@ -61,8 +68,8 @@ export function PracticeScreen(chrome: Chrome) {
       </form>
 
       {pastDays.length > 0 && <>
-      <div className="g-sec" style={{ ['--i' as string]: 3 }}><h2>{t('g.practice.pastT')}</h2></div>
-      <div className="pastgrid" style={{ ['--i' as string]: 3 }}>
+      <div className="g-sec pr3__sec"><h2>{t('g.practice.pastT')}</h2><span className="g-mono">{t('c38.pr.t3')}</span></div>
+      <div className="pastgrid pr3__past">
         {pastDays.map((d) => { const ms = Date.now() - d * 864e5; return <button key={d} className={'past' + (busy === d ? ' is-busy' : '')} onClick={() => { sfx('ui.tap'); past(d); }} disabled={busy >= 0}>
           <span className="past__dow g-mono">{fmtDate(ms, t.lang, { weekday: 'short' })}</span>
           <b className="past__d g-num">{fmtDate(ms, t.lang, { day: 'numeric' })}</b>
@@ -70,7 +77,6 @@ export function PracticeScreen(chrome: Chrome) {
           <span className="past__ago">{busy === d ? <Icon n="clock" size={14} /> : t('g.practice.ago', { n: d })}</span>
         </button>; })}
       </div>
-      <p className="g-fine" style={{ ['--i' as string]: 4 }}>{t('practice.archiveD')}</p>
       </>}
       {msg && <p className="g-err" role="alert"><Icon n="x" size={16} />{msg}</p>}
     </div>

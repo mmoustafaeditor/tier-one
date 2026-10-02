@@ -101,6 +101,11 @@ const SYN=(()=>{
  // 3.3 STOP PRESS: a digital glitch stutter then the slam.
  P.glitch=t=>{ for(let i=0;i<6;i++){ const st=t+i*.045; tone(rnd(300,2400),st,.035,{type:'square',g:.05,a:.001,lp:4000}); noise(st,.03,{type:'highpass',f:rnd(2000,6000),g:.12,a:.001,r:.025}); } boom(t+.3,.5); noise(t+.3,.08,{type:'bandpass',f:1600,q:.8,g:.25,a:.001}); };
  P.voice=(t,a)=>{ const o=a||{}; babble(t,o.dur||1.2,o.base||150); };
+ // 3.8 the Exclusive (LAUNCH_BRIEF §8): the newsroom teletype rattles, the bell on the wire rings twice, then a short
+ // brass lift. Diegetic, ~1.1 s, and used for nothing else so it keeps its meaning.
+ P.exclusive=t=>{ for(let i=0;i<10;i++){ const st=t+i*.04; noise(st,.03,{type:'bandpass',f:rnd(2200,3600),q:3,g:.22,a:.001,r:.025}); } bell(2093,t+.42,.7,.12); bell(2637,t+.58,.9,.1); boom(t+.6,.3); stab(t+.62,[N.C4,N.G4,N.C5,N.E5],'sawtooth',.06,.5); noise(t+.6,.7,{type:'highpass',f:7000,g:.05,a:.005,r:.6}); };
+ // 3.8 Deadline Day's last five seconds (§9): the clock's tick doubled, with a deeper thump under it.
+ P.pulse=t=>{ tone(70,t,.1,{g:.4,a:.003,r:.09}); noise(t,.03,{type:'bandpass',f:2600,q:6,g:.3,a:.001,r:.028}); tone(1500,t,.04,{g:.07,a:.001}); };
  P.ringonce=t=>ring(t);
  P.snip=t=>snip(t);
  P.jetpass=t=>jet(t,1.4);

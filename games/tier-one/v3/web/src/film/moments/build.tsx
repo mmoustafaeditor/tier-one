@@ -35,8 +35,10 @@ export function buildMoment(id0: string, s: Save, extra: Record<string, unknown>
   if (id === 'contact') id = latest(s, ['contact']) || 'contact:barber';
   if (id === 'scalp') id = latest(s, ['scalp', 'trophy']) || 'scalp:itk';
   const [fam, arg = ''] = id.split(':');
+  // 3.8 (LAUNCH_BRIEF §40): the films a player meets on repeat (the paper, Deadline Day) are skippable; the rare
+  // reward moments (a rank, a gold card, a scalp, OFFICIAL) still play through, they are 1–2 s and happen once.
   const spec = (_clip: string, Comp: SceneSpec['Comp'], props: Record<string, unknown>, meta: SceneSpec['meta'], _over: Record<string, unknown>, title: string): SceneSpec =>
-    ({ id: id0, rtl, title, Comp, props: { ...props, rtl }, meta, skippable: false });
+    ({ id: id0, rtl, title, Comp, props: { ...props, rtl }, meta, skippable: /^(paper|deadline)/.test(id0) });
 
   if (fam === 'catchphrase' || fam === 'herewego') {
     const line = String(extra.line || filmCatchphrase(s));

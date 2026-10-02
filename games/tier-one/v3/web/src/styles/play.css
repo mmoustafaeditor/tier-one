@@ -519,3 +519,83 @@ body:has(.tutor) .play { padding-bottom: 320px; }
 :root.reduce .chip-in, :root.reduce .race .rv-av, :root.reduce .race .g-chip, :root.reduce .brk, :root.reduce .night2__body, :root.reduce .ps__roll, :root.reduce .ps--repost, :root.reduce .ps--hwg { animation: none !important; }
 :root.reduce .ps__roll { display: none; }
 @media (prefers-reduced-motion: reduce) { .chip-in, .race .rv-av, .race .g-chip, .brk, .night2__body, .ps__roll { animation: none !important; } .hold__fill { transition: none; } }
+
+/* ---------- 3.8 the Player File (LAUNCH_BRIEF §27) ---------- */
+.play__title { display: inline-flex; align-items: baseline; gap: 8px; min-width: 0; }
+.play__title .g-mono { color: var(--on-desk-3); font-size: 9.5px; white-space: nowrap; }
+.scard__face { position: relative; flex: none; }
+.scard__ev { max-width: 100%; }
+.scard__ev.evw--strong { --chip-b: color-mix(in srgb, var(--c-done) 18%, transparent); --chip-t: var(--c-done-deep); }
+.scard__ev.evw--split { --chip-b: color-mix(in srgb, var(--c-hijack) 18%, transparent); --chip-t: var(--c-hijack-deep); }
+.scard__ev.evw--weak { --chip-b: rgba(0,0,0,.06); --chip-t: var(--card-ink-2); }
+.scard__ev.is-echo { --chip-b: color-mix(in srgb, var(--c-fake) 16%, transparent); --chip-t: var(--c-fake-deep); }
+.file3 { padding-bottom: 72px; position: relative; }
+.pcard3 { grid-template-columns: auto minmax(0, 1fr); }
+.pcard3__art { position: relative; width: 84px; height: 84px; flex: none; }
+.pcard3__art .g-portrait { box-shadow: 0 0 0 3px var(--card), 0 0 0 4px rgba(0,0,0,.12); }
+.pcard3__heat { display: inline-flex; align-items: center; gap: 3px; padding: 1px 7px; border-radius: 999px; background: rgba(0,0,0,.06); color: var(--card-ink-3); font-size: 9px; letter-spacing: .06em; }
+.pcard3__heat.heat--2, .pcard3__heat.heat--3 { background: color-mix(in srgb, var(--red) 14%, transparent); color: var(--red-deep); }
+.pcard3__heat.heat--3 svg { animation: g-flame 1.2s ease-in-out infinite; }
+.pcard3__club { font-size: 12.5px; font-weight: 700; color: var(--card-ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 32%; }
+.play.fit .pcard3 .pcard3__art { width: 64px; height: 64px; } .play.fit .pcard3 .g-portrait { --pt: 64px !important; }
+/* evidence summary */
+.evsum__word { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-family: var(--f-cond); font-stretch: 78%; font-weight: 900; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; background: rgba(0,0,0,.06); color: var(--card-ink-2); }
+.evw--strong.evsum__word { background: var(--c-done); color: #fff; } .evw--split.evsum__word { background: var(--c-hijack); color: #2A1500; } .evw--weak.evsum__word { background: var(--card-ink-3); color: #fff; }
+:lang(ar) .evsum__word { letter-spacing: 0; text-transform: none; }
+.evsum__line { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13.5px; font-weight: 700; color: var(--card-ink-2); line-height: 1.3; }
+.evsum__line.is-two { color: var(--c-done-deep); } .evsum__line.is-echo { color: var(--c-fake-deep); }
+.evsum .know__rows { margin-top: 8px; }
+/* sources */
+.srcs3 .src3 { padding-top: 10px; min-height: 140px; }
+.src3__face { position: relative; display: inline-grid; place-items: center; }
+.src3__face .g-src { position: absolute; bottom: -4px; inset-inline-end: -8px; --sz: 18px !important; box-shadow: 0 0 0 2px var(--desk-2); }
+.src3__rel { display: flex; flex-direction: column; gap: 2px; font-size: 10.5px; font-weight: 700; line-height: 1.2; color: var(--on-desk-2); }
+.src3__rel em { font-style: normal; font-family: var(--f-mono); font-size: 8.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--on-desk-3); }
+.src3__called { font-size: 9px; color: var(--on-desk-3); }
+.src3 .g-portrait { box-shadow: inset 0 0 0 1px var(--desk-line); }
+.src.is-asked .src3__face .g-portrait { box-shadow: 0 0 0 2px var(--c-done); }
+.clip--q .g-portrait { flex: none; }
+.rv__rel { font-size: 8.5px; color: var(--on-desk-3); line-height: 1.2; }
+.rv .g-portrait { box-shadow: 0 0 0 2px var(--desk); }
+/* publish sheet (§7): words first */
+.stake3 { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+.stake3 > p { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin: 0; font-size: 14px; font-weight: 800; color: var(--card-ink-2); }
+.stake3__early { font-size: 9.5px; color: var(--card-ink-3); flex-basis: 100%; }
+.stake3__ex { font-weight: 600 !important; font-size: 13px !important; color: var(--card-ink-3) !important; line-height: 1.3; display: flex !important; gap: 6px; flex-wrap: nowrap !important; align-items: flex-start !important; }
+.stake3__ex svg { flex: none; margin-top: 2px; }
+.stake3__ex.is-on { color: var(--gold-deep) !important; font-weight: 800 !important; }
+.stake3__coach { margin-top: 10px; text-align: center; color: var(--card-ink-3); font-size: 9px; }
+/* sticky actions */
+.file3__bar { position: sticky; bottom: 0; z-index: 5; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: center; margin: 4px -4px 0; padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(transparent, var(--desk) 30%); }
+.file3__back { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 14px; border-radius: 12px; background: var(--desk-3); color: var(--on-desk); font-weight: 800; font-size: 14px; box-shadow: inset 0 0 0 1px var(--desk-line); white-space: nowrap; }
+.file3__go { min-height: 48px; font-size: 18px; }
+.file3__filed { justify-self: end; font-size: 14px; }
+.file3__hint { justify-self: end; color: var(--on-desk-3); font-size: 9px; text-align: end; }
+.play.fit .play__cols > aside { padding-bottom: 0; }
+@media (min-width: 960px) { .file3__bar { margin-inline: 0; } }
+/* Deadline Day (§9): the phase marks on the bar, the unresolved tag, the pulse */
+.ddh__bar { position: relative; }
+.ddh__marks i { position: absolute; top: -2px; width: 2px; height: 14px; background: rgba(255,255,255,.35); }
+.ddh.ph-quick .ddh__clock { color: var(--gold); }
+.ddh.is-pulse .ddh__clock { color: var(--red); animation: dd-pulse .5s ease-in-out infinite; text-shadow: 0 0 60px rgba(255, 60, 30, .9); }
+@keyframes dd-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.ddh__sync { color: var(--on-desk-3); font-size: 9px; }
+.ddc.is-open { box-shadow: inset 0 0 0 2px var(--red); }
+.ddc__tag { display: inline-block; margin-top: 2px; font-family: var(--f-cond); font-stretch: 78%; font-weight: 900; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--red-deep); }
+.ddb.is-quick .ddc.is-open .ddc__tag { color: var(--gold-deep); }
+:root.reduce .ddh.is-pulse .ddh__clock, :root.reduce .ddh.is-last .ddh__clock, :root.reduce .ddh.is-hot .ddh__clock, :root.reduce .ddc.is-quick, :root.reduce .pcard3__heat svg { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .ddh.is-pulse .ddh__clock, .ddh.is-last .ddh__clock, .ddh.is-hot .ddh__clock, .ddc.is-quick, .pcard3__heat svg { animation: none !important; } }
+/* onboarding (§31): the fired scene */
+.onb2__body { margin-top: 10px; font-size: 15px; line-height: 1.4; color: var(--card-ink-2); }
+.onb2__cast { display: grid; gap: 10px; margin-top: 14px; }
+.onb2__who { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; margin: 0; padding: 10px; border-radius: 14px; background: var(--card-2); animation: g-rise .45s var(--ease-out) both; }
+.onb2__who--you { animation-delay: .25s; }
+.onb2__who figcaption { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.onb2__who b { font-size: 11px; font-family: var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--card-ink-3); }
+.onb2__who q { font-family: var(--f-display); font-style: italic; font-size: 16px; line-height: 1.3; quotes: none; }
+:lang(ar) .onb2__who q { font-style: normal; }
+.onb2__scene .g-btn small { display: block; }
+/* call scene: the face, the skip hint */
+.cs__face { margin-bottom: 4px; box-shadow: 0 0 0 2px rgba(255,255,255,.35); }
+.cs__skip { position: absolute; z-index: 2; bottom: max(14px, env(safe-area-inset-bottom)); inset-inline: 0; text-align: center; color: rgba(244, 239, 228, .6); font-size: 10px; }
+.call-scene.is-skipped .cs__bar { animation-play-state: paused; opacity: 0; }

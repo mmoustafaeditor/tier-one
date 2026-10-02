@@ -57,12 +57,14 @@ export function WalletPill({ compact }: { compact?: boolean }) {
 }
 
 // ---------- the top bar
-export function TopBar({ back, title, onHelp, onMenu, children, bell, wallet }: { back?: { label: string; onClick: () => void }; title?: ReactNode; onHelp?: () => void; onMenu?: () => void; children?: ReactNode; bell?: boolean; wallet?: boolean }) {
+// `bare` (3.8, LAUNCH_BRIEF §28): during play only the day, calls and sagas matter, so the wallet and the bell stay
+// off the window, the player file, Deadline Day and the first results reveal. Back is always top-left (owner rule).
+export function TopBar({ back, title, onHelp, onMenu, children, bell, wallet, bare }: { back?: { label: string; onClick: () => void }; title?: ReactNode; onHelp?: () => void; onMenu?: () => void; children?: ReactNode; bell?: boolean; wallet?: boolean; bare?: boolean }) {
   const t = useT();
   const route = useChromeRoute();
-  const showBell = bell ?? !NO_BELL.has(route);
-  const showWallet = wallet ?? (WALLET_ROUTES.has(route) || route === 'front');
-  return <header className="g-top">
+  const showBell = !bare && (bell ?? !NO_BELL.has(route));
+  const showWallet = !bare && (wallet ?? (WALLET_ROUTES.has(route) || route === 'front'));
+  return <header className={'g-top' + (bare ? ' g-top--bare' : '')}>
     {back ? <button className="g-top__back" onClick={() => { sfx('ui.tap'); back.onClick(); }} aria-label={t('sh.top.back') + ': ' + back.label}><Icon n={t.rtl ? 'arrow' : 'back'} size={20} /><span>{back.label}</span></button>
       : <span className="g-top__logo">Tier One</span>}
     {title && <span className="g-top__title" dir="auto">{title}</span>}

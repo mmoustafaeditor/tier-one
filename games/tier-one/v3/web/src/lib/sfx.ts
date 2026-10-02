@@ -16,6 +16,8 @@ const MAP = {
   'scene.agent': 'agentcall', 'scene.barber': 'salon', 'scene.spotter': 'airport', 'scene.physio': 'monitor',
   'scene.kitman': 'kitman', 'scene.leak': 'fax', 'voice': 'voice',
   'publish.hwg': 'herewego', 'stop.press': 'glitch',
+  // 3.8 (LAUNCH_BRIEF §8–§9): the Exclusive's own sound (teletype + wire bell), Deadline Day's last-five-seconds pulse.
+  'excl.stamp': 'exclusive', 'dd.pulse': 'pulse',
   // 3.4 motion pieces (src/film, GOTY §10): objects and places, no voices.
   'press.roll': 'presses', 'shutter': 'shutter', 'lamp.off': 'lampoff', 'lamp.on': 'lampon', 'lift': 'lift', 'flap': 'flap', 'notify': 'notify', 'pen': 'pen', 'flash': 'flash', 'car.pass': 'carpass',
   // GOTY.md §10: foley for the drawn call films, the post film and the day end (frame cues; all synth, nothing fetched)

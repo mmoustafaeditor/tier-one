@@ -16,7 +16,12 @@ export type Mode = 'daily' | 'room' | 'practice' | 'career';
 export interface View {
   mode: Mode; cast: CastSaga[]; state: Pub; R: Rules; done: boolean; result?: Result; no?: number; seed?: string;
   ddEndsAt?: number; coach?: boolean; posterior?: (i: number) => number[]; label?: string; room?: RoomRef;
+  /** Deadline Day (3.8, LAUNCH_BRIEF §9): how long the server keeps accepting posts after its own clock hits zero, and
+   *  the round trip the client measured when it last synced the clock. Local windows have no grace: the engine is here. */
+  ddGraceMs?: number; ddRttMs?: number;
 }
+// Mirrors api/tier-one/v3/index.js › DD_GRACE_MS (the server is authoritative; this only tells the player the truth).
+export const DD_GRACE_MS = 4000;
 export interface ActOut { view: View; answer?: Clue; error?: string }
 export interface Driver { mode: Mode; start(): Promise<View | { error: string }>; act(a: Act): Promise<ActOut>; dd(): Promise<View>; finish(): Promise<View> }
 export interface RoomRef { code: string; pid: string; sec: string; round: number }
@@ -26,20 +31,23 @@ export function remoteDriver(room?: RoomRef): Driver {
   const mode: Mode = room ? 'room' : 'daily';
   const who = () => { const s = getSave(); return room ? { room } : { dev: s.dev, nick: s.nick }; };
   let last: View | null = null;
-  const toView = (r: Remote): View => {
+  // The fair clock (§9): `ddLeftMs` was true when the server wrote it, about half a round trip ago. The client's deadline
+  // is set from that, so a slow line never shows more time than the server will honour; the server's grace covers the rest.
+  const toView = (r: Remote, t0 = Date.now()): View => {
     const v: View = { mode, cast: r.cast, state: r.state, R: RULES, done: r.done, result: r.result, no: r.no, room };
-    if (typeof r.ddLeftMs === 'number') v.ddEndsAt = Date.now() + r.ddLeftMs;
+    if (typeof r.ddLeftMs === 'number') { const rtt = Date.now() - t0; v.ddEndsAt = Date.now() + r.ddLeftMs - Math.min(2000, rtt / 2); v.ddGraceMs = DD_GRACE_MS; v.ddRttMs = rtt; }
     last = v; return v;
   };
   return {
     mode,
-    async start() { const r = await v3<Remote>('daily.start', who()); return r.ok ? toView(r as unknown as Remote) : { error: r.error }; },
+    async start() { const t0 = Date.now(); const r = await v3<Remote>('daily.start', who()); return r.ok ? toView(r as unknown as Remote, t0) : { error: r.error }; },
     async act(a) {
+      const t0 = Date.now();
       const r = (await v3<Remote>('daily.act', { ...who(), act: a })) as unknown as Remote;
-      if (r.cast && r.state) { const view = toView(r); return { view, answer: r.answer, error: r.ok ? undefined : r.error }; }
+      if (r.cast && r.state) { const view = toView(r, t0); return { view, answer: r.answer, error: r.ok ? undefined : r.error }; }
       return { view: last!, error: r.error || 'net' };
     },
-    async dd() { const r = (await v3<Remote>('daily.dd', who())) as unknown as Remote; return r.cast ? toView(r) : last!; },
+    async dd() { const t0 = Date.now(); const r = (await v3<Remote>('daily.dd', who())) as unknown as Remote; return r.cast ? toView(r, t0) : last!; },
     async finish() {
       for (let k = 0; k < 3; k++) { const r = (await v3<Remote>('daily.finish', who(), 15000)) as unknown as Remote; if (r.cast) return toView(r); }
       return last!;

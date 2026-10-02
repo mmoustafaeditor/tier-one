@@ -14,6 +14,7 @@ import { useDDOpenFilm, useDDCloseFilm, useDDTally } from '../ui/live';
 import { afterScenes } from '../lib/scenes';
 import { ddLiveActive, ddResultsDue, ddNext, ddCountdown, hms, ddStake, ddIsEarly, presence, fetchDDBoard, fetchDDResults, fileDDCall, markDD, DD_OUT, DD_RIGHT, DD_WRONG, type DDBoard, type DDSaga, type DDResults, type DDCall } from '../lib/live';
 import { winLabel } from './Wire';
+import { usePaged, Pager } from '../ui/fit';
 import type { Chrome } from '../App';
 
 const OUT_CLS = ['done', 'hijack', 'off'];
@@ -47,18 +48,22 @@ export function DDLiveScreen(chrome: Chrome) {
   }, [dd?.day]); // eslint-disable-line react-hooks/exhaustive-deps
   useDDOpenFilm(day, !!dd && !!board);
   useDDCloseFilm(day, !!results);
+  // One screen (owner rule): the five sagas are paged two at a time; the results page likewise.
+  const pg = usePaged(board?.sagas || [], 2, day);
 
   if (!day) {
     const nx = ddNext(now);
-    return <div className="g-screen lv-ddscreen">
+    return <div className="g-screen lv-ddscreen fit">
       <TopBar back={{ label: t('g.tabs.home'), onClick: home }} title={t('live.dd.title')} />
-      <section className="g-hero lv-ddhero is-off">
-        <span className="g-hero__art" aria-hidden="true"><Icon n="clock" /></span>
-        <span className="g-mono g-hero__k">{t('live.dd.title')}</span>
-        <h1 className="g-hero__t">{nx ? t('live.dd.notLive', { d: fmtDate(nx.opensAt + 12 * 3600e3, t.lang, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) }) : t('live.dd.over')}</h1>
-        <p className="g-hero__s">{t('live.dd.sub')}</p>
-      </section>
-      <GBtn kind="dark" style={{ marginTop: 16 }} onClick={home}><Icon n="home" />{t('live.dd.back')}</GBtn>
+      <div className="fit__body">
+        <section className="g-hero lv-ddhero is-off">
+          <span className="g-hero__art" aria-hidden="true"><Icon n="clock" /></span>
+          <span className="g-mono g-hero__k">{t('live.dd.title')}</span>
+          <h1 className="g-hero__t">{nx ? t('live.dd.notLive', { d: fmtDate(nx.opensAt + 12 * 3600e3, t.lang, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) }) : t('live.dd.over')}</h1>
+          <p className="g-hero__s">{t('live.dd.sub')}</p>
+        </section>
+        <GBtn kind="dark" onClick={home}><Icon n="home" />{t('live.dd.back')}</GBtn>
+      </div>
     </div>;
   }
   const c = dd ? ddCountdown(dd, now) : null;
@@ -67,9 +72,9 @@ export function DDLiveScreen(chrome: Chrome) {
   const mine = board?.mine || {};
   const filed = Object.keys(mine).length;
   const win = board ? winLabel(t, board.window) : '';
-  return <div className="g-screen g-screen--wide lv-ddscreen">
+  return <div className="g-screen g-screen--wide lv-ddscreen fit">
     <TopBar back={{ label: t('g.tabs.home'), onClick: home }} title={t('live.dd.title')} />
-    <div className="g-stack">
+    <div className="fit__body lv-ddscreen__body">
       <section className={'g-hero lv-ddhero' + (dd ? ' is-live' : ' is-res')}>
         <span className="g-hero__art" aria-hidden="true"><Icon n={dd ? 'clock' : 'trophy'} /></span>
         <span className="g-mono g-hero__k">{dd && <span className="lv-live lv-live--lg"><i />{t('live.dd.live')}</span>}{t('live.dd.k', { w: win })}</span>
@@ -87,8 +92,9 @@ export function DDLiveScreen(chrome: Chrome) {
       {!board && !err && <p className="g-empty">{t('common.loading')}</p>}
 
       {board && dd && <section className="lv-sagas">
-        {board.sagas.map((sg, k) => <SagaCard key={sg.rid} sg={sg} k={k} day={board.day} opensAt={board.opensAt} counts={counts[sg.rid] || [0, 0, 0]} mine={mine[sg.rid] || null} onFiled={(call, cts) => { setBoard((b) => b && { ...b, mine: { ...b.mine, [sg.rid]: call }, counts: { ...b.counts, ...cts } }); }} />)}
+        {pg.rows.map((sg, k) => <SagaCard key={sg.rid} sg={sg} k={k} day={board.day} opensAt={board.opensAt} counts={counts[sg.rid] || [0, 0, 0]} mine={mine[sg.rid] || null} onFiled={(call, cts) => { setBoard((b) => b && { ...b, mine: { ...b.mine, [sg.rid]: call }, counts: { ...b.counts, ...cts } }); }} />)}
       </section>}
+      {board && dd && <Pager p={pg} />}
 
       {results && <ResultsBlock r={results} nick={s.nick} />}
 
@@ -168,6 +174,7 @@ function ResultsBlock({ r, nick }: { r: DDResults; nick: string }) {
   const t = useT();
   const mineCalls = r.me?.calls || {};
   const [rootShake, setRootShake] = useState<HTMLElement | null>(null);
+  const tbl = usePaged(r.rows.slice(0, 15), 5, r.day);
   // The verdict lands after the close film (afterScenes): fanfare and confetti for a plus, a shake for a minus.
   useEffect(() => { afterScenes(() => { if (r.me && r.me.pts > 0) { sfx('fanfare'); confetti(); } else if (r.me && r.me.pts < 0) { sfx('sad'); shake(rootShake); } }); }, [r.day]); // eslint-disable-line react-hooks/exhaustive-deps
   return <section className="lv-res" ref={setRootShake}>
@@ -189,11 +196,12 @@ function ResultsBlock({ r, nick }: { r: DDResults; nick: string }) {
     <div className="g-sec"><h2>{t('live.dd.table')}</h2><span className="g-mono">{r.me ? t('live.dd.you', { r: r.me.rank, n: r.players, p: num(r.me.pts) }) : t('live.dd.youNone')}</span></div>
     {r.rows.length ? <div className="ltable g-card lv-table">
       <div className="ltable__h g-mono"><span>#</span><span>{t('league.reporter')}</span><span>{t('career.right')}</span><span>{t('league.pts')}</span></div>
-      {r.rows.slice(0, 15).map((row, k) => <div key={k} className={'lrow' + (row.me ? ' is-me' : '') + (k === 0 ? ' is-top' : '')}>
+      {tbl.rows.map((row, j) => { const k = tbl.page * 5 + j; return <div key={k} className={'lrow' + (row.me ? ' is-me' : '') + (k === 0 ? ' is-top' : '')}>
         <span className="lrow__n g-num">{k === 0 ? <Icon n="crown" size={18} /> : k + 1}</span>
         <span className="lrow__who"><Avatar name={row.me ? nick || row.nick : row.nick} size={28} me={row.me} /><b>{row.me ? t('common.you') : row.nick}</b></span>
         <span className="lrow__x">{row.right}/{row.n}</span><b className={'lrow__p g-num' + (row.pts < 0 ? ' neg' : '')}>{row.me ? <CountUp to={row.pts} ms={900} sign /> : num(row.pts, true)}</b>
-      </div>)}
+      </div>; })}
+      <Pager p={tbl} />
     </div> : <p className="g-empty">{t('live.dd.tableEmpty')}</p>}
   </section>;
 }

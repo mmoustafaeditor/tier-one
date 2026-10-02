@@ -213,3 +213,27 @@
 :root[data-edition="morning"] :is(.name4__cell > b.neg, .name4__cell em.neg, .name4__chip.is-down) { color: var(--red-deep); }
 :root[data-edition="morning"] :is(.name4__chip.is-gold, .name4__coins) { color: var(--gold-deep) !important; }
 :root[data-edition="morning"] .name4__chip.is-hot { color: #C25A00; }
+
+/* ---------- 3.8 the viral object (LAUNCH_BRIEF §10) and the Exclusive moment (§8) ---------- */
+.vobj { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 14px; background: var(--card-ink); color: var(--card); box-shadow: 0 12px 26px -16px rgba(0,0,0,.8); cursor: default; }
+.vobj__head { color: var(--card-2); font-size: 11px; letter-spacing: .1em; }
+.vobj__row { display: flex; gap: 4px; font-size: 26px; line-height: 1; }
+.vobj__c { font-style: normal; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 6px; background: rgba(255,255,255,.08); font-family: var(--f-cond); font-weight: 900; }
+.vobj__c--r { color: var(--c-done); } .vobj__c--x { color: var(--gold); background: rgba(247, 185, 40, .16); } .vobj__c--w { color: #FF8A6A; } .vobj__c--n { color: rgba(244, 239, 228, .4); }
+.vobj__meta { font-size: 13px; font-weight: 700; color: var(--card-2); }
+.vobj__lines { display: flex; flex-wrap: wrap; gap: 6px; }
+.vobj__lines span { display: inline-flex; align-items: center; min-height: 24px; padding: 2px 9px; border-radius: 999px; background: rgba(255,255,255,.1); font-size: 12px; font-weight: 800; }
+.vobj.is-t1 .vobj__lines span { background: rgba(247, 185, 40, .18); color: var(--gold); }
+.vobj.is-spiked .vobj__lines span { background: rgba(255, 90, 54, .18); color: #FF8A6A; }
+.vobj__copy { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; margin-top: 2px; border-radius: 10px; background: var(--card); color: var(--card-ink); font-weight: 800; font-size: 13px; }
+.vobj__copy:active { transform: translateY(1px); }
+.exclm { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: linear-gradient(90deg, color-mix(in srgb, var(--gold) 26%, var(--card)), var(--card-2)); animation: pub-in .4s var(--ease-out) both; }
+.exclm__stamp { --sc: var(--gold-deep); font-size: 20px; border-width: 3.5px; mix-blend-mode: normal; }
+.exclm__b { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.exclm__b b { font-family: var(--f-display); font-size: 17px; line-height: 1.1; }
+.exclm__b .g-mono { color: var(--gold-deep); font-size: 9.5px; }
+.exclm__share { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--gold); color: #3A2600; box-shadow: 0 3px 0 var(--gold-deep); }
+.rrow__reads.is-coach li { grid-template-columns: 1fr auto 18px; }
+.rrow__why2 { grid-column: 1 / -1; font-style: normal; font-size: 12px; color: var(--c-hijack-deep); line-height: 1.3; }
+.res4.fit .vobj { flex: none; }
+:root.reduce .exclm { animation: none; }
