@@ -12,14 +12,11 @@
 .fit__body > * { flex: none; }
 .fit__grow { flex: 1 1 auto !important; min-height: 0; }
 @media (min-width: 700px) and (max-width: 1023.98px) { .g-screen.fit { padding-bottom: calc(var(--tabs-h) + 24px + env(safe-area-inset-bottom, 0px)); } }
-@media (min-width: 1024px) { .g-screen.fit, .g-screen.fit--full { padding-bottom: 16px; } .g-screen.fit { max-width: 760px; } .home.hm.g-screen { max-width: 760px; } }
+@media (min-width: 1024px) { .g-screen.fit, .g-screen.fit--full { padding-bottom: 16px; } .g-screen.fit { max-width: 760px; } }
 
 /* Back is always top-left and a real target (min 44px). */
 .g-top__back { min-height: 48px; min-width: 44px; }
 
-/* The tab bar's five labels: long names wrap to two short lines instead of clipping. */
-.g-tabs a span { max-width: 100%; padding-inline: 2px; text-align: center; line-height: 1.05; font-size: 10.5px; overflow-wrap: anywhere; }
-@media (min-width: 1024px) { .g-tabs a span { font-size: 11px; } }
 
 /* ---------- pager: ‹ 2/5 › */
 .fit-pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0 auto; color: var(--on-desk-2); font-weight: 800; }
@@ -35,70 +32,7 @@
 .fit-tip > button { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; color: var(--on-desk-2); }
 .fit-tip > button:hover { background: var(--desk-3); }
 
-/* ---------- Home (3.7): mini My Press Card + Missions on top, the four modes, the Shop tile */
-.hm .fit__body { gap: 8px; }
-.hm-top { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); gap: 8px; align-items: stretch; }
-.hm-card, .hm-ms { min-width: 0; border-radius: 16px; background: var(--desk-2); color: var(--on-desk); box-shadow: inset 0 0 0 1px var(--desk-line), 0 10px 24px -16px rgba(0,0,0,.8); }
-.hm-card { display: flex; flex-direction: column; gap: 4px; padding: 4px 5px 5px; }
-.hm-card__head { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 6px; align-items: center; min-height: 44px; padding: 0 3px; border-radius: 12px; text-align: start; color: inherit; }
-.hm-card__badge { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: linear-gradient(145deg, #FF7A52, var(--red-deep)); color: #fff; font-family: var(--f-display); font-weight: 800; font-size: 13px; }
-.hm-card__who { display: flex; flex-direction: column; min-width: 0; line-height: 1.1; }
-.hm-card__who small { font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hm-card__who b { font-family: var(--f-display); font-weight: 800; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hm-card__lv { padding: 3px 7px 2px; border-radius: 999px; background: linear-gradient(180deg, #FFD35C, var(--gold)); color: #3A2600; font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 12.5px; white-space: nowrap; box-shadow: 0 2px 0 var(--gold-deep); }
-.hm-card__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px; }
-.hm-st { --mc: var(--red); display: flex; flex-direction: column; align-items: flex-start; min-width: 0; min-height: 60px; padding: 5px 6px 4px; border-radius: 10px; background: var(--desk-3); color: var(--on-desk); text-align: start; box-shadow: inset 0 3px 0 var(--mc); line-height: 1.15; }
-.hm-st--daily { --mc: var(--m-daily); } .hm-st--story { --mc: var(--m-story); } .hm-st--rooms { --mc: var(--m-rooms); } .hm-st--wire { --mc: var(--m-wire); }
-.hm-st > * { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hm-st__m { margin-top: 2px; font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 10px; letter-spacing: .03em; text-transform: uppercase; color: color-mix(in srgb, var(--mc) 65%, var(--on-desk)); }
-.hm-st__v { display: inline-flex; align-items: center; gap: 2px; font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 18px; }
-.hm-st__v svg { color: var(--red); flex: none; }
-.hm-st__c { font-size: 10.5px; font-weight: 800; color: var(--on-desk); }
-.hm-st__s { font-size: 10px; font-weight: 600; color: var(--on-desk-2); }
-:lang(ar) .hm-st__m, :lang(ar) .hm-card__who small { letter-spacing: 0; text-transform: none; font-size: 10.5px; }
-.hm-ms { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 6px 9px 8px; text-align: start; }
-.hm-ms__h { display: flex; align-items: center; gap: 6px; min-height: 30px; }
-.hm-ms__h b { font-family: var(--f-display); font-weight: 800; font-size: 16px; }
-.hm-ms__h svg { margin-inline-start: auto; color: var(--on-desk-2); flex: none; }
-.hm-ms__badge { min-width: 20px; height: 20px; font-size: 12px; padding: 0 5px; }
-.hm-ms__r { display: flex; flex-direction: column; gap: 3px; padding-top: 5px; border-top: 1px solid var(--desk-line); }
-.hm-ms__t { font-size: 11.5px; font-weight: 700; line-height: 1.2; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.hm-ms__l { display: flex; align-items: center; gap: 6px; }
-.hm-ms__l .g-bar { flex: 1; min-width: 0; }
-.hm-ms__p { display: inline-flex; align-items: center; gap: 3px; font-family: var(--f-cond); font-stretch: 80%; font-weight: 900; font-size: 13px; color: var(--gold); white-space: nowrap; }
-.hm-ms__p .g-coin { width: 12px; height: 12px; }
-.hm-ms__r.is-ready .hm-ms__p { color: var(--c-done); }
-.hm-ms__r.is-claimed { opacity: .55; }
-.hm-modes { flex: 1 1 auto !important; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; }
-.hm-mode { --mc: var(--red); position: relative; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 3px; min-height: 96px; padding: 10px 12px; border-radius: 18px; text-align: start; overflow: hidden;
-  color: var(--on-desk); background: linear-gradient(160deg, color-mix(in srgb, var(--mc) 30%, var(--desk-2)), var(--desk-2) 70%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mc) 45%, transparent), 0 10px 24px -14px rgba(0,0,0,.8);
-  transition: transform var(--d-tap, 120ms) var(--ease-out); }
-.hm-mode:active, .hm-shop:active, .hm-ms:active, .hm-st:active { transform: scale(.97); }
-.hm-mode--daily { --mc: var(--m-daily); } .hm-mode--story { --mc: var(--m-story); } .hm-mode--rooms { --mc: var(--m-rooms); } .hm-mode--wire { --mc: var(--m-wire); }
-.hm-mode__ic { position: absolute; top: 10px; inset-inline-start: 10px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: var(--mc); color: #fff; box-shadow: 0 4px 0 color-mix(in srgb, var(--mc) 60%, #000); }
-.hm-mode--story .hm-mode__ic { color: #3A2600; }
-.hm-mode__t { font-family: var(--f-display); font-weight: 800; font-size: 19px; line-height: 1.02; letter-spacing: -.01em; }
-.hm-mode__s { font-size: 12px; line-height: 1.25; color: var(--on-desk-2); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.hm-mode__go { position: absolute; top: 12px; inset-inline-end: 10px; color: var(--mc); }
-.hm-mode.is-hot .hm-mode__ic { animation: g-pulse 1.6s ease-out infinite; --pulse: color-mix(in srgb, var(--mc) 55%, transparent); }
-.hm-shop { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 54px; padding: 6px 12px 6px 8px; border-radius: 16px; text-align: start; color: var(--on-desk);
-  background: linear-gradient(160deg, color-mix(in srgb, var(--gold) 22%, var(--desk-2)), var(--desk-2) 70%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent); transition: transform var(--d-tap, 120ms) var(--ease-out); }
-.hm-shop__ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--gold); color: #3A2600; box-shadow: 0 3px 0 var(--gold-deep); }
-.hm-shop__b { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
-.hm-shop__b b { font-family: var(--f-display); font-weight: 800; font-size: 18px; }
-.hm-shop__b small { font-size: 12px; color: var(--on-desk-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hm-shop__go { color: var(--gold); }
-.hm-card__head:focus-visible, .hm-st:focus-visible, .hm-ms:focus-visible, .hm-shop:focus-visible, .hm-mode:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-@media (max-height: 700px) { .hm-mode { min-height: 84px; padding: 8px 10px; } .hm-mode__ic { width: 36px; height: 36px; border-radius: 11px; } .hm-mode__ic svg { width: 22px; height: 22px; } .hm-mode__t { font-size: 17px; } .hm-mode__s { -webkit-line-clamp: 1; } .hm-shop { min-height: 48px; } }
-@media (max-height: 600px) { .hm-st__s { display: none; } .hm-st { min-height: 46px; } }
-@media (min-width: 560px) { .hm-top { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
-
-/* ---------- top bar (3.7): coins and credits side by side, each opens the Shop; the bell's short list */
-.g-wal { display: inline-flex; align-items: center; gap: 4px; }
-.g-wal__b { display: inline-flex; align-items: center; gap: 5px; height: 44px; padding: 0 9px; border-radius: 999px; background: var(--desk-3); color: var(--on-desk); box-shadow: inset 0 0 0 1px var(--desk-line); font-family: var(--f-cond); font-stretch: 80%; font-weight: 800; font-size: 16px; white-space: nowrap; transition: transform var(--d-tap, 120ms) var(--ease-out); }
-.g-wal__b:active { transform: scale(.94); }
-.g-wal__b:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-@media (max-width: 400px) { .g-wal__b { padding: 0 7px; gap: 4px; font-size: 15px; } .g-top__end { gap: 4px; } }
+/* ---------- the bell's short list (ui/connect.tsx Bell) */
 .nt { position: relative; display: inline-flex; }
 .nt__panel { position: fixed; z-index: 80; top: calc(max(10px, env(safe-area-inset-top, 0px)) + 56px); inset-inline-end: 12px; width: min(360px, calc(100vw - 24px)); padding: 10px; border-radius: 16px; background: var(--desk-2); color: var(--on-desk);
   box-shadow: inset 0 0 0 1px var(--desk-line), 0 18px 40px -12px rgba(0,0,0,.75); animation: nt-in .18s var(--ease-out) both; }
@@ -280,3 +214,12 @@ select.tm-chip { appearance: none; -webkit-appearance: none; text-overflow: elli
 .czm__fair svg { flex: none; margin-top: 1px; color: var(--c-done); }
 .czm__fair b { color: var(--on-desk); }
 @media (min-width: 1024px) { .cz.fit.g-screen { max-width: 1200px; } }
+
+/* ---------- How to play (3.8): one step card at a time, ‹ 2/5 ›, the full rules in a sheet */
+.howto3.fit .howto3__head { display: flex; flex-direction: column; gap: 2px; }
+.howto3.fit .howto3__head .g-h1 { font-size: clamp(22px, 5vw + 4px, 30px); }
+.howto3.fit .stepc { width: auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+.howto3.fit .stepc__art { flex: none; }
+.howto3__row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.howto3__row .g-btn { white-space: nowrap; font-size: 15px; padding: 0 10px; }
+.fullrules__body { color: var(--card-ink); }

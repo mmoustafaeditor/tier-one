@@ -1,74 +1,131 @@
-/* Tier One: the one design system (docs/DESIGN_SYSTEM.md, GOTY.md §11.1, §12). Loaded last by App.tsx, so these are
-   the final word on the shared parts: button, sheet, card, row, chip, chip picker, toast, empty state, top bar, tabs,
-   the route stage, entrances and the "new" signals. Screens compose these; they don't restyle them.
-   Motion scale: 90 (tap) · 180 (state) · 260 (move) · 520 (the one hero beat), from motion.css. */
+/* Tier One: the one design system (docs/spec/M-ui-design-system.md; brief §26, §43, §44). Loaded last by App.tsx,
+   so these are the final word on the shared parts. Part 1 is the token sheet: colour, type roles, spacing, radii,
+   elevation, paper texture, motion timings, breakpoints. Part 2 is the shared components (button, top bar, tab bar,
+   card, row, chip, sheet, toast, empty state, stage, entrances). Screens compose these; they don't restyle them.
+   Breakpoints (CSS can't read a var in @media; keep these in step with desktop.css):
+     phone  < 700   ·  tablet 700–1023  ·  desktop ≥ 1024  ·  wide ≥ 1440 */
+
+/* ================================================================ 1. tokens */
+:root {
+  /* ---- palette (§26): deep charcoal, warm paper, restrained coral, muted grey, rare gold. Aliases of the editions
+     in look/tokens.css and games.css, named by role so screens never reach for a hex. */
+  --sys-charcoal: #15130F; --sys-charcoal-2: #26231E; --sys-paper: #F2EEE5; --sys-paper-2: #E8E2D5; --sys-coral: #D2381B; --sys-coral-hi: #FF5A36;
+  --sys-grey: #7C766A; --sys-gold: #C9972B; --sys-gold-hi: #F7B928;
+  --c-ink: var(--ink); --c-ink-2: var(--ink-2); --c-ink-3: var(--ink-3);
+  --c-paper: var(--paper); --c-paper-2: var(--paper-2); --c-paper-3: var(--paper-3);
+  --c-accent: var(--red); --c-accent-deep: var(--red-deep); --c-gold: var(--gold); --c-gold-deep: var(--gold-deep);
+  --c-line: var(--desk-line);
+  /* ---- type roles (serif for the headlines, sans for the UI, condensed figures, mono for datelines) */
+  --tr-kicker: 600 10.5px/1.2 var(--f-mono); --tr-label: 900 11px/1.1 var(--f-cond);
+  --tr-h1: 800 clamp(26px, 6vw + 6px, 36px)/1.02 var(--f-display); --tr-h2: 800 22px/1.05 var(--f-display); --tr-h3: 800 17px/1.15 var(--f-text);
+  --tr-body: 500 15px/1.4 var(--f-text); --tr-small: 600 12.5px/1.3 var(--f-text); --tr-num: 900 18px/1 var(--f-cond);
+  /* ---- spacing (§44): 4 micro · 8 small · 12 compact · 16 standard · 24 section · 32 major; the phone gutter */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-gutter: 16px;
+  /* ---- targets and radii (§44): 44 tap floor, 48–56 primary; 8 chips, 12 rows and tiles, 16 cards, 18 sheet, pill */
+  --tap: 44px; --tap-primary: 52px; --rad-1: 8px; --rad-2: 12px; --rad-3: 16px; --rad-4: 18px; --rad-pill: 999px;
+  /* ---- elevation: paper on a desk. Lines first; shadows only where something is lifted. */
+  --el-0: inset 0 0 0 1px var(--desk-line);
+  --el-1: inset 0 0 0 1px var(--desk-line), 0 10px 24px -16px rgba(0, 0, 0, .8);
+  --el-2: 0 1px 0 rgba(0, 0, 0, .08), 0 18px 40px -18px rgba(0, 0, 0, .55);
+  --el-3: 0 -24px 60px -24px rgba(0, 0, 0, .9);
+  /* ---- textures: subtle paper grain and a desk-surface vignette, both data URIs (no requests, no photos) */
+  --tex-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .4 0 0 0 0 .34 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --tex-paper-a: .07; /* opacity of the grain on paper cards */
+  --tex-desk: radial-gradient(120% 80% at 50% -10%, rgba(255, 255, 255, .06), transparent 60%), radial-gradient(90% 60% at 50% 110%, rgba(0, 0, 0, .45), transparent 60%);
+  /* ---- motion (§40): common 150–400 · important result 500–1200 · major 1–2 s. Screens use these names only. */
+  --m-tap: 150ms; --m-state: 240ms; --m-move: 400ms; --m-result: 800ms; --m-major: 1400ms;
+  --m-ease: cubic-bezier(.16, 1, .3, 1); --m-ease-in: cubic-bezier(.7, 0, .84, 0); --m-spring: cubic-bezier(.22, 1.6, .36, 1);
+  /* ---- the existing motion names resolve to the same scale */
+  --d-tap: var(--m-tap); --d-ui: var(--m-state); --d-ui2: var(--m-move); --d-reveal: var(--m-result);
+}
+:root.reduce, :root[data-reduce] { --m-tap: 0ms; --m-state: 0ms; --m-move: 0ms; --m-result: 0ms; --m-major: 0ms; }
+@media (prefers-reduced-motion: reduce) { :root { --m-tap: 0ms; --m-state: 0ms; --m-move: 0ms; --m-result: 0ms; --m-major: 0ms; } }
+
+/* paper cards carry the grain; the desk carries the vignette (both off under reduce-data for cheap GPUs) */
+.g-card:not(.g-card--desk)::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: var(--tex-paper-a); background: var(--tex-paper); mix-blend-mode: multiply; }
+:root[data-edition="late"] .g-card:not(.g-card--desk)::before { mix-blend-mode: screen; opacity: calc(var(--tex-paper-a) * .6); }
+@media (prefers-reduced-data: reduce) { .g-card:not(.g-card--desk)::before { display: none; } }
+
+/* ================================================================ 2. shared components */
 
 /* ---------------------------------------------------------------- buttons: primary · dark · paper · ghost (+ gold, green)
    48px floor on every size; press = scale + drop; the screen's one primary action wears a slow ring once. */
-.g-btn { min-height: 56px; font-size: 21px; transition: transform var(--d-tap) var(--ease-out), box-shadow var(--d-tap) var(--ease-out), filter var(--d-ui); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.g-btn { min-height: var(--tap-primary); font-size: 20px; border-radius: var(--rad-2); transition: transform var(--m-tap) var(--m-ease), box-shadow var(--m-tap) var(--m-ease), filter var(--m-state); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .g-btn:active:not(:disabled) { transform: translateY(4px) scale(.97); }
-.g-btn--sm { min-height: 48px; font-size: 17px; padding: 0 16px; }
-.g-btn--lg { min-height: 64px; font-size: 25px; }
+.g-btn--sm { min-height: 48px; font-size: 16px; padding: 0 16px; }
+.g-btn--lg { min-height: 56px; font-size: 22px; }
 .g-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
-.g-btn[data-primary] { animation: sys-call 1.4s var(--ease-out) var(--d-reveal) 1 both; }
+.g-btn[data-primary] { animation: sys-call 1.4s var(--m-ease) var(--m-result) 1 both; }
 @keyframes sys-call { 0% { box-shadow: 0 5px 0 var(--bd), 0 0 0 0 color-mix(in srgb, var(--red) 55%, transparent); } 100% { box-shadow: 0 5px 0 var(--bd), 0 0 0 18px transparent; } }
 .g-btn.is-loading { color: transparent; pointer-events: none; }
 .g-btn.is-loading::after { content: ""; position: absolute; inset: auto 18px 14px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--bt), transparent) 0 0 / 40% 100% no-repeat; animation: sys-sweep .9s var(--ease-in-out) infinite; }
 @keyframes sys-sweep { from { background-position: -60% 0; } to { background-position: 160% 0; } }
-.g-icbtn { width: 44px; height: 44px; transition: transform var(--d-tap) var(--ease-out), background-color var(--d-ui); }
+.g-icbtn { width: var(--tap); height: var(--tap); border-radius: var(--rad-2); transition: transform var(--m-tap) var(--m-ease), background-color var(--m-state); }
 .g-icbtn:active { transform: scale(.9); }
 .g-icbtn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 
-/* ---------------------------------------------------------------- top bar: logo or back, then coins · level · bell */
-.g-top { min-height: 64px; }
-.g-top__back { min-height: 48px; padding-inline-end: 8px; font-size: 16px; border-radius: 12px; transition: transform var(--d-tap) var(--ease-out); }
+/* ---------------------------------------------------------------- top bar (§28): masthead or back, then only what the screen needs */
+.g-top { min-height: 60px; gap: 6px; }
+.g-top__back { min-height: 48px; min-width: 44px; padding-inline-end: 10px; font-size: 15px; border-radius: var(--rad-2); transition: transform var(--m-tap) var(--m-ease); }
 .g-top__back:active { transform: scale(.96); }
+.g-top__back span { max-width: 32vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-top__title { font-size: 19px; }
 .g-pill { height: 36px; }
-/* the bell: a new item rings it once, with one ripple (never a loop) */
-.cn-bell.is-pop::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 0 color-mix(in srgb, var(--red) 60%, transparent); animation: sys-ripple .7s var(--ease-out) 1 both; pointer-events: none; }
+/* the compact wallet pill: coins · credits in one target, opens the Shop; the bell rings once on a new note */
+.g-wal { display: inline-flex; align-items: center; height: 40px; padding: 0 4px; border-radius: var(--rad-pill); background: var(--desk-3); color: var(--on-desk); box-shadow: var(--el-0); transition: transform var(--m-tap) var(--m-ease); }
+.g-wal:active { transform: scale(.95); }
+.g-wal:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.g-wal__b { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 8px; font-family: var(--f-cond); font-stretch: 80%; font-weight: 800; font-size: 15px; white-space: nowrap; }
+.g-wal__b + .g-wal__b { border-inline-start: 1px solid var(--desk-line); }
+.g-wal__b--c svg { color: var(--gold); }
+.g-wal--compact .g-wal__b { padding: 0 7px; font-size: 14px; }
+@media (max-width: 360px) { .g-wal__b { padding: 0 6px; } }
+.cn-bell.is-pop::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 0 color-mix(in srgb, var(--red) 60%, transparent); animation: sys-ripple .7s var(--m-ease) 1 both; pointer-events: none; }
 @keyframes sys-ripple { to { box-shadow: 0 0 0 14px transparent; } }
 
-/* ---------------------------------------------------------------- tab bar: 64px, one sliding indicator in the mode colour */
-.g-tabs a { font-size: 12px; min-height: 48px; }
+/* ---------------------------------------------------------------- tab bar (§29): five destinations, one sliding indicator in the mode colour */
+.g-tabs a { font-size: 11px; min-height: 48px; }
+.g-tabs a span { max-width: 100%; padding-inline: 2px; text-align: center; line-height: 1.05; overflow-wrap: anywhere; }
 .g-tabs::after { width: 40px; height: 4px; margin-inline-start: -3px; }
 
 /* ---------------------------------------------------------------- the card and the list row */
-.g-card { border-radius: var(--r-card); }
-.g-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 64px; padding: 10px 16px; text-align: start; border-radius: var(--r-card);
-  background: var(--desk-2); color: var(--on-desk); box-shadow: inset 0 0 0 1px var(--desk-line); font-size: 16px; line-height: 1.3; transition: transform var(--d-tap) var(--ease-out), background-color var(--d-ui); }
+.g-card { border-radius: var(--rad-3); }
+.g-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 64px; padding: 10px 16px; text-align: start; border-radius: var(--rad-3);
+  background: var(--desk-2); color: var(--on-desk); box-shadow: var(--el-0); font-size: 16px; line-height: 1.3; transition: transform var(--m-tap) var(--m-ease), background-color var(--m-state); }
 .g-row + .g-row { margin-top: 8px; }
 button.g-row:active, a.g-row:active { transform: scale(.98); }
-.g-row__ic { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--row-c, var(--red)) 20%, transparent); color: var(--row-c, var(--red)); }
+.g-row__ic { flex: none; width: 40px; height: 40px; border-radius: var(--rad-2); display: grid; place-items: center; background: color-mix(in srgb, var(--row-c, var(--red)) 20%, transparent); color: var(--row-c, var(--red)); }
 .g-row__b { flex: 1; min-width: 0; display: grid; gap: 2px; }
 .g-row__b b { font-weight: 800; }
 .g-row__b small { color: var(--on-desk-2); font-size: 14px; }
 .g-row__go { flex: none; color: var(--on-desk-3); }
 
 /* ---------------------------------------------------------------- chips, and the chip picker (replaces every <select>) */
-.g-chip { height: 30px; padding: 0 11px; font-size: 13px; }
+.g-chip { height: 30px; padding: 0 11px; font-size: 13px; border-radius: var(--rad-1); }
 .g-picks { display: grid; gap: 8px; }
 .g-picks__l { color: inherit; opacity: .7; }
 .g-picks__row { display: flex; flex-wrap: wrap; gap: 8px; }
 .g-chip--pick { height: 44px; padding: 0 16px; font-size: 15px; cursor: pointer; background: rgba(127, 120, 105, .16); color: inherit; box-shadow: inset 0 0 0 2px rgba(127, 120, 105, .28);
-  transition: transform var(--d-tap) var(--ease-out), background-color var(--d-ui), color var(--d-ui), box-shadow var(--d-ui); }
+  transition: transform var(--m-tap) var(--m-ease), background-color var(--m-state), color var(--m-state), box-shadow var(--m-state); }
 .g-chip--pick:active { transform: scale(.94); }
-.g-chip--pick[aria-checked="true"], .g-chip--pick[aria-pressed="true"] { background: var(--card-ink); color: var(--card); box-shadow: none; animation: g-pop var(--d-ui2) var(--ease-spring) both; }
+.g-chip--pick[aria-checked="true"], .g-chip--pick[aria-pressed="true"] { background: var(--card-ink); color: var(--card); box-shadow: none; animation: g-pop var(--m-move) var(--m-spring) both; }
 .g-card--desk .g-chip--pick[aria-checked="true"], .g-desk .g-chip--pick[aria-checked="true"] { background: var(--on-desk); color: var(--desk); }
 .g-chip--pick:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 
 /* ---------------------------------------------------------------- the one sheet: ink-wash scrim, paper springs up, pulled down to close */
-.scrim { z-index: 110; background: rgba(8, 7, 5, calc(.62 * var(--wash, 1))); backdrop-filter: none; -webkit-backdrop-filter: none; animation: sys-wash var(--d-ui2) var(--ease-out) both; }
-.scrim.is-out { animation: sys-unwash var(--d-ui2) var(--ease-in-out) both; }
+.scrim { z-index: 110; background: rgba(8, 7, 5, calc(.62 * var(--wash, 1))); backdrop-filter: none; -webkit-backdrop-filter: none; animation: sys-wash var(--m-move) var(--m-ease) both; }
+.scrim.is-out { animation: sys-unwash var(--m-move) var(--ease-in-out) both; }
 @keyframes sys-wash { from { background-color: rgba(8, 7, 5, 0); } }
 @keyframes sys-unwash { to { background-color: rgba(8, 7, 5, 0); } }
-.sheet--float { position: relative; padding: 0 18px calc(20px + env(safe-area-inset-bottom, 0)); font-size: 16px; box-shadow: 0 -24px 60px -24px rgba(0, 0, 0, .9);
-  animation: sys-sheet-in var(--d-reveal) var(--ease-spring) both; overscroll-behavior: contain; }
-.sheet--float.is-out { animation: sys-sheet-out var(--d-ui2) var(--ease-in-out) both; }
+.sheet--float { position: relative; padding: 0 18px calc(20px + env(safe-area-inset-bottom, 0)); font-size: 16px; border-radius: var(--rad-4) var(--rad-4) 0 0; box-shadow: var(--el-3);
+  animation: sys-sheet-in var(--m-result) var(--m-spring) both; overscroll-behavior: contain; }
+.sheet--float.is-out { animation: sys-sheet-out var(--m-move) var(--ease-in-out) both; }
 .sheet--float.is-drag { animation: none; transition: none; }
-.sheet--float:not(.is-drag) { transition: transform var(--d-ui2) var(--ease-spring); }
+.sheet--float:not(.is-drag) { transition: transform var(--m-move) var(--m-spring); }
 @keyframes sys-sheet-in { from { transform: translateY(100%); } }
 @keyframes sys-sheet-out { to { transform: translateY(105%); } }
 @media (min-width: 960px) {
+  .sheet--float { border-radius: var(--rad-4); }
   @keyframes sys-sheet-in { from { transform: translateY(32px) scale(.97); opacity: 0; } }
   @keyframes sys-sheet-out { to { transform: translateY(24px) scale(.98); opacity: 0; } }
 }
@@ -79,18 +136,18 @@ button.g-row:active, a.g-row:active { transform: scale(.98); }
 .sheet__ht b { font-family: var(--f-display); font-weight: 800; font-size: 26px; line-height: 1.05; letter-spacing: -.02em; }
 .sheet__k, .sheet__aside { opacity: .65; }
 .sheet__x { flex: none; background: rgba(127, 120, 105, .18); color: inherit; box-shadow: none; }
-.sheet--float[style*="--sheet-c"] { box-shadow: inset 0 5px 0 var(--sheet-c), 0 -24px 60px -24px rgba(0, 0, 0, .9); }
+.sheet--float[style*="--sheet-c"] { box-shadow: inset 0 5px 0 var(--sheet-c), var(--el-3); }
 /* screens' own sheet bodies sit flat inside the one sheet */
 .sheet--float > .wsheet, .sheet--float.cz-sheet { max-width: none; max-height: none; overflow: visible; margin: 0; border-radius: 0; background: none; box-shadow: none; animation: none; padding-inline: 0; }
-.sheet--float.cz-sheet { max-width: 560px; padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0)); max-height: 92vh; overflow-y: auto; background: var(--card); border-radius: 18px 18px 0 0; }
-.sheet--float > .wsheet .wsheet__band { margin-inline: 0; top: 28px; } /* under the sticky handle, never behind it (SAIF-04) */
+.sheet--float.cz-sheet { max-width: 560px; padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0)); max-height: 92vh; overflow-y: auto; background: var(--card); border-radius: var(--rad-4) var(--rad-4) 0 0; }
+.sheet--float > .wsheet .wsheet__band { margin-inline: 0; top: 28px; }
 
 /* ---------------------------------------------------------------- toasts: wire slips, three deep, swipe or tap to bin */
 .toasts { gap: 8px; padding-inline: 12px; pointer-events: none; }
-.toast { pointer-events: auto; display: flex; align-items: center; gap: 12px; width: min(440px, 100%); min-height: 56px; padding: 8px 8px 8px 14px; font-size: 15px; touch-action: pan-y;
+.toast { pointer-events: auto; display: flex; align-items: center; gap: 12px; width: min(440px, 100%); min-height: 56px; padding: 8px 8px 8px 14px; font-size: 15px; touch-action: pan-y; border-radius: var(--rad-2);
   transform: translateY(calc(var(--depth, 0) * -2px)) scale(calc(1 - var(--depth, 0) * .03)); opacity: calc(1 - var(--depth, 0) * .18);
-  transition: transform var(--d-ui2) var(--ease-spring), opacity var(--d-ui); animation: sys-slip var(--d-ui2) var(--ease-spring) both; }
-.toast.is-out { animation: sys-slip-out var(--d-ui) var(--ease-in-out) both; }
+  transition: transform var(--m-move) var(--m-spring), opacity var(--m-state); animation: sys-slip var(--m-move) var(--m-spring) both; }
+.toast.is-out { animation: sys-slip-out var(--m-state) var(--ease-in-out) both; }
 @keyframes sys-slip { from { transform: translateY(-120%) rotate(-2deg); opacity: 0; } }
 @keyframes sys-slip-out { to { transform: translateX(40%) rotate(4deg); opacity: 0; } }
 .toast__ic { flex: none; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--red) 16%, transparent); color: var(--red-deep); }
@@ -104,7 +161,7 @@ button.g-row:active, a.g-row:active { transform: scale(.98); }
 
 /* ---------------------------------------------------------------- the empty state: a note with the next thing to do */
 .g-empty { display: flex; align-items: center; gap: 14px; padding: 16px; color: var(--on-desk-2); font-size: 16px; line-height: 1.4; }
-.g-empty--card { border-radius: var(--r-card); background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); }
+.g-empty--card { border-radius: var(--rad-3); background: var(--desk-2); box-shadow: var(--el-0); }
 .g-empty__ic { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--desk-3); color: var(--on-desk-2); }
 .g-empty__b { flex: 1; min-width: 0; display: grid; gap: 4px; }
 .g-empty__b b { color: var(--on-desk); font-weight: 800; font-size: 17px; }
@@ -117,15 +174,13 @@ button.g-row:active, a.g-row:active { transform: scale(.98); }
 .g-empty--big > .g-btn { width: 100%; max-width: 420px; }
 
 /* ---------------------------------------------------------------- the route stage (App's Suspense fallback) */
-.g-stage__paper { display: grid; gap: 12px; margin-top: 8px; opacity: 0; animation: g-fade var(--d-ui) var(--ease-out) 120ms forwards; }
-.g-stage__paper i { display: block; height: 96px; border-radius: var(--r-card); background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); }
+.g-stage__paper { display: grid; gap: 12px; margin-top: 8px; opacity: 0; animation: g-fade var(--m-state) var(--m-ease) 120ms forwards; }
+.g-stage__paper i { display: block; height: 96px; border-radius: var(--rad-3); background: var(--desk-2); box-shadow: var(--el-0); }
 .g-stage__paper i:first-child { height: 180px; background: color-mix(in srgb, var(--card) 14%, var(--desk-2)); }
 
 /* ---------------------------------------------------------------- entrances: children dealt in by --i (one stagger per screen) */
-/* `backwards` only: no transform is left behind to trap a fixed overlay inside a section. Capped at six steps. */
-.g-in > *, .stagger > [style*="--i"] { animation: sys-rise var(--d-ui2) var(--ease-out) backwards; animation-delay: calc(min(var(--i, 0), 6) * 45ms + var(--d-tap)); }
+.g-in > *, .stagger > [style*="--i"] { animation: sys-rise var(--m-move) var(--m-ease) backwards; animation-delay: calc(min(var(--i, 0), 6) * 45ms + var(--m-tap)); }
 @keyframes sys-rise { from { opacity: 0; transform: translateY(14px); } }
-/* the stamp slams exactly once; a re-render never replays it */
 .stamp.is-slam, .g-stamp.is-slam { animation-iteration-count: 1; }
 .stamp--catch { --stamp-size: 28px; }
 .stamp--catch.stamp--xl { --stamp-size: 44px; }
@@ -133,6 +188,12 @@ button.g-row:active, a.g-row:active { transform: scale(.98); }
 /* ---------------------------------------------------------------- "new": a quiet glow on the case file and the editor's notes */
 .sm-case.is-fresh, .sm-drawer.is-fresh { box-shadow: var(--shadow-card), 0 0 0 2px color-mix(in srgb, var(--gold) 70%, transparent), 0 0 24px -4px color-mix(in srgb, var(--gold) 55%, transparent); animation: sys-glow 2.4s var(--ease-in-out) 2 both; }
 @keyframes sys-glow { 50% { box-shadow: var(--shadow-card), 0 0 0 2px color-mix(in srgb, var(--gold) 40%, transparent), 0 0 10px -4px color-mix(in srgb, var(--gold) 30%, transparent); } }
+
+/* ---------------------------------------------------------------- portraits (Addendum A, ui/portrait.tsx): a slot, card or round */
+.pt { display: inline-grid; place-items: center; width: var(--pt, 48px); height: var(--pt, 48px); flex: none; border-radius: var(--rad-2); overflow: hidden; background: var(--desk-3); box-shadow: var(--el-0); }
+.pt--round { border-radius: 50%; }
+.pt svg, .pt img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.pt--me { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--red) 70%, transparent); }
 
 /* ---------------------------------------------------------------- store / newsroom tails */
 .cz-desk { margin-top: 24px; }

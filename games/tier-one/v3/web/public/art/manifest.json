@@ -1,0 +1,5 @@
+{
+  "v": 1,
+  "_about": "Character art slots (ui/portrait.tsx, brief Addendum A). Add an entry per id to replace the drawn placeholder: { \"src\": \"art/<file>.png\", \"alt\": \"...\", \"moods\": { \"hesitant\": \"...\", \"confident\": \"...\", \"mischief\": \"...\" } }. Ids: src:kitman src:barber src:agent src:spotter src:physio src:leak · rival:tabloid rival:itk rival:insider · editor:mags editor:hana editor:desk · me · player:<playerId>. Never bake a name, club, badge, sponsor or status into the image: those are live text beside the slot.",
+  "art": {}
+}
