@@ -50,6 +50,7 @@ import './styles/motion.css';
 import './styles/desktop.css';
 import './styles/system.css'; // the one design system (docs/spec/M-ui-design-system.md): tokens, then the last word on the shared parts
 import './styles/fit.css'; // one-screen pages (no page scroll), pagers and tips
+import './styles/theme39.css'; // 3.9 Newsroom (UI39.md): the one palette and type, last word on colour
 
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }

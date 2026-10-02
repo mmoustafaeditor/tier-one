@@ -1,0 +1,59 @@
+/* Tier One 3.9 "Newsroom" (UI39.md): the one palette for every edition, every screen, every platform.
+   Loaded last by App.tsx, after system.css and fit.css, so it is the final word on colour. The owner's handoff:
+   charcoal desk, paper cards, one restrained coral, muted grey, rare subdued gold, a modest sage for success.
+   No purple, no neon, no glossy gradients, no rainbow rarity tiers. The light "morning" edition is retired: both
+   data-edition values resolve to this newsroom. Screens use the role names below and never a hex. */
+:root, :root[data-edition="morning"], :root[data-edition="late"], :root:not([data-edition="morning"]) {
+  color-scheme: dark;
+  /* ---- the desk (page) */
+  --desk: #151B1F; --desk-2: #1C2328; --desk-3: #242C32; --desk-4: #2D363D; --desk-line: rgba(239, 231, 215, .12); --desk-line-2: rgba(239, 231, 215, .24);
+  --on-desk: #EFE7D7; --on-desk-2: #B9B2A6; --on-desk-3: #8A8478;
+  /* ---- paper (cards) */
+  --card: #EFE7D7; --card-2: #E4DBC8; --card-3: #D9CFBA; --card-ink: #151B1F; --card-ink-2: #4A4A46; --card-ink-3: #7A766E; --card-line: rgba(21, 27, 31, .14);
+  /* ---- the one accent, gold, and the outcome inks (sage · amber · grey · dusk) */
+  --red: #C94D3F; --red-deep: #A63D31; --red-hi: #D9604F; --red-wash: rgba(201, 77, 63, .14);
+  --gold: #C9A24A; --gold-deep: #9A7A2E; --gold-hi: #DDB75E; --gold-wash: rgba(201, 162, 74, .16);
+  --sage: #5E8C61; --sage-deep: #41663F;
+  --c-done: #5E8C61; --c-done-deep: #41663F; --c-hijack: #B3722F; --c-hijack-deep: #8A5620;
+  --c-off: #8A8478; --c-off-deep: #645F55; --c-fake: #7A6A99; --c-fake-deep: #5A4D73;
+  --c-right: var(--sage); --c-wrong: var(--red);
+  /* ---- the old newspaper names resolve here too (look/tokens.css, game.css) */
+  --paper: var(--desk); --paper-2: var(--desk-2); --paper-3: var(--desk-3);
+  --ink: var(--on-desk); --ink-2: var(--on-desk-2); --ink-3: var(--on-desk-3);
+  --rule: var(--desk-line); --rule-2: var(--desk-line-2);
+  --invert: var(--on-desk); --on-invert: var(--desk);
+  --accent: var(--red); --accent-ink: #FFF4F0; --accent-wash: var(--red-wash); --accent-text: #E06A5B;
+  --go: var(--sage); --dead: var(--c-off);
+  --o-done: var(--c-done); --o-hijack: var(--c-hijack); --o-off: var(--c-off); --o-fake: var(--c-fake);
+  --halftone: rgba(0, 0, 0, .85);
+  --m-daily: var(--red); --m-story: var(--gold); --m-wire: var(--on-desk-2); --m-rooms: var(--on-desk-2); --m-practice: var(--sage);
+  --sys-charcoal: #151B1F; --sys-charcoal-2: #1C2328; --sys-paper: #EFE7D7; --sys-paper-2: #E4DBC8; --sys-coral: #C94D3F; --sys-coral-hi: #D9604F;
+  --sys-grey: #8A8478; --sys-gold: #C9A24A; --sys-gold-hi: #DDB75E;
+  --c-ink: var(--on-desk); --c-ink-2: var(--on-desk-2); --c-ink-3: var(--on-desk-3);
+  --c-paper: var(--card); --c-paper-2: var(--card-2); --c-paper-3: var(--card-3);
+  --c-accent: var(--red); --c-accent-deep: var(--red-deep); --c-gold: var(--gold); --c-gold-deep: var(--gold-deep); --c-line: var(--desk-line);
+  /* ---- buttons: primary coral on paper or desk; the dark button is paper-on-charcoal outline */
+  --bd: var(--red-deep); --bt: #FFF4F0;
+  --shadow-card: 0 1px 0 rgba(0, 0, 0, .25), 0 10px 24px -14px rgba(0, 0, 0, .7);
+  --r-card: 14px; --r-btn: 12px;
+  --tabs-h: 64px;
+  /* ---- type: Newsreader for headings (optical size on), Schibsted Grotesk for everything else, tabular figures */
+  --f-display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --f-text: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-cond: "Schibsted Grotesk", "Archivo", "Arial Narrow", sans-serif; --cond-stretch: 100%;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  /* the wordmark: "tier one." lower-case serif with a coral full stop (ui/chrome.tsx .g-wordmark) */
+  --wordmark-size: 26px;
+}
+:root:lang(ar) { --f-display: "Noto Naskh Arabic", "Newsreader", serif; --f-text: "IBM Plex Sans Arabic", "Schibsted Grotesk", sans-serif; --f-cond: "IBM Plex Sans Arabic", sans-serif; }
+html, body { background: var(--desk); color: var(--on-desk); }
+.g-num, .g-mono, [class*="__pts"], [class*="__clock"], .tabular { font-variant-numeric: tabular-nums; }
+/* a hairline on paper and on the desk, used by every list */
+.g-hr { border: 0; height: 1px; margin: 0; background: var(--desk-line); }
+.g-card .g-hr, .paper .g-hr { background: var(--card-line); }
+/* the wordmark */
+.g-wordmark { font-family: var(--f-display); font-weight: 600; font-size: var(--wordmark-size); letter-spacing: -.02em; line-height: 1; color: var(--on-desk); text-transform: lowercase; white-space: nowrap; font-variation-settings: "opsz" 36; }
+.g-wordmark::after { content: "."; color: var(--red); }
+/* a serif headline with the coral full stop ("Every story has two sides.") */
+.g-hed { font-family: var(--f-display); font-weight: 600; letter-spacing: -.02em; line-height: 1.02; font-variation-settings: "opsz" 48; }
+.g-hed::after { content: "."; color: var(--red); }
