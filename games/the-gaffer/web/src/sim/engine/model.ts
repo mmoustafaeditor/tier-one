@@ -10,6 +10,7 @@
 //   • FULL play (the user's match) samples a pair of players per contest and records who won,
 //   • FAST play (every other match) samples the contest's average odds,
 //   • solve() computes the exact long-run expectations (predict(), the board's expected points, suggestions).
+import { traitsOf, type Traits } from './traits';
 import { WX } from './weather';
 import type { Player, Position } from '../../model/types';
 import { fitPenalty, fullTactics, type FullTactics, type Tactics } from '../tactics';
@@ -47,6 +48,7 @@ export const EV = { FOUL: 1, CORNER: 2, OFFSIDE: 3, TFOUL: 4, GOAL: 5, SAVE: 6, 
 export interface Edge { p: number; to: number; ev?: number; dt?: number }
 export interface Actor {
   id: string; slot: number; pos: Position;
+  tr?: Traits;           // B4: hidden traits (composure, vision, movement off the ball), engine/traits.ts
   a: number[];           // attributes as they play right now: fitness, form, morale, position, home crowd
   x: number; y: number;  // in possession (own frame: y 0 = own goal, x 0 = left touchline)
   ox: number; oy: number; // out of possession
@@ -111,6 +113,8 @@ const S = {
   hold: (a: number[]) => 0.45 * a[5] + 0.35 * a[4] + 0.2 * a[0],
 };
 export const SKILL = S;
+// B4: how much the hidden traits count in the engine (engine/traits.ts; sim-tests/traitsengine.ts).
+export const TRAIT = { CALM: 0.8, MOVE: 0.8, VISION: 0.9, PEN: 0.08 };
 
 // The engine's tuning in one place (logit units; 10 attribute points ≈ K).
 export const TUNE = {
@@ -150,7 +154,7 @@ export function actorsOf(inp: SideInput): Actor[] {
     const sp = spotOf(p, k, t, plan, short);
     const b = inp.bonus + (p.morale - 60) / 20 - pen + sp.bonus;
     const a = p.attrs.map((v, i) => (i === 0 || i === 5 ? v * phys : v * tech) + b);
-    out.push({ id: p.id, slot: k, pos: sl.pos, a, x: sp.x, y: sp.y, ox: sp.ox, oy: sp.oy, f: sp.f, of: sp.of, opos: sp.opos, ip: sp.ip, oop: sp.oop, ifx: sp.ifx, ofx: sp.ofx });
+    out.push({ id: p.id, slot: k, pos: sl.pos, a, x: sp.x, y: sp.y, ox: sp.ox, oy: sp.oy, f: sp.f, of: sp.of, opos: sp.opos, ip: sp.ip, oop: sp.oop, ifx: sp.ifx, ofx: sp.ofx, tr: traitsOf(p) });
   });
   return out;
 }
@@ -434,20 +438,26 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   const ids = outs.map((x) => x.id);
   const ix = outs.map((x) => A.indexOf(x));
   const wOpen: number[] = [], wRun: number[] = [], wAir: number[] = [], wSet: number[] = [], wLong: number[] = [], finF: number[] = [], finH: number[] = [];
+  // B4: hidden traits, relative to the side's own men (they share out its chances, they don't add to them): the better
+  // mover off the ball gets more of the open-play shots, the more composed finisher scores more of the same chances.
+  const avgT = (k: 'calm' | 'offBall' | 'vision') => (outs.length ? outs.reduce((t, x) => t + (x.tr?.[k] ?? 0.5), 0) / outs.length : 0.5);
+  const cMean = avgT('calm'), oMean = avgT('offBall');
   for (let k = 0; k < outs.length; k++) {
     const x = outs[k], sh = pw15(x.a[1] / 70), air = (S.airA(x.a) / 70) ** 2;
-    const open = ROLE_SHOT[x.pos] * x.ifx.shot * (0.4 + band(x.y, 58, 110)) * sh * (x.id === mark ? 0.7 : 1);
+    const move = 1 + TRAIT.MOVE * ((x.tr?.offBall ?? 0.5) - oMean), calm = 1 + TRAIT.CALM * ((x.tr?.calm ?? 0.5) - cMean);
+    const open = ROLE_SHOT[x.pos] * x.ifx.shot * (0.4 + band(x.y, 58, 110)) * sh * (x.id === mark ? 0.7 : 1) * move;
     wOpen.push(open); wRun.push(open * pw15(x.a[0] / 70));
     wAir.push(za[Z.BOX][ix[k]] * air); wSet.push(za[Z.SET][ix[k]] * air);
     wLong.push(ROLE_LONG[x.pos] * (x.a[1] / 70) ** 2);
-    finF.push(fin(x.a[1])); finH.push(fin(0.5 * x.a[1] + 0.5 * x.a[5]));
+    finF.push(fin(x.a[1]) * calm); finH.push(fin(0.5 * x.a[1] + 0.5 * x.a[5]) * calm);
   }
   const taker = (id: string) => outs.find((x) => x.id === id) ?? outs.reduce<Actor | undefined>((b, x) => (!b || x.a[1] > b.a[1] ? x : b), undefined);
   const shooters: ShotTable[] = SHOTS.map((type, i) => {
     if (!outs.length) return table([''], [1], [0]);
     if (type === 'pen' || type === 'fk') {
       const who = taker(type === 'pen' ? pieces.penalties : pieces.freeKicks)!;
-      const c = type === 'pen' ? clamp(0.76 + (who.a[1] - 70) * 0.004 - (gkv - 70) * 0.003, 0.55, 0.92) : clamp(xg[i] * fin(who.a[1]) * keeperF, 0.005, 0.95);
+      const nerve = TRAIT.PEN * ((who.tr?.calm ?? 0.5) - 0.5); // B4: a composed taker
+      const c = type === 'pen' ? clamp(0.76 + nerve + (who.a[1] - 70) * 0.004 - (gkv - 70) * 0.003, 0.55, 0.92) : clamp(xg[i] * fin(who.a[1]) * keeperF * (1 + nerve), 0.005, 0.95);
       return table([who.id], [1], [c]);
     }
     const air = type === 'header' || type === 'corner' || type === 'set';
@@ -460,7 +470,7 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   }
   return {
     side, nodes, xg, shooters, keeper: gk?.id ?? '', exposure,
-    creators: { ids: outs.map((x) => x.id), w: outs.map((x) => ROLE_ASSIST[x.pos] * x.ifx.create * (x.a[2] / 70)) },
+    creators: { ids: outs.map((x) => x.id), w: outs.map((x) => ROLE_ASSIST[x.pos] * x.ifx.create * (x.a[2] / 70) * (1 + TRAIT.VISION * ((x.tr?.vision ?? 0.5) - avgT('vision')))) }, // B4: vision
     foulCard: 0.13 * (id.talk === 2 ? 0.7 : 1),
     foulProp,
   };

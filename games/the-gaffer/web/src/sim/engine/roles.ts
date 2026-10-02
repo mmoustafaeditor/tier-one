@@ -19,9 +19,10 @@ import type { Player, Position } from '../../model/types';
 
 export type Phase = 'ip' | 'oop';
 export const IP_ROLES = ['keeper', 'distributor', 'defender', 'ball_player', 'fullback', 'wingback', 'inverted_fullback', 'holder', 'playmaker',
-  'midfielder', 'box_to_box', 'attacking_mid', 'shadow_striker', 'winger', 'inside_forward', 'advanced_forward', 'target_man', 'false_nine'] as const;
+  'midfielder', 'box_to_box', 'attacking_mid', 'shadow_striker', 'winger', 'inside_forward', 'advanced_forward', 'target_man', 'false_nine',
+  'libero', 'half_back', 'mezzala', 'wide_playmaker', 'deep_forward', 'poacher'] as const;
 export const OOP_ROLES = ['line_keeper', 'sweeper_keeper', 'hold_line', 'step_out', 'screen', 'ball_winner', 'hold_shape', 'track_back',
-  'press_forward', 'outlet'] as const;
+  'press_forward', 'outlet', 'cover', 'press_fullback', 'tuck_in'] as const;
 export type IpRole = typeof IP_ROLES[number];
 export type OopRole = typeof OOP_ROLES[number];
 export type RoleId = IpRole | OopRole;
@@ -64,7 +65,8 @@ export const ROLES: Record<RoleId, RoleDef> = {
   ball_player: R('ball_player', 'ip', ['CB'], { dy: 4, zb: 1.35, zp: 1.6, create: 1.8, bld: 0.08, prg: 0.08, lose: 0.02, w: [0, 0, 0.55, 0.15, 0.2, 0.1, 0] }),
   fullback: R('fullback', 'ip', FB, {}, FB),
   wingback: R('wingback', 'ip', FB, { dy: 24, toX: 7, zf: 1.15, create: 1.3, load: 1.2, w: [0.4, 0, 0.2, 0.2, 0, 0.2, 0] }),
-  inverted_fullback: R('inverted_fullback', 'ip', FB, { dy: 12, toX: 36, zp: 1.15, bld: 0.04, prg: 0.06, load: 1.05, w: [0, 0, 0.5, 0.2, 0.3, 0, 0] }),
+  // (B3: inside to 30, not 36, and smaller passing edges: it was 3.9% better than a plain full-back, sim-tests/rolebal.ts)
+  inverted_fullback: R('inverted_fullback', 'ip', FB, { dy: 12, toX: 30, zp: 1.15, bld: 0.02, prg: 0.03, load: 1.05, w: [0, 0, 0.5, 0.2, 0.3, 0, 0] }),
   holder: R('holder', 'ip', ['CDM'], {}, ['CDM']),
   playmaker: R('playmaker', 'ip', ['CDM', 'CM', 'CAM'], { zp: 1.25, zc: 1.2, create: 1.8, shot: 0.8, prg: 0.12, cmb: 0.1, lose: 0.03, w: [0, 0.1, 0.6, 0.3, 0, 0, 0] }),
   midfielder: R('midfielder', 'ip', ['CM'], {}, ['CM']),
@@ -76,6 +78,14 @@ export const ROLES: Record<RoleId, RoleDef> = {
   advanced_forward: R('advanced_forward', 'ip', ['ST'], {}, ['ST']),
   target_man: R('target_man', 'ip', ['ST'], { dy: 3, zl: 1.57, zx: 1.33, air: true, w: [0, 0.35, 0, 0, 0, 0.65, 0] }),
   false_nine: R('false_nine', 'ip', ['ST'], { dy: -17, create: 1.3, prg: 0.04, cmb: 0.08, w: [0, 0.2, 0.45, 0.35, 0, 0, 0] }),
+  // Plan "خطة قفل الفجوات" B3 (like FM's): each has its own effect and its own players (roles.ts test), and none is a
+  // free win (sim-tests/roles.ts B3 check).
+  libero: R('libero', 'ip', ['CB'], { dy: 12, zp: 1.3, zc: 1.1, create: 1.4, prg: 0.08, lose: 0.03, load: 1.08, w: [0.15, 0, 0.45, 0.25, 0.15, 0, 0] }),
+  half_back: R('half_back', 'ip', ['CDM'], { dy: -12, zb: 1.4, zp: 0.85, bld: 0.08, lose: -0.005, w: [0, 0, 0.5, 0, 0.3, 0.2, 0] }),
+  mezzala: R('mezzala', 'ip', ['CM'], { dy: 8, toX: 24, zf: 1.15, zc: 1.15, zx: 1.2, shot: 1.2, create: 1.2, load: 1.1, w: [0.2, 0.15, 0.25, 0.4, 0, 0, 0] }),
+  wide_playmaker: R('wide_playmaker', 'ip', W, { dy: -4, toX: 28, zf: 0.8, zp: 1.2, zc: 1.15, create: 1.6, shot: 0.85, cross: 0.8, prg: 0.05, w: [0.1, 0, 0.5, 0.4, 0, 0, 0] }),
+  deep_forward: R('deep_forward', 'ip', ['ST'], { dy: -8, zl: 1.15, zp: 1.15, create: 1.25, shot: 0.85, cmb: 0.05, w: [0, 0.3, 0.35, 0.15, 0, 0.2, 0] }),
+  poacher: R('poacher', 'ip', ['ST'], { dy: 2, zx: 1.45, zt: 1.2, zp: 0.7, shot: 1.35, create: 0.6, w: [0.3, 0.6, 0, 0.1, 0, 0, 0] }),
   // ---------- out of possession ----------
   line_keeper: R('line_keeper', 'oop', ['GK'], {}, ['GK']),
   sweeper_keeper: R('sweeper_keeper', 'oop', ['GK'], { dy: 10, sweep: 0.6, lob: 0.015, w: [0.5, 0, 0.2, 0, 0, 0, 0.3] }),
@@ -86,6 +96,9 @@ export const ROLES: Record<RoleId, RoleDef> = {
   hold_shape: R('hold_shape', 'oop', ['CDM', 'CM', 'CAM', 'ST'], {}, ['CDM', 'CM', 'CAM', 'ST']),
   track_back: R('track_back', 'oop', W, {}, W),
   press_forward: R('press_forward', 'oop', ['ST', 'CAM', ...W], { dy: 7, zb: 1.3, zp: 1.1, opb: -0.15, foul: 1.2, load: 1.25, w: [0.4, 0, 0, 0, 0.25, 0.35, 0] }),
+  cover: R('cover', 'oop', ['CB', ...FB], { dy: -5, zt: 1.35, zc: 0.9, zp: 0.85, opp: 0.03, foul: 0.85, w: [0.45, 0, 0, 0, 0.4, 0.15, 0] }),
+  press_fullback: R('press_fullback', 'oop', W, { dy: 6, zb: 1.25, zf: 1.2, opb: -0.08, foul: 1.15, load: 1.15, w: [0.35, 0, 0, 0, 0.3, 0.35, 0] }),
+  tuck_in: R('tuck_in', 'oop', W, { toX: 28, zp: 1.2, zc: 1.1, zf: 0.7, opp: -0.05, w: [0.1, 0, 0.2, 0, 0.45, 0.25, 0] }),
   outlet: R('outlet', 'oop', ['ST', 'CAM', ...W], { dy: 12, zb: 0.6, zp: 0.6, zf: 0.5, zk: 1.4, outlet: 0.25, load: 0.9, w: [0.6, 0.2, 0, 0.2, 0, 0, 0] }),
 };
 export const ROLE_IDS = Object.keys(ROLES) as RoleId[];

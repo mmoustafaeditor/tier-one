@@ -22,17 +22,11 @@ export interface Body {
   calm: number;    // composure 0-1: how much pace he keeps on the ball when pressed
 }
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
-export const hash = (s: string) => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619) >>> 0; return h; };
+import { hash, traitsOf } from '../../sim/engine/traits';
+export { hash };
 // The skill a position reads the game with: defenders defending, midfielders passing, forwards shooting.
 const READ_SKILL: Record<Position, number> = { GK: 6, CB: 4, LB: 4, RB: 4, CDM: 4, CM: 2, CAM: 2, LW: 3, RW: 3, ST: 1 };
 
-// The skill a position makes its runs with: forwards shooting, midfielders passing, full-backs pace.
-const RUN_SKILL: Partial<Record<Position, number>> = { ST: 1, LW: 1, RW: 1, CAM: 2, CM: 2, CDM: 2, LB: 0, RB: 0, CB: 4, GK: 6 };
-// A hidden trait 0-1: the player's level (rating), a skill it leans on, experience (a little), and his own draw (a third).
-function trait(p: Player, key: string, perRating: number, skill: number, youthPenalty: number, age: number): number {
-  const u = (hash(`${key}:${p.id}`) % 1000) / 1000;
-  return clamp(0.5 + (p.rating - 65) * perRating + (0.25 * (skill - 60)) / 40 + 0.35 * (u - 0.5) - youthPenalty * clamp(21 - age, 0, 4) * 0.02, 0.05, 0.95);
-}
 export function bodyOf(p: Player, fit: number, season: number): Body {
   const [pace = 60, , pass = 60, drib = 60, , phys = 60] = p.attrs;
   const legs = fit < 60 ? 0.8 + (0.2 * Math.max(0, fit)) / 60 : 1;
@@ -46,9 +40,7 @@ export function bodyOf(p: Player, fit: number, season: number): Body {
     reads: clamp(0.3 + (p.rating - 65) * 0.012 + clamp(age - 20, 0, 12) * 0.015 + (0.2 * (skill - 60)) / 40 + 0.2 * (u - 0.5), 0.05, 0.95),
     tank: clamp(0.5 + (0.5 * (phys - 40)) / 55, 0.4, 1) * clamp(fit / 100, 0.3, 1),
     touch: clamp((0.7 * drib + 0.3 * pass - 40) / 50, 0, 1),
-    offBall: trait(p, 'run', 0.012, p.attrs[RUN_SKILL[p.position] ?? 2] ?? 60, 0, age),
-    work: trait(p, 'work', 0.006, phys, 0.5, age),
-    calm: trait(p, 'calm', 0.014, 0.5 * pass + 0.5 * drib, 0, age),
+    ...(({ offBall, work, calm }) => ({ offBall, work, calm }))(traitsOf(p, age)),
   };
 }
 export function bodiesOf(m: LiveMatch, world: World): Body[][] {

@@ -30,7 +30,7 @@ const sum: Record<string, number> = {}, xf: Record<string, number> = {}, xa: Rec
 for (let i = 0; i < Math.min(N, pairs.length * 4); i++) {
   const [h, a] = pairs[i % pairs.length];
   const m = startMatch(w, null, h, a, `fm-${i}`, 0, false);
-  for (const f of FORMATION_IDS) { const m2 = withTactics(m, 0, { formation: f, oop: f }, get), g2 = fitted(m2), R = expected(m2, g2); sum[f] = (sum[f] ?? 0) + pointsLeft(m2, 0, R); xf[f] = (xf[f] ?? 0) + R.xg[0]; xa[f] = (xa[f] ?? 0) + R.xg[1]; }
+  for (const f of FORMATION_IDS) { const m2 = withTactics(m, 0, { formation: f, oop: f, roles: undefined, oopRoles: undefined, fullback: 0, striker: 0 }, get), g2 = fitted(m2), R = expected(m2, g2); sum[f] = (sum[f] ?? 0) + pointsLeft(m2, 0, R); xf[f] = (xf[f] ?? 0) + R.xg[0]; xa[f] = (xa[f] ?? 0) + R.xg[1]; }
   n++;
 }
 const mean = FORMATION_IDS.reduce((s, f) => s + sum[f], 0) / FORMATION_IDS.length / n;
@@ -45,7 +45,7 @@ for (const f of [ranked[0], ranked[ranked.length - 1]] as FormationId[]) {
   for (let i = 0; i < S; i++) {
     const [h, a] = pairs[i % pairs.length];
     const m = startMatch(w, null, h, a, `fs-${i}`, 0, false);
-    const m2 = withTactics(m, 0, { formation: f, oop: f }, get);
+    const m2 = withTactics(m, 0, { formation: f, oop: f, roles: undefined, oopRoles: undefined, fullback: 0, striker: 0 }, get);
     simulate(m2, fitted(m2));
     pts += m2.goals[0] > m2.goals[1] ? 3 : m2.goals[0] === m2.goals[1] ? 1 : 0; g += m2.goals[0] + m2.goals[1];
   }

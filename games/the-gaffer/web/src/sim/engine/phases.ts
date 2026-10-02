@@ -158,6 +158,7 @@ export function spotOf(p: Pick<Player, 'attrs' | 'position'> | null, k: number, 
   if (odef) oy += [-6, 0, 9][t.line];
   else if (!ogk) oy += [-9, 0, 9][t.pressing] + 2 * t.mentality - 3 * short;
   oy += fo.dy ?? 0;
+  if (fo.toX !== undefined) ox = ox < 50 ? fo.toX : 100 - fo.toX; // (B3: tuck in narrows him without the ball)
   if (fo.dx) ox += ox < 50 ? -fo.dx : fo.dx;
   return {
     x: clamp(x, 2, 98), y: clamp(y, 2, 98), ox: clamp(ox, 2, 98), oy: clamp(oy, 2, 98), f: fl, of, opos: os.pos, ip, oop,
