@@ -27,11 +27,11 @@ type Beat = Timed & (
   | { kind: 'duel'; side: 0 | 1; who: number; vs?: number; won: boolean; z?: number } // a contest on the ball: `side` keeps it (won: he goes past his man; else forced back)
   | { kind: 'shot'; side: 0 | 1; shooter: number; result: 'goal' | 'save' | 'miss' | 'block'; z?: number; how?: string }
   | { kind: 'kickoff'; side: 0 | 1 }
-  | { kind: 'corner'; side: 0 | 1; taker?: number }
+  | { kind: 'corner'; side: 0 | 1; taker?: number; by?: number } // by: the defender (or keeper) who put it behind
   | { kind: 'offside'; side: 0 | 1 }
-  | { kind: 'foul'; side: 0 | 1; to: number; pt: Pt; pen?: boolean } // pen: given as a penalty (no wall, the kick is staged next)
+  | { kind: 'foul'; side: 0 | 1; to: number; pt: Pt; pen?: boolean; by?: number } // pen: given as a penalty (no wall, the kick is staged next); by: the man who fouled (the other side)
   | { kind: 'pen'; side: 0 | 1; taker: number }                       // a penalty: everyone out of the box, the taker at the spot
-  | { kind: 'out'; side: 0 | 1; how: 'ti' | 'gk'; pt: Pt } // the ball went out of play: `side` restarts (engine flow ti / gk)
+  | { kind: 'out'; side: 0 | 1; how: 'ti' | 'gk'; pt: Pt; last?: number } // the ball went out of play: `side` restarts (engine flow ti / gk); last: who put it out (the other side)
   | { kind: 'hold' });
 
 export interface Anim {
@@ -50,6 +50,7 @@ export interface Anim {
   secMs?: number;         // screen ms per second of play in this minute (a highlight: its passage at its own pace)
   lastPass?: { side: 0 | 1; to: number; at: number; type?: string; eng?: boolean }; // the last pass played (for the measurement tests)
   off: Officials;         // the referee, his assistants and an on-field review (ui2/pitch/officials.ts)
+  downs: { side: 0 | 1; slot: number; until: number }[]; // men brought down by a foul (on the ground for a moment)
   inNet: boolean;
   shooter: { side: 0 | 1; slot: number; how?: string } | null; // runs into the box (or to the edge of it) before a shot
   run: { side: 0 | 1; slot: number; pt: Pt } | null; // the carrier heads for the zone the engine says the play is in
@@ -184,14 +185,14 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World, mode?: H
     const pt = zonePt(f.z, r);
     const found = f.p ? slotOf(m, f.p) : null;
     const slot = found && found.side === f.s ? found.slot : slotNear(m, a, f.s, pt);
-    if (f.k === 'f') { all.push({ kind: 'foul', side: f.s, to: slot, pt, at }); poss = f.s; continue; }
+    if (f.k === 'f') { all.push({ kind: 'foul', side: f.s, to: slot, pt, at, by: slotIn(f.q, (1 - f.s) as 0 | 1) }); poss = f.s; continue; }
     // Corners and offsides come in the engine's flow (since phase 4), at their own moment.
-    if (f.k === 'c') { all.push({ kind: 'corner', side: f.s, taker: found && found.side === f.s ? found.slot : undefined, at }); poss = f.s; continue; }
+    if (f.k === 'c') { all.push({ kind: 'corner', side: f.s, taker: found && found.side === f.s ? found.slot : undefined, by: slotIn(f.q, (1 - f.s) as 0 | 1), at }); poss = f.s; continue; }
     if (f.k === 'o') { all.push({ kind: 'offside', side: f.s, at }); poss = (1 - f.s) as 0 | 1; continue; }
     if (f.k === 'ti' || f.k === 'gk') {
       const prev = all[all.length - 1];
       if (f.k === 'gk' && prev?.kind === 'shot' && prev.result === 'miss') continue; // the missed shot already stages its goal kick
-      all.push({ kind: 'out', side: f.s, how: f.k, pt, at }); poss = f.s;
+      all.push({ kind: 'out', side: f.s, how: f.k, pt, at, last: slotIn(f.p, (1 - f.s) as 0 | 1) }); poss = f.s;
       continue;
     }
     if (f.k === 'w' || f.k === 'l') {
@@ -328,7 +329,7 @@ function plan(a: Anim, m: LiveMatch, msPerMinute: number, world: World, mode?: H
   a.ids = [[...m.sides[0].onPitch], [...m.sides[1].onPitch]];
   a.minute = minuteKey(m);
 }
-const weightOf = (b: Beat) => (b.kind === 'corner' ? 4 : b.kind === 'pen' ? 4 : b.kind === 'foul' ? (wallSize(depthOf(b.side, b.pt.x)) ? 4 : 1.5) : b.kind === 'offside' || b.kind === 'out' ? 1.5 : 1);
+const weightOf = (b: Beat) => (b.kind === 'corner' ? 4 : b.kind === 'pen' ? 4 : b.kind === 'foul' ? (wallSize(depthOf(b.side, b.pt.x), b.pt.y) ? 4 : 1.5) : b.kind === 'offside' || b.kind === 'out' ? 1.5 : 1);
 const SHOT_EV = new Set(['goal', 'nogoal', 'save', 'block', 'miss']);
 const minuteKey = (m: LiveMatch) => `${m.minute}+${m.plus ?? 0}`;
 
@@ -363,16 +364,26 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     a.run = null; a.carrier = -1; a.zone = -1;
     a.sp = { kind: 'corner', side: b.side, at: flag, until: a.time + gap, taker: k, rush: rushFor(a.msPM, gap) };
     a.kinds.corner = (a.kinds.corner ?? 0) + 1;
-    fly(a, flag, travel * 0.3, () => { a.poss = b.side; a.carrier = k; });
+    // Why it's a corner: the ball comes off the man who put it behind (a block, a header, the keeper's save) and goes
+    // over his goal line on that side; then it's fetched to the flag.
+    const other = (1 - b.side) as 0 | 1, by = b.by !== undefined ? a.pos[other][b.by] : undefined;
+    const off = by && dist(by, a.ball) < 14 ? by : a.ball;
+    const out = { x: toX(b.side, L + 1.8), y: clamp(off.y + (flag.y < W / 2 ? -6 : 6), 1, W - 1) };
+    const sec = a.secMs ?? 40, toOff = off === a.ball ? 0 : (dist(a.ball, off) / SPEED.short) * sec;
+    const behind = () => fly(a, out, Math.max(150, (dist(a.ball, out) / 14) * sec), () => fly(a, flag, Math.max(200, gap * 0.25), () => { a.poss = b.side; a.carrier = k; }), 0.8);
+    if (toOff > 60) fly(a, off, toOff, behind); else behind();
+    a.kinds.cornerCause = (a.kinds.cornerCause ?? 0) + (by ? 1 : 0);
     return;
   }
   if (b.kind === 'out') {
     // Out of play: the ball runs over the line, then the restart. A throw-in is taken where it went out by the nearest
     // outfield man; a goal kick by the keeper from the six-yard box.
     a.run = null; a.carrier = -1; a.zone = -1; a.shooter = null;
-    const dur = gap, top = b.pt.y < W / 2;
+    // Out of play from where the ball is, over the nearer touchline (or the goal line behind the restarting side).
+    const dur = gap, top = a.ball.y < W / 2;
     if (b.how === 'ti') {
-      const at = { x: clamp(b.pt.x, 4, L - 4), y: top ? 0.3 : W - 0.3 };
+      const fwd = b.side === 0 ? -1 : 1; // the side that put it out was going the other way
+      const at = { x: clamp(a.ball.x + fwd * 3, 4, L - 4), y: top ? 0.3 : W - 0.3 };
       const slots = FORMATIONS[m.sides[b.side].tactics.formation].slots;
       const k = onPitch(m, b.side).filter((j) => slots[j].pos !== 'GK' && a.pos[b.side][j]).sort((p, q) => dist(a.pos[b.side][p], at) - dist(a.pos[b.side][q], at))[0];
       if (k === undefined) return;
@@ -383,7 +394,7 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
       const gk = gkSlot(m, b.side);
       a.sp = { kind: 'gk', side: b.side, at: { x: toX(b.side, 5.5), y: W / 2 + (top ? -9 : 9) }, until: a.time + dur, taker: gk, rush: 1 };
       a.kinds.goalkick = (a.kinds.goalkick ?? 0) + 1;
-      fly(a, { x: toX(b.side, -1.5), y: clamp(b.pt.y, 10, W - 10) }, travel * 0.6, () => { a.poss = b.side; a.carrier = gk; });
+      fly(a, { x: toX(b.side, -1.5), y: clamp(a.ball.y, 10, W - 10) }, travel * 0.6, () => { a.poss = b.side; a.carrier = gk; });
     }
     return;
   }
@@ -404,20 +415,26 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     fly(a, spot, travel * 0.3, () => { a.poss = b.side; a.carrier = k; });
     return;
   }
-  if (b.kind === 'foul' && b.pen) {
-    // Given as a penalty: the whistle, and the ball goes to the spot with the next beat.
-    a.run = null; a.carrier = -1;
-    a.kinds.foul = (a.kinds.foul ?? 0) + 1;
-    return;
-  }
   if (b.kind === 'foul') {
-    // The whistle: a free kick where the foul was; within range of goal the other side builds a wall.
-    if (!a.pos[b.side][b.to]) return;
+    // The challenge the engine says brought him down: where he was (in the box for a penalty), he goes down, the
+    // referee whistles and runs to it, and shows the card the engine gave, if any.
+    const v = a.pos[b.side][b.to];
+    if (!v) return;
+    const inBoxPt = (q: Pt) => ({ x: toX(b.side, Math.max(depthOf(b.side, q.x), 90)), y: clamp(q.y, W / 2 - 18, W / 2 + 18) });
+    const at = b.pen ? inBoxPt(v) : { x: clamp(v.x, 1, L - 1), y: clamp(v.y, 1, W - 1) };
     a.run = null; a.carrier = -1;
-    a.sp = { kind: 'fk', side: b.side, at: b.pt, until: a.time + gap, taker: b.to, rush: rushFor(a.msPM, gap) };
     a.kinds.foul = (a.kinds.foul ?? 0) + 1;
-    if (wallSize(depthOf(b.side, b.pt.x))) a.kinds.wall = (a.kinds.wall ?? 0) + 1;
-    fly(a, b.pt, travel * 0.3, () => { a.poss = b.side; a.carrier = b.to; });
+    a.kinds.foulAtMan = (a.kinds.foulAtMan ?? 0) + (dist(v, at) < 4 ? 1 : 0);
+    const sec = a.secMs ?? 40;
+    a.downs.push({ side: b.side, slot: b.to, until: a.time + Math.max(900, 2.2 * sec) });
+    a.off.whistle = { at, until: a.time + Math.max(1200, gap * 0.8) };
+    const fouler = b.by !== undefined ? m.sides[(1 - b.side) as 0 | 1].onPitch[b.by] || a.ids[(1 - b.side) as 0 | 1]?.[b.by] : undefined;
+    const card = fouler ? m.events.find((e) => (e.kind === 'yellow' || e.kind === 'red') && e.playerId === fouler && e.min === m.minute && (e.plus ?? 0) === (m.plus ?? 0)) : undefined;
+    if (card) { a.off.card = { red: card.kind === 'red', from: a.time + Math.max(500, 1.2 * sec), until: a.time + Math.max(2400, 5 * sec) }; a.kinds.card = (a.kinds.card ?? 0) + 1; }
+    if (b.pen) return; // given as a penalty: the ball goes to the spot with the next beat
+    a.sp = { kind: 'fk', side: b.side, at, until: a.time + gap, taker: b.to, rush: rushFor(a.msPM, gap) };
+    if (wallSize(depthOf(b.side, at.x), at.y)) a.kinds.wall = (a.kinds.wall ?? 0) + 1;
+    fly(a, at, Math.max(60, (dist(a.ball, at) / SPEED.short) * sec), () => { a.poss = b.side; a.carrier = b.to; });
     return;
   }
   if (b.kind === 'duel') {
@@ -568,13 +585,13 @@ function stage(a: Anim, m: LiveMatch, side: 0 | 1, ks: number[], tg: Pt[], boost
   const field = ks.filter((k) => slots[k].pos !== 'GK' && !(side === att && k === sp.taker)).sort((p, q) => AIR[slots[p].pos] - AIR[slots[q].pos]);
   const ballD = depthOf(att, sp.at.x);
   if (side === att) {
-    if (sp.kind === 'fk' && !wallSize(ballD)) return; // a free kick out of range is just played on
+    if (sp.kind === 'fk' && !wallSize(ballD, sp.at.y)) return; // a free kick out of range is just played on
     attackSpots(field.length, flank).forEach((q, i) => { tg[field[i]] = { x: toX(side, q.d), y: q.y }; boost[field[i]] = sp.rush; });
     if (sp.taker >= 0) { tg[sp.taker] = { x: sp.at.x - (side === 0 ? 1.2 : -1.2), y: sp.at.y }; boost[sp.taker] = sp.rush; }
     return;
   }
   if (sp.kind === 'fk') {
-    const n = wallSize(ballD);
+    const n = wallSize(ballD, sp.at.y);
     if (!n) return;
     const goal = { x: toX(side, 0), y: W / 2 };
     // The wall is picked once (the nearest men when the whistle goes), so nobody swaps in and out of it.
@@ -611,7 +628,7 @@ export function newAnim(m: LiveMatch, world: World): Anim {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], starts: [], msPM: 1000, beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
       spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null, hurt: null, hurtAt: [], ids: [[...m.sides[0].onPitch], [...m.sides[1].onPitch]], seen: [[], []],
-      off: newOfficials(),
+      off: newOfficials(), downs: [],
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -762,6 +779,12 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           // The man a pass is played to knew it was coming: he goes for it at once, and hard.
           const meets = a.flight && a.lastPass?.side === side && a.lastPass.eng ? a.lastPass.to : -1;
           if (meets >= 0 && a.pos[side][meets]) { rush.add(meets); boost[meets] = Math.max(boost[meets] ?? 1, 1.4); const g = a.ag[side]?.[meets]; if (g) g.pend = false; }
+          // A penalty is coming: the man who'll be brought down is on his way into the box with it.
+          const nf = a.beats[a.beat];
+          if (nf?.kind === 'foul' && nf.pen && nf.side === side && nf.to === a.carrier && a.pos[side][a.carrier]) {
+            const q = a.pos[side][a.carrier];
+            tg[a.carrier] = { x: toX(side, Math.max(depthOf(side, q.x), 92)), y: clamp(q.y, W / 2 - 14, W / 2 + 14) }; boost[a.carrier] = 1.5; rush.add(a.carrier);
+          }
           const loose = a.carrier >= 0 && a.pos[side][a.carrier] && dist(a.ball, a.pos[side][a.carrier]) > 2.5;
           if (loose) { tg[a.carrier] = { ...a.ball }; boost[a.carrier] = Math.max(boost[a.carrier] ?? 1, 1.3); rush.add(a.carrier); } // he goes to collect it
           else if (a.carrier >= 0 && a.pos[side][a.carrier] && tg[a.carrier]) { // (a carrier sent off or subbed has no target)
@@ -879,7 +902,7 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           // The man in the next contest (the engine names him): he closes the carrier, or the man the ball is going to,
           // so the tackle or the dribble past him happens where the ball is.
           const nb = a.beats[a.beat];
-          const vs = nb && ((nb.kind === 'duel' && nb.side === other) ? nb.vs : nb.kind === 'turnover' && nb.side === side && nb.vs !== undefined ? nb.to : undefined);
+          const vs = nb && ((nb.kind === 'duel' && nb.side === other) ? nb.vs : nb.kind === 'turnover' && nb.side === side && nb.vs !== undefined ? nb.to : nb.kind === 'foul' && nb.side === other ? nb.by : undefined);
           if (vs !== undefined && a.pos[side][vs] && LINE[slots[vs]?.pos] !== 'gk') {
             const toward = a.flight && a.poss === other ? a.flight.to : a.ball;
             tg[vs] = pressSpot(toward, ownGoal, T.DUEL_CLOSE); boost[vs] = Math.max(boost[vs] ?? 1, 1.5); rush.add(vs);
@@ -892,7 +915,7 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
         const staging = !!a.sp && a.time < a.sp.until;
         const tau = Math.max(120, scale * 0.9);
         // The back line moves as one: out of possession its defenders react on their best reader's call.
-        const down = (k: number) => !!a.hurt && a.time < a.hurt.until && a.hurt.side === side && a.hurt.slot === k; // injured: stays where he fell
+        const down = (k: number) => (!!a.hurt && a.time < a.hurt.until && a.hurt.side === side && a.hurt.slot === k) || a.downs.some((d) => d.side === side && d.slot === k && a.time < d.until); // injured or fouled: stays where he fell
         const isDef = (k: number) => !has && LINE[sps[k]?.opos ?? slots[k].pos] === 'def' && !pp.press.includes(k) && k !== pp.cover && k !== blockK && !down(k); // the blocker sprints to the lane, out of the line
         const lineReads = Math.max(0, ...ks.filter(isDef).map((k) => a.body[side]?.[k]?.reads ?? 0.5));
         // ... and holds its shape at its slowest defender's pace, so it doesn't break up while it steps or drops.
@@ -905,7 +928,9 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           // A little life in everyone's feet, except a keeper set on the shooting angle (he stays on it); more while the
           // ball is dead (a set piece being set up, a stoppage): men jostle and drift, nobody stands like a statue.
           const deadBall = staging || a.beat >= a.beats.length || a.beats[a.beat - 1]?.kind === 'foul';
-          const amp = !has && LINE[slots[k].pos] === 'gk' ? 0 : deadBall ? T.IDLE_DEAD : T.IDLE_LIVE;
+          // (a wall, and the man over the ball, stand still)
+          const still = staging && !!a.sp && ((a.sp.side !== side && !!a.sp.wall?.includes(k)) || (a.sp.side === side && a.sp.taker === k));
+          const amp = (!has && LINE[slots[k].pos] === 'gk') || still ? 0 : deadBall ? T.IDLE_DEAD : T.IDLE_LIVE;
           const wob = Math.sin(a.time / 700 + k * 1.7 + side * 3) * amp;
           const wobX = Math.sin(a.time / 1100 + k * 2.3 + side) * amp * (deadBall ? 0.8 : 0.5);
           const p = a.pos[side][k] ?? t;
@@ -968,7 +993,9 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           return xs[1] ?? (sd === 0 ? 0 : L);
         }) as [number, number];
         const rv = a.off.review, reviewing = !!rv && a.clock >= rv.from && a.clock < rv.until;
-        moveOfficials(a.off, officialTargets(a.ball, a.poss, lastDef, reviewing), dt, a.secMs ?? scale / 60, !!a.snap);
+        a.downs = a.downs.filter((d) => a.time < d.until);
+        const wh = a.off.whistle && a.time < a.off.whistle.until ? a.off.whistle.at : undefined;
+        moveOfficials(a.off, officialTargets(a.ball, a.poss, lastDef, reviewing, wh), dt, a.secMs ?? scale / 60, !!a.snap);
       }
       a.snap = false; // a cut lasts one frame
 }

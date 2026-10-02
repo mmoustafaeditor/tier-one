@@ -97,7 +97,8 @@ export function measure(samples, { kinds, reacts, kin, seconds }, ok) {
   if (process.env.DBG) for (const c of corners) { const st = samples.find((x) => x.sp && x.sp.until === c.sp.until); console.log('start', st.t, JSON.stringify(st.pos[c.sp.side].map((q) => q && Math.round(depth(c.sp.side, q.x))))); }
   if (process.env.DBG) for (const c of corners) console.log(JSON.stringify({ sp: c.sp, t: c.t, beatLen: c.beatLen, att: c.pos[c.sp.side].map((q) => q && [Math.round(depth(c.sp.side, q.x)), Math.round(q.y)]) }));
   ok(corners.every((s) => boxN(s, s.sp.side) >= 4), `corners: 4+ attackers in the box (${corners.map((s) => boxN(s, s.sp.side)).join(', ') || 'none this run'})`);
-  ok(fks.every((s) => wallN(s) >= 3), `free kicks in range: a wall of 3+ at 9.15 m (${fks.map(wallN).join(', ') || 'none this run'})`);
+  // (central: 3+; out wide, where it will be crossed, 2: setpieces.ts wallSize)
+  ok(fks.every((s) => wallN(s) >= (Math.abs(s.sp.at.y - 34) > 18 ? 2 : 3)), `free kicks in range: a wall at 9.15 m of 3+ (2 out wide) (${fks.map(wallN).join(', ') || 'none this run'})`);
   // Phase 1 (body): turning and acceleration stay within each player's limits; better readers react sooner; nobody
   // sprints on an empty tank, and the tank does get used.
   console.log(`  body: max turn ${(kin.turn ?? 0).toFixed(2)} and max acceleration ${(kin.acc ?? 0).toFixed(2)} of the limit; ${reacts.length} reactions logged`);
