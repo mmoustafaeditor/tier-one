@@ -98,7 +98,8 @@ export const FORMATIONS: Record<FormationId, { slots: Slot[]; attack: number; de
   // (B2: the wide men higher and the centre pair a little deeper than the old flat 4-4, which was 7% weaker than every
   // other shape with players who suit it; sim-tests/formations.ts)
   '4-4-2': { slots: [...BACK4, s('RW', 86, 62), s('CM', 62, 45), s('CM', 38, 45), s('LW', 14, 62), s('ST', 62, 82), s('ST', 38, 82)], attack: 0, defence: 0.5 },
-  '4-2-3-1': { slots: [...BACK4, s('CDM', 62, 41), s('CDM', 38, 41), s('RW', 83, 66), s('CAM', 50, 64), s('LW', 17, 66), s('ST', 50, 86)], attack: 0.5, defence: 0.5 },
+  // (B3: the wide men at 62, not 66: with every role at its default it came out 3.5% above the other shapes)
+  '4-2-3-1': { slots: [...BACK4, s('CDM', 62, 41), s('CDM', 38, 41), s('RW', 83, 62), s('CAM', 50, 64), s('LW', 17, 62), s('ST', 50, 86)], attack: 0.5, defence: 0.5 },
   '3-5-2': { slots: [s('GK', 50, 7), s('CB', 72, 21), s('CB', 50, 19), s('CB', 28, 21), s('RB', 89, 50), s('CDM', 50, 40), s('CM', 68, 56), s('CM', 32, 56), s('LB', 11, 50), s('ST', 62, 82), s('ST', 38, 82)], attack: 1, defence: -0.5 },
   '5-3-2': { slots: [s('GK', 50, 7), s('RB', 88, 32), s('CB', 70, 20), s('CB', 50, 18), s('CB', 30, 20), s('LB', 12, 32), s('CM', 70, 52), s('CDM', 50, 45), s('CM', 30, 52), s('ST', 62, 80), s('ST', 38, 80)], attack: -1, defence: 1.5 },
   '4-1-4-1': { slots: [...BACK4, s('CDM', 50, 39), s('RW', 85, 60), s('CM', 63, 55), s('CM', 37, 55), s('LW', 15, 60), s('ST', 50, 84)], attack: -0.5, defence: 1 },

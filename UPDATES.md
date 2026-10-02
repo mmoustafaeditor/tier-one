@@ -85,6 +85,30 @@ together with your change.
 
 ---
 
+## 2026-10-02 · saifsaber · The Gaffer B3: nine new roles, each with its own job on the pitch, none a free win
+- **What changed:** Step B3 of the plan to close the gaps with FM26. Nine new roles (EN/AR/ES/FR):
+  - **With the ball:** libero, half-back, mezzala, wide playmaker, deep-lying forward, poacher.
+  - **Without it:** cover, press the full-back, tuck in.
+
+  Each changes the engine (where he stands, which contests he joins, shots/chances, risk) and the pitch:
+  - the mezzala runs into the half-space and the box;
+  - the wide playmaker comes inside;
+  - the deep-lying forward drops;
+  - the libero steps into midfield;
+  - the half-back drops between the centre-backs;
+  - the cover man sits behind the line;
+  - the press-the-full-back winger goes at their full-back on his flank;
+  - tuck in narrows without the ball (out-of-possession positions now honour a role's sideways spot; before, they ignored it).
+
+  Measured:
+  - **Balance** (`sim-tests/rolebal.ts`, new, 400 fixtures): new roles −0.6% to +1.5% against the default role, none over +3%.
+  - **An old role fixed:** the inverted full-back was +3.9% (inside to 30 instead of 36, smaller passing edges: now +2.6%).
+  - **On the pitch** (`sim-tests/rolespitch.ts`, new): each role moves the way it says, e.g. mezzala +8.7 m up, wide playmaker 13.7 m inside, libero +9.6 m.
+  - **Formations** (with every role at its default, so the test judges the shape itself): 4-2-3-1's wide men from 66 to 62 (it was 3.5% above the rest).
+  - **Loose balls:** a ball changing sides with no challenge named now has the nearest man going to it beforehand: lost balls that show their cause 100% (12 matches).
+- **Files:** `games/the-gaffer/web/src/sim/engine/roles.ts`, `src/sim/engine/phases.ts`, `src/sim/engine/story.ts`, `src/sim/tactics.ts`, `src/ui2/pitch/move.ts`, `src/ui2/pitch/sim.ts`, `src/ui2/pitch/tuning.ts`, `src/lang-tac*.ts`, `web/sim-tests/rolebal.ts` (new), `web/sim-tests/rolespitch.ts` (new), `web/sim-tests/formations.ts`, `web/sim-tests/diag.ts`, `games/the-gaffer/ENGINE.md`
+- **Heads-up for the team:** Changes results (the inverted full-back and 4-2-3-1 adjusted; AI clubs can pick the new roles when they suit their players). Fingerprint now changes again. Tier One untouched.
+
 ## 2026-10-02 · saifsaber · The Gaffer B2: six new formations, all balanced; AI clubs use the whole range
 - **What changed:** Step B2 of the plan to close the gaps with FM26. Six new shapes: 3-4-3, 4-3-1-2 (diamond), 3-4-2-1, 4-2-2-2, 5-4-1, 4-4-1-1 (12 in all), on the Tactics board and the live tactics sheet, in and out of possession. Measured first (new `sim-tests/formations.ts`): with players who suit them, the old shapes were within 2.4% of each other except 4-4-2, 7% weaker than the rest; the engine also favours a crowded middle, so a narrow diamond first came out 9% stronger. Where each man stands in the new shapes (and the old 4-4-2: wide men higher, centre pair a little deeper) was set so that no shape is a free win: now −4.1% (5-4-1) to +2.6% (4-2-3-1), each with its own trade-off (5-4-1 concedes the least and creates the least; 3-4-3 and 3-5-2 the most open). AI clubs used to play almost only 4-3-3; now their style lists the shapes that suit it, their squad rules out what it can't fill, and the club's manager decides among the rest (a new manager can bring a new shape): about 87 clubs 4-3-3, 80 4-4-2, 61 4-4-1-1, 52 4-2-3-1, 40 3-4-3, the rest the others. Back-three sides drop into a back five without the ball.
 - **Files:** `games/the-gaffer/web/src/sim/tactics.ts`, `src/sim/match.ts`, `web/sim-tests/formations.ts` (new), `games/the-gaffer/ENGINE.md`

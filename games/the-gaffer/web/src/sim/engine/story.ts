@@ -222,8 +222,8 @@ export function applyTip(m: LiveMatch, side: 0 | 1, tip: Tip, get: Lookup) {
 //   creating roles (playmaker, ball-playing CB, false 9, wing-back, inverted full-back, distributor): chances created,
 //   outlets: shots and chances on the break.
 export interface RoleImpact { id: string; phase: 'ip' | 'oop'; role: RoleId; kind: 'won' | 'shots' | 'made'; n: number; x: number; score: number }
-const PRESS_ROLES: RoleId[] = ['press_forward', 'ball_winner', 'step_out', 'screen', 'sweeper_keeper'];
-const SHOOT_ROLES: RoleId[] = ['inside_forward', 'shadow_striker', 'box_to_box', 'target_man'];
+const PRESS_ROLES: RoleId[] = ['press_forward', 'ball_winner', 'step_out', 'screen', 'sweeper_keeper', 'press_fullback'];
+const SHOOT_ROLES: RoleId[] = ['inside_forward', 'shadow_striker', 'box_to_box', 'target_man', 'poacher', 'mezzala'];
 export function roleImpact(m: LiveMatch, s: 0 | 1): RoleImpact | null {
   const plan = planOf(fullTactics(m.sides[s].tactics));
   const ev = m.events;
