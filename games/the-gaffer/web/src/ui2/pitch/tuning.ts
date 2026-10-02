@@ -63,8 +63,9 @@ export const T = {
   DUEL_CLOSE: 1.4,   // the man in the next contest closes the carrier to this distance (m) before it
   RECV_RUN: 6,       // how fast (m/s of play) a man runs onto a pass: the ball is aimed where he can be when it arrives
   BALL_HOME: 7,      // a pass bends towards its moving receiver at most this fast (m per second of play)
-  IDLE_DEAD: 1.4,
-  IDLE_LIVE: 0.9,    // in play, men off the ball keep moving this much (m) around where they want to be
+  IDLE_DEAD: 1.6,
+  IDLE_LIVE: 1.3,
+  IDLE_W: 0.8,       // how fast men sway around their spot (rad per match second): ~1 m/s at the widest, a walk    // in play, men off the ball keep moving this much (m) around where they want to be
   CARRY_AIM: 0.55,   // the carrier heads this share of the way to his next step each frame (he keeps going with it)    // while the ball is dead, players jostle and drift this far (m) around their spot
   // Hidden traits (A4, body.ts):
   RUN_SEE: [0.62, 1.08] as [number, number], // the chance he makes his role's run in a beat: worst mover, best (above 1: always)
