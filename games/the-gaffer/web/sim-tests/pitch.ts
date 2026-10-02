@@ -36,12 +36,15 @@ function play(i: number, out: Frame[], acc: { kinds: Record<string, number>; rea
   if (MARKING !== undefined) for (const s of m.sides) s.tactics = { ...s.tactics, marking: MARKING, setMark: MARKING }; // env MARKING=0|1|2
   const a: Anim = newAnim(m, w);
   const t0 = i * 1e8; // frames of different matches never share a time
+  let prevTo = -1;
   while (!playOver(m) && m.minute < MINS) {
     const n = clone(m);
     stepMinute(n, get);
     m = n;
-    const ms = MODE === undefined ? MS : minuteMs(m, MODE, RATES[1]);
-    const seen = MODE === undefined || !!shownOf(m, MODE);
+    const ms = MODE === undefined ? MS : minuteMs(m, MODE, RATES[1], prevTo);
+    const sh = MODE === undefined ? null : shownOf(m, MODE, prevTo);
+    const seen = MODE === undefined || !!sh;
+    prevTo = sh ? sh.to : -1; // (as the live screen: a move carried over from the minute before)
     for (let t = 0; t < ms; t += FRAME) {
       tick(a, m, w, FRAME, ms, true, MODE, MODE === undefined ? ms : MS); // highlights: players run at the normal pace's scale
       if (!seen) continue;
@@ -50,7 +53,7 @@ function play(i: number, out: Frame[], acc: { kinds: Record<string, number>; rea
         m: i, t: t0 + x.time, go: true, min: x.minute, gkT: x.gkT ? { ...x.gkT } : null, mk: x.mk ? [...x.mk] : null, carrier: x.flight ? -1 : x.carrier,
         tanks: x.ag.map((r: any[]) => r.map((g) => (g ? [Math.round(g.tank * 1000) / 1000, g.spr ? 1 : 0] : null))), bh: x.bh,
         sp: x.sp && x.time < x.sp.until ? { ...x.sp, until: t0 + x.sp.until } : null, flag: !!x.flag && x.time < x.flag.until, runs: x.runsN,
-        trans: x.trans ? { ...x.trans, at: t0 + x.trans.at } : null, beatLen: x.beatLen, poss: x.poss, ball: { ...x.ball },
+        trans: x.trans ? { ...x.trans, at: t0 + x.trans.at } : null, beatLen: x.beatLen, msPM: x.msPM, poss: x.poss, ball: { ...x.ball },
         pos: x.pos.map((s: any[]) => s.map((q) => (q ? { x: q.x, y: q.y } : null))), spd: x.spd,
         slots: m.sides.map((sd) => FORMATIONS[sd.tactics.formation].slots.map((z) => z.pos)), pressing: m.sides.map((sd) => sd.tactics.pressing),
       });

@@ -27,7 +27,8 @@ export function defendSpots(n: number, flank: -1 | 1): { d: number; y: number }[
   return Array.from({ length: n }, (_, i) => out[i] ?? { d: 20, y: W / 2 });
 }
 // A free kick within shooting range gets a wall: 3 to 5 men 9.15 m from the ball, across the line to the goal centre.
-export const wallSize = (depth: number) => (depth > 86 ? 5 : depth > 78 ? 4 : depth > 70 ? 3 : 0);
+// The wall by distance, and by angle: a free kick out wide (it'll be crossed) gets two men.
+export const wallSize = (depth: number, y = W / 2) => (depth <= 70 ? 0 : Math.abs(y - W / 2) > 18 ? 2 : depth > 86 ? 5 : depth > 78 ? 4 : 3);
 export function wallSpots(ball: Pt, goal: Pt, n: number): Pt[] {
   const dx = goal.x - ball.x, dy = goal.y - ball.y, d = Math.hypot(dx, dy) || 1;
   const ux = dx / d, uy = dy / d, c = { x: ball.x + ux * WALL_GAP, y: ball.y + uy * WALL_GAP };

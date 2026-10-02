@@ -378,6 +378,21 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .pitchwrap { position: relative; }
 .view-chips { margin-bottom: var(--s-3); }
 .hlsel { width: 100%; margin: 0 0 var(--s-3); }
+/* The match speed bar (like FM's): a slider with the speed beside it. */
+.spdbar { display: flex; align-items: center; gap: var(--s-2); flex: 1 1 120px; min-width: 96px; max-width: 220px; }
+.spdbar input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent, #6ee7b7); height: 28px; }
+.pitch2d .g-dot2.down { opacity: .55; } /* brought down by a foul: on the ground for a moment */
+.spdbar b { font-size: 13px; min-width: 2.6em; text-align: end; }
+/* Touchline shouts right under the pitch, so they can be used while a highlight plays; one row that scrolls sideways. */
+.shoutbar { display: flex; gap: var(--s-2); overflow-x: auto; padding: var(--s-2) 0; scrollbar-width: none; }
+.shoutbar::-webkit-scrollbar { display: none; }
+.shoutbar .chip { flex: none; }
+.yell { position: absolute; inset-inline-start: 50%; top: 10%; transform: translateX(-50%); padding: 6px 12px; border-radius: 999px;
+  background: rgba(0, 0, 0, .72); color: #fff; font-weight: 700; font-size: 14px; white-space: nowrap; pointer-events: none;
+  animation: yell 2.4s ease-out forwards; }
+[dir="rtl"] .yell { transform: translateX(50%); }
+@keyframes yell { 0% { opacity: 0; margin-top: 8px; } 10% { opacity: 1; margin-top: 0; } 80% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .yell { animation: yell 2.4s steps(1, end) forwards; } }
 .live-tip { display: grid; gap: var(--s-2); }
 .skipbtn { white-space: nowrap; }
 .subcols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
@@ -417,7 +432,11 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .g-dot2 { transition: transform .14s linear; }
 .g-dot-n { font: 800 2.3px/1 var(--f-text); }
 .g-dot2.carrier circle { stroke: #FFC857; stroke-width: .8; }
-.g-wx { pointer-events: none; }
+.g-wx, .g-ground { pointer-events: none; }
+.g-ground.wx1 { fill: rgba(20, 40, 90, .08); }
+.g-ground.wx2 { fill: rgba(20, 40, 90, .16); }
+.g-ground.wx4 { fill: rgba(200, 170, 40, .10); }
+.g-ground.wx5 { fill: rgba(255, 255, 255, .42); }
 .g-wx.rain path { stroke: rgba(220, 235, 255, .55); stroke-width: .25; stroke-linecap: round; animation: wx-rain .9s linear infinite; }
 .g-wx.heat { fill: rgba(255, 170, 60, .07); }
 .g-wx.wind path { stroke: rgba(255, 255, 255, .35); stroke-width: .18; stroke-linecap: round; animation: wx-wind 3.2s linear infinite; }
@@ -523,6 +542,13 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .an-split { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 4px; background: rgba(127,127,127,.15); }
 .an-split i { display: block; background: var(--dv-us); }
 .an-split i.them { background: var(--dv-them); }
+/* The pass network */
+.an-link { stroke: var(--dv-us); stroke-linecap: round; }
+.an-link.them { stroke: var(--dv-them); }
+.an-node { fill: var(--dv-us); stroke: rgba(0,0,0,.55); stroke-width: .3; }
+.an-node.them { fill: var(--dv-them); }
+.an-num { font-size: 2.2px; font-weight: 800; fill: #fff; pointer-events: none; }
+.an-rows { display: flex; flex-direction: column; gap: 6px; margin: var(--s-2) 0 var(--s-3); }
 .an-pick { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--s-3); font-size: .85rem; }
 .an-kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); margin: var(--s-3) 0; }
 .an-kv span { display: flex; flex-direction: column; font-size: .8rem; }

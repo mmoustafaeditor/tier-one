@@ -11,7 +11,7 @@ let pw;
 try { pw = await import('playwright'); } catch { pw = await import(`${execSync('npm root -g').toString().trim()}/playwright/index.mjs`); }
 const html = readFileSync(fileURLToPath(new URL('../dist/index.html', import.meta.url)));
 const server = createServer((_, res) => { res.writeHead(200, { 'content-type': 'text/html' }); res.end(html); }).listen(0);
-const URL0 = `http://localhost:${server.address().port}/?pitchdebug`;
+const URL0 = `http://localhost:${server.address().port}/?pitchdebug${process.env.WX ? `&wx=${process.env.WX}` : ""}`; // WX: show the pitch in this weather
 const browser = await pw.chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
 const p = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
 const errs = []; p.on('pageerror', (e) => errs.push(e.message)); p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });

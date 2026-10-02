@@ -11,7 +11,7 @@ import { planOf, rolesArrays } from '../sim/engine/phases';
 import { ROLES, roleFit, rolesFor, POOR_FIT } from '../sim/engine/roles';
 import { TX } from '../lang-tac-all';
 import { PERIOD_END, clockOf, isExtraBreak, isHalfTime, playOver } from '../sim/engine/clock';
-import { RATES, minuteMs, shownOf, type HlMode } from '../sim/highlights';
+import { RATES, RATE_MAX, RATE_MIN, RATE_STEP, minuteMs, shownOf, type HlMode } from '../sim/highlights';
 import { RSN, RS } from '../sim/engine/referee';
 import { Banner, CommentaryFeed, MomentIcon, RefLine, VarBanner, bannerOf, momentText, refOf } from './Officials';
 import { applyTip, explain, suggest, winChance, type Point, type Tip } from '../sim/engine/story';
@@ -22,31 +22,34 @@ import { useGame, clubOf, cn, sn, matchLabel } from './game';
 import { Pitch2D } from './Pitch2D';
 import { pointText, tipWhat, tipWhy } from './why';
 import { sfx, soundOn, setSound } from './sfx';
+import { AN } from '../lang-ana';
 
 const clone = (m: LiveMatch): LiveMatch => JSON.parse(JSON.stringify(m));
 // A watched match shows highlights like FM (sim/highlights.ts): the pace sets the highlight speed (× real time).
 // Instant plays to the whistle at once.
-const HOLD_K = [1.25, 1, 0.55];
+// The pause after a big moment shortens as the match speed goes up (1 at the normal pace).
+const pctOf = (a: number, b: number) => Math.round((100 * a) / Math.max(1, b));
+const holdK = (rate: number) => Math.pow(RATES[1] / rate, 0.6);
 const PHASE_MS = 1500;
 const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFinish, onSpeed, onHl }: {
-  m: LiveMatch; locked: boolean; speed0: 0 | 1 | 2; hl0?: HlMode; onUpdate: (m: LiveMatch) => void; onSave: (m: LiveMatch) => void; onFinish: (m: LiveMatch) => void;
-  onSpeed?: (s: 0 | 1 | 2) => void; onHl?: (h: HlMode) => void;
+export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFinish, onRate, onHl }: {
+  m: LiveMatch; locked: boolean; rate0: number; hl0?: HlMode; onUpdate: (m: LiveMatch) => void; onSave: (m: LiveMatch) => void; onFinish: (m: LiveMatch) => void;
+  onRate?: (r: number) => void; onHl?: (h: HlMode) => void;
 }) {
   const g = useGame();
   const { w, c, x, lang } = g;
   const get = (id: string) => playerOf(w, id)!;
   const me = Math.max(0, isUserSide(m, c)) as 0 | 1;
   const [paused, setPaused] = useState(false);
-  const [speed, setSpeed] = useState<number>(speed0);
-  // What the match shows (sim/highlights.ts, like FM): a highlight plays at RATES[speed] × real time, the clock runs on
-  // quickly between highlights; players run at a fixed scale for that speed.
+  const [speed, setSpeed] = useState<number>(rate0);
+  // What the match shows (sim/highlights.ts, like FM): a highlight plays at `speed` × real time (the speed bar), the
+  // clock runs on quickly between highlights; players run at a fixed scale for that speed.
   const [hl, setHl] = useState<HlMode>(hl0);
-  const savedAt = useRef(Date.now());
-  const saveDue = useRef(false);
-  const minMs = minuteMs(m, hl, RATES[speed]);
-  const scale = Math.round((2400 * RATES[1]) / RATES[speed]);
+  const [yell, setYell] = useState<{ l: string; at: number } | null>(null); // the last shout, shown on the pitch for a moment
+  const prevTo = useRef(-1); // where the previous minute's highlight ended (a move carried over shows from its start)
+  const minMs = minuteMs(m, hl, speed, prevTo.current);
+  const scale = Math.round((2400 * RATES[1]) / speed);
   const [view, setView] = useState(0);
   const [changes, setChanges] = useState(false);
   const [htSeen, setHtSeen] = useState(m.minute > 45);
@@ -68,6 +71,7 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
     const id = setTimeout(() => {
       const n = clone(m);
       const before = n.events.length, seq = n.ref?.seq ?? 0;
+      prevTo.current = shownOf(m, hl, prevTo.current)?.to ?? -1;
       stepMinute(n, get);
       onUpdate(n);
       const fresh = n.events.slice(before);
@@ -76,14 +80,11 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
       const whistle = isHalfTime(n) || playOver(n) || isExtraBreak(n);
       const k = fresh.some((e) => e.kind === 'goal') ? 2600 : fresh.some((e) => e.kind === 'red') ? 2200 : fresh.some((e) => e.kind === 'pen') ? 1600
         : fresh.some((e) => e.kind === 'yellow') ? 900 : whistle ? 1800 : 0;
-      setHold(Math.round(k * HOLD_K[speed]));
-      if (whistle) { onSave(n); if (!reduced()) sfx('whistle'); }
-      // A save in play every 5 match minutes, but never more than once every 10 real seconds: between highlights the
-      // clock runs fast and saving the whole career that often froze slow phones ...
-      else if (n.minute % 5 === 0 && !n.plus) saveDue.current = true;
-      // ... and the save waits for a minute between highlights (the picture is cutting anyway), so the moment it takes
-      // never lands in a passage being watched. In Full match every minute is shown: then it goes after 10 seconds.
-      if (saveDue.current && !whistle && Date.now() - savedAt.current > 10000 && (hl === 4 || !shownOf(n, hl))) { saveDue.current = false; savedAt.current = Date.now(); onSave(n); }
+      setHold(Math.round(k * holdK(speed)));
+      if (whistle && !reduced()) sfx('whistle');
+      // Saved every minute: during play only the match is saved, on its own (App saveLive: a small record written in a
+      // millisecond or two), so it never stalls the pitch and a reload loses at most a minute.
+      onSave(n);
     }, minMs + hold);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,7 +93,7 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
   useEffect(() => {
     if (!banner) return;
     const last = banner.i === banner.ph.length - 1;
-    const id = setTimeout(() => setBanner((b) => (b && b.i + 1 < b.ph.length ? { ...b, i: b.i + 1 } : null)), Math.round(PHASE_MS * HOLD_K[speed] * (last ? 1.6 : 1)));
+    const id = setTimeout(() => setBanner((b) => (b && b.i + 1 < b.ph.length ? { ...b, i: b.i + 1 } : null)), Math.round(PHASE_MS * holdK(speed) * (last ? 1.6 : 1)));
     return () => clearTimeout(id);
   }, [banner, speed]);
 
@@ -114,7 +115,7 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
   useEffect(() => { if (!flash) return; const id = setTimeout(() => setFlash(null), reduced() ? 1200 : 2200); return () => clearTimeout(id); }, [flash]);
 
   const change = (f: (n: LiveMatch) => void) => { const n = clone(m); f(n); onUpdate(n); onSave(n); };
-  const pickSpeed = (i: 0 | 1 | 2) => { setSpeed(i); onSpeed?.(i); };
+  const pickSpeed = (r: number) => { setSpeed(r); onRate?.(r); };
   const [feed, setFeed] = useState(0);
   // While the banner is up the scoreboard shows the goal as the crowd saw it, then the ruling.
   const shown: [number, number] = banner?.adj && banner.i < banner.ph.length - 1 ? [m.goals[0] + banner.adj[0], m.goals[1] + banner.adj[1]] : m.goals;
@@ -146,9 +147,17 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
   const o = (1 - me) as 0 | 1;
   const stats = [...x.live.stats.map((l, k) => [l, m.stats[me][k], m.stats[o][k]] as const),
     [R.statsExtra[0], m.stats[me][6], m.stats[o][6]] as const, [R.statsExtra[1], rs(me, 'off'), rs(o, 'off')] as const,
-    [R.statsExtra[2], rs(me, 'fk'), rs(o, 'fk')] as const, [R.statsExtra[3], rs(me, 'ti'), rs(o, 'ti')] as const, [R.statsExtra[4], rs(me, 'gk'), rs(o, 'gk')] as const];
+    [R.statsExtra[2], rs(me, 'fk'), rs(o, 'fk')] as const, [R.statsExtra[3], rs(me, 'ti'), rs(o, 'ti')] as const, [R.statsExtra[4], rs(me, 'gk'), rs(o, 'gk')] as const,
+    // The engine's pass count (a FULL match since it was added): passes, and the share that found their man.
+    ...(m.ps ? [[AN[g.ui].passes, m.ps.side[me * 2], m.ps.side[o * 2]] as const, [`${AN[g.ui].passes} · ${AN[g.ui].acc}`, pctOf(m.ps.side[me * 2 + 1], m.ps.side[me * 2]), pctOf(m.ps.side[o * 2 + 1], m.ps.side[o * 2])] as const] : [])];
+  const pctRow = m.ps ? stats.length - 1 : -1;
   const us = me === 0 ? home : away, them = me === 0 ? away : home;
-  const shout = (k: string, v: number) => change((n) => setTactics(n, me, { [k]: v } as Partial<Tactics>, 'shout'));
+  // A shout from the touchline (it can come mid-highlight): the change is made now and saved at the next quiet moment
+  // (saving the career mid-passage would stall a slow phone), and a bubble on the pitch says what was shouted.
+  const shout = (l: string, k: string, v: number) => {
+    const n = clone(m); setTactics(n, me, { [k]: v } as Partial<Tactics>, 'shout'); onUpdate(n); // (saved with the minute)
+    setYell({ l, at: Date.now() });
+  };
   const ft = fullTactics(s.tactics);
   return (
     <div className="sc-live">
@@ -191,8 +200,17 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
           <select className="sel hlsel" value={hl} aria-label={R.hlTitle} title={R.hlTitle} onChange={(e) => { const v = +e.target.value as HlMode; setHl(v); onHl?.(v); }}>
             {R.hl.map((l, i) => <option key={l} value={i}>{R.hlTitle}: {l}</option>)}
           </select>
-          {view === 0 && hl !== 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={minMs} mode={hl} scale={scale} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} /></div>
+          {view === 0 && hl !== 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={minMs} mode={hl} scale={scale} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} />
+              {yell && <div key={yell.at} className="yell" aria-live="polite" onAnimationEnd={() => setYell(null)}>📣 {yell.l}</div>}</div>
             : <ZonePitch m={m} me={me} mode={view || 1} /> /* commentary only: the zone map, no pitch */}
+          {!done && (
+            <div className="shoutbar" role="group" aria-label={x.live.touchline}>
+              {x.live.shouts.map(([l, k, v]) => {
+                const on = (ft as unknown as Record<string, number>)[k] === v;
+                return <button key={l} className="chip" aria-pressed={on} onClick={() => shout(l, k, v)}>{l}</button>;
+              })}
+            </div>
+          )}
           <div className="mom-h"><b>{x.live.momentum}</b><span>{x.live.momentumKey(cn(us, lang), cn(them, lang))}</span></div>
           <Momentum data={mom} rtl={g.rtl} label={x.live.momentum} />
         </Panel>
@@ -211,22 +229,16 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
             <div className="stats">
               {stats.map(([l, a, b], k) => (
                 <div key={l} className="st">
-                  <b>{a}{k === 0 ? '%' : ''}</b>
+                  <b>{a}{k === 0 || k === pctRow ? '%' : ''}</b>
                   <div className="mid"><span>{l}</span><div className="bars" style={{ ['--u' as string]: `${Math.max(1, a)}fr`, ['--t' as string]: `${Math.max(1, b)}fr` }}><i /><i /></div></div>
-                  <b>{b}{k === 0 ? '%' : ''}</b>
+                  <b>{b}{k === 0 || k === pctRow ? '%' : ''}</b>
                 </div>
               ))}
             </div>
           </Panel>
-          {!done && (
+          {!done && (tip || c.planB) && (
             <Panel i={5} label={x.live.touchline}>
               <PanelHead title={x.live.touchline} right={<span className="eyebrow">{x.live.takes}</span>} />
-              <div className="shouts">
-                {x.live.shouts.map(([l, k, v]) => {
-                  const on = (ft as unknown as Record<string, number>)[k] === v;
-                  return <button key={l} aria-pressed={on} onClick={() => shout(k, v)}>{l}</button>;
-                })}
-              </div>
               {tip && (
                 <div className="advice live-tip">
                   <span className="staff" aria-hidden="true">AS</span>
@@ -247,9 +259,11 @@ export function LiveScreen({ m, locked, speed0, hl0 = 2, onUpdate, onSave, onFin
         {!done ? (
           <>
             <button className="icon-btn" aria-label={paused ? x.live.play : x.live.pause} onClick={() => setPaused(!paused)}><I n={paused ? 'play' : 'pause'} /></button>
-            <div className="seg" role="group" aria-label={x.live.speed}>
-              {R.speeds.map((l, i) => <button key={l} aria-pressed={speed === i} onClick={() => pickSpeed(i as 0 | 1 | 2)}>{l}</button>)}
-            </div>
+            {/* The match speed bar, like FM's: slower to study a move, faster to get through it. */}
+            <label className="spdbar" title={x.live.speed}>
+              <input type="range" min={RATE_MIN} max={RATE_MAX} step={RATE_STEP} value={speed} aria-label={x.live.speed} aria-valuetext={`×${speed}`} onChange={(e) => pickSpeed(+e.target.value)} />
+              <b className="ltr">×{speed}</b>
+            </label>
             <span className="grow" />
             <button className="btn btn--ghost btn--sm skipbtn" title={x.live.skip} onClick={() => { const n = clone(m); n.sides[me].autoSubs = true; simulate(n, get); setBanner(null); onUpdate(n); onSave(n); }}>{R.instant}</button>
             <button className="btn btn--accent" onClick={() => setChanges(true)}><I n="swap" />{x.live.changes}</button>

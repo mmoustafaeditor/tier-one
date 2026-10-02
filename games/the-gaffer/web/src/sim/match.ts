@@ -20,15 +20,15 @@ import {
   FORMATIONS, aiTactics, autoXI, availableIn, formOf, fullTactics, setPieces, slotValue, xiFor, DEFAULT_TACTICS, type FormationId, type Tactics,
 } from './tactics';
 import { TUNE, buildModel, patchSub, rates as modelRates, type Model, type Rates, type SideInput } from './engine/model';
-import { newTally, playMinute, type Ball, type Flow, type Rules, type Tally } from './engine/play';
-import { aiRead, reslot } from './engine/story';
+import { newTally, playMinute, type Ball, type Flow, type PassTally, type Rules, type Tally } from './engine/play';
+import { aiPrep, aiReact, aiRead, reslot } from './engine/story';
 import { autoRoles, carryRoles, planFor, planOf, slotLoad } from './engine/phases';
 import { EV } from './engine/model';
 import { RS, RSN, TUNE_REF, callFoul, callGoal, callOffside, ensureRef, foulFactor, initRef, misconduct, refereeFor, restartOnTurnover, settle, wasteBooking, type Acts, type RefState } from './engine/referee';
 import { PERIOD_END, afterTick, isExtraBreak, isHalfTime, knockout, needsExtra, periodOver, playOver, tick } from './engine/clock';
 import { SUBS } from './competitions';
 import { BG, HURT, proneness } from './engine/injury';
-import { WX, weatherFor, type Wx } from './engine/weather';
+import { WX, weatherFor, weatherPlan, type Wx } from './engine/weather';
 import { AI_COH, cohLevel, cohesionOfClub } from './cohesion';
 import { staffEdge } from './norms';
 
@@ -96,6 +96,7 @@ export interface LiveMatch {
   ball?: Ball;         // who has the ball, where in the possession graph, clock carry
   tl?: Tally;          // possession, territory, phase counters, momentum, fitness curve
   flow?: Flow[];       // the ball's path in the last minute (for the pitch)
+  ps?: PassTally;      // the passes of a FULL match, counted (engine/play.ts; the analysis, ratings and numbers read it)
   rev?: number;        // bumps on every change the model depends on (subs, cards, tactics)
   dirty?: boolean;     // the model must be rebuilt now (a red card mid-minute)
   base?: { stats: [TeamStats, TeamStats]; xg: [number, number]; from: number }; // a v1 match resumed on v2
@@ -121,7 +122,7 @@ const level = squadStrength;
 function side(w: World, c: Career | null, clubId: string, oppLevel: number, form: number, opp: Player[], cup?: string): SideState {
   const squad = squadOf(w, clubId);
   const mine = c?.clubId === clubId;
-  const tactics: Tactics = mine ? (c!.tactics ?? DEFAULT_TACTICS) : aiTactics(squad, level(squad), oppLevel, opp, w.managers?.[clubId]?.style);
+  const tactics: Tactics = mine ? (c!.tactics ?? DEFAULT_TACTICS) : aiTactics(squad, level(squad), oppLevel, opp, w.managers?.[clubId]?.style, `${clubId}:${w.managers?.[clubId]?.name ?? ''}`);
   // gf-ref: suspensions are per competition (a cup ban doesn't keep a player out of the league, and back).
   const xi = mine ? xiFor(w, c!, cup).xi : autoXI(squad, tactics.formation, cup);
   // Tactics v3: an AI manager gives each player the role that suits him (and the club's style) in each phase.
@@ -456,6 +457,8 @@ function aiDecisions(m: LiveMatch, i: 0 | 1, get: Lookup) {
   const o = (1 - i) as 0 | 1;
   const diff = m.goals[i] - m.goals[o];
   const t = s.tactics;
+  // Kick-off: the AI manager sets up for the weather (engine/weather.ts weatherPlan), logged like any other change.
+  if (s.ai && m.minute === 1 && !m.plus && m.wx) setTactics(m, i, weatherPlan(fullTactics(t), m.wx) as Partial<Tactics>, `wx${m.wx}`);
   // Score-state reactions at half-time and with a quarter of an hour to go.
   if (s.ai && (m.minute === 46 || m.minute === 76)) {
     if (diff < 0) {
@@ -465,8 +468,12 @@ function aiDecisions(m: LiveMatch, i: 0 | 1, get: Lookup) {
       setTactics(m, i, { mentality: Math.max(diff === 1 ? -2 : -1, Math.min(t.mentality, 0) - 1), waste: true }, 'protect');
     }
   }
+  // Facing a human, the AI sets up for this opponent at kick-off (engine/story.ts aiPrep), after the weather.
+  if (s.ai && m.minute === 1 && !m.plus && !m.sides[o].ai && m.full) aiPrep(m, i, get);
   // Facing a human at half-time, the AI reads the first half and makes the one change that helps it most.
   if (s.ai && m.minute === 46 && !m.sides[o].ai && m.full) aiRead(m, i, get);
+  // ... and reacts during the match, at any minute: after conceding, or when it is being pinned back (story.ts aiReact).
+  if (s.ai && !m.sides[o].ai && m.full) aiReact(m, i, get);
   // Fresh legs around the hour: swap the most tired outfield players when the bench has someone nearly as good.
   // gf-ref: in three windows (two changes at each of the first two), and one in extra time.
   const plan = m.minute === 60 || m.minute === 72 ? 2 : m.minute === 82 || m.minute === 100 ? 1 : 0;
@@ -517,7 +524,7 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
   const current = () => { if (!model || m.dirty) { model = modelNow(m, get); m.dirty = false; } return model; };
   const acts = actsOf(m, get);
   const hurt: Hurt[] = [];
-  playMinute(m, r, current, rulesOf(m, get, rr, hurt), !!m.full);
+  playMinute(m, r, current, rulesOf(m, get, rr, hurt), !!m.full, m.full ? rngFor(`${m.key}:pass`, t) : undefined); // the passes' own stream (engine/passes.ts)
   settle(m, acts);       // DOGSO with advantage: a card, or none if the move ended in a goal
   misconduct(m, acts, rr); // dissent, violent conduct
   // Hurt in a tackle (engine/injury.ts): the offence, the player's proneness and his load.

@@ -126,6 +126,33 @@ export const ARC: Record<PassKind, { h: number; t: number }> = {
 export const THROUGH_LEAD = 5;
 // The ball's height at t (0-1) of a flight with this peak, ending at `end` metres (a shot over the bar).
 export const arcHeight = (peak: number, t: number, end = 0) => 4 * peak * t * (1 - t) + end * t;
+// The ball's flight (plan "خطة قفل الفجوات", A1). A ball along the ground leaves the foot fastest and slows as it rolls;
+// one in the air keeps most of its pace. A lofted long ball comes down short of its man and bounces once before he takes
+// it. Crosses and shots curl off the straight line and come back to the same end point, so the ball still arrives where
+// and when the engine's pass says. `k`: how much faster it leaves than it arrives (speed falls from 1 + k to 1 - k).
+export const BALL = { GROUND_K: 0.6, AIR_K: 0.15, BOUNCE_AT: 0.8, BOUNCE_KEEP: 0.12 };
+export interface BallPath { h: number; end: number; bounce?: boolean; bend?: number }
+// The weather on the ball (A2; the match's weather is engine/weather.ts, clear, rain, heavy rain, wind, heat, snow): on a
+// wet pitch a pass skids on and keeps its pace; standing water and snow hold it up. The wind blows along the pitch, one
+// way for the whole match (`windOf`): a ball in the air drifts with its crosswind share, and one hit into it hangs up.
+export const GROUND_K_WX = [0.6, 0.4, 0.85, 0.6, 0.6, 0.85];
+export const WIND = { DRIFT: 3.2, LIFT: 0.35 }; // metres of drift for a 7 m high, 30 m ball across the wind; extra height into it
+export const windOf = (key: string) => { let h = 2166136261; for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 16777619) >>> 0; return h % 2 ? 1 : -1; };
+export const travelShare = (t: number, air: boolean, wx = 0) => t + (air ? BALL.AIR_K : GROUND_K_WX[wx] ?? BALL.GROUND_K) * t * (1 - t);
+// The wind on a ball in the air from `from` to `to` with this peak: [sideways bend (m), extra peak height (m)].
+export function windOn(from: Pt, to: Pt, h: number, wind: number): [number, number] {
+  const dx = to.x - from.x, dy = to.y - from.y, d = Math.hypot(dx, dy);
+  if (!h || d < 1) return [0, 0];
+  const across = (-dy / d) * wind, into = -(dx / d) * wind; // the wind blows towards +x (wind 1) or -x (wind -1)
+  return [WIND.DRIFT * (h / 7) * (d / 30) * across, Math.max(0, into) * WIND.LIFT * h];
+}
+export function heightAt(p: BallPath, t: number): number {
+  if (!p.bounce) return arcHeight(p.h, t, p.end);
+  const at = BALL.BOUNCE_AT;
+  return t < at ? arcHeight(p.h, t / at) : arcHeight(p.h * BALL.BOUNCE_KEEP, (t - at) / (1 - at));
+}
+// Sideways off the straight line at share e of the way (bend: metres at the middle; + to the left of the direction).
+export const bendAt = (bend: number, e: number) => 4 * bend * e * (1 - e);
 // The engine's shot type (MatchEvent.how) decides the ball that set it up and where the shooter stands.
 export function deliveryOf(how: string | undefined): PassKind | null {
   return how === 'header' || how === 'corner' || how === 'set' ? 'cross' : how === 'cutback' ? 'cutback' : how === 'through' ? 'through' : null;

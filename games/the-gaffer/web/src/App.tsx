@@ -11,7 +11,7 @@ import { decisions, type Choice, type Decision } from './sim/decisions';
 import { nextUserMatch, seasonOver, type SeasonSummary } from './sim/season';
 import { staffPrep } from './sim/staff';
 import { store, tidyCareer, parseSave, metaOf } from './sim/save';
-import { listSlots, migrate, clearSlot, setActiveSlot, freeSlot, FREE_SLOTS } from './sim/slots';
+import { listSlots, migrate, clearSlot, setActiveSlot, freeSlot, FREE_SLOTS, writeLive, readLive, clearLive } from './sim/slots';
 import type { World } from './sim/world';
 import type { LiveMatch } from './sim/match';
 import type { Aftermath } from './sim/aftermath';
@@ -28,6 +28,7 @@ import { PreMatch } from './ui2/PreMatch';
 import { LiveScreen } from './ui2/Live';
 import { FullTime } from './ui2/FullTime';
 import { Digest } from './ui2/Digest';
+import { rateOf } from './sim/highlights';
 import { TransfersScreen } from './ui2/Transfers';
 import { OfficeScreen } from './ui2/Office';
 import { CareerScreen } from './ui2/Career';
@@ -168,14 +169,19 @@ export function App() {
     setBusy(false);
     if (!p.ok || !p.save.career) { setBadSave(true); setToast(x.set.importBad); return; }
     setSlot(n); setActiveSlot(n);
-    const w = p.save.world as World, c = p.save.career;
+    const w = p.save.world as World;
+    let c = p.save.career;
+    // The match saved on its own during play, when it's this career's and further on than the career's copy.
+    const lv = readLive<LiveMatch>(n);
+    if (lv && c.live && lv.key === c.live.key && lv.minute >= c.live.minute && lv.live.sides?.length === 2) c = { ...c, live: lv.live };
+    else if (lv && !c.live) clearLive(n);
     cur.current = { w, c };
     setWorld(w); setCareer(c); setTop(null);
     if (c.live) { setLive(c.live); setLocked(false); setRoute({ s: 'live' }); setToast(x.live.resumed(c.live.minute)); }
     else setRoute({ s: 'today' });
   };
   const started = async (w: World, c: Career, n: number) => {
-    setSlot(n); setActiveSlot(n);
+    setSlot(n); setActiveSlot(n); clearLive(n);
     cur.current = { w, c };
     setWorld(w); setCareer(c);
     const r = await store(w, c, n);
@@ -225,11 +231,20 @@ export function App() {
     await paint();
     const s = advance(w, { ...c, live: null }, m);
     await commit(s.world, s.career);
+    clearLive(slot);
     setLive(null);
     setBusy(false);
     if (s.after) { setAfter(s.after); setRoute({ s: 'ft' }); } else setRoute({ s: 'today' });
   };
-  const saveLive = async (m: LiveMatch) => { setLive(m); await run({ type: 'match.save', live: m }, { toast: false }); };
+  // During play only the match is saved, on its own (slots.ts writeLive): quick, so the pitch never stalls. The career
+  // in memory carries it too (any screen saving the career in the meantime saves the match as it is now).
+  const saveLive = async (m: LiveMatch) => {
+    setLive(m);
+    const { w, c } = cur.current;
+    if (!w || !c || !m.sides.some((s) => s.clubId === c.clubId) || (c.live && c.live.key !== m.key)) return;
+    cur.current = { w, c: { ...c, live: m } };
+    if (!writeLive(slot, m)) await run({ type: 'match.save', live: m }, { toast: false }); // (no room: the full save)
+  };
   const cont = async () => {
     const { w, c } = cur.current;
     if (!w || !c || busy) return;
@@ -355,7 +370,7 @@ export function App() {
         {route.s === 'academy' && <AcademyScreen focus={route.focus} />}
         {route.s === 'match' && <MatchScreen tab={route.tab ?? 0} onTab={(n) => setRoute({ s: 'match', tab: n })} />}
         {route.s === 'pre' && <PreMatch />}
-        {route.s === 'live' && live && <LiveScreen m={live} locked={locked} speed0={prefs.pace ?? 1} hl0={prefs.hl ?? 2} onSpeed={(pace) => setPrefs({ ...prefs, pace })} onHl={(hl) => setPrefs({ ...prefs, hl })} onUpdate={setLive} onSave={(m) => void saveLive(m)} onFinish={(m) => void finishLive(m)} />}
+        {route.s === 'live' && live && <LiveScreen m={live} locked={locked} rate0={rateOf(prefs)} hl0={prefs.hl ?? 2} onRate={(rate) => setPrefs({ ...prefs, rate })} onHl={(hl) => setPrefs({ ...prefs, hl })} onUpdate={setLive} onSave={(m) => void saveLive(m)} onFinish={(m) => void finishLive(m)} />}
         {route.s === 'ft' && after && <FullTime a={after} onDone={() => { setAfter(null); setRoute({ s: 'today' }); }} />}
         {route.s === 'digest' && <Digest onDone={() => setRoute({ s: 'today' })} />}
         {route.s === 'transfers' && <TransfersScreen tab={route.tab ?? 0} neg={route.neg} pid={route.p} onTab={(n) => setRoute({ s: 'transfers', tab: n })} />}

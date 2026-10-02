@@ -8,9 +8,12 @@ import { FORMATIONS } from '../sim/tactics';
 import type { World } from '../sim/world';
 import { L, W } from './pitch/move';
 import { downIn, newAnim, setPitchDebug, tick, type Anim } from './pitch/sim';
+import { MONITOR, refKit } from './pitch/officials';
 import type { HlMode } from '../sim/highlights';
 
 const PITCH_DEBUG = typeof location !== 'undefined' && /[?&]pitchdebug\b/.test(location.search);
+// Tests only (with ?pitchdebug): show the pitch in this weather (&wx=0-5), whatever the match's is.
+const PITCH_WX = PITCH_DEBUG ? Number(new URLSearchParams(location.search).get('wx') ?? NaN) : NaN;
 setPitchDebug(PITCH_DEBUG);
 
 const rgb = (hex: string) => { const n = parseInt(hex.replace('#', '').slice(0, 6), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
@@ -24,10 +27,10 @@ export function awayKit(home: string, a: [string, string]): string {
 }
 // Rain or snow falling over the pitch (the match's weather, engine/weather.ts). Fixed drops, moved by CSS.
 const DROPS = Array.from({ length: 46 }, (_, i) => ({ x: ((i * 37) % 109) - 2, y: (i * 53) % 70, d: (i * 7) % 10 }));
-function Weather({ kind, h }: { kind: number; h: number }) {
-  // Heat: a faint warm haze over the pitch. Wind: long thin gusts drifting across it.
+function Weather({ kind, h, wind }: { kind: number; h: number; wind: number }) {
+  // Heat: a faint warm haze over the pitch. Wind: long thin gusts drifting along it, the way it blows this match.
   if (kind === 4) return <rect className="g-wx heat" x="-2" y="0" width={L + 4} height={h} aria-hidden="true" />;
-  if (kind === 3) return <g className="g-wx wind" aria-hidden="true">{DROPS.slice(0, 12).map((p, i) => <path key={i} d={`M${p.x} ${(p.y * h) / 70}h7`} style={{ animationDelay: `${-p.d * 0.35}s` }} />)}</g>;
+  if (kind === 3) return <g className="g-wx wind" aria-hidden="true" transform={wind < 0 ? `translate(${L} 0) scale(-1 1)` : undefined}>{DROPS.slice(0, 12).map((p, i) => <path key={i} d={`M${p.x} ${(p.y * h) / 70}h7`} style={{ animationDelay: `${-p.d * 0.35}s` }} />)}</g>;
   const snow = kind === 5, n = kind === 2 ? 46 : snow ? 30 : 26;
   return (
     <g className={`g-wx ${snow ? 'snow' : 'rain'}`} aria-hidden="true">
@@ -98,17 +101,23 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   const ballRef = useRef<SVGGElement | null>(null);
   const shadowRef = useRef<SVGEllipseElement | null>(null);
   const flagRef = useRef<SVGGElement | null>(null);
+  const refRef = useRef<SVGGElement | null>(null);              // the referee
+  const arRef = useRef<(SVGGElement | null)[]>([null, null]);  // the assistants: top (right half), bottom (left half)
+  const monRef = useRef<SVGGElement | null>(null);              // the VAR monitor (shown during an on-field review)
+  const cardRef = useRef<SVGGElement | null>(null);             // a card the referee is showing
   const hurtRef = useRef<SVGGElement | null>(null);
   const netRef = useRef<SVGTextElement | null>(null);
   const anim = useRef<Anim | null>(null);
 
   const colors = m.sides.map((s) => world.clubs.find((c) => c.id === s.clubId)!.colors);
   const kit = [colors[0][0], awayKit(colors[0][0], colors[1] as [string, string])];
+  const refC = refKit(kit);
   const kitRef = useRef(kit);
   kitRef.current = kit;
   const numbers = m.sides.map((s) => s.onPitch.map((id) => (id ? world.players.find((p) => p.id === id)?.shirtNumber ?? '' : '')));
 
-  if (!anim.current) anim.current = newAnim(m, world);
+  if (!anim.current) { anim.current = newAnim(m, world); if (PITCH_WX >= 0 && PITCH_WX <= 5) anim.current.wx = PITCH_WX; }
+  const wx = anim.current.wx;
 
   useEffect(() => {
     let raf = 0;
@@ -163,6 +172,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
             order.push([p.y, g]);
           }
           g.classList.toggle('carrier', on && a.poss === side && a.carrier === k);
+          g.classList.toggle('down', on && a.downs.some((d) => d.side === side && d.slot === k && a.time < d.until)); // brought down by a foul
         });
       }
       // Far players are drawn first, so nearer ones overlap them.
@@ -182,10 +192,24 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         hurtRef.current.setAttribute('opacity', hp ? '1' : '0');
         if (hp) { const [hx, hy, hs] = pr(fx(hp.x), hp.y); hurtRef.current.setAttribute('transform', `translate(${hx.toFixed(2)} ${(hy - 3.6 * hs).toFixed(2)}) scale(${hs.toFixed(3)})`); }
       }
+      // The officials: the referee, the assistants on their touchlines, the VAR monitor when there's a review.
+      const place = (el: SVGGElement | null, x: number, y: number) => { if (!el) return; const [ox, oy, os] = pr(fx(x), y); el.setAttribute('transform', `translate(${ox.toFixed(2)} ${oy.toFixed(2)}) scale(${os.toFixed(3)})`); };
+      place(refRef.current, a.off.ref.x, a.off.ref.y);
+      // The card the referee shows (held up above him).
+      if (cardRef.current) {
+        const cd = a.off.card, up = !!cd && a.time >= cd.from && a.time < cd.until;
+        cardRef.current.setAttribute('opacity', up ? '1' : '0');
+        if (up) { cardRef.current.querySelector('rect')?.setAttribute('fill', cd!.red ? '#e53935' : '#ffd400'); place(cardRef.current, a.off.ref.x, a.off.ref.y); }
+      }
+      place(arRef.current[0], a.off.ar[0].x, a.off.ar[0].y);
+      place(arRef.current[1], a.off.ar[1].x, a.off.ar[1].y);
+      const rv = a.off.review, reviewing = !!rv && a.clock >= rv.from && a.clock < rv.until;
+      if (monRef.current) { monRef.current.setAttribute('opacity', reviewing ? '1' : '0'); if (reviewing) place(monRef.current, MONITOR.x, MONITOR.y); }
+      // Offside: the assistant on that half raises his flag.
       if (flagRef.current) {
         const up = !!a.flag && a.time < a.flag.until;
         flagRef.current.setAttribute('opacity', up ? '1' : '0');
-        if (up) { const [fx0, fy0, fs] = pr(fx(a.flag!.x), W - 0.3); flagRef.current.setAttribute('transform', `translate(${fx0.toFixed(2)} ${fy0.toFixed(2)}) scale(${fs.toFixed(3)})`); }
+        if (up) { const ar = a.off.ar[a.flag!.x > L / 2 ? 0 : 1]; place(flagRef.current, ar.x, ar.y); }
       }
       raf = requestAnimationFrame(loop);
     };
@@ -194,14 +218,18 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   }, []);
 
   const vh = viewHeight(camera);
+  // The flat view keeps a strip outside each touchline for the assistants and the monitor.
+  const y0 = camera === 0 ? -4 : 0, vh2 = vh - y0 * 2;
   return (
-    <svg className={`pitch2d cam${camera}`} viewBox={`-2 0 ${L + 4} ${vh}`} role="img" aria-label="pitch">
-      <rect x="-2" y="0" width={L + 4} height={vh} style={{ fill: 'var(--pitch-b)' }} />
+    <svg className={`pitch2d cam${camera}`} viewBox={`-2 ${y0} ${L + 4} ${vh2}`} role="img" aria-label="pitch">
+      <rect x="-2" y={y0} width={L + 4} height={vh2} style={{ fill: 'var(--pitch-b)' }} />
       <path ref={pitchRef} style={{ fill: 'var(--pitch-a)' }} />
       <path ref={stripeRef} style={{ fill: 'var(--pitch-b)' }} />
       <path ref={gridRef} fill="none" style={{ stroke: 'var(--pitch-line)' }} strokeOpacity=".45" strokeWidth=".3" strokeDasharray="1 1.4" />
       <path ref={zoneRef} className="g-zone" opacity=".2" />
       <path ref={lineRef} fill="none" style={{ stroke: 'var(--pitch-line)' }} strokeWidth=".4" strokeLinejoin="round" />
+      {/* The ground in this weather: wet and dark in rain, a white cover of snow, dry and yellowing in the heat. */}
+      {[1, 2, 4, 5].includes(wx) && <rect className={`g-ground wx${wx}`} x="-2" y={y0} width={L + 4} height={vh2} aria-hidden="true" />}
       <g ref={layer}>
         {([0, 1] as const).map((side) => m.sides[side].onPitch.map((_, k) => (
           <g key={`${side}-${k}`} ref={(el) => { dots.current[side][k] = el; }} className="g-dot2">
@@ -209,11 +237,15 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
             <text className="g-dot-n" y=".85" textAnchor="middle" fill={ink(kit[side])}>{numbers[side][k]}</text>
           </g>
         )))}
+        <g ref={refRef} className="g-off"><circle r="1.7" fill={refC} stroke="#fff" strokeOpacity=".85" strokeWidth=".35" /></g>
+        {[0, 1].map((i) => <g key={i} ref={(el) => { arRef.current[i] = el; }} className="g-off"><circle r="1.4" fill={refC} stroke="#fff" strokeOpacity=".85" strokeWidth=".3" /></g>)}
         <ellipse ref={shadowRef} rx="1.1" ry=".6" fill="#000" opacity="0" />
         <g ref={ballRef}><circle r="1.05" fill="#fff" stroke="#111" strokeWidth=".3" /></g>
       </g>
-      {!!m.wx && <Weather kind={m.wx} h={vh} />}
+      {!!wx && <Weather kind={wx} h={vh} wind={anim.current.wind} />}
       <g ref={hurtRef} className="g-hurt" opacity="0"><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx=".5" fill="#fff" stroke="#c62828" strokeWidth=".25" /><path d="M-.35 -.95h.7v.6h.6v.7h-.6v.6h-.7v-.6h-.6v-.7h.6z" fill="#d32f2f" /></g>
+      <g ref={cardRef} className="g-card" opacity="0"><rect x=".9" y="-5.4" width="2" height="2.8" rx=".25" fill="#ffd400" stroke="#111" strokeWidth=".15" /><path d="M.6 -1.2 L1.6 -2.8" stroke="#fff" strokeWidth=".35" /></g>
+      <g ref={monRef} className="g-var" opacity="0"><rect x="-2.6" y="-1.6" width="5.2" height="3.2" rx=".4" fill="#0b1220" stroke="#9fb3c8" strokeWidth=".25" /><text y=".7" textAnchor="middle" fontSize="1.9" fontWeight="800" fill="#fff">VAR</text></g>
       <g ref={flagRef} className="g-flag" opacity="0"><path d="M0 0V-4.2" stroke="#222" strokeWidth=".35" /><path d="M0 -4.2h2.6l-.5 1 .5 1H0z" fill="#ffd400" stroke="#7a6400" strokeWidth=".15" /></g>
       <text ref={netRef} className="g-goal" x={L / 2} y={vh / 2 + 4} textAnchor="middle" opacity="0">{goalWord}</text>
     </svg>

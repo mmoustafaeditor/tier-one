@@ -4,7 +4,7 @@ import type { UiLang } from './i18n';
 const EN = {
   open: 'Match analysis',
   title: 'Match analysis',
-  tabs: ['Chances', 'Territory', 'Players'] as [string, string, string],
+  tabs: ['Chances', 'Territory', 'Passes', 'Players'] as string[],
   us: 'Us', them: 'Them',
   shots: (n: number) => `${n} shot${n === 1 ? '' : 's'}`,
   onTarget: (n: number) => `${n} on target`,
@@ -29,18 +29,23 @@ const EN = {
   pick: 'Player',
   heat: 'Where he was involved: his contests, shots and fouls.',
   duels: 'Contests won', saves: 'Saves', fouls: 'Fouls', goals: 'Goals', assists: 'Assists', rating: 'Rating',
-  noPass: 'The match engine plays contests between players, not single passes, so there is no pass map.',
+  noPass: 'This match was played before passes were counted, so there is no pass map.',
+  net: 'Pass network',
+  netNote: 'Each man where his role puts him with the ball, bigger the more passes he completed; the thicker a line, the more two men passed to each other.',
+  passes: 'Passes', completed: (a: number, b: number) => `${a} of ${b}`, acc: 'completed', key: 'Key passes', long: 'Long balls', cross: 'Crosses',
+  top: 'On the ball',
 };
 export type AnaStrings = typeof EN;
 
 const AR: AnaStrings = {
   open: 'تحليل الماتش',
   title: 'تحليل الماتش',
-  tabs: ['الفرص', 'السيطرة', 'اللعيبة'],
+  tabs: ['الفرص', 'السيطرة', 'الباصات', 'اللعيبة'],
   us: 'إحنا', them: 'هما',
-  shots: (n) => `${n} تسديدة`,
+  // Egyptian Arabic counts: 3 to 10 take the plural, everything else the singular.
+  shots: (n) => `${n} ${n >= 3 && n <= 10 ? 'تسديدات' : 'تسديدة'}`,
   onTarget: (n) => `${n} على المرمى`,
-  big: (n) => `${n} فرصة كبيرة`,
+  big: (n) => `${n} ${n >= 3 && n <= 10 ? 'فرص كبيرة' : 'فرصة كبيرة'}`,
   xg: 'xG',
   res: { g: 'جول', v: 'اتصدّت', b: 'اتصدّ قدامها', m: 'برّه' },
   mapNote: 'كل دايرة تسديدة في المكان اللي اتشاطت منه؛ كل ما كانت أكبر كانت الفرصة أخطر. المليانة: جول.',
@@ -61,13 +66,17 @@ const AR: AnaStrings = {
   pick: 'اللعيب',
   heat: 'الأماكن اللي شارك فيها: التحامات وتسديدات وفاولات.',
   duels: 'التحامات كسبها', saves: 'تصديات', fouls: 'فاولات', goals: 'أجوان', assists: 'أسيست', rating: 'التقييم',
-  noPass: 'محرك الماتش بيلعب التحامات بين اللعيبة مش باصات منفصلة، عشان كده مفيش خريطة باصات.',
+  noPass: 'الماتش ده اتلعب قبل ما الباصات تتعد، عشان كده مفيش خريطة باصات.',
+  net: 'شبكة الباصات',
+  netNote: 'كل لعيب في مكانه والكورة مع فريقه، وكل ما كمّل باصات أكتر الدايرة بتكبر؛ وكل ما الخط أتخن، اللعيبين دول باصوا لبعض أكتر.',
+  passes: 'الباصات', completed: (a, b) => `${a} من ${b}`, acc: 'صح', key: 'باصات مفتاحية', long: 'كور طويلة', cross: 'عرضيات',
+  top: 'مين لمس الكورة أكتر',
 };
 
 const ES: AnaStrings = {
   open: 'Análisis del partido',
   title: 'Análisis del partido',
-  tabs: ['Ocasiones', 'Territorio', 'Jugadores'],
+  tabs: ['Ocasiones', 'Territorio', 'Pases', 'Jugadores'],
   us: 'Nosotros', them: 'Ellos',
   shots: (n) => `${n} tiro${n === 1 ? '' : 's'}`,
   onTarget: (n) => `${n} a puerta`,
@@ -92,13 +101,17 @@ const ES: AnaStrings = {
   pick: 'Jugador',
   heat: 'Dónde participó: sus duelos, tiros y faltas.',
   duels: 'Duelos ganados', saves: 'Paradas', fouls: 'Faltas', goals: 'Goles', assists: 'Asistencias', rating: 'Nota',
-  noPass: 'El motor juega duelos entre jugadores, no pases sueltos, así que no hay mapa de pases.',
+  noPass: 'Este partido se jugó antes de que se contaran los pases, así que no hay mapa de pases.',
+  net: 'Red de pases',
+  netNote: 'Cada jugador donde su rol lo sitúa con balón, más grande cuantos más pases completó; cuanto más gruesa la línea, más se pasaron esos dos.',
+  passes: 'Pases', completed: (a, b) => `${a} de ${b}`, acc: 'completados', key: 'Pases clave', long: 'Balones largos', cross: 'Centros',
+  top: 'Con el balón',
 };
 
 const FR: AnaStrings = {
   open: 'Analyse du match',
   title: 'Analyse du match',
-  tabs: ['Occasions', 'Territoire', 'Joueurs'],
+  tabs: ['Occasions', 'Territoire', 'Passes', 'Joueurs'],
   us: 'Nous', them: 'Eux',
   shots: (n) => `${n} tir${n === 1 ? '' : 's'}`,
   onTarget: (n) => `${n} cadré${n === 1 ? '' : 's'}`,
@@ -123,7 +136,11 @@ const FR: AnaStrings = {
   pick: 'Joueur',
   heat: 'Là où il a pesé : ses duels, tirs et fautes.',
   duels: 'Duels gagnés', saves: 'Arrêts', fouls: 'Fautes', goals: 'Buts', assists: 'Passes décisives', rating: 'Note',
-  noPass: 'Le moteur joue des duels entre joueurs, pas des passes une à une : il n’y a donc pas de carte des passes.',
+  noPass: 'Ce match a été joué avant que les passes soient comptées : il n’y a donc pas de carte des passes.',
+  net: 'Réseau de passes',
+  netNote: 'Chaque joueur là où son rôle le place avec le ballon, plus gros s’il a réussi plus de passes ; plus le trait est épais, plus ces deux-là se sont passé le ballon.',
+  passes: 'Passes', completed: (a, b) => `${a} sur ${b}`, acc: 'réussies', key: 'Passes clés', long: 'Ballons longs', cross: 'Centres',
+  top: 'Au ballon',
 };
 
 export const AN: Record<UiLang, AnaStrings> = { en: EN, ar: AR, es: ES, fr: FR };
