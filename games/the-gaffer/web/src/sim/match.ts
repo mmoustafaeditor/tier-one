@@ -519,7 +519,7 @@ export function stepMinute(m: LiveMatch, get: Lookup) {
   const current = () => { if (!model || m.dirty) { model = modelNow(m, get); m.dirty = false; } return model; };
   const acts = actsOf(m, get);
   const hurt: Hurt[] = [];
-  playMinute(m, r, current, rulesOf(m, get, rr, hurt), !!m.full);
+  playMinute(m, r, current, rulesOf(m, get, rr, hurt), !!m.full, m.full ? rngFor(`${m.key}:pass`, t) : undefined); // the passes' own stream (engine/passes.ts)
   settle(m, acts);       // DOGSO with advantage: a card, or none if the move ended in a goal
   misconduct(m, acts, rr); // dissent, violent conduct
   // Hurt in a tackle (engine/injury.ts): the offence, the player's proneness and his load.

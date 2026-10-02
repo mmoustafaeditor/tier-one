@@ -31,7 +31,7 @@ export function highlightOf(m: LiveMatch): Highlight {
   for (const f of flow) {
     if (f.k === 'g' || f.k === 'v' || f.k === 'm' || f.k === 'b' || f.k === 'c') up(2, f.t);
     else if (f.k === 'f' && depthOfZone(f.s, f.z) >= 4) up(2, f.t);
-    else if ((f.k === 'w' || f.k === 'l') && f.n !== undefined && FINAL.has(f.n)) up(1, f.t);
+    else if ((f.k === 'w' || f.k === 'l' || f.k === 'r') && f.n !== undefined && FINAL.has(f.n)) up(1, f.t);
   }
   if (!level) return { level: 0, from: 0, to: 0 };
   return { level, from: Math.max(0, at - LEAD), to: Math.min(60, at + TAIL) };
