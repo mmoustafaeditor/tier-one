@@ -1,9 +1,10 @@
-// Season UI pieces other screens can drop in: the weekly event banner, cosmetic previews and the claim reveal.
+// Season UI pieces other screens can drop in: cosmetic previews of the legacy kinds and the claim reveal.
+// 3.8: the weekly-event banner is gone with the system (brief §34).
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { useT } from '../lib/i18n';
 import { useSave } from '../lib/save';
 import { sfx } from '../lib/sfx';
-import { cosmetic, frameCSS, weekEventView, type Cosmetic } from '../lib/season';
+import { cosmetic, frameCSS, type Cosmetic } from '../lib/season';
 import { Icon } from './game';
 import '../styles/season.css';
 
@@ -26,33 +27,6 @@ export function CosSwatch({ c, nick, size = '' }: { c: Cosmetic; nick?: string; 
   }
 }
 
-// Weekly event (Practice and Career only). Drop into Home or Practice: <WeekEventBanner/>.
-export function WeekEventBanner({ onPlay, compact }: { onPlay?: () => void; compact?: boolean }) {
-  const t = useT();
-  const s = useSave();
-  const { ev, n, got, daysLeft } = weekEventView(s);
-  const reward = cosmetic(ev.reward)!;
-  const vars = { r: t('rival.itk'), l: ev.rules.league ? t('m.wire.lg.' + ev.rules.league) : '' };
-  const goal = ev.id === 'rival' ? t('season.ev.goalItk', { r: vars.r, n: ev.goal }) : t('season.ev.goalPlay', { n: ev.goal });
-  return <section className={'wkev' + (compact ? ' wkev--compact' : '') + (got ? ' is-won' : '')} style={{ ['--ev' as string]: ev.accent }} aria-label={t(ev.nameKey)}>
-    <div className="wkev__main">
-      <p className="wkev__when">{t('season.ev.k')} <span>{t('season.ev.only')}</span></p>
-      <h3 className="wkev__name">{t(ev.nameKey)}</h3>
-      <p className="wkev__rule">{t(ev.descKey, vars)}</p>
-      <div className="wkev__goal">
-        <span className="wkev__pips" role="img" aria-label={t('season.ev.progress', { a: n, b: ev.goal })}>{Array.from({ length: ev.goal }, (_, k) => <i key={k} className={k < n ? 'on' : ''} />)}</span>
-        <span>{got ? t('season.ev.won') : goal}</span>
-        {!got && <span className="wkev__left">{t('season.ev.left', { n: daysLeft })}</span>}
-      </div>
-    </div>
-    <div className="wkev__reward">
-      <CosSwatch c={reward} nick={s.nick} size="sm" />
-      <small>{nameOf(t, reward)}</small>
-      {got ? <Icon n="check" size={16} /> : onPlay && <button type="button" className="g-btn g-btn--sm g-btn--dark" onClick={onPlay}>{t('season.ev.play')}</button>}
-    </div>
-  </section>;
-}
-
 // The claim reveal: a card dealt face down, flipped to the reward; coins rain for coin rewards.
 export interface RevealItem { coins?: number; cos?: string[] }
 export function Reveal({ item, onClose, onEquip }: { item: RevealItem; onClose: () => void; onEquip?: (id: string) => void }) {
@@ -67,7 +41,7 @@ export function Reveal({ item, onClose, onEquip }: { item: RevealItem; onClose: 
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     addEventListener('keydown', esc);
     return () => { clearTimeout(k); removeEventListener('keydown', esc); };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const coins = item.coins ? Array.from({ length: Math.min(28, 8 + item.coins / 4) }, (_, k) => ({ x: (k * 37) % 100, d: (k * 53) % 600, r: (k * 71) % 360 })) : [];
   return <div className="reveal" role="dialog" aria-modal="true" aria-label={c ? t('season.reveal.item') : t('season.reveal.coins', { n: item.coins || 0 })} onClick={onClose}>
     {coins.length > 0 && <div className="reveal__rain" aria-hidden="true">{coins.map((p, k) => <span key={k} className="g-coin" style={{ ['--x' as string]: p.x + '%', ['--d' as string]: p.d + 'ms', ['--r' as string]: p.r + 'deg' }} />)}</div>}

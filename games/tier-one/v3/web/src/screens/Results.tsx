@@ -37,7 +37,6 @@ import { shareStyle } from '../lib/wallet';
 const ChallengeButton: ComponentType<{ view: View; result: Result }> | null = null;
 
 const TIER_C: Record<string, string> = { T1: 'gold', T2: 'done', T3: 'done', T4: 'off', SPIKED: '' };
-const LEAGUE_PTS: Record<string, number> = { T1: 30, T2: 20, T3: 12, T4: 6, SPIKED: 2 };
 export interface Start { pp: number; credits: number; streak: number }
 type Modal = null | { k: 'thread'; i: number } | { k: 'replies' } | { k: 'breakdown' } | { k: 'board' };
 const verdictOf = (p: ResultSaga) => (!p.call ? 'none' : p.excl ? 'excl' : p.right ? 'right' : 'wrong');
@@ -245,7 +244,7 @@ function CallRow({ p, c, th, k, onOpen }: { p: ResultSaga; c: CastSaga; th: Thre
 }
 
 // ---------- how your name moved (GOTY §1): followers, reputation, contacts and rivals that moved, level; Career's report folds in
-function NameStrip({ sum, s, start, mode, tier, report, beat }: { sum: WindowSummary | null; s: ReturnType<typeof useSave>; start?: Start; mode: View['mode']; tier: Result['tier']; report: CareerReport | null; beat: Beat | null }) {
+function NameStrip({ sum, s, start, mode, report, beat }: { sum: WindowSummary | null; s: ReturnType<typeof useSave>; start?: Start; mode: View['mode']; tier: Result['tier']; report: CareerReport | null; beat: Beat | null }) {
   const t = useT();
   const b = bylineOf(s);
   const rt = repTier(b.rep);
@@ -258,7 +257,7 @@ function NameStrip({ sum, s, start, mode, tier, report, beat }: { sum: WindowSum
   if (sum && sum.hot > 0) chips.push({ k: 'hot', cls: 'is-hot', txt: <><Icon n="flame" size={13} />{t('cn.res.hot', { n: sum.hot })}</> });
   for (const l of sum?.levels || []) chips.push({ k: 'lv' + l.src, cls: 'is-gold', txt: t('hr.res.lvChip', { s: t('src.' + l.src), n: l.lv }) });
   for (const [id, e] of rivals) chips.push({ k: 'r' + id, cls: e.w > e.l ? 'is-up' : e.l > e.w ? 'is-down' : '', txt: t(e.w > e.l ? 'hr.res.beat' : e.l > e.w ? 'hr.res.lostTo' : 'hr.res.drew', { r: t('rival.' + id) }) });
-  if (mode === 'daily') chips.push({ k: 'streak', cls: 'is-hot', txt: <><Icon n="flame" size={13} />{t('g.res.streak', { n: s.streak.n })} · {t('results.league', { n: LEAGUE_PTS[tier] })}</> });
+  if (mode === 'daily') chips.push({ k: 'streak', cls: 'is-hot', txt: <><Icon n="flame" size={13} />{t('g.res.streak', { n: s.streak.n })}</> }); // 3.8: the invisible weekly league is gone (brief §35)
   if (report) {
     chips.push({ k: 'cred', cls: report.repAfter >= report.repBefore ? 'is-up' : 'is-down', txt: t('hr.res.cred', { a: Math.round(report.repBefore), b: Math.round(report.repAfter) }) });
     if (report.favours > 0) chips.push({ k: 'fav', cls: 'is-gold', txt: t('career.favours') + ' +' + report.favours });

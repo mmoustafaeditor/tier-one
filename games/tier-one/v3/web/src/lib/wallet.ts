@@ -1,22 +1,24 @@
-// The wallet (GOTY.md §8.4): two currencies with plain names.
-//   Coins   — earned by playing, spent on small things. Stored where they always were: save.credits + save.ledger
-//             (the legacy field name; lib/meta.ts credit()/spend() and lib/season.ts keep writing it).
-//   Credits — bought, rarely earned (season end, a 30-day streak, a first Tier 1, a referral). Stored in save.wallet.
+// The wallet (LAUNCH_BRIEF §22; docs/spec/E-economy.md): two currencies with plain names, one coherent system.
+//   Coins   — earned by playing, spent on common looks and Career conveniences. Stored where they always were:
+//             save.credits + save.ledger (the legacy field name; lib/meta.ts credit()/spend() keep writing it).
+//   Credits — premium: bought when payments are on (lib/monet.ts PAYMENTS, one flag) and earned at three real
+//             milestones (the first Tier 1, every 30-day streak, a season's end) plus a referred friend's first window.
+//             Stored in save.wallet. Spent on premium and seasonal looks, the Season Pass, your paper's name, gifts.
 // Every movement of either currency goes through here and lands in one ledger (save.wallet.ledger) with an
 // idempotency key, so a grant can never land twice and the v4 server can replay it.
+// Nothing bought or earned here can change a Daily, Multiplayer or Transfer Market score (brief §22, §48).
 //
 // v4 ADAPTER POINT: the api lane's wallet.get/earn/spend/gift become a `WalletSync` (setWalletSync). Each ledger entry
 // is pushed with its id as the idempotency key; `reconcile()` pulls the server balance back. Until then the local
-// ledger is the source of truth and nothing here makes a request.
+// ledger is the source of truth and nothing here makes a request. The server's amounts (api/tier-one/v4/config/
+// catalog.json `earn`) match CREDITS_EARN below.
 //
-// Earnable-credit hooks for other lanes (each is idempotent per key; safe inside an update() mutator when `s` is given):
-//   awardFirstTier1(s?)        — lib/meta.ts onDailyDone, when r.tier === 'T1' the first time (30 credits)
-//   awardStreak(n, s?)         — lib/meta.ts onDailyDone after the streak moves (40 credits at every 30 days)
-//   awardSeasonEnd(sid, lv, s?)— lib/season.ts syncSeason when a season rolls over (25 credits, +25 at level 40)
-//   onFirstWindowFinished(s?)  — any Results screen after the player's first finished window (pays the referral)
+// Credit earning is wired through lib/earnhook.ts (no import cycle): lib/meta.ts fires firstTier1 / streak / firstWindow,
+// lib/season.ts fires the season-end hook. The functions stay exported for tests and other lanes.
 import { update, getSave, type Save } from './save';
-import { MONET } from './monet';
-import { syncSeason, seasonAt, installThemeCSS, equipped as seasonEquipped, type CosKind } from './season';
+import { paymentsOn } from './monet';
+import { syncSeason, seasonAt, installThemeCSS, equipped as seasonEquipped, setSeasonEndHook, type CosKind } from './season';
+import { setCreditHooks } from './earnhook';
 import { item, priceNow, onSale, isStandard, isLegacyKind, standardOf, legacy, GOLD_CREDITS, type Item, type Kind, type Price } from './catalog';
 import { t } from './i18n';
 import { earnMet } from './earned';
@@ -47,12 +49,13 @@ export type Tx = { ok: true; id: string; n: number; cur: Currency } | { ok: fals
 export const LEDGER_CAP = 120;
 export const REFUND_HOURS = 48;
 
-// Earnable credits (the only ways credits are not bought). Small on purpose: credits should mean something.
-export const CREDITS_EARN = { firstT1: 30, streak30: 40, seasonEnd: 25, seasonTop: 25, referral: 30 } as const;
+// Earnable credits (the only ways credits are not bought). Small on purpose: credits should mean something. The server
+// (api/tier-one/v4/config/catalog.json `earn`) pays the same amounts once accounts sync. Rare milestones only (brief §22).
+export const CREDITS_EARN = { firstT1: 30, streak30: 40, seasonEnd: 25, referral: 30 } as const;
 export const GIFT_MIN_LEVEL = 3; // a friend code can gift once the account is past the tutorial levels (anti-fraud)
 
 // Credit packs at honest tiers (docs/BUSINESS.md). No pack over €20, the bonus grows slowly, and the middle pack is
-// exactly one Gold season so the price of Gold is the same however you pay.
+// exactly one Season Pass so its price is the same however you pay. Shown as a price list until payments are on.
 export interface CreditPack { id: string; credits: number; price: string; eur: number; tag?: 'gold' }
 export const CREDIT_PACKS: CreditPack[] = [
   { id: 'c100', credits: 100, price: '€1.49', eur: 1.49 },
@@ -61,7 +64,34 @@ export const CREDIT_PACKS: CreditPack[] = [
   { id: 'c1800', credits: 1800, price: '€19.99', eur: 19.99 },
 ];
 export const packBonus = (p: CreditPack) => Math.round(((p.credits / p.eur) / (CREDIT_PACKS[0].credits / CREDIT_PACKS[0].eur) - 1) * 100);
-export const creditPacksOnSale = () => MONET.enabled && !!purchaseFlow;
+/** True only when a pack can really be bought: the one payments flag (lib/monet.ts) and a registered purchase flow. */
+export const creditPacksOnSale = () => paymentsOn() && !!purchaseFlow;
+
+// ---------------------------------------------------------------- Career conveniences bought with coins (brief §22)
+// Low-impact, Career only, never a ranked mode: a Favour (Burner, Tip-off or Stakeout, rotating), up to three a day.
+// The career lane calls buyFavour() from its Favours tray; coffee lives in lib/byline.ts (COFFEE_COST), the blog rename
+// in the career screen. None of these are catalog items: the Store sells identity only (brief §23–24).
+export const FAVOUR_COST = 15, FAVOURS_A_DAY = 3;
+const favKey = (ms = Date.now()) => 'fav:' + new Date(ms).toISOString().slice(0, 10);
+export const favoursLeftToday = (s: Save = getSave()) => Math.max(0, FAVOURS_A_DAY - (s.stats[favKey()] || 0));
+export type FavourKind = 'burner' | 'tipoff' | 'stakeout';
+/** Buys one Favour for FAVOUR_COST coins (the kind rotates burner → tipoff → stakeout). Returns the kind, or an error. */
+export function buyFavour(): { ok: true; kind: FavourKind; n: number } | { ok: false; error: 'short' | 'limit' | 'career' } {
+  const s = getSave();
+  if (!s.career) return { ok: false, error: 'career' };
+  if (!favoursLeftToday(s)) return { ok: false, error: 'limit' };
+  if (s.credits < FAVOUR_COST) return { ok: false, error: 'short' };
+  const kinds: FavourKind[] = ['burner', 'tipoff', 'stakeout'];
+  let kind: FavourKind = 'burner';
+  update((x) => {
+    if (!x.career) return;
+    const k = favKey(); x.stats[k] = (x.stats[k] || 0) + 1;
+    kind = kinds[(x.stats[k] - 1) % 3];
+    x.career.favours[kind]++;
+    x.credits -= FAVOUR_COST; x.ledger = [{ at: Date.now(), d: -FAVOUR_COST, why: 'favour' }, ...x.ledger].slice(0, 30);
+  });
+  return { ok: true, kind, n: FAVOUR_COST };
+}
 
 // ---------------------------------------------------------------- v4 adapter point
 export interface WalletSync {
@@ -118,11 +148,11 @@ export function earnCredits(key: string, n: number, why: string, s?: Save): Wall
 }
 export const awardFirstTier1 = (s?: Save) => earnCredits('t1:first', CREDITS_EARN.firstT1, 'earn:t1', s);
 export const awardStreak = (n: number, s?: Save) => (n > 0 && n % 30 === 0 ? earnCredits('streak:' + n, CREDITS_EARN.streak30, 'earn:streak', s) : null);
-export function awardSeasonEnd(sid: string, lv: number, s?: Save) {
-  const a = earnCredits('season:' + sid, CREDITS_EARN.seasonEnd, 'earn:season', s);
-  const b = lv >= 40 ? earnCredits('season:' + sid + ':top', CREDITS_EARN.seasonTop, 'earn:seasonTop', s) : null;
-  return a || b;
-}
+/** A season's end pays once per season id (the level is recorded in the recap; it no longer changes the amount). */
+export function awardSeasonEnd(sid: string, _lv: number, s?: Save) { return earnCredits('season:' + sid, CREDITS_EARN.seasonEnd, 'earn:season', s); }
+// The game events reach these through lib/earnhook.ts (no import cycle with lib/meta.ts / lib/season.ts).
+setCreditHooks({ firstTier1: (s) => { awardFirstTier1(s); }, streak: (n, s) => { awardStreak(n, s); }, firstWindow: (s) => { onFirstWindowFinished(s); } });
+setSeasonEndHook((sid, lv, s) => { awardSeasonEnd(sid, lv, s); });
 
 // ---------------------------------------------------------------- spend, buy, equip
 export function canPay(p: Price, cur: Currency, s: Save = getSave()) { const n = p[cur]; return n != null && balance(cur, s) >= n; }
@@ -287,7 +317,7 @@ export function onFirstWindowFinished(s?: Save): WalletEntry | null {
 /** Server-confirmed: a friend you referred finished their window (idempotent per friend code). */
 export const onReferralConfirmed = (friend: string) => { const e = earnCredits('refby:' + friend, CREDITS_EARN.referral, 'earn:referred'); if (e) update((s) => { const w = wallet(s); w.ref = { ...(w.ref || {}), friends: (w.ref?.friends || 0) + 1 }; }); return e; };
 
-// ---------------------------------------------------------------- credit packs and Gold
+// ---------------------------------------------------------------- credit packs and the Season Pass
 export async function buyCreditPack(id: string): Promise<Tx> {
   const p = CREDIT_PACKS.find((x) => x.id === id);
   if (!p || !creditPacksOnSale()) return { ok: false, error: 'off' };
@@ -298,6 +328,7 @@ export function applyPurchase(receipt: string, packId: string): WalletEntry | nu
   const p = CREDIT_PACKS.find((x) => x.id === packId); if (!p) return null;
   return earnCredits('pack:' + receipt, p.credits, 'pack:' + packId);
 }
+/** The Season Pass item for the season running at `ms` (kind 'gold' in the catalog; "Season Pass" on screen). */
 export const goldItemId = (ms = Date.now()) => 'gold.' + seasonAt(ms).id;
 
 // ---------------------------------------------------------------- what other screens read

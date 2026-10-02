@@ -43,10 +43,11 @@ export function PriceTag({ price, was, cur, className = '' }: { price: Price; wa
 export function WalletStrip({ onGet }: { onGet?: () => void }) {
   const t = useT(); const s = useSave();
   const b = balances(s);
+  const on = creditPacksOnSale();
   return <div className="cz-wallet" role="group" aria-label={t('pass.wallet')}>
     <span className="cz-wallet__pill" title={t('eco.wallet.coinsD')}><span className="g-coin" aria-hidden="true" /><b className="g-num">{b.coins.toLocaleString('en')}</b><small>{t('eco.wallet.coins')}</small></span>
     <span className="cz-wallet__pill cz-wallet__pill--c" title={t('eco.wallet.creditsD')}><CreditIcon /><b className="g-num">{b.credits.toLocaleString('en')}</b><small>{t('eco.wallet.credits')}</small></span>
-    {onGet && <button type="button" className="cz-wallet__get" onClick={() => { sfx('ui.tap'); onGet(); }} aria-label={t('eco.wallet.get')}><CreditIcon size={15} /><Icon n="arrow" size={14} /><span>{t('eco.wallet.get')}</span></button>}
+    {onGet && <button type="button" className="cz-wallet__get" onClick={() => { sfx('ui.tap'); onGet(); }} aria-label={on ? t('eco.wallet.get') : t('eco38.wallet.how')}><CreditIcon size={15} /><Icon n={on ? 'arrow' : 'help'} size={14} /><span>{on ? t('eco.wallet.get') : t('eco38.wallet.how')}</span></button>}
   </div>;
 }
 /** An honest countdown: days when far, hours on the last day. */
@@ -314,19 +315,27 @@ export function GiftSheet({ it, onClose, onSent }: { it: Item; onClose: () => vo
     </div>
   </Sheet>;
 }
+/** Credits: how they are earned, and the packs. While payments are off (lib/monet.ts PAYMENTS, one flag) the packs are a
+ *  plain price list with no buy button: nothing on this screen pretends to take money. */
 export function PacksSheet({ onClose }: { onClose: () => void }) {
   const t = useT();
   const on = creditPacksOnSale();
   const [busy, setBusy] = useState('');
-  return <Sheet label={t('eco.packs.hed')} onClose={onClose} wide>
-    <div className="cz-sheet__head"><CreditIcon size={34} /><div><h2>{t('eco.packs.hed')}</h2><p>{t('eco.packs.dek')}</p></div></div>
-    <div className="cz-packs">{CREDIT_PACKS.map((p) => { const b = packBonus(p); return <button key={p.id} type="button" className={'cz-pack' + (p.tag ? ' is-gold' : '')} disabled={!on || !!busy} onClick={() => { setBusy(p.id); buyCreditPack(p.id).finally(() => setBusy('')); }}>
-      <b className="g-num"><CreditIcon size={18} />{p.credits.toLocaleString('en')}</b>
-      <span className="cz-pack__p">{p.price}</span>
-      <small>{p.tag === 'gold' ? t('eco.packs.gold') : b > 0 ? t('eco.packs.bonus', { n: b }) : ' '}</small>
-    </button>; })}</div>
-    <p className="g-fine">{on ? t('eco.packs.regional') : t('eco.packs.soon')}</p>
-    <div className="cz-earnlist"><h3>{t('eco.earn.hed')}</h3><ul>{(t.list('eco.earn.list') as string[]).map((x, k) => <li key={k}><Icon n="check" size={14} />{x}</li>)}</ul></div>
+  return <Sheet label={on ? t('eco.packs.hed') : t('eco38.wallet.how')} onClose={onClose} wide>
+    <div className="cz-sheet__head"><CreditIcon size={34} /><div><h2>{on ? t('eco.packs.hed') : t('eco38.wallet.how')}</h2><p>{on ? t('eco.packs.dek') : t('eco38.wallet.howD')}</p></div></div>
+    <div className="cz-earnlist cz-earnlist--first"><h3>{t('eco.earn.hed')}</h3><ul>{(t.list('eco.earn.list') as string[]).map((x, k) => <li key={k}><Icon n="check" size={14} />{x}</li>)}</ul></div>
+    {on ? <>
+      <div className="cz-packs">{CREDIT_PACKS.map((p) => { const b = packBonus(p); return <button key={p.id} type="button" className={'cz-pack' + (p.tag ? ' is-gold' : '')} disabled={!!busy} onClick={() => { setBusy(p.id); buyCreditPack(p.id).finally(() => setBusy('')); }}>
+        <b className="g-num"><CreditIcon size={18} />{p.credits.toLocaleString('en')}</b>
+        <span className="cz-pack__p">{p.price}</span>
+        <small>{p.tag === 'gold' ? t('eco.packs.gold') : b > 0 ? t('eco.packs.bonus', { n: b }) : ' '}</small>
+      </button>; })}</div>
+      <p className="g-fine">{t('eco.packs.regional')}</p>
+    </> : <div className="cz-packs-off">
+      <h3>{t('eco38.packs.later')}</h3>
+      <ul className="cz-packs-off__list">{CREDIT_PACKS.map((p) => <li key={p.id}><b className="g-num"><CreditIcon size={14} />{p.credits.toLocaleString('en')}</b><span>{p.price}</span>{p.tag === 'gold' && <small>{t('eco.packs.gold')}</small>}</li>)}</ul>
+      <p className="g-fine">{t('eco.packs.soon')}</p>
+    </div>}
     <div className="cz-sheet__acts"><GBtn kind="dark" size="sm" onClick={onClose}>{t('common.close')}</GBtn></div>
   </Sheet>;
 }

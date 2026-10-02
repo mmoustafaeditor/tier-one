@@ -19,7 +19,6 @@ const MeScreen = lazy(() => import('./screens/Me').then((m) => ({ default: m.MeS
 const WindowScreen = lazy(() => import('./screens/Window').then((m) => ({ default: m.WindowScreen })));
 const WireScreen = lazy(() => import('./screens/Wire').then((m) => ({ default: m.WireScreen })));
 const StoryScreen = lazy(() => import('./screens/Story').then((m) => ({ default: m.StoryScreen })));
-const PassScreen = lazy(() => import('./screens/Pass').then((m) => ({ default: m.PassScreen })));
 const PracticeScreen = lazy(() => import('./screens/Practice').then((m) => ({ default: m.PracticeScreen })));
 const RoomsScreen = lazy(() => import('./screens/Rooms').then((m) => ({ default: m.RoomsScreen })));
 const HowTo = lazy(() => import('./screens/HowTo').then((m) => ({ default: m.HowTo })));
@@ -34,7 +33,7 @@ const DDLiveScreen = lazy(() => import('./screens/DDLive').then((m) => ({ defaul
 const EditorDeskScreen = lazy(() => import('./screens/Editor').then((m) => ({ default: m.EditorDeskScreen })));
 const BoardsScreen = lazy(() => import('./screens/Boards').then((m) => ({ default: m.BoardsScreen })));
 const DailyHubScreen = lazy(() => import('./screens/DailyHub').then((m) => ({ default: m.DailyHubScreen })));
-const MissionsScreen = lazy(() => import('./screens/DailyHub').then((m) => ({ default: m.MissionsScreen })));
+const MissionsScreen = lazy(() => import('./screens/Missions').then((m) => ({ default: m.MissionsScreen })));
 import { setNav } from './screens/Connect';
 import { SocialWatch } from './ui/social';
 import { captureReferral, headlineVars, headlineStyle } from './lib/wallet';
@@ -49,7 +48,7 @@ import './styles/fit.css'; // 3.6: one-screen pages (no page scroll), the four-m
 
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
-  | { n: 'rooms'; code?: string; challenge?: string; expired?: boolean } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize'; sec?: 'looks' | 'modes'; cur?: 'coins' | 'credits' } | { n: 'ddlive' } | { n: 'editor' }
+  | { n: 'rooms'; code?: string; challenge?: string; expired?: boolean } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize'; sec?: 'featured' | 'cosmetics' | 'season' | 'owned'; cur?: 'coins' | 'credits' } | { n: 'ddlive' } | { n: 'editor' }
   | { n: 'boards'; period?: 'daily' | 'weekly' | 'rooms' | 'wire'; from?: Route } | { n: 'today' } | { n: 'missions' }
   | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
@@ -182,7 +181,7 @@ export function App() {
     case 'wire': screen = <WireScreen {...chrome} rid={route.rid} />; break;
     case 'desk': case 'story': screen = <StoryScreen {...chrome} />; break;
     case 'me': screen = <MeScreen {...chrome} />; break;
-    case 'pass': screen = <PassScreen {...chrome} />; break;
+    case 'pass': screen = <CustomizeScreen key="season" {...chrome} sec="season" />; break; // 3.8: the season track lives in the one Store
     case 'practice': screen = <PracticeScreen {...chrome} />; break;
     case 'rooms': screen = <RoomsScreen {...chrome} code={route.code} expired={route.expired || !!route.challenge} />; break;
     case 'newsroom': screen = <RoomsScreen {...chrome} expired />; break;

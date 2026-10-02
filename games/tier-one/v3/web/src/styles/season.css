@@ -1,6 +1,6 @@
-/* Seasons, the Pass tracks, the store, weekly events and the claim reveal (GOTY.md §3).
+/* Seasons, the season track and the claim reveal (lib/season.ts; the Store is screens/Customize.tsx).
    One loud thing per screen: the season masthead and its track. Everything else is quiet paper on the desk.
-   --sa is the live season's accent (lib/season.ts); --ev the weekly event's. */
+   --sa is the live season's accent (lib/season.ts). */
 
 .season { --mc: var(--sa); }
 
@@ -64,25 +64,6 @@
 .cos__paper.swatch { width: 100%; height: 100%; border: 0; }
 .cos--favour { background: linear-gradient(135deg, #FFD35C, var(--gold)); color: #3A2600; }
 .cos--favour svg { width: 26px; height: 26px; }
-
-/* ---------- Weekly event banner: a wire strip, the event colour as its rule */
-.wkev { display: flex; gap: 14px; align-items: center; padding: 14px 14px 14px 16px; border-radius: 14px; background: var(--card); color: var(--card-ink); box-shadow: var(--shadow-card); border-inline-start: 6px solid var(--ev); }
-.wkev__main { flex: 1; min-width: 0; }
-.wkev__when { font-size: 12.5px; font-weight: 700; color: var(--card-ink-2); }
-.wkev__when span { font-weight: 400; color: var(--card-ink-3); margin-inline-start: 6px; }
-.wkev__name { margin-top: 2px; font-family: var(--f-display); font-weight: 800; font-size: 22px; line-height: 1.1; }
-.wkev__rule { margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--card-ink-2); }
-.wkev__goal { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; font-weight: 600; }
-.wkev__pips { display: inline-flex; gap: 4px; }
-.wkev__pips i { width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 2px var(--card-ink-3); }
-.wkev__pips i.on { background: var(--ev); box-shadow: none; }
-.wkev__left { font-weight: 400; color: var(--card-ink-3); }
-.wkev__reward .g-btn { font-size: 13px; padding-inline: 10px; }
-.wkev__reward { flex: none; width: 96px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
-.wkev__reward .cos { width: 64px; height: 48px; }
-.wkev__reward small { font-size: 11.5px; line-height: 1.2; color: var(--card-ink-2); }
-.wkev.is-won .wkev__reward svg { color: var(--c-done-deep); }
-.wkev--compact .wkev__rule { display: none; }
 
 /* ---------- Store */
 .wallet-pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-cond); font-stretch: 78%; font-weight: 900; font-size: 20px; color: var(--gold); }
@@ -166,7 +147,7 @@
 @keyframes sea-rain { to { transform: translateY(110vh) rotate(var(--r)); } }
 
 /* ---------- Keyboard focus, reduced motion */
-.season button:focus-visible, .wkev button:focus-visible, .reveal button:focus-visible { outline: 3px solid var(--sa, var(--gold)); outline-offset: 2px; }
+.season button:focus-visible, .reveal button:focus-visible { outline: 3px solid var(--sa, var(--gold)); outline-offset: 2px; }
 .season .slip__cell.is-ready:focus-visible { outline-offset: 1px; }
 :root.reduce .slip__here, :root.reduce .recap__stamp, :root.reduce .reveal, :root.reduce .reveal__rain { animation: none; }
 :root.reduce .reveal__rain { display: none; }
@@ -232,9 +213,7 @@
 .storesheet__sec { margin-top: 18px; }
 .storesheet .g-sub { color: var(--on-desk-2); font-size: 13.5px; }
 .storesheet button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-.pass3__cols > .wkev { align-self: stretch; }
 @media (min-width: 1024px) {
-  .pass3__cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
   .snext__keys, .nslip { grid-template-rows: 48px 104px; }
   .snext__grid.has-gold .snext__keys, .snext__grid.has-gold .nslip { grid-template-rows: 48px 104px 104px; }
   .nslip__what { font-size: 12.5px; }
