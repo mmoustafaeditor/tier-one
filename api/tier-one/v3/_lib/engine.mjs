@@ -8,8 +8,12 @@
 //  · per-saga source overrides (Career: club leaks, frozen-out kit men, Trust, early access, second opinions);
 //  · an explicit action log + replay (the server scores from it), a public view, a composer preview and a
 //    per-saga results explanation (what the call scored, what the exclusive needed, which reads were right);
-//  · score bounds widened to 420: a board with no twist (all five Fake) can reach 5 × 84;
 //  · "no twist this window" is announced on the morning of day 5 when the board has none (DESIGN §3.3 edge case).
+//
+// 3.8 (launch brief §4, §7, §36; simulation in games/tier-one/v3/sim/sim3.mjs; the reasoning in docs/spec/D-game-math.md):
+//  every constant below was re-derived from a few thousand simulated boards per archetype. What changed: Exclusive +20 → +30,
+//  Tier 1 180 → 200, Tier 2 120 → 130, score ceiling 420 → 470, and an explicit ROLLOVER (0) for unused points. What the
+//  audit kept, and why, is written next to each number.
 import { RNG, hashStr } from './rng.mjs';
 
 export const OUT = ['DONE', 'HIJACK', 'OFF', 'FAKE'];
@@ -19,8 +23,9 @@ const O4 = [0, 1, 2, 3];
 export const RULES = {
   SAGAS: 5,
   DAYS: 7,                 // day 7 = Deadline Day
-  CONTACTS: 4,             // contact points per day, days 1–6; unused points do not carry over
-  DD_CONTACTS: 3,
+  CONTACTS: 4,             // per day, days 1–6. KEEP: each point is worth ≈4–5 score to a good player (3/day −14, 5/day +19), so points bind
+  ROLLOVER: 0,             // unused points that carry to tomorrow. 0: carrying 1–2 changed an optimal score by +1, so it adds a rule and no decision
+  DD_CONTACTS: 3,          // KEEP: 2 or 4 moved scores <1 pt; 3 = one physio, or spotter + kit man, in sixty seconds
   DD_POSTS: 3,             // Deadline Day: at most 3 posts (calls or U-turns)
   DD_SECONDS: 60,          // Deadline Day real clock
   DD_SNAP: 15,             // the last 15 s open the Quick post composer (posts at Advanced)
@@ -31,12 +36,19 @@ export const RULES = {
   TWIST_DAY: [[4, 0.5], [5, 0.5]],
   TW_M: [[0, 0.5, 0.5, 0], [0.5, 0, 0.5, 0], [0.6, 0.4, 0, 0]],
   // Publishing strengths: 0 Talks, 1 Advanced, 2 Confirmed
-  BASE: [10, 20, 40],
-  LOSS: [5, 15, 60],
-  EARLY: [1, 2, 4],        // per day left (7 − call day) on a right call
-  EXCL: [0, 0, 20],        // right Confirmed call, posted no later than the first correct rival post, passing the two-source rule
-  UT_PEN: [3, 8, 30],      // U-turn: the withdrawn call costs this; the new call scores normally but is never exclusive
+  BASE: [10, 20, 40],      // KEEP: Confirmed beats Advanced from p ≈ 0.58 on day 1 (0.67 on day 6) — exactly the "bet 3-to-2" the composer prints
+  LOSS: [5, 15, 60],       // KEEP: −50 cut the day-1-Confirm-everything archetype's Spiked rate from 39% to 26%; reckless must stay expensive
+  EARLY: [1, 2, 4],        // per day left (7 − call day). KEEP: the card-reading player already beats the wait-for-the-physio player 119 to 78
+  EXCL: [0, 0, 30],        // right Confirmed, no correct rival post before your day, two circles. +20 → +30: a day-2 exclusive (90) is now the
+                           // biggest single thing in the game; it lifts the card reader +4.5 and the reckless archetype 0 (two circles gate it)
+  UT_PEN: [3, 8, 30],      // U-turn: the withdrawn call costs this; the new call scores normally but is never exclusive. KEEP: a Confirmed U-turn
+                           // to a right Advanced on day 5 nets −6 instead of −60: a rescue, never a free re-roll
   // Sources. kind 'own': fixed error table M[truth][report]. kind 'street': right w.p. rel, otherwise repeats the spin.
+  // All five KEPT after the audit (bits of information per point, cold: kit man .28, barber .19, agent .20, spotter .34, physio .35):
+  //  · barber: not noise — the best Off-vs-Fake separator in the game (his "stay" lines are rarely the spin); at 55% the expert gains +19
+  //  · agent: the bias is the lesson ("her no is worth more than her yes"); sharpening it mostly helped the day-1 gambler (+17)
+  //  · spotter: the day-3 turning point, the most information per point; · physio: 92% but day 5 — at cost 2 the late player gained +15,
+  //    the card reader +8, the expert +2, i.e. a cheaper physio pays waiting; at day 4 it cut exclusives. Stays 3 points, day 5.
   SOURCES: {
     kitman:  { cost: 1, from: 1, kind: 'own', says: ['LEAVING', 'STAYING'],
                M: [[0.80, 0.20], [0.80, 0.20], [0.20, 0.80], [0.20, 0.80]] },
@@ -52,7 +64,9 @@ export const RULES = {
   LEAK: { cost: 2, from: 1, kind: 'own', says: OUT,
           M: [[0.85, 0.05, 0.05, 0.05], [0.05, 0.85, 0.05, 0.05], [0.05, 0.05, 0.85, 0.05], [0.05, 0.05, 0.05, 0.85]] },
   // Tiers: T1 also needs at least one exclusive. Spiked = below zero.
-  TIERS: { T1: 180, T2: 120, T3: 70, T4: 0 },
+  // 180/120 → 200/130: with the +30 exclusive the card-reading player makes Tier 1 on ~13% of boards, Tier 2 ~36%, Spiked ~5%;
+  // the Bayes-optimal player ~55% Tier 1 (was 63% at 180). Tier 1 should be a story, not a Tuesday.
+  TIERS: { T1: 200, T2: 130, T3: 70, T4: 0 },
   // Evidence circles: reads from the same circle are not independent (two-source rule counts circles, not reads).
   CIRCLE: { kitman: 'club', physio: 'club', agent: 'agent', spotter: 'travel', barber: 'street', tabloid: 'street', itk: 'street', insider: 'insider', leak: 'office' },
   // Source-card tally weights (what each report points to); street voices and rivals point to the outcome they claim.
@@ -65,13 +79,15 @@ export const RULES = {
   },
   CLAIM_TALLY: { barber: 1, tabloid: 1, itk: 2, insider: 3 },
   // Rivals post overnight and are visible next morning. street = errors repeat the spin; own = errors spread evenly.
+  // KEEP: a correct rival post already stands on 8% of sagas by day 2, 33% by day 4, 61% by day 6, 79% on Deadline Day — the
+  // exclusive is a race you win on days 2–4, and copying @PressBoxPete (72% right, day 6.5) scores 72 with 0 exclusives.
   RIVALS: [
     { id: 'tabloid', days: [1, 2], p: 0.60, rel: 0.35, kind: 'street' },
     { id: 'itk',     days: [2, 4], p: 0.70, rel: 0.55, kind: 'street' },
     { id: 'insider', days: [5, 6], p: 0.85, rel: 0.75, kind: 'own' },
   ],
-  // The server rejects a stored Daily total outside these (5 × (−60 − 30) and 5 × 84).
-  SCORE_MIN: -450, SCORE_MAX: 420,
+  // The server rejects a stored Daily total outside these: 5 × (−60 − 30) and 5 × (40 + 6×4 + 30) on a board with no twist.
+  SCORE_MIN: -450, SCORE_MAX: 470,
 };
 export const SRC = ['kitman', 'barber', 'agent', 'spotter', 'physio'];
 export const RIVAL_IDS = ['tabloid', 'itk', 'insider'];
@@ -213,7 +229,8 @@ export function endDay(g) {
     g.twist = { i: s.i, day: g.day, voided, pen: g.pens[s.i] }; g.calls[s.i] = null; g.pens[s.i] = 0;
   }
   if (g.board.twI < 0 && g.day === 5) g.noTwist = true;
-  g.left = g.day === g.R.DAYS ? g.R.DD_CONTACTS : g.R.CONTACTS;
+  // Unused points: at most ROLLOVER of them carry into tomorrow (0 = they vanish, the 3.x rule).
+  g.left = Math.min(g.R.ROLLOVER || 0, g.left) + (g.day === g.R.DAYS ? g.R.DD_CONTACTS : g.R.CONTACTS);
   return true;
 }
 // Skip to the end (Deadline Day clock ran out, or the player walks away): every remaining day ends.
