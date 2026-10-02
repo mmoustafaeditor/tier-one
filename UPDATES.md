@@ -7,6 +7,10 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-02 · Tier One 3.9.5 — no drawn faces
+
+- Owner: image files only, nothing drawn in code. Players without a painted portrait now show only their initials on a plain tile; the silhouette is gone. Painted art arrives through art/manifest.json (Salah is the first).
+
 ## 2026-10-02 · Tier One 3.9.4 — painted player art, Salah
 
 - Removed the drawn SVG "anime" faces (owner: not the style). Players without art now show a quiet silhouette with their initials in the club colour.

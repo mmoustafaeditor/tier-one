@@ -64,9 +64,8 @@ export function portraitPlaceholderSVG(kind: PortraitKind, id: string, opts: { t
     const p = WORLD.players.find((x) => x.id === id);
     const ini = esc((p ? p.n : id.replace(/^p-/, '')).split(/[\s-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase());
     const c1 = opts.tint || '#3A4A55', g = 'pl' + (h % 100000);
-    return `<svg viewBox="0 0 100 100" role="img" aria-label="${esc(opts.label || '')}"><defs><radialGradient id="${g}" cx="50%" cy="30%" r="75%"><stop offset="0" stop-color="#2D363D"/><stop offset="1" stop-color="#151B1F"/></radialGradient></defs>`
-      + `<rect width="100" height="100" fill="url(#${g})"/><circle cx="50" cy="40" r="17" fill="#3A444B"/><path d="M16 100c3-20 17-30 34-30s31 10 34 30z" fill="${c1}" opacity=".85"/><path d="M16 100c3-20 17-30 34-30s31 10 34 30z" fill="#151B1F" opacity=".35"/>`
-      + `<text x="50" y="46" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-weight="600" font-size="15" fill="#EFE7D7">${ini}</text></svg>`;
+    void h; void c1; void g; // no drawn face: initials on a plain tile until the painted portrait arrives
+    return `<svg viewBox="0 0 100 100" role="img" aria-label="${esc(opts.label || '')}"><rect width="100" height="100" fill="#242C32"/><text x="50" y="62" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-weight="600" font-size="34" fill="#EFE7D7">${ini}</text></svg>`;
   }
   const tint = opts.tint || SRC_C[id] || '#3A342A', tint2 = opts.tint2 || '#F4EFE4';
   const mood = opts.mood || 'neutral';
