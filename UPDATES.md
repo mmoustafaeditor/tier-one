@@ -85,6 +85,20 @@ together with your change.
 
 ---
 
+## 2026-10-02 · saifsaber · The Gaffer B4: the hidden traits count in the engine too (composure, vision, movement)
+- **What changed:** The last step of the plan to close the gaps with FM26. The hidden traits that already moved players on the pitch (A4) now also count in the match engine, worked out the same way (attributes, rating, age, a fixed per-player draw; nothing new saved), in a new shared module `engine/traits.ts`, with a fourth one, vision:
+  - **Composure:** a composed finisher scores more of the same chances, and a composed taker more penalties.
+  - **Movement off the ball:** the better mover gets more of his side's open-play shots.
+  - **Vision:** the man with vision makes more of the key passes.
+
+  They share out a side's chances and goals among its players (relative to the side's own men), so the totals don't move. Measured (new `sim-tests/traitsengine.ts`, 1,500 matches with the traits on and off):
+  - **Totals:** goals +0.9%, xG −0.1% (the rule was within 3%).
+  - **Composure:** the most composed third of finishers beat their xG by 0.080 goals a shot against 0.069 with the traits off.
+  - **Vision:** midfielders' assists, most vs least vision ×3.59 (×2.77 off).
+  - **Movement:** forwards' shots, best vs worst movers ×2.87 (×2.54 off).
+- **Files:** `games/the-gaffer/web/src/sim/engine/traits.ts` (new), `src/sim/engine/model.ts`, `src/ui2/pitch/body.ts` (reads the traits from the engine module, same values), `web/sim-tests/traitsengine.ts` (new), `games/the-gaffer/ENGINE.md`
+- **Heads-up for the team:** Changes who scores and assists (not how many). The plan "خطة قفل الفجوات" is now done (A1-A5, B1-B4). Tier One untouched.
+
 ## 2026-10-02 · saifsaber · The Gaffer B3: nine new roles, each with its own job on the pitch, none a free win
 - **What changed:** Step B3 of the plan to close the gaps with FM26. Nine new roles (EN/AR/ES/FR):
   - **With the ball:** libero, half-back, mezzala, wide playmaker, deep-lying forward, poacher.
