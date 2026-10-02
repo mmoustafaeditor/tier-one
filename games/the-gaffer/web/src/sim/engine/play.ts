@@ -3,13 +3,16 @@
 // FAST play (every other match) samples the contest's average odds and records only what the league tables and
 // player stats need. Both walk the same graph with the same odds, so they agree by construction.
 import type { Rng } from '../rng';
-import { END, EV, N, QUAL, QUAL_W, SHOTS, START, TUNE, shotEdges, type Duel, type Edge, type Model } from './model';
+import { END, EV, F_GK, N, QUAL, QUAL_W, SHOTS, START, TUNE, shotEdges, type Duel, type Edge, type Model } from './model';
 import type { LiveMatch, MatchEvent } from '../match';
+import { chainOf } from './passes';
 
-// The ball's path for the pitch (FULL only; nothing reads it back). k: w won / l lost a duel, f foul, g goal, v save,
-// b block, m miss, ti throw-in, gk goal kick (the side `s` restarts), c a corner to `s`, o `s` caught offside. t: seconds into the minute when it happens;
-// n: the engine node it happened at (model.ts N: the kind of action, e.g. a cross or a through ball).
-export interface Flow { s: 0 | 1; z: number; k: string; p?: string; t?: number; n?: number }
+// The ball's path for the pitch (FULL only; nothing reads it back). k: p a pass (`p` to `q`, `ty` its kind: passes.ts),
+// w a contest won by the attacker `p` against `q`, l lost: the defender `p` (side `s`) takes the ball off `q`, r lost but
+// the ball kept: `p` is forced back by `q` and his side keeps it, f foul, g goal, v save, b block, m miss, ti throw-in,
+// gk goal kick (the side `s` restarts), c a corner to `s`, o `s` caught offside. t: seconds into the minute when it
+// happens; n: the engine node it happened at (model.ts N: the kind of action, e.g. a cross or a through ball).
+export interface Flow { s: 0 | 1; z: number; k: string; p?: string; q?: string; ty?: string; t?: number; n?: number }
 export interface Tally {
   poss: [number, number];   // in-play seconds on the ball
   zone: number[];           // [side*30 + zone]: seconds on the ball per zone (absolute: col from the home goal × 5 + row)
@@ -52,6 +55,9 @@ const rowOf = (x: number) => Math.max(0, Math.min(4, Math.floor(x / 20)));
 const laneRow = (lane: number, x?: number) => (x === undefined ? [1, 2, 3][lane] : lane === 1 ? 2 : rowOf(x));
 export const absZone = (s: 0 | 1, col: number, row: number) => (s === 0 ? col * 5 + row : (5 - col) * 5 + (4 - row));
 
+// How long the ball takes to reach the shooter (s), by kind of pass: he strikes it when it gets to him.
+const FLIGHT: Record<string, number> = { g: 1.4, t: 2, c: 2.2, x: 2.2, l: 2.5 };
+
 // gf-ref: with added time played on top of the 90, each regulation minute carries 55 s of the engine's clock, so a
 // match (about 90 + 9 minutes) still plays the engine's calibrated 5,400 s.
 export const TICK_SECS = 55;
@@ -60,7 +66,8 @@ export const TICK_SECS = 55;
 const clockAt = (secs: number, left: number, t: number) => Math.max(0, Math.min(60, Math.round(secs - left + t)));
 
 // Plays one minute (60 s of the match clock, carrying over what the last action overran).
-export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rules, full: boolean) {
+// `rp`: the passes' own random stream (FULL play; passes.ts), so the result never depends on them.
+export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rules, full: boolean, rp?: Rng) {
   const b = m.ball!;
   const tl = m.tl!;
   let budget = (m.ref ? TICK_SECS : 60) + b.c; // gf-ref: a little less per minute, the added time makes it up
@@ -68,6 +75,17 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
   const flow: Flow[] = [];
   const secs = budget;
   let cornerAfter: Flow | null = null;
+  // Who has the ball (for the passes): the last man the previous minute's path left it with.
+  const last = m.flow?.[m.flow.length - 1];
+  let hold: string | undefined = last && last.s === b.s ? (last.k === 'p' ? last.q : last.k === 'w' || last.k === 'l' || last.k === 'r' ? last.p : undefined) : undefined;
+  const passes = (s: 0 | 1, M: Model, node: number, target: string | undefined, t0: number, t1: number): { t: number; ty: string } | undefined => {
+    if (!full || !rp) return;
+    const t = m.sides[s].tactics;
+    const c = chainOf(rp, M.actors[s], node, hold, target, t0, t1, t.passing ?? 1, t.tempo ?? 1);
+    for (const x of c.passes) flow.push({ s, z: 0, k: 'p', p: x.p, q: x.q, ty: x.ty, t: x.t, n: node });
+    hold = c.holder;
+    return c.passes.length ? c.passes[c.passes.length - 1] : undefined;
+  };
   let guard = 0;
   while (budget > 0 && guard++ < 400) {
     const M = model();
@@ -95,6 +113,10 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       let assist = full ? b.a : undefined;
       if (assist === shooter) assist = undefined;
       const how = SHOTS[i];
+      const passT = passes(s, M, nodeIx, shooter, clockAt(secs, budget, 0), clockAt(secs, budget, 0) + 0.4);
+      hold = undefined;
+      // (the shot is struck once the ball has reached him: its moment on the pitch, not its result)
+      const shotT = Math.min(60, Math.max(clockAt(secs, budget, node.t), passT === undefined ? 0 : passT.t + (FLIGHT[passT.ty] ?? 1.4)));
       if (edge.ev === EV.GOAL) {
         if (!full && i !== 9 && i !== 10 && r() < 0.72) {
           const cr = at.creators, w = cr.w.map((v, j) => (cr.ids[j] === shooter ? 0 : v));
@@ -106,11 +128,12 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       } else if (edge.ev === EV.SAVE) rules.event({ min: m.minute, side: o, kind: 'save', playerId: at.keeper, by: shooter, assistId: assist, how, xg, z });
       else if (edge.ev === EV.BLOCK) rules.event({ min: m.minute, side: s, kind: 'block', playerId: shooter, how, xg, z, vs: full ? b.d : undefined });
       else rules.event({ min: m.minute, side: s, kind: 'miss', playerId: shooter, assistId: assist, how, xg, z });
-      if (full) flow.push({ s, z, k: edge.ev === EV.GOAL ? 'g' : edge.ev === EV.SAVE ? 'v' : edge.ev === EV.BLOCK ? 'b' : 'm', p: shooter, t: clockAt(secs, budget, node.t), n: nodeIx });
+      if (full) flow.push({ s, z, k: edge.ev === EV.GOAL ? 'g' : edge.ev === EV.SAVE ? 'v' : edge.ev === EV.BLOCK ? 'b' : 'm', p: shooter, t: shotT, n: nodeIx });
       if (edge.to === N.CRN) {
         const taker = m.sides[s].pieces.corners;
         rules.event({ min: m.minute, side: s, kind: 'corner', playerId: m.sides[s].onPitch.includes(taker) ? taker : '' });
-        if (full) flow.push({ s, z: absZone(s, 5, z % 5 < 2 ? 0 : 4), k: 'c', p: m.sides[s].onPitch.includes(taker) ? taker : undefined, t: clockAt(secs, budget, node.t), n: nodeIx });
+        if (full) flow.push({ s, z: absZone(s, 5, z % 5 < 2 ? 0 : 4), k: 'c', p: m.sides[s].onPitch.includes(taker) ? taker : undefined, t: shotT, n: nodeIx });
+        hold = m.sides[s].onPitch.includes(taker) ? taker : undefined;
       }
     } else {
       let u = r();
@@ -126,6 +149,8 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         won = r() < p;
         edge = pickEdge(r, won ? node.win! : node.lose!);
       } else if (!edge) edge = node.alt[node.alt.length - 1];
+      // The passes in this action, before what ends it (a contest's own come with it, below).
+      if (full && won === undefined) passes(s, M, nodeIx, undefined, clockAt(secs, budget, 0), clockAt(secs, budget, node.t) - 0.5);
       // Fouls: the defender in the contest (or one of them) brings the attacker down.
       if (edge.ev === EV.FOUL || edge.ev === EV.TFOUL || edge.ev === EV.PENFOUL) {
         // gf-ref: a foul that leads to the free-kick node is placed now: in the box (a penalty) or outside it.
@@ -150,7 +175,7 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         else if (go === 'adv') { to = nodeIx; dt = 0; }
         else if (go === 'on') { to = N.FCH; dt = 0; }
         else { to = END; dt = TUNE.dead.FOUL; }
-        if (full) flow.push({ s, z: fz, k: 'f', p: victim, t: clockAt(secs, budget, node.t), n: nodeIx });
+        if (full) { flow.push({ s, z: fz, k: 'f', p: victim, t: clockAt(secs, budget, node.t), n: nodeIx }); hold = go === 'turn' ? undefined : victim; }
       }
       if (edge.ev === EV.CORNER || (edge.to === N.CRN && edge.ev === undefined)) {
         const taker = m.sides[s].pieces.corners;
@@ -161,10 +186,11 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         const d = node.duel!;
         const who = aId ?? d.a[pickW(r, d.wa)].id;
         rules.event({ min: m.minute, side: s, kind: 'offside', playerId: who });
-        if (full) flow.push({ s, z: absZone(s, COL[nodeIx] ?? 4, 2), k: 'o', p: who, t: clockAt(secs, budget, node.t), n: nodeIx });
+        if (full) { flow.push({ s, z: absZone(s, COL[nodeIx] ?? 4, 2), k: 'o', p: who, t: clockAt(secs, budget, node.t), n: nodeIx }); hold = undefined; }
       }
-      // Recording (FULL): duels that decide the story, zones, the ball's path.
+      // Recording (FULL): the passes into the contest, duels that decide the story, zones, the ball's path.
       if (full && won !== undefined) {
+        passes(s, M, nodeIx, aId, clockAt(secs, budget, 0), clockAt(secs, budget, node.t) - 0.8);
         const lane = nodeIx === N.F0 ? 0 : nodeIx === N.F2 ? 2 : nodeIx >= N.P0 && nodeIx <= N.P2 ? nodeIx - N.P0 : 1;
         const col = COL[nodeIx] ?? 3;
         const z = absZone(s, col, laneRow(lane, ax));
@@ -175,9 +201,14 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
         if (nodeIx === N.B) { tl.bu[s * 2 + 1]++; if (won) tl.bu[s * 2]++; }
         if (nodeIx >= N.P0 && nodeIx <= N.P2) { tl.mid[s * 2 + 1]++; if (won) { tl.mid[s * 2]++; tl.ent[s * 3 + lane]++; threat[s] += 0.03; } }
         if (won) { b.a = aId; b.d = dId; } else b.d = dId;
-        flow.push({ s: won ? s : o, z, k: won ? 'w' : 'l', p: won ? aId : dId, t: clockAt(secs, budget, node.t), n: nodeIx });
+        // Lost, but the ball stays with the attacking side (pressed back, recycled): not a turnover.
+        const kept = !won && (to >= 0 ? to : edge.to) < END;
+        flow.push(won ? { s, z, k: 'w', p: aId, q: dId, t: clockAt(secs, budget, node.t), n: nodeIx }
+          : kept ? { s, z, k: 'r', p: aId, q: dId, t: clockAt(secs, budget, node.t), n: nodeIx }
+          : { s: o, z, k: 'l', p: dId, q: aId, t: clockAt(secs, budget, node.t), n: nodeIx });
+        hold = won || kept ? aId : dId;
       }
-      if (cornerAfter) { flow.push(cornerAfter); cornerAfter = null; }
+      if (cornerAfter) { flow.push(cornerAfter); hold = cornerAfter.p; cornerAfter = null; }
       if (full && edge.to === N.CTR) tl.ctr[s]++;
       if (full) {
         const col = COL[nodeIx] ?? 3;
@@ -195,6 +226,8 @@ export function playMinute(m: LiveMatch, r: Rng, model: () => Model, rules: Rule
       if (full && out) flow.push({ s: o, z: out === 'gk' ? absZone(o, 0, 2) : absZone(s, COL[nodeIx] ?? 3, (flow.length & 1) * 4), k: out, t: clockAt(secs, budget, 0), n: nodeIx });
       if (full && st === 2) { tl.hi[o]++; threat[o] += 0.05; }
       b.s = o; b.n = START[st]; b.a = undefined; b.d = undefined;
+      // A restart or a ball won without a contest: the next chain starts from where play does (a goal kick: the keeper).
+      if (out || won !== false) hold = out === 'gk' ? M.actors[o].find((x) => x.f & F_GK)?.id : undefined;
     } else b.n = to;
   }
   b.c = Math.min(0, budget);

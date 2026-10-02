@@ -57,4 +57,11 @@ export const T = {
   CARRY_SPACE: [4, 10] as [number, number], // the carrier slows inside the first (pressed), drives on beyond the second (space)
   CARRY_BOOST: [0.7, 0.95, 1.3] as [number, number, number], // his pace: pressed, normal, in space
   CARRY_STEP: [2, 6, 12] as [number, number, number],         // how far ahead he aims: pressed, normal, in space (m)
+  // The engine's passes and contests (engine/passes.ts):
+  PASS_LEAD: 2.5,    // a pass is played this far ahead of the receiver on his way (m): he comes onto it
+  DUEL_CARRY: 9,     // won a contest: he carries it on this far past his man (forced back: half that, backwards)
+  DUEL_CLOSE: 1.4,   // the man in the next contest closes the carrier to this distance (m) before it
+  RECV_RUN: 6,       // how fast (m/s of play) a man runs onto a pass: the ball is aimed where he can be when it arrives
+  BALL_HOME: 7,      // a pass bends towards its moving receiver at most this fast (m per second of play)
+  BALL_ROLL: 9,      // a ball not yet at its man's feet rolls on to him at this pace (m per second of play)
 };

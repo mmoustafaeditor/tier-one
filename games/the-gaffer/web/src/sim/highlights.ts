@@ -11,7 +11,7 @@ import { N } from './engine/model';
 export type HlMode = 0 | 1 | 2 | 3 | 4; // commentary only, key, extended, comprehensive, full match
 export interface Highlight { level: 0 | 1 | 2 | 3; from: number; to: number } // seconds into the minute
 const NEED: Record<HlMode, number> = { 0: 9, 1: 3, 2: 2, 3: 1, 4: 0 };
-const LEAD = 14, TAIL = 3; // a passage starts this many seconds before its moment (the build-up) and ends a little after
+const LEAD = 18, TAIL = 3; // a passage starts this many seconds before its moment (the build-up) and ends a little after
 const FINAL = new Set<number>([N.THR, N.CRS, N.CTR]); // a dangerous attack: a ball in behind, a cross, a counter (a duel on the wing alone is not)
 
 const nowOf = (m: LiveMatch) => (e: MatchEvent) => e.min === m.minute && (e.plus ?? 0) === (m.plus ?? 0);
@@ -31,7 +31,7 @@ export function highlightOf(m: LiveMatch): Highlight {
   for (const f of flow) {
     if (f.k === 'g' || f.k === 'v' || f.k === 'm' || f.k === 'b' || f.k === 'c') up(2, f.t);
     else if (f.k === 'f' && depthOfZone(f.s, f.z) >= 4) up(2, f.t);
-    else if ((f.k === 'w' || f.k === 'l') && f.n !== undefined && FINAL.has(f.n)) up(1, f.t);
+    else if ((f.k === 'w' || f.k === 'l' || f.k === 'r') && f.n !== undefined && FINAL.has(f.n)) up(1, f.t);
   }
   if (!level) return { level: 0, from: 0, to: 0 };
   return { level, from: Math.max(0, at - LEAD), to: Math.min(60, at + TAIL) };

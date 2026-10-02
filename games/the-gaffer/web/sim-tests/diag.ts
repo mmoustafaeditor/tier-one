@@ -1,5 +1,5 @@
-// Diagnosis of what a viewer sees in highlights (Extended): per passage, how many touches before the shot, pass lengths,
-// balls that land with nobody there, ball jumps without a pass, possession changing hands without a contest.
+// Diagnosis of what a viewer sees in highlights (Extended): per passage, how many touches before the shot, pass lengths
+// by kind, passes that land away from their man, ball jumps without a pass. Fails if a viewer would see either.
 import { generateWorld, playerOf } from '../src/sim/world';
 import { startMatch, stepMinute } from '../src/sim/match';
 import { playOver } from '../src/sim/engine/clock';
@@ -25,10 +25,14 @@ for (let i = 0; i < N; i++) {
       tick(a, m, w, FRAME, ms, true, 2, 2400);
       if (!sh) { prevBall = { ...a.ball }; prevCarrier = a.carrier; prevPoss = a.poss; continue; }
       if (a.beat !== beat0) for (let b = beat0; b < a.beat; b++) { const B = a.beats[b]; log.push(`${(t / 1000).toFixed(1)}s ${B.kind}${B.type ? '/' + B.type : ''}${B.how ? '/' + B.how : ''} s${B.side}`); if (B.kind === 'pass') passes++; if (B.kind === 'turnover') passes = 0; if (B.kind === 'shot') { agg.shots++; agg.passesBeforeShot.push(passes); if (passes <= 1) agg.shotsFromNowhere++; passes = 0; } }
-      if (a.flight && a.flight !== lastFlight) { lastFlight = a.flight; agg.flights++; const d = Math.hypot(a.flight.to.x - a.flight.from.x, a.flight.to.y - a.flight.from.y); agg.len.push(d); log.push(`      ball ${d.toFixed(0)} m`); }
-      if (!a.flight && lastFlight && a.carrier >= 0 && a.pos[a.poss][a.carrier]) { const q = a.pos[a.poss][a.carrier]; const dd = Math.hypot(q.x - lastFlight.to.x, q.y - lastFlight.to.y); if (dd > 4) { agg.landNoOne++; log.push(`      landed ${dd.toFixed(0)} m from the man who gets it`); } lastFlight = null; }
+      // Only passes count (a shot, a parry, a corner kicked to the flag or a goal kick are not a pass to a man), and
+      // a picture cut (the first beat of a highlight, a restart staged) is not a jump.
+      const startedNow = a.beat !== beat0 ? a.beats[a.beat - 1] : null;
+      const cut = startedNow && (a.beat - 1 === 0 || ['kickoff', 'corner', 'out', 'foul', 'pen', 'offside'].includes(startedNow.kind));
+      if (a.flight && a.flight !== lastFlight && a.lastPass?.at === a.time) { lastFlight = a.flight; agg.flights++; const d = Math.hypot(a.flight.to.x - a.flight.from.x, a.flight.to.y - a.flight.from.y); agg.len.push(d); const ty = `${a.lastPass?.type}${a.lastPass?.eng ? '' : '(pitch)'}`; (agg as any).ty = (agg as any).ty ?? {}; ((agg as any).ty[ty] ??= []).push(d); (agg as any).cur = ty; log.push(`      ball ${d.toFixed(0)} m`); }
+      if (!a.flight && lastFlight && a.carrier >= 0 && a.pos[a.poss][a.carrier]) { const q = a.pos[a.poss][a.carrier]; const dd = Math.hypot(q.x - lastFlight.to.x, q.y - lastFlight.to.y); if (dd > 4) { agg.landNoOne++; (agg as any).miss = (agg as any).miss ?? {}; (agg as any).miss[(agg as any).cur] = ((agg as any).miss[(agg as any).cur] ?? 0) + 1; log.push(`      landed ${dd.toFixed(0)} m from the man who gets it`); } lastFlight = null; }
       const jump = Math.hypot(a.ball.x - prevBall.x, a.ball.y - prevBall.y);
-      if (!a.flight && jump > 3 && t > 0) { agg.jumps++; log.push(`      ball jumped ${jump.toFixed(0)} m (no pass)`); }
+      if (!a.flight && jump > 3 && t > 0 && !cut) { agg.jumps++; const why = `${a.beats[a.beat - 1]?.kind}:${prevCarrier === a.carrier && prevPoss === a.poss ? 'same' : 'swap'}:${a.beat}/${a.beats.length}:${t < 100 ? 'start' : 'mid'}`; (agg as any).why = (agg as any).why ?? {}; (agg as any).why[why] = ((agg as any).why[why] ?? 0) + 1; log.push(`      ball jumped ${jump.toFixed(0)} m (no pass) carrier ${prevPoss}:${prevCarrier} -> ${a.poss}:${a.carrier} beat ${a.beats[a.beat - 1]?.kind} flightWas ${!!lastFlight}`); }
       if (a.poss !== prevPoss && !a.flight && !lastFlight) { agg.swapNoFlight++; }
       prevBall = { ...a.ball }; prevCarrier = a.carrier; prevPoss = a.poss;
     }
@@ -38,6 +42,8 @@ for (let i = 0; i < N; i++) {
     }
   }
 }
+console.log('jumps by beat:', JSON.stringify((agg as any).why));
+for (const [k, v] of Object.entries((agg as any).ty ?? {}) as [string, number[]][]) { const sv = [...v].sort((p, q) => p - q); console.log(`  ${k}: ${v.length}, median ${sv[Math.floor(sv.length / 2)].toFixed(0)} m, landed off ${(agg as any).miss?.[k] ?? 0}`); }
 const med = (xs: number[]) => { const s = [...xs].sort((p, q) => p - q); return s[Math.floor(s.length / 2)] ?? 0; };
 const pct = (x: number, y: number) => Math.round((100 * x) / Math.max(1, y));
 console.log(`\n${agg.passages} passages; median ${med(agg.beatsPer)} beats in ${med(agg.secs).toFixed(1)} s on screen`);
@@ -45,3 +51,8 @@ console.log(`ball moves: ${agg.flights}; median length ${med(agg.len).toFixed(0)
 console.log(`ball landed 4+ m from the man who then has it: ${pct(agg.landNoOne, agg.flights)}% of moves`);
 console.log(`ball jumped 3+ m in a frame without a pass: ${agg.jumps} times`);
 console.log(`shots: ${agg.shots}; passes in the move before a shot: median ${med(agg.passesBeforeShot)}; 0-1 passes: ${pct(agg.shotsFromNowhere, agg.shots)}%`);
+// What a viewer must never see (engine passes since 2026-10-02): a pass landing away from its man, a ball jumping.
+const offPct = pct(agg.landNoOne, agg.flights);
+console.log(`${offPct <= 5 ? 'ok  ' : 'FAIL'} passes reach their man: ${100 - offPct}% (≥ 95%)`);
+console.log(`${agg.jumps === 0 ? 'ok  ' : 'FAIL'} the ball never jumps without a pass (${agg.jumps})`);
+process.exit(offPct <= 5 && agg.jumps === 0 ? 0 : 1);
