@@ -171,6 +171,18 @@ export function aiRead(m: LiveMatch, side: 0 | 1, get: Lookup) {
   const tip = suggest(m, side, get, 1, 0.04, (p) => !p.formation && p.routine === undefined)[0];
   if (tip) setTactics(m, side, tip.patch, `read:${tip.theme}:${tip.ours ? 1 : 0}`);
 }
+// Kick-off against a human: the AI manager sets up for this opponent the way the engine rates best, one instruction
+// change (worth at least AI_PREP_MIN expected points; no new shape or roles) on top of its style. One, not two: two
+// gave the same points and more open games (sim-tests/aiprep.ts: +7% goals against +4%).
+export const AI_PREP_MIN = 0.03, AI_PREP_N = 1;
+export function aiPrep(m: LiveMatch, side: 0 | 1, get: Lookup) {
+  const ok = (p: Partial<Tactics>) => !p.formation && !p.oop && !p.roles && !p.oopRoles && p.waste === undefined;
+  for (let i = 0; i < AI_PREP_N; i++) {
+    const tip = suggest(m, side, get, 1, AI_PREP_MIN, ok)[0];
+    if (!tip) break;
+    setTactics(m, side, tip.patch, `prep:${tip.theme}:${tip.ours ? 1 : 0}`);
+  }
+}
 export function applyTip(m: LiveMatch, side: 0 | 1, tip: Tip, get: Lookup) {
   if (tip.patch.formation) reshape(m, side, tip.patch.formation, get, 'tip');
   else setTactics(m, side, tip.patch, 'tip');

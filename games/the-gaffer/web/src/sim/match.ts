@@ -21,7 +21,7 @@ import {
 } from './tactics';
 import { TUNE, buildModel, patchSub, rates as modelRates, type Model, type Rates, type SideInput } from './engine/model';
 import { newTally, playMinute, type Ball, type Flow, type PassTally, type Rules, type Tally } from './engine/play';
-import { aiRead, reslot } from './engine/story';
+import { aiPrep, aiRead, reslot } from './engine/story';
 import { autoRoles, carryRoles, planFor, planOf, slotLoad } from './engine/phases';
 import { EV } from './engine/model';
 import { RS, RSN, TUNE_REF, callFoul, callGoal, callOffside, ensureRef, foulFactor, initRef, misconduct, refereeFor, restartOnTurnover, settle, wasteBooking, type Acts, type RefState } from './engine/referee';
@@ -468,6 +468,8 @@ function aiDecisions(m: LiveMatch, i: 0 | 1, get: Lookup) {
       setTactics(m, i, { mentality: Math.max(diff === 1 ? -2 : -1, Math.min(t.mentality, 0) - 1), waste: true }, 'protect');
     }
   }
+  // Facing a human, the AI sets up for this opponent at kick-off (engine/story.ts aiPrep), after the weather.
+  if (s.ai && m.minute === 1 && !m.plus && !m.sides[o].ai && m.full) aiPrep(m, i, get);
   // Facing a human at half-time, the AI reads the first half and makes the one change that helps it most.
   if (s.ai && m.minute === 46 && !m.sides[o].ai && m.full) aiRead(m, i, get);
   // Fresh legs around the hour: swap the most tired outfield players when the bench has someone nearly as good.
