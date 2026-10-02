@@ -1,7 +1,7 @@
 {
   "name": "Tier One",
   "short_name": "Tier One",
-  "description": "The transfer-journalist game. Five sagas, seven days, one window.",
+  "description": "The transfer-journalist game. Hear something, investigate it, decide, risk your reputation, publish.",
   "id": "/tier-one/",
   "start_url": "./?source=pwa",
   "scope": "./",
@@ -19,8 +19,9 @@
     { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
   ],
   "shortcuts": [
-    { "name": "Today's Daily", "url": "./?tab=daily&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "The Wire", "url": "./?tab=wire&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Story", "url": "./?tab=story&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Daily Challenge", "url": "./?tab=today&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Career Mode", "url": "./?tab=story&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Multiplayer", "url": "./?tab=rooms&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Transfer Market", "url": "./?tab=wire&source=pwa", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }
