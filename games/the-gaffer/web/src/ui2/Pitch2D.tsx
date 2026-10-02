@@ -12,6 +12,8 @@ import { MONITOR, refKit } from './pitch/officials';
 import type { HlMode } from '../sim/highlights';
 
 const PITCH_DEBUG = typeof location !== 'undefined' && /[?&]pitchdebug\b/.test(location.search);
+// Tests only (with ?pitchdebug): show the pitch in this weather (&wx=0-5), whatever the match's is.
+const PITCH_WX = PITCH_DEBUG ? Number(new URLSearchParams(location.search).get('wx') ?? NaN) : NaN;
 setPitchDebug(PITCH_DEBUG);
 
 const rgb = (hex: string) => { const n = parseInt(hex.replace('#', '').slice(0, 6), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
@@ -25,10 +27,10 @@ export function awayKit(home: string, a: [string, string]): string {
 }
 // Rain or snow falling over the pitch (the match's weather, engine/weather.ts). Fixed drops, moved by CSS.
 const DROPS = Array.from({ length: 46 }, (_, i) => ({ x: ((i * 37) % 109) - 2, y: (i * 53) % 70, d: (i * 7) % 10 }));
-function Weather({ kind, h }: { kind: number; h: number }) {
-  // Heat: a faint warm haze over the pitch. Wind: long thin gusts drifting across it.
+function Weather({ kind, h, wind }: { kind: number; h: number; wind: number }) {
+  // Heat: a faint warm haze over the pitch. Wind: long thin gusts drifting along it, the way it blows this match.
   if (kind === 4) return <rect className="g-wx heat" x="-2" y="0" width={L + 4} height={h} aria-hidden="true" />;
-  if (kind === 3) return <g className="g-wx wind" aria-hidden="true">{DROPS.slice(0, 12).map((p, i) => <path key={i} d={`M${p.x} ${(p.y * h) / 70}h7`} style={{ animationDelay: `${-p.d * 0.35}s` }} />)}</g>;
+  if (kind === 3) return <g className="g-wx wind" aria-hidden="true" transform={wind < 0 ? `translate(${L} 0) scale(-1 1)` : undefined}>{DROPS.slice(0, 12).map((p, i) => <path key={i} d={`M${p.x} ${(p.y * h) / 70}h7`} style={{ animationDelay: `${-p.d * 0.35}s` }} />)}</g>;
   const snow = kind === 5, n = kind === 2 ? 46 : snow ? 30 : 26;
   return (
     <g className={`g-wx ${snow ? 'snow' : 'rain'}`} aria-hidden="true">
@@ -114,7 +116,8 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   kitRef.current = kit;
   const numbers = m.sides.map((s) => s.onPitch.map((id) => (id ? world.players.find((p) => p.id === id)?.shirtNumber ?? '' : '')));
 
-  if (!anim.current) anim.current = newAnim(m, world);
+  if (!anim.current) { anim.current = newAnim(m, world); if (PITCH_WX >= 0 && PITCH_WX <= 5) anim.current.wx = PITCH_WX; }
+  const wx = anim.current.wx;
 
   useEffect(() => {
     let raf = 0;
@@ -225,6 +228,8 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       <path ref={gridRef} fill="none" style={{ stroke: 'var(--pitch-line)' }} strokeOpacity=".45" strokeWidth=".3" strokeDasharray="1 1.4" />
       <path ref={zoneRef} className="g-zone" opacity=".2" />
       <path ref={lineRef} fill="none" style={{ stroke: 'var(--pitch-line)' }} strokeWidth=".4" strokeLinejoin="round" />
+      {/* The ground in this weather: wet and dark in rain, a white cover of snow, dry and yellowing in the heat. */}
+      {[1, 2, 4, 5].includes(wx) && <rect className={`g-ground wx${wx}`} x="-2" y={y0} width={L + 4} height={vh2} aria-hidden="true" />}
       <g ref={layer}>
         {([0, 1] as const).map((side) => m.sides[side].onPitch.map((_, k) => (
           <g key={`${side}-${k}`} ref={(el) => { dots.current[side][k] = el; }} className="g-dot2">
@@ -237,7 +242,7 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
         <ellipse ref={shadowRef} rx="1.1" ry=".6" fill="#000" opacity="0" />
         <g ref={ballRef}><circle r="1.05" fill="#fff" stroke="#111" strokeWidth=".3" /></g>
       </g>
-      {!!m.wx && <Weather kind={m.wx} h={vh} />}
+      {!!wx && <Weather kind={wx} h={vh} wind={anim.current.wind} />}
       <g ref={hurtRef} className="g-hurt" opacity="0"><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx=".5" fill="#fff" stroke="#c62828" strokeWidth=".25" /><path d="M-.35 -.95h.7v.6h.6v.7h-.6v.6h-.7v-.6h-.6v-.7h.6z" fill="#d32f2f" /></g>
       <g ref={cardRef} className="g-card" opacity="0"><rect x=".9" y="-5.4" width="2" height="2.8" rx=".25" fill="#ffd400" stroke="#111" strokeWidth=".15" /><path d="M.6 -1.2 L1.6 -2.8" stroke="#fff" strokeWidth=".35" /></g>
       <g ref={monRef} className="g-var" opacity="0"><rect x="-2.6" y="-1.6" width="5.2" height="3.2" rx=".4" fill="#0b1220" stroke="#9fb3c8" strokeWidth=".25" /><text y=".7" textAnchor="middle" fontSize="1.9" fontWeight="800" fill="#fff">VAR</text></g>

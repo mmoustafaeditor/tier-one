@@ -15,7 +15,7 @@ import { bodiesOf, decideMs, move, reactMs, type Body } from './body';
 import { assignMarks, blockSpot, inBox, keeperSpot, markSpot, slideY, wideInThird } from './defend';
 import { attackSpots, defendSpots, rushFor, wallSize, wallSpots, type SetPiece } from './setpieces';
 import { moveOfficials, newOfficials, officialTargets, type Officials } from './officials';
-import { ARC, L, THROUGH_LEAD, TRANSITION_MS, W, bendAt, buildUp, heightAt, travelShare, deliveryOf, lineDepth, passKind, pressShape, pressSpot, runFor, shooterSpot, shotTarget, speedsOf, wideOf, type LineState, type PassKind, type PressPlan, type Pt, type Transition } from './move';
+import { ARC, L, THROUGH_LEAD, TRANSITION_MS, W, bendAt, windOf, windOn, buildUp, heightAt, travelShare, deliveryOf, lineDepth, passKind, pressShape, pressSpot, runFor, shooterSpot, shotTarget, speedsOf, wideOf, type LineState, type PassKind, type PressPlan, type Pt, type Transition } from './move';
 
 // Measurement hook (ui-tests): set by the page with ?pitchdebug, or by a Node test.
 let PITCH_DEBUG = false;
@@ -40,6 +40,7 @@ export interface Anim {
   poss: 0 | 1;
   carrier: number;        // slot of the ball carrier in the possessing side (-1 = loose)
   flight: { from: Pt; to: Pt; t: number; dur: number; then: () => void; h: number; end: number; bounce?: boolean; bend?: number; recv?: [0 | 1, number] } | null; // recv: aimed at this man (it bends to meet him)
+  wx: number; wind: number; // the match's weather (engine/weather.ts) and which way the wind blows (+x 1, -x -1)
   bh: number;             // the ball's height in metres (lofted passes, crosses, shots over the bar)
   beats: Beat[];
   beat: number;
@@ -343,6 +344,13 @@ const SHOT_EV = new Set(['goal', 'nogoal', 'save', 'block', 'miss']);
 const minuteKey = (m: LiveMatch) => `${m.minute}+${m.plus ?? 0}`;
 
 function fly(a: Anim, to: Pt, dur: number, then: () => void, h = 0, end = 0, path: { bounce?: boolean; bend?: number } = {}) {
+  // In the wind a ball in the air drifts across (and back onto its end point) and hangs up when hit into it.
+  if (a.wx === 3 && h > 0) {
+    const [drift, lift] = windOn(a.ball, to, h, a.wind);
+    if (Math.abs(drift) > 0.3 || lift > 0.3) { path = { ...path, bend: (path.bend ?? 0) + drift }; h += lift; a.kinds.wind = (a.kinds.wind ?? 0) + 1; }
+  }
+  // Never faster than a ball can be hit (a beat squeezed by the director must not send it across the pitch in a blink).
+  if (a.secMs) dur = Math.max(dur, (dist(a.ball, to) / T.BALL_VMAX) * a.secMs);
   a.flight = { from: { ...a.ball }, to, t: 0, dur: Math.max(60, dur), then, h, end, ...path };
   if (path.bounce) a.kinds.bounce = (a.kinds.bounce ?? 0) + 1;
   if (path.bend) a.kinds.bend = (a.kinds.bend ?? 0) + 1;
@@ -485,6 +493,9 @@ function runBeat(a: Anim, m: LiveMatch, b: Beat) {
     if (b.pt) a.run = { side: b.side, slot: k, pt: b.pt };
     else if (a.run && a.run.side !== b.side) a.run = null;
     if (b.vs !== undefined) a.kinds.tackle = (a.kinds.tackle ?? 0) + 1;
+    // At the start of a highlight the picture cuts to the man who won it (as for a duel), rather than the ball crossing
+    // the pitch to him in a blink.
+    if (a.beat - 1 === 0) { a.flight = null; a.poss = b.side; a.carrier = k; a.ball = { ...a.pos[b.side][k] }; return; }
     fly(a, a.pos[b.side][k], travel * (b.vs !== undefined ? 0.25 : 0.6), () => { a.poss = b.side; a.carrier = k; });
     return;
   }
@@ -644,7 +655,7 @@ export function newAnim(m: LiveMatch, world: World): Anim {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], starts: [], msPM: 1000, beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
       spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null, hurt: null, hurtAt: [], ids: [[...m.sides[0].onPitch], [...m.sides[1].onPitch]], seen: [[], []],
-      off: newOfficials(), downs: [],
+      off: newOfficials(), downs: [], wx: m.wx ?? 0, wind: windOf(m.key),
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -696,7 +707,7 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           if (g > 0.2) f.to = g <= st ? want : { x: f.to.x + ((want.x - f.to.x) / g) * st, y: f.to.y + ((want.y - f.to.y) / g) * st };
         }
         // Fast off the foot and slowing (more on the ground than in the air); a curl bends it off the line and back.
-        const e = travelShare(f.t, f.h > 0 || !!f.end);
+        const e = travelShare(f.t, f.h > 0 || !!f.end, a.wx);
         a.ball = { x: f.from.x + (f.to.x - f.from.x) * e, y: f.from.y + (f.to.y - f.from.y) * e };
         if (f.bend) {
           const dx = f.to.x - f.from.x, dy = f.to.y - f.from.y, d = Math.hypot(dx, dy), o = bendAt(f.bend, e);

@@ -16,6 +16,7 @@ let shown = 0;
 for (let i = 0; i < N; i++) {
   let m = startMatch(w, null, top[(i * 7) % top.length].id, top[(i * 13 + 5) % top.length].id, `diag-${i}`, 1, true);
   const a: any = newAnim(m, w);
+  if (process.env.WX) a.wx = +process.env.WX; // the pitch in this weather (A2), whatever the match's is
   let prevTo = -1;
   while (!playOver(m)) {
     const n = JSON.parse(JSON.stringify(m)); stepMinute(n, get); m = n;
@@ -58,6 +59,7 @@ console.log(`shots: ${agg.shots}; passes in the move before a shot: median ${med
 const offPct = pct(agg.landNoOne, agg.flights);
 // The ball's flight (A1): every long ball bounces once before its man takes it; crosses and shots curl.
 const bounced = pct(kinds.bounce ?? 0, kinds.long ?? 0);
+if (process.env.WX === '3') console.log(`${(kinds.wind ?? 0) > 0 ? 'ok  ' : 'FAIL'} balls in the air the wind moves: ${kinds.wind ?? 0}`);
 console.log(`${bounced >= 90 ? 'ok  ' : 'FAIL'} long balls that bounce: ${bounced}% of ${kinds.long ?? 0} (≥ 90%); curled crosses and shots: ${kinds.bend ?? 0}`);
 console.log(`${offPct <= 5 ? 'ok  ' : 'FAIL'} passes reach their man: ${100 - offPct}% (≥ 95%)`);
 console.log(`${agg.jumps === 0 ? 'ok  ' : 'FAIL'} the ball never jumps without a pass (${agg.jumps})`);
