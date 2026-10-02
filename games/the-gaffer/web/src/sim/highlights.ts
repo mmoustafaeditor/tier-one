@@ -9,7 +9,8 @@ import type { LiveMatch, MatchEvent } from './match';
 import { N } from './engine/model';
 
 export type HlMode = 0 | 1 | 2 | 3 | 4; // commentary only, key, extended, comprehensive, full match
-export interface Highlight { level: 0 | 1 | 2 | 3; from: number; to: number } // seconds into the minute
+// from/to: seconds into the minute; `from` below 0 = the move began in the minute before (that many seconds before its end)
+export interface Highlight { level: 0 | 1 | 2 | 3; from: number; to: number }
 const NEED: Record<HlMode, number> = { 0: 9, 1: 3, 2: 2, 3: 1, 4: 0 };
 const LEAD = 18, TAIL = 3; // a passage starts this many seconds before its moment (the build-up) and ends a little after
 const FINAL = new Set<number>([N.THR, N.CRS, N.CTR]); // a dangerous attack: a ball in behind, a cross, a counter (a duel on the wing alone is not)
@@ -34,16 +35,18 @@ export function highlightOf(m: LiveMatch): Highlight {
     else if ((f.k === 'w' || f.k === 'l' || f.k === 'r') && f.n !== undefined && FINAL.has(f.n)) up(1, f.t);
   }
   if (!level) return { level: 0, from: 0, to: 0 };
-  return { level, from: Math.max(0, at - LEAD), to: Math.min(60, at + TAIL) };
+  return { level, from: at - LEAD, to: Math.min(60, at + TAIL) };
 }
 // The zone's column counted from the attacking side's own goal (0-5): 4 and 5 are the last third.
 const depthOfZone = (s: 0 | 1, z: number) => (s === 0 ? Math.floor(z / 5) : 5 - Math.floor(z / 5));
 
-// Is this minute shown on the pitch in this mode, and which seconds of it? Full match shows the whole minute.
-export function shownOf(m: LiveMatch, mode: HlMode): { from: number; to: number } | null {
+// Is this minute shown on the pitch in this mode, and which seconds of it? Full match shows the whole minute. A move
+// that began in the minute before is shown from its start (`from` < 0), but never again what was already shown:
+// `prevTo` = where the previous minute's highlight ended (-1 when it had none).
+export function shownOf(m: LiveMatch, mode: HlMode, prevTo = -1): { from: number; to: number } | null {
   if (mode === 4) return { from: 0, to: 60 };
   const h = highlightOf(m);
-  return h.level >= NEED[mode] ? { from: h.from, to: h.to } : null;
+  return h.level >= NEED[mode] ? { from: Math.max(h.from, prevTo >= 0 ? Math.min(0, prevTo - 60) : -LEAD), to: h.to } : null;
 }
 
 // Full match, like FM: live play runs at the chosen speed; dead time (a corner or a free kick being set up, the ball
@@ -69,9 +72,9 @@ export function squeeze(m: LiveMatch): { at: (t: number) => number; len: number 
 // How long the minute takes on screen (ms): a highlight plays at `rate` × real time (FM's "match speed during
 // highlights"); between highlights the clock runs on quickly; a full match squeezes its dead time (squeeze above).
 export const BETWEEN_MS = 260;
-export function minuteMs(m: LiveMatch, mode: HlMode, rate: number): number {
+export function minuteMs(m: LiveMatch, mode: HlMode, rate: number, prevTo = -1): number {
   if (mode === 4) return Math.round((squeeze(m).len * 1000) / rate);
-  const s = shownOf(m, mode);
+  const s = shownOf(m, mode, prevTo);
   return s ? Math.round(((s.to - s.from) * 1000) / rate) : BETWEEN_MS;
 }
 // The highlight speed for each pace setting (× real time): slow, normal, fast.

@@ -404,7 +404,7 @@ export const NEW_AR: NewStrings = {
     applied: 'اتغيّر',
     noTips: 'أنا مكنتش هغيّر حاجة.',
     shape: (f: string) => `الشكل ${f}`,
-    reason: { chase: 'بيطاردوا النتيجة', protect: 'بيحافظوا على التقدم', red: 'بعد الكارت الأحمر', tenmen: 'قصاد عشرة', tip: '', read: 'قريوا الشوط الأول', wx3: 'عشان الهوا', wx4: 'عشان الحر' },
+    reason: { chase: 'بيطاردوا النتيجة', protect: 'بيحافظوا على التقدم', red: 'بعد الكارت الأحمر', tenmen: 'قصاد عشرة', tip: '', read: 'قريوا الشوط الأول', prep: 'قاريين الخصم', wx3: 'عشان الهوا', wx4: 'عشان الحر' },
     changeLine: '{c}: {what}{why}.',
     talkLine: '{c} في كلام بين الشوطين: «{what}».',
     c: {

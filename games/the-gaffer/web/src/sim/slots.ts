@@ -65,7 +65,20 @@ export async function writeSlot(slot: number, text: string, meta: SaveMeta | nul
   return ok;
 }
 
+// The match being watched, saved on its own between the career's full saves (kick-off and the final whistle): a
+// small record written in a few milliseconds, so saving during play never stalls the pitch. On load it replaces the
+// career's copy of the same match when it is further on. `gaffer.live.<slot>`, localStorage (backed up by the shell).
+export interface LiveRecord<M> { key: string; minute: number; savedAt: string; live: M }
+export function writeLive<M extends { key: string; minute: number }>(slot: number, live: M): boolean {
+  return ls.set(`gaffer.live.${slot}`, JSON.stringify({ key: live.key, minute: live.minute, savedAt: new Date().toISOString(), live }));
+}
+export function readLive<M>(slot: number): LiveRecord<M> | null {
+  try { const r = JSON.parse(ls.get(`gaffer.live.${slot}`) ?? 'null') as LiveRecord<M> | null; return r && typeof r.key === 'string' && r.live ? r : null; } catch { return null; }
+}
+export const clearLive = (slot: number) => ls.del(`gaffer.live.${slot}`);
+
 export async function clearSlot(slot: number): Promise<void> {
+  clearLive(slot);
   const d = await db();
   if (!d) ls.del(`gaffer.slot.${slot}`);
   else await tx('readwrite', (s) => s.delete(slot));
