@@ -40,7 +40,6 @@ const RivalsScreen = lazy(() => import('./screens/Connect').then((m) => ({ defau
 const ContactsScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.ContactsScreen })));
 const CustomizeScreen = lazy(() => import('./screens/Customize').then((m) => ({ default: m.CustomizeScreen })));
 const DDLiveScreen = lazy(() => import('./screens/DDLive').then((m) => ({ default: m.DDLiveScreen })));
-const EditorDeskScreen = lazy(() => import('./screens/Editor').then((m) => ({ default: m.EditorDeskScreen })));
 const BoardsScreen = lazy(() => import('./screens/Boards').then((m) => ({ default: m.BoardsScreen })));
 const DailyHubScreen = lazy(() => import('./screens/DailyHub').then((m) => ({ default: m.DailyHubScreen })));
 const MissionsScreen = lazy(() => import('./screens/Missions').then((m) => ({ default: m.MissionsScreen })));
@@ -57,7 +56,7 @@ import './styles/fit.css'; // one-screen pages (no page scroll), pagers and tips
 
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
-  | { n: 'rooms'; code?: string; challenge?: string; expired?: boolean } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize'; sec?: 'featured' | 'cosmetics' | 'season' | 'owned'; cur?: 'coins' | 'credits' } | { n: 'ddlive' } | { n: 'editor' }
+  | { n: 'rooms'; code?: string; challenge?: string; expired?: boolean } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize'; sec?: 'featured' | 'cosmetics' | 'season' | 'owned'; cur?: 'coins' | 'credits' } | { n: 'ddlive' }
   | { n: 'boards'; period?: 'daily' | 'weekly' | 'rooms' | 'wire'; from?: Route } | { n: 'today' } | { n: 'missions' }
   | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
@@ -69,7 +68,7 @@ function initialRoute(): Route {
   if (q.get('challenge') || q.get('newsroom')) return { n: 'rooms', expired: true };
   const tab = q.get('tab');
   if (tab === 'desk') return { n: 'story' };
-  if (tab === 'daily' || tab === 'wire' || tab === 'story' || tab === 'me' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms' || tab === 'feed' || tab === 'rivals' || tab === 'contacts' || tab === 'customize' || tab === 'ddlive' || tab === 'editor' || tab === 'boards' || tab === 'today' || tab === 'missions') return { n: tab } as Route;
+  if (tab === 'daily' || tab === 'wire' || tab === 'story' || tab === 'me' || tab === 'pass' || tab === 'practice' || tab === 'howto' || tab === 'rooms' || tab === 'feed' || tab === 'rivals' || tab === 'contacts' || tab === 'customize' || tab === 'ddlive' || tab === 'boards' || tab === 'today' || tab === 'missions') return { n: tab } as Route;
   if (tab === 'shop') return { n: 'customize' };
   if (tab === 'newsroom') return { n: 'rooms', expired: true };
   return { n: 'front' };
@@ -211,7 +210,6 @@ export function App() {
     case 'contacts': screen = <ContactsScreen {...chrome} />; break;
     case 'customize': screen = <CustomizeScreen key={(route.sec || '') + (route.cur || '')} {...chrome} sec={route.sec} cur={route.cur} />; break;
     case 'ddlive': screen = <DDLiveScreen {...chrome} />; break;
-    case 'editor': screen = <EditorDeskScreen {...chrome} />; break;
     case 'boards': screen = <BoardsScreen {...chrome} period={route.period} from={route.from} />; break;
     case 'today': screen = <DailyHubScreen {...chrome} />; break;
     case 'missions': screen = <MissionsScreen {...chrome} />; break;

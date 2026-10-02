@@ -1,5 +1,9 @@
 {
   "v": 1,
-  "_about": "Character art slots (ui/portrait.tsx, brief Addendum A). Add an entry per id to replace the drawn placeholder: { \"src\": \"art/<file>.png\", \"alt\": \"...\", \"moods\": { \"hesitant\": \"...\", \"confident\": \"...\", \"mischief\": \"...\" } }. Ids: src:kitman src:barber src:agent src:spotter src:physio src:leak · rival:tabloid rival:itk rival:insider · editor:mags editor:hana editor:desk · me · player:<playerId>. Never bake a name, club, badge, sponsor or status into the image: those are live text beside the slot.",
-  "art": {}
+  "_readme": "Tier One character art (LAUNCH_BRIEF Addendum A). Drop approved anime portraits here and map them by id; ui/portrait.tsx picks them up at runtime, no code change. Keys are '<id>' or '<id>@<mood>' (moods: neutral confident hesitant mischief stern shock joy). Values are paths relative to this folder (or absolute URLs). Square images, 512x512 PNG/WebP, transparent or paper background. Never bake a name, club crest, shirt sponsor or status into the art: those are live text beside it.",
+  "base": "art/",
+  "player": {},
+  "source": {},
+  "rival": {},
+  "staff": {}
 }

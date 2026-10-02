@@ -1,85 +1,106 @@
-// Character art slots (brief Addendum A). No image generation here: every face is a slot keyed by a stable id, drawn
-// as a consistent illustrated placeholder until the owner's approved anime art lands in public/art/manifest.json.
+// Character art slots (LAUNCH_BRIEF Addendum A). One <Portrait> for every face in the game: real players (by player
+// id), the fictional sources (kitman · barber · agent · spotter · physio · leak), the rivals (tabloid · itk · insider)
+// and the newsroom staff (editor · you). The owner's approved anime art drops in by id through public/art/manifest.json
+// (no code change: the manifest maps "<kind>/<id>" to an image under public/art/). Until a file lands, a consistent
+// illustrated SVG placeholder stands in: the same id always draws the same face (build, hair, skin, expression), tinted
+// with the club or source colour. Names, clubs and statuses are never baked into the art: they are live text beside it.
 //
-//   <Portrait id="src:kitman" size={48} />            a source (kitman · barber · agent · spotter · physio · leak)
-//   <Portrait id="rival:itk" size={40} shape="round" />  a rival account (tabloid · itk · insider)
-//   <Portrait id="editor:mags" />                      an editor (mags · hana · desk)
-//   <Portrait id="me" name={nick} />                   the player (initials; never a face until they pick one)
-//   <Portrait id={'player:' + playerId} name={p.n} club={club} />   a real player: the art is separate from the live
-//                                                      club/status text, which the caller renders beside it
-//   <Portrait id=… mood="hesitant|confident|mischief|plain" />  a hint only; never carries a rule
+//   <Portrait kind="player" id={p.id} club={c.to} size={72} />
+//   <Portrait kind="source" id="kitman" size={44} mood="confident" />
+//   <Portrait kind="rival"  id="itk" size={34} />
+//   <Portrait kind="staff"  id="editor" size={96} mood="stern" />
 //
-// manifest.json: { "v": 1, "art": { "<id>": { "src": "art/kitman.png", "alt": "…", "moods": { "confident": "art/kitman-c.png" } } } }
-// Names, clubs and statuses are always live text next to the slot, never inside the image (Addendum A, B).
+// Moods are short and optional (a glance, a frown): they change the placeholder's mouth/brows only and pick the
+// manifest variant "<id>@<mood>" when the owner supplied one. Reduced motion: no animation here at all.
 import { useEffect, useState, type CSSProperties } from 'react';
+import { hash } from '../lib/kit';
 import type { WClub } from '../lib/engine';
-import { initialsOf } from './screenbits';
 
-export type Mood = 'plain' | 'hesitant' | 'confident' | 'mischief';
-interface Art { src: string; alt?: string; moods?: Partial<Record<Mood, string>> }
-interface Manifest { v: number; art: Record<string, Art> }
+export type PortraitKind = 'player' | 'source' | 'rival' | 'staff';
+export type Mood = 'neutral' | 'confident' | 'hesitant' | 'mischief' | 'stern' | 'shock' | 'joy';
+export interface ArtManifest { v: number; base?: string; player?: Record<string, string>; source?: Record<string, string>; rival?: Record<string, string>; staff?: Record<string, string> }
 
-let manifest: Manifest | null = null, loading: Promise<void> | null = null;
+// ---------- the manifest (fetched once; empty until it loads or when it is missing)
+let manifest: ArtManifest | null = null;
+let loading: Promise<ArtManifest> | null = null;
 const subs = new Set<() => void>();
-function load() {
-  if (manifest || loading) return loading || Promise.resolve();
-  loading = fetch('art/manifest.json', { cache: 'force-cache' }).then((r) => (r.ok ? (r.json() as Promise<Manifest>) : null)).then((m) => { manifest = m && m.art ? m : { v: 1, art: {} }; subs.forEach((f) => f()); }).catch(() => { manifest = { v: 1, art: {} }; });
+export function loadArtManifest(): Promise<ArtManifest> {
+  if (manifest) return Promise.resolve(manifest);
+  if (!loading) {
+    const url = (typeof location !== 'undefined' && (location.protocol === 'file:' || location.hostname === 'appassets.androidplatform.net')) ? 'https://www.sembagames.app/tier-one/art/manifest.json' : 'art/manifest.json';
+    loading = fetch(url, { cache: 'force-cache' }).then((r) => (r.ok ? r.json() : { v: 0 })).catch(() => ({ v: 0 })).then((m: ArtManifest) => { manifest = m; subs.forEach((f) => f()); return m; });
+  }
   return loading;
 }
-/** The art file for an id (and mood), or null while the manifest hasn't arrived or has no art for it. */
-export function portraitSrc(id: string, mood: Mood = 'plain'): string | null {
-  const a = manifest?.art[id];
-  if (!a) return null;
-  return (mood !== 'plain' && a.moods && a.moods[mood]) || a.src;
+/** The approved image for a face, if the owner has supplied one (with the mood variant first). */
+export function artFor(kind: PortraitKind, id: string, mood?: Mood): string | null {
+  const m = manifest; if (!m) return null;
+  const table = m[kind]; if (!table) return null;
+  const hit = (mood && table[id + '@' + mood]) || table[id];
+  if (!hit) return null;
+  const base = m.base || 'art/';
+  return /^(https?:)?\//.test(hit) ? hit : base + hit;
 }
-export function usePortraits(): Manifest | null {
-  const [, tick] = useState(0);
-  useEffect(() => { void load(); const f = () => tick((x) => x + 1); subs.add(f); return () => { subs.delete(f); }; }, []);
-  return manifest;
-}
-
-// ---------- the placeholder: a consistent illustrated bust per id (hair, skin, collar from the id; a tell per cast role)
-const hash = (s: string) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; };
-const SKIN = ['#F1C9A5', '#E0A982', '#C98B5F', '#A66A42', '#7E4B2B', '#5A341C'];
-const HAIR = ['#1B1612', '#3B2A1E', '#6B4A2B', '#A3772F', '#2B2B2B', '#8C8C8C', '#C7B9A6'];
-const COLLAR: Record<string, string> = { src: '#15130F', rival: '#D2381B', editor: '#2E2A26', me: '#D2381B', player: '#15130F' };
-const TELL: Record<string, string> = {
-  'src:kitman': 'M20 46h24v4H20z', // a kit bag strap
-  'src:barber': 'M18 10l6 8M30 10l-6 8', // scissors glint
-  'src:agent': 'M14 34l6-6 6 6M38 34l6-6 6 6', // sunglasses arms
-  'src:spotter': 'M8 12l10 4M46 8l-6 6', // binocular lines
-  'src:physio': 'M26 10h12v3H26z', // a cap band
-  'src:leak': 'M20 50h24', // a lanyard
-  'editor:mags': 'M18 22h28', 'editor:hana': 'M20 22h24',
-};
-export function placeholderSVG(id: string, name = '', mood: Mood = 'plain', club?: WClub): string {
-  const h = hash(id);
-  const role = id.split(':')[0];
-  const skin = SKIN[h % SKIN.length], hair = HAIR[(h >> 4) % HAIR.length], collar = club?.c1 || COLLAR[role] || '#15130F';
-  const bg = club?.c2 && club.c2 !== club.c1 ? club.c2 : '#E8E2D5';
-  const brow = mood === 'hesitant' ? 'M22 25l6 2M42 25l-6 2' : mood === 'confident' ? 'M22 27l6-2M42 27l-6-2' : mood === 'mischief' ? 'M22 26l6-1M42 28l-6-2' : 'M22 26h6M36 26h6';
-  const mouth = mood === 'hesitant' ? 'M27 42q5-2 10 0' : mood === 'confident' ? 'M26 40q6 5 12 0' : mood === 'mischief' ? 'M27 41q6 4 11-1' : 'M27 41h10';
-  const hairShape = (h >> 8) % 3 === 0 ? 'M18 24c0-10 6-15 14-15s14 5 14 15c-2-5-6-7-14-7s-12 2-14 7z' : (h >> 8) % 3 === 1 ? 'M17 26c0-12 7-18 15-18s15 6 15 18c-3-6-8-9-15-9s-12 3-15 9z' : 'M19 22c1-8 6-12 13-12s12 4 13 12c-3-4-7-6-13-6s-10 2-13 6z';
-  const initials = role === 'me' || role === 'player' ? initialsOf(name || '?') : '';
-  return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
-<rect width="64" height="64" rx="12" fill="${bg}"/>
-<path d="M8 64c0-13 10-20 24-20s24 7 24 20z" fill="${collar}"/>
-<path d="M22 44h20v6c0 3-5 5-10 5s-10-2-10-5z" fill="${skin}"/>
-<ellipse cx="32" cy="30" rx="13" ry="15" fill="${skin}"/>
-<path d="${hairShape}" fill="${hair}"/>
-<path d="${brow}" stroke="${hair}" stroke-width="2" stroke-linecap="round" fill="none"/>
-<circle cx="26.5" cy="31.5" r="1.6" fill="#15130F"/><circle cx="37.5" cy="31.5" r="1.6" fill="#15130F"/>
-<path d="${mouth}" stroke="#7A4A3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-${TELL[id] ? `<path d="${TELL[id]}" stroke="#15130F" stroke-width="2" stroke-linecap="round" fill="none" opacity=".55"/>` : ''}
-${initials ? `<text x="32" y="59" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="11" fill="#F2EEE5">${initials.replace(/[<&]/g, '')}</text>` : ''}
-</svg>`;
+function useArt(kind: PortraitKind, id: string, mood?: Mood) {
+  const [, bump] = useState(0);
+  useEffect(() => { const f = () => bump((n) => n + 1); subs.add(f); loadArtManifest(); return () => { subs.delete(f); }; }, []);
+  return artFor(kind, id, mood);
 }
 
-export function Portrait({ id, name = '', club, size = 48, shape = 'card', mood = 'plain', className = '', style, alt }: { id: string; name?: string; club?: WClub; size?: number; shape?: 'card' | 'round'; mood?: Mood; className?: string; style?: CSSProperties; alt?: string }) {
-  usePortraits();
-  const src = portraitSrc(id, mood);
-  const cls = ['pt', 'pt--' + shape, 'pt--' + id.split(':')[0], className].filter(Boolean).join(' ');
-  const st = { ['--pt' as string]: size + 'px', ...style };
-  if (src) return <span className={cls + ' is-art'} style={st}><img src={src} alt={alt || ''} loading="lazy" decoding="async" /></span>;
-  return <span className={cls} style={st} aria-hidden={alt ? undefined : 'true'} role={alt ? 'img' : undefined} aria-label={alt} dangerouslySetInnerHTML={{ __html: placeholderSVG(id, name, mood, club) }} />;
+// ---------- the placeholder: an original illustrated face, deterministic per id
+const SKIN = ['#F1C9A5', '#E0AC84', '#C98C5E', '#A66A42', '#7A4A2B', '#5C3A22'];
+const HAIR = ['#1B1612', '#3B2A1E', '#6B4423', '#A86A2E', '#C9A050', '#2E2E36', '#5A5A62', '#8B1E1E'];
+const SRC_C: Record<string, string> = { kitman: '#2FBF71', barber: '#FF9A1F', agent: '#35C3E6', spotter: '#9E7BFF', physio: '#FF5A36', leak: '#A77BFF', editor: '#F7B928', you: '#FF5A36', tabloid: '#FF3D7F', itk: '#6B6B80', insider: '#F7B928' };
+const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
+/** The SVG placeholder as a string (also used by the share card). `tint` is the backdrop: a club colour, a source colour. */
+export function portraitPlaceholderSVG(kind: PortraitKind, id: string, opts: { tint?: string; tint2?: string; mood?: Mood; label?: string } = {}): string {
+  const h = hash(kind + ':' + id);
+  const skin = SKIN[h % SKIN.length], hair = HAIR[(h >>> 3) % HAIR.length];
+  const build = (h >>> 6) % 3, cut = (h >>> 8) % 4, brow = (h >>> 11) % 2, beard = kind !== 'staff' && (h >>> 13) % 3 === 0;
+  const tint = opts.tint || SRC_C[id] || '#3A342A', tint2 = opts.tint2 || '#F4EFE4';
+  const mood = opts.mood || 'neutral';
+  const uid = 'pt' + (h % 100000);
+  // head geometry: three builds (narrow, round, square)
+  const face = ['M50 22c-15 0-25 12-25 30 0 18 10 32 25 32s25-14 25-32c0-18-10-30-25-30z', 'M50 20c-17 0-28 13-28 31s11 33 28 33 28-15 28-33-11-31-28-31z', 'M50 21c-16 0-26 10-26 26v8c0 16 10 29 26 29s26-13 26-29v-8c0-16-10-26-26-26z'][build];
+  const hairs = [
+    'M24 48c-2-20 10-32 26-32s28 12 26 32c-4-9-10-15-18-16-6 5-16 6-26 3-3 4-6 8-8 13z',
+    'M23 50c-1-24 11-36 27-36s28 12 27 36c-3-6-7-10-12-11-4-7-10-10-15-10s-11 3-15 10c-5 1-9 5-12 11z',
+    'M25 44c0-18 12-28 25-28s25 10 25 28c-4-6-9-10-14-11-3 4-8 6-11 6s-8-2-11-6c-5 1-10 5-14 11z',
+    'M27 42c2-16 11-24 23-24s21 8 23 24c-6-4-12-6-16-5-2 2-5 3-7 3s-5-1-7-3c-4-1-10 1-16 5z',
+  ][cut];
+  const mouth = { neutral: 'M41 72q9 4 18 0', confident: 'M40 70q10 9 20 0', hesitant: 'M42 73q8-3 16 0', mischief: 'M40 70q8 8 20-2', stern: 'M41 73h18', shock: 'M46 68a4 5 0 1 0 8 0a4 5 0 1 0-8 0', joy: 'M38 68q12 12 24 0z' }[mood];
+  const brows = mood === 'stern' ? 'M36 52l10 3M64 52l-10 3' : mood === 'shock' ? 'M36 48q6-5 12 0M52 48q6-5 12 0' : mood === 'hesitant' ? 'M36 50q6 3 12 1M52 51q6-2 12 1' : brow ? 'M36 51q6-3 12 0M52 51q6-3 12 0' : 'M36 52h12M52 52h12';
+  const eyes = mood === 'joy' ? 'M39 60q4-4 8 0M53 60q4-4 8 0' : mood === 'mischief' ? 'M39 60q4 2 8 0M53 60q4 2 8 0' : '';
+  const eyeDots = mood === 'joy' || mood === 'mischief' ? '' : `<circle cx="43" cy="60" r="${mood === 'shock' ? 3.2 : 2.4}" fill="#15130F"/><circle cx="57" cy="60" r="${mood === 'shock' ? 3.2 : 2.4}" fill="#15130F"/><circle cx="44" cy="59" r=".8" fill="#fff"/><circle cx="58" cy="59" r=".8" fill="#fff"/>`;
+  const collar = kind === 'player' ? `<path d="M22 100c4-14 14-20 28-20s24 6 28 20z" fill="${tint}"/><path d="M44 80l6 8 6-8" fill="none" stroke="${tint2}" stroke-width="2.5"/>` : `<path d="M22 100c4-14 14-20 28-20s24 6 28 20z" fill="#2C271F"/><path d="M50 82l-6 18h12z" fill="${tint}"/>`;
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="${esc(opts.label || '')}"><defs><radialGradient id="${uid}" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="${tint}" stop-opacity=".55"/><stop offset="1" stop-color="${tint}" stop-opacity=".12"/></radialGradient><clipPath id="${uid}c"><rect width="100" height="100" rx="18"/></clipPath></defs>`
+    + `<g clip-path="url(#${uid}c)"><rect width="100" height="100" fill="#211D17"/><rect width="100" height="100" fill="url(#${uid})"/>`
+    + `<circle cx="50" cy="44" r="36" fill="${tint}" opacity=".12"/>${collar}`
+    + `<path d="M43 76h14v10c0 4-3 6-7 6s-7-2-7-6z" fill="${skin}"/>`
+    + `<path d="${face}" fill="${skin}"/>`
+    + (beard ? `<path d="M30 62c2 14 9 22 20 22s18-8 20-22c-5 8-11 12-20 12s-15-4-20-12z" fill="${hair}" opacity=".85"/>` : '')
+    + `<path d="${hairs}" fill="${hair}"/>`
+    + `<path d="${brows}" fill="none" stroke="${hair}" stroke-width="2.4" stroke-linecap="round"/>`
+    + (eyes ? `<path d="${eyes}" fill="none" stroke="#15130F" stroke-width="2.2" stroke-linecap="round"/>` : eyeDots)
+    + `<path d="M50 62v6l-3 2" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1.6" stroke-linecap="round"/>`
+    + `<path d="${mouth}" fill="${mood === 'joy' || mood === 'shock' ? '#7A2A1E' : 'none'}" stroke="#7A2A1E" stroke-width="2.2" stroke-linecap="round"/>`
+    + `<path d="M12 98q38-20 76 0" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/></g></svg>`;
+}
+
+export interface PortraitProps { kind: PortraitKind; id: string; size?: number; club?: WClub; mood?: Mood; name?: string; className?: string; style?: CSSProperties; round?: boolean }
+export function Portrait({ kind, id, size = 56, club, mood, name, className = '', style, round }: PortraitProps) {
+  const src = useArt(kind, id, mood);
+  const label = name || '';
+  const st: CSSProperties = { ['--pt' as string]: size + 'px', ...style };
+  if (src) return <span className={'g-portrait is-art' + (round ? ' is-round' : '') + ' ' + className} style={st} data-kind={kind} data-id={id}><img src={src} alt={label} width={size} height={size} loading="lazy" decoding="async" /></span>;
+  return <span className={'g-portrait' + (round ? ' is-round' : '') + ' ' + className} style={st} data-kind={kind} data-id={id} role={label ? 'img' : undefined} aria-label={label || undefined} aria-hidden={label ? undefined : true}
+    dangerouslySetInnerHTML={{ __html: portraitPlaceholderSVG(kind, id, { tint: club?.c1, tint2: club?.c2, mood, label }) }} />;
+}
+/** Which placeholder mood a source's read suggests (a hesitant Off, a confident Done): expression only, never a rule. */
+export function moodFor(src: string, o: number): Mood {
+  if (src === 'barber') return o === 3 ? 'mischief' : 'confident';
+  if (src === 'agent') return o === 0 ? 'confident' : 'stern';
+  if (o === 2 || o === 3) return 'hesitant';
+  return 'confident';
 }

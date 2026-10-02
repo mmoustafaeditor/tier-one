@@ -182,7 +182,7 @@ const es: Dict = {
     stakeout: 'Vigilancia', stakeoutD: 'El vigía un día antes en un culebrón', use: 'Usar', useOn: 'Usar aquí', tipFake: 'Chivatazo: lo de {p} es Humo.', tipReal: 'Chivatazo: la negociación de {p} es real.',
     promoted: 'Ascenso: {rank}', history: 'Mercados recientes', rival: 'Empezar de nuevo en un periódico rival', rivalD: 'Nombre nuevo y agenda nueva. Tus trofeos se quedan.',
     leakToast: 'La oficina de prensa del {c} te coge el teléfono.', frozenToast: 'El {c} te ha cerrado la puerta.', repLine: 'Reputación {a} → {b}', followersLine: '+{n} seguidores', favoursEarned: '+{n} favor',
-    unl: ['Dougie, Sal y Rosa · @BackPageBants', 'Terminal Tony, @ITK_Kev · relaciones con clubes', 'Dra. Inès, @PressBoxPete · filtraciones de clubes · reglas del Diario exactas', 'Culebrones de estrellas · segunda opinión con confianza 5 · la jugada de Vince', '6 culebrones, 5 contactos, cierre de 45 segundos · el «Done deal»'],
+    unl: ['Dougie, Sal y Rosa · @BackPageBants', 'Terminal Tony desde el día 3 · @ITK_Kev · 4 historias por ventana', 'Dra. Inès · @PressBoxPete · la relación con los clubes cambia tus tableros · una agente que confía en ti llama primero', 'Alcance ×1,5 · gabinetes abiertos a un nombre de confianza · segunda opinión por línea directa', '6 historias · 5 llamadas al día · jugadores estrella · último día de 45 segundos'],
     boardLine: '{s} culebrones · {c} puntos de contacto al día · cierre de {d} s',
     slotNote: 'Una ranura de carrera. El Semba Pass añade dos más (concepto).',
   },

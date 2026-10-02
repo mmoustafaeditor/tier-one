@@ -181,7 +181,7 @@ const en = {
     stakeout: 'Stakeout', stakeoutD: 'Spotter a day early on one saga', use: 'Use', useOn: 'Use on this saga', tipFake: 'Tip-off: the {p} story is Fake.', tipReal: 'Tip-off: the {p} talks are real.',
     promoted: 'Promoted: {rank}', history: 'Recent windows', rival: 'Start again at a rival paper', rivalD: 'A new name and a fresh contact book. Your trophies stay.',
     leakToast: '{c}’s press office is returning your calls.', frozenToast: '{c} have frozen you out.', repLine: 'Rep {a} → {b}', followersLine: '+{n} followers', favoursEarned: '+{n} favour',
-    unl: ['Dougie, Sal and Rosa · @BackPageBants', 'Terminal Tony, @ITK_Kev · club relations', 'Dr Inès, @PressBoxPete · club leaks · Daily rules exactly', 'Superstar sagas · second opinions at Trust 5 · Vince’s play', '6 sagas, 5 contacts, a 45-second Deadline Day · the “Done deal” moment'],
+    unl: ['Dougie, Sal and Rosa · @BackPageBants', 'Terminal Tony from day 3 · @ITK_Kev · 4 stories a window', 'Dr Inès · @PressBoxPete · club relations change your boards · a Trusted agent rings first', 'Reach ×1.5 · press offices open to a trusted name · Direct Line second opinions', '6 stories · 5 calls a day · star players · a 45-second Deadline Day'],
     boardLine: '{s} sagas · {c} contact points a day · Deadline Day {d} s',
     slotNote: 'One career slot. The Semba Pass adds two more (concept).',
   },

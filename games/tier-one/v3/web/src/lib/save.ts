@@ -23,8 +23,10 @@ export interface CareerSave {
   slot: number; paper: string; rank: number; windows: number; favours: { burner: number; tipoff: number; stakeout: number };
   relations: Record<string, { v: number; last: number }>; t1: number; exclusives: number; right: number; calls: number; uturns: number;
   history: { n: number; total: number; tier: Tier; repAfter: number; at: number }[]; live: LocalWindow | null; restarts: number;
-  t1Top?: number; // Tier 1 windows played at the top rank (Story finale)
+  t1Top?: number; // Tier 1 windows played at the top stage
   renames?: number; // blog renames so far (the first is free)
+  topW?: number; // 3.8: windows played at the top stage (3 = the career is established: endless + prestige)
+  marks?: Record<string, number>; // 3.8: counters the Career log reads (barberBurned, …)
 }
 export interface CareerSlot { career: CareerSave; story?: Save['story'] }
 export interface Save {

@@ -1,0 +1,152 @@
+// 3.8 launch rework, Career lane (LAUNCH_BRIEF §11–§15, §20–§21, Addendum A). The stage screen, the stages' names and
+// offers, club relations as words, contacts as relationships, prestige. Keys live under cr38.* so nothing collides
+// with the older parts. Shape: { en, ar (Egyptian), es }.
+export default {
+  en: {
+    cr38: {
+      open: {
+        k: 'The opening', title: 'The fall', skip: 'Skip', begin: 'Open the blog', again: 'Watch it again', start: 'Start the comeback', replay: 'Watch the opening',
+        lines: ['Deadline Day, 23:58. An agent rings: pen on paper by midnight.', 'You hit publish. DONE DEAL.', '00:03. He signs somewhere else.', 'By breakfast you’re a meme. By lunch, Mags Doyle slides an empty box across the desk.'],
+        lost: 'followers gone by breakfast', hook: 'Fired. Laughed at. Start again from a free blog and make them quote you.',
+      },
+      stageOf: 'Stage {n} of 5',
+      stage: {
+        blog: { name: 'The Blog', premise: 'A laptop in a rented flat, a free blog and three people who still pick up: Dougie, Sal and Rosa.', intro: 'You’re nobody now. Good. Nobody expects anything from nobody.', introBy: 'editor', brief: 'I’m not your editor any more. I still read everything. Be right, small and often.', briefBy: 'editor', gives: '3 stories a window · 3 calls a day · Dougie, Sal and Rosa · @BackPageBants against you' },
+        local: { name: 'Local Desk', premise: 'A small paper gives you a chance. Terminal Tony joins. The competition has noticed.', intro: 'Nobody else would take your call. I did. Don’t make me explain that to the board.', introBy: 'hana', brief: 'Four stories a window. Ring Tony from day 3: a jet is worth more than a rumour.', briefBy: 'hana', gives: '4 stories · 4 calls a day · the airport spotter opens · @ITK_Kev joins the race' },
+        nationals: { name: 'The Nationals', premise: 'Big clubs, bigger stars, more pressure. Dr Inès reads a body like a contract. Agents leak to people they trust.', intro: 'Welcome to the nationals. We pay by the story. Right ones pay better.', introBy: 'desk', brief: 'Five stories, the physio from day 5. Keep the clubs sweet: a press office that likes you is a source.', briefBy: 'desk', gives: '5 stories · the physio opens · @PressBoxPete joins · club relations change your boards · a Trusted agent rings you first' },
+        pressbox: { name: 'The Press Box', premise: 'Established. Clubs know your name, publications compete for it, rivals take it personally.', intro: 'Press box. Sit anywhere. Not there.', introBy: 'insider', brief: 'Everyone in here has a source. The question is who has two.', briefBy: 'insider', gives: 'Reach ×1.5 · press offices open to a trusted name · Direct Line contacts give a second opinion' },
+        tierone: { name: 'Tier One', premise: 'Same building, same desk. Six stories a window, star players, forty-five seconds on Deadline Day.', intro: 'I called you. Not the other way round. Your desk is where you left it.', introBy: 'editor', brief: 'Three windows up here and nobody asks who you are. After that it never ends.', briefBy: 'editor', gives: '6 stories · 5 calls a day · star players · a 45-second Deadline Day · reach ×2' },
+        established: { name: 'Tier One · Established', premise: 'The career carries on: endless windows, or hand the chair back and climb again with a harder newsroom.', intro: 'Keep it. Or hand the chair back and climb again. Your choice now.', introBy: 'editor', brief: 'Every window up here is a front page waiting. Prestige is in the drawer when you want it.', briefBy: 'editor', gives: '' },
+      },
+      intro: { k: 'New desk', new: 'What’s new', go: 'Take the desk', srcNew: 'New source', rivalsNew: 'New rival' },
+      goal: {
+        k: 'Next', top: '{n} more windows at Tier One', both: '{w} more windows and reputation {r} higher → {next}', windows: '{w} more windows → {next}', rep: 'Reputation {r} higher ({tier}) → {next}', ready: 'Next window → {next}',
+        meter: 'Windows {w}/{gw} · Reputation {r}/{gr}',
+      },
+      established: { k: 'Established', line: 'Established at Tier One. Endless windows, or prestige.' },
+      prestige: { n: 'Prestige {n}', go: 'Prestige: climb again', sure: 'Hand the chair back and start Prestige {n}?', what: 'A new career from the Blog with a harder newsroom: the rivals post more and are right more often. Your name, followers, reputation, contacts and trophies stay.', yes: 'Climb again' },
+      followers: { back: 'All 38,200 back', toBack: '{n} to the 38,200 you lost' },
+      leak: { on: 'Rosa trusts you: one free agent read a window.' },
+      club: {
+        title: 'Clubs', lead: 'How the clubs in your stories feel about you. Right calls warm them up, wrong loud ones cool them down. At +3 their press office becomes a source; at −3 their kit man repeats the street.',
+        leadEarly: 'How the clubs in your stories feel about you. From {n} it changes your boards: at +3 a press office becomes a source, at −3 the kit man repeats the street.', empty: 'No club has an opinion yet. Play a window.',
+        trusted: 'Trusted', warm: 'Warm', neutral: 'Neutral', cold: 'Cold', frozen: 'Frozen out',
+        line: { trusted: 'Press office returns your calls', warm: 'Takes your calls', neutral: 'No history', cold: 'Slow to call back', frozen: 'Club insiders are less reliable' },
+      },
+      nav: { log: 'Career log', contacts: 'Contacts', clubs: 'Clubs', more: 'More' },
+      log: { empty: 'Nothing yet. Play a window and somebody will have an opinion.' },
+      contacts: { lead: 'Trust grows every time you ring them and act on what they said. It changes Career and Practice only.', locked: 'Opens at {n}', book: 'Full contacts book', sub: 'Five people who pick up. Trust is earned one call at a time.', fair: 'Relationships change Career and Practice. The Daily, rooms and the Transfer Market stay the same for everyone.' },
+      trust: {
+        cold: 'Cold', familiar: 'Familiar', trusted: 'Trusted', inner: 'Inner Circle', direct: 'Direct Line',
+        max: 'As close as it gets', toward: 'Getting to {w}', earlyAt: 'opens a day early at {w}', againAt: 'second opinion at {w}', nextGives: '{w}: {p}',
+        gives: { familiar: '{who} makes fewer mistakes with you', trusted: 'Rings back first · fewer mistakes still', inner: '{who} has a nickname for you', direct: 'One free second opinion a window' },
+        fx: {
+          kitman: { cold: 'Picks up. Says if, never where.', familiar: 'Fewer slips when it’s you asking.', trusted: 'Nearly never wrong for you.', direct: 'A second opinion when you need one.' },
+          barber: { cold: 'Repeats the street.', familiar: 'A bit more than the street.', trusted: 'Hears things before the street does.', direct: 'Still the barber. Ask him twice.' },
+          agent: { cold: 'Sells every deal.', familiar: 'Her “no” is worth hearing.', trusted: 'Rings you first about one deal a window.', direct: 'A second read, free, when it matters.' },
+          spotter: { cold: 'Jets from day 3.', familiar: 'Fewer wrong tails.', trusted: 'Opens a day early for you.', direct: 'Two looks at arrivals, one price.' },
+          physio: { cold: 'Medicals from day 5.', familiar: 'Rarely wrong already.', trusted: 'Opens a day early for you.', direct: 'A second opinion before you Confirm.' },
+        },
+      },
+      favours: '{n} favours in the drawer',
+    },
+  },
+  ar: {
+    cr38: {
+      open: {
+        k: 'البداية', title: 'الوقعة', skip: 'تخطّى', begin: 'افتح البلوج', again: 'شوفه تاني', start: 'ابدأ الرجوع', replay: 'شوف البداية',
+        lines: ['يوم الحسم، ١١:٥٨ بالليل. وكيل بيتصل: القلم على الورق قبل نص الليل.', 'دوست نشر. صفقة تمت.', '١٢:٠٣. مضى لنادي تاني.', 'على الفطار بقيت ميم. وعلى الغدا، ماجز دويل زقّت لك كرتونة فاضية على المكتب.'],
+        lost: 'متابع راحوا قبل الفطار', hook: 'اترفدت. اتضحك عليك. ابدأ تاني من بلوج ببلاش وخليهم ينقلوا عنك.',
+      },
+      stageOf: 'المرحلة {n} من ٥',
+      stage: {
+        blog: { name: 'البلوج', premise: 'لابتوب في شقة إيجار، بلوج ببلاش، وتلات أنفار لسه بيردوا: دوجي وسال وروزا.', intro: 'انت ولا حاجة دلوقتي. أحسن. محدش مستني حاجة من ولا حاجة.', introBy: 'editor', brief: 'أنا مبقتش رئيسة تحريرك. بس لسه بقرا كل حاجة. خليك صح، في الصغير وكتير.', briefBy: 'editor', gives: '٣ قصص في الفترة · ٣ مكالمات في اليوم · دوجي وسال وروزا · @BackPageBants ضدك' },
+        local: { name: 'الجريدة المحلية', premise: 'جريدة صغيرة بتدّيك فرصة. توني المطار بقى معاك. والمنافسين خدوا بالهم.', intro: 'محدش غيري رضي يرد عليك. أنا رديت. متخلنيش أشرح ده لمجلس الإدارة.', introBy: 'hana', brief: 'أربع قصص في الفترة. اتصل بتوني من اليوم ٣: طيارة تسوى أكتر من إشاعة.', briefBy: 'hana', gives: '٤ قصص · ٤ مكالمات في اليوم · راصد المطار بيفتح · @ITK_Kev دخل السباق' },
+        nationals: { name: 'الجرايد الكبيرة', premise: 'أندية كبيرة، نجوم أكبر، ضغط أكتر. د. إينيس بتقرا الجسم زي العقد. والوكلاء بيسرّبوا للناس اللي بيثقوا فيها.', intro: 'أهلاً في الجرايد الكبيرة. بندفع بالخبر. والصح بيتدفع أكتر.', introBy: 'desk', brief: 'خمس قصص، وأخصائية العلاج من اليوم ٥. خلي الأندية مبسوطة منك: مكتب إعلامي بيحبك هو مصدر.', briefBy: 'desk', gives: '٥ قصص · أخصائية العلاج بتفتح · @PressBoxPete دخل · علاقتك بالأندية بتغيّر لوحتك · وكيلة بتثق فيك بتكلمك الأول' },
+        pressbox: { name: 'المقصورة', premise: 'بقيت اسم. الأندية عارفاك، الجرايد بتتنافس عليك، والمنافسين واخدينها شخصي.', intro: 'المقصورة. اقعد في أي مكان. مش هنا.', introBy: 'insider', brief: 'كل اللي هنا عنده مصدر. السؤال مين عنده اتنين.', briefBy: 'insider', gives: 'الوصول ×١.٥ · المكاتب الإعلامية بتفتح للاسم الموثوق · مصادر الخط المباشر بتدّي رأي تاني' },
+        tierone: { name: 'تير وان', premise: 'نفس المبنى، نفس المكتب. ست قصص في الفترة، لاعبين نجوم، وخمسة وأربعين ثانية يوم الحسم.', intro: 'أنا اللي كلمتك. مش العكس. مكتبك زي ما سبته.', introBy: 'editor', brief: 'تلات فترات هنا فوق ومحدش هيسأل انت مين. وبعدها مبتخلصش.', briefBy: 'editor', gives: '٦ قصص · ٥ مكالمات في اليوم · لاعبين نجوم · يوم حسم ٤٥ ثانية · الوصول ×٢' },
+        established: { name: 'تير وان · اسم ثابت', premise: 'المشوار مكمّل: فترات من غير نهاية، أو سلّم الكرسي واطلع تاني في غرفة أخبار أصعب.', intro: 'خليك. أو سلّم الكرسي واطلع تاني. القرار قرارك دلوقتي.', introBy: 'editor', brief: 'كل فترة هنا فوق صفحة أولى مستنية. البريستيج في الدرج لما تحب.', briefBy: 'editor', gives: '' },
+      },
+      intro: { k: 'مكتب جديد', new: 'الجديد', go: 'استلم المكتب', srcNew: 'مصدر جديد', rivalsNew: 'منافس جديد' },
+      goal: {
+        k: 'الجاي', top: '{n} فترات كمان في تير وان', both: '{w} فترات كمان وسمعة أعلى بـ{r} ← {next}', windows: '{w} فترات كمان ← {next}', rep: 'سمعة أعلى بـ{r} ({tier}) ← {next}', ready: 'الفترة الجاية ← {next}',
+        meter: 'فترات {w}/{gw} · سمعة {r}/{gr}',
+      },
+      established: { k: 'اسم ثابت', line: 'اسم ثابت في تير وان. فترات من غير نهاية، أو بريستيج.' },
+      prestige: { n: 'بريستيج {n}', go: 'بريستيج: اطلع تاني', sure: 'تسلّم الكرسي وتبدأ بريستيج {n}؟', what: 'مشوار جديد من البلوج في غرفة أخبار أصعب: المنافسين بينشروا أكتر وبيصيبوا أكتر. اسمك ومتابعينك وسمعتك ومصادرك وكؤوسك بتفضل معاك.', yes: 'اطلع تاني' },
+      followers: { back: 'الـ38,200 كلهم رجعوا', toBack: 'فاضل {n} للـ38,200 اللي خسرتهم' },
+      leak: { on: 'روزا بتثق فيك: قراية وكيلة ببلاش كل فترة.' },
+      club: {
+        title: 'الأندية', lead: 'الأندية اللي في قصصك شايفاك إزاي. التوقع الصح بيدفّيهم، والغلط العالي بيبرّدهم. عند +٣ المكتب الإعلامي بيبقى مصدر؛ عند −٣ مسؤول المهمات بيكرر كلام الشارع.',
+        leadEarly: 'الأندية اللي في قصصك شايفاك إزاي. من {n} بتغيّر لوحتك: عند +٣ المكتب الإعلامي بيبقى مصدر، وعند −٣ مسؤول المهمات بيكرر كلام الشارع.', empty: 'مفيش نادي عنده رأي لسه. العب فترة.',
+        trusted: 'واثق فيك', warm: 'دافي', neutral: 'عادي', cold: 'بارد', frozen: 'مقاطعك',
+        line: { trusted: 'المكتب الإعلامي بيرد عليك', warm: 'بيرد على مكالماتك', neutral: 'مفيش تاريخ', cold: 'بطيء في الرد', frozen: 'ناس النادي أقل موثوقية معاك' },
+      },
+      nav: { log: 'سجل المشوار', contacts: 'المصادر', clubs: 'الأندية', more: 'كمان' },
+      log: { empty: 'لسه مفيش. العب فترة وحد هيبقى عنده رأي.' },
+      contacts: { lead: 'الثقة بتزيد كل ما تتصل وتتصرف على كلامهم. بتغيّر المسيرة والتدريب بس.', locked: 'بيفتح في {n}', book: 'دفتر المصادر كامل', sub: 'خمس أنفار بيردوا. الثقة بتتكسب مكالمة مكالمة.', fair: 'العلاقات بتغيّر المسيرة والتدريب. اليومي والأوض وسوق الانتقالات زي ما هم للكل.' },
+      trust: {
+        cold: 'بارد', familiar: 'معرفة', trusted: 'ثقة', inner: 'الدايرة المقربة', direct: 'خط مباشر',
+        max: 'أقرب ما يكون', toward: 'في الطريق لـ{w}', earlyAt: 'بيفتح بدري بيوم عند {w}', againAt: 'رأي تاني عند {w}', nextGives: '{w}: {p}',
+        gives: { familiar: '{who} بيغلط أقل معاك', trusted: 'بيرد عليك الأول · غلط أقل كمان', inner: '{who} عنده اسم دلع ليك', direct: 'رأي تاني ببلاش كل فترة' },
+        fx: {
+          kitman: { cold: 'بيرد. بيقول ماشي ولا لأ، مش رايح فين.', familiar: 'بيزلّ أقل لما انت اللي بتسأل.', trusted: 'تقريباً عمره ما بيغلط معاك.', direct: 'رأي تاني لما تحتاجه.' },
+          barber: { cold: 'بيكرر كلام الشارع.', familiar: 'شوية أكتر من الشارع.', trusted: 'بيسمع قبل الشارع.', direct: 'لسه الحلاق. اسأله مرتين.' },
+          agent: { cold: 'بتبيع أي صفقة.', familiar: '«لأ» بتاعتها تستاهل تتسمع.', trusted: 'بتكلمك الأول عن صفقة كل فترة.', direct: 'قراية تانية ببلاش لما يفرق.' },
+          spotter: { cold: 'طيارات من اليوم ٣.', familiar: 'متابعة غلط أقل.', trusted: 'بيفتح بدري بيوم علشانك.', direct: 'نظرتين على الوصول بسعر واحدة.' },
+          physio: { cold: 'الكشف الطبي من اليوم ٥.', familiar: 'نادراً ما بتغلط أصلاً.', trusted: 'بتفتح بدري بيوم علشانك.', direct: 'رأي تاني قبل ما تأكد.' },
+        },
+      },
+      favours: '{n} خدمات في الدرج',
+    },
+  },
+  es: {
+    cr38: {
+      open: {
+        k: 'El arranque', title: 'La caída', skip: 'Saltar', begin: 'Abrir el blog', again: 'Verlo otra vez', start: 'Empezar la vuelta', replay: 'Ver el arranque',
+        lines: ['Último día, 23:58. Llama un agente: tinta en el papel antes de medianoche.', 'Le das a publicar. HECHO.', '00:03. Firma por otro.', 'Al desayuno eres un meme. A la hora de comer, Mags Doyle te acerca una caja vacía.'],
+        lost: 'seguidores perdidos antes del desayuno', hook: 'Despedido. Ridiculizado. Empieza de nuevo desde un blog gratis y haz que te citen.',
+      },
+      stageOf: 'Etapa {n} de 5',
+      stage: {
+        blog: { name: 'El blog', premise: 'Un portátil en un piso de alquiler, un blog gratis y tres personas que aún te lo cogen: Dougie, Sal y Rosa.', intro: 'Ahora no eres nadie. Mejor. Nadie espera nada de nadie.', introBy: 'editor', brief: 'Ya no soy tu directora. Lo sigo leyendo todo. Acierta, poco y a menudo.', briefBy: 'editor', gives: '3 historias por ventana · 3 llamadas al día · Dougie, Sal y Rosa · @BackPageBants en contra' },
+        local: { name: 'Redacción local', premise: 'Un periódico pequeño se arriesga contigo. Llega Terminal Tony. La competencia se ha fijado.', intro: 'Nadie más te cogía el teléfono. Yo sí. No me hagas explicárselo al consejo.', introBy: 'hana', brief: 'Cuatro historias por ventana. Llama a Tony desde el día 3: un jet vale más que un rumor.', briefBy: 'hana', gives: '4 historias · 4 llamadas al día · se abre el vigía del aeropuerto · @ITK_Kev entra en la carrera' },
+        nationals: { name: 'Los nacionales', premise: 'Clubes grandes, estrellas mayores, más presión. La Dra. Inès lee un cuerpo como un contrato. Los agentes filtran a quien se fían.', intro: 'Bienvenido a los nacionales. Pagamos por pieza. Las buenas, mejor.', introBy: 'desk', brief: 'Cinco historias, la fisio desde el día 5. Ten contentos a los clubes: un gabinete de prensa que te aprecia es una fuente.', briefBy: 'desk', gives: '5 historias · se abre la fisio · entra @PressBoxPete · la relación con los clubes cambia tus tableros · una agente que confía en ti te llama primero' },
+        pressbox: { name: 'El palco de prensa', premise: 'Consolidado. Los clubes saben tu nombre, los medios compiten por él, los rivales se lo toman personal.', intro: 'Palco de prensa. Siéntate donde quieras. Ahí no.', introBy: 'insider', brief: 'Aquí todos tienen una fuente. La pregunta es quién tiene dos.', briefBy: 'insider', gives: 'Alcance ×1,5 · los gabinetes se abren a un nombre de confianza · los contactos de línea directa dan una segunda opinión' },
+        tierone: { name: 'Tier One', premise: 'El mismo edificio, la misma mesa. Seis historias por ventana, jugadores estrella, cuarenta y cinco segundos el último día.', intro: 'Te he llamado yo. No al revés. Tu mesa está donde la dejaste.', introBy: 'editor', brief: 'Tres ventanas aquí arriba y nadie preguntará quién eres. Después, no se acaba nunca.', briefBy: 'editor', gives: '6 historias · 5 llamadas al día · jugadores estrella · último día de 45 segundos · alcance ×2' },
+        established: { name: 'Tier One · Consolidado', premise: 'La carrera sigue: ventanas sin fin, o devuelve la silla y vuelve a subir con una redacción más dura.', intro: 'Quédatela. O devuelve la silla y vuelve a subir. Ahora decides tú.', introBy: 'editor', brief: 'Cada ventana aquí arriba es una portada esperando. El prestigio está en el cajón cuando quieras.', briefBy: 'editor', gives: '' },
+      },
+      intro: { k: 'Nueva mesa', new: 'Novedades', go: 'Ocupar la mesa', srcNew: 'Nueva fuente', rivalsNew: 'Nuevo rival' },
+      goal: {
+        k: 'Siguiente', top: '{n} ventanas más en Tier One', both: '{w} ventanas más y {r} de reputación más → {next}', windows: '{w} ventanas más → {next}', rep: '{r} de reputación más ({tier}) → {next}', ready: 'Próxima ventana → {next}',
+        meter: 'Ventanas {w}/{gw} · Reputación {r}/{gr}',
+      },
+      established: { k: 'Consolidado', line: 'Consolidado en Tier One. Ventanas sin fin, o prestigio.' },
+      prestige: { n: 'Prestigio {n}', go: 'Prestigio: volver a subir', sure: '¿Devolver la silla y empezar el Prestigio {n}?', what: 'Una carrera nueva desde el blog con una redacción más dura: los rivales publican más y aciertan más. Tu nombre, seguidores, reputación, contactos y trofeos se quedan.', yes: 'Volver a subir' },
+      followers: { back: 'Los 38.200, recuperados', toBack: '{n} para los 38.200 que perdiste' },
+      leak: { on: 'Rosa confía en ti: una lectura de agente gratis por ventana.' },
+      club: {
+        title: 'Clubes', lead: 'Qué opinan de ti los clubes de tus historias. Los aciertos los calientan; los fallos a lo grande los enfrían. A +3 su gabinete de prensa es una fuente; a −3 su utillero repite la calle.',
+        leadEarly: 'Qué opinan de ti los clubes de tus historias. Desde {n} cambia tus tableros: a +3 un gabinete de prensa es una fuente, a −3 el utillero repite la calle.', empty: 'Ningún club opina todavía. Juega una ventana.',
+        trusted: 'Confía', warm: 'Cálido', neutral: 'Neutral', cold: 'Frío', frozen: 'Vetado',
+        line: { trusted: 'El gabinete te devuelve las llamadas', warm: 'Te coge el teléfono', neutral: 'Sin historia', cold: 'Tarda en devolverte la llamada', frozen: 'La gente del club es menos fiable' },
+      },
+      nav: { log: 'Diario', contacts: 'Contactos', clubs: 'Clubes', more: 'Más' },
+      log: { empty: 'Nada todavía. Juega una ventana y alguien opinará.' },
+      contacts: { lead: 'La confianza crece cada vez que llamas y actúas según lo que dijeron. Solo cambia Carrera y Práctica.', locked: 'Se abre en {n}', book: 'Agenda completa', sub: 'Cinco personas que lo cogen. La confianza se gana llamada a llamada.', fair: 'Las relaciones cambian Carrera y Práctica. El Diario, las salas y el Mercado son iguales para todos.' },
+      trust: {
+        cold: 'Frío', familiar: 'Conocido', trusted: 'De confianza', inner: 'Círculo íntimo', direct: 'Línea directa',
+        max: 'Más cerca, imposible', toward: 'Camino de {w}', earlyAt: 'se abre un día antes en {w}', againAt: 'segunda opinión en {w}', nextGives: '{w}: {p}',
+        gives: { familiar: '{who} se equivoca menos contigo', trusted: 'Te devuelve la llamada primero · aún menos errores', inner: '{who} tiene un mote para ti', direct: 'Una segunda opinión gratis por ventana' },
+        fx: {
+          kitman: { cold: 'Lo coge. Dice si se va, nunca adónde.', familiar: 'Menos despistes cuando preguntas tú.', trusted: 'Casi nunca falla contigo.', direct: 'Una segunda opinión cuando la necesites.' },
+          barber: { cold: 'Repite la calle.', familiar: 'Algo más que la calle.', trusted: 'Se entera antes que la calle.', direct: 'Sigue siendo el barbero. Pregúntale dos veces.' },
+          agent: { cold: 'Vende todos los tratos.', familiar: 'Su «no» merece oírse.', trusted: 'Te llama primero por un trato por ventana.', direct: 'Una segunda lectura, gratis, cuando importa.' },
+          spotter: { cold: 'Jets desde el día 3.', familiar: 'Menos colas equivocadas.', trusted: 'Se abre un día antes para ti.', direct: 'Dos miradas a llegadas por el precio de una.' },
+          physio: { cold: 'Reconocimientos desde el día 5.', familiar: 'Ya casi nunca falla.', trusted: 'Se abre un día antes para ti.', direct: 'Una segunda opinión antes de Confirmar.' },
+        },
+      },
+      favours: '{n} favores en el cajón',
+    },
+  },
+};
