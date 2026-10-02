@@ -11,6 +11,7 @@ const top = w.clubs.filter((c) => ['eng1', 'esp1', 'ita1', 'ger1', 'fra1'].inclu
 const N = +(process.argv[2] ?? 6), SHOW = +(process.argv[3] ?? 4);
 const FRAME = 1000 / 60;
 const kinds: Record<string, number> = {};
+const closeD: number[] = [];
 const agg = { passages: 0, flights: 0, len: [] as number[], landNoOne: 0, jumps: 0, swapNoFlight: 0, beatsPer: [] as number[], passesBeforeShot: [] as number[], shotsFromNowhere: 0, shots: 0, secs: [] as number[] };
 let shown = 0;
 for (let i = 0; i < N; i++) {
@@ -27,6 +28,9 @@ for (let i = 0; i < N; i++) {
       const beat0 = a.beat;
       tick(a, m, w, FRAME, ms, true, 2, 2400);
       if (!sh) { prevBall = { ...a.ball }; prevCarrier = a.carrier; prevPoss = a.poss; continue; }
+      // A5: how far the man the engine names in a contest (the defender in a duel, the tackler, the fouler) is from the
+      // ball when it happens (the beat starts): far means he arrives from nowhere.
+      if (a.beat !== beat0) for (let b = beat0; b < a.beat; b++) { const B: any = a.beats[b]; const def = B.kind === 'duel' ? [1 - B.side, B.vs] : B.kind === 'turnover' && B.vs !== undefined ? [B.side, B.to] : B.kind === 'foul' && B.by !== undefined ? [1 - B.side, B.by] : null; if (def && b > 0 && a.pos[def[0]][def[1]]) { const q = a.pos[def[0]][def[1]], tgt = a.flight ? a.flight.to : a.ball; closeD.push(Math.hypot(q.x - tgt.x, q.y - tgt.y)); } }
       if (a.beat !== beat0) for (let b = beat0; b < a.beat; b++) { const B = a.beats[b]; log.push(`${(t / 1000).toFixed(1)}s ${B.kind}${B.type ? '/' + B.type : ''}${B.how ? '/' + B.how : ''} s${B.side}`); if (B.kind === 'pass') passes++; if (B.kind === 'turnover') passes = 0; if (B.kind === 'shot') { agg.shots++; agg.passesBeforeShot.push(passes); if (passes <= 1) agg.shotsFromNowhere++; passes = 0; } }
       // Only passes count (a shot, a parry, a corner kicked to the flag or a goal kick are not a pass to a man), and
       // a picture cut (the first beat of a highlight, a restart staged) is not a jump.
@@ -57,6 +61,8 @@ console.log(`ball jumped 3+ m in a frame without a pass: ${agg.jumps} times`);
 console.log(`shots: ${agg.shots}; passes in the move before a shot: median ${med(agg.passesBeforeShot)}; 0-1 passes: ${pct(agg.shotsFromNowhere, agg.shots)}%`);
 // What a viewer must never see (engine passes since 2026-10-02): a pass landing away from its man, a ball jumping.
 const offPct = pct(agg.landNoOne, agg.flights);
+console.log(`the man in a contest when it happens: median ${med(closeD).toFixed(1)} m from the ball, 6+ m away ${pct(closeD.filter((x) => x >= 6).length, closeD.length)}% (${closeD.length} contests)`);
+console.log(`${med(closeD) <= 3.5 ? 'ok  ' : 'FAIL'} the man in a contest is there when it happens: median ${med(closeD).toFixed(1)} m (≤ 3.5 m; 7.0 m before A5)`);
 // The ball's flight (A1): every long ball bounces once before its man takes it; crosses and shots curl.
 const bounced = pct(kinds.bounce ?? 0, kinds.long ?? 0);
 if (process.env.WX === '3') console.log(`${(kinds.wind ?? 0) > 0 ? 'ok  ' : 'FAIL'} balls in the air the wind moves: ${kinds.wind ?? 0}`);
@@ -69,4 +75,4 @@ console.log(`${farPct <= 5 ? 'ok  ' : 'FAIL'} every lost ball shows why: ${100 -
 console.log(`${bounced >= 90 ? 'ok  ' : 'FAIL'} long balls that bounce: ${bounced}% of ${kinds.long ?? 0} (≥ 90%); curled crosses and shots: ${kinds.bend ?? 0}`);
 console.log(`${offPct <= 5 ? 'ok  ' : 'FAIL'} passes reach their man: ${100 - offPct}% (≥ 95%)`);
 console.log(`${agg.jumps === 0 ? 'ok  ' : 'FAIL'} the ball never jumps without a pass (${agg.jumps})`);
-process.exit(offPct <= 5 && agg.jumps === 0 && bounced >= 90 && farPct <= 5 ? 0 : 1);
+process.exit(offPct <= 5 && agg.jumps === 0 && bounced >= 90 && farPct <= 5 && med(closeD) <= 3.5 ? 0 : 1);

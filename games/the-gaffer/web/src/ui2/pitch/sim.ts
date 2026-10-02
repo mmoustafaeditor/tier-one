@@ -40,6 +40,7 @@ export interface Anim {
   poss: 0 | 1;
   carrier: number;        // slot of the ball carrier in the possessing side (-1 = loose)
   flight: { from: Pt; to: Pt; t: number; dur: number; then: () => void; h: number; end: number; bounce?: boolean; bend?: number; recv?: [0 | 1, number] } | null; // recv: aimed at this man (it bends to meet him)
+  mt: number;             // match seconds played on the pitch so far (idle movement runs on it, at any speed)
   wx: number; wind: number; // the match's weather (engine/weather.ts) and which way the wind blows (+x 1, -x -1)
   bh: number;             // the ball's height in metres (lofted passes, crosses, shots over the bar)
   beats: Beat[];
@@ -686,7 +687,7 @@ export function newAnim(m: LiveMatch, world: World): Anim {
       pos: [[], []], ball: { x: L / 2, y: W / 2 }, poss: 0, carrier: forwardSlot(m, 0), flight: null, beats: [], starts: [], msPM: 1000, beat: 0, clock: 0,
       beatLen: 400, inNet: false, shooter: null, run: null, zone: -1, minute: '', time: 0, bh: 0,
       spd: speedsOf(m, world), body: bodiesOf(m, world), ag: [[], []], eventAt: -1e9, reacts: [], kin: { turn: 0, acc: 0 }, line: [undefined, undefined], back: [-1e9, -1e9], trans: null, runsN: 0, kinds: {}, sp: null, flag: null, hurt: null, hurtAt: [], ids: [[...m.sides[0].onPitch], [...m.sides[1].onPitch]], seen: [[], []],
-      off: newOfficials(), downs: [], wx: m.wx ?? 0, wind: windOf(m.key),
+      off: newOfficials(), downs: [], wx: m.wx ?? 0, wind: windOf(m.key), mt: 0,
     };
     for (const side of [0, 1] as const) {
       const slots = FORMATIONS[m.sides[side].tactics.formation].slots;
@@ -702,6 +703,7 @@ export function newAnim(m: LiveMatch, world: World): Anim {
 export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: number, go: boolean, mode?: HlMode, scale = ms) {
       if (PITCH_DEBUG) (a as unknown as { go?: boolean }).go = go; // the test skips a paused or finished match
       a.time += dt;
+      a.mt += dt / Math.max(1, a.secMs ?? scale / 60); // match seconds, for the players' idle movement
       if (a.minute !== minuteKey(mm)) plan(a, mm, ms, world, mode);
       // The minute's length on screen changed mid-minute (another highlight mode or speed): the rest of it keeps pace.
       else if (go && ms > 0 && a.msPM > 0 && Math.abs(ms - a.msPM) > 1) {
@@ -978,13 +980,17 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           }
           // The man in the next contest (the engine names him): he closes the carrier, or the man the ball is going to,
           // so the tackle or the dribble past him happens where the ball is.
-          // He reads it a beat early: while the pass to the man who will lose it is on its way, he is already closing
-          // him (A3), so the ball is won where it is, not by a man arriving from 30 m away.
+          // He reads it a pass early (A3, A5): when the next pass goes to the man he will challenge (a duel, a tackle, a
+          // foul), he is already closing that man while the ball is still with the passer, so the contest happens where
+          // the ball is, not with him arriving from 20 m away.
           const nb0 = a.beats[a.beat], nb1 = a.beats[a.beat + 1];
-          const nb = nb0 && nb0.kind === 'pass' && nb0.side === other && nb1?.kind === 'turnover' && nb1.side === side && nb1.vs !== undefined && nb1.vs === nb0.to ? nb1 : nb0;
+          const manOf = (b: Beat | undefined) => !b ? undefined : b.kind === 'duel' && b.side === other ? b.who : b.kind === 'turnover' && b.side === side && b.vs !== undefined ? b.vs : b.kind === 'foul' && b.side === other ? b.to : undefined;
+          const early = nb0?.kind === 'pass' && nb0.side === other && manOf(nb1) !== undefined && manOf(nb1) === nb0.to;
+          const nb = early ? nb1 : nb0;
           const vs = nb && ((nb.kind === 'duel' && nb.side === other) ? nb.vs : nb.kind === 'turnover' && nb.side === side && nb.vs !== undefined ? nb.to : nb.kind === 'foul' && nb.side === other ? nb.by : undefined);
           if (vs !== undefined && a.pos[side][vs] && LINE[slots[vs]?.pos] !== 'gk') {
-            const toward = a.flight && a.poss === other ? a.flight.to : a.ball;
+            const recv = early && nb0.kind === 'pass' ? a.pos[other][nb0.to] : undefined;
+            const toward = a.flight && a.poss === other ? a.flight.to : recv ?? a.ball;
             tg[vs] = pressSpot(toward, ownGoal, T.DUEL_CLOSE); boost[vs] = Math.max(boost[vs] ?? 1, 1.5); rush.add(vs);
           }
         } else a.line[side] = undefined;
@@ -1010,16 +1016,19 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           const deadBall = staging || a.beat >= a.beats.length || a.beats[a.beat - 1]?.kind === 'foul';
           // (a wall, and the man over the ball, stand still)
           const still = staging && !!a.sp && ((a.sp.side !== side && !!a.sp.wall?.includes(k)) || (a.sp.side === side && a.sp.taker === k));
-          const amp = (!has && LINE[slots[k].pos] === 'gk') || still ? 0 : deadBall ? T.IDLE_DEAD : T.IDLE_LIVE;
-          const wob = Math.sin(a.time / 700 + k * 1.7 + side * 3) * amp;
-          const wobX = Math.sin(a.time / 1100 + k * 2.3 + side) * amp * (deadBall ? 0.8 : 0.5);
+          const amp = (!has && LINE[slots[k].pos] === 'gk') || still || (has && k === a.carrier && !staging) ? 0 : deadBall ? T.IDLE_DEAD : T.IDLE_LIVE; // (the carrier moves with the ball)
+          // In match seconds (a.mt), so it's the same walking pace at any speed; applied every frame on top of where he
+          // has decided to be (not only at his decision ticks), so nobody stands frozen between them. The back line
+          // sways only across: it keeps its depth together.
+          const swayY = (mt: number) => Math.sin(mt * T.IDLE_W + k * 1.7 + side * 3) * amp;
+          const swayX = (mt: number) => (isDef(k) ? 0 : Math.sin(mt * T.IDLE_W * 0.7 + k * 2.3 + side) * amp * (deadBall ? 0.8 : 0.5));
+          const wob = swayY(a.mt), wobX = swayX(a.mt);
           const p = a.pos[side][k] ?? t;
           const B0 = a.body[side]?.[k] ?? { top: 1, acc: 1, turn: 1, reads: 0.5, tank: 0.7 };
           // In the line: the line's pace. Walking to a set piece: no turning limit (he's not running at speed).
           // The keeper side-steps across his goal (no running turn limit, quick feet).
           const B = staging || (!has && LINE[slots[k].pos] === 'gk') ? { ...B0, turn: B0.turn * 4, acc: B0.acc * 1.5 } : isDef(k) ? { ...B0, top: Math.min(B0.top, lineTop), acc: Math.min(B0.acc, lineAcc) } : B0;
-          if (wobX) t = { x: t.x + wobX, y: t.y };
-          const g = a.ag[side][k] ??= { vx: 0, vy: 0, tx: t.x, ty: t.y + wob, at: 0, tank: 1, pend: false, spr: false };
+          const g = a.ag[side][k] ??= { vx: 0, vy: 0, tx: t.x, ty: t.y, at: 0, tank: 1, pend: false, spr: false };
           // Between highlights the picture cuts: everyone is simply where he should be for the next scene.
           if (a.snap) { a.pos[side][k] = { x: t.x, y: t.y }; g.vx = 0; g.vy = 0; g.tx = t.x; g.ty = t.y; g.pend = false; continue; }
           // On the ball, about to receive or shoot, or walking to a set piece: no delay. Everyone else commits to
@@ -1027,13 +1036,13 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           // The keeper never takes his eyes off the ball: he follows it without a reaction delay.
           const onIt = (has && k === a.carrier) || (!has && (k === blockK || LINE[slots[k].pos] === 'gk')) || (a.run?.side === side && a.run.slot === k) || (a.shooter?.side === side && a.shooter.slot === k);
           if (down(k)) { g.tx = t.x; g.ty = t.y; g.pend = false; }
-          else if (onIt || staging) { g.tx = t.x; g.ty = t.y + wob; g.pend = false; }
+          else if (onIt || staging) { g.tx = t.x; g.ty = t.y; g.pend = false; }
           else if (a.time >= g.at) {
             const since = a.time - a.eventAt;
             if (!g.pend || since >= reactMs(isDef(k) ? lineReads : B.reads, a.beatLen)) {
               if (g.pend && !isDef(k)) { a.reacts.push([B.reads, since]); if (a.reacts.length > 400) a.reacts.shift(); g.pend = false; }
               g.pend = false;
-              g.tx = t.x; g.ty = t.y + wob;
+              g.tx = t.x; g.ty = t.y;
               // The line looks again together (same tick for all its defenders).
               g.at = isDef(k) ? a.time + decideMs(a.beatLen) - ((a.time + side * 37) % decideMs(a.beatLen)) : a.time + decideMs(a.beatLen);
             }
@@ -1044,12 +1053,16 @@ export function tick(a: Anim, mm: LiveMatch, world: World, dt: number, ms: numbe
           const keeperOut = !has && LINE[slots[k].pos] === 'gk'; // the keeper's side-steps aren't sprints
           if (!staging && !keeperOut && g.tank < T.EMPTY) sprint = Math.min(sprint, T.SPRINT);
           const vx0 = g.vx, vy0 = g.vy;
-          const nk = move({ x: p.x, y: p.y, vx: g.vx, vy: g.vy }, g.tx, g.ty, dt, tau, B, sprint, !staging && ((!has && k === blockK) || rush.has(k))); // sprints are flat out
+          // (his target sways with him, so walking to it doesn't cancel the sway out)
+          const nk = move({ x: p.x, y: p.y, vx: g.vx, vy: g.vy }, g.tx + (down(k) ? 0 : wobX), g.ty + (down(k) ? 0 : wob), dt, tau, B, sprint, !staging && ((!has && k === blockK) || rush.has(k))); // sprints are flat out
           // The line's depth is one decision for all its defenders (PR A): it moves together at the line's pace, and
           // only their sideways movement is left to each body.
           if (isDef(k) && !staging) { nk.x = p.x + (g.tx - p.x) * (1 - Math.exp((-dt * lineTop * sprint) / tau)); nk.vx = (nk.x - p.x) / Math.max(1, dt); }
           g.vx = nk.vx; g.vy = nk.vy;
-          a.pos[side][k] = { x: nk.x, y: nk.y };
+          // The sway goes straight onto his position (this frame's share of it), not through his target: easing into
+          // a target near him would swallow it and he'd look frozen.
+          const dmt = dt / Math.max(1, a.secMs ?? scale / 60), sx = down(k) ? 0 : wobX - swayX(a.mt - dmt), sy = down(k) ? 0 : wob - swayY(a.mt - dmt);
+          a.pos[side][k] = { x: nk.x + sx, y: nk.y + sy };
           const vmax = (T.VMAX * B.top * sprint) / tau, sp1 = Math.hypot(nk.vx, nk.vy);
           g.spr = !staging && !keeperOut && sprint > T.SPRINT && sp1 > 0.6 * vmax;
           g.tank = g.spr ? Math.max(0, g.tank - (T.DRAIN * dt) / scale / B.tank) : Math.min(1, g.tank + (T.REFILL * dt) / scale);
