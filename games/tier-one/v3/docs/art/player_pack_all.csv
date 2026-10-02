@@ -1,0 +1,563 @@
+file_id,player,club,league,position,shirt,trim,has_art
+p-martin-odegaard,Martin Ødegaard,Arsenal,Premier League (England),midfielder,#F00000,#FFFFFF,no
+p-bukayo-saka,Bukayo Saka,Arsenal,Premier League (England),forward,#F00000,#FFFFFF,no
+p-christos-tzolis,Christos Tzolis,Arsenal,Premier League (England),forward,#F00000,#FFFFFF,no
+p-noni-madueke,Noni Madueke,Arsenal,Premier League (England),forward,#F00000,#FFFFFF,no
+p-eberechi-eze,Eberechi Eze,Arsenal,Premier League (England),midfielder,#F00000,#FFFFFF,no
+p-nicolas-jackson,Nicolas Jackson,Aston Villa,Premier League (England),forward,#69091C,#BBD5F2,no
+p-john-mcginn,John McGinn,Aston Villa,Premier League (England),midfielder,#69091C,#BBD5F2,no
+p-ibrahim-mbaye,Ibrahim Mbaye,Aston Villa,Premier League (England),forward,#69091C,#BBD5F2,no
+p-boubacar-kamara,Boubacar Kamara,Aston Villa,Premier League (England),midfielder,#69091C,#BBD5F2,no
+p-emiliano-buendia,Emiliano Buendía,Aston Villa,Premier League (England),midfielder,#69091C,#BBD5F2,no
+p-alex-scott-footballer-born-2003,Alex Scott,AFC Bournemouth,Premier League (England),midfielder,#000000,#FFFFFF,no
+p-david-brooks-footballer,David Brooks,AFC Bournemouth,Premier League (England),midfielder,#000000,#FFFFFF,no
+p-ryan-christie,Ryan Christie,AFC Bournemouth,Premier League (England),midfielder,#000000,#FFFFFF,no
+p-ben-gannon-doak,Ben Gannon-Doak,AFC Bournemouth,Premier League (England),forward,#000000,#FFFFFF,no
+p-eli-junior-kroupi,Eli Junior Kroupi,AFC Bournemouth,Premier League (England),forward,#000000,#FFFFFF,no
+p-dango-ouattara,Dango Ouattara,Brentford,Premier League (England),forward,#FFFFFF,#000000,no
+p-igor-thiago,Igor Thiago,Brentford,Premier League (England),forward,#FFFFFF,#000000,no
+p-kevin-schade,Kevin Schade,Brentford,Premier League (England),forward,#FFFFFF,#000000,no
+p-josh-dasilva,Josh Dasilva,Brentford,Premier League (England),midfielder,#FFFFFF,#000000,no
+p-mathias-jensen,Mathias Jensen,Brentford,Premier League (England),midfielder,#FFFFFF,#000000,no
+p-yankuba-minteh,Yankuba Minteh,Brighton & Hove Albion,Premier League (England),midfielder,#1144DD,#FFFFFF,no
+p-georginio-rutter,Georginio Rutter,Brighton & Hove Albion,Premier League (England),forward,#1144DD,#FFFFFF,no
+p-stefanos-tzimas,Stefanos Tzimas,Brighton & Hove Albion,Premier League (England),forward,#1144DD,#FFFFFF,no
+p-jack-hinshelwood,Jack Hinshelwood,Brighton & Hove Albion,Premier League (England),midfielder,#1144DD,#FFFFFF,no
+p-kaoru-mitoma,Kaoru Mitoma,Brighton & Hove Albion,Premier League (England),midfielder,#1144DD,#FFFFFF,no
+p-geovany-quenda,Geovany Quenda,Chelsea,Premier League (England),forward,#14349B,#FFFFFF,no
+p-jamie-gittens,Jamie Gittens,Chelsea,Premier League (England),forward,#14349B,#FFFFFF,no
+p-joao-pedro-footballer-born-2001,João Pedro,Chelsea,Premier League (England),forward,#14349B,#FFFFFF,no
+p-pedro-neto,Pedro Neto,Chelsea,Premier League (England),forward,#14349B,#FFFFFF,no
+p-cole-palmer,Cole Palmer,Chelsea,Premier League (England),midfielder,#14349B,#FFFFFF,no
+p-ellis-simms,Ellis Simms,Coventry City,Premier League (England),forward,#62B5E5,#111111,no
+p-ephron-mason-clark,Ephron Mason-Clark,Coventry City,Premier League (England),forward,#62B5E5,#111111,no
+p-haji-wright,Haji Wright,Coventry City,Premier League (England),forward,#62B5E5,#111111,no
+p-tatsuhiro-sakamoto,Tatsuhiro Sakamoto,Coventry City,Premier League (England),forward,#62B5E5,#111111,no
+p-caleb-yirenkyi,Caleb Yirenkyi,Coventry City,Premier League (England),midfielder,#62B5E5,#111111,no
+p-ismaila-sarr,Ismaïla Sarr,Crystal Palace,Premier League (England),forward,#FFFFFF,#111111,no
+p-dwight-mcneil,Dwight McNeil,Crystal Palace,Premier League (England),forward,#FFFFFF,#111111,no
+p-eddie-nketiah,Eddie Nketiah,Crystal Palace,Premier League (England),forward,#FFFFFF,#111111,no
+p-jean-philippe-mateta,Jean-Philippe Mateta,Crystal Palace,Premier League (England),forward,#FFFFFF,#111111,no
+p-yeremy-pino,Yéremy Pino,Crystal Palace,Premier League (England),forward,#FFFFFF,#111111,no
+p-thierno-barry-footballer-born-2002,Thierno Barry,Everton,Premier League (England),forward,#0000FF,#FFFFFF,no
+p-kiernan-dewsbury-hall,Kiernan Dewsbury-Hall,Everton,Premier League (England),midfielder,#0000FF,#FFFFFF,no
+p-jarrad-branthwaite,Jarrad Branthwaite,Everton,Premier League (England),defender,#0000FF,#FFFFFF,no
+p-jack-grealish,Jack Grealish,Everton,Premier League (England),midfielder,#0000FF,#FFFFFF,no
+p-brennan-johnson,Brennan Johnson,Everton,Premier League (England),forward,#0000FF,#FFFFFF,no
+p-gonzalo-garcia-footballer-born-2004,Gonzalo García,Fulham,Premier League (England),forward,#FFFFFF,#000000,no
+p-tom-cairney,Tom Cairney,Fulham,Premier League (England),midfielder,#FFFFFF,#000000,no
+p-kevin-footballer-born-2003,Kevin,Fulham,Premier League (England),forward,#FFFFFF,#000000,no
+p-rodrigo-muniz-brazilian-footballer,Rodrigo Muniz,Fulham,Premier League (England),forward,#FFFFFF,#000000,no
+p-cesar-palacios-footballer-born-2004,César Palacios,Fulham,Premier League (England),midfielder,#FFFFFF,#000000,no
+p-mohamed-belloumi,Mohamed Belloumi,Hull City,Premier League (England),forward,#000000,#FFFFFF,no
+p-oli-mcburnie,Oli McBurnie,Hull City,Premier League (England),forward,#000000,#FFFFFF,no
+p-sorba-thomas,Sorba Thomas,Hull City,Premier League (England),forward,#000000,#FFFFFF,no
+p-eliot-matazo,Eliot Matazo,Hull City,Premier League (England),midfielder,#000000,#FFFFFF,no
+p-joe-gelhardt,Joe Gelhardt,Hull City,Premier League (England),midfielder,#000000,#FFFFFF,no
+p-abdul-fatawu,Abdul Fatawu,Ipswich Town,Premier League (England),forward,#0333A0,#FFFFFF,no
+p-jaden-philogene,Jaden Philogene,Ipswich Town,Premier League (England),forward,#0333A0,#FFFFFF,no
+p-julio-enciso-footballer-born-2004,Julio Enciso,Ipswich Town,Premier League (England),forward,#0333A0,#FFFFFF,no
+p-sindre-walle-egeli,Sindre Walle Egeli,Ipswich Town,Premier League (England),forward,#0333A0,#FFFFFF,no
+p-zian-flemming,Zian Flemming,Ipswich Town,Premier League (England),forward,#0333A0,#FFFFFF,no
+p-dominic-calvert-lewin,Dominic Calvert-Lewin,Leeds United,Premier League (England),forward,#777777,#FFFFFF,no
+p-brenden-aaronson,Brenden Aaronson,Leeds United,Premier League (England),midfielder,#777777,#FFFFFF,no
+p-daniel-james-footballer,Daniel James,Leeds United,Premier League (England),midfielder,#777777,#FFFFFF,no
+p-harry-wilson-footballer-born-1997,Harry Wilson,Leeds United,Premier League (England),midfielder,#777777,#FFFFFF,no
+p-sean-longstaff,Sean Longstaff,Leeds United,Premier League (England),midfielder,#777777,#FFFFFF,no
+p-alexander-isak,Alexander Isak,Liverpool,Premier League (England),forward,#8F1E32,#FFFFFF,no
+p-bradley-barcola,Bradley Barcola,Liverpool,Premier League (England),forward,#8F1E32,#FFFFFF,no
+p-cody-gakpo,Cody Gakpo,Liverpool,Premier League (England),forward,#8F1E32,#FFFFFF,no
+p-mohamed-salah,Mohamed Salah,Liverpool,Premier League (England),forward,#8F1E32,#FFFFFF,yes
+p-victor-munoz-footballer-born-2003,Víctor Muñoz,Liverpool,Premier League (England),forward,#8F1E32,#FFFFFF,no
+p-erling-haaland,Erling Haaland,Manchester City,Premier League (England),forward,#98C6EB,#FFFFFF,no
+p-iliman-ndiaye,Iliman Ndiaye,Manchester City,Premier League (England),forward,#98C6EB,#FFFFFF,no
+p-jeremy-doku,Jérémy Doku,Manchester City,Premier League (England),forward,#98C6EB,#FFFFFF,no
+p-elliot-anderson,Elliot Anderson,Manchester City,Premier League (England),midfielder,#98C6EB,#FFFFFF,no
+p-enzo-fernandez,Enzo Fernández,Manchester City,Premier League (England),midfielder,#98C6EB,#FFFFFF,no
+p-joshua-zirkzee,Joshua Zirkzee,Manchester United,Premier League (England),forward,#FF0000,#FFFFFF,no
+p-bruno-fernandes,Bruno Fernandes,Manchester United,Premier League (England),midfielder,#FF0000,#FFFFFF,no
+p-marcus-rashford,Marcus Rashford,Manchester United,Premier League (England),forward,#FF0000,#FFFFFF,no
+p-matheus-cunha,Matheus Cunha,Manchester United,Premier League (England),forward,#FF0000,#FFFFFF,no
+p-andrey-santos,Andrey Santos,Manchester United,Premier League (England),midfielder,#FF0000,#FFFFFF,no
+p-aladji-bamba,Aladji Bamba,Newcastle United,Premier League (England),midfielder,#FFFFFF,#000000,no
+p-bazoumana-toure,Bazoumana Touré,Newcastle United,Premier League (England),forward,#FFFFFF,#000000,no
+p-harvey-barnes,Harvey Barnes,Newcastle United,Premier League (England),forward,#FFFFFF,#000000,no
+p-joelinton,Joelinton,Newcastle United,Premier League (England),forward,#FFFFFF,#000000,no
+p-matias-fernandez-pardo,Matias Fernandez-Pardo,Newcastle United,Premier League (England),forward,#FFFFFF,#000000,no
+p-callum-hudson-odoi,Callum Hudson-Odoi,Nottingham Forest,Premier League (England),forward,#D70926,#FFFFFF,no
+p-chris-wood-footballer-born-1991,Chris Wood,Nottingham Forest,Premier League (England),forward,#D70926,#FFFFFF,no
+p-igor-jesus-footballer-born-2001,Igor Jesus,Nottingham Forest,Premier League (England),forward,#D70926,#FFFFFF,no
+p-liam-delap,Liam Delap,Nottingham Forest,Premier League (England),forward,#D70926,#FFFFFF,no
+p-morgan-gibbs-white,Morgan Gibbs-White,Nottingham Forest,Premier League (England),midfielder,#D70926,#FFFFFF,no
+p-brian-brobbey,Brian Brobbey,Sunderland,Premier League (England),forward,#FF0000,#000000,no
+p-chemsdine-talbi,Chemsdine Talbi,Sunderland,Premier League (England),forward,#FF0000,#000000,no
+p-nilson-angulo,Nilson Angulo,Sunderland,Premier League (England),forward,#FF0000,#000000,no
+p-alan-browne-footballer,Alan Browne,Sunderland,Premier League (England),midfielder,#FF0000,#000000,no
+p-chris-rigg,Chris Rigg,Sunderland,Premier League (England),midfielder,#FF0000,#000000,no
+p-mathys-tel,Mathys Tel,Tottenham Hotspur,Premier League (England),forward,#FFFFFF,#111111,no
+p-richarlison,Richarlison,Tottenham Hotspur,Premier League (England),forward,#FFFFFF,#111111,no
+p-savio-footballer-born-2004,Sávio,Tottenham Hotspur,Premier League (England),forward,#FFFFFF,#111111,no
+p-conor-gallagher,Conor Gallagher,Tottenham Hotspur,Premier League (England),midfielder,#FFFFFF,#111111,no
+p-james-maddison,James Maddison,Tottenham Hotspur,Premier League (England),midfielder,#FFFFFF,#111111,no
+p-federico-valverde,Federico Valverde,Real Madrid,LaLiga (Spain),midfielder,#FFFFFF,#FEBE10,no
+p-endrick,Endrick,Real Madrid,LaLiga (Spain),forward,#FFFFFF,#FEBE10,no
+p-kylian-mbappe,Kylian Mbappé,Real Madrid,LaLiga (Spain),forward,#FFFFFF,#FEBE10,no
+p-rodrygo,Rodrygo,Real Madrid,LaLiga (Spain),forward,#FFFFFF,#FEBE10,no
+p-vinicius-junior,Vinícius Júnior,Real Madrid,LaLiga (Spain),forward,#FFFFFF,#FEBE10,no
+p-raphinha,Raphinha,Barcelona,LaLiga (Spain),forward,#05003B,#FFFFFF,no
+p-anthony-gordon-footballer,Anthony Gordon,Barcelona,LaLiga (Spain),forward,#05003B,#FFFFFF,no
+p-gabriel-jesus,Gabriel Jesus,Barcelona,LaLiga (Spain),forward,#05003B,#FFFFFF,no
+p-lamine-yamal,Lamine Yamal,Barcelona,LaLiga (Spain),forward,#05003B,#FFFFFF,no
+p-fermin-lopez,Fermín López,Barcelona,LaLiga (Spain),midfielder,#05003B,#FFFFFF,no
+p-ademola-lookman,Ademola Lookman,Atlético Madrid,LaLiga (Spain),forward,#FF0000,#0000FF,no
+p-alexander-sorloth,Alexander Sørloth,Atlético Madrid,LaLiga (Spain),forward,#FF0000,#0000FF,no
+p-julian-alvarez,Julián Alvarez,Atlético Madrid,LaLiga (Spain),forward,#FF0000,#0000FF,no
+p-alex-baena,Álex Baena,Atlético Madrid,LaLiga (Spain),midfielder,#FF0000,#0000FF,no
+p-lee-kang-in,Lee Kang-in,Atlético Madrid,LaLiga (Spain),midfielder,#FF0000,#0000FF,no
+p-inaki-williams,Iñaki Williams,Athletic Club,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-alex-berenguer,Álex Berenguer,Athletic Club,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-gorka-guruzeta,Gorka Guruzeta,Athletic Club,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-nico-williams,Nico Williams,Athletic Club,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-oihan-sancet,Oihan Sancet,Athletic Club,LaLiga (Spain),midfielder,#FFFFFF,#000000,no
+p-gerard-moreno,Gerard Moreno,Villarreal,LaLiga (Spain),forward,#FFFF00,#111111,no
+p-georges-mikautadze,Georges Mikautadze,Villarreal,LaLiga (Spain),forward,#FFFF00,#111111,no
+p-ilias-akhomach,Ilias Akhomach,Villarreal,LaLiga (Spain),forward,#FFFF00,#111111,no
+p-alberto-moleiro,Alberto Moleiro,Villarreal,LaLiga (Spain),midfielder,#FFFF00,#111111,no
+p-juan-foyth,Juan Foyth,Villarreal,LaLiga (Spain),defender,#FFFF00,#111111,no
+p-mikel-oyarzabal,Mikel Oyarzabal,Real Sociedad,LaLiga (Spain),forward,#0042FF,#FFFFFF,no
+p-ander-barrenetxea-footballer,Ander Barrenetxea,Real Sociedad,LaLiga (Spain),forward,#0042FF,#FFFFFF,no
+p-goncalo-guedes,Gonçalo Guedes,Real Sociedad,LaLiga (Spain),forward,#0042FF,#FFFFFF,no
+p-orri-oskarsson,Orri Óskarsson,Real Sociedad,LaLiga (Spain),forward,#0042FF,#FFFFFF,no
+p-benat-turrientes,Beñat Turrientes,Real Sociedad,LaLiga (Spain),midfielder,#0042FF,#FFFFFF,no
+p-abde-ezzalzouli,Abde Ezzalzouli,Real Betis,LaLiga (Spain),forward,#359B5C,#FFFFFF,no
+p-antony-footballer-born-2000,Antony,Real Betis,LaLiga (Spain),forward,#359B5C,#FFFFFF,no
+p-cucho-hernandez,Cucho Hernández,Real Betis,LaLiga (Spain),forward,#359B5C,#FFFFFF,no
+p-pablo-fornals,Pablo Fornals,Real Betis,LaLiga (Spain),midfielder,#359B5C,#FFFFFF,no
+p-aitor-ruibal,Aitor Ruibal,Real Betis,LaLiga (Spain),forward,#359B5C,#FFFFFF,no
+p-robbie-ure,Robbie Ure,Sevilla,LaLiga (Spain),forward,#FFFFFF,#E20001,no
+p-ruben-vargas,Rubén Vargas,Sevilla,LaLiga (Spain),forward,#FFFFFF,#E20001,no
+p-giorgi-kochorashvili,Giorgi Kochorashvili,Sevilla,LaLiga (Spain),midfielder,#FFFFFF,#E20001,no
+p-alfon-gonzalez,Alfon González,Sevilla,LaLiga (Spain),forward,#FFFFFF,#E20001,no
+p-peque-fernandez,Peque Fernández,Sevilla,LaLiga (Spain),midfielder,#FFFFFF,#E20001,no
+p-arnaut-danjuma,Arnaut Danjuma,Valencia,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-hugo-duro,Hugo Duro,Valencia,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-luis-rioja,Luis Rioja,Valencia,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-javi-guerra-footballer-born-2003,Javi Guerra,Valencia,LaLiga (Spain),midfielder,#FFFFFF,#000000,no
+p-harvey-elliott,Harvey Elliott,Valencia,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-borja-iglesias,Borja Iglesias,Celta Vigo,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-ferran-jutgla,Ferran Jutglà,Celta Vigo,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-pablo-duran,Pablo Durán,Celta Vigo,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-miguel-roman-footballer,Miguel Román,Celta Vigo,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-couhaib-driouech,Couhaib Driouech,Celta Vigo,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-kike-barja,Kike Barja,Osasuna,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-raul-garcia-footballer-born-2000,Raúl García,Osasuna,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-aimar-oroz,Aimar Oroz,Osasuna,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-iker-munoz,Iker Muñoz,Osasuna,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-jon-moncayola,Jon Moncayola,Osasuna,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-alemao-footballer-born-1998,Alemão,Rayo Vallecano,LaLiga (Spain),forward,#FFFFFF,#111111,no
+p-isi-palazon,Isi Palazón,Rayo Vallecano,LaLiga (Spain),forward,#FFFFFF,#111111,no
+p-randy-nteka,Randy Nteka,Rayo Vallecano,LaLiga (Spain),forward,#FFFFFF,#111111,no
+p-sergio-camello,Sergio Camello,Rayo Vallecano,LaLiga (Spain),forward,#FFFFFF,#111111,no
+p-unai-lopez,Unai López,Rayo Vallecano,LaLiga (Spain),midfielder,#FFFFFF,#111111,no
+p-borja-mayoral,Borja Mayoral,Getafe,LaLiga (Spain),forward,#0000FF,#FFFFFF,no
+p-juanmi-footballer-born-1993,Juanmi,Getafe,LaLiga (Spain),forward,#0000FF,#FFFFFF,no
+p-martin-satriano,Martín Satriano,Getafe,LaLiga (Spain),forward,#0000FF,#FFFFFF,no
+p-nemanja-gudelj,Nemanja Gudelj,Getafe,LaLiga (Spain),midfielder,#0000FF,#FFFFFF,no
+p-ramon-terrats,Ramon Terrats,Getafe,LaLiga (Spain),midfielder,#0000FF,#FFFFFF,no
+p-javi-puado,Javi Puado,Espanyol,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-pere-milla,Pere Milla,Espanyol,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-roberto-fernandez-footballer-born-2002,Roberto Fernández,Espanyol,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-edu-exposito,Edu Expósito,Espanyol,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-pol-lozano,Pol Lozano,Espanyol,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-mariano-diaz,Mariano Díaz,Deportivo Alavés,LaLiga (Spain),forward,#FFFFFF,#111111,no
+p-toni-martinez,Toni Martínez,Deportivo Alavés,LaLiga (Spain),forward,#FFFFFF,#111111,no
+p-angel-perez-footballer-born-2002,Ángel Pérez,Deportivo Alavés,LaLiga (Spain),midfielder,#FFFFFF,#111111,no
+p-antonio-blanco-footballer,Antonio Blanco,Deportivo Alavés,LaLiga (Spain),midfielder,#FFFFFF,#111111,no
+p-carles-alena,Carles Aleñá,Deportivo Alavés,LaLiga (Spain),midfielder,#FFFFFF,#111111,no
+p-ivan-romero-footballer-born-2001,Iván Romero,Levante,LaLiga (Spain),forward,#222730,#661424,no
+p-roger-brugue,Roger Brugué,Levante,LaLiga (Spain),forward,#222730,#661424,no
+p-petar-ratkov,Petar Ratkov,Levante,LaLiga (Spain),forward,#222730,#661424,no
+p-yanis-musuayi,Yanis Musuayi,Levante,LaLiga (Spain),forward,#222730,#661424,no
+p-jon-ander-olasagasti,Jon Ander Olasagasti,Levante,LaLiga (Spain),midfielder,#222730,#661424,no
+p-ezequiel-ponce,Ezequiel Ponce,Elche,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-facundo-buonanotte,Facundo Buonanotte,Elche,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-german-valera,Germán Valera,Elche,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-marc-aguado,Marc Aguado,Elche,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-yago-santiago,Yago Santiago,Elche,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-diego-villares,Diego Villares,Deportivo A Coruña,LaLiga (Spain),midfielder,#777777,#FFFFFF,no
+p-david-mella,David Mella,Deportivo A Coruña,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-yeremay-hernandez,Yeremay Hernández,Deportivo A Coruña,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-zakaria-eddahchouri,Zakaria Eddahchouri,Deportivo A Coruña,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-adama-traore-footballer-born-1996,Adama Traoré,Deportivo A Coruña,LaLiga (Spain),forward,#777777,#FFFFFF,no
+p-chupete,Chupete,Málaga,LaLiga (Spain),forward,#FFFFFF,#103E9E,no
+p-carlos-dotor,Carlos Dotor,Málaga,LaLiga (Spain),midfielder,#FFFFFF,#103E9E,no
+p-david-larrubia,David Larrubia,Málaga,LaLiga (Spain),midfielder,#FFFFFF,#103E9E,no
+p-haitam-abaida,Haitam,Málaga,LaLiga (Spain),midfielder,#FFFFFF,#103E9E,no
+p-joaquin-munoz-footballer-born-1999,Joaquín Muñoz,Málaga,LaLiga (Spain),midfielder,#FFFFFF,#103E9E,no
+p-andres-martin-footballer,Andrés Martín,Racing de Santander,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-giorgi-guliashvili,Giorgi Guliashvili,Racing de Santander,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-juan-carlos-arana,Juan Carlos Arana,Racing de Santander,LaLiga (Spain),forward,#FFFFFF,#000000,no
+p-andre-almeida-footballer-born-2000,André Almeida,Racing de Santander,LaLiga (Spain),midfielder,#FFFFFF,#000000,no
+p-inigo-vicente,Iñigo Vicente,Racing de Santander,LaLiga (Spain),midfielder,#FFFFFF,#000000,no
+p-lautaro-martinez,Lautaro Martínez,Inter Milan,Serie A (Italy),forward,#000000,#FFFFFF,no
+p-marcus-thuram,Marcus Thuram,Inter Milan,Serie A (Italy),forward,#000000,#FFFFFF,no
+p-curtis-jones-footballer-born-2001,Curtis Jones,Inter Milan,Serie A (Italy),midfielder,#000000,#FFFFFF,no
+p-luis-henrique-footballer-born-2001,Luis Henrique,Inter Milan,Serie A (Italy),midfielder,#000000,#FFFFFF,no
+p-petar-sucic,Petar Sučić,Inter Milan,Serie A (Italy),midfielder,#000000,#FFFFFF,no
+p-david-neres,David Neres,Napoli,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-rasmus-hojlund,Rasmus Højlund,Napoli,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-kevin-de-bruyne,Kevin De Bruyne,Napoli,Serie A (Italy),midfielder,#777777,#FFFFFF,no
+p-scott-mctominay,Scott McTominay,Napoli,Serie A (Italy),midfielder,#777777,#FFFFFF,no
+p-alisson-santos,Alisson Santos,Napoli,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-kenan-yildiz,Kenan Yıldız,Juventus,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-randal-kolo-muani,Randal Kolo Muani,Juventus,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-edon-zhegrova,Edon Zhegrova,Juventus,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-francisco-conceicao,Francisco Conceição,Juventus,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-teun-koopmeiners,Teun Koopmeiners,Juventus,Serie A (Italy),midfielder,#777777,#FFFFFF,no
+p-goncalo-ramos,Gonçalo Ramos,AC Milan,Serie A (Italy),forward,#000000,#FFFFFF,no
+p-christian-pulisic,Christian Pulisic,AC Milan,Serie A (Italy),midfielder,#000000,#FFFFFF,no
+p-ruben-loftus-cheek,Ruben Loftus-Cheek,AC Milan,Serie A (Italy),midfielder,#000000,#FFFFFF,no
+p-diego-moreira,Diego Moreira,AC Milan,Serie A (Italy),forward,#000000,#FFFFFF,no
+p-adrien-rabiot,Adrien Rabiot,AC Milan,Serie A (Italy),midfielder,#000000,#FFFFFF,no
+p-gianluca-scamacca,Gianluca Scamacca,Atalanta,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-jonathan-rowe-footballer-born-2003,Jonathan Rowe,Atalanta,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-kamaldeen-sulemana,Kamaldeen Sulemana,Atalanta,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-lazar-samardzic,Lazar Samardžić,Atalanta,Serie A (Italy),midfielder,#777777,#FFFFFF,no
+p-mario-pasalic,Mario Pašalić,Atalanta,Serie A (Italy),midfielder,#777777,#FFFFFF,no
+p-santiago-castro-footballer-born-2004,Santiago Castro,Roma,Serie A (Italy),forward,#980729,#681F30,no
+p-lorenzo-pellegrini,Lorenzo Pellegrini,Roma,Serie A (Italy),midfielder,#980729,#681F30,no
+p-manu-kone,Manu Koné,Roma,Serie A (Italy),midfielder,#980729,#681F30,no
+p-bryan-cristante,Bryan Cristante,Roma,Serie A (Italy),midfielder,#980729,#681F30,no
+p-donyell-malen,Donyell Malen,Roma,Serie A (Italy),forward,#980729,#681F30,no
+p-mattia-zaccagni,Mattia Zaccagni,Lazio,Serie A (Italy),midfielder,#88BFF7,#FFFFFF,no
+p-andrea-pinamonti,Andrea Pinamonti,Lazio,Serie A (Italy),forward,#88BFF7,#FFFFFF,no
+p-gustav-isaksen,Gustav Isaksen,Lazio,Serie A (Italy),forward,#88BFF7,#FFFFFF,no
+p-bruno-galassi,Bruno Galassi,Lazio,Serie A (Italy),midfielder,#88BFF7,#FFFFFF,no
+p-fisayo-dele-bashiru,Fisayo Dele-Bashiru,Lazio,Serie A (Italy),midfielder,#88BFF7,#FFFFFF,no
+p-alieu-njie-footballer-born-2005,Alieu Njie,Fiorentina,Serie A (Italy),forward,#552A79,#FFFFFF,no
+p-beto-footballer-born-1998,Beto,Fiorentina,Serie A (Italy),forward,#552A79,#FFFFFF,no
+p-pedro-goncalves,Pedro Gonçalves,Fiorentina,Serie A (Italy),forward,#552A79,#FFFFFF,no
+p-wilfried-gnonto,Wilfried Gnonto,Fiorentina,Serie A (Italy),forward,#552A79,#FFFFFF,no
+p-arthur-atta,Arthur Atta,Fiorentina,Serie A (Italy),midfielder,#552A79,#FFFFFF,no
+p-artem-dovbyk,Artem Dovbyk,Bologna,Serie A (Italy),forward,#00003C,#FFFFFF,no
+p-riccardo-orsolini,Riccardo Orsolini,Bologna,Serie A (Italy),forward,#00003C,#FFFFFF,no
+p-samuel-mbangula,Samuel Mbangula,Bologna,Serie A (Italy),forward,#00003C,#FFFFFF,no
+p-federico-bernardeschi,Federico Bernardeschi,Bologna,Serie A (Italy),midfielder,#00003C,#FFFFFF,no
+p-mikel-amondarain,Mikel Amondarain,Bologna,Serie A (Italy),midfielder,#00003C,#FFFFFF,no
+p-nico-paz,Nico Paz,Como,Serie A (Italy),midfielder,#215AAE,#FFFFFF,no
+p-lucas-da-cunha,Lucas Da Cunha,Como,Serie A (Italy),midfielder,#215AAE,#FFFFFF,no
+p-anastasios-douvikas,Anastasios Douvikas,Como,Serie A (Italy),forward,#215AAE,#FFFFFF,no
+p-assane-diao,Assane Diao,Como,Serie A (Italy),forward,#215AAE,#FFFFFF,no
+p-maxence-caqueret,Maxence Caqueret,Como,Serie A (Italy),midfielder,#215AAE,#FFFFFF,no
+p-gaetano-oristanio,Gaetano Oristanio,Torino,Serie A (Italy),forward,#65001B,#FFFFFF,no
+p-pietro-pellegri,Pietro Pellegri,Torino,Serie A (Italy),forward,#65001B,#FFFFFF,no
+p-zakaria-aboukhlal,Zakaria Aboukhlal,Torino,Serie A (Italy),forward,#65001B,#FFFFFF,no
+p-nikola-vlasic,Nikola Vlašić,Torino,Serie A (Italy),midfielder,#65001B,#FFFFFF,no
+p-rolando-mandragora,Rolando Mandragora,Torino,Serie A (Italy),midfielder,#65001B,#FFFFFF,no
+p-jesper-karlstrom,Jesper Karlström,Udinese,Serie A (Italy),midfielder,#777777,#FFFFFF,no
+p-idrissa-gueye-footballer-born-2006,Idrissa Gueye,Udinese,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-keinan-davis,Keinan Davis,Udinese,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-nicolo-zaniolo,Nicolò Zaniolo,Udinese,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-hassane-kamara,Hassane Kamara,Udinese,Serie A (Italy),defender,#777777,#FFFFFF,no
+p-junior-messias,Júnior Messias,Genoa,Serie A (Italy),forward,#FFFFFF,#000040,no
+p-vitinha-footballer-born-march-2000,Vitinha,Genoa,Serie A (Italy),forward,#FFFFFF,#000040,no
+p-ethan-meichtry,Ethan Meichtry,Genoa,Serie A (Italy),midfielder,#FFFFFF,#000040,no
+p-tommaso-baldanzi,Tommaso Baldanzi,Genoa,Serie A (Italy),midfielder,#FFFFFF,#000040,no
+p-elias-havel,Elias Havel,Genoa,Serie A (Italy),forward,#FFFFFF,#000040,no
+p-kevin-carlos,Kevin Carlos,Cagliari,Serie A (Italy),forward,#022249,#FFFFFF,no
+p-jacopo-fazzini,Jacopo Fazzini,Cagliari,Serie A (Italy),midfielder,#022249,#FFFFFF,no
+p-michel-ndary-adopo,Michel Adopo,Cagliari,Serie A (Italy),midfielder,#022249,#FFFFFF,no
+p-alessandro-deiola,Alessandro Deiola,Cagliari,Serie A (Italy),midfielder,#022249,#FFFFFF,no
+p-m-bala-nzola,M'Bala Nzola,Cagliari,Serie A (Italy),forward,#022249,#FFFFFF,no
+p-david-romero-footballer,David Romero,Parma,Serie A (Italy),forward,#FFFFFF,#000000,no
+p-ousmane-diallo-footballer,Ousmane Diallo,Parma,Serie A (Italy),forward,#FFFFFF,#000000,no
+p-pontus-almqvist,Pontus Almqvist,Parma,Serie A (Italy),forward,#FFFFFF,#000000,no
+p-adrian-bernabe,Adrián Bernabé,Parma,Serie A (Italy),midfielder,#FFFFFF,#000000,no
+p-benjamin-cremaschi,Benjamin Cremaschi,Parma,Serie A (Italy),midfielder,#FFFFFF,#000000,no
+p-amar-fatah,Amar Fatah,Lecce,Serie A (Italy),forward,#FFFF00,#000055,no
+p-konan-n-dri,Konan N'Dri,Lecce,Serie A (Italy),forward,#FFFF00,#000055,no
+p-nikola-stulic,Nikola Štulić,Lecce,Serie A (Italy),forward,#FFFF00,#000055,no
+p-medon-berisha,Medon Berisha,Lecce,Serie A (Italy),midfielder,#FFFF00,#000055,no
+p-sadik-fofana,Sadik Fofana,Lecce,Serie A (Italy),midfielder,#FFFF00,#000055,no
+p-domenico-berardi,Domenico Berardi,Sassuolo,Serie A (Italy),forward,#00A746,#000000,no
+p-cristian-volpato,Cristian Volpato,Sassuolo,Serie A (Italy),forward,#00A746,#000000,no
+p-kieron-bowie,Kieron Bowie,Sassuolo,Serie A (Italy),forward,#00A746,#000000,no
+p-andrea-ghion,Andrea Ghion,Sassuolo,Serie A (Italy),midfielder,#00A746,#000000,no
+p-daniel-boloca,Daniel Boloca,Sassuolo,Serie A (Italy),midfielder,#00A746,#000000,no
+p-albion-rrahmani,Albion Rrahmani,Venezia,Serie A (Italy),forward,#000000,#FFFFFF,no
+p-andrea-adorante,Andrea Adorante,Venezia,Serie A (Italy),forward,#000000,#FFFFFF,no
+p-john-yeboah,John Yeboah,Venezia,Serie A (Italy),forward,#000000,#FFFFFF,no
+p-lamine-fanne,Lamine Fanne,Venezia,Serie A (Italy),midfielder,#000000,#FFFFFF,no
+p-gianluca-busio,Gianluca Busio,Venezia,Serie A (Italy),midfielder,#000000,#FFFFFF,no
+p-antonio-raimondo,Antonio Raimondo,Frosinone,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-daniel-birligea,Daniel Bîrligea,Frosinone,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-fares-ghedjemis,Farès Ghedjemis,Frosinone,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-romano-schmid,Romano Schmid,Frosinone,Serie A (Italy),midfielder,#777777,#FFFFFF,no
+p-alessio-zerbin,Alessio Zerbin,Frosinone,Serie A (Italy),forward,#777777,#FFFFFF,no
+p-gustavo-varela-footballer-born-2005,Gustavo Varela,Monza,Serie A (Italy),forward,#FF0000,#FFFFFF,no
+p-patrick-cutrone,Patrick Cutrone,Monza,Serie A (Italy),forward,#FF0000,#FFFFFF,no
+p-manga-foe-ondoa,Manga Foe Ondoa,Monza,Serie A (Italy),midfielder,#FF0000,#FFFFFF,no
+p-omari-forson,Omari Forson,Monza,Serie A (Italy),midfielder,#FF0000,#FFFFFF,no
+p-ricardo-mangas,Ricardo Mangas,Monza,Serie A (Italy),defender,#FF0000,#FFFFFF,no
+p-harry-kane,Harry Kane,Bayern Munich,Bundesliga (Germany),forward,#FF0000,#FFFFFF,no
+p-michael-olise,Michael Olise,Bayern Munich,Bundesliga (Germany),forward,#FF0000,#FFFFFF,no
+p-serge-gnabry,Serge Gnabry,Bayern Munich,Bundesliga (Germany),forward,#FF0000,#FFFFFF,no
+p-jamal-musiala,Jamal Musiala,Bayern Munich,Bundesliga (Germany),midfielder,#FF0000,#FFFFFF,no
+p-tom-bischof,Tom Bischof,Bayern Munich,Bundesliga (Germany),midfielder,#FF0000,#FFFFFF,no
+p-afonso-moreira,Afonso Moreira,Bayer Leverkusen,Bundesliga (Germany),forward,#000000,#FFFFFF,no
+p-martin-terrier,Martin Terrier,Bayer Leverkusen,Bundesliga (Germany),forward,#000000,#FFFFFF,no
+p-jonas-hofmann,Jonas Hofmann,Bayer Leverkusen,Bundesliga (Germany),midfielder,#000000,#FFFFFF,no
+p-malik-tillman,Malik Tillman,Bayer Leverkusen,Bundesliga (Germany),midfielder,#000000,#FFFFFF,no
+p-robert-andrich,Robert Andrich,Bayer Leverkusen,Bundesliga (Germany),midfielder,#000000,#FFFFFF,no
+p-serhou-guirassy,Serhou Guirassy,Borussia Dortmund,Bundesliga (Germany),forward,#FFE300,#000000,no
+p-felix-nmecha,Felix Nmecha,Borussia Dortmund,Bundesliga (Germany),midfielder,#FFE300,#000000,no
+p-jobe-bellingham,Jobe Bellingham,Borussia Dortmund,Bundesliga (Germany),midfielder,#FFE300,#000000,no
+p-emre-can,Emre Can,Borussia Dortmund,Bundesliga (Germany),midfielder,#FFE300,#000000,no
+p-fabio-silva-footballer-born-2002,Fábio Silva,Borussia Dortmund,Bundesliga (Germany),forward,#FFE300,#000000,no
+p-antonio-nusa,Antonio Nusa,Leipzig,Bundesliga (Germany),forward,#FFFFFF,#FF0000,no
+p-johan-bakayoko,Johan Bakayoko,Leipzig,Bundesliga (Germany),forward,#FFFFFF,#FF0000,no
+p-marc-guiu,Marc Guiu,Leipzig,Bundesliga (Germany),forward,#FFFFFF,#FF0000,no
+p-assan-ouedraogo,Assan Ouédraogo,Leipzig,Bundesliga (Germany),midfielder,#FFFFFF,#FF0000,no
+p-brajan-gruda,Brajan Gruda,Leipzig,Bundesliga (Germany),midfielder,#FFFFFF,#FF0000,no
+p-ansgar-knauff,Ansgar Knauff,Eintracht Frankfurt,Bundesliga (Germany),forward,#000000,#FFFFFF,no
+p-jonathan-burkardt,Jonathan Burkardt,Eintracht Frankfurt,Bundesliga (Germany),forward,#000000,#FFFFFF,no
+p-younes-ebnoutalib,Younes Ebnoutalib,Eintracht Frankfurt,Bundesliga (Germany),forward,#000000,#FFFFFF,no
+p-fares-chaibi,Farès Chaïbi,Eintracht Frankfurt,Bundesliga (Germany),midfielder,#000000,#FFFFFF,no
+p-ayoube-amaimouni,Ayoube Amaimouni,Eintracht Frankfurt,Bundesliga (Germany),forward,#000000,#FFFFFF,no
+p-ermedin-demirovic,Ermedin Demirović,VfB Stuttgart,Bundesliga (Germany),forward,#FFFFFF,#111111,no
+p-tiago-tomas,Tiago Tomás,VfB Stuttgart,Bundesliga (Germany),forward,#FFFFFF,#111111,no
+p-bilal-el-khannouss,Bilal El Khannouss,VfB Stuttgart,Bundesliga (Germany),midfielder,#FFFFFF,#111111,no
+p-chris-fuhrich,Chris Führich,VfB Stuttgart,Bundesliga (Germany),midfielder,#FFFFFF,#111111,no
+p-deniz-undav,Deniz Undav,VfB Stuttgart,Bundesliga (Germany),forward,#FFFFFF,#111111,no
+p-derry-scherhant,Derry Scherhant,SC Freiburg,Bundesliga (Germany),forward,#FE0000,#FFFFFF,no
+p-lucas-holer,Lucas Höler,SC Freiburg,Bundesliga (Germany),forward,#FE0000,#FFFFFF,no
+p-maximilian-eggestein,Maximilian Eggestein,SC Freiburg,Bundesliga (Germany),midfielder,#FE0000,#FFFFFF,no
+p-igor-matanovic,Igor Matanović,SC Freiburg,Bundesliga (Germany),forward,#FE0000,#FFFFFF,no
+p-cyriaque-irie,Cyriaque Irié,SC Freiburg,Bundesliga (Germany),forward,#FE0000,#FFFFFF,no
+p-adam-hlozek,Adam Hložek,TSG Hoffenheim,Bundesliga (Germany),forward,#0000FF,#FFFFFF,no
+p-fisnik-asllani,Fisnik Asllani,TSG Hoffenheim,Bundesliga (Germany),forward,#0000FF,#FFFFFF,no
+p-max-moerstedt,Max Moerstedt,TSG Hoffenheim,Bundesliga (Germany),forward,#0000FF,#FFFFFF,no
+p-leon-avdullahu,Leon Avdullahu,TSG Hoffenheim,Bundesliga (Germany),midfielder,#0000FF,#FFFFFF,no
+p-patrick-wimmer,Patrick Wimmer,TSG Hoffenheim,Bundesliga (Germany),midfielder,#0000FF,#FFFFFF,no
+p-tim-kleindienst,Tim Kleindienst,Borussia Mönchengladbach,Bundesliga (Germany),forward,#FFFFFF,#111111,no
+p-enzo-leopold,Enzo Leopold,Borussia Mönchengladbach,Bundesliga (Germany),midfielder,#FFFFFF,#111111,no
+p-florian-neuhaus,Florian Neuhaus,Borussia Mönchengladbach,Bundesliga (Germany),midfielder,#FFFFFF,#111111,no
+p-franck-honorat,Franck Honorat,Borussia Mönchengladbach,Bundesliga (Germany),midfielder,#FFFFFF,#111111,no
+p-kevin-stoger,Kevin Stöger,Borussia Mönchengladbach,Bundesliga (Germany),midfielder,#FFFFFF,#111111,no
+p-phillip-tietz,Phillip Tietz,Mainz 05,Bundesliga (Germany),forward,#FF0000,#FFFFFF,no
+p-ransford-yeboah-konigsdorffer,Ransford-Yeboah Königsdörffer,Mainz 05,Bundesliga (Germany),forward,#FF0000,#FFFFFF,no
+p-lee-jae-sung,Lee Jae-sung,Mainz 05,Bundesliga (Germany),midfielder,#FF0000,#FFFFFF,no
+p-nadiem-amiri,Nadiem Amiri,Mainz 05,Bundesliga (Germany),midfielder,#FF0000,#FFFFFF,no
+p-paul-nebel,Paul Nebel,Mainz 05,Bundesliga (Germany),midfielder,#FF0000,#FFFFFF,no
+p-justin-njinmah,Justin Njinmah,Werder Bremen,Bundesliga (Germany),forward,#FFFFFF,#009A59,no
+p-keke-topp,Keke Topp,Werder Bremen,Bundesliga (Germany),forward,#FFFFFF,#009A59,no
+p-niclas-fullkrug,Niclas Füllkrug,Werder Bremen,Bundesliga (Germany),forward,#FFFFFF,#009A59,no
+p-mitchell-weiser,Mitchell Weiser,Werder Bremen,Bundesliga (Germany),defender,#FFFFFF,#009A59,no
+p-cedric-itten,Cedric Itten,Werder Bremen,Bundesliga (Germany),forward,#FFFFFF,#009A59,no
+p-livan-burcu,Livan Burcu,Union Berlin,Bundesliga (Germany),forward,#FF0000,#FFFFFF,no
+p-oliver-burke,Oliver Burke,Union Berlin,Bundesliga (Germany),forward,#FF0000,#FFFFFF,no
+p-jeong-woo-yeong,Jeong Woo-yeong,Union Berlin,Bundesliga (Germany),midfielder,#FF0000,#FFFFFF,no
+p-rani-khedira,Rani Khedira,Union Berlin,Bundesliga (Germany),midfielder,#FF0000,#FFFFFF,no
+p-andrej-ilic,Andrej Ilić,Union Berlin,Bundesliga (Germany),forward,#FF0000,#FFFFFF,no
+p-michael-gregoritsch,Michael Gregoritsch,FC Augsburg,Bundesliga (Germany),forward,#EDE6DC,#680F00,no
+p-rodrigo-ribeiro-footballer-born-2005,Rodrigo Ribeiro,FC Augsburg,Bundesliga (Germany),forward,#EDE6DC,#680F00,no
+p-mert-komur,Mert Kömür,FC Augsburg,Bundesliga (Germany),midfielder,#EDE6DC,#680F00,no
+p-sima-suso,Sima Suso,FC Augsburg,Bundesliga (Germany),midfielder,#EDE6DC,#680F00,no
+p-seol-young-woo,Seol Young-woo,FC Augsburg,Bundesliga (Germany),defender,#EDE6DC,#680F00,no
+p-luca-waldschmidt,Luca Waldschmidt,1. FC Köln,Bundesliga (Germany),forward,#FFFFFF,#111111,no
+p-ragnar-ache,Ragnar Ache,1. FC Köln,Bundesliga (Germany),forward,#FFFFFF,#111111,no
+p-reigan-heskey,Reigan Heskey,1. FC Köln,Bundesliga (Germany),forward,#FFFFFF,#111111,no
+p-isak-johannesson,Ísak Jóhannesson,1. FC Köln,Bundesliga (Germany),midfielder,#FFFFFF,#111111,no
+p-said-el-mala,Said El Mala,1. FC Köln,Bundesliga (Germany),midfielder,#FFFFFF,#111111,no
+p-terem-moffi,Terem Moffi,Hamburger SV,Bundesliga (Germany),forward,#FFFFFF,#FF0000,no
+p-albert-gronbaek,Albert Grønbæk,Hamburger SV,Bundesliga (Germany),midfielder,#FFFFFF,#FF0000,no
+p-fabio-vieira-footballer-born-2000,Fábio Vieira,Hamburger SV,Bundesliga (Germany),midfielder,#FFFFFF,#FF0000,no
+p-immanuel-pherai,Immanuel Pherai,Hamburger SV,Bundesliga (Germany),midfielder,#FFFFFF,#FF0000,no
+p-nicolai-remberg,Nicolai Remberg,Hamburger SV,Bundesliga (Germany),midfielder,#FFFFFF,#FF0000,no
+p-bryan-lasme,Bryan Lasme,Schalke 04,Bundesliga (Germany),forward,#0000DD,#FFFFFF,no
+p-hwang-hee-chan,Hwang Hee-chan,Schalke 04,Bundesliga (Germany),forward,#0000DD,#FFFFFF,no
+p-moussa-sylla-footballer-born-1999,Moussa Sylla,Schalke 04,Bundesliga (Germany),forward,#0000DD,#FFFFFF,no
+p-kenan-karaman,Kenan Karaman,Schalke 04,Bundesliga (Germany),forward,#0000DD,#FFFFFF,no
+p-robin-gosens,Robin Gosens,Schalke 04,Bundesliga (Germany),defender,#0000DD,#FFFFFF,no
+p-noel-futkeu,Noel Futkeu,Elversberg,Bundesliga (Germany),forward,#777777,#FFFFFF,no
+p-jason-ceka,Jason Çeka,Elversberg,Bundesliga (Germany),midfielder,#777777,#FFFFFF,no
+p-lukasz-poreba,Łukasz Poręba,Elversberg,Bundesliga (Germany),midfielder,#777777,#FFFFFF,no
+p-maurice-krattenmacher,Maurice Krattenmacher,Elversberg,Bundesliga (Germany),midfielder,#777777,#FFFFFF,no
+p-noah-darvich,Noah Darvich,Elversberg,Bundesliga (Germany),midfielder,#777777,#FFFFFF,no
+p-rayan-philippe,Rayan Philippe,SC Paderborn,Bundesliga (Germany),forward,#000000,#FFFFFF,no
+p-sven-michel-footballer,Sven Michel,SC Paderborn,Bundesliga (Germany),forward,#000000,#FFFFFF,no
+p-luka-duric,Luka Đurić,SC Paderborn,Bundesliga (Germany),midfielder,#000000,#FFFFFF,no
+p-oliver-batista-meier,Oliver Batista Meier,SC Paderborn,Bundesliga (Germany),midfielder,#000000,#FFFFFF,no
+p-albert-millgramm,Albert Millgramm,SC Paderborn,Bundesliga (Germany),forward,#000000,#FFFFFF,no
+p-ferran-torres,Ferran Torres,Paris Saint-Germain,Ligue 1 (France),forward,#0000CC,#FFFFFF,no
+p-khvicha-kvaratskhelia,Khvicha Kvaratskhelia,Paris Saint-Germain,Ligue 1 (France),forward,#0000CC,#FFFFFF,no
+p-ousmane-dembele,Ousmane Dembélé,Paris Saint-Germain,Ligue 1 (France),forward,#0000CC,#FFFFFF,no
+p-fabian-ruiz,Fabián Ruiz,Paris Saint-Germain,Ligue 1 (France),midfielder,#0000CC,#FFFFFF,no
+p-maghnes-akliouche,Maghnes Akliouche,Paris Saint-Germain,Ligue 1 (France),midfielder,#0000CC,#FFFFFF,no
+p-amine-gouiri,Amine Gouiri,Olympique de Marseille,Ligue 1 (France),forward,#FFFFFF,#111111,no
+p-neal-maupay,Neal Maupay,Olympique de Marseille,Ligue 1 (France),forward,#FFFFFF,#111111,no
+p-angel-gomes,Angel Gomes,Olympique de Marseille,Ligue 1 (France),midfielder,#FFFFFF,#111111,no
+p-himad-abdelli,Himad Abdelli,Olympique de Marseille,Ligue 1 (France),midfielder,#FFFFFF,#111111,no
+p-timothy-weah,Timothy Weah,Olympique de Marseille,Ligue 1 (France),forward,#FFFFFF,#111111,no
+p-folarin-balogun,Folarin Balogun,AS Monaco,Ligue 1 (France),forward,#FE0000,#FFFFFF,no
+p-lamine-camara,Lamine Camara,AS Monaco,Ligue 1 (France),midfielder,#FE0000,#FFFFFF,no
+p-mathys-detourbet,Mathys Detourbet,AS Monaco,Ligue 1 (France),forward,#FE0000,#FFFFFF,no
+p-matthis-abline,Matthis Abline,AS Monaco,Ligue 1 (France),forward,#FE0000,#FFFFFF,no
+p-aleksandr-golovin-footballer,Aleksandr Golovin,AS Monaco,Ligue 1 (France),midfielder,#FE0000,#FFFFFF,no
+p-dilane-bakwa,Dilane Bakwa,Lille,Ligue 1 (France),forward,#FE0000,#221F64,no
+p-ethan-mbappe,Ethan Mbappé,Lille,Ligue 1 (France),forward,#FE0000,#221F64,no
+p-osame-sahraoui,Osame Sahraoui,Lille,Ligue 1 (France),forward,#FE0000,#221F64,no
+p-hakon-haraldsson,Hákon Haraldsson,Lille,Ligue 1 (France),midfielder,#FE0000,#221F64,no
+p-benjamin-andre,Benjamin André,Lille,Ligue 1 (France),midfielder,#FE0000,#221F64,no
+p-corentin-tolisso,Corentin Tolisso,Lyon,Ligue 1 (France),midfielder,#FFFFFF,#0000FF,no
+p-ernest-nuamah,Ernest Nuamah,Lyon,Ligue 1 (France),forward,#FFFFFF,#0000FF,no
+p-keito-nakamura,Keito Nakamura,Lyon,Ligue 1 (France),forward,#FFFFFF,#0000FF,no
+p-pavel-sulc,Pavel Šulc,Lyon,Ligue 1 (France),midfielder,#FFFFFF,#0000FF,no
+p-julien-duranville,Julien Duranville,Lyon,Ligue 1 (France),forward,#FFFFFF,#0000FF,no
+p-elye-wahi,Elye Wahi,Nice,Ligue 1 (France),forward,#FF0000,#000000,no
+p-gauthier-hein,Gauthier Hein,Nice,Ligue 1 (France),forward,#FF0000,#000000,no
+p-mohamed-amoura,Mohamed Amoura,Nice,Ligue 1 (France),forward,#FF0000,#000000,no
+p-sofiane-diop,Sofiane Diop,Nice,Ligue 1 (France),forward,#FF0000,#000000,no
+p-morgan-sanson,Morgan Sanson,Nice,Ligue 1 (France),midfielder,#FF0000,#000000,no
+p-florian-thauvin,Florian Thauvin,Lens,Ligue 1 (France),midfielder,#777777,#FFFFFF,no
+p-florian-sotoca,Florian Sotoca,Lens,Ligue 1 (France),forward,#777777,#FFFFFF,no
+p-odsonne-edouard,Odsonne Édouard,Lens,Ligue 1 (France),forward,#777777,#FFFFFF,no
+p-thorgan-hazard,Thorgan Hazard,Lens,Ligue 1 (France),forward,#777777,#FFFFFF,no
+p-yacine-titraoui,Yacine Titraoui,Lens,Ligue 1 (France),midfielder,#777777,#FFFFFF,no
+p-esteban-lepaul,Esteban Lepaul,Stade Rennais,Ligue 1 (France),forward,#FF0000,#000000,no
+p-musa-al-taamari,Musa Al-Taamari,Stade Rennais,Ligue 1 (France),forward,#FF0000,#000000,no
+p-ludovic-blas,Ludovic Blas,Stade Rennais,Ligue 1 (France),midfielder,#FF0000,#000000,no
+p-valentin-rongier,Valentin Rongier,Stade Rennais,Ligue 1 (France),midfielder,#FF0000,#000000,no
+p-boulaye-dia,Boulaye Dia,Stade Rennais,Ligue 1 (France),forward,#FF0000,#000000,no
+p-joaquin-panichelli,Joaquín Panichelli,RC Strasbourg,Ligue 1 (France),forward,#0000DD,#FFFFFF,no
+p-sam-amo-ameyaw,Sam Amo-Ameyaw,RC Strasbourg,Ligue 1 (France),forward,#0000DD,#FFFFFF,no
+p-sebastian-nanasi,Sebastian Nanasi,RC Strasbourg,Ligue 1 (France),forward,#0000DD,#FFFFFF,no
+p-giovanni-reyna,Giovanni Reyna,RC Strasbourg,Ligue 1 (France),midfielder,#0000DD,#FFFFFF,no
+p-maxi-oyedele,Maxi Oyedele,RC Strasbourg,Ligue 1 (France),midfielder,#0000DD,#FFFFFF,no
+p-julian-vignolo,Julián Vignolo,Toulouse,Ligue 1 (France),forward,#777777,#FFFFFF,no
+p-santiago-hidalgo,Santiago Hidalgo,Toulouse,Ligue 1 (France),forward,#777777,#FFFFFF,no
+p-sion-oppong,Sion Oppong,Toulouse,Ligue 1 (France),forward,#777777,#FFFFFF,no
+p-thomas-jorgensen,Thomas Jørgensen,Toulouse,Ligue 1 (France),midfielder,#777777,#FFFFFF,no
+p-casper-tengstedt,Casper Tengstedt,Toulouse,Ligue 1 (France),forward,#777777,#FFFFFF,no
+p-giovani-versini,Giovani Versini,Brest,Ligue 1 (France),forward,#FF0000,#FFFFFF,no
+p-noah-edjouma,Noah Edjouma,Brest,Ligue 1 (France),forward,#FF0000,#FFFFFF,no
+p-pathe-mboup,Pathé Mboup,Brest,Ligue 1 (France),forward,#FF0000,#FFFFFF,no
+p-hugo-magnetti,Hugo Magnetti,Brest,Ligue 1 (France),midfielder,#FF0000,#FFFFFF,no
+p-joseph-nonge,Joseph Nonge,Brest,Ligue 1 (France),midfielder,#FF0000,#FFFFFF,no
+p-cameron-archer,Cameron Archer,Auxerre,Ligue 1 (France),forward,#FFFFFF,#111111,no
+p-eros-maddy,Eros Maddy,Auxerre,Ligue 1 (France),forward,#FFFFFF,#111111,no
+p-naouirou-ahamada,Naouirou Ahamada,Auxerre,Ligue 1 (France),midfielder,#FFFFFF,#111111,no
+p-kevin-danois,Kévin Danois,Auxerre,Ligue 1 (France),midfielder,#FFFFFF,#111111,no
+p-danny-namaso,Danny Namaso,Auxerre,Ligue 1 (France),forward,#FFFFFF,#111111,no
+p-amine-sbai,Amine Sbaï,Angers,Ligue 1 (France),forward,#000000,#FFFFFF,no
+p-harouna-djibirin,Harouna Djibirin,Angers,Ligue 1 (France),forward,#000000,#FFFFFF,no
+p-prosper-peter,Prosper Peter,Angers,Ligue 1 (France),forward,#000000,#FFFFFF,no
+p-usman-simbakoli,Usman Simbakoli,Angers,Ligue 1 (France),forward,#000000,#FFFFFF,no
+p-branco-van-den-boomen,Branco van den Boomen,Angers,Ligue 1 (France),midfielder,#000000,#FFFFFF,no
+p-josh-maja,Josh Maja,Le Havre,Ligue 1 (France),forward,#8ED6F9,#0D2142,no
+p-amir-richardson,Amir Richardson,Le Havre,Ligue 1 (France),midfielder,#8ED6F9,#0D2142,no
+p-felix-mambimbi,Felix Mambimbi,Le Havre,Ligue 1 (France),midfielder,#8ED6F9,#0D2142,no
+p-enzo-koffi,Enzo Koffi,Le Havre,Ligue 1 (France),forward,#8ED6F9,#0D2142,no
+p-joan-tincres,Joan Tincres,Le Havre,Ligue 1 (France),forward,#8ED6F9,#0D2142,no
+p-isak-jensen,Isak Jensen,Lorient,Ligue 1 (France),forward,#FF5F00,#000000,no
+p-mohamed-bamba-footballer-born-2001,Mohamed Bamba,Lorient,Ligue 1 (France),forward,#FF5F00,#000000,no
+p-bandiougou-fadiga,Bandiougou Fadiga,Lorient,Ligue 1 (France),midfielder,#FF5F00,#000000,no
+p-noah-cadiou,Noah Cadiou,Lorient,Ligue 1 (France),midfielder,#FF5F00,#000000,no
+p-theo-le-bris,Théo Le Bris,Lorient,Ligue 1 (France),midfielder,#FF5F00,#000000,no
+p-jean-philippe-krasso,Jean-Philippe Krasso,Paris FC,Ligue 1 (France),forward,#000060,#FFFFFF,no
+p-lassine-sinayoko,Lassine Sinayoko,Paris FC,Ligue 1 (France),forward,#000060,#FFFFFF,no
+p-ilan-kebbal,Ilan Kebbal,Paris FC,Ligue 1 (France),midfielder,#000060,#FFFFFF,no
+p-pablo-pagis,Pablo Pagis,Paris FC,Ligue 1 (France),midfielder,#000060,#FFFFFF,no
+p-patrick-zabi,Patrick Zabi,Paris FC,Ligue 1 (France),midfielder,#000060,#FFFFFF,no
+p-jeremy-le-douaron,Jérémy Le Douaron,Troyes,Ligue 1 (France),forward,#777777,#FFFFFF,no
+p-kandet-diawara,Kandet Diawara,Troyes,Ligue 1 (France),forward,#777777,#FFFFFF,no
+p-iron-gomis,Iron Gomis,Troyes,Ligue 1 (France),midfielder,#777777,#FFFFFF,no
+p-merwan-ifnaoui,Merwan Ifnaoui,Troyes,Ligue 1 (France),midfielder,#777777,#FFFFFF,no
+p-mouhamed-diop-footballer,Mouhamed Diop,Troyes,Ligue 1 (France),midfielder,#777777,#FFFFFF,no
+p-antoine-rabillard,Antoine Rabillard,Le Mans,Ligue 1 (France),forward,#FF0000,#FFFF00,no
+p-billal-brahimi,Billal Brahimi,Le Mans,Ligue 1 (France),forward,#FF0000,#FFFF00,no
+p-adil-bourabaa,Adil Bourabaa,Le Mans,Ligue 1 (France),midfielder,#FF0000,#FFFF00,no
+p-alexandre-lauray,Alexandre Lauray,Le Mans,Ligue 1 (France),midfielder,#FF0000,#FFFF00,no
+p-jean-vercruysse,Jean Vercruysse,Le Mans,Ligue 1 (France),midfielder,#FF0000,#FFFF00,no
+p-monsef-bakrar,Monsef Bakrar,Al Ahly,Egyptian Premier League,forward,#CC0000,#FFFFFF,no
+p-soufiane-benjdida,Soufiane Benjdida,Al Ahly,Egyptian Premier League,forward,#CC0000,#FFFFFF,no
+p-taher-mohamed,Taher Mohamed,Al Ahly,Egyptian Premier League,forward,#CC0000,#FFFFFF,no
+p-ahmed-reda-hashem,Ahmed Reda,Al Ahly,Egyptian Premier League,midfielder,#CC0000,#FFFFFF,no
+p-achraf-bencharki,Achraf Bencharki,Al Ahly,Egyptian Premier League,forward,#CC0000,#FFFFFF,no
+p-ahmed-abdel-rahim,Ahmed Abdel Rahim,Zamalek,Egyptian Premier League,forward,#FFFFFF,#111111,no
+p-hossam-ashraf,Hossam Ashraf,Zamalek,Egyptian Premier League,forward,#FFFFFF,#111111,no
+p-nasser-mansi,Nasser Mansi,Zamalek,Egyptian Premier League,forward,#FFFFFF,#111111,no
+p-omar-gaber,Omar Gaber,Zamalek,Egyptian Premier League,defender,#FFFFFF,#111111,no
+p-adam-kaied,Adam Kaied,Zamalek,Egyptian Premier League,midfielder,#FFFFFF,#111111,no
+p-ahmed-abdel-kader,Ahmed Kader,Pyramids,Egyptian Premier League,forward,#FFFFFF,#111111,no
+p-mostafa-fathi,Mostafa Fathi,Pyramids,Egyptian Premier League,forward,#FFFFFF,#111111,no
+p-mahmoud-saber,Mahmoud Saber,Pyramids,Egyptian Premier League,midfielder,#FFFFFF,#111111,no
+p-mohanad-lasheen,Mohanad Lasheen,Pyramids,Egyptian Premier League,midfielder,#FFFFFF,#111111,no
+p-youssef-obama,Youssef Obama,Pyramids,Egyptian Premier League,midfielder,#FFFFFF,#111111,no
+p-karim-bambo,Karim Bambo,Al-Masry,Egyptian Premier League,forward,#00924F,#FFFFFF,no
+p-salah-mohsen,Salah Mohsen,Al-Masry,Egyptian Premier League,forward,#00924F,#FFFFFF,no
+p-mohammed-al-shamy--egy-al-masry,Mohammed Al Shamy,Al-Masry,Egyptian Premier League,forward,#00924F,#FFFFFF,no
+p-hassan-ali--egy-al-masry,Hassan Ali,Al-Masry,Egyptian Premier League,midfielder,#00924F,#FFFFFF,no
+p-karim-el-eraki,Karim El Eraki,Al-Masry,Egyptian Premier League,defender,#00924F,#FFFFFF,no
+p-islam-issa-footballer,Islam Issa,Ceramica Cleopatra,Egyptian Premier League,forward,#880000,#000000,no
+p-nejc-gradisar,Nejc Gradišar,Ceramica Cleopatra,Egyptian Premier League,forward,#880000,#000000,no
+p-peter-gwargis,Peter Gwargis,Ceramica Cleopatra,Egyptian Premier League,forward,#880000,#000000,no
+p-abdallah-magdy,Abdallah Magdy,Ceramica Cleopatra,Egyptian Premier League,midfielder,#880000,#000000,no
+p-ahmed-belhadji,Ahmed Belhadji,Ceramica Cleopatra,Egyptian Premier League,midfielder,#880000,#000000,no
+p-ahmed-atef-footballer-born-1998,Ahmed Atef,ZED,Egyptian Premier League,forward,#000000,#FFFFFF,no
+p-mostafa-saad,Mostafa Saad,ZED,Egyptian Premier League,forward,#000000,#FFFFFF,no
+p-rafaat-khalil--egy-zed,Rafaat Khalil,ZED,Egyptian Premier League,forward,#000000,#FFFFFF,no
+p-abdel-rahman-el-banouby--egy-zed,Abdel Rahman El Banouby,ZED,Egyptian Premier League,midfielder,#000000,#FFFFFF,no
+p-ahmed-sayed--egy-zed,Ahmed Sayed,ZED,Egyptian Premier League,defender,#000000,#FFFFFF,no
+p-gabriel-martinelli,Gabriel Martinelli,Al Hilal,Saudi Pro League,forward,#0000DF,#0040FF,no
+p-ollie-watkins,Ollie Watkins,Al Hilal,Saudi Pro League,forward,#0000DF,#0040FF,no
+p-ruben-neves,Rúben Neves,Al Hilal,Saudi Pro League,midfielder,#0000DF,#0040FF,no
+p-crysencio-summerville,Crysencio Summerville,Al Hilal,Saudi Pro League,forward,#0000DF,#0040FF,no
+p-salem-al-dawsari,Salem Al-Dawsari,Al Hilal,Saudi Pro League,forward,#0000DF,#0040FF,no
+p-abdullah-al-hamdan,Abdullah Al-Hamdan,Al-Nassr,Saudi Pro League,forward,#FFFF00,#000044,no
+p-sadio-mane,Sadio Mané,Al-Nassr,Saudi Pro League,forward,#FFFF00,#000044,no
+p-hayder-abdulkareem,Hayder Abdulkareem,Al-Nassr,Saudi Pro League,midfielder,#FFFF00,#000044,no
+p-samu-costa,Samú Costa,Al-Nassr,Saudi Pro League,midfielder,#FFFF00,#000044,no
+p-kingsley-coman,Kingsley Coman,Al-Nassr,Saudi Pro League,forward,#FFFF00,#000044,no
+p-george-ilenikhena,George Ilenikhena,Al-Ittihad,Saudi Pro League,forward,#FFDD00,#000000,no
+p-roger-fernandes,Roger Fernandes,Al-Ittihad,Saudi Pro League,forward,#FFDD00,#000000,no
+p-saleh-al-shehri,Saleh Al-Shehri,Al-Ittihad,Saudi Pro League,forward,#FFDD00,#000000,no
+p-houssem-aouar,Houssem Aouar,Al-Ittihad,Saudi Pro League,midfielder,#FFDD00,#000000,no
+p-mukhtar-ali,Mukhtar Ali,Al-Ittihad,Saudi Pro League,midfielder,#FFDD00,#000000,no
+p-firas-al-buraikan,Firas Al-Buraikan,Al-Ahli,Saudi Pro League,forward,#FFFFFF,#008456,no
+p-francisco-trincao,Francisco Trincão,Al-Ahli,Saudi Pro League,forward,#FFFFFF,#008456,no
+p-eduard-spertsyan,Eduard Spertsyan,Al-Ahli,Saudi Pro League,midfielder,#FFFFFF,#008456,no
+p-meshal-al-mutairi-footballer-born-1999,Meshal Al-Mutairi,Al-Ahli,Saudi Pro League,midfielder,#FFFFFF,#008456,no
+p-abdullah-radif,Abdullah Radif,Al-Ahli,Saudi Pro League,forward,#FFFFFF,#008456,no
+p-abdullah-al-salem-footballer,Abdullah Al-Salem,Al Qadsiah FC,Saudi Pro League,forward,#FC1C14,#FFFFFF,no
+p-ali-hazazi,Ali Hazazi,Al Qadsiah FC,Saudi Pro League,midfielder,#FC1C14,#FFFFFF,no
+p-musab-al-juwayr,Musab Al-Juwayr,Al Qadsiah FC,Saudi Pro League,midfielder,#FC1C14,#FFFFFF,no
+p-nahitan-nandez,Nahitan Nández,Al Qadsiah FC,Saudi Pro League,midfielder,#FC1C14,#FFFFFF,no
+p-tijjani-reijnders,Tijjani Reijnders,Al Qadsiah FC,Saudi Pro League,midfielder,#FC1C14,#FFFFFF,no
+p-roger-martinez,Roger Martínez,Al-Shabab SFC,Saudi Pro League,forward,#FFFFFF,#111111,no
+p-daniel-podence,Daniel Podence,Al-Shabab SFC,Saudi Pro League,midfielder,#FFFFFF,#111111,no
+p-josh-brownhill,Josh Brownhill,Al-Shabab SFC,Saudi Pro League,midfielder,#FFFFFF,#111111,no
+p-yannick-carrasco,Yannick Carrasco,Al-Shabab SFC,Saudi Pro League,midfielder,#FFFFFF,#111111,no
+p-abdulrahman-al-aboud,Abdulrahman Al-Aboud,Al-Shabab SFC,Saudi Pro League,midfielder,#FFFFFF,#111111,no
+p-leroy-sane,Leroy Sané,Galatasaray,Süper Lig (Turkey),forward,#A90432,#FDB912,no
+p-mauro-icardi,Mauro Icardi,Galatasaray,Süper Lig (Turkey),forward,#A90432,#FDB912,no
+p-gabriel-sara,Gabriel Sara,Galatasaray,Süper Lig (Turkey),midfielder,#A90432,#FDB912,no
+p-bars-alper-ylmaz,Barış Alper Yılmaz,Galatasaray,Süper Lig (Turkey),forward,#A90432,#FDB912,no
+p-victor-osimhen,Victor Osimhen,Galatasaray,Süper Lig (Turkey),forward,#A90432,#FDB912,no
+p-kerem-akturkoglu,Kerem Aktürkoğlu,Fenerbahçe,Süper Lig (Turkey),forward,#002F6C,#FFED00,no
+p-edson-alvarez,Edson Álvarez,Fenerbahçe,Süper Lig (Turkey),midfielder,#002F6C,#FFED00,no
+p-marco-asensio,Marco Asensio,Fenerbahçe,Süper Lig (Turkey),midfielder,#002F6C,#FFED00,no
+p-fred,Fred,Fenerbahçe,Süper Lig (Turkey),midfielder,#002F6C,#FFED00,no
+p-milot-rashica,Milot Rashica,Beşiktaş,Süper Lig (Turkey),forward,#000000,#FFFFFF,no
+p-orkun-kokcu,Orkun Kökçü,Beşiktaş,Süper Lig (Turkey),midfielder,#000000,#FFFFFF,no
+p-wilfred-ndidi,Wilfred Ndidi,Beşiktaş,Süper Lig (Turkey),midfielder,#000000,#FFFFFF,no
+p-ernest-muci,Ernest Muçi,Trabzonspor,Süper Lig (Turkey),forward,#800020,#87CEEB,no
+p-oleksandr-zubkov,Oleksandr Zubkov,Trabzonspor,Süper Lig (Turkey),forward,#800020,#87CEEB,no
+p-okay-yokuslu,Okay Yokuşlu,Trabzonspor,Süper Lig (Turkey),midfielder,#800020,#87CEEB,no
+p-tim-jabol-folcarelli,Tim Jabol-Folcarelli,Trabzonspor,Süper Lig (Turkey),midfielder,#800020,#87CEEB,no
+p-paul-onuachu,Paul Onuachu,Trabzonspor,Süper Lig (Turkey),forward,#800020,#87CEEB,no
+p-krzysztof-piatek,Krzysztof Piątek,Başakşehir,Süper Lig (Turkey),forward,#E85C0D,#1C2A5B,no
+p-yusuf-sar,Yusuf Sarı,Başakşehir,Süper Lig (Turkey),forward,#E85C0D,#1C2A5B,no
+p-abbosbek-fayzullaev,Abbosbek Fayzullaev,Başakşehir,Süper Lig (Turkey),midfielder,#E85C0D,#1C2A5B,no
+p-berat-ozdemir,Berat Özdemir,Başakşehir,Süper Lig (Turkey),midfielder,#E85C0D,#1C2A5B,no
+p-eldor-shomurodov,Eldor Shomurodov,Başakşehir,Süper Lig (Turkey),forward,#E85C0D,#1C2A5B,no
