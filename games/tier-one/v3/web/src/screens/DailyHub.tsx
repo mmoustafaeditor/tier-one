@@ -1,7 +1,8 @@
 // Daily Challenge (3.6): today's Daily first, then Deadline Day Live and Practice, then the Daily leaderboard. And the
 // Missions screen (Home's Missions box). Both fit one screen.
 import { useEffect, useState } from 'react';
-import { useT, num, resetAt } from '../lib/i18n';
+import { useT, num, resetAt, fmtDate } from '../lib/i18n';
+import { ddLiveActive, ddNext } from '../lib/live';
 import { update, useSave, getSave } from '../lib/save';
 import { v3 } from '../lib/api';
 import type { CastSaga } from '../lib/engine';
@@ -30,6 +31,9 @@ export function DailyHubScreen(chrome: Chrome) {
   const d0 = new Date(today + 'T00:00:00Z'); const dow = (d0.getUTCDay() + 6) % 7;
   const week = Array.from({ length: 7 }, (_, k) => { const d = new Date(d0.getTime() + (k - dow) * 864e5).toISOString().slice(0, 10); return { d, on: !!s.daily[d], now: d === today }; });
   const back = { label: t('g.tabs.home'), onClick: () => chrome.go({ n: 'front' }) };
+  // §35: the card says what Deadline Day Live is (a shared 24 h board on real deadline days) and when the next one is.
+  const ddOn = !!ddLiveActive(now), ddNx = ddNext(now);
+  const ddSub = ddOn ? t('live.dd.live') : ddNx ? t('c38.hub.ddNext', { d: fmtDate(ddNx.opensAt + 12 * 3600e3, t.lang, { day: 'numeric', month: 'short' }) }) : t('c38.hub.ddOff');
   return <div className="g-screen dh fit">
     <TopBar back={back} title={t('hub.daily.title')} />
     <div className="fit__body">
@@ -59,7 +63,7 @@ export function DailyHubScreen(chrome: Chrome) {
       <div className="dh-two">
         <button className="dh-card dh-card--dd" onClick={() => { sfx('open'); chrome.go({ n: 'ddlive' }); }}>
           <span className="dh-card__ic" aria-hidden="true"><Icon n="clock" size={22} /></span>
-          <b>{t('hub.daily.dd')}</b><small>{t('hub.daily.ddSub')}</small>
+          <b>{t('hub.daily.dd')}</b><small>{t('c38.hub.ddSub')} · {ddSub}</small>
         </button>
         <button className="dh-card dh-card--practice" onClick={() => { sfx('open'); chrome.go(s.practice.live ? { n: 'play', mode: 'practice', key: Date.now() } : { n: 'practice' }); }}>
           <span className="dh-card__ic" aria-hidden="true"><Icon n="target" size={22} /></span>

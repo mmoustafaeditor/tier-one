@@ -1,16 +1,19 @@
-// First run (HYBRID.md §9): language, byline, then a guided first saga on a training board. No rules page.
+// First run (LAUNCH_BRIEF §31, 3.8): welcome → your name → one short scene ("You were fired last season after getting
+// the biggest call wrong": the editor and you, portrait slots, skippable) → the training board, where the game is
+// taught in play (ring the Kit Man, a second source, read the evidence, call it, publish, see the consequence) → Home
+// with today's Daily highlighted. No rules page; the shop, pass and achievements stay out of sight until later (§45).
 import { useState } from 'react';
 import { useT, LANGS } from '../lib/i18n';
 import { update, useSave } from '../lib/save';
 import { sfx } from '../lib/sfx';
 import { Icon, GBtn } from '../ui/game';
+import { Portrait } from '../ui/portrait';
 import type { Go } from '../App';
-import { playColdOpen } from '../lib/scenes';
 import { newCareer } from '../lib/career';
 
 export const TUT_SEED = 'TRAIN1';
 export function startTutorial(go: Go) {
-  update((x) => { x.practice.live = { seed: TUT_SEED, mode: 'practice', log: [], started: Date.now(), coach: true, label: 'tutorial' }; x.tut = { ...(x.tut || {}), done: false, seen: {} }; });
+  update((x) => { x.practice.live = { seed: TUT_SEED, mode: 'practice', log: [], started: Date.now(), coach: false, label: 'tutorial' }; x.tut = { ...(x.tut || {}), done: false, seen: {} }; });
   go({ n: 'play', mode: 'practice', key: Date.now() });
 }
 
@@ -19,16 +22,15 @@ export function Onboarding({ go }: { go: Go }) {
   const s = useSave();
   const [step, setStep] = useState(0);
   const [nick, setNick] = useState(s.nick);
-  const finish = (tut: boolean) => {
-    // 3.4 one opening: the story is the game's opening. The career starts at chapter 1 (The Blog) and the prologue film
-    // ("The fall") plays; the Story tab then shows the prologue's title card once (save.story.prologue is still unset).
-    update((x) => {
-      x.onboarded = true; x.nick = nick.trim().slice(0, 16); if (!tut) x.tut = { ...(x.tut || {}), done: true };
-      if (!x.career) { x.career = newCareer(); x.story = { ...(x.story || {}), chapterSeen: 0 }; }
-    });
-    if (tut) startTutorial(go); else go({ n: 'story' });
-    playColdOpen();
-  };
+  const name = () => nick.trim().slice(0, 16);
+  // The career starts at chapter 1 either way (its own prologue plays from Career Mode, not here: the first five
+  // minutes belong to the training board). "I've played before" lands on Home.
+  const commit = (tutDone: boolean) => update((x) => {
+    x.onboarded = true; x.nick = name(); if (tutDone) x.tut = { ...(x.tut || {}), done: true };
+    if (!x.career) { x.career = newCareer(); x.story = { ...(x.story || {}), chapterSeen: 0 }; }
+  });
+  const train = () => { commit(false); startTutorial(go); };
+  const skipAll = () => { commit(true); go({ n: 'front' }); };
   return <div className="onb2" role="dialog" aria-modal="true" aria-label={t('g.onb.k')}>
     <div className="onb2__glow" aria-hidden="true" />
     <div className="onb2__in">
@@ -46,8 +48,25 @@ export function Onboarding({ go }: { go: Go }) {
         <div className="g-mono onb2__k">{t('g.onb.pressCard')}</div>
         <h1 className="g-h1">{t('g.onb.nickH')}</h1>
         <input className="onb2__input" value={nick} maxLength={16} onChange={(e) => setNick(e.target.value)} aria-label={t('onb.nick')} placeholder={t('g.onb.nickPh')} autoFocus />
-        <GBtn shine pulse onClick={() => finish(true)} style={{ marginTop: 16 }}><Icon n="phone" />{t('g.onb.first')}</GBtn>
-        <button className="onb2__skip" onClick={() => finish(false)}>{t('g.onb.skip')}</button>
+        <GBtn shine pulse onClick={() => { sfx('page.turn'); setStep(2); }} style={{ marginTop: 16 }}><Icon n="phone" />{t('g.onb.next')}</GBtn>
+        <button className="onb2__skip" onClick={skipAll}>{t('g.onb.skip')}</button>
+      </div>}
+      {step === 2 && <div className="onb2__card onb2__scene g-card" key="2">
+        <div className="g-mono onb2__k">{t('c38.onb.firedK')}</div>
+        <h1 className="g-h1">{t('c38.onb.firedH')}</h1>
+        <p className="onb2__body">{t('c38.onb.firedBody')}</p>
+        <div className="onb2__cast">
+          <figure className="onb2__who onb2__who--ed">
+            <Portrait kind="staff" id="editor" size={72} mood="stern" name={t('c38.onb.editor')} />
+            <figcaption><b>{t('c38.onb.editor')}</b><q dir="auto">{t('c38.onb.editorLine')}</q></figcaption>
+          </figure>
+          <figure className="onb2__who onb2__who--you">
+            <Portrait kind="staff" id="you" size={72} mood="hesitant" name={name() || t('c38.onb.you')} />
+            <figcaption><b dir="auto">{name() || t('c38.onb.you')}</b><q dir="auto">{t('c38.onb.youLine')}</q></figcaption>
+          </figure>
+        </div>
+        <GBtn size="lg" shine pulse sound="open" onClick={train} style={{ marginTop: 16 }}><Icon n="phone" />{t('c38.onb.start')}<small>{t('c38.onb.trainingSub')}</small></GBtn>
+        <button className="onb2__skip" onClick={skipAll}>{t('c38.onb.skip')}</button>
       </div>}
     </div>
   </div>;
