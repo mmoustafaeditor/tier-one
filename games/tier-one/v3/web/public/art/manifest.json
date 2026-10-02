@@ -1,0 +1,9 @@
+{
+  "v": 1,
+  "_readme": "Tier One character art (LAUNCH_BRIEF Addendum A). Drop approved anime portraits here and map them by id; ui/portrait.tsx picks them up at runtime, no code change. Keys are '<id>' or '<id>@<mood>' (moods: neutral confident hesitant mischief stern shock joy). Values are paths relative to this folder (or absolute URLs). Square images, 512x512 PNG/WebP, transparent or paper background. Never bake a name, club crest, shirt sponsor or status into the art: those are live text beside it.",
+  "base": "art/",
+  "player": {},
+  "source": {},
+  "rival": {},
+  "staff": {}
+}

@@ -70,9 +70,7 @@ export function HowTo(chrome: Chrome) {
         <div className="fullrules__body">
           <div className="fullrules__cols">
             <div>{['s1', 's2', 's3', 's4', 's5'].map(sec)}</div>
-            <div>{['s6', 's7', 's8', 's9', 's10'].map(sec)}
-              {/* Story mode only (lib/career.ts vincePick): the one Career rule that changes what a source says. */}
-              <section className="rule3 rule3--story"><h3>{(t.list('g.story.vince.howto') as string[])[0]}</h3><p>{(t.list('g.story.vince.howto') as string[])[1]}</p></section></div>
+            <div>{['s6', 's7', 's8', 's9', 's10'].map(sec)}</div>
           </div>
           <h3 className="fullrules__t">{head[0]}</h3>
           <div className="tscroll"><table className="gtable"><thead><tr>{head.map((h, k) => <th key={k}>{h}</th>)}</tr></thead>

@@ -31,7 +31,6 @@ const RivalsScreen = lazy(() => import('./screens/Connect').then((m) => ({ defau
 const ContactsScreen = lazy(() => import('./screens/Connect').then((m) => ({ default: m.ContactsScreen })));
 const CustomizeScreen = lazy(() => import('./screens/Customize').then((m) => ({ default: m.CustomizeScreen })));
 const DDLiveScreen = lazy(() => import('./screens/DDLive').then((m) => ({ default: m.DDLiveScreen })));
-const EditorDeskScreen = lazy(() => import('./screens/Editor').then((m) => ({ default: m.EditorDeskScreen })));
 const BoardsScreen = lazy(() => import('./screens/Boards').then((m) => ({ default: m.BoardsScreen })));
 const DailyHubScreen = lazy(() => import('./screens/DailyHub').then((m) => ({ default: m.DailyHubScreen })));
 const MissionsScreen = lazy(() => import('./screens/DailyHub').then((m) => ({ default: m.MissionsScreen })));
@@ -49,7 +48,7 @@ import './styles/fit.css'; // 3.6: one-screen pages (no page scroll), the four-m
 
 export type Route =
   | { n: 'front' } | { n: 'daily' } | { n: 'wire'; rid?: string } | { n: 'desk' } | { n: 'story' } | { n: 'me' } | { n: 'pass' } | { n: 'practice' }
-  | { n: 'rooms'; code?: string; challenge?: string; expired?: boolean } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize'; sec?: 'looks' | 'modes'; cur?: 'coins' | 'credits' } | { n: 'ddlive' } | { n: 'editor' }
+  | { n: 'rooms'; code?: string; challenge?: string; expired?: boolean } | { n: 'newsroom'; code?: string } | { n: 'howto' } | { n: 'feed' } | { n: 'rivals' } | { n: 'contacts' } | { n: 'customize'; sec?: 'looks' | 'modes'; cur?: 'coins' | 'credits' } | { n: 'ddlive' }
   | { n: 'boards'; period?: 'daily' | 'weekly' | 'rooms' | 'wire'; from?: Route } | { n: 'today' } | { n: 'missions' }
   | { n: 'play'; mode: 'practice' | 'career'; key: number } | { n: 'room'; room: RoomRef; key: number };
 export type Go = (r: Route) => void;
@@ -58,7 +57,7 @@ const TABS: { n: Route['n']; k: string; icon: string; c: string }[] = [
   { n: 'front', k: 'g.tabs.home', icon: 'home', c: 'var(--red)' }, { n: 'story', k: 'g.tabs.story', icon: 'story', c: 'var(--m-story)' }, { n: 'wire', k: 'g.tabs.wire', icon: 'wire', c: 'var(--m-wire)' },
   { n: 'rooms', k: 'g.tabs.friends', icon: 'friends', c: 'var(--m-rooms)' }, { n: 'me', k: 'g.tabs.me', icon: 'me', c: 'var(--gold)' },
 ];
-const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' || r.n === 'newsroom' ? 'rooms' : r.n === 'pass' || r.n === 'rivals' || r.n === 'contacts' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' || r.n === 'ddlive' || r.n === 'editor' || r.n === 'today' || r.n === 'missions' || r.n === 'boards' || r.n === 'customize' ? 'front' : r.n);
+const tabOf = (r: Route): Route['n'] => (r.n === 'play' ? (r.mode === 'career' ? 'story' : 'front') : r.n === 'desk' ? 'story' : r.n === 'room' || r.n === 'newsroom' ? 'rooms' : r.n === 'pass' || r.n === 'rivals' || r.n === 'contacts' ? 'me' : r.n === 'daily' || r.n === 'practice' || r.n === 'howto' || r.n === 'ddlive' || r.n === 'today' || r.n === 'missions' || r.n === 'boards' || r.n === 'customize' ? 'front' : r.n);
 
 function initialRoute(): Route {
   const q = new URLSearchParams(location.search);
@@ -192,7 +191,6 @@ export function App() {
     case 'contacts': screen = <ContactsScreen {...chrome} />; break;
     case 'customize': screen = <CustomizeScreen key={(route.sec || '') + (route.cur || '')} {...chrome} sec={route.sec} cur={route.cur} />; break;
     case 'ddlive': screen = <DDLiveScreen {...chrome} />; break;
-    case 'editor': screen = <EditorDeskScreen {...chrome} />; break;
     case 'boards': screen = <BoardsScreen {...chrome} period={route.period} from={route.from} />; break;
     case 'today': screen = <DailyHubScreen {...chrome} />; break;
     case 'missions': screen = <MissionsScreen {...chrome} />; break;

@@ -1,5 +1,6 @@
 // One Byline screens (GOTY.md §1.2–1.4): the Feed, Rivals and the Contacts Book.
-// Each screen has one moment: the feed prints its new copy, the rivals' scalp stamps slam, a contact's card fills.
+// 3.8 (LAUNCH_BRIEF §15): a contact is a relationship, not a level. The card says Cold · Familiar · Trusted · Inner
+// Circle · Direct Line, what that gets you in Career and Practice, and how to get closer. XP stays behind the scenes.
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useT, num } from '../lib/i18n';
 import { useSave, getSave } from '../lib/save';
@@ -7,10 +8,11 @@ import { spend } from '../lib/meta';
 import { sfx, buzz } from '../lib/sfx';
 import {
   markRead, rivalOf, netOf, rivalState, RIVALS, SCALP_NET, TROPHY_NET, BOOK_SRC, bookOf, bookProgress, coffeeToday, buyCoffee,
-  COFFEE_COST, XP_COFFEE, BOOK_LV, toRoute, type FeedItem,
+  COFFEE_COST, trustWord, TRUST_WORDS, toRoute, type FeedItem,
 } from '../lib/byline';
-import { Icon, GBtn, TopBar, SrcIcon, CountUp } from '../ui/game';
+import { Icon, GBtn, TopBar, CountUp } from '../ui/game';
 import { FeedRow, RivalMark, Handle, tn } from '../ui/connect';
+import { Portrait } from '../ui/portrait';
 import { Empty } from '../ui/bits';
 import type { Chrome } from '../App';
 
@@ -77,11 +79,11 @@ function RivalCard({ id, i }: { id: string; i: number }) {
   const goal = r.scalp ? TROPHY_NET : SCALP_NET;
   const pct = Math.max(0, Math.min(100, (100 * Math.max(0, n)) / goal));
   const st = rivalState(r);
-  const taunt = r.taunt ? t('cn.taunt.' + id + '.' + r.taunt, { rec: '\u2066' + r.w + '–' + r.l + (r.d ? '–' + r.d : '') + '\u2069', p: r.tp ? '\u2068' + r.tp + '\u2069' : '', name: '\u2068' + (getSave().nick.trim() || t('d2.post.you')) + '\u2069' }) : '';
+  const taunt = r.taunt ? t('cn.taunt.' + id + '.' + r.taunt, { rec: '⁦' + r.w + '–' + r.l + (r.d ? '–' + r.d : '') + '⁩', p: r.tp ? '⁨' + r.tp + '⁩' : '', name: '⁨' + (getSave().nick.trim() || t('d2.post.you')) + '⁩' }) : '';
   useEffect(() => { if (r.scalp && !s.reduced) { const id2 = setTimeout(() => { sfx('stamp.done'); buzz(25); }, 380 + i * 160); return () => clearTimeout(id2); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return <article className={'cn-rival cn-rival--' + id + ' is-' + st} style={{ ['--i' as string]: i }}>
     <header className="cn-rival__h">
-      <RivalMark id={id} size={48} />
+      <span className="cn-rival__face"><Portrait kind="rival" id={id} size={48} mood={st === 'losing' ? 'mischief' : st === 'winning' ? 'stern' : 'neutral'} /><RivalMark id={id} size={20} /></span>
       <div><h2><Handle id={id} /></h2><p>{t('cn.rivals.blurb.' + id)}</p></div>
     </header>
     <div className="cn-rec" aria-label={`${t('cn.rivals.you')} ${r.w}, ${t('cn.rivals.them')} ${r.l}, ${t('cn.rivals.drawn')} ${r.d}`}>
@@ -99,14 +101,14 @@ function RivalCard({ id, i }: { id: string; i: number }) {
   </article>;
 }
 
-// ---------------------------------------------------------------- Contacts
+// ---------------------------------------------------------------- Contacts (§15): relationships
 export function ContactsScreen(chrome: Chrome) {
   const t = useT();
   return <div className="g-screen g-screen--wide cn-screen cn-contacts">
     <TopBar back={{ label: t('g.tabs.me'), onClick: () => chrome.go({ n: 'me' }) }} title={t('cn.contacts.title')} />
-    <header className="cn-head"><h1>{t('cn.contacts.hed')}</h1><p>{t('cn.contacts.sub')}</p></header>
+    <header className="cn-head"><h1>{t('cn.contacts.hed')}</h1><p>{t('cr38.contacts.sub')}</p></header>
     <div className="cn-cgrid">{BOOK_SRC.map((src) => <ContactCard key={src} src={src} />)}</div>
-    <p className="cn-fair">{t('cn.contacts.fair')}</p>
+    <p className="cn-fair">{t('cr38.contacts.fair')}</p>
   </div>;
 }
 function ContactCard({ src }: { src: string }) {
@@ -115,28 +117,29 @@ function ContactCard({ src }: { src: string }) {
   const [bump, setBump] = useState(0);
   const had = coffeeToday(s, src), broke = s.credits < COFFEE_COST;
   const coffee = () => { if (buyCoffee(src, spend)) { sfx('coin'); buzz(20); setBump((x) => x + 1); } };
-  const perks: [number, string, boolean][] = [[2, 'l2', false], [3, 'l3', false], [3, 'p3', true], [4, 'l4', false], [5, 'l5', false], [5, 'p5', true]];
-  const next = perks.find(([lv]) => lv > p.lv);
+  const w = trustWord(p.lv), next = p.max ? null : trustWord(p.lv + 1);
+  // What the relationship gives you (Career and Practice only), one line per level reached.
+  const gives = TRUST_WORDS.map((k, i) => [i + 1, k] as const).filter(([lv]) => lv <= p.lv && lv >= 2);
   return <article className={'cn-contact' + (p.lv >= 2 ? ' has-frame' : '') + (p.lv >= 5 ? ' is-gold' : '')} style={{ ['--sc' as string]: SRC_C[src] }}>
     <header className="cn-contact__h">
-      <SrcIcon k={src} size={48} />
+      <Portrait kind="source" id={src} size={48} mood={p.lv >= 3 ? 'confident' : p.lv >= 2 ? 'neutral' : 'hesitant'} />
       <div className="cn-contact__id">
         <h2>{t('g.story.who.' + src)}<span className="cn-contact__role"> · {t('src.' + src)}</span></h2>
         {p.lv >= 4 ? <p className="cn-contact__nick">{t('cn.contacts.calls', { n: t('cn.nick.' + src) })}</p> : <p>{t('src.' + src + 'P')}</p>}
       </div>
-      <span className="cn-lv" aria-label={t('cn.contacts.lv', { n: p.lv })}>
-        <b className="g-num" key={p.lv}>{p.lv}</b>
-        <span className="cn-lv__pips" aria-hidden="true">{BOOK_LV.map((_, k) => <i key={k} className={k < p.lv ? 'on' : ''} />)}</span>
+      <span className="cn-lv cn-lv--word" aria-label={t('cr38.trust.' + w)}>
+        <b key={p.lv}>{t('cr38.trust.' + w)}</b>
+        <span className="cn-lv__pips" aria-hidden="true">{TRUST_WORDS.map((_, k) => <i key={k} className={k < p.lv ? 'on' : ''} />)}</span>
       </span>
     </header>
     <div className="cn-xp">
       <span className="g-bar" style={{ ['--bar' as string]: p.lv >= 5 ? 'linear-gradient(90deg,#FFD35C,#F7B928)' : 'var(--sc)' }}><i key={bump} style={{ width: p.pct + '%' }} /></span>
-      <small>{p.max ? t('cn.contacts.max') : t('cn.contacts.xp', { a: p.into, b: p.need, n: p.lv + 1 })}</small>
-      {bump > 0 && <span className="cn-xp__pop" key={bump} aria-hidden="true">+{XP_COFFEE}</span>}
+      <small>{next ? t('cr38.trust.toward', { w: t('cr38.trust.' + next) }) : t('cr38.trust.max')}</small>
+      {bump > 0 && <span className="cn-xp__pop" key={bump} aria-hidden="true">☕</span>}
     </div>
     <div className="cn-perks">
-      {perks.filter(([lv]) => lv <= p.lv).map(([, k, play]) => <span key={k} className="cn-perk"><Icon n="check" size={13} />{t('cn.perk.' + k)}{play && <em>{t('cn.contacts.storyOnly')}</em>}</span>)}
-      {next && <p className="cn-perks__next"><Icon n="lock" size={13} />{t('cn.contacts.next', { n: next[0], p: t('cn.perk.' + next[1]) })}</p>}
+      {gives.map(([, k]) => <span key={k} className="cn-perk"><Icon n="check" size={13} />{t('cr38.trust.gives.' + k, { who: t('g.story.who.' + src) })}</span>)}
+      {next && <p className="cn-perks__next"><Icon n="lock" size={13} />{t('cr38.trust.nextGives', { w: t('cr38.trust.' + next), p: t('cr38.trust.gives.' + next, { who: t('g.story.who.' + src) }) })}</p>}
     </div>
     <footer className="cn-contact__f">
       <small>{t('cn.contacts.asked', { a: num(e.asks || 0), b: num(e.hits || 0) })}</small>
