@@ -12,6 +12,7 @@ import type { Route } from '../App';
 import { Icon } from './bits';
 import { Roll } from './game';
 import { Bell, navTo } from './connect';
+import { Portrait } from './portrait';
 
 // ---------- the route, for components that render inside every screen (TopBar) but get no props about it
 let chromeRoute: Route['n'] = 'front';
@@ -25,11 +26,11 @@ const NO_BELL = new Set<Route['n']>(['daily', 'room', 'play', 'customize', 'howt
 
 // ---------- the five destinations (§29). Transfer Market is a Home card (and the bell's notes), not a tab.
 export const TABS: { n: Route['n']; k: string; icon: string; c: string }[] = [
-  { n: 'front', k: 'sh.tabs.home', icon: 'desk', c: 'var(--red)' },
-  { n: 'today', k: 'sh.tabs.daily', icon: 'daily', c: 'var(--m-daily)' },
-  { n: 'story', k: 'sh.tabs.career', icon: 'career', c: 'var(--m-story)' },
-  { n: 'rooms', k: 'sh.tabs.rooms', icon: 'rooms', c: 'var(--m-rooms)' },
-  { n: 'me', k: 'sh.tabs.me', icon: 'card', c: 'var(--gold)' },
+  { n: 'front', k: 'u39.tabs.desk', icon: 'desk', c: 'var(--red)' },
+  { n: 'today', k: 'u39.tabs.daily', icon: 'daily', c: 'var(--red)' },
+  { n: 'story', k: 'u39.tabs.career', icon: 'career', c: 'var(--red)' },
+  { n: 'wire', k: 'u39.tabs.market', icon: 'market', c: 'var(--red)' },
+  { n: 'me', k: 'u39.tabs.me', icon: 'card', c: 'var(--red)' },
 ];
 /** Which tab a route lights up. Everything the Daily owns (the hub, the board, Practice, Deadline Day Live, the Daily
  *  table) is the Daily tab; everything about your name is My Press Card; the Market, Shop, Missions and How to play
@@ -38,9 +39,10 @@ export function tabOf(r: Route): Route['n'] {
   switch (r.n) {
     case 'play': return r.mode === 'career' ? 'story' : 'today';
     case 'daily': case 'today': case 'practice': case 'ddlive': return 'today';
-    case 'boards': return r.period === 'rooms' ? 'rooms' : r.period === 'wire' ? 'front' : r.from && r.from.n === 'me' ? 'me' : 'today';
+    case 'boards': return r.period === 'rooms' ? 'front' : r.period === 'wire' ? 'wire' : r.from && r.from.n === 'me' ? 'me' : 'today';
     case 'desk': case 'story': return 'story';
-    case 'room': case 'newsroom': case 'rooms': return 'rooms';
+    case 'room': case 'newsroom': case 'rooms': return 'front';
+    case 'wire': return 'wire';
     case 'me': case 'pass': case 'rivals': case 'contacts': case 'feed': return 'me';
     default: return 'front';
   }
@@ -66,12 +68,13 @@ export function TopBar({ back, title, onHelp, onMenu, children, bell, wallet, ba
   const showWallet = !bare && (wallet ?? (WALLET_ROUTES.has(route) || route === 'front'));
   return <header className={'g-top' + (bare ? ' g-top--bare' : '')}>
     {back ? <button className="g-top__back" onClick={() => { sfx('ui.tap'); back.onClick(); }} aria-label={t('sh.top.back') + ': ' + back.label}><Icon n={t.rtl ? 'arrow' : 'back'} size={20} /><span>{back.label}</span></button>
-      : <span className="g-top__logo">Tier One</span>}
+      : <span className="g-top__logo g-wordmark">tier one</span>}
     {title && <span className="g-top__title" dir="auto">{title}</span>}
     <span className="g-top__end">
       {children}
       {showWallet && <WalletPill compact={route === 'front'} />}
       {showBell && <Bell />}
+      {!bare && route !== 'me' && <button type="button" className="g-top__me" onClick={() => { sfx('ui.tap'); navTo({ n: 'me' }); }} aria-label={t('u39.tabs.me')}><Portrait kind="staff" id="you" size={40} round /></button>}
       {onHelp && <button className="g-icbtn" onClick={onHelp} aria-label={t('nav.howto')}><Icon n="help" /></button>}
       {onMenu && <button className="g-icbtn" onClick={onMenu} aria-label={t('sh.top.menu')}><Icon n="menu" /></button>}
     </span>

@@ -151,7 +151,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     <Tip id="player" />
     <div className="sg-tabs" role="tablist">
       {(['ring', 'clips', 'call'] as const).map((k) => <button key={k} role="tab" aria-selected={pane === k} onClick={() => { sfx('ui.tap'); setPane(k); }}>
-        {k === 'ring' ? t('c38.file.tabs.sources') : k === 'clips' ? t('c38.file.tabs.clippings') + (curReads.length + livePosts.length ? ` (${curReads.length + livePosts.length})` : '') : t('c38.file.tabs.call')}
+        {k === 'ring' ? t('c38.file.tabs.sources') : k === 'clips' ? t('u39.said.tab') + (curReads.length + livePosts.length ? ` (${curReads.length + livePosts.length})` : '') : t('c38.file.tabs.call')}
       </button>)}
     </div>
 
@@ -179,7 +179,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     </section>}
 
     {pane === 'clips' && <>
-      {!(curReads.length > 0 || livePosts.length > 0) && <p className="know__none">{t('c38.file.noClips')}</p>}
+      {!(curReads.length > 0 || livePosts.length > 0) && <p className="know__none">{t('u39.said.none')}</p>}
       {(curReads.length > 0 || livePosts.length > 0) && <section className="clips is-open">
         <ol className="clips__l">
           {[...curReads.map((r, k) => {

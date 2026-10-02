@@ -80,8 +80,9 @@ export function Home(chrome: Chrome) {
 
       <section className={'hm-hero g-card' + (played ? ' is-filed' : '')} aria-label={t('sh.home.kicker')}>
         <div className="hm-hero__band">
-          <span className="hm-hero__k">{t('sh.home.kicker')} <b>{t('sh.home.no', { n: no })}</b></span>
-          <span className="hm-hero__clock g-num" role="timer" aria-label={t('sh.home.closes', { t: hms(closes) })}><Icon n="clock" size={13} />{hms(closes)}</span>
+          <span className="hm-hero__k g-mono">{t('sh.home.kicker')} No. {String(no).padStart(3, '0')}</span>
+          <h2 className="hm-hero__t g-hed">{t('u39.home.title')}</h2>
+          <p className="hm-hero__sub">{t('u39.home.sub')}</p>
         </div>
         <div className="hm-hero__body">
           <div className="hm-hero__kits" aria-hidden="true">
@@ -93,7 +94,8 @@ export function Home(chrome: Chrome) {
           </div> : <p className="hm-hero__s">{t('sh.home.hidden')}</p>}
           <div className="hm-hero__meta">
             <span className={'hm-hero__streak' + (s.streak.n ? ' is-lit' : '')}><Icon n="flame" size={15} />{s.streak.n ? t('sh.home.streak', { n: s.streak.n }) : t('sh.home.streak0')}</span>
-            <span className="hm-hero__here"><Icon n="rooms" size={15} />{here > 1 ? t('sh.home.here', { n: here.toLocaleString('en') }) : t('sh.home.hereOne')}</span>
+            <span className="hm-hero__clock g-num" role="timer" aria-label={t('sh.home.closes', { t: hms(closes) })}>{t('u39.home.resets')} <b>{hms(closes)}</b></span>
+            {here > 1 && <span className="hm-hero__here"><Icon n="rooms" size={15} />{t('sh.home.here', { n: here.toLocaleString('en') })}</span>}
           </div>
           <GBtn size="lg" primary={!played} pulse={!played && !liveD} shine={!played} sound={null} onClick={playDaily} className="hm-hero__cta">
             <Icon n={played ? 'daily' : liveD ? 'uturn' : 'phone'} size={24} />{played ? t('sh.home.result') : liveD ? t('sh.home.resume', { d: liveD }) : t('sh.home.play')}

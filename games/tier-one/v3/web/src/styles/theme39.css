@@ -57,3 +57,54 @@ html, body { background: var(--desk); color: var(--on-desk); }
 /* a serif headline with the coral full stop ("Every story has two sides.") */
 .g-hed { font-family: var(--f-display); font-weight: 600; letter-spacing: -.02em; line-height: 1.02; font-variation-settings: "opsz" 48; }
 .g-hed::after { content: "."; color: var(--red); }
+
+/* ================================================================ 3.9 component skin (screenshots 01–18) */
+/* top bar: wordmark left, bell + avatar right; Back is a chevron + label */
+.g-top { background: var(--desk); border-bottom: 1px solid var(--desk-line); }
+.g-top__logo.g-wordmark { font-size: var(--wordmark-size); text-transform: lowercase; }
+.g-top__title { font-family: var(--f-display); font-weight: 600; }
+.g-top__back { color: var(--on-desk); font-family: var(--f-display); font-weight: 600; }
+.g-top__me { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; padding: 0; }
+.g-top__me .g-portrait { border-radius: 50% !important; box-shadow: 0 0 0 2px var(--gold); background: var(--desk-3); }
+.g-top__me:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+/* bottom bar: five destinations, coral icon + label + underline when selected */
+.g-tabs { background: var(--desk); border-top: 1px solid var(--desk-line); }
+.g-tabs a { color: var(--on-desk-2); font-family: var(--f-text); font-weight: 500; }
+.g-tabs a[aria-current] { color: var(--red); }
+.g-tabs::after { background: var(--red) !important; box-shadow: none !important; border-radius: 2px; }
+@media (min-width: 1024px) { .g-tabs::after { background: var(--red-wash) !important; box-shadow: inset 3px 0 0 var(--red) !important; } .g-tabs__brand { background: var(--red); box-shadow: 0 4px 0 var(--red-deep); } }
+/* buttons: coral primary with a serif label; paper/dark are outlined */
+.g-btn { font-family: var(--f-display); font-weight: 600; letter-spacing: 0; text-transform: none; }
+.g-btn:not(.g-btn--paper):not(.g-btn--dark):not(.g-btn--ghost):not(.g-btn--gold):not(.g-btn--green) { background: var(--red); color: #fff; box-shadow: 0 3px 0 var(--red-deep); }
+.g-btn--dark { background: transparent; color: var(--on-desk); box-shadow: inset 0 0 0 1.5px var(--desk-line-2); }
+.g-btn--paper { background: transparent; color: var(--card-ink); box-shadow: inset 0 0 0 1.5px var(--card-ink); }
+.g-btn--gold { background: var(--gold); color: var(--card-ink); box-shadow: 0 3px 0 var(--gold-deep); }
+.g-btn--green { background: var(--sage); color: #fff; box-shadow: 0 3px 0 var(--sage-deep); }
+/* cards: paper on the desk; desk rows outlined */
+.g-card:not(.g-card--desk) { background: var(--card); color: var(--card-ink); box-shadow: 0 1px 0 rgba(0,0,0,.25), 0 12px 28px -18px rgba(0,0,0,.8); }
+.g-card--desk, .g-row, .hm-card, .hm-tile, .hm-season, .cn-hub__t { background: var(--desk-2) !important; color: var(--on-desk); box-shadow: inset 0 0 0 1px var(--desk-line) !important; }
+.g-h1, .g-h2, .g-sec h2, .sheet__ht b { font-family: var(--f-display); font-weight: 600; letter-spacing: -.015em; text-transform: none; }
+.g-chip { font-family: var(--f-text); font-weight: 600; text-transform: none; letter-spacing: 0; }
+.g-stamp--gold { color: var(--gold-deep); border-color: var(--gold); }
+/* Desk: the Daily card (screenshot 01) */
+.hm-hero { background: var(--card) !important; color: var(--card-ink); }
+.hm-hero__band { display: grid !important; gap: 2px; padding: 16px 18px 4px !important; background: none !important; color: var(--card-ink) !important; }
+.hm-hero__k { font-size: 12px; letter-spacing: .22em; color: var(--card-ink-2); text-transform: none; }
+.hm-hero__t { margin: 2px 0 0; font-size: clamp(38px, 12vw, 56px); color: var(--card-ink); }
+.hm-hero__sub { margin: 0; font-size: 16px; line-height: 1.3; color: var(--card-ink); }
+.hm-hero__body { color: var(--card-ink); }
+.hm-hero__meta { border-top: 1px solid var(--card-line); padding-top: 10px; color: var(--card-ink-2); }
+.hm-hero__streak { font-family: var(--f-display); font-weight: 600; color: var(--card-ink); }
+.hm-hero__streak.is-lit svg { color: var(--red); }
+.hm-hero__clock b { font-family: var(--f-text); font-weight: 600; color: var(--card-ink); font-size: 16px; }
+.hm-hero__s { color: var(--card-ink-2); }
+.hm-card b, .hm-tile b { font-family: var(--f-display); font-weight: 600; font-size: 18px; }
+.hm-card__ic, .hm-tile__ic { background: transparent !important; color: var(--gold) !important; }
+.hm-season__lv { color: var(--gold); font-family: var(--f-display); }
+.g-bar i { background: var(--gold); }
+/* the Player File's "What they said": the quote reads as a quote */
+.clip__q { font-family: var(--f-display); font-weight: 500; font-size: 16px; line-height: 1.3; border-inline-start: 3px solid var(--acc, var(--red)); padding-inline-start: 10px; margin: 4px 0 6px; }
+.clip__new { background: var(--red); color: #fff; }
+.sg-tabs button[aria-selected="true"] { color: var(--on-desk); box-shadow: inset 0 -3px 0 var(--red); }
+/* low-end and the APK: no grain under reduced data */
+@media (prefers-reduced-data: reduce) { .g-card::before { display: none; } }

@@ -7,6 +7,15 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-02 · Tier One 3.9.0 "Newsroom" (first pass)
+
+- Removed every drawn film and cutscene (call films, post films, day-end, page turns, the cutscene host, the Film setting).
+- New call screen: the source's own portrait breathes on the desk while their place's sound plays, then the line types in on a paper card and the face swaps to its reaction. Same screen in Daily, Career, Practice and Rooms.
+- The Player File's Clippings tab is now "What they said": every source's line about that player, newest first.
+- Posting now lands as the quick burst and the stamp on the file in every mode.
+- Newsroom palette from the owner's handoff (charcoal, paper, coral, subdued gold, sage), "tier one." wordmark, avatar in the top bar, five tabs Desk · Daily · Career · Market · Profile, the Desk's Daily card restyled.
+- Not yet done from docs/UI39.md: the editable composer, the published-post screen with fan replies, the edition review, the Market tabs, the Settings page and the Profile tabs. APK bundle builds but was not published (Saif's feed untouched).
+
 ## 2026-10-02 · mmoustafaeditor (Claude Code session) · Tier One 3.8.0 launch rework (web)
 - **What changed:** The owner's 60-part launch brief (docs/LAUNCH_BRIEF.md) applied: simulation-audited game math (Exclusive +30, Tier 1 200 / Tier 2 130; sim in games/tier-one/v3/sim/sim3.mjs, spec docs/spec/D); qualitative source reliability in ranked play, "independent sources agree / echo chamber", the Player File rebuilt, the Exclusive moment, Deadline Day phases with a fair clock, Results as the share card, onboarding in play, Practice as the learning lab; Home around THE DAILY hero, design tokens and icon family, Morning Papers, contextual push ask, analytics funnel; Career as five emergent stages (20 windows, no conspiracy plot), visible club relations, contacts as relationships; Rooms math (cap 16, 7 rounds, recap card); Transfer Market on server-managed calendar.mjs (no hard-coded dates); one economy, one Store, real credit earning, missions that reward play; the owner's character pack in public/art (fictional cast, 512px WebP, reaction moods). Specs in games/tier-one/v3/docs/spec/.
 - **Files:** `games/tier-one/v3/**`, `api/tier-one/v3/**`, `api/tier-one/v4/**`, `tier-one/` build.

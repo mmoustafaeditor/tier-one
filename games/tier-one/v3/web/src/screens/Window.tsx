@@ -2,7 +2,7 @@
 // Daily and rooms (server-held) and Practice/Career (local). Layout: look/mockups/challenge.html + deadline.html.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { E, OUTS, shadow, type Act, type Call, type Clue, type Post, type Game } from '../lib/engine';
+import { E, OUTS, shadow, type Act, type Clue, type Post, type Game } from '../lib/engine';
 import type { Driver, View } from '../lib/driver';
 import { useT, fmtDate } from '../lib/i18n';
 import { getSave, update, useSave } from '../lib/save';
@@ -10,6 +10,8 @@ import { sfx, buzz } from '../lib/sfx';
 import { leanOf, outWord, strWord, postLine, vars, evidenceOf } from '../lib/story';
 import { Icon, Kit, GBtn, TopBar, shake } from '../ui/game';
 import { Portrait } from '../ui/portrait';
+import { CallScreen } from '../ui/CallScreen';
+import '../styles/call.css';
 import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } from '../lib/meta';
 import { applyWindow, totalFavours, vinceOf, type CareerReport } from '../lib/career';
 import { storyBeats, pushBeats, beatScene, type Beat } from '../lib/storyMode';
@@ -51,7 +53,6 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const [calling, setCalling] = useState<{ i: number; c: Clue } | null>(null);
   const [burst, setBurst] = useState<{ k: number; kind: number; hwg: boolean } | null>(null);
   const [filedAt, setFiledAt] = useState<Record<number, number>>({});
-  const [posting, setPosting] = useState<{ i: number; o: number; s: number; ut: boolean; k: number; prev: Call | null; hwg: boolean } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const startRef = useRef({ pp: getSave().pp, credits: getSave().credits, streak: getSave().streak.n });
   const recorded = useRef(false);
@@ -117,12 +118,13 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     const out = await act(ut ? ['u', i, o, s] : ['c', i, o, s]);
     if (out && !out.error) {
       const late = view && view.state.day === view.R.DAYS;
-      if (late) {
-        // Deadline Day: the clock is running, so the quick burst instead of the full post.
+      {
+        // 3.9: every post lands as the quick burst and the stamp on the file (no post film).
         const hwg = hereWeGo({ o, s });
         sfx(hwg ? 'publish.hwg' : (['publish.talks', 'publish.advanced', 'publish.confirmed'] as const)[s]); setTimeout(() => sfx('stamp.done'), 120); buzz(s === 2 ? [20, 40, 30] : 18);
         setFiledAt((f) => ({ ...f, [i]: Date.now() })); setBurst({ k: Date.now(), kind: s, hwg }); setTimeout(() => setBurst(null), 1100); shake(rootRef.current);
-      } else setPosting({ i, o, s, ut, k: Date.now(), prev, hwg: hereWeGo({ o, s }) });
+        void late; void prev; void ut;
+      }
       if (view && view.state.day === view.R.DAYS && view.ddEndsAt && view.ddEndsAt - Date.now() <= 15000) ddLate.current = true;
     }
   };
@@ -165,7 +167,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const endTut = (handoff: boolean) => update((x) => { x.tut = { ...(x.tut || {}), done: true }; if (handoff) x.practice.live = null; });
   const favours = view.mode === 'career' ? <FavourTray g={g} i={deskSel} onUse={(k) => act(['f', k, deskSel])} /> : null;
   const toBoard = () => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } };
-  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy || !!posting} onLater={toBoard} last={calling ? null : last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
+  const file = <SagaFile view={view} g={g} i={deskSel} busy={busy} onLater={toBoard} last={calling ? null : last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
   // §28: during play the top bar carries only the way back and where you are (the wallet and the bell stay off).
   const dayTitle = <span className="play__title"><span>{title}</span><span className="g-mono">{t('c38.win.day', { n: view.state.day, m: view.R.DAYS })}</span></span>;
 
@@ -197,12 +199,9 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
       <aside className={'play__file' + (mob ? '' : ' only-desk')}>{file}</aside>
     </div>
 
-    {tutor && !calling && !night && !posting && !burst && <TutorCoach g={g} sel={sel} onDone={() => endTut(false)} onFinish={() => { endTut(false); fastForward(); }} />}
-    {/* 3.9 (UI39.md): the call screen and the published-post screen replace the films here; until the daily lane lands
-        them the answer goes straight to the file and the post is filed at once. */}
-    {calling && view.cast[calling.i] && (() => { setTimeout(() => setCalling(null), 0); return null; })()}
+    {tutor && !calling && !night && !burst && <TutorCoach g={g} sel={sel} onDone={() => endTut(false)} onFinish={() => { endTut(false); fastForward(); }} />}
+    {calling && view.cast[calling.i] && createPortal(<CallScreen src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} i={calling.i} mode={view.mode} onDone={() => setCalling(null)} />, document.body)}
     {burst && createPortal(<Burst key={burst.k} kind={burst.kind} hwg={burst.hwg} />, document.body)}
-    {posting && view.cast[posting.i] && (() => { const p = posting; setTimeout(() => { setPosting(null); setFiledAt((f) => ({ ...f, [p.i]: Date.now() })); shake(rootRef.current); }, 0); return null; })()}
 
     <Sheet open={confirmEnd} onClose={() => setConfirmEnd(false)} label={t('daily.endConfirmOk')}>
       <div className="sheet__body"><h2 className="g-h2">{t('daily.endConfirm', { n: view.state.day, c: view.state.left })}</h2><p className="g-sub" style={{ marginTop: 8 }}>{t('daily.contactsNote')}</p>
