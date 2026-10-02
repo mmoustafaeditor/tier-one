@@ -85,6 +85,7 @@ function RoomsBoard({ chrome }: { chrome: Chrome }) {
     Promise.all(getSave().rooms.map(async (ref) => {
       const x = await loadRoom(ref);
       if ('gone' in x) { forgetRoom(ref.code); toast('info', t('hub.rooms.gone', { n: ref.name })); return null; }
+      if ('seat' in x) { forgetRoom(ref.code); return null; }
       if ('error' in x) return { code: ref.code, name: ref.name, rank: 0, n: 0, pts: 0 };
       const st = standings(x.room, ref.pid), i = st.findIndex((r) => r.me);
       return { code: ref.code, name: x.room.name, rank: i + 1, n: st.length, pts: i >= 0 ? st[i].total : 0 };
