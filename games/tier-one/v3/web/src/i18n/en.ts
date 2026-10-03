@@ -44,10 +44,10 @@ const en = {
   },
   circle: { club: 'Club', agent: 'Agent', travel: 'Travel', street: 'Street', insider: 'Insider', office: 'Press office' },
   daily: {
-    kicker: 'The Daily · {date}', closes: 'Board closes {t}', hed: 'Seven days, five sagas, and at least one of them is lying.',
+    kicker: 'The Daily Challenge · {date}', closes: 'Board closes {t}', hed: 'Seven days, five sagas, and at least one of them is lying.',
     contactsLeft: '{n} contact points left today', contactsNone: 'No contacts left today', contactsNote: 'Unused points don’t roll over. Nor does sleep.',
     board: 'The board', boardAside: 'Lean · your call', sleep: 'Sleep on it · go to day {n}', sleepDD: 'Sleep on it · Deadline Day',
-    fair: 'Same board for everyone. Nothing you buy changes your Daily score.', needNet: 'The Daily is held on our server so nobody can peek at the answers. It needs a connection.',
+    fair: 'Same board for everyone. Nothing you buy changes your Daily score.', needNet: 'The Daily Challenge is held on our server so nobody can peek at the answers. It needs a connection.',
     practiceInstead: 'Practise offline instead', play: 'Open the phones', resume: 'Back to the phones', read: 'Read the result', played: 'Filed. Tomorrow’s board at {t}.',
     tagline: 'Five sagas. Seven days. One window.', rank: '{r} of {n}', par: 'Par {n}', parNone: 'Par when three have filed', lean: 'Leans {o}', split: 'Split', noReads: 'Nobody rung yet', circles: '{n} circles',
     called: 'Filed · {s} {o}', calledDay: 'Filed day {d}', startNote: 'One attempt. Your score is worked out on our server from what you did.',
@@ -142,10 +142,10 @@ const en = {
   },
   share: { text: 'Tier One · {what} · {tier} · {pts} pts\n{row}\n{url}', by: 'By {n}', extra: 'Extra · {no}' },
   front: {
-    lead: 'Lead story', dailyNo: 'The Daily · No. {n}', streak: 'Streak', streakN: 'days on the streak', league: 'League', leagueLine: '{r} of {n} · {div}',
+    lead: 'Lead story', dailyNo: 'The Daily Challenge · No. {n}', streak: 'Streak', streakN: 'days on the streak', league: 'League', leagueLine: '{r} of {n} · {div}',
     moreWire: 'More from the wire', heat: 'Heat', yourCalls: 'Your calls', live: '{n} live', noCalls: 'Nothing filed on the Transfer Market yet. It pays weeks later; start now.',
     alsoFlag: 'Also in this edition', practiceD: 'Off the record. Coach mode shows the exact odds.', careerD: 'Local blogger to Tier One. Sources that trust you.', roomsD: 'Your group chat, same boards, one table.',
-    wireEmpty: 'Nothing on the wire yet. The phones are quiet — suspiciously quiet.', wireOff: 'The Transfer Market needs a connection. The Daily does too; Practice and Career don’t.', openFile: 'Open the file',
+    wireEmpty: 'Nothing on the wire yet. The phones are quiet — suspiciously quiet.', wireOff: 'The Transfer Market needs a connection. The Daily Challenge does too; Practice and Career don’t.', openFile: 'Open the file',
     grace: '{n} grace days banked', tallyAria: '{n} day streak',
   },
   wire: {

@@ -6,7 +6,7 @@ export default {
       tabs: { home: 'Home', daily: 'Daily', career: 'Career', rooms: 'Rooms', me: 'My Press Card' },
       top: { wallet: '{c} coins, {k} credits. Open the Shop', menu: 'Settings', back: 'Back' },
       home: {
-        kicker: 'The Daily', no: 'No. {n}', closes: 'Closes in {t}', play: 'Play today’s Daily', resume: 'Back to day {d}', result: 'See your result',
+        kicker: 'The Daily Challenge', no: 'No. {n}', closes: 'Closes in {t}', play: 'Play today’s Daily', resume: 'Back to day {d}', result: 'See your result',
         filed: 'Filed · {p} pts', rank: '#{r} of {n}', streak: '{n}-day streak', streak0: 'Start a streak', here: '{n} reporters on it', hereOne: 'Be the first on it',
         hidden: 'Five sagas. Same board for everyone.', season: '{s} · Lv {n}', next: 'Next: {r} at Lv {n}', nextCoins: '{n} coins', nextLook: 'a look', seasonMax: 'Top of the track',
         modes: { career: 'Career Mode', market: 'Transfer Market', rooms: 'Multiplayer', practice: 'Practice' },
@@ -25,7 +25,7 @@ export default {
       push: {
         title: 'Want a reminder when tomorrow’s desk opens?', body: 'One a day, at most. You choose what else.', yes: 'Remind me', no: 'Not now', later: 'Maybe later',
         row: 'Notifications', rowOn: 'On · {n} kinds', rowOff: 'Off', rowNo: 'Not available on this device', rowDenied: 'Blocked in your browser settings',
-        topics: { daily: 'The Daily opens', streak: 'Streak at risk', market: 'A Market call settled', roomOpen: 'A room round opened', roomClose: 'A room round is closing', ddlive: 'Deadline Day Live begins' },
+        topics: { daily: 'The Daily Challenge opens', streak: 'Streak at risk', market: 'A Market call settled', roomOpen: 'A room round opened', roomClose: 'A room round is closing', ddlive: 'Deadline Day Live begins' },
         done: 'Reminders on', failed: 'Couldn’t switch them on', off: 'Reminders off',
       },
       acct: {

@@ -7,7 +7,7 @@ export default {
       tabs: { home: 'Home', story: 'Career Mode', wire: 'Transfer Market', friends: 'Multiplayer', me: 'My Press Card' },
       home: {
         noName: 'New reporter', freelance: 'Out of work since Deadline Day', xp: 'XP {a}/{b}', followers: '{n} followers', streak: 'Streak',
-        dailyNo: 'The Daily · No. {n}', todaysFive: 'Today’s five', filed: 'Filed.', tag: 'Five transfer sagas. Some are lying. Break them first or get ratio’d trying.',
+        dailyNo: 'The Daily Challenge · No. {n}', todaysFive: 'Today’s five', filed: 'Filed.', tag: 'Five transfer sagas. Some are lying. Break them first or get ratio’d trying.',
         filedSub: '{p} points {r}', weekAria: 'This week', dow: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
         play: 'Open the phones', resume: 'Back to day {d}', seePage: 'See your front page', fair: 'Same five for everyone · about 6 min', tomorrow: 'New five at {t}',
         missions: 'Today’s missions', missionsReset: 'Reset at {t}', claimed: 'Claimed', modes: 'Your desk',

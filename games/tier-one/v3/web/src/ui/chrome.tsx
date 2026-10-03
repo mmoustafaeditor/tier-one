@@ -76,7 +76,7 @@ export function TopBar({ back, title, onHelp, onMenu, children, bell, wallet, ba
       {showBell && <Bell />}
       {!bare && route !== 'me' && <button type="button" className="g-top__me" onClick={() => { sfx('ui.tap'); navTo({ n: 'me' }); }} aria-label={t('u39.tabs.me')}><Portrait kind="staff" id="you" size={40} round /></button>}
       {onHelp && <button className="g-icbtn" onClick={onHelp} aria-label={t('nav.howto')}><Icon n="help" /></button>}
-      {onMenu && <button className="g-icbtn" onClick={onMenu} aria-label={t('sh.top.menu')}><Icon n="menu" /></button>}
+      {onMenu && <button className="g-icbtn" onClick={onMenu} aria-label={t('common.settings') + ' · ' + t('common.language')}><Icon n="language" /></button>}
     </span>
   </header>;
 }

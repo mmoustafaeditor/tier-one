@@ -7,6 +7,13 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.8 — the Desk (owner page-by-page pass, page 1)
+
+- Desk rebuilt to the owner's screenshot: newsroom banner (owner art), the Daily Challenge card (Daily No., title, five mystery shirts, streak · reset clock), then Play today · Past results · Leaderboards (daily and weekly) · Streak; the Season row with level and XP; a Career Mode card; Multiplayer and Transfer Market tiles. Practice, Missions and Shop are off the Desk.
+- "The Daily" is now "The Daily Challenge" everywhere (EN; ES "El Reto Diario", AR "التحدي اليومي" on the Desk).
+- The top bar's menu button is now a language (globe) icon; it still opens Settings.
+- Mystery shirts restyled (charcoal with a paper-coloured question mark). Desktop shows the Desk in two columns.
+
 ## 2026-10-03 · Tier One 3.9.7 — painted players actually show
 
 - Fix: the app loaded the portrait list (art/manifest.json) with `force-cache`, so phones that had seen the old, empty list kept it and showed initials instead of the 227 painted players. It now asks fresh once per build.

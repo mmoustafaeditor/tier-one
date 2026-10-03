@@ -35,7 +35,7 @@ export default {
       },
       nav: { log: 'Career log', contacts: 'Contacts', clubs: 'Clubs', more: 'More' },
       log: { empty: 'Nothing yet. Play a window and somebody will have an opinion.' },
-      contacts: { lead: 'Trust grows every time you ring them and act on what they said. It changes Career and Practice only.', locked: 'Opens at {n}', book: 'Full contacts book', sub: 'Five people who pick up. Trust is earned one call at a time.', fair: 'Relationships change Career and Practice. The Daily, rooms and the Transfer Market stay the same for everyone.' },
+      contacts: { lead: 'Trust grows every time you ring them and act on what they said. It changes Career and Practice only.', locked: 'Opens at {n}', book: 'Full contacts book', sub: 'Five people who pick up. Trust is earned one call at a time.', fair: 'Relationships change Career and Practice. The Daily Challenge, rooms and the Transfer Market stay the same for everyone.' },
       trust: {
         cold: 'Cold', familiar: 'Familiar', trusted: 'Trusted', inner: 'Inner Circle', direct: 'Direct Line',
         max: 'As close as it gets', toward: 'Getting to {w}', earlyAt: 'opens a day early at {w}', againAt: 'second opinion at {w}', nextGives: '{w}: {p}',
