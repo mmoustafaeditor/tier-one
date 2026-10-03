@@ -46,6 +46,7 @@ for (; steps < 30 && !card; steps++) {
 }
 const pl0 = pledge()!;
 ok(!!card, `3 the assistant flags the promise after ${steps} more steps (${pl0.apps} games, ${pl0.due - pl0.n} matchdays left)`);
+ok(card?.title.n === pl0.apps && card?.title.s === '10', `3 decision memory: the card carries how far the promise has got (${card?.title.n} of ${card?.title.s} games)`);
 const start = card?.choices.find((ch) => ch.id === 'start');
 ok(!!start && start.cmds.length === 1, `3 it proposes starting him, with its sporting cost shown (${start?.fx.map((f) => f.key + ':' + (f.n ?? '')).join(', ')})`);
 

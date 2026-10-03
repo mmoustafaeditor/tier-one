@@ -11,7 +11,7 @@ import { balanceOf } from './balance';
 import { biasOf, levelOf, staffOf } from './delegation';
 import { windowLeft } from './windows';
 import {
-  archetypeOf, canTalk, pledgeKey, hierarchy, homegrown, now, pledgeCheck, pledgeState, renewFactor, roomOf, talkCall, talkPreview, trustOf, type PledgeReq, type Tone,
+  archetypeOf, canTalk, pledgeKey, hierarchy, homegrown, now, pledgeCheck, pledgeState, renewFactor, roomOf, talkCall, talkPreview, trustOf, type PledgeReq, type Tone, PROSPECT_APPS,
 } from './room';
 
 const sign = (n: number) => (n > 0 ? `+${n}` : `${n}`);
@@ -167,7 +167,9 @@ function promiseDue(w: World, c: Career, p: Player, pl: Pledge): Decision | null
     choices.push({ id: 'letgo', key: 'dr.ch.letgo', cmds: [], pick: !pick, fx: [{ tone: 'bad', icon: 'handshake', key: 'dr.fx.trust', s: '-20' }] });
     return {
       id: `pdue:${pl.id}:${pl.n}`, kind: 'promise', dept: 'matchprep', role: 'assistant', icon: 'doc', ev: pl.ev,
-      title: { key: `dr.due.role.${pl.role}`, pn: p.name, n: pl.st, s: String(pl.el), p: p.id },
+      // Decision memory (rework §C): the title carries how far the promise has got (starts of fit matchdays, or a
+      // prospect's appearances of the ten), so the card can quote it.
+      title: { key: `dr.due.role.${pl.role}`, pn: p.name, n: pl.role === 'prospect' ? pl.apps : pl.st, s: String(pl.role === 'prospect' ? PROSPECT_APPS : pl.el), p: p.id },
       advice: { key: pick ? 'dr.adv.due.start' : start ? 'dr.adv.due.cost' : 'dr.adv.due.none', pn: p.name, n: start?.cost ?? 0, s: String(s.left) },
       due: { key: 'days', n: Math.max(1, s.left) }, choices, score: 72, open: { to: 'player', id: p.id },
     };

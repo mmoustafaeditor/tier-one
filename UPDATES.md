@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: promise cards remember how far they've got
+- **What changed:** The assistant's warning card about a promise now says how it stands, e.g. "Your word to X: regular starts · started 1 of 5" or, for an academy pathway, "· 0 played so far", next to the matchdays left. The sim test checks it. The browser slice test also no longer counts it as a failure when the staff keep the kid's promise themselves (match prep is delegated in "The usual split"): that run says so and skips the card steps.
+- **Files:** `web/src/sim/room-decisions.ts`, `src/ui2/roomText.ts`, `src/lang-dressing*.ts`, `web/sim-tests/rework/slice.ts`, `web/ui-tests/rework-slice.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: "About the job" when picking a club
 - **What changed:** When you pick a club for a new career, a new panel lists facts about the job: where the squad and the budget rank in the league, the squad's average age against the league's, the club's derbies (which count extra with the board), and how many of the first eleven are out of contract next summer. Also re-ran the full test suite: 46 of 47 sim tests pass (`marking` is the same known sampling-noise check), and the engine fingerprint is unchanged.
 - **Files:** `web/src/ui2/NewCareer.tsx`, `src/lang-job.ts` (new), `src/styles/app.css`, `web/ui-tests/rework-job.mjs` (new), `games/the-gaffer/rework/*`

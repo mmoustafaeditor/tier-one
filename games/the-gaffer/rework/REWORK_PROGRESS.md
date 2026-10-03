@@ -119,4 +119,10 @@ Decision (Saif, 2026-10-03): AI clubs keep their current XI selection; the best-
   `evidence/m4g-before|after/`.
 * Full suite re-run: 46/47 sim tests pass (`marking` baseline noise), fingerprint unchanged; all UI gates pass.
 
+* Decision memory (handoff §C): a role-promise card quotes how far it has got ("started 1 of 5" for a role, "0 played
+  so far" for a prospect, next to the matchdays left). `rework/slice` checks the card carries it. The browser slice now
+  also recognises the staff keeping the promise themselves (match prep is delegated in "The usual split", so the
+  assistant may start the kid mid-sim); that run then skips the card steps and says so instead of failing.
+  Evidence `evidence/m4h-after/`.
+
 Next: M5 validation items possible here (save round-trip/slot isolation checks, full-suite run), then the report.

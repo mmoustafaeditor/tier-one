@@ -27,6 +27,7 @@ no named Android device was available — see Known limitations).
   Transfers › Needs.
 * Picking a club shows "About the job": league rank by squad and budget, age against the league, derbies, expiring
   deals in the first eleven.
+* Promise cards remember: "Your word to X: a pathway · 0 played so far", "regular starts · started 1 of 5".
 * Accessibility from the title screen and Settings: larger text, reduce motion, stronger contrast.
 * Nothing is wider than a phone at 320–412 px, in English or Arabic.
 
@@ -47,7 +48,7 @@ Current-code reproduction: `node sim-tests/build.mjs rework/repro` → every che
 | Navigation (4 languages) | `ui-tests/nav.mjs` | pass (Search budget 2 → 3 taps, funnel) |
 | Width gate 320/360/390/412, EN/AR | `ui-tests/overflow.mjs` | pass |
 | Half-time staging, Continue label, courses | `ui-tests/rework-ht.mjs` | pass (fails on the old build: F12 reproduced) |
-| Browser slice | `ui-tests/rework-slice.mjs` | pass |
+| Browser slice | `ui-tests/rework-slice.mjs` | pass; in some runs the delegated staff keep the kid's promise before the card shows, and the run says so and skips the card steps |
 | Title career cards | `ui-tests/rework-title.mjs` | pass |
 | Squad planner | `ui-tests/rework-planner.mjs` | pass (folded on phones; need → Transfers › Needs) |
 | Accessibility | `ui-tests/rework-a11y.mjs` | pass (no sideways scroll at the largest text, EN/AR) |
@@ -90,5 +91,5 @@ load. Rollback: older builds ignore both fields.
 quick-match full time), `m2b-before|after` (half-time staging, Continue, courses), `m2c-before|after` (Transfers
 funnel), `m2d-after` (first-week guide), `m2e-after` (Tactics essentials), `m3-slice` (the connected sequence:
 promotion sheet → warning card → Your XI → full time → after reload), `m4-after` (full-time why/next), `m4c-after`
-(pre-match briefing), `m4d-before|after` (title-screen career cards), `m4e-before|after` (squad planner), `m4f-before|after` (accessibility), `m4g-before|after` (new-career job facts). Phone 390 px and desktop 1440 px, English and
+(pre-match briefing), `m4d-before|after` (title-screen career cards), `m4e-before|after` (squad planner), `m4f-before|after` (accessibility), `m4g-before|after` (new-career job facts), `m4h-after` (promise card with memory). Phone 390 px and desktop 1440 px, English and
 Arabic where the screen changed.

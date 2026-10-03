@@ -38,6 +38,7 @@ export const D_ES: DStrings = {
   give: 'Dale el brazalete',
   word: 'Tu palabra', noWord: 'No hay promesas abiertas. Nadie te reclama nada.',
   status: { open: 'En camino', slip: 'Se escapa', lost: 'Perdida', kept: 'Cumplida', broken: 'Rota' },
+  memo: { starts: (st: number, el: number) => `titular en ${st} de ${el}`, apps: (a: number, _of: number) => `${a} jugados hasta ahora` },
   groups: ['portero', 'defensa', 'centrocampista', 'delantero'],
   pledge: (key: string, group: string) => ({
     'role.star': 'ser la estrella', 'role.starter': 'jugar de titular', 'role.rotation': 'minutos de rotación', 'role.prospect': 'un camino al primer equipo',

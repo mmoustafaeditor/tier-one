@@ -38,6 +38,7 @@ export const D_AR: DStrings = {
   give: 'اديله الشارة',
   word: 'كلمتك', noWord: 'مفيش وعود مفتوحة. محدش ماسك عليك حاجة.',
   status: { open: 'ماشي تمام', slip: 'بيفلت', lost: 'راح', kept: 'اتنفّذ', broken: 'اتكسر' },
+  memo: { starts: (st: number, el: number) => `لعب أساسي ${st} من ${el}`, apps: (a: number, _of: number) => `لعب ${a} لحد دلوقتي` },
   groups: ['حارس', 'مدافع', 'لاعب وسط', 'مهاجم'],
   pledge: (key: string, group: string) => ({
     'role.star': 'إنه نجم الفريق', 'role.starter': 'إنه يلعب أساسي', 'role.rotation': 'دقايق في التدوير', 'role.prospect': 'طريق للفريق الأول',

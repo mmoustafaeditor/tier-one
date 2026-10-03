@@ -42,6 +42,7 @@ export const D_EN = {
   give: 'Give him the armband',
   word: 'Your word', noWord: 'No promises open. Nobody is holding you to anything.',
   status: { open: 'On track', slip: 'Slipping', lost: 'Gone', kept: 'Kept', broken: 'Broken' } as Record<string, string>,
+  memo: { starts: (st: number, el: number): string => `started ${st} of ${el}`, apps: (a: number, _of: number): string => `${a} played so far` },
   groups: ['goalkeeper', 'defender', 'midfielder', 'forward'] as [string, string, string, string],
   pledge: (key: string, group: string): string => ({
     'role.star': 'star billing', 'role.starter': 'regular starts', 'role.rotation': 'rotation minutes', 'role.prospect': 'a pathway',
