@@ -7,6 +7,14 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.19 — board and Player File to the owner's mockups; Past Results detail
+
+- Desk: Play today now opens the Daily Challenge tab first (not straight into the sagas).
+- Board: stadium lights behind the header (art/stadium.webp, cut from the owner's mockup), "Daily No. 033" title, coral kicker with the date, big "Day n" + "Day n of 7" + a paper calls-left pill, the day strip; dark saga cards with the painted portrait flush left, crests with club names, "Not rung yet", coral arrow. The live ticker and presence strip are off the board.
+- Player File: no card around the header; the portrait large on the right over the lights; gold kicker, big name, crests; a paper Evidence card (circles count top right, "Call a source to gather evidence."); calls-left pill above the sources. The footer bar is gone (Back to Board is in the top bar; Your Call is a tab).
+- Scrolling: the board list and the whole Player File scroll as one page inside the screen on phones and desktop (the sources pane used to be squeezed to ~50px on short phones).
+- Past Results: tap a Daily to see its full result: tier, points, rank, the row and each saga (player, clubs, what it was, your points). Saga details are saved from this version on.
+
 ## 2026-10-03 · Tier One 3.9.18 — Daily tab uses the Desk's painted jerseys
 
 - Locked: the Desk's dark painted shirts with the question mark (art/daily-shirt.webp), no tile boxes.

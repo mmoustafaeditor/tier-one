@@ -164,3 +164,35 @@
   .hm39__row { min-height: 46px; padding: 4px 6px 4px 10px; } .hm39__row > b { font-size: 15.5px; }
   .hm39__mp { padding: 8px 12px; gap: 4px; } .hm39__mp > b { font-size: 22px; } .hm39__mp > svg { width: 24px; height: 24px; }
 }
+/* 3.9.19: Past Results — tap a Daily for its full result */
+.pr40__item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 10px; width: 100%; text-align: start; color: inherit; }
+.pr40__item > svg { color: var(--red); }
+.pr40 { display: flex; flex-direction: column; gap: 10px; }
+.pr40__back { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; min-height: 40px; color: var(--on-desk-2); font-weight: 700; }
+.pr40__k { color: var(--accent-text); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+.pr40__top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pr40__pts { font-family: var(--f-display); font-size: 34px; }
+.pr40__rank { color: var(--on-desk-2); }
+.pr40__row { margin: 0; font-size: 22px; letter-spacing: 2px; }
+.pr40__sagas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pr40__sagas li { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); }
+.pr40__sagas li.is-right { box-shadow: inset 3px 0 0 var(--sage), inset 0 0 0 1px var(--desk-line); }
+.pr40__sagas li.is-wrong { box-shadow: inset 3px 0 0 var(--red), inset 0 0 0 1px var(--desk-line); }
+.pr40__face .g-portrait { border-radius: 10px; overflow: hidden; }
+.pr40__b { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.pr40__b b { font-family: var(--f-display); font-size: 16px; }
+.pr40__b small { color: var(--on-desk-2); font-size: 12.5px; }
+.pr40__route { display: flex; align-items: center; gap: 4px; font-size: 12.5px; color: var(--on-desk); min-width: 0; }
+.pr40__route > svg { color: var(--gold); flex: none; }
+.pr40__route bdi { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr40__res { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.pr40__res b { font-size: 18px; }
+.is-right .pr40__res small { color: #9FC79F; } .is-wrong .pr40__res small { color: var(--accent-text); } .pr40__res small { color: var(--on-desk-3); font-size: 12px; }
+.pr40__sagas li { background: var(--card-2); color: var(--card-ink); box-shadow: inset 0 0 0 1px var(--card-line); }
+.pr40__sagas li.is-right { box-shadow: inset 4px 0 0 var(--sage), inset 0 0 0 1px var(--card-line); }
+.pr40__sagas li.is-wrong { box-shadow: inset 4px 0 0 var(--red), inset 0 0 0 1px var(--card-line); }
+.pr40__b b, .pr40__res b, .pr40__route { color: var(--card-ink); }
+.pr40__b small, .pr40__rank, .pr40__back { color: var(--card-ink-2); }
+.pr40__route > svg { color: var(--gold-deep); }
+.is-right .pr40__res small { color: var(--sage-deep); } .is-wrong .pr40__res small { color: var(--red-deep); } .pr40__res small { color: var(--card-ink-3); }
+.pr40__item > svg { flex: none; }

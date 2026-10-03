@@ -82,8 +82,9 @@ function finishWindow(s: Save, r: Result, mode: 'daily' | 'practice' | 'story' |
 
 export function onDailyDone(dayKey: string, no: number, r: Result, extra: { ddLast15?: boolean } = {}) {
   update((s) => {
-    if (s.daily[dayKey]) { s.daily[dayKey] = { ...s.daily[dayKey], rank: r.rank, players: r.players, par: r.par }; return; }
-    s.daily[dayKey] = { no, total: r.total, tier: r.tier, row: r.row || '', ex: r.ex, rank: r.rank, players: r.players, par: r.par };
+    const per = r.cast && r.per ? r.per.map((x) => { const c = r.cast!.find((k) => k.i === x.i) || r.cast![x.i]; return c ? { pid: c.player.id, n: c.player.n, from: c.from, to: c.to, truth: x.truth, called: x.called, right: x.right, pts: x.pts, excl: x.excl } : null; }).filter((x): x is NonNullable<typeof x> => !!x) : undefined;
+    if (s.daily[dayKey]) { s.daily[dayKey] = { ...s.daily[dayKey], rank: r.rank, players: r.players, par: r.par, per: s.daily[dayKey].per || per }; return; }
+    s.daily[dayKey] = { no, total: r.total, tier: r.tier, row: r.row || '', ex: r.ex, rank: r.rank, players: r.players, par: r.par, per };
     // Streak with grace days: one earned per 7-day run (bank up to 2); a missed day spends one.
     const st = s.streak;
     const gap = st.last ? dayDiff(st.last, dayKey) : 99;

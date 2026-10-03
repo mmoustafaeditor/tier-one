@@ -12,7 +12,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { E, OUTS, type Game, type Clue } from '../lib/engine';
 import { useT, num } from '../lib/i18n';
 import { leanOf, voiceLine, postLine, saysWord, outWord, strWord, vars, varsH, evidenceOf, relKey, GRADE } from '../lib/story';
-import { Glyph, Lines } from '../ui/bits';
+import { Glyph, Lines, Crest } from '../ui/bits';
 import { Icon, SrcIcon, GBtn } from '../ui/game';
 import { Portrait, moodFor, accentOf } from '../ui/portrait';
 import { sfx, buzz } from '../lib/sfx';
@@ -35,7 +35,13 @@ export const RIVAL_IC: Record<string, string> = { tabloid: 'BB', itk: '?', insid
 /** A rival's face: the art slot (Addendum A), with the old initials as the accessible label. */
 export const RivalFace = ({ id, size = 34, name }: { id: string; size?: number; name?: string }) => <Portrait kind="rival" id={id} size={size} round name={name} className={'rv-av rv-av--' + id} />;
 
-export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, justFiled, onLater, rivalRecord }: SagaProps) {
+/** The calls you have left today: a paper pill with a coral phone (board and Player File). */
+export function CallsPill({ left }: { left: number }) {
+  const t = useT();
+  return <span className={'callpill' + (left ? '' : ' is-out')} aria-label={t('daily.contactsLeft', { n: left })}><Icon n="phone" size={18} /><b>{left ? t('u39.file.calls', { n: left }) : t('g.win.noCalls')}</b></span>;
+}
+
+export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, justFiled, rivalRecord }: SagaProps) {
   const t = useT();
   const c = view.cast[i];
   const ln = leanOf(g, i);
@@ -79,7 +85,6 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     : !E.exclusiveOpen(g, i, selO!) ? t('c38.pub.exBeaten', { r: beatenBy ? t('rival.' + beatenBy.id) : '' })
     : s !== 2 ? t('c38.pub.exNeedConf')
     : t('c38.pub.exNeedTwo', { n: E.circlesFor(g, i, selO!).size });
-  const canCall = cs === 'ok' || canUt;
 
   const rivalsRace = <section className="rivals race">
     <div className="g-sec"><h2>{t('calls.race.h')}</h2></div>
@@ -99,12 +104,12 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
 
   return <div className={'file2 file3' + (pane === 'call' ? ' is-call' : '')}>
     {/* ---- header (3.9, screenshot 03): the file card, the player's portrait large on the right ---- */}
-    <header className={'pf39 g-card' + (justFiled ? ' is-filed' : '')}>
+    <header className={'pf39 pf40' + (justFiled ? ' is-filed' : '')}>
       <div className="pf39__txt">
         <span className="pf39__k g-mono">{t('u39.file.k')} · {t('c38.file.sagaNo', { n: i + 1, m: view.cast.length })}</span>
         <h1 className="pf39__n" dir="auto">{c.player.n}</h1>
         <span className="pf39__m">{[t('pos.' + c.player.pos), c.player.age > 0 ? t('u39.file.age', { n: c.player.age }) : ''].filter(Boolean).join(' · ')}</span>
-        <span className="pf39__route"><bdi>{c.from.s}</bdi><Icon n={t.rtl ? 'back' : 'arrow'} size={16} /><bdi><b>{c.to.s}</b></bdi></span>
+        <span className="pf39__route"><Crest club={c.from} size={34} /><bdi>{c.from.s}</bdi><Icon n={t.rtl ? 'back' : 'arrow'} size={20} /><Crest club={c.to} size={34} /><bdi><b>{c.to.s}</b></bdi></span>
         <em className="pf39__sim">{t('u39.file.sim')}</em>
       </div>
       <span className="pf39__art" aria-hidden="true"><Portrait kind="player" id={c.player.id} club={c.from} size={150} /></span>
@@ -116,9 +121,9 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     {g.tips && i in g.tips && <div className="g-chip g-chip--gold tipchip">{t(g.tips[i] ? 'career.tipFake' : 'career.tipReal', { p: c.player.s })}</div>}
 
     {/* ---- evidence (3.9): four bars on the left, the independent circles on the right ---- */}
-    <section className={'ev39 ev--' + ev.word} aria-label={t('c38.ev.summary')}>
+    <section className={'ev39 ev40 ev--' + ev.word} aria-label={t('c38.ev.summary')}>
+      <h2 className="ev39__h">{t('c38.ev.summary')}</h2>
       <div className="ev39__bars">
-        <h2 className="ev39__h">{t('c38.ev.summary')}</h2>
         {[0, 1, 2, 3].map((k) => <div key={k} className={'ev39__r oc--' + OUTS[k] + (!ln.none && ln.o === k ? ' is-lead' : '')}>
           <span>{outWord(t.lang, k)}</span><span className="ev39__bar"><i style={{ width: (100 * ln.tally[k]) / maxT + '%' }} /></span>
         </div>)}
@@ -130,6 +135,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
           {view.posterior && <span className="ev39__coach g-mono">{view.posterior(i).map((p, k) => `${outWord(t.lang, k)[0]} ${Math.round(p * 100)}%`).join(' · ')}</span>}
         </>; })()}
       </div>
+      {!curReads.length && <p className="ev40__hint">{t('u39.file.gather')}</p>}
     </section>
 
     <div className="sg-tabs sg39" role="tablist">
@@ -140,7 +146,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
 
     <div className="pf39__pane">
     {pane === 'ring' && <section className="src39" aria-label={t('g.saga.ring')}>
-      <p className="src39__left g-mono">{t('g.saga.left', { n: g.left })}</p>
+      <div className="src39__left"><CallsPill left={g.left} /></div>
       {srcs.map((k) => {
         const st = E.askState(g, i, k), so = E.srcOf(g.R, i, k)!;
         const asked = curReads.filter((r) => r.src === k);
@@ -221,13 +227,6 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     {how && <HowScored g={g} i={i} view={view} />}
     </>}
 
-    </div>
-    {/* ---- footer: Make the call · Back to board ---- */}
-    <div className="file3__bar">
-      <button type="button" className="file3__back" onClick={() => { sfx('ui.tap'); onLater?.(); }}><Icon n={t.rtl ? 'arrow' : 'back'} size={18} />{t('c38.file.back')}</button>
-      {pane !== 'call' && (canCall ? <GBtn size="sm" sound="page.turn" className="file3__go" onClick={() => { if (call) setUtOpen(true); setPane('call'); }}><Icon n="pen" size={18} />{call ? t('c38.file.change') : t('c38.file.call')}</GBtn>
-        : call ? <span className={'g-stamp file3__filed g-stamp--' + OUTS[call.o]}>{t('c38.file.filed')}</span>
-        : <span className="file3__hint g-mono">{t('c38.file.ringFirst')}</span>)}
     </div>
   </div>;
 }

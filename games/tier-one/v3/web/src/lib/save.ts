@@ -8,7 +8,7 @@
 //   pp      lifetime Press Points; the season Pass is the one visible level (lib/progress.ts levelOf)
 // A Career slot keeps only what is its own story: rank/chapter, windows, favours, club relations, counters, history.
 import { useRef, useSyncExternalStore } from 'react';
-import type { Pub, Tier, Act } from './engine';
+import type { Pub, Tier, Act, WClub } from './engine';
 import type { MissionState } from './progress';
 import type { SeasonSave, SeasonRecap, WeekEvState, CosKind } from './season';
 import type { Byline, BookEntry, RivalRec, FeedItem } from './byline';
@@ -17,7 +17,8 @@ import type { SocialSave } from './social';
 export const SAVE_KEY = 'tierone_v3';
 export const SAVE_V = 3;
 
-export interface DailyRecord { no: number; total: number; tier: Tier; row: string; ex: number; rank?: number | null; players?: number; par?: number | null }
+export interface DailyPer { pid: string; n: string; from: WClub; to: WClub; truth: number; called: boolean; right: boolean; pts: number; excl: boolean }
+export interface DailyRecord { no: number; total: number; tier: Tier; row: string; ex: number; rank?: number | null; players?: number; par?: number | null; per?: DailyPer[] }
 export interface LocalWindow { seed: string; mode: 'practice' | 'career'; log: Act[]; started: number; coach?: boolean; label?: string; favours?: { kind: string; i: number; day: number; info?: number }[]; ddAt?: number }
 export interface CareerSave {
   slot: number; paper: string; rank: number; windows: number; favours: { burner: number; tipoff: number; stakeout: number };

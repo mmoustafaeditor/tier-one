@@ -13,19 +13,19 @@ import { Portrait } from '../ui/portrait';
 import { CallScreen } from '../ui/CallScreen';
 import '../styles/call.css';
 import '../styles/file39.css';
+import '../styles/board40.css';
 import { onDailyDone, onPracticeDone, onCareerDone, onRoomDone, toast, ymdUTC } from '../lib/meta';
 import { applyWindow, totalFavours, vinceOf, type CareerReport } from '../lib/career';
 import { storyBeats, pushBeats, beatScene, type Beat } from '../lib/storyMode';
 import { Sheet, useNow, Crest } from '../ui/bits';
-import { SagaFile, RivalFace, type RivalRecord } from './Saga';
+import { SagaFile, CallsPill, RivalFace, type RivalRecord } from './Saga';
 import { Tip } from '../ui/fit';
 import { hereWeGo } from '../lib/share';
 import { Results } from './Results';
 import { playScene, afterScenes, seen } from '../lib/scenes';
 import type { Chrome } from '../App';
 // The editor's desk (GOTY.md §7.1): the Daily brief before day 1 and the Deadline Day Live ticker (ui/live.tsx).
-import { DailyBriefSheet, DDLiveTicker } from '../ui/live';
-import { LivePresence } from '../ui/social';
+import { DailyBriefSheet } from '../ui/live';
 import { catchphraseOf } from '../lib/catchphrase';
 
 // The rival ledger (GOTY.md §1.3) lives in the connect lane's lib/byline.ts. Picked up here if that module exists and
@@ -64,7 +64,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     if (!v.done || !v.result || recorded.current) return;
     recorded.current = true;
     const r = v.result;
-    if (v.mode === 'daily') onDailyDone(ymdUTC(), v.no || 0, r, { ddLast15: ddLate.current });
+    if (v.mode === 'daily') onDailyDone(ymdUTC(), v.no || 0, { ...r, cast: r.cast || v.cast }, { ddLast15: ddLate.current });
     else if (v.mode === 'room') onRoomDone(r);
     else if (v.mode === 'practice') onPracticeDone(r, !!v.coach);
     else if (v.mode === 'career') {
@@ -170,22 +170,23 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const toBoard = () => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } };
   const file = <SagaFile view={view} g={g} i={deskSel} busy={busy} onLater={toBoard} last={calling ? null : last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
   // §28: during play the top bar carries only the way back and where you are (the wallet and the bell stay off).
-  const dayTitle = <span className="play__title"><span>{title}</span><span className="g-mono">{t('c38.win.day', { n: view.state.day, m: view.R.DAYS })}</span></span>;
+  const noTxt = view.mode === 'daily' ? t('u39.dh.no', { n: String(view.no || '').padStart(3, '0') }) : '';
+  const dayTitle = <span className="play__title"><span>{view.mode === 'daily' ? t('g.win.daily', { n: String(view.no || '').padStart(3, '0') }) : title}</span></span>;
 
   return <div className={'g-screen g-screen--wide play fit fit--full' + (dd ? ' is-dd' : '')} ref={rootRef}>
-    <TopBar bare back={mob ? { label: t('c38.file.back'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : dayTitle} />
+    <TopBar bare back={mob ? { label: t('c38.file.back'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : dayTitle}>{mob && noTxt ? <span className="play__no g-mono">{noTxt}</span> : null}</TopBar>
+    <img className="play__stad" src="art/stadium.webp" alt="" aria-hidden="true" decoding="async" />
     {dd && <DDHead view={view} onZero={finish} />}
     <div className="play__cols">
       <main className={mob ? 'only-desk' : ''}>
-        {view.mode === 'daily' && !dd && <DDLiveTicker go={chrome.go} />}
-        {view.mode === 'daily' && !dd && <LivePresence board="daily" />}
-        {!dd && <section className="dayhead">
-          <DayStrip day={view.state.day} days={view.R.DAYS} />
+        {!dd && <section className="dayhead dh40">
+          <div className="g-mono dayhead__k">{view.mode === 'daily' ? t('g.win.dailyK', { date: fmtDate(Date.now(), t.lang, { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '') }) : view.mode === 'career' ? t('career.ranks.' + (sv.career?.rank || 0)) : view.mode === 'room' ? t('nav.rooms') : tutor ? t('c38.onb.training') : t('c38.pr.k')}</div>
           <div className="dayhead__row">
-            <div><div className="g-mono dayhead__k">{view.mode === 'daily' ? t('g.win.dailyK', { date: fmtDate(Date.now(), t.lang) }) : view.mode === 'career' ? t('career.ranks.' + (sv.career?.rank || 0)) : view.mode === 'room' ? t('nav.rooms') : tutor ? t('c38.onb.training') : t('c38.pr.k')}</div>
-              <h1 className="g-h2 dayhead__h">{t('g.win.dayH', { n: view.state.day })}</h1></div>
-            <Phones left={view.state.left} max={view.R.CONTACTS} />
+            <h1 className="dayhead__h">{t('g.win.dayH', { n: view.state.day })}</h1>
+            <span className="dh40__of g-mono">{t('c38.win.day', { n: view.state.day, m: view.R.DAYS })}</span>
+            <CallsPill left={view.state.left} />
           </div>
+          <DayStrip day={view.state.day} days={view.R.DAYS} />
         </section>}
         {!dd && !tutor && <Tip id="board" />}
         {dd ? <DDBoard view={view} g={g} busy={busy} onOpen={setSel} onQuick={(i, o) => postCall(i, o, 1, !!g.calls[i])} />
@@ -219,14 +220,6 @@ function DayStrip({ day, days }: { day: number; days: number }) {
     {Array.from({ length: days }, (_, k) => { const d = k + 1; return <span key={d} className={(d < day ? 'past' : d === day ? 'now' : '') + (d === days ? ' dd' : '')}><i>{d < day ? <Icon n="check" /> : d === days ? <Icon n="clock" /> : d}</i></span>; })}
   </div>;
 }
-function Phones({ left, max }: { left: number; max: number }) {
-  const t = useT();
-  const n = Math.max(max, left);
-  return <div className="phones-box" aria-label={t('daily.contactsLeft', { n: left })}>
-    <div className="phones-box__i">{Array.from({ length: n }, (_, k) => <i key={k} className={k < left ? 'on' : ''}><Icon n="phone" /></i>)}</div>
-    <span className="g-mono">{left ? t('g.win.callsLeft', { n: left }) : t('g.win.noCalls')}</span>
-  </div>;
-}
 // A saga on the board (§28): who, where to, and the evidence in one word (Strong / Split / Weak, "2 agree", Echo).
 function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Game; i: number; open: boolean; onOpen: () => void; filed?: number; hint?: boolean }) {
   const t = useT();
@@ -235,21 +228,21 @@ function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Ga
   const posted = E.livePosts(g, i).length;
   const vince = view.mode === 'career' && vinceOf(view.R)?.i === i;
   return <button className={'scard' + (open ? ' is-open' : '') + (call ? ' is-called' : '') + (hint ? ' is-hint' : '')} style={{ ['--i' as string]: i }} onClick={onOpen} aria-label={c.player.n}>
-    <span className="scard__face"><Portrait kind="player" id={c.player.id} club={c.from} size={52} /><Kit club={c.from} player={c.player} size={22} style={{ position: 'absolute', insetInlineEnd: -5, bottom: -5 }} /></span>
+    <span className="scard__face"><Portrait kind="player" id={c.player.id} club={c.from} size={120} /></span>
     <span className="scard__b">
       <span className="scard__n" dir="auto">{c.player.n}</span>
-      <span className="scard__r"><Crest club={c.from} size={18} /><Icon n={t.rtl ? 'back' : 'arrow'} size={14} /><Crest club={c.to} size={18} /><span>{c.to.s}</span></span>
+      <span className="scard__r"><span className="scard__cl"><Crest club={c.from} size={26} /><bdi>{c.from.s}</bdi></span><Icon n={t.rtl ? 'back' : 'arrow'} size={18} /><span className="scard__cl"><Crest club={c.to} size={26} /><bdi>{c.to.s}</bdi></span></span>
       <span className="scard__st">
         {tw && <span key="tw" className="g-chip g-chip--red chip-in">{t('stamp.twist')}</span>}
         {vince && <span key="vp" className="g-chip vince-chip" title={t('g.story.vince.banner')}><Icon n="eye" />{t('g.story.vince.chip')}</span>}
-        {!call && (ln.none ? <span className="g-chip">{t('g.win.notRung')}</span>
+        {!call && (ln.none ? <span className="scard__nr">{t('g.win.notRung')}</span>
           : <span key={'ev' + ev.word + ln.o + ev.agree + (ev.echo ? 'e' : '')} className={'g-chip chip-in scard__ev evw--' + ev.word + (ev.echo ? ' is-echo' : '') + ' g-chip--' + OUTS[ln.o]}>
             {ev.echo ? <><Icon n="eye" />{t('c38.ev.' + ev.word)}</> : <>{t('c38.ev.' + ev.word)}{!ln.split && <> · {outWord(t.lang, ln.o)}</>}{ev.agree >= 2 ? <> · {t('c38.ev.circles', { n: ev.agree })}</> : null}</>}
           </span>)}
         {posted > 0 && !call && <span key={'rv' + posted} className="g-chip scard__riv chip-in"><Icon n="bolt" />{posted === 1 ? t('c38.ev.rivalOne') : t('c38.ev.rival', { n: posted })}</span>}
       </span>
     </span>
-    <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + (hereWeGo(call) ? 'gold scard__hwg' : OUTS[call.o]) + (filed ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : outWord(t.lang, call.o)}</span> : <Icon n={t.rtl ? 'back' : 'arrow'} size={22} />}</span>
+    <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + (hereWeGo(call) ? 'gold scard__hwg' : OUTS[call.o]) + (filed ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : outWord(t.lang, call.o)}</span> : <span className="scard__go"><Icon n={t.rtl ? 'back' : 'arrow'} size={22} /></span>}</span>
   </button>;
 }
 
