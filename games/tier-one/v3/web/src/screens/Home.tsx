@@ -8,11 +8,10 @@ import type { Save } from '../lib/save';
 import { useWire } from '../lib/wireData';
 import { ymdUTC } from '../lib/meta';
 import { ensureMissions, levelOf } from '../lib/progress';
-import { seasonAt } from '../lib/season';
 import { sfx } from '../lib/sfx';
 import { Icon, useNow, Sheet } from '../ui/bits';
 import { Kit, TopBar } from '../ui/game';
-import { chapterOf } from '../lib/storyMode';
+import { chapterOf, chapterName } from '../lib/storyMode';
 import type { Chrome } from '../App';
 import { dailyFeed } from '../lib/byline';
 import { dailyNoToday } from './Front';
@@ -22,9 +21,6 @@ export const hms = (ms: number) => { const s = Math.max(0, Math.floor(ms / 1000)
 /** The day of today's Daily still in progress (0 when none). */
 export const dailyLiveDay = (s: Save) => { const today = ymdUTC(); return !s.daily[today] && s.last && new Date(s.last.at).toISOString().slice(0, 10) === today && !s.last.pub.over ? Number(s.last.pub.day) || 0 : 0; };
 const TIER_STAMP: Record<string, string> = { T1: 'gold', T2: 'done', T3: 'done', T4: 'off', SPIKED: '' };
-// Season number since launch (Season 01 = the season running on 1 July 2026).
-const SEASON_ONE = Date.UTC(2026, 6, 1);
-function seasonNo(): number { let n = 1, cur = seasonAt(SEASON_ONE); const id = seasonAt().id; while (cur.id !== id && n < 99) { cur = seasonAt(cur.end + 864e5 / 2); n++; } return n; }
 const pad3 = (n: number) => String(n).padStart(3, '0');
 
 export function Home(chrome: Chrome) {
@@ -43,7 +39,6 @@ export function Home(chrome: Chrome) {
   const past = Object.entries(s.daily).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 30);
   const lv = levelOf(s.pp, s);
   const xpIn = lv.max ? lv.per : Math.round((lv.pct / 100) * lv.per);
-  const sn = String(seasonNo()).padStart(2, '0');
   const careerSub = s.career?.live ? t('sh.home.sub.careerLive') : ch && s.career ? t('sh.home.sub.careerAt', { c: ch.n, n: s.career.windows + 1 }) : t('sh.home.sub.careerNew');
   const arrow = <Icon n={t.rtl ? 'back' : 'arrow'} size={20} />;
   return <div className="g-screen home hm hm39 fit">
@@ -75,12 +70,16 @@ export function Home(chrome: Chrome) {
         </div>
       </section>
 
-      <button type="button" className="hm39__season" onClick={() => { sfx('ui.tap'); chrome.go({ n: 'pass' }); }}>
-        <b>{t('u39.home.season', { n: sn })}</b><i aria-hidden="true" />
+      {s.career && ch ? <button type="button" className="hm39__season" onClick={() => { sfx('ui.tap'); chrome.go({ n: 'story' }); }} aria-label={t('u39.home.chapter', { n: ch.n }) + ' · ' + t(chapterName(ch.id))} title={t(chapterName(ch.id))}>
+        <b>{t('u39.home.chapter', { n: ch.n })}</b><i aria-hidden="true" />
         <span className="hm39__lv">{t('g.lv', { n: lv.n })}</span>
         <span className="hm39__bar" aria-hidden="true"><i style={{ width: Math.max(2, Math.min(100, lv.pct)) + '%' }} /></span>
         <span className="hm39__xp g-num">{xpIn} / {lv.per} XP</span>
-      </button>
+      </button> : <button type="button" className="hm39__season hm39__prologue" onClick={() => { sfx('open'); chrome.go({ n: 'story' }); }}>
+        <b>{t('u39.home.prologue')}</b><i aria-hidden="true" />
+        <span className="hm39__pro">{t('u39.home.prologueSub')}</span>
+        <span className="hm39__begin">{t('u39.home.begin')}<Icon n={t.rtl ? 'back' : 'arrow'} size={16} /></span>
+      </button>}
 
       <button type="button" className={'hm39__career' + (s.career?.live ? ' is-hot' : '')} onClick={() => { sfx('open'); chrome.go({ n: 'story' }); }}>
         <span className="hm39__cic" aria-hidden="true"><Icon n="career" size={30} /></span>

@@ -7,6 +7,11 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.10 — the Desk shows your Career chapter
+
+- The row under the Daily Challenge card now shows the Career chapter you are in ("Chapter 2", the chapter's name on hover/long-press) with your level and XP; it opens Career.
+- Before a career exists it reads "Prologue · Your story starts here." with a coral Begin button that opens Career. The season label is gone from the Desk.
+
 ## 2026-10-03 · Tier One 3.9.9 — six tabs, always on; Back everywhere
 
 - Bottom bar: Desk · Daily · Career · Multiplayer · Market · Profile, on every page (also inside the Daily, Career and room windows; the page leaves room for it).
