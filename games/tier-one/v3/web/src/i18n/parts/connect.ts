@@ -43,7 +43,7 @@ export default {
         title: 'Contacts', hed: 'Your contacts book', sub: 'Every ask builds the relationship. Trusting a right read, or seeing through a wrong one, builds it faster.',
         lv: 'Level {n}', xp: '{a} of {b} XP to level {n}', max: 'Top level', asked: 'Asked {a} times, right {b}',
         coffee: 'Buy them a coffee', coffeeSub: '30 coins for 20 XP, once a day', coffeeDone: 'Coffee bought today', coffeeBroke: 'You need 30 coins. Missions pay them.',
-        storyOnly: 'Story and Practice', fair: 'Levels change looks and Story/Practice asks. The Daily and rooms stay the same for everyone.',
+        storyOnly: 'Story and Practice', fair: 'Levels change looks and Story/Practice asks. The Daily Challenge and rooms stay the same for everyone.',
         calls: 'Calls you “{n}”', next: 'Level {n}: {p}',
       },
       perk: {

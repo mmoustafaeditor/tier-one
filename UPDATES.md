@@ -7,6 +7,50 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.14 — head in the top bar, icons above the picture
+
+- The Desk's top bar items (coins, bell, globe/settings) sit on the logo's line, above the picture's top edge and drawn over it; the character's head rises into the bar in the gap between the logo and the icons.
+- The Desk's wallet shows coins only (credits stay in the Shop) so that gap stays clear.
+- The three mode tiles are compact: icon and name on one line (names wrap by word), no empty space.
+
+## 2026-10-03 · Tier One 3.9.13 — the Desk, aligned and rounded
+
+- The newsroom picture is a rounded card with the same corners and edges as the Daily Challenge card and the tiles; her head breaks out of its top edge (two layers of one image: the rounded photo, and the cut-out head above it).
+- Top bar: the profile avatar is gone everywhere (Profile is a tab). On the Desk the bar is wordmark · coins and credits · bell · globe (settings), clear of her head; the logo is no longer crowded.
+- Desktop and tablet show the same Desk as one centred column (Career Mode, Multiplayer and Transfer Market as three tiles). Short phones hide the tagline so everything stays on one screen. home39.css rewritten as one consolidated stylesheet.
+
+## 2026-10-03 · Tier One 3.9.12 — the full newsroom banner, her head in the top bar
+
+- The Desk banner is the owner's whole illustration (lamp, posters, mug), with the anime character's head rising into a transparent top bar like the mockup (art/desk-hero-full.webp; the head is cut out by colour so her hair stays).
+- Top bar on the Desk: wordmark, bell, avatar, globe. Coins and credits sit in a pill on the banner's bottom-right corner (still opens the Shop), so nothing covers her.
+- Shorter phones (under 760px tall): Career Mode joins Multiplayer and Transfer Market as a third tile and the card tightens, so the Desk stays one screen. Taller phones keep the Career card. Desktop keeps a framed banner and a normal top bar.
+
+## 2026-10-03 · Tier One 3.9.11 — Desk polish
+
+- Fixed "Lv NaN / NaN XP": the level maths now treats a missing or corrupt saved number as 0 (lib/progress.ts levelOf, lib/season.ts seasonLevel).
+- The Desk has no Back button; every other page keeps it.
+- The streak button is gone (the streak shows on the card; tapping it opens the streak details).
+- The five mystery shirts are the owner's art (cropped from the handoff screenshot, transparent background), beside the title like the mockup.
+- The newsroom banner shows on phones again (it shrinks on short screens, hides only under 600px tall). Rows tightened so the whole Desk fits a 390×664 phone; the top bar fits wordmark, wallet, bell, avatar and globe at 360–390px.
+
+## 2026-10-03 · Tier One 3.9.10 — the Desk shows your Career chapter
+
+- The row under the Daily Challenge card now shows the Career chapter you are in ("Chapter 2", the chapter's name on hover/long-press) with your level and XP; it opens Career.
+- Before a career exists it reads "Prologue · Your story starts here." with a coral Begin button that opens Career. The season label is gone from the Desk.
+
+## 2026-10-03 · Tier One 3.9.9 — six tabs, always on; Back everywhere
+
+- Bottom bar: Desk · Daily · Career · Multiplayer · Market · Profile, on every page (also inside the Daily, Career and room windows; the page leaves room for it).
+- Back is top-left on every page. Pages without their own Back get one before the wordmark; it returns to the page you came from (a real history, reset when you tap a tab). Android's back key uses the same.
+- Back labels say "Desk" (was "Home").
+
+## 2026-10-03 · Tier One 3.9.8 — the Desk (owner page-by-page pass, page 1)
+
+- Desk rebuilt to the owner's screenshot: newsroom banner (owner art), the Daily Challenge card (Daily No., title, five mystery shirts, streak · reset clock), then Play today · Past results · Leaderboards (daily and weekly) · Streak; the Season row with level and XP; a Career Mode card; Multiplayer and Transfer Market tiles. Practice, Missions and Shop are off the Desk.
+- "The Daily" is now "The Daily Challenge" everywhere (EN; ES "El Reto Diario", AR "التحدي اليومي" on the Desk).
+- The top bar's menu button is now a language (globe) icon; it still opens Settings.
+- Mystery shirts restyled (charcoal with a paper-coloured question mark). Desktop shows the Desk in two columns.
+
 ## 2026-10-03 · Tier One 3.9.7 — painted players actually show
 
 - Fix: the app loaded the portrait list (art/manifest.json) with `force-cache`, so phones that had seen the old, empty list kept it and showed initials instead of the 227 painted players. It now asks fresh once per build.

@@ -1,0 +1,108 @@
+/* The Desk (3.9.13, owner screenshots). One viewport on every phone; the same single column, centred, on tablet and
+   desktop. Order: top bar · the newsroom picture (a rounded card, her head breaking out of its top edge) · the Daily
+   Challenge card · the Career chapter row · Career Mode · Multiplayer · Transfer Market. Every card shares one edge
+   line and one corner radius (--hm-r). */
+.hm39 { --hm-r: 14px; }
+.hm39 .fit__body { gap: 8px; overflow-x: visible; }
+.hm39 > .g-top { border-bottom: 0 !important; box-shadow: none !important; background: transparent !important; }
+
+/* ---------- the picture: two layers of one image. The photo is clipped to a rounded card; the band above it (her
+   head, cut out on a transparent ground) is drawn unclipped so it rises out of the frame. */
+.hm39__art { position: relative; width: 100%; align-self: stretch; flex: none !important; aspect-ratio: 941 / 474; margin: -14px 0 0; z-index: 7; pointer-events: none; }
+.hm39__art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; display: block; }
+.hm39__photo { clip-path: inset(18.6% 0 0 0 round var(--hm-r)); }
+.hm39__hair { clip-path: inset(0 0 81.9% 0); }
+@media (max-height: 560px) { .hm39__art { display: none; } }
+/* short phones: the tagline steps aside so the whole Desk fits */
+@media (max-height: 700px) and (max-width: 699px) { .hm39__sub { display: none; } .hm39__t { margin-bottom: 0; } }
+
+/* ---------- the Daily Challenge card */
+.hm39__daily { flex: none; position: relative; padding: 12px 14px; border-radius: var(--hm-r); background: var(--card); color: var(--card-ink); box-shadow: 0 14px 30px -18px rgba(0,0,0,.9); }
+.hm39__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hm39__k { font-size: 12px; letter-spacing: .22em; color: var(--card-ink-2); text-transform: none; white-space: nowrap; }
+.hm39__mid { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.hm39__t { margin: 2px 0 4px; font-size: clamp(26px, 8vw, 38px); line-height: .98; color: var(--card-ink); }
+.hm39__sub { margin: 0; font-size: 14px; line-height: 1.3; color: var(--card-ink); }
+.hm39__shirts { display: block; width: clamp(120px, 37vw, 190px); height: auto; }
+.hm39__meta { display: flex; align-items: center; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--card-line); }
+.hm39__streak { display: inline-flex; align-items: center; gap: 6px; padding-inline-end: 12px; border-inline-end: 1px solid var(--card-line); font-family: var(--f-display); font-weight: 600; font-size: 17px; color: var(--card-ink); min-height: 36px; }
+.hm39__streak svg { color: var(--card-ink-3); } .hm39__streak.is-lit svg { color: var(--red); }
+.hm39__clock { font-size: 14px; color: var(--card-ink-2); }
+.hm39__clock b { font-family: var(--f-text); font-weight: 600; font-size: 16px; color: var(--card-ink); }
+.hm39__acts { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 52px; gap: 8px; margin-top: 10px; }
+.hm39__play { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 12px; border-radius: 10px; background: var(--red); color: #fff; font-family: var(--f-display); font-weight: 600; font-size: 18px; box-shadow: 0 3px 0 var(--red-deep); white-space: nowrap; }
+.hm39__past { min-height: 46px; padding: 0 8px; border-radius: 10px; box-shadow: inset 0 0 0 1.5px var(--card-ink); color: var(--card-ink); font-family: var(--f-display); font-weight: 600; font-size: 15px; line-height: 1.1; }
+.hm39__ic { min-height: 46px; display: grid; place-items: center; border-radius: 10px; box-shadow: inset 0 0 0 1.5px var(--card-line); color: var(--card-ink); background: var(--card-2); }
+.hm39__play:active, .hm39__past:active, .hm39__ic:active, .hm39__season:active, .hm39__career:active, .hm39__tile:active { transform: scale(.98); }
+.hm39__play:focus-visible, .hm39__past:focus-visible, .hm39__ic:focus-visible, .hm39__streak:focus-visible, .hm39__season:focus-visible, .hm39__career:focus-visible, .hm39__tile:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+@media (max-width: 370px) { .hm39__acts { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 46px; gap: 6px; } .hm39__play { font-size: 16px; } .hm39__past { font-size: 13.5px; } }
+
+/* ---------- the Career chapter row (or the Prologue invitation) */
+.hm39__season { flex: none; display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 14px; border-radius: var(--hm-r); background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); color: var(--on-desk); text-align: start; }
+.hm39__season > b { font-family: var(--f-display); font-weight: 600; font-size: 18px; white-space: nowrap; }
+.hm39__season > i { width: 1px; height: 24px; background: var(--desk-line-2); }
+.hm39__lv { font-family: var(--f-display); font-weight: 600; font-size: 17px; color: var(--gold); white-space: nowrap; }
+.hm39__bar { flex: 1; min-width: 40px; height: 7px; border-radius: 4px; background: var(--desk-4); overflow: hidden; }
+.hm39__bar i { display: block; height: 100%; border-radius: 4px; background: var(--gold); }
+.hm39__xp { font-size: 13px; color: var(--on-desk-2); white-space: nowrap; }
+.hm39__prologue { gap: 10px; padding: 0 8px 0 14px; background: linear-gradient(90deg, color-mix(in srgb, var(--gold) 14%, var(--desk-2)), var(--desk-2) 70%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent); }
+.hm39__prologue > b { font-style: italic; color: var(--gold-hi); }
+.hm39__pro { flex: 1; min-width: 0; font-family: var(--f-display); font-size: 14.5px; color: var(--on-desk); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm39__begin { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: var(--red); color: #fff; font-family: var(--f-display); font-weight: 600; font-size: 15px; white-space: nowrap; }
+
+/* ---------- Career Mode card (tall phones) and the mode tiles */
+.hm39__career, .hm39__tile { display: grid; align-items: center; text-align: start; border-radius: var(--hm-r); background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); color: var(--on-desk); }
+.hm39__career { flex: none; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; min-height: 60px; padding: 6px 14px; }
+.hm39__career.is-hot { box-shadow: inset 0 0 0 1px var(--gold); }
+.hm39__cic, .hm39__tic { display: grid; place-items: center; color: var(--gold); }
+.hm39__cb, .hm39__tb { display: grid; gap: 2px; min-width: 0; }
+.hm39__cb b { font-family: var(--f-display); font-weight: 600; font-size: 20px; line-height: 1.1; }
+.hm39__cb small, .hm39__tb small { color: var(--on-desk-2); font-size: 13px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hm39__tiles { flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hm39__tile { grid-template-columns: 28px minmax(0, 1fr); gap: 8px; min-height: 58px; padding: 6px 10px; }
+.hm39__tb b { font-family: var(--f-display); font-weight: 600; font-size: 15.5px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hm39__tile--career { display: none !important; }
+/* the three-tile row: shorter phones, and tablet/desktop (Career joins Multiplayer and Transfer Market) */
+@media (max-height: 760px), (min-width: 700px) {
+  .hm39__career { display: none !important; }
+  .hm39__tile--career { display: grid !important; }
+  .hm39__tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hm39__tile { grid-template-columns: 1fr; justify-items: start; align-content: center; gap: 3px; min-height: 56px; padding: 6px 10px; }
+  .hm39__tb small { display: none; }
+  .hm39__tb b { font-size: 14.5px; white-space: normal; }
+}
+
+/* ---------- tablet and desktop: the same Desk, one centred column */
+@media (min-width: 700px) {
+  .home.hm.hm39.g-screen { max-width: 470px !important; }
+  .hm.hm39 .fit__body { display: flex !important; flex-direction: column; grid-template-columns: none; }
+  .hm.hm39 .fit__body > * { grid-column: auto !important; grid-row: auto !important; align-self: stretch; }
+}
+
+/* ---------- sheets */
+.hm39__list ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.hm39__list li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; min-height: 52px; padding: 6px 2px; border-bottom: 1px solid var(--card-line); }
+.hm39__lw { display: grid; } .hm39__lw b { font-family: var(--f-display); font-weight: 600; } .hm39__lw small { color: var(--card-ink-3); }
+.hm39__lp { font-size: 18px; min-width: 52px; text-align: end; }
+.hm39__streakbox { display: grid; justify-items: center; text-align: center; gap: 8px; padding-bottom: 12px; }
+.hm39__flame { color: var(--red); }
+
+/* 3.9.14 (owner): the bar's items share the logo's line, above the picture; her head rises into the gap between the
+   logo and the icons; the Desk's wallet shows coins only so the gap stays clear (credits live in the Shop). */
+.hm39 > .g-top { position: relative !important; z-index: 9; }
+.hm39 > .g-top .g-wal--compact .g-wal__b--c { display: none; }
+.hm39 > .g-top .g-wal--compact .g-wal__b + .g-wal__b { border: 0; }
+.hm39__art { margin-top: -46px; }
+@media (min-width: 700px) { .hm39__art { margin-top: -46px !important; } }
+/* the three mode tiles: icon and name on one line, no empty space */
+@media (max-height: 760px), (min-width: 700px) {
+  .hm39__tile { grid-template-columns: auto minmax(0, 1fr); align-items: center; justify-items: start; gap: 6px; min-height: 0; padding: 10px 8px; }
+  .hm39__tic svg { width: 20px; height: 20px; }
+  .hm39__tb b { font-size: 13.5px; line-height: 1.12; }
+}
+.hm39 .fit__body { overflow: visible !important; }
+@media (max-height: 760px), (min-width: 700px) {
+  .hm39__tile { gap: 5px; padding: 9px 7px; }
+  .hm39__tic svg { width: 18px; height: 18px; }
+  .hm39__tb b { font-size: 13px; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: normal; word-break: keep-all; }
+}

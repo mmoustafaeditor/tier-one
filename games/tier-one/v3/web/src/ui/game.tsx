@@ -22,7 +22,7 @@ const hash = (s: string) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; 
 function lum(hex: string) { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return .5; const n = parseInt(m[1], 16); return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; }
 let kid = 0;
 export function kitSVG(club?: WClub, label = '', mystery = false) {
-  const c1 = mystery ? '#26221C' : club?.c1 || '#777', c2raw = mystery ? '#3A342A' : club?.c2 || '#fff';
+  const c1 = mystery ? '#20272C' : club?.c1 || '#777', c2raw = mystery ? '#384249' : club?.c2 || '#fff';
   const c2 = Math.abs(lum(c1) - lum(c2raw)) < .12 ? (lum(c1) > .5 ? '#15130F' : '#F4EFE4') : c2raw;
   const id = 'k' + ++kid, pat = club ? hash(club.id) % 5 : 0;
   const body = 'M22 8l-14 8 6 14 6-3v31h40V27l6 3 6-14-14-8c-2 6-8 9-18 9s-16-3-18-9z';
@@ -34,7 +34,7 @@ export function kitSVG(club?: WClub, label = '', mystery = false) {
     if (pat === 4) fill += `<path d="M10 70L70 0h14L24 70z" fill="${c2}"/>`;
   }
   const plated = !mystery && (pat === 1 || pat === 2 || pat === 3);
-  const tx = mystery ? '#FF5A36' : plated ? '#fff' : lum(c1) > .55 ? '#15130F' : '#fff';
+  const tx = mystery ? '#D8D0C0' : plated ? '#fff' : lum(c1) > .55 ? '#15130F' : '#fff';
   const plate = plated ? `<rect x="33" y="31" width="34" height="18" rx="3" fill="rgba(0,0,0,.55)"/>` : '';
   const txt = mystery ? '?' : label;
   return `<svg viewBox="0 0 100 70"><defs><clipPath id="${id}"><path d="${body}"/></clipPath></defs><g clip-path="url(#${id})">${fill}<path d="M22 8c2 6 8 9 18 9s16-3 18-9" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="3"/>${plate}</g>`

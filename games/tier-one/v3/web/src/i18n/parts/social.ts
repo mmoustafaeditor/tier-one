@@ -37,7 +37,7 @@ export default {
         pending: 'You’re on {n}’s board', pendingSub: 'Finish the Practice window on this seed and your score answers it by itself.',
         results: 'Answers', noResults: 'Nobody has answered yet.', you: 'You', w: 'beat it', l: 'fell short', d: 'matched it', yours: '{s} pts · {r}',
         mine: 'Your challenges', answered: 'Boards you took', open: 'Open', closed: 'Closed', code: 'Code', label: 'Beat {n}’s board',
-        mode: { daily: 'The Daily', practice: 'Practice', career: 'Career Mode' }, career: 'Story boards replay under Daily rules; the score to beat is the reporter’s word.',
+        mode: { daily: 'The Daily Challenge', practice: 'Practice', career: 'Career Mode' }, career: 'Story boards replay under Daily rules; the score to beat is the reporter’s word.',
         errors: { 'not found': 'No challenge with that code.', expired: 'That challenge has expired.', own: 'You can’t answer your own challenge.', done: 'You’ve already answered this one.', full: 'This challenge is full.', play: 'Play today’s Daily first.', log: 'That board didn’t finish. Play it through.', played: 'Play the Daily first, then mint from it.', net: 'Challenges need a connection.', dev: 'Challenges need a connection.', seed: 'That board can’t be shared.', day: 'That Daily can’t be shared.', busy: 'Try again.', rate: 'Slow down a little.' },
       },
       fr: {

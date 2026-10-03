@@ -12,7 +12,7 @@ import { Icon, installTilt, prefersReducedMotion, TopBar } from './ui/game';
 // 3.8 shell (launch brief §28–§29, §32–§33, §54): the chrome decides what the top bar shows per route, the five
 // destinations live in ui/chrome.tsx, the morning briefing and the notification ask mount here, and the funnel's
 // route-based events are sent from go() so no screen has to remember to.
-import { TABS, tabOf, setChromeRoute } from './ui/chrome';
+import { TABS, tabOf, setChromeRoute, setGoBack } from './ui/chrome';
 import { MorningPapers } from './ui/morning';
 import { PushAsk } from './ui/notify';
 import { trackAppOpen, funnel } from './lib/analytics';
@@ -106,9 +106,14 @@ export function App() {
   // Page changes: a View Transition where supported, sliding in tab order (left/right, mirrored in Arabic); into and out of
   // the window it scales like picking up a sheet. Without the API, motion.css plays the same slide on the new .g-screen.
   const routeRef = useRef(route); routeRef.current = route;
+  // 3.9.9: a history of where you came from, so Back (top-left on every page) returns there; tabs reset it.
+  const hist = useRef<Route[]>([]);
+  const backing = useRef(false);
   const go: Go = useCallback((r: Route) => {
     const reduce = prefersReducedMotion();
     const from = routeRef.current;
+    if (!backing.current && from.n !== r.n) { hist.current = [...hist.current, from].slice(-30); }
+    backing.current = false;
     // Route-based funnel events, sent once here rather than from every button that leads somewhere.
     if (r.n === 'today' || (r.n === 'daily' && from.n !== 'today')) funnel.dailyViewed(dailyNoToday());
     if (r.n === 'daily') { const sv = getSave(); if (!sv.daily[ymdUTC()] && !dailyLiveDay(sv)) funnel.dailyStarted(dailyNoToday()); }
@@ -126,6 +131,8 @@ export function App() {
     }
     swap();
   }, []);
+  const goBackNow = useCallback(() => { const prev = hist.current.pop(); backing.current = true; go(prev || { n: 'front' }); }, [go]);
+  setGoBack(goBackNow);
   useEffect(() => { document.documentElement.classList.toggle('has-vt', 'startViewTransition' in document); }, []);
   // Your desk: the equipped headline font rides on <html> (data-hd + --hd-*), so the results front page and the byline
   // card pick it up from CSS (styles/customize.css) without those screens knowing. The standard wood type sets nothing.
@@ -139,8 +146,8 @@ export function App() {
 
   // Android Back: the WebView calls window.__tierBack(); true when handled.
   useEffect(() => {
-    (window as any).__tierBack = () => { if (route.n !== 'front') { go({ n: 'front' }); return true; } return false; };
-  }, [route, go]);
+    (window as any).__tierBack = () => { const b = document.querySelector<HTMLButtonElement>('.g-top__back'); if (b && route.n !== 'front') { b.click(); return true; } if (route.n !== 'front') { goBackNow(); return true; } return false; };
+  }, [route, go, goBackNow]);
 
   // Desktop keyboard: 1–5 opens that saga on the board, Esc goes back, ? opens how to play. Never while typing or in a dialog.
   useEffect(() => {
@@ -184,7 +191,6 @@ export function App() {
 
   const edition = () => update((x) => { const cur = x.edition || (matchMedia('(prefers-color-scheme: dark)').matches ? 'late' : 'morning'); x.edition = cur === 'late' ? 'morning' : 'late'; });
   const tab = tabOf(route);
-  const inWindow = (route.n === 'daily' || route.n === 'room' || route.n === 'play') && !!driver;
   const chrome = { go, openSettings: () => setSettings(true), edition };
   setNav(go);
 
@@ -211,9 +217,9 @@ export function App() {
   }
   return <>
     <Suspense fallback={<RouteStage />}>{screen}</Suspense>
-    {!inWindow && <nav className="g-tabs" aria-label="Sections" style={{ ['--tab-i' as string]: Math.max(0, TABS.findIndex((x) => x.n === tab)), ['--tab-c' as string]: TABS.find((x) => x.n === tab)?.c }}>
+    {<nav className="g-tabs" aria-label="Sections" style={{ ['--tab-i' as string]: Math.max(0, TABS.findIndex((x) => x.n === tab)), ['--tab-c' as string]: TABS.find((x) => x.n === tab)?.c }}>
       <span className="g-tabs__brand" aria-hidden="true">T<b>1</b></span>
-      {TABS.map((x) => <a key={x.n} href={'?tab=' + x.n} style={{ ['--tab-c' as string]: x.c }} aria-current={tab === x.n ? 'page' : undefined} onClick={(e) => { e.preventDefault(); if (tab === x.n && route.n === x.n) return; go({ n: x.n } as Route); }}><Icon n={x.icon} /><span>{t(x.k)}</span></a>)}
+      {TABS.map((x) => <a key={x.n} href={'?tab=' + x.n} style={{ ['--tab-c' as string]: x.c }} aria-current={tab === x.n ? 'page' : undefined} onClick={(e) => { e.preventDefault(); if (tab === x.n && route.n === x.n) return; hist.current = route.n === 'front' ? [] : [{ n: 'front' }]; backing.current = true; go({ n: x.n } as Route); }}><Icon n={x.icon} /><span>{t(x.k)}</span></a>)}
     </nav>}
     <Toasts />
     <Suspense fallback={null}>
