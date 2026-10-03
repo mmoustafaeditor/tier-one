@@ -37,11 +37,11 @@ See `REWORK_BASELINE.md` (table) — F01, F02, F03, F04, F05, F07, F08, F09, F10
 the manager's side (AI clubs deferred, see §6); F14 not reproduced; F17 not reproduced and hardened; F16 fixed (contextual talks).
 Current-code reproduction: `node sim-tests/build.mjs rework/repro` → every checked item OK.
 
-## 3. Test report (this container; full sim suite re-run on `4b99ca3`+, UI tests on the latest build)
+## 3. Test report (this container; full sim suite re-run after the engine re-tuning, UI tests on the merged build)
 | Suite | Command | Result |
 |---|---|---|
 | Typecheck | `npx tsc --noEmit` | clean |
-| Sim tests (47, incl. `rework/*`) | `node sim-tests/build.mjs <name>` | 46 pass; `marking` fails one sampling-noise check (corner headers), same as the baseline (passes at 4,000) |
+| Sim tests (51, incl. `rework/*`) | `node sim-tests/build.mjs <name>` | all pass after the re-tuning (`pitch` now checks buildUp directly; `rolespitch` at 64 matches; `marking` passed this run) |
 | Engine fingerprint | `fingerprint` | `a04af554a49efa49` through the M5 checks; `7116eb372ed61d68` since AI clubs moved to the best-XI pick and the engine was re-tuned (approved; §4) |
 | AI best-XI balance | `rework/aixi` | before/after table in §4 |
 | Event agreement (400 matches) | `rework/agree` | pass: score, stats, commentary, ratings, Why, highlights all agree with the log |
@@ -126,7 +126,11 @@ Build 2,834 KB (1,270 KB gzip). A full world season in Node takes ~22 s (`rework
 ## 8. Next backlog
 * P0: none open from the trust backlog.
 * P1: Android/WebView resume + import on a named device; human first-hour test.
-* P2: scenarios / Tactics Lab modes; an analysis tab aggregating tactical causes across a run of matches.
+* P2: scenarios / Tactics Lab modes (not built; the title screen only offers modes that exist).
+* Handoff screens not yet reworked beyond what is listed above: Dressing room (§E: relationship history, hierarchy
+  groups view), Training (§F: weekly microcycle, staff-proposed week), Academy (§H: cohorts, loan recommendations),
+  Club/Office (§Q), News/World (§S). Done from those sections: promise progress on cards (§E), fit-but-not-match-ready
+  on Medical (§G), the player's fit in your plan (§I).
 
 ## 9. Evidence index
 `evidence/m1-before|after` (Today/board, inbox dates, Tactics), `m2-before|after` (promotion sheet, availability,
