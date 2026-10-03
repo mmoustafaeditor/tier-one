@@ -14,11 +14,13 @@ const URL0 = `http://localhost:${server.address().port}/`;
 const b = await pw.chromium.launch();
 let fails = 0;
 const ok = (c, msg) => { console.log(`${c ? 'ok  ' : 'FAIL'} ${msg}`); if (!c) fails++; };
-for (const lang of ['en', 'ar']) for (const W of [320, 360, 390, 412]) {
+// LANGS=en,ar,es,fr to widen the gate (default EN and AR).
+for (const lang of (process.env.LANGS ?? 'en,ar').split(',')) for (const W of [320, 360, 390, 412]) {
   const p = await (await b.newContext({ viewport: { width: W, height: 800 } })).newPage();
   await p.goto(URL0); await p.waitForFunction(() => window.__bootDone === true, null, { timeout: 20000 }).catch(() => {}); await p.waitForTimeout(800);
   const clickT = (re) => p.evaluate((s) => [...document.querySelectorAll('button')].find((x) => new RegExp(s).test(x.innerText))?.click(), re);
-  if (lang === 'ar') { await clickT('^عربي$'); await p.waitForTimeout(400); }
+  const chip = { ar: '^عربي$', es: '^ES$', fr: '^FR$' }[lang];
+  if (chip) { await clickT(chip); await p.waitForTimeout(400); }
   await clickT('2026/27'); await p.waitForTimeout(400); await clickT('🇪🇬'); await p.waitForTimeout(400);
   await clickT('Al Ahly|الأهلي'); await p.waitForTimeout(500);
   await p.evaluate(() => document.querySelector('button.btn--accent.big')?.click()); await p.waitForTimeout(1200);

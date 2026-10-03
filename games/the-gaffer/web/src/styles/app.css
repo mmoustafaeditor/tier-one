@@ -630,3 +630,18 @@ em.bias { font-style: normal; color: var(--ink-3); }
 /* Rework: "About the job" on the new-career club page. */
 .job-list { margin: 8px 0 0; padding-inline-start: 18px; display: grid; gap: 6px; font-size: 14px; color: var(--ink-2); }
 @media (min-width: 900px) { .confirm-grid .club-splash { grid-row: span 3; } }
+/* Rework M5 width gate, ES/FR at 320–390 px: long Spanish/French labels used to push Today, Tactics and Club wider than
+   the phone. */
+.sc-today .a-dec > * { min-width: 0; }
+.sc-today .choice .pickmark, .tone-btn .pickmark { white-space: normal; text-align: end; line-height: 1.15; flex-shrink: 1; min-width: 0; }
+.sc-tactics .between { flex-wrap: wrap; row-gap: 6px; }
+.sc-tactics .between > .steps { flex: 1 1 210px; min-width: 0; }
+.steps button { min-width: 0; overflow-wrap: anywhere; line-height: 1.1; }
+.fac-r { min-width: 0; }
+.fac-r .btn { white-space: normal; text-align: center; max-width: 100%; line-height: 1.15; }
+.match-tabs .seg { overflow-x: auto; scrollbar-width: none; }
+.match-tabs .seg::-webkit-scrollbar { display: none; }
+.match-tabs .seg button { white-space: nowrap; flex: none; }
+.sc-today .decision .head { flex-wrap: wrap; }
+.sc-today .decision .head .grow { min-width: 0; flex: 1 1 180px; }
+.sc-today .decision .head .due { white-space: normal; }

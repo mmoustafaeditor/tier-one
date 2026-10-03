@@ -53,6 +53,9 @@ Current-code reproduction: `node sim-tests/build.mjs rework/repro` → every che
 | Squad planner | `ui-tests/rework-planner.mjs` | pass (folded on phones; need → Transfers › Needs) |
 | Accessibility | `ui-tests/rework-a11y.mjs` | pass (no sideways scroll at the largest text, EN/AR) |
 | New-career job facts | `ui-tests/rework-job.mjs` | pass |
+| Multi-season lifecycle (3 seasons) | `rework/lifecycle` | pass: 0 world/career issues each season end, saves round-trip exactly, slot 2 untouched, goals 2.88/2.90/2.92, home wins 44.9/44.7/42.8%, draws 21.9/22.2/23.9%, top-100 rating 85.9 → 86.7 |
+| Width gate ES/FR | `LANGS=es,fr ui-tests/overflow.mjs` | pass after fixes (it found Spanish/French labels widening Today, Tactics, Match tabs and Club at 320–390 px) |
+| Performance | `ui-tests/perf.mjs` | pass (see 7c) |
 
 ## 4. Balance report
 Engine fingerprint unchanged from the baseline (`a04af554a49efa49`): the rework did not change how matches are
@@ -71,6 +74,8 @@ load. Rollback: older builds ignore both fields.
 * The derby/board-pressure arc has no new authored content; the existing systems cover it (world test, press cards).
 * No Android device test, no WebView back/resume run, no named-device benchmark in this environment.
 * No human comprehension sessions (the handoff's human gates) — none could be run here.
+* The packed save grows ~130 KB a season (878 → 1,139 KB over three seasons). Fine for IndexedDB; on the
+  localStorage fallback (~5 MB) a career of ten-plus seasons could hit the limit.
 * The `marking` test is noisy at its default sample size (pre-existing).
 * The first-week guide's "hidden" choice is per device (localStorage), by design.
 
@@ -80,6 +85,25 @@ load. Rollback: older builds ignore both fields.
 3. Open an existing save from the live build (slot load + previous-copy fallback), and a `.gaffer` export.
 4. Spot-check Today, Tactics, Transfers funnel, a quick match and a career match at 390 px, in Arabic.
 5. No Android wrapper change was made (`android/` untouched): no new APK required.
+
+## 7b. Compatibility and rollback
+* **Saves:** the save format stays v8 (`SAVE_VERSION` unchanged). New fields are optional and ignored by the
+  previous build: `SaveMeta.pos/of/next` (title card), device prefs `text/calm/contrast` (the old `loadPrefs` rebuilds
+  the object and drops them), slot backup copies at slot ids 101/102 (the old build only lists slots 1–2). Checked
+  against the pre-rework code (`6f56572`): its `checkCareer` accepts saves written by this build.
+* **Rollback:** `git revert -m 1 <merge commit>` on `main` and push. `build-the-gaffer.yml` rebuilds and publishes the
+  previous web build with a newer build number (minutes since epoch), so installed apps hot-update back to it through
+  `/the-gaffer/version.json`. No Android wrapper change was made, so no APK needs replacing either way.
+* **Data:** nothing server-side changed (`api/the-gaffer/**` untouched).
+
+## 7c. Performance (headless Chromium, `ui-tests/perf.mjs`; not a device measurement)
+| CPU | boot → ready (incl. intro) | new career | open Squad | quick result | JS heap |
+|---|---|---|---|---|---|
+| 1× | 4.5 s | 0.28 s | 0.05 s | 1.2 s | 43 MB |
+| 4× slower | 5.2 s | 1.4 s | 0.7 s | 7.4 s | 65 MB |
+
+Build 2,834 KB (1,270 KB gzip). A full world season in Node takes ~22 s (`rework/lifecycle`). The quick result on a
+4× slower CPU (7.4 s) includes simulating the whole matchday across every league; it is the slowest step measured.
 
 ## 8. Next backlog
 * P0: none open from the trust backlog.

@@ -126,3 +126,15 @@ Decision (Saif, 2026-10-03): AI clubs keep their current XI selection; the best-
   Evidence `evidence/m4h-after/`.
 
 Next: M5 validation items possible here (save round-trip/slot isolation checks, full-suite run), then the report.
+
+* **M5 here:** `rework/lifecycle` (3 seasons: checks, exact save round trip, two-slot isolation, sane bands), ES/FR
+  width gate (found and fixed Spanish/French overflow at 320–390 px), `ui-tests/perf.mjs` numbers, compatibility and
+  rollback notes (report §7b–7c).
+
+## Final plan (Saif, 2026-10-03: "do everything, then merge")
+1. M5 validation possible here: multi-season regression, save round-trip / slot isolation, ES/FR width gate, browser
+   performance numbers, rollback plan.
+2. AI clubs on the best-XI assignment + balance recalibration (results change; Saif approved; before/after numbers).
+3. M4 match polish: commentary / stats / pitch agree with the engine's events; analysis across several matches.
+4. Remaining handoff screens (dressing room, training, medical, academy, player page, club, news): result-neutral items.
+5. Merge into `main` (merge commit; main merged in first), check the Gaffer workflow and the live site.

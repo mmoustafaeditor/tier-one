@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: release checks (seasons, saves, Spanish/French widths, speed)
+- **What changed:** Ran the checks the game needs before release. Three full seasons played on the clock: no world or career errors, saves load back exactly, the second save slot stays untouched, and goals, home wins, draws and player ratings stay steady. Running the screen-width check in Spanish and French found labels that made Today, Tactics, the Match tabs and Club wider than a small phone; all fixed. Measured speed in the browser, and wrote the rollback plan: the save format is unchanged, and the previous build can still open saves from this one.
+- **Files:** `web/sim-tests/rework/lifecycle.ts` (new), `web/ui-tests/perf.mjs` (new), `web/ui-tests/overflow.mjs` (`LANGS=`), `src/styles/app.css`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** A save grows about 130 KB per season. That's fine on most devices, but a career of 10+ seasons could be too big for the backup storage some browsers fall back to. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: promise cards remember how far they've got
 - **What changed:** The assistant's warning card about a promise now says how it stands, e.g. "Your word to X: regular starts · started 1 of 5" or, for an academy pathway, "· 0 played so far", next to the matchdays left. The sim test checks it. The browser slice test also no longer counts it as a failure when the staff keep the kid's promise themselves (match prep is delegated in "The usual split"): that run says so and skips the card steps.
 - **Files:** `web/src/sim/room-decisions.ts`, `src/ui2/roomText.ts`, `src/lang-dressing*.ts`, `web/sim-tests/rework/slice.ts`, `web/ui-tests/rework-slice.mjs`, `games/the-gaffer/rework/*`
