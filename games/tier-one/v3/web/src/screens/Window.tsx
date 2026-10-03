@@ -201,7 +201,7 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
     </div>
 
     {tutor && !calling && !night && !burst && <TutorCoach g={g} sel={sel} onDone={() => endTut(false)} onFinish={() => { endTut(false); fastForward(); }} />}
-    {calling && view.cast[calling.i] && createPortal(<CallScreen src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} i={calling.i} mode={view.mode} onDone={() => setCalling(null)} />, document.body)}
+    {calling && view.cast[calling.i] && createPortal(<CallScreen src={calling.c.src} clue={calling.c} c={view.cast[calling.i]} R={view.R} i={calling.i} mode={view.mode} left={view.state.left} onDone={() => setCalling(null)} />, document.body)}
     {burst && createPortal(<Burst key={burst.k} kind={burst.kind} hwg={burst.hwg} />, document.body)}
 
     <Sheet open={confirmEnd} onClose={() => setConfirmEnd(false)} label={t('daily.endConfirmOk')}>
@@ -235,9 +235,8 @@ function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Ga
         {tw && <span key="tw" className="g-chip g-chip--red chip-in">{t('stamp.twist')}</span>}
         {vince && <span key="vp" className="g-chip vince-chip" title={t('g.story.vince.banner')}><Icon n="eye" />{t('g.story.vince.chip')}</span>}
         {!call && (ln.none ? <span className="scard__nr">{t('g.win.notRung')}</span>
-          : <span key={'ev' + ev.word + ln.o + ev.agree + (ev.echo ? 'e' : '')} className={'g-chip chip-in scard__ev evw--' + ev.word + (ev.echo ? ' is-echo' : '') + ' g-chip--' + OUTS[ln.o]}>
-            {ev.echo ? <><Icon n="eye" />{t('c38.ev.' + ev.word)}</> : <>{t('c38.ev.' + ev.word)}{!ln.split && <> · {outWord(t.lang, ln.o)}</>}</>}
-          </span>)}
+          : view.posterior ? <span key={'ev' + ev.word + ln.o} className={'g-chip chip-in scard__ev evw--' + ev.word + ' g-chip--' + OUTS[ln.o]}>{t('c38.ev.' + ev.word)}{!ln.split && <> · {outWord(t.lang, ln.o)}</>}</span>
+          : <span className="scard__nr is-rung">{t(E.curReads(g, i).length === 1 ? 'u39.file.heard1' : 'u39.file.heard', { n: E.curReads(g, i).length })}</span>)}
         {call && <span key={'pub' + (filed || 0)} className={'scard__pub oc--' + OUTS[call.o] + (filed ? ' is-slam' : '')}><Icon n="check" size={14} /><b>{t('u39.call2.pubShort')}</b> · {outWord(t.lang, call.o)} · {strWord(t.lang, call.s)}</span>}
         {posted > 0 && !call && <span key={'rv' + posted} className="g-chip scard__riv chip-in"><Icon n="bolt" />{posted === 1 ? t('c38.ev.rivalOne') : t('c38.ev.rival', { n: posted })}</span>}
       </span>
@@ -493,11 +492,11 @@ function DDBoard({ view, g, busy, onOpen, onQuick }: { view: View; g: Game; busy
     <div className="g-sec"><h2>{quick ? t('c38.dd.quick') : t('dd.stillOpen')}</h2><span className="g-mono">{quick ? t('c38.dd.quickNote') : open ? t('c38.dd.open', { n: open }) : t('c38.dd.allFiled')}</span></div>
     {order.map((i) => {
       const c = view.cast[i];
-      const call = g.calls[i], ln = leanOf(g, i), ev = evidenceOf(g, i), cs = E.callState(g, i);
+      const call = g.calls[i], ln = leanOf(g, i), cs = E.callState(g, i);
       const canPost = cs === 'ok' && !ln.none;
       const canUt = !!call && E.canUturn(g, i) && !ln.none && ln.o !== call.o;
       return <div key={i} className={'ddc' + (quick && canPost ? ' is-quick' : '') + (!call ? ' is-open' : '')}>
-        <button className="ddc__who" onClick={() => onOpen(i)}><Kit club={c.from} player={c.player} size={44} /><span><b>{c.player.s} → {c.to.s}</b><span className="g-mono">{call ? t('dd.filed', { s: strWord(t.lang, call.s), o: outWord(t.lang, call.o) }) : ln.none ? t('dd.noLean') : t('c38.ev.' + ev.word) + (ln.split ? '' : ' · ' + outWord(t.lang, ln.o)) + (ev.agree >= 2 ? ' · ' + t('c38.ev.circles', { n: ev.agree }) : '')}</span>{!call && <span className="ddc__tag">{t('c38.dd.unresolved')}</span>}</span></button>
+        <button className="ddc__who" onClick={() => onOpen(i)}><Kit club={c.from} player={c.player} size={44} /><span><b>{c.player.s} → {c.to.s}</b><span className="g-mono">{call ? t('dd.filed', { s: strWord(t.lang, call.s), o: outWord(t.lang, call.o) }) : ln.none ? t('dd.noLean') : t(E.curReads(g, i).length === 1 ? 'u39.file.heard1' : 'u39.file.heard', { n: E.curReads(g, i).length })}</span>{!call && <span className="ddc__tag">{t('c38.dd.unresolved')}</span>}</span></button>
         {canPost ? <button className={'ddc__go oc--' + OUTS[ln.o]} disabled={busy} onClick={() => onQuick(i, ln.o)}>{t('g.win.ddPost', { o: outWord(t.lang, ln.o) })}</button>
           : canUt ? <button className="ddc__go" disabled={busy} onClick={() => onQuick(i, ln.o)}>{t('dd.uturn', { o: outWord(t.lang, ln.o) })}</button>
           : call ? <span className={'g-stamp g-stamp--' + OUTS[call.o]}>{outWord(t.lang, call.o)}</span>

@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { E, OUTS, type Game, type Clue } from '../lib/engine';
 import { useT, num } from '../lib/i18n';
-import { leanOf, voiceLine, postLine, saysWord, outWord, strWord, vars, varsH, evidenceOf, relKey, GRADE } from '../lib/story';
+import { leanOf, voiceLine, postLine, outWord, strWord, vars, varsH, evidenceOf, relKey, GRADE } from '../lib/story';
 import { Glyph, Lines, Crest } from '../ui/bits';
 import { Icon, SrcIcon, GBtn } from '../ui/game';
 import { Portrait, moodFor } from '../ui/portrait';
@@ -119,9 +119,10 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     {g.tips && i in g.tips && <div className="g-chip g-chip--gold tipchip">{t(g.tips[i] ? 'career.tipFake' : 'career.tipReal', { p: c.player.s })}</div>}
 
     {/* ---- evidence (3.9): four bars on the left, the independent circles on the right ---- */}
-    <section className={'ev39 ev40 ev--' + ev.word + (curReads.length ? '' : ' is-empty')} aria-label={t('c38.ev.summary')}>
+    <section className={'ev39 ev40 ev--' + ev.word + (curReads.length && view.posterior ? '' : ' is-empty')} aria-label={t('c38.ev.summary')}>
       <h2 className="ev39__h">{t('c38.ev.summary')}</h2>
-      {curReads.length ? <>
+      {curReads.length && !view.posterior ? <p className="ev40__none"><b>{t(curReads.length === 1 ? 'u39.file.heard1' : 'u39.file.heard', { n: curReads.length })}.</b> {t('u39.file.readIt')}</p>
+      : curReads.length ? <>
         <div className="ev39__bars">
           {[0, 1, 2, 3].map((k) => <div key={k} className={'ev39__r oc--' + OUTS[k] + (!ln.none && ln.o === k ? ' is-lead' : '')}>
             <span>{outWord(t.lang, k)}</span><span className="ev39__bar"><i style={{ width: (100 * ln.tally[k]) / maxT + '%' }} /></span><b className="g-num">{ln.tally[k]}</b>
@@ -151,13 +152,13 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
           <span className="src39__face"><Portrait kind="source" id={k} size={64} mood={lastR ? moodFor(k, lo) : 'neutral'} /></span>
           <span className="src39__b">
             <b>{view.mode === 'career' ? srcNamed(t, k) : t('src.' + k)}</b>
-            <small>{lastR ? saysWord(t.lang, k, lastR.r, c) : t(relKey(k))}</small>
+            <small>{t(relKey(k))}</small>
             <span className="src39__rel"><em className={'g' + grade}>{t('c38.rel.short.' + k)}</em>{circ ? ' · ' + t('u39.file.circ.' + circ) : ''}</span>
           </span>
           {lastR && st !== 'ok' ? <span className="src39__act is-done"><Icon n="check" size={16} />{t('u39.file.called')}</span>
             : st === 'closed' ? <span className="src39__act is-shut"><Icon n="lock" size={14} />{t('u39.file.opens', { n: so.from })}</span>
             : <button type="button" className="src39__act is-ring src" data-src={k} disabled={st !== 'ok' || busy} onClick={() => onAsk(k)}><Icon n="phone" size={16} />{t(so.cost === 1 ? 'u39.file.ring' : 'u39.file.rings', { n: so.cost })}</button>}
-          {lastR && <blockquote className={'src39__q' + (k === last?.c.src && last?.i === i ? ' is-new' : '')}><span>{voiceLine(t.lang, c, lastR)}</span><small className={'g-stamp g-stamp--' + OUTS[lo]}>{t('u39.file.added', { o: saysWord(t.lang, k, lastR.r, c) })}</small></blockquote>}
+          {lastR && <blockquote className={'src39__q' + (k === last?.c.src && last?.i === i ? ' is-new' : '')}><span>{voiceLine(t.lang, c, lastR)}</span><small className="src39__saved">{t('u39.call.saved')} · {t('common.day', { n: lastR.day })}</small></blockquote>}
         </div>;
       })}
       {favours}

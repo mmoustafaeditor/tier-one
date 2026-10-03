@@ -3,6 +3,7 @@
 import { E, OUTS, STRENGTHS, type Game, type CastSaga, type Clue, type Post } from './engine';
 import { hash, esc } from './kit';
 import { tr, trList, type Vars } from './i18n';
+import CLUES from '../data/cluepack.json';
 
 export const CIRCLE_LETTER: Record<string, string> = { club: 'α', agent: 'β', travel: 'γ', street: 'δ', insider: 'ε', office: 'ζ' };
 export const GRADE: Record<string, string> = { physio: 'A', insider: 'A', spotter: 'B', agent: 'B', kitman: 'B', leak: 'B', itk: 'C', barber: 'D', tabloid: 'D' };
@@ -20,7 +21,26 @@ export const vars = (c: CastSaga): Vars => ({ p: c.player.s, to: c.to.s, from: c
 export const varsH = (c: CastSaga): Vars => Object.fromEntries(Object.entries(vars(c)).map(([k, v]) => [k, esc(String(v))]));
 
 // One line per (player, source, era): the same question gets the same words, and nothing repeats across sagas.
+// 3.9.21: the owner's multilingual clue pack (src/data/cluepack.json, built from the pack's clue_pack.json): six lines per
+// source answer in English, Egyptian Arabic and Spanish, each tied to one expression scene (public/art/calls/). The line is
+// picked from the source's ANSWER (never the hidden truth) by player · source · twist phase, so every player on a board
+// hears the same words and sees the same face, in any language, on every reread.
+type PackLine = { id: string; e: string; en: string; ar: string; es: string };
+const packLine = (c: CastSaga, cl: Clue): PackLine | null => {
+  const pool = (CLUES.pools as Record<string, PackLine[]>)[cl.src + '.' + cl.r];
+  return pool && pool.length ? pool[hash(c.player.id + '|' + cl.src + '|' + cl.era + (cl.again ? '|2' : '')) % pool.length] : null;
+};
+/** The expression scene for a heard clue: its image path and crop. */
+export function clueArt(c: CastSaga, cl: Clue): { src: string; pos: string; w: number; h: number } | null {
+  const id = packLine(c, cl)?.e || (CLUES.fallback as Record<string, string>)[cl.src];
+  const x = id ? (CLUES.expr as Record<string, { p: string; w: number; h: number }>)[id] : null;
+  return id && x ? { src: 'art/calls/' + id + '.webp', pos: x.p, w: x.w, h: x.h } : null;
+}
+/** What the source can see (pack copy), for the call screen. */
+export const accessLine = (lang: string, src: string) => { const a = (CLUES.access as Record<string, Record<string, string>>)[src]; return a ? a[lang === 'ar' ? 'ar' : lang === 'es' ? 'es' : 'en'] : ''; };
 export function voiceLine(lang: string, c: CastSaga, cl: Clue): string {
+  const pl = packLine(c, cl);
+  if (pl) return (lang === 'ar' ? pl.ar : lang === 'es' ? pl.es : pl.en).replace(/\{linked_club\}/g, c.to.s);
   // voice.* (base + banterx personality) then voice3.* (parts/banter3*.ts): same outcome index, more of each source's voice.
   const pack = [...((trList(lang, `voice.${cl.src}.${cl.r}`) as string[] | undefined) || []), ...((trList(lang, `voice3.${cl.src}.${cl.r}`) as string[] | undefined) || [])];
   if (!pack.length) return '';

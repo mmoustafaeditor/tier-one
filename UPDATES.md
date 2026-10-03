@@ -7,6 +7,14 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.21 — the call as one card; the owner's multilingual clue pack
+
+- Clue pack integrated (owner's ZIP, pack v1.0.0): 120 lines (6 per source answer) in English, Egyptian Arabic and Spanish, each tied to one of 18 expression scenes (public/art/calls/*.webp, 2.5 MB, loaded only for the active call). Data: src/data/cluepack.json (built from clue_pack.json: lines, expression ids, crops, fallbacks, access lines; internal claim notes left out). Mapping: kit man 0 leaving / 1 staying; barber, agent, press office ("leak", Career only) 0 Done / 1 Hijack / 2 Off / 3 Fake; spotter 0 linked flight / 1 elsewhere / 2 none; physio 0 linked medical / 1 elsewhere / 2 none.
+- The line and face come from the source's ANSWER (engine unchanged, never the hidden truth), picked by player · source · twist phase: same words and face for every player on a board, in every language, on every reread. {linked_club} is the linked club's name. All 120 lines checked: art exists, all three languages present, placeholders match.
+- Call screen (lib CallScreen.tsx, call.css .call41): one connected card. Scene art (clamp 200–340 px) flows into the paper: role + name (Dougie, Sal, Rosa, Terminal Tony, Dr Inès) on the art, what the source can see, the quote at 18–21 px with matching inline quote marks («» in Spanish), "Saved to your notebook", one Back to the story. Header: back, "On the line", saga · day, and the post-call balance in an outlined pill ("3 call points left"). No verdict chips, no typewriter wait; reduced motion respected.
+- No automatic verdicts in standard play: Sources show "Saved to your notebook · Day n" under the quote (no "Leaving/Off" word); the Evidence card says "n sources heard. Their quotes are under Sources. Read them, then make your call."; board and Deadline Day rows say "n sources heard" instead of Strong/Split · outcome. Practice's coach mode keeps the bars and odds. The engine's evidence, exclusive and scoring rules are unchanged.
+- Checked at 390×664 (EN, AR, ES) and 360×640 (EN): full flow, no horizontal scroll.
+
 ## 2026-10-03 · Tier One 3.9.20 — mobile Daily usability pass (owner's recording review)
 
 - Independent circles are gone from the player-facing UI (the Evidence card, board chips). The exclusive rule is unchanged in the engine; its line now reads "Exclusive needs two different kinds of source backing this outcome. You have N. You can still publish it as a normal call." (it counts the kinds backing the outcome you picked, which is why it can differ from the total).
