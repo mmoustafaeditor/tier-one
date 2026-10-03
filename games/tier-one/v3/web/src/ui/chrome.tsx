@@ -74,7 +74,7 @@ export function TopBar({ back, title, onHelp, onMenu, children, bell, wallet, ba
   const showWallet = !bare && (wallet ?? (WALLET_ROUTES.has(route) || route === 'front'));
   return <header className={'g-top' + (bare ? ' g-top--bare' : '')}>
     {back ? <button className="g-top__back" onClick={() => { sfx('ui.tap'); back.onClick(); }} aria-label={t('sh.top.back') + ': ' + back.label}><Icon n={t.rtl ? 'arrow' : 'back'} size={20} /><span>{back.label}</span></button>
-      : <><button className="g-top__back g-top__back--auto" onClick={() => { sfx('ui.tap'); goBack(); }} aria-label={t('u39.back')}><Icon n={t.rtl ? 'arrow' : 'back'} size={20} /></button><span className="g-top__logo g-wordmark">tier one</span></>}
+      : <>{route !== 'front' && <button className="g-top__back g-top__back--auto" onClick={() => { sfx('ui.tap'); goBack(); }} aria-label={t('u39.back')}><Icon n={t.rtl ? 'arrow' : 'back'} size={20} /></button>}<span className="g-top__logo g-wordmark">tier one</span></>}
     {title && <span className="g-top__title" dir="auto">{title}</span>}
     <span className="g-top__end">
       {children}

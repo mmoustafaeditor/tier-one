@@ -13,8 +13,10 @@ import { addSeasonPP, seasonWindow, seasonAt, seasonLevel, MAX_SLV } from './sea
 export const MAX_LV = MAX_SLV;
 export function levelOf(pp: number, s: Save = getSave()) {
   const def = seasonAt();
-  const cur = s.season && s.season.id === def.id ? s.season.pp : 0;
-  const spp = Math.max(0, cur - Math.max(0, s.pp - pp));
+  // 3.9.11: a missing or corrupt number in an old save must never show "Lv NaN": everything is coerced to a finite number.
+  const fin = (x: unknown) => { const v = Number(x); return Number.isFinite(v) ? v : 0; };
+  const cur = s.season && s.season.id === def.id ? fin(s.season.pp) : 0;
+  const spp = Math.max(0, cur - Math.max(0, fin(s.pp) - fin(pp)));
   const lv = seasonLevel(spp, def.ppPerLv);
   return { n: lv.n, into: lv.max ? 100 : lv.pct, need: 100, max: lv.max, pct: lv.pct, pp: spp, per: def.ppPerLv };
 }

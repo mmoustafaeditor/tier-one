@@ -1,14 +1,15 @@
 /* 3.9.8 the Desk (screenshot 01). One viewport: banner, Daily Challenge card, season row, Career card, two tiles. */
 .hm39 .fit__body { gap: 10px; }
-.hm39__art { flex: 1 1 140px !important; min-height: 0; max-height: 200px; margin: -4px -16px 0; overflow: hidden; }
-.hm39__art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
-@media (max-height: 760px) { .hm39__art { display: none; } }
+.hm39__art { flex: 1 1 190px !important; min-height: 96px; max-height: 210px; margin: -6px -16px 0; overflow: hidden; }
+.hm39__art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+@media (max-height: 600px) { .hm39__art { display: none; } }
 /* the Daily Challenge card: paper */
 .hm39__daily { flex: none; position: relative; margin-top: -26px; padding: 14px 16px 14px; border-radius: 14px; background: var(--card); color: var(--card-ink); box-shadow: 0 14px 30px -18px rgba(0,0,0,.9); }
-@media (max-height: 760px) { .hm39__daily { margin-top: 0; } }
+@media (max-height: 600px) { .hm39__daily { margin-top: 0; } }
 .hm39__k { font-size: 12px; letter-spacing: .22em; color: var(--card-ink-2); text-transform: none; }
 .hm39__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.hm39__mid { display: block; }
+.hm39__mid { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.hm39__shirts { display: block; width: clamp(128px, 40vw, 200px); height: auto; }
 .hm39__t { margin: 2px 0 4px; font-size: clamp(30px, 9.4vw, 44px); line-height: .98; color: var(--card-ink); }
 .hm39__sub { margin: 0; font-size: 15px; line-height: 1.3; color: var(--card-ink); }
 .hm39__kits { display: flex; flex: none; }
@@ -20,14 +21,13 @@
 .hm39__streak svg { color: var(--card-ink-3); } .hm39__streak.is-lit svg { color: var(--red); }
 .hm39__clock { font-size: 14px; color: var(--card-ink-2); }
 .hm39__clock b { font-family: var(--f-text); font-weight: 600; font-size: 16px; color: var(--card-ink); }
-.hm39__acts { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 46px 46px; gap: 8px; margin-top: 12px; }
+.hm39__acts { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 52px; gap: 8px; margin-top: 12px; }
 .hm39__play { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 12px; border-radius: 10px; background: var(--red); color: #fff; font-family: var(--f-display); font-weight: 600; font-size: 19px; box-shadow: 0 3px 0 var(--red-deep); white-space: nowrap; }
 .hm39__past { min-height: 52px; padding: 0 8px; border-radius: 10px; box-shadow: inset 0 0 0 1.5px var(--card-ink); color: var(--card-ink); font-family: var(--f-display); font-weight: 600; font-size: 15px; line-height: 1.1; }
 .hm39__ic { min-height: 52px; display: grid; place-items: center; border-radius: 10px; box-shadow: inset 0 0 0 1.5px var(--card-line); color: var(--card-ink); background: var(--card-2); }
-.hm39__ic:last-child svg { color: var(--red); }
 .hm39__play:active, .hm39__past:active, .hm39__ic:active { transform: scale(.97); }
 .hm39__play:focus-visible, .hm39__past:focus-visible, .hm39__ic:focus-visible, .hm39__season:focus-visible, .hm39__career:focus-visible, .hm39__tile:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-@media (max-width: 370px) { .hm39__acts { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 44px 44px; gap: 6px; } .hm39__play { font-size: 17px; } .hm39__past { font-size: 13.5px; } }
+@media (max-width: 370px) { .hm39__acts { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 48px; gap: 6px; } .hm39__play { font-size: 17px; } .hm39__past { font-size: 13.5px; } }
 /* the season row */
 .hm39__season { flex: none; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 16px; border-radius: 12px; background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); color: var(--on-desk); text-align: start; }
 .hm39__season > b { font-family: var(--f-display); font-weight: 600; font-size: 18px; white-space: nowrap; }
@@ -74,3 +74,26 @@
 .hm39__pro { flex: 1; min-width: 0; font-family: var(--f-display); font-size: 14.5px; color: var(--on-desk); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm39__begin { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: var(--red); color: #fff; font-family: var(--f-display); font-weight: 600; font-size: 15px; white-space: nowrap; }
 .hm39__prologue { gap: 10px; padding: 0 10px 0 14px; }
+
+/* 3.9.11 compact rows so the banner fits on phones; the title wraps beside the shirts */
+.hm39__t { font-size: clamp(28px, 8.4vw, 42px); }
+.hm39__sub { font-size: 14.5px; }
+.hm39__career { min-height: 66px; padding: 8px 14px; }
+.hm39__cb b { font-size: 20px; }
+.hm39__tile { min-height: 64px; padding: 8px 12px; }
+.hm39__tb b { font-size: 16px; }
+.hm39__tb small, .hm39__cb small { font-size: 13px; }
+.hm39__season { min-height: 48px; }
+.hm39__play, .hm39__past, .hm39__ic { min-height: 48px; }
+.hm39__daily { padding: 12px 14px; }
+.hm39__meta { margin-top: 8px; padding-top: 8px; }
+.hm39__acts { margin-top: 10px; }
+.hm39 .fit__body { gap: 8px; }
+
+/* 3.9.11b the bottom tiles stay one line each so the Desk fits a 664px-tall phone */
+.hm39__art { min-height: 64px; }
+.hm39__career { min-height: 58px; padding: 6px 14px; }
+.hm39__cb small, .hm39__tb small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hm39__tile { min-height: 58px; padding: 6px 10px; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; }
+.hm39__tb b { font-size: 15.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hm39__shirts { width: clamp(124px, 38vw, 200px); }

@@ -128,3 +128,14 @@ html, body { background: var(--desk); color: var(--on-desk); }
 /* Back on every page: the icon-only back sits before the wordmark */
 .g-top__back--auto { padding-inline-end: 4px; }
 .g-top__back--auto + .g-top__logo { margin-inline-start: 2px; }
+
+/* 3.9.11 the top bar fits a 360–390px phone: wordmark, wallet, bell, avatar, globe */
+@media (max-width: 430px) {
+  .g-top { gap: 6px; padding-inline: 12px; margin-inline: -16px; }
+  .g-top__logo.g-wordmark { font-size: 22px; }
+  .g-top__end { gap: 6px; }
+  .g-top .g-icbtn, .g-top .cn-bell, .g-top__me { width: 40px !important; height: 40px !important; }
+  .g-top__me .g-portrait { width: 36px !important; height: 36px !important; }
+  .g-wal { height: 36px; } .g-wal__b { padding: 0 6px; font-size: 14px; }
+}
+@media (max-width: 360px) { .g-top__logo.g-wordmark { font-size: 19px; } .g-wal__b--c { display: none; } }

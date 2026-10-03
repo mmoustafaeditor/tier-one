@@ -7,6 +7,14 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.11 — Desk polish
+
+- Fixed "Lv NaN / NaN XP": the level maths now treats a missing or corrupt saved number as 0 (lib/progress.ts levelOf, lib/season.ts seasonLevel).
+- The Desk has no Back button; every other page keeps it.
+- The streak button is gone (the streak shows on the card; tapping it opens the streak details).
+- The five mystery shirts are the owner's art (cropped from the handoff screenshot, transparent background), beside the title like the mockup.
+- The newsroom banner shows on phones again (it shrinks on short screens, hides only under 600px tall). Rows tightened so the whole Desk fits a 390×664 phone; the top bar fits wordmark, wallet, bell, avatar and globe at 360–390px.
+
 ## 2026-10-03 · Tier One 3.9.10 — the Desk shows your Career chapter
 
 - The row under the Daily Challenge card now shows the Career chapter you are in ("Chapter 2", the chapter's name on hover/long-press) with your level and XP; it opens Career.

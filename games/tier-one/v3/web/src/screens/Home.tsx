@@ -10,7 +10,7 @@ import { ymdUTC } from '../lib/meta';
 import { ensureMissions, levelOf } from '../lib/progress';
 import { sfx } from '../lib/sfx';
 import { Icon, useNow, Sheet } from '../ui/bits';
-import { Kit, TopBar } from '../ui/game';
+import { TopBar } from '../ui/game';
 import { chapterOf, chapterName } from '../lib/storyMode';
 import type { Chrome } from '../App';
 import { dailyFeed } from '../lib/byline';
@@ -49,7 +49,6 @@ export function Home(chrome: Chrome) {
       <section className={'hm39__daily' + (played ? ' is-filed' : '')} aria-label={t('u39.home.title')}>
         <div className="hm39__top">
           <span className="hm39__k g-mono">{t('u39.home.k', { n: pad3(no) })}</span>
-          <span className="hm39__kits" aria-hidden="true">{[0, 1, 2, 3, 4].map((k) => <span key={k} className="hm39__kit"><Kit mystery size={40} /></span>)}</span>
         </div>
         <div className="hm39__mid">
           <div className="hm39__head">
@@ -57,16 +56,16 @@ export function Home(chrome: Chrome) {
             {played ? <p className="hm39__sub"><span className={'g-stamp g-stamp--' + (TIER_STAMP[played.tier] || '')}>{t('tier.' + played.tier)}</span> <b className="g-num">{t('sh.home.filed', { p: num(played.total) })}</b>{played.rank ? ' · ' + t('sh.home.rank', { r: played.rank, n: played.players || 1 }) : ''}</p>
               : <p className="hm39__sub">{t('u39.home.sub')}</p>}
           </div>
+          <img className="hm39__shirts" src="art/daily-shirts.webp" alt="" aria-hidden="true" width={398} height={130} decoding="async" />
         </div>
         <div className="hm39__meta">
-          <span className={'hm39__streak' + (s.streak.n ? ' is-lit' : '')}><Icon n="flame" size={18} />{s.streak.n ? t('sh.home.streak', { n: s.streak.n }) : t('sh.home.streak0')}</span>
+          <button type="button" className={'hm39__streak' + (s.streak.n ? ' is-lit' : '')} onClick={() => { sfx('ui.tap'); setSheet('streak'); }}><Icon n="flame" size={18} />{s.streak.n ? t('sh.home.streak', { n: s.streak.n }) : t('sh.home.streak0')}</button>
           <span className="hm39__clock" role="timer">{t('u39.home.resets')} <b className="g-num">{hms(closes)}</b></span>
         </div>
         <div className="hm39__acts">
           <button type="button" className="hm39__play" onClick={() => { sfx('open'); chrome.go({ n: 'daily' }); }}>{played ? t('u39.home.result') : liveD ? t('u39.home.resume', { d: liveD }) : t('u39.home.play')}{arrow}</button>
           <button type="button" className="hm39__past" onClick={() => { sfx('ui.tap'); setSheet('past'); }}>{t('u39.home.past')}</button>
           <button type="button" className="hm39__ic" aria-label={t('u39.home.lb')} title={t('u39.home.lb')} onClick={() => { sfx('ui.tap'); chrome.go({ n: 'boards', period: 'daily', from: { n: 'front' } }); }}><Icon n="trophy" size={20} /></button>
-          <button type="button" className="hm39__ic" aria-label={t('u39.home.streakT')} title={t('u39.home.streakT')} onClick={() => { sfx('ui.tap'); setSheet('streak'); }}><Icon n="flame" size={20} /></button>
         </div>
       </section>
 

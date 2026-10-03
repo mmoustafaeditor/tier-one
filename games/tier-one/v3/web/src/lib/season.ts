@@ -62,6 +62,7 @@ export interface SeasonRecap { id: string; lv: number; pp: number; gold: boolean
 export interface WeekEvState { wk: string; n: number; got?: boolean }
 
 export function seasonLevel(pp: number, per: number) {
+  pp = Number.isFinite(pp) && pp > 0 ? pp : 0; per = Number.isFinite(per) && per > 0 ? per : 100;
   const n = Math.min(MAX_SLV, Math.floor(pp / per) + 1);
   const into = n >= MAX_SLV ? per : pp - (n - 1) * per;
   return { n, into, need: per, pct: Math.round((into / per) * 100), max: n >= MAX_SLV };
