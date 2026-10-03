@@ -125,7 +125,7 @@ export function youthDecisions(w: World, c: Career): Decision[] {
       const spot = windowOf(c) ? academyLoanSpots(w, c, kid, 1)[0] : undefined;
       const choices: Choice[] = [
         { id: 'up', key: 'y_ch_promote', cmds: [{ type: 'academy.promote', id: kid.id }], pick: hoy !== 'veteran',
-          fx: [{ tone: 'good', icon: 'squad', key: 'y_fx_squad' }, { tone: 'plain', icon: 'pound', key: 'y_fx_proWage' }] },
+          fx: [{ tone: 'good', icon: 'squad', key: 'y_fx_squad' }, { tone: 'plain', icon: 'pound', key: 'y_fx_proWage' }, { tone: 'warn', icon: 'handshake', key: 'y_fx_pledge' }] },
       ];
       if (spot) choices.push({ id: 'loan', key: 'y_ch_loan', s: spot.clubId, cmds: [{ type: 'academy.loan', id: kid.id, to: spot.clubId }], pick: hoy === 'veteran',
         fx: [{ tone: 'good', icon: 'grow', key: spot.role === 0 ? 'y_fx_starter' : 'y_fx_rotation' }] });
@@ -191,7 +191,7 @@ export function youthDecisions(w: World, c: Career): Decision[] {
     if (old) {
       const spot = windowOf(c) ? academyLoanSpots(w, c, old, 1)[0] : undefined;
       const choices: Choice[] = [
-        { id: 'up', key: 'y_ch_promote', cmds: [{ type: 'academy.promote', id: old.id }], pick: old.potential >= bar + 2 && hoy !== 'money', fx: [{ tone: 'plain', icon: 'squad', key: 'y_fx_squad' }] },
+        { id: 'up', key: 'y_ch_promote', cmds: [{ type: 'academy.promote', id: old.id }], pick: old.potential >= bar + 2 && hoy !== 'money', fx: [{ tone: 'plain', icon: 'squad', key: 'y_fx_squad' }, { tone: 'warn', icon: 'handshake', key: 'y_fx_pledge' }] },
         { id: 'go', key: 'y_ch_release', pn: old.name, cmds: [{ type: 'academy.release', id: old.id }], pick: old.potential < bar + 2 || hoy === 'money', fx: [{ tone: 'plain', icon: 'swap', key: 'y_fx_free' }] },
       ];
       if (spot) choices.splice(1, 0, { id: 'loan', key: 'y_ch_loan', s: spot.clubId, cmds: [{ type: 'academy.loan', id: old.id, to: spot.clubId }], fx: [{ tone: 'good', icon: 'grow', key: spot.role === 0 ? 'y_fx_starter' : 'y_fx_rotation' }] });

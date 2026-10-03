@@ -147,5 +147,48 @@ const clone = <T,>(x: T): T => structuredClone(x);
   ok((await loadSlot(2)).ok === false, 'F17 the other slot is untouched');
 }
 
+// ---------- M2: F05, F06, F08, F10 ----------
+{
+  const { autoXI: ax, slotValue, availabilityFor } = await import('../../src/sim/tactics');
+  const { pct3 } = await import('../../src/ui2/util');
+  const { promotionTerms, promoteKid } = await import('../../src/sim/youth');
+  const { predict } = await import('../../src/sim/match');
+  // F06: no man out of position while a natural player who'd be at least as good there sits out.
+  for (const club of ['eng-liverpool', 'esp-real-madrid', 'egy-al-ahly', 'ger-bayern']) {
+    const { w, c } = fresh(club);
+    const squad = squadOf(w, c.clubId);
+    const f = (c.tactics ?? DEFAULT_TACTICS).formation;
+    const xi = ax(squad, f);
+    const bad = xi.filter((p, i) => { const pos = FORMATIONS[f].slots[i].pos; return p.position !== pos && squad.some((q) => q.position === pos && !xi.includes(q) && q.injured === 0 && slotValue(q, pos) >= slotValue(p, pos)); });
+    ok(bad.length === 0 && xi.length === 11 && new Set(xi.map((p) => p.id)).size === 11, `F06 ${club}: best XI has nobody out of position ahead of a better natural player (${bad.map((p) => p.name.en).join(', ') || 'none'})`);
+  }
+  // F08: the three outcomes always add up to 100.
+  let off = 0;
+  for (const club of W0.clubs.filter((x) => x.leagueId === 'egy1' || x.leagueId === 'eng1')) {
+    const cc = newCareer(W0, seed, club.id, 'T', { age: 40, nationality: 'EGY' }, 2026);
+    const m = nextUserMatch(W0, cc); if (!m) continue;
+    const r = pct3(predict(m, (id) => playerOf(W0, id)!));
+    if (r[0] + r[1] + r[2] !== 100) off++;
+  }
+  ok(off === 0 && pct3([0.3333, 0.3333, 0.3334]).reduce((a, b) => a + b, 0) === 100, 'F08 win/draw/loss shown always add up to 100');
+  // F10: a cup ban counts for the cup match, not the league one; tired men are flagged, still available.
+  const { w, c } = fresh();
+  const sq = squadOf(w, c.clubId).map((p, i) => (i === 0 ? { ...p, sus: { 'egy-cup': 1 } } : i === 1 ? { ...p, fitness: 60 } : p));
+  const cup = availabilityFor(sq, 'egy-cup'), lg = availabilityFor(sq, undefined);
+  ok(!cup.available.includes(sq[0]) && cup.out.some((o) => o.p === sq[0] && o.why === 'banned') && lg.available.includes(sq[0]), 'F10 a cup-banned player is out for the cup match only');
+  ok(lg.available.includes(sq[1]) && lg.out.some((o) => o.p === sq[1] && o.why === 'tired'), 'F10 a tired player is available but flagged');
+  // F05: the promotion sheet shows exactly what the command applies.
+  // A 17-year-old in our academy (the intake comes later in the season, so one is made from a squad player's record).
+  const base = squadOf(w, c.clubId)[5];
+  const kid = { ...base, id: 'kid-test', birthYear: c.season - 17, rating: 55, potential: 80, wage: 2000, contractUntil: c.season + 1 };
+  const wk: World = { ...w, academy: [...(w.academy ?? []), kid] };
+  if (kid) {
+    const t = promotionTerms(wk, c, kid);
+    const r = promoteKid(wk, c, kid.id);
+    const p = typeof r === 'string' ? null : r.world.players.find((x) => x.id === kid.id);
+    ok(!!p && p.wage === t.wage && p.contractUntil === t.until, `F05 promotion sheet terms = what promotion applies (${t.wage}/month to ${t.until})`);
+  } else ok(false, 'F05 no academy player to promote in the test club');
+}
+
 console.log(fails ? `\n${fails} FAILED` : '\nall passed');
 process.exit(fails ? 1 : 0);

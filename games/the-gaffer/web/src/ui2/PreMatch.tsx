@@ -1,5 +1,6 @@
 // The tunnel: the one moment before kick-off where the screen breathes. Team sheets, the last word in the dressing
 // room, the odds, and three ways in: walk out, just the result, or sim on to the next decision.
+import { pct1 } from './util';
 import { RefLine } from './Officials';
 import { isDerby } from '../sim/rivalry';
 import { CL } from '../lang-club-all';
@@ -112,7 +113,7 @@ export function PreMatch() {
         <div className="stack">
           <Panel i={3}>
             <div className="facts">
-              <div className="kpi"><span className="v">{Math.round(win * 100)}%</span><span className="l">{x.pre.winChance}</span></div>
+              <div className="kpi"><span className="v">{pct1(win)}</span><span className="l">{x.pre.winChance}</span></div>
               <div className="kpi"><span className="v">{xg[me].toFixed(1)}</span><span className="l">{x.pre.ourXg}</span></div>
               <div className="kpi"><span className="v">{xg[1 - me].toFixed(1)}</span><span className="l">{x.pre.theirXg}</span></div>
             </div>

@@ -19,7 +19,7 @@ import { dateOf, shortDate } from '../sim/calendar';
 import { Crest, I, Meter, Portrait } from './kit';
 import { Panel, PanelHead, Seg, Steps } from './shell';
 import { useGame, clubOf, cn, sn, matchLabel } from './game';
-import { leagueRows, upcoming } from './util';
+import { leagueRows, upcoming, pctOf } from './util';
 
 export function MatchScreen({ tab, onTab }: { tab: number; onTab: (n: number) => void }) {
   const g = useGame();
@@ -68,7 +68,7 @@ function TacticsBoard() {
   const m = useMemo(() => nextUserMatch(w, { ...c, tactics: { ...draft, xi } }), [w, c, draft, xi.join()]);
   const m0 = useMemo(() => nextUserMatch(w, c), [w, c]);
   const odds = (mm: typeof m) => { if (!mm) return 0; const p = predict(mm, get); return mm.sides[0].clubId === c.clubId ? p[0] : p[2]; };
-  const win = Math.round(odds(m) * 100), win0 = Math.round(odds(m0) * 100);
+  const win = pctOf(odds(m)), win0 = pctOf(odds(m0)); // F08: never 0 or 100
   const me = m ? (m.sides[0].clubId === c.clubId ? 0 : 1) : 0;
   const opp = m ? m.sides[1 - me] : null;
   const oppClub = opp ? clubOf(w, opp.clubId) : undefined;
@@ -201,6 +201,14 @@ function TacticsBoard() {
               </button>
             ))}
           </div>
+          {/* F06: why a man plays out of position: his value there against the best natural player not in the XI. */}
+          {(() => {
+            const notes = xi.map((id, i) => ({ p: id ? playerOf(w, id) : undefined, pos: slots[i]?.pos })).filter((o) => o.p && o.pos && o.p.position !== o.pos).slice(0, 3).map(({ p, pos }) => {
+              const alt = squadOf(w, c.clubId).filter((q) => q.position === pos && !inXI.has(q.id) && available(q)).sort((a, b) => slotValue(b, pos!) - slotValue(a, pos!))[0];
+              return <li key={p!.id}>{alt ? T.outPos(sn(p!, lang), x.common.posLong[pos!], Math.round(slotValue(p!, pos!)), sn(alt, lang), Math.round(slotValue(alt, pos!))) : T.outPosNone(sn(p!, lang), x.common.posLong[pos!], Math.round(slotValue(p!, pos!)))}</li>;
+            });
+            return notes.length ? <ul className="xi-notes small on-ground">{notes}</ul> : null;
+          })()}
           {/* F01: whose XI this is, said where the XI is picked. */}
           <div className="xi-owner small on-ground">
             <span>{saved.xi ? T.xiMine : delegated(c, 'lineup') ? T.xiStaff : T.xiAuto}</span>

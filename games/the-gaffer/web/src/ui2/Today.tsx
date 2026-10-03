@@ -12,14 +12,14 @@ import { isDerby } from '../sim/rivalry';
 import { CL } from '../lang-club-all';
 import { NV } from '../lang-nav-all';
 import { nextUserMatch, seasonOver } from '../sim/season';
-import { available } from '../sim/tactics';
+import { availabilityFor } from '../sim/tactics';
 import { dayName, dayNum, shortDate } from '../sim/calendar';
 import { DEPTS } from '../sim/delegation';
 import { levelOf } from '../sim/staff';
 import { Crest, Form, I, Portrait, Spark, initialsOf } from './kit';
 import { Panel, PanelHead } from './shell';
 import { useGame, clubOf, cn, sn, matchLabel } from './game';
-import { formOf, leagueRows, upcoming, avgMorale } from './util';
+import { formOf, leagueRows, upcoming, avgMorale, pct3, pctText } from './util';
 import { DecisionCard, Receipt, choiceText, titleText } from './Decisions';
 import { newsText } from './text';
 import { D } from '../lang-dressing-all';
@@ -125,7 +125,7 @@ function FixtureCard() {
   const line = !tip ? A.fine : tip.k === 'scoutFirst' ? A.scoutFirst : tip.k === 'mismatch' ? A.mismatch(x.tac.styles[tip.use]) : tip.k === 'edge' ? A.edge
     : tip.k === 'lowMastery' ? A.lowMastery(tip.n) : tip.k === 'tired' ? A.tired(tip.n) : tip.k === 'outOfPos' ? A.outOfPos(tip.n) : tip.k === 'underdog' ? A.underdog : A.trap;
   const asst = c.ops.staff.assistant;
-  const pct = (v: number) => `${Math.round(v * 100)}%`;
+  const [pw, pd, pl] = pct3(odds); // F08: they add up to 100
   const mine = home.id === c.clubId;
   return (
     <Panel className="fixture a-match" i={0} label={x.fixture.comp('', '')}>
@@ -140,7 +140,7 @@ function FixtureCard() {
           <div className="team"><Crest club={away} size={64} /><b>{cn(away, lang)}</b><Form list={formOf(rows, away.id)} letters={x.wdl} /></div>
         </div>
         <div className="odds" style={{ ['--w' as string]: `${Math.max(1, Math.round(odds[0] * 100))}fr`, ['--d' as string]: `${Math.max(1, Math.round(odds[1] * 100))}fr`, ['--l' as string]: `${Math.max(1, Math.round(odds[2] * 100))}fr` }} aria-hidden="true"><i /><i /><i /></div>
-        <div className="odds-l"><span>{x.fixture.win} <b>{pct(odds[0])}</b></span><span>{x.fixture.draw} <b>{pct(odds[1])}</b></span><span>{x.fixture.loss} <b>{pct(odds[2])}</b></span></div>
+        <div className="odds-l"><span>{x.fixture.win} <b>{pctText(pw)}</b></span><span>{x.fixture.draw} <b>{pctText(pd)}</b></span><span>{x.fixture.loss} <b>{pctText(pl)}</b></span></div>
       </div>
       <div className="read">
         <div className="advice">
@@ -161,25 +161,27 @@ function FitPanel() {
   const g = useGame();
   const { w, c, x } = g;
   const squad = squadOf(w, c.clubId);
-  const cupBan = (p: (typeof squad)[number]) => Object.values(p.sus ?? {}).some((n) => n > 0); // gf-ref
-  const out = squad.filter((p) => !available(p) || cupBan(p) || p.fitness < 78 || (c.rested ?? []).includes(p.id))
-    .sort((a, b) => (b.injured + b.banned) - (a.injured + a.banned) || a.fitness - b.fitness).slice(0, 3);
   const u = upcoming(w, c, 1)[0];
   if (!u) return null; // nothing left to be fit for this season (GF-007)
+  // F10: available for THIS match (its competition's bans, rests), the same rule the XI is picked with.
+  const av = availabilityFor(squad, u.cup, c.rested ?? []);
+  const out = av.out.slice(0, 3);
   const day = dayName(u.date, g.ui);
-  const fit = squad.filter(available).length;
+  const fit = av.available.length;
+  const tired = av.out.filter((o) => o.why === 'tired').length;
   return (
     <Panel i={3} className="a-avail" label={x.today.fit(day)}>
-      <PanelHead title={x.today.fit(day)} right={<span className="eyebrow">{x.today.fitOf(fit, squad.length)}</span>} />
+      <PanelHead title={x.today.fit(day)} right={<span className="eyebrow">{x.today.fitOf(fit, squad.length)}{tired ? ` · ${x.today.tiredN(tired)}` : ''}</span>} />
       {out.length === 0 ? <p className="muted small">{x.today.allFit}</p> : (
         <div className="avail">
-          {out.map((p) => (
+          {out.map(({ p, why }) => (
             <button key={p.id} className="av" onClick={() => g.player(p.id)}>
               <Portrait p={p} club={g.club} />
               <div>
                 <b>{sn(p, g.lang)}</b>
-                {p.injured ? <span className="tag tag--bad"><I n="medic" size="sm" />{x.today.injured(p.injured)}</span>
-                  : p.banned || cupBan(p) ? <span className="tag tag--bad"><I n="x" size="sm" />{x.today.banned}</span>
+                {why === 'injured' ? <span className="tag tag--bad"><I n="medic" size="sm" />{x.today.injured(p.injured)}</span>
+                  : why === 'banned' ? <span className="tag tag--bad"><I n="x" size="sm" />{x.today.banned}</span>
+                  : why === 'rested' ? <span className="tag"><I n="bolt" size="sm" />{x.today.restedTag}</span>
                   : <span className="tag tag--warn"><I n="bolt" size="sm" />{x.today.tired(p.fitness)}</span>}
               </div>
             </button>

@@ -413,6 +413,7 @@ em.bias { font-style: normal; color: var(--ink-3); }
 
 /* ---------- matchday bar on solo screens ---------- */
 .mbar .btn { min-height: 48px; }
+.mbar .btn--ghost { color: var(--on-ground); border-color: rgba(255,255,255,.22); } /* rework: readable on the dark bar (full time, quick match) */
 
 /* ---------- touch targets ---------- */
 @media (pointer: coarse) {
@@ -553,3 +554,8 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .an-kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); margin: var(--s-3) 0; }
 .an-kv span { display: flex; flex-direction: column; font-size: .8rem; }
 .an-kv b { font-size: 1.05rem; }
+
+/* Rework M1/M2 (F01/F06): whose XI it is, and why a man plays out of position. */
+.xi-owner { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: 8px 0 4px; color: var(--on-ground-2, rgba(255,255,255,.75)); }
+.xi-notes { margin: 6px 0 0; padding-inline-start: 18px; color: var(--on-ground-2, rgba(255,255,255,.75)); }
+.xi-notes li { margin: 2px 0; }

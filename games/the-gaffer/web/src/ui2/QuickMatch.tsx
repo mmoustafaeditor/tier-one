@@ -15,6 +15,8 @@ import { Crest, I } from './kit';
 import { Chips, Panel } from './shell';
 import { GameCtx, cn, type Game } from './game';
 import { LiveScreen } from './Live';
+import { FullTime } from './FullTime';
+import { aftermath, type Aftermath } from '../sim/aftermath';
 import { rateOf } from '../sim/highlights';
 
 const newSeed = () => (Math.random() * 2 ** 31) >>> 0;
@@ -27,12 +29,12 @@ export function QuickMatch({ t, x, ui, onExit }: { t: Strings; x: XStrings; ui: 
   const [leagueId, setLeagueId] = useState(covered[0]?.id ?? world.leagues[0].id);
   const [side, setSide] = useState<0 | 1>(0);
   const [picks, setPicks] = useState<[string, string]>(() => { const top = clubsOf(world, leagueId).sort((a, b) => b.reputation - a.reputation); return [top[0].id, top[1].id]; });
-  const [game, setGame] = useState<{ m: LiveMatch; c: Career; w: World } | null>(null);
+  const [game, setGame] = useState<{ m: LiveMatch; c: Career; w: World; ft?: Aftermath | null; n?: number } | null>(null);
   const club = (id: string) => world.clubs.find((c) => c.id === id)!;
 
   const kickOff = () => {
     const c = newCareer(world, seed, picks[0], t.managerDefault, { age: 40, nationality: world.leagues.find((l) => l.id === club(picks[0]).leagueId)!.country }, FIRST_SEASON);
-    setGame({ m: startMatch(world, c, picks[0], picks[1], `quick:${seed}:${picks.join(':')}`, 0), c, w: world });
+    setGame({ m: startMatch(world, c, picks[0], picks[1], `quick:${seed}:${picks.join(':')}`, 0), c, w: world, n: 0 });
   };
 
   if (game) {
@@ -45,8 +47,16 @@ export function QuickMatch({ t, x, ui, onExit }: { t: Strings; x: XStrings; ui: 
     return (
       <GameCtx.Provider value={g}>
         <div className="shell solo"><main className="main"><div className="page">
-          <LiveScreen m={game.m} locked={false} rate0={rateOf(loadPrefs())} hl0={loadPrefs().hl ?? 2} onUpdate={(m) => setGame({ ...game, m })} onSave={() => undefined}
-            onFinish={() => setGame(null)} />
+          {game.ft ? (
+            // F11 (rework): the quick match ends on a real full-time screen and analysis, read-only (nothing counts).
+            <FullTime a={game.ft} onDone={onExit} quick={{
+              rematch: () => { const n = (game.n ?? 0) + 1; setGame({ ...game, ft: null, n, m: startMatch(game.w, game.c, picks[0], picks[1], `quick:${seed}:${picks.join(':')}:${n}`, 0) }); },
+              change: () => setGame(null),
+            }} />
+          ) : (
+            <LiveScreen m={game.m} locked={false} rate0={rateOf(loadPrefs())} hl0={loadPrefs().hl ?? 2} onUpdate={(m) => setGame({ ...game, m })} onSave={() => undefined}
+              onFinish={(m) => setGame({ ...game, m, ft: aftermath(game.w, game.c, game.w, game.c, m) })} />
+          )}
         </div></main></div>
       </GameCtx.Provider>
     );

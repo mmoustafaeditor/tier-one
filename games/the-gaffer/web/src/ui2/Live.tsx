@@ -1,6 +1,7 @@
 // Matchday under the floodlights: the scoreboard, key moments, where the ball has lived, the numbers, shouts from
 // the touchline, and the changes sheet. At half-time the analysts' Why takes over the screen; at full time the
 // record goes to the aftermath. Every minute is the engine's (sim/match.ts); nothing here decides anything.
+import { pctOf as chanceOf } from './util';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Player } from '../model/types';
 import { playerOf } from '../sim/world';
@@ -350,7 +351,7 @@ function Changes({ m, me, onChange, onClose }: { m: LiveMatch; me: 0 | 1; onChan
   const plan = planOf(ft);
   const X = TX[g.ui];
   const T = x.tac;
-  const win = Math.round(winChance(m, me, expected(m, get)) * 100);
+  const win = chanceOf(winChance(m, me, expected(m, get)));
   const setT = (patch: Partial<Tactics>) => onChange((n) => setTactics(n, me, patch));
   const row = (p: Player, pos: string, on: boolean, sel: boolean, pick: () => void) => (
     <button key={p.id} className={`subrow${sel ? ' on' : ''}`} aria-pressed={sel} onClick={pick}>
@@ -437,8 +438,8 @@ function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHa
     if (sub && tired && subIn) userSub(n, me, tired.id, subIn.id);
     return n;
   };
-  const w0 = Math.round(winChance(m, me, expected(m, get)) * 100);
-  const w1 = Math.round(winChance(plan(picked, doSub), me, expected(plan(picked, doSub), get)) * 100);
+  const w0 = chanceOf(winChance(m, me, expected(m, get)));
+  const w1 = chanceOf(winChance(plan(picked, doSub), me, expected(plan(picked, doSub), get)));
   const pts = why.points.slice(0, 3);
   const head = x.ht.heads[why.verdict] ?? '';
   return (

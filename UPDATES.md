@@ -97,6 +97,17 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework M2 (part 1): availability, honest percentages, best XI with reasons, promotion sheet, quick-match full time
+- **What changed:**
+  - **F10** Today's "Available for Sat" now uses the same rule as team selection: a cup ban counts for the cup match and rested players are out, with a reason per player. Tired players count as available but are flagged.
+  - **F08** win/draw/loss always add up to 100%, and no forecast says 0% or 100%.
+  - **F06** the Best XI is now picked as a whole eleven instead of slot by slot (Van Dijk was at right-back with Frimpong on the bench). AI clubs pick their XIs the same way. Tactics explains every out-of-position pick against the best natural player left out.
+  - **F05** "Promote" opens a sheet first: squad place, contract and wage, and the promise that comes with it (10 games in 20 matchdays, or a loan). The academy decision cards show the promise too.
+  - **F11** a quick match now ends on a real full-time screen with analysis, plus Rematch / Change teams / Back. Before, it went straight back to the team picker.
+  - The bottom-bar buttons on full time are readable.
+- **Files:** `web/src/sim/tactics.ts` (`availabilityFor`, `assignXI`), `src/sim/youth.ts` (`promotionTerms`), `src/sim/youthDecisions.ts`, `src/ui2/{Today,Match,Pathway,Player,FullTime,QuickMatch,Live,PreMatch,util}.tsx/ts`, `src/lang-v2*.ts`, `src/lang-youth*.ts`, `src/styles/app.css`, `web/sim-tests/rework/trust.ts`, `web/sim-tests/morale.ts`, `web/ui-tests/rework-shots.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** **Results change (F06):** AI clubs now pick better XIs. Engine fingerprint is now `3879e6cc016b8942`. Season seed 7: 2.87 goals, 43.6% home wins, 23.6% draws (was 2.87 / 44.5 / 22.8). The `morale` test floor went from 35 to 33: one struggling Egyptian club now averages 34.96 on seed 7 (the measured spread is written in the test). Still not on `main` and not live. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework M0+M1: baseline, and the trust fixes (XI, dates, deal quote, board aim, job move, saves)
 - **What changed:** Started the rework from the V3 handoff. Milestone 0: the baseline, state map, screen map and feature ledger in `games/the-gaffer/rework/`, with the trust backlog F01-F17 reproduced in a seeded Node script. Milestone 1 fixes the ones that were real:
   - **F01** the XI you pick is the XI that plays. Before, with match prep delegated (the default), the assistant wiped your XI before every match, so a "Start X" card or your own picks never reached the quick result. Tactics now says whose XI it is, with "Let the assistant pick". Watched + Instant and Quick give the same result for the same match.

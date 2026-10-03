@@ -46,7 +46,20 @@ for (const lang of LANGS) {
     await shot('02-inbox-dates');                            // F02: message dated vs header
     await nav(p, 'match'); await p.waitForTimeout(800); await seg(p, 0); await p.waitForTimeout(800);
     await shot('03-tactics', true);                          // F01: whose XI
+    // F05: the academy's Promote opens the promotion sheet (squad place, contract, the promise).
+    await nav(p, 'squad'); await p.waitForTimeout(700); await seg(p, 4); await p.waitForTimeout(800);
+    await p.evaluate(() => [...document.querySelectorAll('.ac-row .btns button')][0]?.click()); await p.waitForTimeout(800);
+    await shot('04-academy-promote');
+    await p.keyboard.press('Escape'); await p.waitForTimeout(300);
     await nav(p, 'today'); await p.waitForTimeout(700);
+    await shot('05-today-availability', true);
+    // F11: a quick match ends on a full-time screen (from the title screen, in a fresh page).
+    await p.goto(URL0); await p.waitForFunction(() => window.__bootDone === true, null, { timeout: 20000 }).catch(() => {}); await p.waitForTimeout(800);
+    await click(p, /^(Quick match|ماتش سريع)/); await p.waitForTimeout(900);
+    await click(p, /^(Kick off|ابدأ)/); await p.waitForTimeout(2500);
+    await click(p, /^(Instant|فورًا|على طول)$/); await p.waitForTimeout(4000);
+    await p.evaluate(() => [...document.querySelectorAll('.mbar button, button.btn--accent')].find((b) => b.getBoundingClientRect().width && /Full-time|نهاية|انتهى/.test(b.innerText))?.click()); await p.waitForTimeout(1500);
+    await shot('06-quick-fulltime', true);
     await ctx.close();
   }
 }

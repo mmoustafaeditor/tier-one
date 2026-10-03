@@ -128,6 +128,24 @@ export const DEFAULT_TACTICS: UserTactics = {
 // gf-ref: suspensions are per competition: `banned` is the league's, `sus[cupId]` a cup's (sim/discipline.ts).
 export const available = (p: Player) => p.injured === 0 && p.banned === 0;
 export const availableIn = (p: Player, cup?: string) => p.injured === 0 && (cup ? !((p.sus?.[cup] ?? 0) > 0) : p.banned === 0);
+// F10 (rework): who can play the next match and why the others can't, from the same rule selection uses (availableIn
+// for that competition, rested players out). Tired players are available but flagged: fit enough to play, not sharp.
+export const MATCH_SHARP = 78;
+export type OutWhy = 'injured' | 'banned' | 'rested' | 'tired';
+export function availabilityFor(squad: Player[], cup: string | undefined, rested: string[] = []): { available: Player[]; out: { p: Player; why: OutWhy }[] } {
+  const rest = new Set(rested);
+  const out: { p: Player; why: OutWhy }[] = [];
+  const available: Player[] = [];
+  for (const p of squad) {
+    const why: OutWhy | null = p.injured > 0 ? 'injured' : !availableIn(p, cup) ? 'banned' : rest.has(p.id) ? 'rested' : null;
+    if (why) { out.push({ p, why }); continue; }
+    available.push(p);
+    if (p.fitness < MATCH_SHARP) out.push({ p, why: 'tired' });
+  }
+  const rank: Record<OutWhy, number> = { injured: 0, banned: 1, rested: 2, tired: 3 };
+  out.sort((a, b) => rank[a.why] - rank[b.why] || a.p.fitness - b.p.fitness);
+  return { available, out };
+}
 // Match-day level: a tired or unhappy player plays under his rating.
 export const formOf = (p: Player, fitness = p.fitness) => p.rating * (0.75 + 0.25 * (fitness / 100)) + (p.morale - 60) / 20;
 
@@ -146,21 +164,53 @@ export function fitPenalty(player: Position, slot: Position): number {
 // v2.6: a second position learned in training (p.alt) plays at almost full value (1 point off: still not his first).
 export const slotValue = (p: Player, slot: Position, fitness = p.fitness) => formOf(p, fitness) - (p.alt === slot && p.position !== slot ? 1 : fitPenalty(p.position, slot));
 
-// Best XI for a formation: goalkeeper first, then each slot takes its best free player.
+// F06 (rework): the best XI is the best eleven together, not slot by slot. The old greedy fill took each slot in order,
+// so an early slot could take a man the next slot needed more (Van Dijk at right-back with Frimpong on the bench).
+// Now one assignment maximises the summed slot values (Hungarian method, 11 slots × the squad), with a small bonus for
+// a player's own position so equal totals keep men where they play.
+const NATURAL = 0.5;
+const fitValue = (p: Player, pos: Position) => slotValue(p, pos) + (p.position === pos ? NATURAL : 0);
+export function assignXI(pool: Player[], positions: Position[]): (Player | undefined)[] {
+  const n = positions.length, m = pool.length;
+  if (!m) return positions.map(() => undefined);
+  if (m < n) {
+    // Not enough men for every slot: fill greedily (only happens with a gutted squad).
+    const used = new Set<string>();
+    return positions.map((pos) => { const b = pool.filter((p) => !used.has(p.id)).sort((a, b) => fitValue(b, pos) - fitValue(a, pos))[0]; if (b) used.add(b.id); return b; });
+  }
+  // Hungarian (rows = slots, cols = players), minimising cost = -value. O(n²m).
+  const cost = positions.map((pos) => pool.map((p) => -fitValue(p, pos)));
+  const INF = 1e18;
+  const u = new Array(n + 1).fill(0), v = new Array(m + 1).fill(0), way = new Array(m + 1).fill(0), pRow = new Array(m + 1).fill(0);
+  for (let i = 1; i <= n; i++) {
+    pRow[0] = i;
+    let j0 = 0;
+    const minv = new Array(m + 1).fill(INF), used = new Array(m + 1).fill(false);
+    do {
+      used[j0] = true;
+      const i0 = pRow[j0];
+      let delta = INF, j1 = 0;
+      for (let j = 1; j <= m; j++) {
+        if (used[j]) continue;
+        const cur = cost[i0 - 1][j - 1] - u[i0] - v[j];
+        if (cur < minv[j]) { minv[j] = cur; way[j] = j0; }
+        if (minv[j] < delta) { delta = minv[j]; j1 = j; }
+      }
+      for (let j = 0; j <= m; j++) { if (used[j]) { u[pRow[j]] += delta; v[j] -= delta; } else minv[j] -= delta; }
+      j0 = j1;
+    } while (pRow[j0] !== 0);
+    do { const j1 = way[j0]; pRow[j0] = pRow[j1]; j0 = j1; } while (j0);
+  }
+  const out: (Player | undefined)[] = positions.map(() => undefined);
+  for (let j = 1; j <= m; j++) if (pRow[j]) out[pRow[j] - 1] = pool[j - 1];
+  return out;
+}
+
+// Best XI for a formation, in slot order.
 export function autoXI(squad: Player[], formation: FormationId, cup?: string): Player[] {
   const ok = squad.filter((p) => availableIn(p, cup));
   const pool = ok.length >= 11 ? ok : squad;
-  const used = new Set<string>();
-  const xi: Player[] = [];
-  const slots = FORMATIONS[formation].slots;
-  const order = slots.map((sl, i) => ({ sl, i })).sort((a, b) => (a.sl.pos === 'GK' ? -1 : b.sl.pos === 'GK' ? 1 : 0));
-  const out: (Player | undefined)[] = [];
-  for (const { sl, i } of order) {
-    const best = pool.filter((p) => !used.has(p.id)).sort((a, b) => slotValue(b, sl.pos) - slotValue(a, sl.pos))[0];
-    if (best) { used.add(best.id); out[i] = best; }
-  }
-  for (const p of out) if (p) xi.push(p);
-  return xi;
+  return assignXI(pool, FORMATIONS[formation].slots.map((sl) => sl.pos)).filter(Boolean) as Player[];
 }
 
 // The user's XI in slot order. Picks the user made are kept while they're still fit, available and at the club;
@@ -186,12 +236,13 @@ export function xiFor(w: World, c: Career, cup?: string): { xi: Player[]; replac
       if (gone) replaced.push(gone);
     }
   });
-  const pool = squad.filter((p) => available(p) && !used.has(p.id));
-  slots.forEach((sl, i) => {
-    if (out[i]) return;
-    const best = (pool.length ? pool : squad.filter((p) => !used.has(p.id))).sort((a, b) => slotValue(b, sl.pos) - slotValue(a, sl.pos))[0];
-    if (best) { out[i] = best; used.add(best.id); pool.splice(pool.indexOf(best), 1); }
-  });
+  // Holes (no pick, or the pick can't play) are filled together, by the same assignment as the best XI (F06).
+  const holes = slots.map((_, i) => i).filter((i) => !out[i]);
+  if (holes.length) {
+    const free = squad.filter((p) => available(p) && !used.has(p.id));
+    const pool = free.length >= holes.length ? free : squad.filter((p) => !used.has(p.id));
+    assignXI(pool, holes.map((i) => slots[i].pos)).forEach((p, k) => { if (p) { out[holes[k]] = p; used.add(p.id); } });
+  }
   return { xi: out.filter(Boolean) as Player[], replaced };
 }
 

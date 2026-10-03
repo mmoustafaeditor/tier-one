@@ -8,6 +8,8 @@ import { squadOf } from '../sim/world';
 import { staffOf } from '../sim/delegation';
 import { treatmentCost } from '../sim/training';
 import { windowOf } from '../sim/windows';
+import { promotionTerms } from '../sim/youth';
+import { PROSPECT_APPS, PROSPECT_WINDOW } from '../sim/room';
 import {
   academyLoanSpots, academyOf, canRush, capOf, gradsOf, intakeDay, loaneesOf, matchRisk, potBand, previewDay, readyBar, returnWindow, riskBand, riskMult,
   rushGain, rushRisk, standout, startRating, tierOf,
@@ -113,6 +115,7 @@ export function AcademyScreen({ focus }: { focus?: string }) {
   const bar = readyBar(w, c);
   const [loanFor, setLoanFor] = useState<Player | null>(null);
   const [letGo, setLetGo] = useState<Player | null>(null);
+  const [promote, setPromote] = useState<Player | null>(null);
   const it = c.intake && c.intake.season === c.season && c.intake.club === c.clubId ? c.intake : null;
   const day = intakeDay(c);
   const fresh = it?.arrived && c.round - it.day <= 6;
@@ -201,7 +204,7 @@ export function AcademyScreen({ focus }: { focus?: string }) {
                   </button>
                   <span className="pband num"><span>{k.rating}</span><small>{plo}–{phi}</small></span>
                   <span className="btns">
-                    <button className="btn btn--sm" disabled={age(k) < 16} onClick={() => void g.run({ type: 'academy.promote', id: k.id })}>{A.promote}</button>
+                    <button className="btn btn--sm" disabled={age(k) < 16} onClick={() => setPromote(k)}>{A.promote}</button>
                     <button className="btn btn--ghost btn--sm" onClick={() => setLoanFor(k)}>{A.loan}</button>
                     <button className="btn btn--ghost btn--sm" onClick={() => setLetGo(k)}>{A.release}</button>
                   </span>
@@ -261,6 +264,7 @@ export function AcademyScreen({ focus }: { focus?: string }) {
       </div>
 
       {loanFor && <LoanSheet kid={loanFor} onClose={() => setLoanFor(null)} />}
+      {promote && <PromoteSheet kid={promote} onClose={() => setPromote(null)} />}
       {letGo && (
         <Sheet label={A.release} onClose={() => setLetGo(null)}>
           <h2 className="h2">{A.release}</h2>
@@ -272,6 +276,30 @@ export function AcademyScreen({ focus }: { focus?: string }) {
         </Sheet>
       )}
     </div>
+  );
+}
+
+// F05 (rework): promotion says what it commits the club to before the yes: squad place, contract, and the prospect
+// promise the dressing room will hold him to (sim/room.ts PROSPECT_APPS in PROSPECT_WINDOW matchdays, or a loan).
+export function PromoteSheet({ kid, onClose }: { kid: Player; onClose: () => void }) {
+  const g = useGame();
+  const { w, c, lang } = g;
+  const A = Y[g.ui].ac;
+  const t = promotionTerms(w, c, kid);
+  return (
+    <Sheet label={A.pmTitle(nm(kid, lang))} onClose={onClose}>
+      <h2 className="h2">{A.pmTitle(nm(kid, lang))}</h2>
+      <ul className="pm-list">
+        <li>{A.pmSquad(t.squad, t.max)}</li>
+        <li>{A.pmDeal(money(t.wage), t.until)}</li>
+        <li><b>{A.pmPromise(PROSPECT_APPS, PROSPECT_WINDOW)}</b></li>
+      </ul>
+      <p className="small muted">{A.pmAlt}</p>
+      <div className="sheet-actions">
+        <button className="btn btn--ghost" onClick={onClose}>{g.x.notNowShort}</button>
+        <button className="btn btn--primary" disabled={t.squad > t.max} onClick={async () => { const r = await g.run({ type: 'academy.promote', id: kid.id }); if (r.ok) onClose(); }}>{A.pmYes}</button>
+      </div>
+    </Sheet>
   );
 }
 

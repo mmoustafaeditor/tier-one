@@ -6,7 +6,7 @@ import { FLAG } from '../data/names';
 import { squadOf, money as money0 } from '../sim/world';
 import { anyPlayer, inAcademy, potBand, riskBand, riskMult, matchRisk, roundsOf } from '../sim/youth';
 import { DevCurve } from './DevCurve';
-import { LoanSheet as KidLoanSheet } from './Pathway';
+import { LoanSheet as KidLoanSheet, PromoteSheet } from './Pathway';
 import { Y } from '../lang-youth-all';
 import '../styles/youth.css';
 import { estimate, shortlisted } from '../sim/estimate';
@@ -37,6 +37,7 @@ export function PlayerScreen({ id }: { id: string }) {
   const p = anyPlayer(w, id);
   const ac = !!inAcademy(w, id);
   const [acLoan, setAcLoan] = useState(false);
+  const [promote, setPromote] = useState(false);
   const [loanPick, setLoanPick] = useState(false);
   const [loanAsk, setLoanAsk] = useState(false);
   const est = useMemo(() => { if (!p) return null; const e = estimate(w, c, p); if (ac) { const [plo, phi] = potBand(c, p); return { ...e, plo, phi }; } return e; }, [w, c, p, ac]);
@@ -80,7 +81,7 @@ export function PlayerScreen({ id }: { id: string }) {
         <div className="p-acts">
           {ac && p.clubId !== c.clubId ? null /* another club's academy: not on the market (V2.5) */ : ac ? (
             <>
-              <button className="btn btn--accent btn--sm" disabled={age < 16} onClick={() => void g.run({ type: 'academy.promote', id: p.id })}><I n="up" size="sm" />{Yx.ac.promote}</button>
+              <button className="btn btn--accent btn--sm" disabled={age < 16} onClick={() => setPromote(true)}><I n="up" size="sm" />{Yx.ac.promote}</button>
               <button className="btn btn--ghost on-ground btn--sm" onClick={() => setAcLoan(true)}><I n="swap" size="sm" />{Yx.ac.loan}</button>
               <button className="btn btn--ghost on-ground btn--sm" onClick={() => g.go({ s: 'academy', focus: p.id })}><I n="grad" size="sm" />{Yx.cv.academy}</button>
             </>
@@ -201,6 +202,7 @@ export function PlayerScreen({ id }: { id: string }) {
       </div>
 
       {acLoan && <KidLoanSheet kid={p} onClose={() => setAcLoan(false)} />}
+      {promote && <PromoteSheet kid={p} onClose={() => setPromote(false)} />}
       {loanPick && <LoanOutSheet id={p.id} onClose={() => setLoanPick(false)} />}
       {loanAsk && <LoanSheet id={p.id} onClose={() => setLoanAsk(false)} />}
     </div>

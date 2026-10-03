@@ -49,3 +49,18 @@ export function leagueRows(w: World, c: Career) {
 export const avgMorale = (w: World, c: Career) => { const s = squadOf(w, c.clubId); return Math.round(s.reduce((a, p) => a + p.morale, 0) / Math.max(1, s.length)); };
 export const moodOf = (p: Player) => (p.morale >= 75 ? 4 : p.morale >= 62 ? 3 : p.morale >= 50 ? 2 : p.morale >= 38 ? 1 : 0);
 export const ageOf = (p: Player, season: number) => season - p.birthYear;
+
+// F08 (rework): forecasts shown as whole percentages that add up. The three outcomes are rounded together (largest
+// remainder) so W + D + L = 100; a single chance never reads as a certainty (">99%", "<1%").
+export function pct3(o: readonly [number, number, number]): [number, number, number] {
+  const t = o[0] + o[1] + o[2] || 1;
+  const raw = o.map((v) => (v / t) * 100);
+  const out = raw.map(Math.floor) as [number, number, number];
+  const order = raw.map((v, i) => [v - Math.floor(v), i] as const).sort((a, b) => b[0] - a[0]);
+  const rem = 100 - (out[0] + out[1] + out[2]);
+  for (let k = 0; k < rem; k++) out[order[k % 3][1]]++;
+  return out;
+}
+export const pctText = (n: number) => (n >= 100 ? '>99%' : n <= 0 ? '<1%' : `${n}%`);
+export const pctOf = (v: number) => Math.min(99, Math.max(1, Math.round(v * 100))); // one chance, 1-99
+export const pct1 = (v: number) => (v >= 0.995 ? '>99%' : v < 0.005 ? '<1%' : `${Math.round(v * 100)}%`);

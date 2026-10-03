@@ -466,14 +466,21 @@ export function academySeasonEnd(w: World, c: Career, players: Player[], clubs: 
 
 export type YouthNo = 'gone' | 'squadFull' | 'window' | 'club' | 'young' | 'congested' | 'plans' | 'notYet' | 'budget' | 'retired' | 'wait' | 'limit';
 
+// F05 (rework): what promotion commits the club to, shown before the manager says yes (the sheet reads this, the command
+// applies it): his first-team contract and wage, the squad place, and the prospect promise the dressing room then holds.
+export function promotionTerms(w: World, c: Career, kid: Player) {
+  const lid = w.clubs.find((x) => x.id === c.clubId)!.leagueId;
+  const value = valueOf(kid.rating, c.season - kid.birthYear, kid.potential);
+  return { value, wage: Math.max(kid.wage, roundFee(wageOf(value, lid) / 2)), until: Math.max(kid.contractUntil, c.season + 3), squad: squadOf(w, c.clubId).length + 1, max: SQUAD_MAX };
+}
+
 export function promoteKid(w: World, c: Career, id: string): { world: World; career: Career } | YouthNo {
   const kid = inAcademy(w, id);
   if (!kid || kid.clubId !== c.clubId) return 'gone';
   if (squadOf(w, c.clubId).length >= SQUAD_MAX) return 'squadFull';
   if (c.season - kid.birthYear < 16) return 'young';
-  const lid = w.clubs.find((x) => x.id === c.clubId)!.leagueId;
-  const value = valueOf(kid.rating, c.season - kid.birthYear, kid.potential);
-  const p: Player = { ...kid, shirtNumber: freeShirt(w, c.clubId, kid.position), marketValue: value, wage: Math.max(kid.wage, roundFee(wageOf(value, lid) / 2)), contractUntil: Math.max(kid.contractUntil, c.season + 3) };
+  const t = promotionTerms(w, c, kid);
+  const p: Player = { ...kid, shirtNumber: freeShirt(w, c.clubId, kid.position), marketValue: t.value, wage: t.wage, contractUntil: t.until };
   const world = { ...w, players: [...w.players, p], academy: (w.academy ?? []).filter((k) => k.id !== id) };
   let career: Career = { ...c, grads: [...new Set([...(c.grads ?? []), kid.id])] };
   career = addNews(career, 'youth', 'promoted', { player: kid.id, pn: kid.name, club: c.clubId });

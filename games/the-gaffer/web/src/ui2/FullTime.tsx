@@ -15,7 +15,8 @@ import { levelText } from './roomText';
 import { Analysis } from './Analysis';
 import { AN } from '../lang-ana';
 
-export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
+// F11 (rework): `quick` — a quick match's read-only full time: no "what it changed" (nothing counts), Rematch / Change teams.
+export function FullTime({ a, onDone, quick }: { a: Aftermath; onDone: () => void; quick?: { rematch: () => void; change: () => void } }) {
   const g = useGame();
   const { w, c, x, lang } = g;
   const [all, setAll] = useState(false);
@@ -55,7 +56,7 @@ export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
             markers={a.scorers.map((s) => ({ i: s.min, label: s.pn[lang].split(' ').slice(-1)[0] }))} />
         </Panel>
 
-        <Panel i={2} label={F.changed}>
+        {quick ? <Panel i={2} label={F.quickNote}><p className="small muted">{F.quickNote}</p></Panel> : <Panel i={2} label={F.changed}>
           <PanelHead title={F.changed} />
           <div className="changes">
             {a.pos && a.pos[1] > 0 && (
@@ -74,7 +75,7 @@ export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
               <div><div className="who">{doc.name[lang]}, <span>{x.office.roles.assistant.toLowerCase()}</span></div><q>{why}</q></div>
             </div>
           )}
-        </Panel>
+        </Panel>}
 
         {a.ref && (
           <Panel i={4} label={RF[g.ui].report.title}>
@@ -103,7 +104,11 @@ export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
       <div className="mbar" role="toolbar">
         {a.ana && <button className="btn btn--ghost" aria-pressed={ana} onClick={() => { setAna(!ana); if (!ana) requestAnimationFrame(() => document.querySelector('.g-ana')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }}>{AN[g.ui].open}</button>}
         <span className="grow" />
-        <button className="btn btn--accent" onClick={onDone}>{F.done}<I n="arrowr" size="sm" /></button>
+        {quick ? <>
+          <button className="btn btn--ghost" onClick={onDone}>{F.back}</button>
+          <button className="btn btn--ghost" onClick={quick.change}>{F.changeTeams}</button>
+          <button className="btn btn--accent" onClick={quick.rematch}>{F.rematch}<I n="arrowr" size="sm" /></button>
+        </> : <button className="btn btn--accent" onClick={onDone}>{F.done}<I n="arrowr" size="sm" /></button>}
       </div>
     </div>
   );
