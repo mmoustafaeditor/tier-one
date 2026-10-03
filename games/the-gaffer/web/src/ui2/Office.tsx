@@ -1,6 +1,8 @@
 // The club office: the money (with a runway you can read), the board and what they want, the facilities, the staff
 // room (who does what, and how much you let them), and the commercial side.
 import { BL } from '../lang-boardlog';
+import { FC } from '../lang-forecast';
+import { roundFee } from '../sim/season';
 import { useState } from 'react';
 import type { Dept, DeptLevel, Facility, StaffRole } from '../model/types';
 import { monthly, upgradeCost, FACILITIES, attendance, capacityOf, refPrice, BUILD_DAYS, buildLeft } from '../sim/economy';
@@ -179,10 +181,24 @@ function Board() {
 
 function Facilities() {
   const g = useGame();
-  const { c, x } = g;
+  const { w, c, x } = g;
   const O = x.office;
   const C = CL[g.ui];
   const build = c.ops.build; // V2.7: one project at a time, open once built
+  // Rework §Q "forecast before major spending": cash after paying, the extra upkeep (0.4% of the wage cap a month for
+  // each facility level, sim/economy.ts upkeep) and the lowest point left this season on the monthly picture.
+  const mo = monthly(w, c);
+  const months: Date[] = [];
+  for (let r = c.round; r <= roundsIn(c); r++) {
+    const d = dateOf(c.season, r), prev = months[months.length - 1];
+    if (!prev || prev.getUTCMonth() !== d.getUTCMonth()) months.push(d);
+  }
+  const forecast = (cost: number) => {
+    const keep = roundFee(g.club.wageCap * 0.004);
+    const pts = (months.length ? months : [dateOf(c.season, c.round)]).map((d, i) => ({ d, v: g.club.budget - cost + (mo.net - keep) * i }));
+    const low = pts.reduce((a, b) => (b.v < a.v ? b : a));
+    return { cash: g.club.budget - cost, keep, low };
+  };
   return (
     <div className="grid">
       <Panel i={1} label={O.facilities}>
@@ -199,6 +215,10 @@ function Facilities() {
                 {build?.f === f ? <span className="tag tag--warn"><I n="clock" size="sm" />{C.build.busy(build.level, buildLeft(c))}</span>
                   : lvl < 5 ? <button className="btn btn--ghost btn--sm" disabled={g.club.budget < cost || !!build} title={build ? C.build.oneAtATime : C.build.takes(BUILD_DAYS[lvl + 1])} onClick={() => void g.run({ type: 'facility.upgrade', facility: f }, { toast: x.saved })}>{O.upgrade(money(cost))}</button> : <span className="small muted">{O.maxed}</span>}
               </div>
+              {lvl < 5 && !build && g.club.budget >= cost && (() => {
+                const fc = forecast(cost), F = FC[g.ui];
+                return <p className={`fac-fc small${fc.low.v < 0 ? ' warn' : ' muted'}`}>{F.line(money(fc.cash), money(fc.keep), money(fc.low.v), monthName(fc.low.d, g.ui))}{fc.low.v < 0 ? ` ${F.short}` : ''}</p>;
+              })()}
             </div>
           );
         })}

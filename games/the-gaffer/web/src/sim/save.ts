@@ -62,6 +62,10 @@ export function tidyCareer(w: World, c: Career): Career {
   const shortlist = c.shortlist ?? [];
   const keep = shortlist.filter((id) => players.has(id));
   if (keep.length !== shortlist.length) out = { ...out, shortlist: keep };
+  // Opponent reports are read only for the next match (by its key, `seed:season:…`); earlier seasons' never are, and they
+  // grew a save by ~20 KB a season (rework M5).
+  const oldRep = Object.keys(c.scouted ?? {}).filter((k) => Number(k.split(':')[1]) < c.season);
+  if (oldRep.length) { const scouted = { ...c.scouted }; for (const k of oldRep) delete scouted[k]; out = { ...out, scouted }; }
   const stale = Object.keys(c.watch ?? {}).filter((id) => !players.has(id));
   if (stale.length) { const watch = { ...c.watch }; for (const id of stale) delete watch[id]; out = { ...out, watch }; }
   const xi = c.tactics?.xi;

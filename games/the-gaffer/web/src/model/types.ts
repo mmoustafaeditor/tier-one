@@ -269,7 +269,10 @@ export interface RoomState {
   clauses: RoomClause[];                  // release clauses met, waiting on the player
   arm?: number;                           // season the armband question was last asked
   lead?: string[];                        // the leaders at the last tick (a leader sold is felt)
+  memory?: RoomMemo[];                    // rework §E: turning points kept across seasons (the event log is per season), newest first
 }
+// One remembered turning point: when, what (a room event name), who, and its reason when it has one.
+export interface RoomMemo { t: [number, number]; n: string; p: string; why?: string }
 
 // Intake Day (V2.6): a yearly event at ~70 % of the season. Ten matchdays before, the Head of Youth previews the group
 // (the kids already exist here, hidden); on the day they join the club's academy as world players.

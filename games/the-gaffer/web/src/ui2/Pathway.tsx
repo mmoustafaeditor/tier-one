@@ -2,6 +2,7 @@
 // the rush-back call with its stated relapse risk, and the loaded legs before the next match. Academy & pathway: Intake
 // Day (preview, then the day itself), the academy as a real squad (promote, loan out, release), the loanees' minutes,
 // and the graduates in the first team. Every button is a command (sim/commands.ts → sim/youth.ts).
+import { CO } from '../lang-cohort';
 import { LS } from '../lang-loanspot';
 import { MATCH_SHARP } from '../sim/tactics';
 import { SH } from '../lang-sharp';
@@ -214,8 +215,12 @@ export function AcademyScreen({ focus }: { focus?: string }) {
       <div className="grid2">
         <Panel i={1} label={A.squad}>
           <PanelHead title={A.squad} right={<span className="eyebrow">{A.cap(ac.length, cap)}</span>} />
-          <div className="rows">
-            {ac.map((k) => {
+          {/* Rework §H: the academy by age group, each with its size, level and who is ready. */}
+          {([['u18', ac.filter((k) => age(k) < 18)], ['u21', ac.filter((k) => age(k) >= 18)]] as const).filter(([, ks]) => ks.length).map(([coh, ks]) => (
+            <div key={coh} className="cohort">
+              <div className="between coh-h"><h3 className="h3">{CO[g.ui][coh]}</h3><span className="small muted">{CO[g.ui].head(ks.length, (ks.reduce((s, k) => s + k.rating, 0) / ks.length).toFixed(0), ks.filter((k) => age(k) >= 17 && k.rating >= bar - 1).length)}</span></div>
+              <div className="rows">
+            {ks.map((k) => {
               const [plo, phi] = potBand(c, k);
               const grown = k.rating - startRating(k, c.season);
               const ready = age(k) >= 17 && k.rating >= bar - 1;
@@ -236,6 +241,10 @@ export function AcademyScreen({ focus }: { focus?: string }) {
                 </div>
               );
             })}
+              </div>
+            </div>
+          ))}
+          <div className="rows">
             {!ac.length && <p className="muted small">{A.empty}</p>}
           </div>
         </Panel>

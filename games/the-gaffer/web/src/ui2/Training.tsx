@@ -11,6 +11,10 @@ import { PLANS_MAX, congested, matchRisk, plansOf, riskBand, riskMult, anyPlayer
 import { I, Meter, Portrait } from './kit';
 import { weekPlan } from '../sim/staff';
 import { WP } from '../lang-weekplan';
+import { WK } from '../lang-week';
+import { todayOf } from '../sim/cups';
+import { shortDate } from '../sim/calendar';
+import { upcoming } from './util';
 import { Panel, PanelHead, Seg, Sheet, Steps } from './shell';
 import { SquadTabs } from './SquadTabs';
 import { useGame, nm, sn, clubOf, cn } from './game';
@@ -64,6 +68,34 @@ export function TrainingScreen() {
               </ul>
               {on ? <span className="tag tag--good"><I n="check" size="sm" />{W.onIt}</span>
                 : <button className="btn btn--primary btn--sm" onClick={() => { void g.run({ type: 'training.set', load: plan.load }, { toast: false }).then(() => g.run({ type: 'prep.set', focus: plan.focus }, { toast: false })); }}>{W.use}</button>}
+            </Panel>
+          );
+        })()}
+        {(() => {
+          // Rework §F: the next seven days around the real fixtures (league and cup dates). The sim applies the week as a
+          // whole; this shows where the work sits. Two matches in the week: the heavy session is dropped (sim/youth.ts).
+          const K = WK[g.ui];
+          const today = todayOf(c);
+          const day0 = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+          const games = upcoming(w, c, 4);
+          const dayOf = (d: Date) => Math.round((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - day0) / 86400000);
+          const onDay = new Map(games.map((m) => [dayOf(m.date), m] as const));
+          const days = Array.from({ length: 7 }, (_, i) => {
+            const date = new Date(day0 + i * 86400000);
+            const m = onDay.get(i);
+            const kind = m ? 'match' : onDay.has(i - 1) ? 'rec' : onDay.has(i + 1) ? 'light' : 'work';
+            const text = m ? K.match(cn(clubOf(w, m.home === c.clubId ? m.away : m.home), lang), m.home === c.clubId) : kind === 'rec' ? K.recovery : kind === 'light' ? K.light : K.work(Yx.intens[ops.training.load], x.train.focusNames[c.prep ?? 'tactical']);
+            return { date, kind, text };
+          });
+          const two = busy; // the game's own rule for a two-match week (sim/youth.ts congested: a cup tie this matchday)
+          return (
+            <Panel i={0} className="week" label={K.title}>
+              <PanelHead title={K.title} />
+              <div className="week-days">
+                {days.map((d, i) => <div key={i} className={`wd ${d.kind}`}><b>{shortDate(d.date, g.ui)}</b><span>{d.text}</span></div>)}
+              </div>
+              {two && <p className="small"><span className="tag tag--warn"><I n="cal" size="sm" />{ops.training.load === 2 ? K.twoHeavy : K.two}</span></p>}
+              <p className="small muted">{K.note}</p>
             </Panel>
           );
         })()}

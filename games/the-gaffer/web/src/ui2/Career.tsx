@@ -6,6 +6,7 @@ import { useGame, clubOf, cn, money } from './game';
 import { dateOf, longDate } from '../sim/calendar';
 import { legendsOf, onTheWay } from '../sim/legends';
 import { CL } from '../lang-club-all';
+import { StyleProfile } from './Profile';
 
 export function CareerScreen() {
   const g = useGame();
@@ -85,6 +86,8 @@ export function CareerScreen() {
             {way.length > 0 && <p className="small"><b>{L.way}:</b> {way.map((y) => `${y.p.name[lang] || y.p.name.en} (${y.t[0]})`).join(', ')}</p>}
           </div>
         </Panel>
+
+        <StyleProfile />
 
         <Panel className="g-leg" i={3} label={K.jobs}>
           <PanelHead title={K.jobs} right={<span className="eyebrow">{K.badge} · {k.licence}</span>} />

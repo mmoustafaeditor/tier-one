@@ -3,6 +3,7 @@
 // (a promise kept or broken, a request to leave, a departure) are marked. With `playerId`: only that player's.
 import type { DomainEvent, TalkWhy } from '../model/types';
 import { anyPlayer } from '../sim/youth';
+import { roomOf } from '../sim/room';
 import { dateOf, shortDate } from '../sim/calendar';
 import { RL } from '../lang-roomlog';
 import { D } from '../lang-dressing-all';
@@ -39,7 +40,12 @@ export function RoomLog({ playerId, max = 10 }: { playerId?: string; max?: numbe
   const { w, c, lang } = g;
   const T = RL[g.ui];
   const name = (id: string) => { const p = anyPlayer(w, id); return p ? p.name[lang] || p.name.en : '—'; };
-  const rows = [...(c.events ?? [])].reverse()
+  // The event log first; then the room's memory (its turning points) for what the log no longer holds.
+  // (the log is capped by size, not cleared each season: skip a remembered moment it still holds)
+  const inLog = new Set((c.events ?? []).filter((e) => e.type === 'room').map((e) => `${e.t[0]}:${e.t[1]}:${e.name}:${e.refs?.p?.[0]}`));
+  const past: DomainEvent[] = (roomOf(c).memory ?? []).filter((m) => !inLog.has(`${m.t[0]}:${m.t[1]}:${m.n}:${m.p}`))
+    .map((m, i) => ({ id: `memo${i}`, t: m.t, type: 'room', name: m.n, refs: { p: [m.p] }, data: m.why ? { why: m.why } : undefined }));
+  const rows = [...[...(c.events ?? [])].reverse(), ...past]
     .filter((e) => !playerId || e.refs?.p?.includes(playerId))
     .map((e) => ({ e, text: roomLine(e, g.ui, name) }))
     .filter((r): r is { e: DomainEvent; text: string } => !!r.text)
@@ -49,7 +55,7 @@ export function RoomLog({ playerId, max = 10 }: { playerId?: string; max?: numbe
     <ol className="rl-list">
       {rows.map(({ e, text }) => (
         <li key={e.id} className={TURN.has(e.name) ? `turn ${e.name === 'promise.kept' ? 'good' : 'bad'}` : ''}>
-          <span className="rl-when">{shortDate(dateOf(e.t[0], e.t[1]), g.ui)}</span>
+          <span className="rl-when">{shortDate(dateOf(e.t[0], e.t[1]), g.ui)}{e.t[0] < c.season ? ` ${String(e.t[0]).slice(2)}` : ''}</span>
           <span className="rl-what">{text}</span>
         </li>
       ))}

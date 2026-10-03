@@ -678,3 +678,19 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .board-log ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
 .board-log li { display: grid; grid-template-columns: 3.6em 1fr; gap: 8px; font-size: 14px; align-items: baseline; }
 .board-log .up { color: var(--good); } .board-log .down { color: var(--bad); }
+/* Rework §Q: forecast under a facility upgrade. */
+.sc-office .fac .fac-fc { grid-column: 1 / -1; margin: 0; }
+.sc-office .fac .fac-fc.warn { color: var(--bad); font-weight: 600; }
+/* Rework §H: academy age groups. */
+.cohort + .cohort { margin-top: var(--s-3); }
+.cohort .coh-h { flex-wrap: wrap; gap: 4px 10px; margin-bottom: 4px; }
+/* Rework §R: style profile on Career. */
+.sp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.sp-list li { display: grid; gap: 2px; }
+/* Rework §F: "This week" on Training. */
+.week-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-bottom: var(--s-2); }
+@media (max-width: 760px) { .week-days { grid-template-columns: 1fr; } }
+.week-days .wd { display: grid; gap: 2px; padding: 8px; border-radius: 10px; background: var(--surface-2); font-size: 13px; min-width: 0; overflow-wrap: anywhere; }
+.week-days .wd.match { background: var(--accent); color: var(--accent-ink); font-weight: 650; }
+.week-days .wd.rec { border-inline-start: 3px solid var(--good); }
+.week-days .wd.light { border-inline-start: 3px solid var(--warn-mark); }

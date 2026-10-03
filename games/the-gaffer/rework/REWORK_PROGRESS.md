@@ -178,6 +178,27 @@ Next: M5 validation items possible here (save round-trip/slot isolation checks, 
   team's level against his; the first suggestion is marked when he would start. `ui-tests/rework-screens3.mjs`;
   evidence `evidence/m4j-after/`.
 
+* **Last sections (Saif: "finish everything that can be done here"):**
+  - §S News: sections (All, Our club, Results, Transfers, Managers, Youth, Records, Crisis, Dressing rooms) with counts;
+    "Our club" items marked. Each item already had its category.
+  - §Q Board: "Why it moved" — the board's last eight confidence moves, each with its cause (a result against what they
+    expected, derby ×1.5; press answers; a public claim; the weekly table check; the season plan; the season review),
+    recorded where confidence moves (`sim/boardlog.ts`). `rework/boardlog`: every move equals the sum of its causes
+    (29 of 29 over half a season).
+  - §Q Facilities: a forecast under each affordable upgrade (cash after paying, +upkeep a month, the lowest point left
+    this season and when).
+  - §H Academy: Under 18 / Under 21 groups with size, average and how many are ready.
+  - §R Career: "Your style, from what you've done": the plan in use, the market (spent vs raised, signings' age),
+    promises kept vs broken, homegrown players in the squad, departments run yourself. Read from the career.
+  - §E Memory: the dressing room remembers its turning points across seasons (`RoomState.memory`, 60 kept); the
+    timeline adds what the season log no longer holds (`rework/roomlog` checks the armband survives a season change).
+  - §F Training: "This week": the next seven days around the real fixtures (match, recovery after, light before, your
+    intensity and focus between), the game's own two-match-week rule, and a note that the sim applies the week whole.
+  - Save size: last seasons' opponent reports are pruned at tidy (never read again; ~20 KB a season). Academies level
+    off (kids leave at 20); rating histories are capped at 60. Not changed (it would change results): the world's
+    player count rises ~350 a season (intakes outnumber retirements).
+  - `ui-tests/rework-screens4.mjs`; evidence `evidence/m4k-after/`.
+
 ## Final plan (Saif, 2026-10-03: "do everything, then merge")
 1. M5 validation possible here: multi-season regression, save round-trip / slot isolation, ES/FR width gate, browser
    performance numbers, rollback plan.

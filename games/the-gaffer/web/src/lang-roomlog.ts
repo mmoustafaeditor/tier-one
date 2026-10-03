@@ -11,7 +11,7 @@ interface LogStrings {
   leader: N; core: N; exitReq: N; exitLeader: N; ret: N; stayed: N;
 }
 const en: LogStrings = {
-  title: 'What happened in the dressing room', titleOne: 'Between you and him', sub: 'This season, newest first', none: 'Nothing yet this season.',
+  title: 'What happened in the dressing room', titleOne: 'Between you and him', sub: 'Newest first · earlier seasons: the turning points', none: 'Nothing yet this season.',
   talk: { reassure: (n) => `You reassured ${n}`, challenge: (n) => `You challenged ${n}`, promise: (n) => `You gave ${n} your word` },
   answer: { list: (n) => `You put ${n} on the list, as he asked`, refuse: (n) => `You refused to let ${n} go`, promise: (n) => `You talked ${n} round with a promise` },
   captain: (n) => `${n} got the armband`, kept: (n) => `You kept your word to ${n}`, broken: (n) => `You broke your word to ${n}`,
@@ -20,7 +20,7 @@ const en: LogStrings = {
   exitReq: (n) => `${n} left unhappy`, exitLeader: (n) => `A leader left: ${n}`, ret: (n) => `${n} came back to face us`, stayed: (n) => `${n} turned the move down and stayed`,
 };
 const ar: LogStrings = {
-  title: 'اللي حصل في غرفة اللبس', titleOne: 'بينك وبينه', sub: 'الموسم ده، الأحدث الأول', none: 'لسه مفيش حاجة الموسم ده.',
+  title: 'اللي حصل في غرفة اللبس', titleOne: 'بينك وبينه', sub: 'الأحدث الأول · المواسم اللي فاتت: اللحظات الفاصلة', none: 'لسه مفيش حاجة الموسم ده.',
   talk: { reassure: (n) => `طمّنت ${n}`, challenge: (n) => `حمّست ${n} وتحدّيته`, promise: (n) => `إديت ${n} كلمة` },
   answer: { list: (n) => `حطيت ${n} في قايمة البيع زي ما طلب`, refuse: (n) => `رفضت تسيب ${n} يمشي`, promise: (n) => `هدّيت ${n} بوعد` },
   captain: (n) => `${n} لبس شارة الكابتن`, kept: (n) => `وفّيت بكلمتك لـ${n}`, broken: (n) => `خلفت كلمتك لـ${n}`,
@@ -29,7 +29,7 @@ const ar: LogStrings = {
   exitReq: (n) => `${n} مشي زعلان`, exitLeader: (n) => `واحد من القادة مشي: ${n}`, ret: (n) => `${n} رجع يلعب قصادنا`, stayed: (n) => `${n} رفض الانتقال وفضل`,
 };
 const es: LogStrings = {
-  title: 'Lo que pasó en el vestuario', titleOne: 'Entre tú y él', sub: 'Esta temporada, lo más reciente primero', none: 'Nada todavía esta temporada.',
+  title: 'Lo que pasó en el vestuario', titleOne: 'Entre tú y él', sub: 'Lo más reciente primero · temporadas anteriores: los momentos clave', none: 'Nada todavía esta temporada.',
   talk: { reassure: (n) => `Tranquilizaste a ${n}`, challenge: (n) => `Retaste a ${n}`, promise: (n) => `Le diste tu palabra a ${n}` },
   answer: { list: (n) => `Pusiste a ${n} en la lista, como pidió`, refuse: (n) => `No dejaste salir a ${n}`, promise: (n) => `Convenciste a ${n} con una promesa` },
   captain: (n) => `${n} recibió el brazalete`, kept: (n) => `Cumpliste tu palabra con ${n}`, broken: (n) => `Rompiste tu palabra con ${n}`,
@@ -38,7 +38,7 @@ const es: LogStrings = {
   exitReq: (n) => `${n} se fue descontento`, exitLeader: (n) => `Se fue un líder: ${n}`, ret: (n) => `${n} volvió para jugar contra nosotros`, stayed: (n) => `${n} rechazó el traspaso y se quedó`,
 };
 const fr: LogStrings = {
-  title: 'Ce qui s’est passé au vestiaire', titleOne: 'Entre vous deux', sub: 'Cette saison, du plus récent au plus ancien', none: 'Rien encore cette saison.',
+  title: 'Ce qui s’est passé au vestiaire', titleOne: 'Entre vous deux', sub: 'Du plus récent au plus ancien · saisons passées : les tournants', none: 'Rien encore cette saison.',
   talk: { reassure: (n) => `Vous avez rassuré ${n}`, challenge: (n) => `Vous avez secoué ${n}`, promise: (n) => `Vous avez donné votre parole à ${n}` },
   answer: { list: (n) => `Vous avez placé ${n} sur la liste, à sa demande`, refuse: (n) => `Vous avez refusé de laisser partir ${n}`, promise: (n) => `Vous avez retenu ${n} avec une promesse` },
   captain: (n) => `${n} a reçu le brassard`, kept: (n) => `Vous avez tenu parole envers ${n}`, broken: (n) => `Vous avez manqué à votre parole envers ${n}`,

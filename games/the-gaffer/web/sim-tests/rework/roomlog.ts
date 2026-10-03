@@ -2,8 +2,9 @@
 // player who asked for one: every dressing-room event in the log reads as a line, a talk carries its tone, promises kept
 // or broken and departures are lines too. node sim-tests/build.mjs rework/roomlog
 import { generateRealWorld } from '../../src/sim/seed';
-import { newCareer } from '../../src/sim/season';
-import { advance } from '../../src/sim/clock';
+import { newCareer, seasonOver } from '../../src/sim/season';
+import { advance, endOfSeason } from '../../src/sim/clock';
+import { squadOf } from '../../src/sim/world';
 import { dispatch } from '../../src/sim/commands';
 import { anyPlayer } from '../../src/sim/youth';
 import { canTalk, roomOf } from '../../src/sim/room';
@@ -34,5 +35,20 @@ const unread = room.filter((e) => !SKIP.has(e.name) && !roomLine(e, 'en', name))
 ok(!unread.length, `every dressing-room event reads as a line${unread.length ? ' — not: ' + [...new Set(unread.map((e) => e.name))].join(', ') : ''}`);
 const fake = (n: string, data: Record<string, string>) => ({ id: 'x', t: [2026, 3] as [number, number], type: 'room' as const, name: n, refs: { p: [ask?.playerId ?? 'p'] }, data });
 ok(['promise.kept', 'promise.broken', 'room.request', 'room.exit', 'room.leader', 'room.core', 'room.return', 'room.stayed', 'room.settled'].every((n) => !!roomLine(fake(n, { why: 'req' }), 'en', name)), 'promises, requests, departures and new leaders all read as lines');
+// Across a season end: a turning point (the armband) stays in the room's memory after the event log is cleared.
+{
+  const cap = squadOf(w, c.clubId).sort((a, b) => b.rating - a.rating)[1];
+  const r2 = dispatch(w, c, { type: 'room.captain', playerId: cap.id });
+  ok(r2.ok, `the armband goes to ${cap.name.en}`);
+  if (r2.ok) { w = r2.world; c = r2.career; }
+  ok((roomOf(c).memory ?? []).some((m) => m.n === 'room.captain' && m.p === cap.id), 'the room remembers it');
+  const season = c.season;
+  while (!seasonOver(c)) { const s = advance(w, c); w = s.world; c = s.career; }
+  const e = endOfSeason(w, c); w = e.world; c = e.career;
+  ok(c.season === season + 1, 'a new season');
+  const m = (roomOf(c).memory ?? []).find((x) => x.n === 'room.captain' && x.p === cap.id);
+  ok(!!m && m.t[0] === season, 'the armband is still in the memory, dated last season');
+  ok(!!m && roomLine({ id: 'm', t: m.t, type: 'room', name: m.n, refs: { p: [m.p] } }, 'en', name) === `${cap.name.en} got the armband`, 'and it still reads as a line');
+}
 console.log(fails ? `\n${fails} FAILED` : '\nall passed');
 process.exit(fails ? 1 : 0);
