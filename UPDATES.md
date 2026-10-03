@@ -7,6 +7,13 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.16 — the Daily Challenge tab to the owner's mockups
+
+- Paper card with a coral band (Daily No. and reset clock), "The Daily Challenge." title, "Five sagas. Make your calls."
+- Today's five sagas: mystery shirts before you play, the five clubs' kits with player names after.
+- Week strip (sage check on played days, coral ring on today), streak and status line, then Play Daily Challenge (before) or Share results (after).
+- Leaderboard and Past Results rows with coral arrows. Deadline Day and Practice cards are no longer on this tab.
+
 ## 2026-10-03 · Tier One 3.9.15 — the Desk to the owner's mockup; language dropdown
 
 - Top bar: wordmark, then one grouped pill: bell · language · settings (gear). The language button drops down English / العربية / Español only; the gear opens the full Settings. This applies on every page with a settings button. The Desk's bar no longer shows coins (the Shop has its own card).

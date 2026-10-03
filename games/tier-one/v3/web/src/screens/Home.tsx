@@ -33,7 +33,6 @@ export function Home(chrome: Chrome) {
   const closes = Date.parse(today + 'T00:00:00Z') + 864e5 - now;
   const ch = chapterOf(s);
   const [sheet, setSheet] = useState<null | 'past' | 'streak'>(null);
-  const past = Object.entries(s.daily).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 30);
   const lv = levelOf(s.pp, s);
   const xpIn = lv.max ? lv.per : Math.round((lv.pct / 100) * lv.per);
   const arrow = <Icon n={t.rtl ? 'back' : 'arrow'} size={20} />;
@@ -88,18 +87,7 @@ export function Home(chrome: Chrome) {
       </div>
     </div>
 
-    <Sheet open={sheet === 'past'} onClose={() => setSheet(null)} label={t('u39.home.past')}>
-      <div className="sheet__body hm39__list">
-        <h2 className="g-h2">{t('u39.home.past')}</h2>
-        {!past.length ? <p className="g-sub">{t('u39.home.noPast')}</p> : <ol>
-          {past.map(([d, r]) => <li key={d}>
-            <span className="hm39__lw"><b>{t('u39.home.k', { n: pad3(r.no) })}</b><small className="g-mono">{fmtDate(Date.parse(d + 'T12:00:00Z'), t.lang, { day: 'numeric', month: 'short' })}{r.rank ? ' · #' + r.rank : ''}</small></span>
-            <span className={'g-stamp g-stamp--' + (TIER_STAMP[r.tier] || '')}>{t('tier.' + r.tier)}</span>
-            <b className="g-num hm39__lp">{num(r.total, true)}</b>
-          </li>)}
-        </ol>}
-      </div>
-    </Sheet>
+    <PastResults open={sheet === 'past'} onClose={() => setSheet(null)} />
     <Sheet open={sheet === 'streak'} onClose={() => setSheet(null)} label={t('u39.home.streakT')}>
       <div className="sheet__body hm39__streakbox">
         <span className="hm39__flame"><Icon n="flame" size={40} /></span>
@@ -109,4 +97,23 @@ export function Home(chrome: Chrome) {
       </div>
     </Sheet>
   </div>;
+}
+
+/** Past Daily Challenge results (newest first): number, date, rank, tier stamp, points. Used by the Desk and the Daily tab. */
+export function PastResults({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useT();
+  const s = useSave();
+  const past = Object.entries(s.daily).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 30);
+  return <Sheet open={open} onClose={onClose} label={t('u39.home.past')}>
+    <div className="sheet__body hm39__list">
+      <h2 className="g-h2">{t('u39.home.past')}</h2>
+      {!past.length ? <p className="g-sub">{t('u39.home.noPast')}</p> : <ol>
+        {past.map(([d, r]) => <li key={d}>
+          <span className="hm39__lw"><b>{t('u39.home.k', { n: pad3(r.no) })}</b><small className="g-mono">{fmtDate(Date.parse(d + 'T12:00:00Z'), t.lang, { day: 'numeric', month: 'short' })}{r.rank ? ' · #' + r.rank : ''}</small></span>
+          <span className={'g-stamp g-stamp--' + (TIER_STAMP[r.tier] || '')}>{t('tier.' + r.tier)}</span>
+          <b className="g-num hm39__lp">{num(r.total, true)}</b>
+        </li>)}
+      </ol>}
+    </div>
+  </Sheet>;
 }
