@@ -570,7 +570,7 @@ export function roomDay(pre: World, w0: World, c0: Career, mine: LiveMatch | nul
 // Academy graduates: promoted by you, produced by the club's academy (V2.6 `hg`), or at the club since he was 17.
 export const homegrown = (c: Career, p: Player) => (c.grads ?? []).includes(p.id) || p.hg === c.clubId || (p.jc === c.clubId && p.since !== undefined && p.since - p.birthYear <= 17);
 
-const PRIO: Record<TalkWhy, number> = { broken: 0, request: 1, asked: 2, minutes: 3, role: 4, contract: 5, unhappy: 6, doubts: 7, new: 8, form: 9, debut: 10, scored: 11, dropped: 12 };
+const PRIO: Record<TalkWhy, number> = { broken: 0, request: 1, asked: 2, minutes: 3, role: 4, contract: 5, unhappy: 6, doubts: 7, new: 8, form: 9, debut: 10, scored: 11, dropped: 12, rotation: 6 };
 // Why a player would come knocking (the ask), from the state only.
 function askWhy(x: Ctx, p: Player): TalkWhy | null {
   const t = now(x.c);
@@ -581,7 +581,20 @@ function askWhy(x: Ctx, p: Player): TalkWhy | null {
   if (p.contractUntil <= x.c.season && x.c.round >= 4 && rankIn(x.w, p) < 13 && !x.room.pledges.some((y) => y.playerId === p.id && y.status === 'open')) return 'contract';
   if (p.morale < 38) return 'unhappy';
   if (trustOf(p) < 30) return 'doubts';
+  if (p.captain && rotating(x)) return 'rotation';
   return null;
+}
+// Rework §S "the captain challenges the rotation policy": the side keeps changing (17+ different starters in the last
+// five league games; the staff's own picks run at 14–18 a club, so this is the top end) and it isn't working (one win
+// or none in the last five matches). Uncommon by design; the ask cooldowns stop repeats.
+export const ROT_STARTERS = 17;
+function rotating(x: Ctx): boolean {
+  const last = (x.c.matches ?? []).filter((m) => m.home === x.c.clubId || m.away === x.c.clubId).slice(0, 5);
+  if (last.length < 5) return false;
+  const wins = last.filter((m) => { const k = m.home === x.c.clubId ? 0 : 1; return m.goals[k] > m.goals[1 - k]; }).length;
+  if (wins > 1) return false;
+  const ids = new Set(squadOf(x.w, x.c.clubId).map((p) => p.id));
+  return Object.entries(x.room.roll).filter(([id, s]) => ids.has(id) && s.length >= 5 && s.slice(-5).includes('1')).length >= ROT_STARTERS;
 }
 const rankIn = (w: World, p: Player) => byRating(squadOf(w, p.clubId)).findIndex((q) => q.id === p.id);
 // His level says he's worth a bigger role than his contract gives him (a prospect who became a regular, say).

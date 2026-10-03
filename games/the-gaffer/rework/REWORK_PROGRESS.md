@@ -207,10 +207,24 @@ Next: M5 validation items possible here (save round-trip/slot isolation checks, 
 4. Remaining handoff screens (dressing room, training, medical, academy, player page, club, news): result-neutral items.
 5. Merge into `main` (merge commit; main merged in first), check the Gaffer workflow and the live site.
 
-## Deferred, to revisit (Saif, 2026-10-03: "keep these in mind if they really should be done")
-1. A per-day training microcycle that changes the simulation (today the week strip explains the weekly model).
-   Changes results: needs its own balance pass and Saif's go-ahead on the numbers.
-2. Tactics Lab / scenario modes and a narrative-event engine (trigger, actors, options, delayed effects, cooldowns,
-   relationship memory) beyond the existing room, press and board events.
-3. The world's player count rises ~350 a season (youth intakes outnumber retirements). Bound it (retire or release more
-   at season end) with a multi-season balance check; changes results.
+## Deferred, to revisit (Saif, 2026-10-03: "keep these in mind if they really should be done") — done 2026-10-03
+Saif asked for all three to close the game out. What was built, and where it stops:
+1. **World size bounded** (`sim/season.ts` `FREE_MAX = 400`): the cause was the free-agent pool, not intakes vs
+   retirements — released academy kids and unsigned expired contracts piled up (160 → 2,424 free agents in three
+   seasons). At season end the 400 most valuable stay on the market and the rest leave the game (anyone the career
+   still refers to stays). Players over three seasons 8,422 → 8,530 → 8,496 → 8,386 (was → 9,165 → 10,413); the
+   packed save grows ~60 KB a season (874 → 993 KB), half what it did. `rework/lifecycle`, `youth`, `world` and
+   `fingerprint` pass; top-100 talent 85.9 → 86.7 over three seasons (band ±3).
+2. **Training microcycle, on the weekly model** (`ui2/Training.tsx`): the week strip places the sessions the intensity
+   gives (Light 2 / Normal 3 / Heavy 4) on the free days around the fixtures and the rest as days off; "Give them a
+   day off" / "Extra session" move the intensity one step (`training.set`). The game still applies the week as a
+   whole, so results don't change; a per-day simulation was not built (it would need its own balance pass).
+3. **Tactics Lab** (`sim/lab.ts`, pre-match "Try another plan"): the next match in the engine's own odds for every
+   style, in this shape or another; Use applies it (`tactics.set`) and the tunnel's odds become that row's (tested,
+   `rework/lab` and `ui-tests/rework-lab.mjs`). Scenario modes were not built.
+   **Narrative events:** the handoff §S examples were checked against the game. Already there: contract asks and
+   "playing above his role" (form spike), academy pathway promises, the board moving targets, broken promises, press
+   questions, derbies. Missing and added: **the captain challenges the rotation policy** (`room.ts` `rotating`, ask
+   `rotation`): 17+ different league starters in the last five and ≤1 win in the last five matches; uses the existing
+   ask system (talk options, ignored = morale/trust hit, ask cooldowns, room log). `rework/captainrot`. Sponsor
+   activation conflicts were not added (no sponsor-activation system to conflict with).

@@ -18,6 +18,9 @@ import { dateOf, shortDate } from '../sim/calendar';
 import { Crest, I, Portrait } from './kit';
 import { Panel, PanelHead } from './shell';
 import { useGame, clubOf, cn, sn, matchLabel } from './game';
+import { tacticsLab } from '../sim/lab';
+import { LB } from '../lang-lab';
+import type { FormationId } from '../sim/tactics';
 
 export function PreMatch() {
   const g = useGame();
@@ -141,6 +144,8 @@ export function PreMatch() {
           <ol className="brief-list">{brief.map((line, i) => <li key={i}>{line}</li>)}</ol>
         </Panel>
 
+        <TacticsLab />
+
         <div className="stack">
           <Panel i={3}>
             <div className="facts">
@@ -158,5 +163,53 @@ export function PreMatch() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Tactics Lab (rework, handoff §J): the next match in the engine's own odds under each style, in this shape or another
+// (sim/lab.ts). Folded until asked for; worked out only when open.
+function TacticsLab() {
+  const g = useGame();
+  const { w, c, x } = g;
+  const T = LB[g.ui];
+  const [open, setOpen] = useState(false);
+  const cur = (c.tactics?.formation ?? '4-3-3') as FormationId;
+  const [shape, setShape] = useState<FormationId>(cur);
+  const lab = useMemo(() => (open ? tacticsLab(w, c, shape) : null), [open, w, c, shape]);
+  const pts = (v: number) => (v >= 0 ? '+' : '−') + Math.abs(v * 100).toFixed(1);
+  return (
+    <Panel i={3} className="lab" label={T.title}>
+      <PanelHead title={T.title} right={<button className="btn btn--ghost btn--sm" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{open ? T.close : T.open}</button>} />
+      {open && lab && <>
+        <p className="meta dim">{T.sub}</p>
+        <label className="lab-shape"><span>{T.shape}</span>
+          <select value={shape} onChange={(e) => setShape(e.target.value as FormationId)}>
+            {(Object.keys(FORMATIONS) as FormationId[]).map((f) => <option key={f} value={f}>{f}{f === cur ? ' ✓' : ''}</option>)}
+          </select>
+        </label>
+        <div className="lab-rows">
+          <div className="lab-row now">
+            <span className="nm"><b>{T.now}</b><small className="ltr">{cur} · {x.tac.styles[lab.now.ph]}</small></span>
+            <span className="v">{pct1(lab.now.win)}</span>
+            <span className="x ltr">{T.xg(lab.now.xg[0].toFixed(1), lab.now.xg[1].toFixed(1))}</span>
+            <span className="tag">{T.inUse}</span>
+          </div>
+          {lab.rows.map((r) => {
+            const same = shape === cur && r.ph === lab.now.ph;
+            const d = r.win - lab.now.win;
+            return (
+              <div key={r.ph} className="lab-row">
+                <span className="nm"><b>{x.tac.styles[r.ph]}</b><small className={`ltr ${d > 0.005 ? 'up' : d < -0.005 ? 'down' : ''}`}>{T.diff(pts(d))}</small></span>
+                <span className="v">{pct1(r.win)}</span>
+                <span className="x ltr">{T.xg(r.xg[0].toFixed(1), r.xg[1].toFixed(1))}</span>
+                {same ? <span className="tag">{T.inUse}</span>
+                  : <button className="btn btn--ghost btn--sm" disabled={g.busy} onClick={() => void g.run({ type: 'tactics.set', tactics: r.tactics }, { toast: x.tac.locked })}>{T.use}</button>}
+              </div>
+            );
+          })}
+        </div>
+        <p className="meta dim">{T.note}</p>
+      </>}
+    </Panel>
   );
 }

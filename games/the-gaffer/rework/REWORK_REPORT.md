@@ -32,6 +32,10 @@ no named Android device was available — see Known limitations).
 * Dressing room timeline (and per player); the fitness coach proposes the week; academy loan rows explain the move.
 * News sections; why the board's trust moved; a forecast before upgrades; academy age groups; your style from your
   career; dressing-room memory across seasons; this week around the fixtures.
+* Pre-match Tactics Lab: "Try another plan" shows each style's win chance and xG against this opponent (any shape);
+  Use applies it. The training week shows sessions and days off around the fixtures, with a day off / extra session.
+* The captain comes to see you when the side keeps changing and isn't winning.
+* Long careers stay light: the free-agent pool is capped at 400, so the world no longer grows each season.
 * Accessibility from the title screen and Settings: larger text, reduce motion, stronger contrast.
 * Nothing is wider than a phone at 320–412 px, in English or Arabic.
 
@@ -52,6 +56,9 @@ Current-code reproduction: `node sim-tests/build.mjs rework/repro` → every che
 | What keeps happening | `ui-tests/rework-trends.mjs` | pass |
 | Dressing room / training / academy | `rework/roomlog`, `rework/weekplan`, `ui-tests/rework-screens3.mjs` | pass |
 | Board causes, last screens | `rework/boardlog`, `ui-tests/rework-screens4.mjs` | pass |
+| Tactics Lab | `rework/lab`, `ui-tests/rework-lab.mjs` | pass: lab = tunnel odds; after Use the tunnel shows the row's odds; EN + AR 320/390 px |
+| Captain's rotation challenge | `rework/captainrot` | pass (asks when rotating and losing; not when winning or settled) |
+| Bounded world (after `FREE_MAX`) | `rework/lifecycle`, `youth`, `world`, `fingerprint` | pass; fingerprint unchanged (`7116eb372ed61d68`) |
 | Trust regressions | `rework/trust` | 33+ checks pass (F01–F10, F17, F07 picks) |
 | Career-memory slice | `rework/slice` | pass (promote → warn → start → plays → kept → reload) |
 | Broken-promise arc | `rework/arcs` | pass |
@@ -97,10 +104,10 @@ load. Rollback: older builds ignore both fields.
 * The derby/board-pressure arc has no new authored content; the existing systems cover it (world test, press cards).
 * No Android device test, no WebView back/resume run, no named-device benchmark in this environment.
 * No human comprehension sessions (the handoff's human gates) — none could be run here.
-* The world's player count rises ~350 a season (youth intakes outnumber retirements); left as is because changing it
-  changes results. Old opponent reports are now pruned.
-* The packed save grows ~130 KB a season (878 → 1,139 KB over three seasons). Fine for IndexedDB; on the
-  localStorage fallback (~5 MB) a career of ten-plus seasons could hit the limit.
+* The world's size is bounded (free agents capped at 400 at season end): 8,422 → 8,386 players over three seasons.
+  Club squads still thin slowly (25.2 → 24.3 a club), pre-existing and bounded by the squad minimum.
+* The packed save grows ~60 KB a season (874 → 993 KB over three seasons). Fine for IndexedDB; on the
+  localStorage fallback (~5 MB) a very long career could still reach the limit.
 * The `marking` test is noisy at its default sample size (pre-existing).
 * The first-week guide's "hidden" choice is per device (localStorage), by design.
 
@@ -133,12 +140,13 @@ Build 2,834 KB (1,270 KB gzip). A full world season in Node takes ~22 s (`rework
 ## 8. Next backlog
 * P0: none open from the trust backlog.
 * P1: Android/WebView resume + import on a named device; human first-hour test.
-* P2: scenarios / Tactics Lab modes (not built; the title screen only offers modes that exist).
+* P2: scenario modes (not built; the title screen only offers modes that exist). The pre-match Tactics Lab is built.
 * Handoff items not done, because they can't be done in this container or need people: Android device runs (resume,
   update, a named-device benchmark), human first-hour and comprehension tests, and confirming the live deploy (the
-  session may not read deploy status). Not built by choice: a per-day training simulation (the week strip explains the
-  weekly model instead; a real microcycle would change results and needs its own balance pass), Tactics Lab /
-  scenario modes, and a narrative-event engine beyond the existing room, press and board events.
+  session may not read deploy status). Not built by choice: a per-day training simulation (the week plans sessions on the
+  weekly model; a per-day one would change results and needs its own balance pass), scenario modes, and sponsor
+  activation conflicts. Built late: the pre-match Tactics Lab, the training week's sessions, the captain's rotation
+  challenge, the bounded world.
 
 ## 9. Evidence index
 `evidence/m1-before|after` (Today/board, inbox dates, Tactics), `m2-before|after` (promotion sheet, availability,

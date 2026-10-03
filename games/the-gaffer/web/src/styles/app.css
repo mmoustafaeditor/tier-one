@@ -694,3 +694,20 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .week-days .wd.match { background: var(--accent); color: var(--accent-ink); font-weight: 650; }
 .week-days .wd.rec { border-inline-start: 3px solid var(--good); }
 .week-days .wd.light { border-inline-start: 3px solid var(--warn-mark); }
+.week-days .wd.off { opacity: .6; }
+.week-days .wd.work { border-inline-start: 3px solid var(--accent); }
+.week-btns { margin: 0 0 var(--s-2); }
+/* Tactics Lab on the pre-match screen */
+.lab .lab-shape{display:flex;align-items:center;gap:8px;margin:8px 0}
+.lab .lab-shape select{min-height:36px;padding:4px 8px;border-radius:8px;background:var(--surface-2,#0f2a26);color:inherit;border:1px solid var(--line,#2a4a44)}
+.lab-rows{display:flex;flex-direction:column;gap:4px}
+.lab-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line,rgba(255,255,255,.08))}
+.lab-row.now{border-bottom-width:2px}
+.lab-row .nm{display:flex;flex-direction:column;min-width:0}
+.lab-row .nm b{overflow-wrap:anywhere}
+.lab-row .nm small{opacity:.75}
+.lab-row .nm small.up{color:var(--good,#3ddc97);opacity:1}
+.lab-row .nm small.down{color:var(--bad,#ff6b6b);opacity:1}
+.lab-row .v{font-weight:700;min-width:3.5em;text-align:end}
+.lab-row .x{font-size:.85em;opacity:.8;white-space:nowrap}
+@media (max-width:420px){.lab-row{grid-template-columns:minmax(0,1fr) auto auto}.lab-row .x{display:none}}

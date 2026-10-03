@@ -246,7 +246,7 @@ export interface Pledge {
   cu0?: number; d0?: number;              // contract end when made; deals on the books when made
   status: 'open' | 'kept' | 'broken'; closed?: number; ev?: string;
 }
-export type TalkWhy = 'asked' | 'request' | 'broken' | 'minutes' | 'role' | 'contract' | 'unhappy' | 'doubts' | 'new' | 'form' | 'scored' | 'debut' | 'dropped'; // F16: scored/debut/dropped from the last match here
+export type TalkWhy = 'asked' | 'request' | 'broken' | 'minutes' | 'role' | 'contract' | 'unhappy' | 'doubts' | 'new' | 'form' | 'scored' | 'debut' | 'dropped' | 'rotation'; // F16: scored/debut/dropped from the last match here; rotation: the captain on the chopping and changing
 export interface RoomAsk { playerId: string; pn: LocalizedName; why: TalkWhy; made: number; until: number; ev?: string }
 export interface RoomCause { k: string; d: number; at: number; pn?: LocalizedName }
 export interface RoomClause { playerId: string; pn: LocalizedName; clubId: string; fee: number; until: number; ev?: string }
