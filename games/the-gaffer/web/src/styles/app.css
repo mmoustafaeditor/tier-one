@@ -494,9 +494,9 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .awards summary { cursor: pointer; color: var(--ink-2); }
 
 /* V2.10 club looks (meta/looks.ts): the office ground in the look's colours; matchday floodlights stay as they are. */
-:root[data-look="1"]:not([data-light="flood"]) { --ground: #2A0D16; --ground-2: #3A1320; --ground-3: #4E1B2B; --glow-a: rgba(149,191,229,.14); --glow-b: rgba(122,38,58,.4); }
-:root[data-look="2"]:not([data-light="flood"]) { --ground: #06192A; --ground-2: #0A2438; --ground-3: #0E3150; --glow-a: rgba(125,235,203,.12); --glow-b: rgba(11,59,92,.45); }
-:root[data-look="3"]:not([data-light="flood"]) { --ground: #231904; --ground-2: #342507; --ground-3: #4A350B; --glow-a: rgba(232,190,90,.14); --glow-b: rgba(168,118,18,.35); }
+:root[data-look="1"]:not([data-light="flood"]) { --ground: #140c10; --ground-2: #1b1116; --ground-3: #26171e; }
+:root[data-look="2"]:not([data-light="flood"]) { --ground: #0a1119; --ground-2: #0f1822; --ground-3: #16222f; }
+:root[data-look="3"]:not([data-light="flood"]) { --ground: #13110a; --ground-2: #1a170e; --ground-3: #252014; }
 .looks .look .btn { margin-top: var(--s-2); }
 .looks .look.on { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 .sc-pass .looks.looks4 { grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); }
