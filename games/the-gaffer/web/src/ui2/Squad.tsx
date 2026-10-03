@@ -15,6 +15,7 @@ import { Y } from '../lang-youth-all';
 import { Chips, Panel, PanelHead } from './shell';
 import { I, Portrait, Ring } from './kit';
 import { SquadTabs } from './SquadTabs';
+import { SquadPlanner } from './Planner';
 import { useGame, money, sn } from './game';
 import { ageOf, moodOf } from './util';
 import { D } from '../lang-dressing-all';
@@ -112,6 +113,8 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
             </div>
           )}
         </Panel>
+
+        <SquadPlanner />
 
         <Panel className="g-list" i={2} label={x.squad.player}>
           <div className="col-h"><span /><span className="eyebrow">{x.squad.player}</span><span className="glance"><span className="g">{x.squad.fit}</span><span className="g">{x.squad.mood}</span><span className="g">{x.squad.yrs}</span></span></div>

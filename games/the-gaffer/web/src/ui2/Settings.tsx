@@ -1,6 +1,8 @@
 // Settings and saves: language, real or fictional names, how far "Sim to the next decision" runs, match speed and
 // sound, difficulty, export / import / delete, and the small print. Career settings go through commands like
 // everything else; device settings are prefs.
+import { A11yControls } from './A11y';
+import { AX } from '../lang-a11y';
 import { RF } from '../lang-ref-all';
 import { useRef, useState } from 'react';
 import type { Career, NamesMode } from '../model/types';
@@ -82,7 +84,11 @@ export function SettingsScreen({ prefs, onPrefs, onTitle, slot, onDelete, onImpo
           </div>
           <Seg label={S.balance} value={b.difficulty} onChange={(difficulty) => void g.run({ type: 'balance.set', balance: { ...b, difficulty } })}
             options={([-1, 0, 1] as const).map((v) => ({ v, label: t.difficultyLv[v + 1] }))} />
-          <p className="small muted">{S.motion}</p>
+        </Panel>
+
+        <Panel i={2} label={AX[g.ui].title}>
+          <PanelHead title={AX[g.ui].title} />
+          <A11yControls ui={g.ui} prefs={prefs} onPrefs={onPrefs} />
         </Panel>
 
         <Panel i={2} label={S.saves}>

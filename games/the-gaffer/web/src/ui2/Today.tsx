@@ -1,5 +1,6 @@
 // Today: "What needs me before the next match?" The next match, up to five decisions with the staff's call, who's
 // fit, the club's pulse and the table. Continue is always in the same place.
+import { lastMatchHere } from '../sim/record';
 import { useMemo, useState } from 'react';
 import type { Choice, Decision } from '../sim/decisions';
 import { decisions, staffCallsSinceMatch } from '../sim/decisions';
@@ -11,18 +12,20 @@ import { isDerby } from '../sim/rivalry';
 import { CL } from '../lang-club-all';
 import { NV } from '../lang-nav-all';
 import { nextUserMatch, seasonOver } from '../sim/season';
-import { available } from '../sim/tactics';
-import { dayName, dayNum, shortDate, dateOf } from '../sim/calendar';
+import { availabilityFor } from '../sim/tactics';
+import { dayName, dayNum, shortDate } from '../sim/calendar';
 import { DEPTS } from '../sim/delegation';
 import { levelOf } from '../sim/staff';
 import { Crest, Form, I, Portrait, Spark, initialsOf } from './kit';
 import { Panel, PanelHead } from './shell';
 import { useGame, clubOf, cn, sn, matchLabel } from './game';
-import { formOf, leagueRows, upcoming, avgMorale } from './util';
+import { formOf, leagueRows, upcoming, avgMorale, pct3, pctText } from './util';
 import { DecisionCard, Receipt, choiceText, titleText } from './Decisions';
 import { newsText } from './text';
 import { D } from '../lang-dressing-all';
 import { cohesionOf } from '../sim/room';
+import { todayOf } from '../sim/cups';
+import { FirstWeekGuide } from './Guide';
 
 export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision, ch: Choice) => Promise<boolean>; onUndo: () => void; canUndo: string | null }) {
   const g = useGame();
@@ -38,8 +41,7 @@ export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision,
   const over = seasonOver(c);
   const oppId = nm0 ? (nm0.home === c.clubId ? nm0.away : nm0.home) : null;
   const opp = oppId ? clubOf(w, oppId) : undefined;
-  const nowDate = dateOf(c.season, c.round, false);
-  const today = new Date(nowDate.getTime() - 2 * 86400000);
+  const today = todayOf(c);
   const daysTo = nm0 ? Math.round((nm0.date.getTime() - today.getTime()) / 86400000) : 0;
   const dayWord = nm0 ? dayName(nm0.date, g.ui) : '';
   // No match left for us (our league finished while others play on) reads as season over, never as an empty day (GF-007).
@@ -76,6 +78,7 @@ export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision,
 
         <div className="col col-a">
           <section className="a-dec stack" aria-label={x.nav.today}>
+            <FirstWeekGuide />
             {receipts.map((r, k) => <Receipt key={r.id} label={x.dec.done(r.label)} undo={x.dec.undo} onUndo={k === 0 && canUndo === r.id ? () => { onUndo(); setReceipts((rs) => rs.slice(1)); } : undefined} />)}
             {shown.map((d, k) => <DecisionCard key={d.id} d={d} i={k + 1} onResolve={resolve} />)}
             {list.length > 5 && <button className="btn btn--ghost on-ground" onClick={() => setAll(!all)}>{all ? x.today.fewer : x.today.more(list.length - 5)}</button>}
@@ -124,7 +127,7 @@ function FixtureCard() {
   const line = !tip ? A.fine : tip.k === 'scoutFirst' ? A.scoutFirst : tip.k === 'mismatch' ? A.mismatch(x.tac.styles[tip.use]) : tip.k === 'edge' ? A.edge
     : tip.k === 'lowMastery' ? A.lowMastery(tip.n) : tip.k === 'tired' ? A.tired(tip.n) : tip.k === 'outOfPos' ? A.outOfPos(tip.n) : tip.k === 'underdog' ? A.underdog : A.trap;
   const asst = c.ops.staff.assistant;
-  const pct = (v: number) => `${Math.round(v * 100)}%`;
+  const [pw, pd, pl] = pct3(odds); // F08: they add up to 100
   const mine = home.id === c.clubId;
   return (
     <Panel className="fixture a-match" i={0} label={x.fixture.comp('', '')}>
@@ -139,7 +142,7 @@ function FixtureCard() {
           <div className="team"><Crest club={away} size={64} /><b>{cn(away, lang)}</b><Form list={formOf(rows, away.id)} letters={x.wdl} /></div>
         </div>
         <div className="odds" style={{ ['--w' as string]: `${Math.max(1, Math.round(odds[0] * 100))}fr`, ['--d' as string]: `${Math.max(1, Math.round(odds[1] * 100))}fr`, ['--l' as string]: `${Math.max(1, Math.round(odds[2] * 100))}fr` }} aria-hidden="true"><i /><i /><i /></div>
-        <div className="odds-l"><span>{x.fixture.win} <b>{pct(odds[0])}</b></span><span>{x.fixture.draw} <b>{pct(odds[1])}</b></span><span>{x.fixture.loss} <b>{pct(odds[2])}</b></span></div>
+        <div className="odds-l"><span>{x.fixture.win} <b>{pctText(pw)}</b></span><span>{x.fixture.draw} <b>{pctText(pd)}</b></span><span>{x.fixture.loss} <b>{pctText(pl)}</b></span></div>
       </div>
       <div className="read">
         <div className="advice">
@@ -160,25 +163,27 @@ function FitPanel() {
   const g = useGame();
   const { w, c, x } = g;
   const squad = squadOf(w, c.clubId);
-  const cupBan = (p: (typeof squad)[number]) => Object.values(p.sus ?? {}).some((n) => n > 0); // gf-ref
-  const out = squad.filter((p) => !available(p) || cupBan(p) || p.fitness < 78 || (c.rested ?? []).includes(p.id))
-    .sort((a, b) => (b.injured + b.banned) - (a.injured + a.banned) || a.fitness - b.fitness).slice(0, 3);
   const u = upcoming(w, c, 1)[0];
   if (!u) return null; // nothing left to be fit for this season (GF-007)
+  // F10: available for THIS match (its competition's bans, rests), the same rule the XI is picked with.
+  const av = availabilityFor(squad, u.cup, c.rested ?? []);
+  const out = av.out.slice(0, 3);
   const day = dayName(u.date, g.ui);
-  const fit = squad.filter(available).length;
+  const fit = av.available.length;
+  const tired = av.out.filter((o) => o.why === 'tired').length;
   return (
     <Panel i={3} className="a-avail" label={x.today.fit(day)}>
-      <PanelHead title={x.today.fit(day)} right={<span className="eyebrow">{x.today.fitOf(fit, squad.length)}</span>} />
+      <PanelHead title={x.today.fit(day)} right={<span className="eyebrow">{x.today.fitOf(fit, squad.length)}{tired ? ` · ${x.today.tiredN(tired)}` : ''}</span>} />
       {out.length === 0 ? <p className="muted small">{x.today.allFit}</p> : (
         <div className="avail">
-          {out.map((p) => (
+          {out.map(({ p, why }) => (
             <button key={p.id} className="av" onClick={() => g.player(p.id)}>
               <Portrait p={p} club={g.club} />
               <div>
                 <b>{sn(p, g.lang)}</b>
-                {p.injured ? <span className="tag tag--bad"><I n="medic" size="sm" />{x.today.injured(p.injured)}</span>
-                  : p.banned || cupBan(p) ? <span className="tag tag--bad"><I n="x" size="sm" />{x.today.banned}</span>
+                {why === 'injured' ? <span className="tag tag--bad"><I n="medic" size="sm" />{x.today.injured(p.injured)}</span>
+                  : why === 'banned' ? <span className="tag tag--bad"><I n="x" size="sm" />{x.today.banned}</span>
+                  : why === 'rested' ? <span className="tag"><I n="bolt" size="sm" />{x.today.restedTag}</span>
                   : <span className="tag tag--warn"><I n="bolt" size="sm" />{x.today.tired(p.fitness)}</span>}
               </div>
             </button>
@@ -197,7 +202,7 @@ function PulsePanel({ pos }: { pos: number }) {
   const last = (k: 1 | 2 | 3, now: number) => [...pulse.map((p) => p[k]), now].slice(-6);
   const squad = squadOf(w, c.clubId);
   const low = [...squad].sort((a, b) => a.morale - b.morale)[0];
-  const lastM = c.matches?.[0];
+  const lastM = lastMatchHere(c);
   const res = lastM ? (() => { const me = lastM.home === c.clubId ? 0 : 1; const d = lastM.goals[me] - lastM.goals[1 - me]; const o = clubOf(w, me === 0 ? lastM.away : lastM.home); return `${x.today.lastResult}: ${lastM.goals[me]}–${lastM.goals[1 - me]} v ${cn(o, g.lang)}${d > 0 ? '' : ''}`; })() : '';
   const obj = g.t.objective[userObjective(w, c)]; // V2.7: after the board meeting
   const rows: [string, string, string, string, number, number[]][] = [

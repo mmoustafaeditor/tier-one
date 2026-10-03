@@ -413,6 +413,7 @@ em.bias { font-style: normal; color: var(--ink-3); }
 
 /* ---------- matchday bar on solo screens ---------- */
 .mbar .btn { min-height: 48px; }
+.mbar .btn--ghost { color: var(--on-ground); border-color: rgba(255,255,255,.22); } /* rework: readable on the dark bar (full time, quick match) */
 
 /* ---------- touch targets ---------- */
 @media (pointer: coarse) {
@@ -553,3 +554,105 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .an-kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); margin: var(--s-3) 0; }
 .an-kv span { display: flex; flex-direction: column; font-size: .8rem; }
 .an-kv b { font-size: 1.05rem; }
+
+/* Rework M1/M2 (F01/F06): whose XI it is, and why a man plays out of position. */
+.xi-owner { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: 8px 0 4px; color: var(--on-ground-2, rgba(255,255,255,.75)); }
+.xi-notes { margin: 6px 0 0; padding-inline-start: 18px; color: var(--on-ground-2, rgba(255,255,255,.75)); }
+.xi-notes li { margin: 2px 0; }
+/* F15: a course's effect is read in full before paying */
+.row .course-fx, .row .grow:has(.course-fx) .name { white-space: normal; overflow: visible; text-overflow: clip; display: block; }
+/* Rework: the first-week guide on Today */
+.guide .guide-steps { list-style: none; margin: var(--s-3) 0; padding: 0; display: grid; gap: 6px; }
+.guide .guide-steps li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); }
+.guide .guide-steps li .grow { display: grid; gap: 2px; }
+.guide .guide-steps li.done { opacity: .62; }
+.guide .guide-steps li.done b { text-decoration: line-through; }
+/* Rework: long effect chips (F04's "already the top target", the youth pledge) wrap instead of widening the page. */
+.sc-today .fx .tag, .dcard .fx .tag { white-space: normal; max-width: 100%; height: auto; line-height: 1.3; padding-block: 3px; }
+.sc-today .col, .sc-today .a-dec, .guide, .guide-steps li .grow { min-width: 0; }
+/* Rework gate (ui-tests/overflow.mjs): nothing wider than a 320-412px phone. */
+.o-tabs, .o-tabs .seg { max-width: 100%; min-width: 0; }
+.h-hero { overflow-wrap: break-word; min-width: 0; max-width: 100%; }
+.sc-tactics .bench .row, .sc-tactics .bench > div { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.sc-transfers .t-top { min-width: 0; max-width: 100%; }
+.sc-transfers .t-top svg { max-width: 100%; }
+.sc-tactics section, .sc-tactics .stack, .sc-tactics .layout > * { min-width: 0; }
+.sc-tactics .board { overflow: clip; }
+@media (max-width: 400px) { .sc-tactics .board .tok .nm { max-width: 76px; overflow: hidden; text-overflow: ellipsis; } }
+.sc-transfers .t-top { flex-wrap: wrap; }
+.sc-transfers .target { min-width: 0; overflow: clip; }
+.sc-tactics .save { flex-wrap: wrap; } .sc-tactics .save .btn { min-width: 0; }
+.ft-next { margin-top: var(--s-3); display: grid; gap: 6px; } .ft-next .row { gap: 6px; }
+/* Rework: why it happened, on full time */
+.ft-why { display: grid; gap: 10px; }
+.ft-why .cause { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+.ft-why .cause .n { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); font: 700 12px/1 var(--f-text); }
+.ft-why .cause.good .n { background: var(--mint-400, #7FE3C4); color: #04211C; }
+.ft-why .cause.bad .n { background: rgba(229,96,74,.18); color: var(--bad, #E5604A); }
+.ft-why .cause p { margin: 2px 0 0; }
+/* Rework: the pre-match briefing */
+.brief-list { margin: 0; padding-inline-start: 20px; display: grid; gap: 8px; }
+.brief-list li { line-height: 1.4; }
+
+/* Rework: an empty slot is a "New career" card, not dead space; the career card gets an extra line or two. */
+.slot-new { display: flex; align-items: center; gap: 12px; width: 100%; padding: 4px 0; background: none; border: 0; color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.slot-new .grow { display: flex; flex-direction: column; min-width: 0; }
+.slot-new:hover .slot-empty, .slot-new:focus-visible .slot-empty { border-color: var(--accent, currentColor); color: var(--ink); }
+.slot-line .grow { min-width: 0; }
+.sc-title .slot-line .sub { white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }
+
+/* Rework: squad planner (ui2/Planner.tsx), one card per line. */
+.plan-sub { margin: -4px 0 10px; }
+.plan { display: grid; gap: 10px; }
+.plan-line { border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 12px; display: grid; gap: 4px; border-inline-start-width: 4px; border-inline-start-color: var(--good); }
+.plan-line.amber { border-inline-start-color: var(--warn-mark); }
+.plan-line.red { border-inline-start-color: var(--bad); }
+.plan-h { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.plan-f { font-size: 13px; color: var(--ink-2); overflow-wrap: anywhere; }
+.plan-f.hot { color: var(--bad); font-weight: 600; }
+.plan-f.warm { color: var(--warn-mark); font-weight: 600; }
+.plan-needs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.plan-needs .tag { white-space: normal; text-align: start; cursor: pointer; }
+.plan-needs span.tag { cursor: default; }
+@media (min-width: 1100px) { .sc-squad .g-plan { grid-column: 3; } }
+.plan-fold { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; padding: 0; background: none; border: 0; cursor: pointer; text-align: start; }
+
+/* Rework: accessibility prefs (ui2/A11y.tsx), set on <html> by App. */
+:root[data-text="1"] body { zoom: 1.1; }
+:root[data-text="2"] body { zoom: 1.2; }
+:root[data-calm="1"] *, :root[data-calm="1"] *::before, :root[data-calm="1"] *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+:root[data-contrast="1"]:not([data-light="flood"]) { --ink-2: #213F3A; --ink-3: #2C4D47; --line-2: rgba(11,42,38,.32); }
+:root[data-contrast="1"] { --on-ground-2: #DCEEE9; --on-ground-3: #C4DDD6; }
+:root[data-contrast="1"][data-light="flood"] { --ink-2: #D3E8E2; --ink-3: #BFDAD3; --line-2: rgba(255,255,255,.32); }
+.title-top { flex-wrap: wrap; gap: 8px; }
+.a11y-open { gap: 6px; }
+.a11y { display: grid; gap: 8px; margin-bottom: 12px; }
+/* Rework: "About the job" on the new-career club page. */
+.job-list { margin: 8px 0 0; padding-inline-start: 18px; display: grid; gap: 6px; font-size: 14px; color: var(--ink-2); }
+@media (min-width: 900px) { .confirm-grid .club-splash { grid-row: span 3; } }
+/* Rework M5 width gate, ES/FR at 320–390 px: long Spanish/French labels used to push Today, Tactics and Club wider than
+   the phone. */
+.sc-today .a-dec > * { min-width: 0; }
+.sc-today .choice .pickmark, .tone-btn .pickmark { white-space: normal; text-align: end; line-height: 1.15; flex-shrink: 1; min-width: 0; }
+.sc-tactics .between { flex-wrap: wrap; row-gap: 6px; }
+.sc-tactics .between > .steps { flex: 1 1 210px; min-width: 0; }
+.steps button { min-width: 0; overflow-wrap: anywhere; line-height: 1.1; }
+.fac-r { min-width: 0; }
+.fac-r .btn { white-space: normal; text-align: center; max-width: 100%; line-height: 1.15; }
+.match-tabs .seg { overflow-x: auto; scrollbar-width: none; }
+.match-tabs .seg::-webkit-scrollbar { display: none; }
+.match-tabs .seg button { white-space: nowrap; flex: none; }
+.sc-today .decision .head { flex-wrap: wrap; }
+.sc-today .decision .head .grow { min-width: 0; flex: 1 1 180px; }
+.sc-today .decision .head .due { white-space: normal; }
+/* Rework M4: "What keeps happening" on Match › Fixtures (ui2/Trends.tsx). */
+.trends { margin-bottom: var(--s-3); }
+.trend-sum { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; margin: 0 0 var(--s-2); }
+.trend-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.trend-list li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); border-inline-start: 4px solid var(--good); }
+.trend-list li.bad { border-inline-start-color: var(--bad); }
+.trend-list li .grow { display: grid; gap: 2px; min-width: 0; }
+.trend-list li .btn { flex: none; white-space: normal; max-width: 45%; text-align: center; line-height: 1.15; }
+/* Rework §I: "In your plan" on the player page (sim/planfit.ts). */
+.plan-fit { display: grid; gap: 2px; margin: 0 0 var(--s-3); padding: 8px 10px; border-radius: 12px; background: var(--surface-2); border-inline-start: 4px solid var(--good); font-size: 14px; }
+.plan-fit.warn { border-inline-start-color: var(--warn-mark); }

@@ -26,6 +26,9 @@ export function roomTitle(g: Game, r: Ref): string {
   if (!f) return k;
   if (k === 'clause') return f(pn(g, r), money(r.n ?? 0), club(g.w, g.lang, r.club));
   if (k === 'due.sign') return f(pn(g, r), d.groups[r.n ?? 1]);
+  // Decision memory: a role promise's card quotes how far it has got.
+  if (k.startsWith('due.role.') && r.s !== undefined && Number(r.s) > 0)
+    return `${f(pn(g, r))} · ${k === 'due.role.prospect' ? d.memo.apps(r.n ?? 0, Number(r.s)) : d.memo.starts(r.n ?? 0, Number(r.s))}`;
   return f(pn(g, r));
 }
 

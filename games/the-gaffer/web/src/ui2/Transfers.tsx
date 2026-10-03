@@ -30,7 +30,10 @@ import { byDay } from './recruitText';
 import '../styles/recruit.css';
 
 // Tab ids keep their old numbers (0 shortlist, 1 search, 3 deals, 4 loans) so links from other screens still land.
-const ORDER = [5, 6, 0, 1, 2, 3, 4];
+// Rework (handoff §P): one recruitment funnel in four stages instead of seven equal chips. The seven views and their tab
+// numbers stay (deep links from cards, the player page and talks keep working); a stage with two views has a sub-switch.
+const STAGES: number[][] = [[5, 6], [0, 1], [2], [3, 4]];
+const stageOf = (tab: number) => Math.max(0, STAGES.findIndex((st) => st.includes(tab)));
 
 export function TransfersScreen({ tab, onTab, neg, pid }: { tab: number; onTab: (n: number) => void; neg?: string; pid?: string }) {
   const g = useGame();
@@ -61,13 +64,19 @@ export function TransfersScreen({ tab, onTab, neg, pid }: { tab: number; onTab: 
           <Kpi v={<span className="ltr">{money(committed(c))}</span>} l={Rs.kpi.committed} />
         </div>
       </div>
-      <div ref={chipRow} className="rc-tabs chips chips--scroll on-ground" role="group" aria-label={T.title}>
-        {ORDER.map((i) => (
-          <button key={i} className="chip" aria-pressed={tab === i} onClick={() => onTab(i)}>
-            {Rs.tabs[i]}{i === 2 && live.length ? <em className="count">{live.length}</em> : i === 5 && reds ? <em className="count warn">{reds}</em> : null}
+      <div ref={chipRow} className="rc-funnel on-ground" role="group" aria-label={T.title}>
+        {STAGES.map((st, k) => (
+          <button key={k} className="stage" aria-pressed={stageOf(tab) === k} onClick={() => onTab(st[0])}>
+            <span className="n">{k + 1}</span><b>{Rs.stages[k]}</b>
+            {st.includes(2) && live.length ? <em className="count">{live.length}</em> : st.includes(5) && reds ? <em className="count warn">{reds}</em> : null}
           </button>
         ))}
       </div>
+      {STAGES[stageOf(tab)].length > 1 && (
+        <div className="rc-tabs chips on-ground" role="group" aria-label={Rs.stages[stageOf(tab)]}>
+          {STAGES[stageOf(tab)].map((i) => <button key={i} className="chip" aria-pressed={tab === i} onClick={() => onTab(i)}>{Rs.tabs[i]}</button>)}
+        </div>
+      )}
       {!open && (tab === 0 || tab === 1) && <p className="note-line on-ground"><I n="lock" size="sm" />{T.closed}</p>}
       {tab === 0 && <Targets top={top} />}
       {tab === 1 && <Search need={top?.pos ?? 'ST'} />}

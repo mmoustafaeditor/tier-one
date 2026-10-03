@@ -6,6 +6,7 @@ export const CL_EN = {
   tag: 'Board meeting',
   derby: 'Derby',
   title: (season: string): string => `The board’s plan for ${season}`,
+  adviceTop: (target: string): string => `Our target: ${target}. It’s the top of what any board can ask; we’ll judge you on it.`,
   advice: (target: string): string => `Our target: ${target}. Aim higher and the owner will back you with money, but we’ll judge you harder.`,
   choices: {
     expected: (): string => 'Our target is right',
@@ -16,6 +17,7 @@ export const CL_EN = {
     kitty: (v: string): string => `${v} from the owner`,
     strict: (): string => 'Stricter board',
     target: (t: string): string => t,
+    top: (): string => 'Already the top target: there is no higher aim to agree',
   },
   board: {
     none: 'The board meets before the season’s first matchdays.',

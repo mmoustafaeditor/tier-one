@@ -17,7 +17,7 @@ import { riskMult } from './youth';
 import { playerOf, squadOf, squadStrength, type World } from './world';
 import { balanceOf, oppBoost } from './balance';
 import {
-  FORMATIONS, aiTactics, autoXI, availableIn, formOf, fullTactics, setPieces, slotValue, xiFor, DEFAULT_TACTICS, type FormationId, type Tactics,
+  FORMATIONS, aiTactics, aiXI, availableIn, formOf, fullTactics, setPieces, slotValue, xiFor, DEFAULT_TACTICS, type FormationId, type Tactics,
 } from './tactics';
 import { TUNE, buildModel, patchSub, rates as modelRates, type Model, type Rates, type SideInput } from './engine/model';
 import { newTally, playMinute, type Ball, type Flow, type PassTally, type Rules, type Tally } from './engine/play';
@@ -124,7 +124,7 @@ function side(w: World, c: Career | null, clubId: string, oppLevel: number, form
   const mine = c?.clubId === clubId;
   const tactics: Tactics = mine ? (c!.tactics ?? DEFAULT_TACTICS) : aiTactics(squad, level(squad), oppLevel, opp, w.managers?.[clubId]?.style, `${clubId}:${w.managers?.[clubId]?.name ?? ''}`);
   // gf-ref: suspensions are per competition (a cup ban doesn't keep a player out of the league, and back).
-  const xi = mine ? xiFor(w, c!, cup).xi : autoXI(squad, tactics.formation, cup);
+  const xi = mine ? xiFor(w, c!, cup).xi : aiXI(squad, tactics.formation, cup);
   // Tactics v3: an AI manager gives each player the role that suits him (and the club's style) in each phase.
   if (!mine && !tactics.roles) Object.assign(tactics, autoRoles(xi, fullTactics(tactics)));
   const inXI = new Set(xi.map((p) => p.id));

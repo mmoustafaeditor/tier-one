@@ -147,6 +147,146 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: Medical shows who is fit but not match-ready
+- **What changed:** Medical has a new list, "Fit, not match-ready": players who aren't injured but are below 78% fitness. Each shows how many matchdays until he's ready (the game recovers 12% a matchday) and a rest switch. After a single match in a week the list is usually empty; it fills up in weeks with cup and league matches together.
+- **Files:** `web/src/ui2/Pathway.tsx`, `src/lang-sharp.ts` (new), `web/ui-tests/rework-medical.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** None. Branch only.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: engine re-tuned, match checks, "What keeps happening", fit in your plan
+- **What changed:** Engine tuning, as Saif approved. Off-the-ball movement counts a little more (`MOVE` 1.0). Composure is now measured against the team's own shooters, so it moves goals between players without adding any (`CALM` 1.5). Morale climbs back faster below 40, so the bottom teams sit at 43–46 instead of 33–35. A new test plays 400 matches (league and cup, including extra time and penalties) and checks that score, stats, commentary, ratings, "Why it happened" and highlights all agree with what actually happened. It found one small thing, now fixed: an xG of 4.95 showed as 4.9 in one place and 4.95 in another. Two new things on screen: "What keeps happening" on Match › Fixtures (record, average xG and the analysis findings that repeat over the last 6 matches, with a link to the fix), and "In your 4-3-3" on the player page (starts / would start ahead of so-and-so / behind so-and-so).
+- **Files:** `web/src/sim/engine/model.ts`, `src/sim/engine/story.ts`, `src/sim/season.ts`, `src/sim/planfit.ts` (new), `src/ui2/Trends.tsx` (new), `src/ui2/Player.tsx`, `src/ui2/Match.tsx`, `src/ui2/FullTime.tsx`, `src/lang-trends.ts`, `src/lang-fitplan.ts` (new), `src/styles/app.css`, `web/sim-tests/rework/{agree,planfit}.ts` (new), `web/sim-tests/{morale,pitch,rolespitch}.ts`, `web/ui-tests/{pitch-metrics,rework-trends,rework-planfit}.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** Match results change again (fingerprint `7116eb372ed61d68`). The other teams are a bit harder to beat now (your team takes 1.72 points a game instead of 1.80 over 9 seasons). The `rolespitch` test now takes ~45 minutes. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: AI clubs pick their best XI too (2 tuning items open)
+- **What changed:** The other clubs now pick their starting XI the same way as your team: the whole eleven together, so far fewer players end up out of position (5.9% → 0.6%). Measured over 9 full seasons, the game barely moved: goals 2.89 → 2.92 a match, home wins 44.0% → 44.6%, draws 22.9% → 22.1%, your team's points 1.80 → 1.78 a game. Three tests used samples too small to be reliable and now run on bigger ones (`aiprep`, `rolespitch`, the ten-men check in `referee`); they pass. Two effects really did get a bit weaker and still need tuning: composed finishers' edge over xG (`traitsengine`), and the lowest morale a club can sink to (`morale`).
+- **Files:** `web/src/sim/tactics.ts` (`aiXI`), `src/sim/match.ts`, `src/sim/room.ts`, `web/sim-tests/rework/aixi.ts` (new), `web/sim-tests/aiprep.ts`, `web/sim-tests/referee.ts`, `web/sim-tests/rolespitch.ts`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** Match results change: the engine fingerprint goes from `a04af554a49efa49` to `3879e6cc016b8942` (Saif approved). `traitsengine` and `morale` fail until the tuning is done. Branch only, not merged. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: release checks (seasons, saves, Spanish/French widths, speed)
+- **What changed:** Ran the checks the game needs before release. Three full seasons played on the clock: no world or career errors, saves load back exactly, the second save slot stays untouched, and goals, home wins, draws and player ratings stay steady. Running the screen-width check in Spanish and French found labels that made Today, Tactics, the Match tabs and Club wider than a small phone; all fixed. Measured speed in the browser, and wrote the rollback plan: the save format is unchanged, and the previous build can still open saves from this one.
+- **Files:** `web/sim-tests/rework/lifecycle.ts` (new), `web/ui-tests/perf.mjs` (new), `web/ui-tests/overflow.mjs` (`LANGS=`), `src/styles/app.css`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** A save grows about 130 KB per season. That's fine on most devices, but a career of 10+ seasons could be too big for the backup storage some browsers fall back to. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: promise cards remember how far they've got
+- **What changed:** The assistant's warning card about a promise now says how it stands, e.g. "Your word to X: regular starts · started 1 of 5" or, for an academy pathway, "· 0 played so far", next to the matchdays left. The sim test checks it. The browser slice test also no longer counts it as a failure when the staff keep the kid's promise themselves (match prep is delegated in "The usual split"): that run says so and skips the card steps.
+- **Files:** `web/src/sim/room-decisions.ts`, `src/ui2/roomText.ts`, `src/lang-dressing*.ts`, `web/sim-tests/rework/slice.ts`, `web/ui-tests/rework-slice.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: "About the job" when picking a club
+- **What changed:** When you pick a club for a new career, a new panel lists facts about the job: where the squad and the budget rank in the league, the squad's average age against the league's, the club's derbies (which count extra with the board), and how many of the first eleven are out of contract next summer. Also re-ran the full test suite: 46 of 47 sim tests pass (`marking` is the same known sampling-noise check), and the engine fingerprint is unchanged.
+- **Files:** `web/src/ui2/NewCareer.tsx`, `src/lang-job.ts` (new), `src/styles/app.css`, `web/ui-tests/rework-job.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: accessibility settings, reachable before a career
+- **What changed:** The title screen has an "Accessibility" button, and Settings has the same panel. It offers text size (standard, larger, largest), Reduce motion (stops animations and the live-match flashes; it shows as on when the phone itself asks for reduced motion) and Stronger contrast (darker or brighter secondary text). The choices are kept on the device, not in the save, and apply straight away. At the largest size no main screen scrolls sideways, in English or Arabic.
+- **Files:** `web/src/ui2/A11y.tsx` (new), `src/lang-a11y.ts` (new), `src/sim/prefs.ts` (`text`/`calm`/`contrast`), `src/App.tsx`, `src/ui2/Title.tsx`, `src/ui2/Settings.tsx`, `src/ui2/Live.tsx`, `src/styles/app.css`, `web/ui-tests/rework-a11y.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** The old "Motion follows your device" line in Settings is replaced by the panel. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: squad planner
+- **What changed:** The Squad screen has a "Squad planner" with one card per line (goalkeepers, defence, midfield, attack). Each card shows the roles (first choice / rotation / prospects), deals ending this season or next (coloured), average age and how many players are 31+, who is out, and the needs the scouts already work out from your tactics. Tapping a need opens Transfers › Needs. On phones the planner starts folded to one row so the player list stays near the top; it remembers whether you opened it.
+- **Files:** `web/src/ui2/Planner.tsx` (new), `src/lang-planner.ts` (new), `src/ui2/Squad.tsx`, `src/styles/app.css`, `web/ui-tests/rework-planner.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** Read-only: nothing in the game changes. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: richer career cards on the title screen
+- **What changed:** Your career card on the title screen now shows the manager, season and matchday, the league position (from the first match on), the next league match (home or away) and when you last played. An empty slot is now a clear "Start a 2026/27 career" card instead of a grey "Empty slot" row.
+- **Files:** `web/src/ui2/Title.tsx`, `src/sim/save.ts` (`metaOf` adds `pos`/`of`/`next`), `src/model/types.ts`, `src/App.tsx`, `src/lang-v2*.ts`, `src/styles/app.css`, `web/ui-tests/rework-title.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** The new save fields are optional, so no migration is needed: older saves show the old card until they are saved again. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: pre-match briefing
+- **What changed:** The pre-match screen has a "Three things for this match" panel with an "Open tactics" button. It lists the two biggest number edges either way, taken straight from the match model (e.g. "Our edge: Build-up, centre. 4.7 of ours against 2.6", or where they crowd us), plus what the scouting report knows about them. Also recorded Saif's decision: AI clubs keep their current XI selection, and the best-XI assignment stays on the manager's side only.
+- **Files:** `web/src/ui2/PreMatch.tsx`, `src/lang-v2*.ts`, `src/styles/app.css`, `web/ui-tests/rework-ht.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** Read-only display: match results unchanged. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: full time explains why it happened
+- **What changed:** Full time (career and quick match) has a "Why it happened" panel. It shows the analysts' top three findings from the engine's own record of the match (e.g. "Their press is biting: 10 balls lost in our own third"), each marked as helping or hurting us. These are the same findings half-time shows, and they now feed the "What to do next" buttons.
+- **Files:** `web/src/ui2/FullTime.tsx`, `src/styles/app.css`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework F16: players have something real to talk about
+- **What changed:** Players now have three new reasons to talk, all from what actually happened in your last match: he scored, a homegrown player made his first appearance, or a starter was dropped. Praise after a goal or a debut lifts morale and trust a little. Challenging a dropped player works on driven players and leaders, and backfires on volatile or mercenary ones. Each reason comes up once, and the existing cooldown stops repeats, so talks can't be farmed for morale. Players with nothing new still have nothing to say.
+- **Files:** `web/src/sim/room.ts`, `src/model/types.ts`, `src/lang-dressing*.ts`, `web/sim-tests/rework/talks.ts` (new)
+- **Heads-up for the team:** Match results unchanged (fingerprint `a04af554a49efa49`). Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework M4: full time says what to do next
+- **What changed:** Under the assistant's verdict, full time now offers "What to do next": up to three buttons that lead to where each problem from the match can be fixed. Tactical problems go to Tactics, tired legs to Training, poor finishing to recruitment needs, and cohesion to the Dressing room. They only appear when the match found something to fix.
+- **Files:** `web/src/ui2/FullTime.tsx`, `src/lang-v2*.ts`, `src/styles/app.css`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework M3: the broken-promise arc proven end to end
+- **What changed:** A new seeded test covers what happens when you break your word to a youngster. The assistant warns you, you let it go, he never plays, and the promise breaks. His trust and morale drop, he asks for a word, the message and the news say why, and the next talk with him is about it. No game code changed; this proves the existing systems connect.
+- **Files:** `web/sim-tests/rework/arcs.ts` (new), `games/the-gaffer/rework/REWORK_PROGRESS.md`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: staff say how sure they are; board advice matches its choices
+- **What changed:** Each decision card's staff line now says how sure the advice is: confident, fairly sure, or a hunch, with that person's quality, since quality decides how good their calls are. At a club whose target is already the top one, the board's advice no longer mentions "aim higher", which isn't offered there.
+- **Files:** `web/src/ui2/Decisions.tsx`, `src/sim/decisions.ts`, `src/lang-v2*.ts`, `src/lang-club*.ts`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: best XI fix limited to your side; match results back to baseline
+- **What changed:** The full test suite showed that moving AI clubs to the new best-XI pick (F06) shifted four calibrated tests. Those were the AI's kick-off read, the ten-men effect, the role positions, and the trait effects. So the improved pick now applies only to your side: the assistant at kick-off, "Best XI for me", and filling gaps in your XI. AI clubs pick as before until Milestone 4 recalibrates with it. The repro script now checks the current code: F01-F11 and F17 all report OK.
+- **Files:** `web/src/sim/tactics.ts` (`bestXI` for the manager, `autoXI` unchanged for AI), `src/sim/staff.ts`, `web/sim-tests/{morale.ts,rework/trust.ts,rework/repro.ts}`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** This replaces the earlier "results change" note for F06. The engine fingerprint is `a04af554a49efa49` again and the `morale` floor is back at 35. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: Tactics shows the essentials first
+- **What changed:** "How we play" now shows the essentials: style, shape, approach, press and defensive line. Everything else (shape without the ball, width, tempo, passing, transitions, set pieces, marking) sits behind "More instructions". That button says how many of those settings you've changed from the defaults, so nothing set is ever out of sight without you knowing. The choice is remembered on the device. On very narrow phones, long names on the pitch are shortened instead of pushing the page wider.
+- **Files:** `web/src/ui2/Match.tsx`, `src/lang-tac*.ts`, `src/styles/app.css`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** None. Branch only, not live. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework M3: a promise to a youngster that the whole game remembers
+- **What changed:**
+  - **The prospect promise now warns before it breaks.** Promote a youngster and he's promised 10 games in 20 matchdays. Before, nothing warned you and it simply broke. Now the assistant flags it in time and proposes starting him in the next match, cup ties included, with what that costs the team.
+  - **The staff respect your word.** They no longer put a player you've promised something to on the transfer list, or sell him.
+  - **Proven end to end, in Node and in the real build:** promote, get warned, start him, he plays, the promise counts it. He ends up with 10 games and the promise kept, his trust goes up and a message names it. After a save and reload, the promise and your XI are still there.
+- **Files:** `web/src/sim/room-decisions.ts`, `src/sim/staff.ts`, `src/lang-dressing*.ts`, `web/sim-tests/rework/slice.ts` (new), `web/ui-tests/rework-slice.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** More "Your word" cards will appear for academy graduates. Match results unchanged. Branch only, not live. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: first-week guide, and no screen wider than a phone
+- **What changed:** A skippable "Your first week" guide on Today. It has five steps (agree the season, decide how hands-on you are, set your plan, get the opponent report, play your first match). Each ticks itself off when the game state shows it's done, each has a "Show me" link, and it disappears after the first matches. A new width check opens every area and tab at 320, 360, 390 and 412 px wide, in English and Arabic, and fails if a page scrolls sideways. It caught a problem from today's work (long effect chips widened Today) and older ones (Club header and tabs, the Tactics button row, a transfer target card); all fixed.
+- **Files:** `web/src/ui2/Guide.tsx` (new), `src/lang-guide.ts` (new), `src/ui2/Today.tsx`, `src/styles/app.css`, `web/ui-tests/overflow.mjs` (new), `web/ui-tests/rework-shots.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** The guide's "hidden" choice is saved on the device (`gaffer.guide.hidden`), not in the save. Branch only, not live. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework F07: scout picks think about the future
+- **What changed:** When the search exists because the starter is getting old or his deal is ending, the scouts no longer put a 35-year-old first (Al Ahly's keeper search did). Each year past 29 costs a candidate in those searches, and past 32 in any search. An older player can still be picked when nobody younger is close.
+- **Files:** `web/src/sim/recruit/picks.ts`, `web/sim-tests/rework/trust.ts`
+- **Heads-up for the team:** Delegated signings use the same list, so staff sign younger players for succession. Match results unchanged. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework M2 (part 3): Transfers as one recruitment funnel
+- **What changed:** Transfers' seven equal chips are now four numbered stages: 1 Needs & scouting, 2 Shortlist & search, 3 Negotiations, 4 Deals & loans. A stage with two views (e.g. Needs | Scouts) has a small switch underneath. Nothing was removed, and every link into Transfers (cards, the player page, talks) lands where it did.
+- **Files:** `web/src/ui2/Transfers.tsx`, `src/lang-recruit*.ts`, `src/styles/recruit.css`, `web/ui-tests/nav.mjs` (Search is now 3 taps from Today, was 2), `web/ui-tests/rework-shots.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** Search is one tap further away; the nav test budget was raised to match. Still on the branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework M2 (part 2): half-time staging, Continue says what's next, honest courses, cup labels, smarter half-time sub
+- **What changed:**
+  - **F12** at half-time the team talk now waits with your other changes until "Second half". Before, choosing a talk restarted the match at once and dropped the changes you'd ticked.
+  - **Continue** now says what happens next on every screen, phones included: "2 to decide", "Next: matchday", "Back to the match", "Season review".
+  - **F15** each course says what it does before you pay: tire 15% slower, defeats hurt morale less, press 3% harder, or youngsters grow 15% faster. It's permanent and taken once, and shows its reputation gain.
+  - **F13** the season review says how far you went in each cup (won it, runners-up, out in the semis...), not just the cup's name.
+  - **F07** the half-time sub suggestion no longer takes off someone who scored or set up a goal, and only appears when a player is actually tired.
+- **Files:** `web/src/ui2/{Live,OfficeBar,Career,Sheets}.tsx`, `src/lang-v2*.ts`, `src/styles/{app.css,look/components.css}`, `web/ui-tests/rework-ht.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** No change to results. Still on the branch only, not live. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework M2 (part 1): availability, honest percentages, best XI with reasons, promotion sheet, quick-match full time
+- **What changed:**
+  - **F10** Today's "Available for Sat" now uses the same rule as team selection: a cup ban counts for the cup match and rested players are out, with a reason per player. Tired players count as available but are flagged.
+  - **F08** win/draw/loss always add up to 100%, and no forecast says 0% or 100%.
+  - **F06** the Best XI is now picked as a whole eleven instead of slot by slot (Van Dijk was at right-back with Frimpong on the bench). AI clubs pick their XIs the same way. Tactics explains every out-of-position pick against the best natural player left out.
+  - **F05** "Promote" opens a sheet first: squad place, contract and wage, and the promise that comes with it (10 games in 20 matchdays, or a loan). The academy decision cards show the promise too.
+  - **F11** a quick match now ends on a real full-time screen with analysis, plus Rematch / Change teams / Back. Before, it went straight back to the team picker.
+  - The bottom-bar buttons on full time are readable.
+- **Files:** `web/src/sim/tactics.ts` (`availabilityFor`, `assignXI`), `src/sim/youth.ts` (`promotionTerms`), `src/sim/youthDecisions.ts`, `src/ui2/{Today,Match,Pathway,Player,FullTime,QuickMatch,Live,PreMatch,util}.tsx/ts`, `src/lang-v2*.ts`, `src/lang-youth*.ts`, `src/styles/app.css`, `web/sim-tests/rework/trust.ts`, `web/sim-tests/morale.ts`, `web/ui-tests/rework-shots.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** **Results change (F06):** AI clubs now pick better XIs. Engine fingerprint is now `3879e6cc016b8942`. Season seed 7: 2.87 goals, 43.6% home wins, 23.6% draws (was 2.87 / 44.5 / 22.8). The `morale` test floor went from 35 to 33: one struggling Egyptian club now averages 34.96 on seed 7 (the measured spread is written in the test). Still not on `main` and not live. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework M0+M1: baseline, and the trust fixes (XI, dates, deal quote, board aim, job move, saves)
+- **What changed:** Started the rework from the V3 handoff. Milestone 0: the baseline, state map, screen map and feature ledger in `games/the-gaffer/rework/`, with the trust backlog F01-F17 reproduced in a seeded Node script. Milestone 1 fixes the ones that were real:
+  - **F01** the XI you pick is the XI that plays. Before, with match prep delegated (the default), the assistant wiped your XI before every match, so a "Start X" card or your own picks never reached the quick result. Tactics now says whose XI it is, with "Let the assistant pick". Watched + Instant and Quick give the same result for the same match.
+  - **F02** one "today". The header said Thu while messages were dated the Saturday after, and cup ties fell before "today". Promise and deal counters now say matchdays, and "Window shuts tonight" only shows on deadline day.
+  - **F03** one deal quote. Today's "meet his demands" card counted the agreed fee twice (£19M off in the test); it now shows the same "room after" as the Talks screen.
+  - **F04** no "Aim higher" when the board's target is already the top one (it was the same target plus the owner's money).
+  - **F09** after a job move, "Last time out" no longer shows the old club's match backwards. The old club's season plan, instalments and open talks stay with the old club.
+  - **F17** export/import checked (round trip, tampered, newer and junk files all handled). Each save now keeps the one it replaced, and a slot that doesn't load opens that copy and says so.
+- **Files:** `games/the-gaffer/rework/*` (new: baseline, ledgers, progress, before/after screenshots), `web/src/sim/{staff,cups,decisions,vision,coach,record,room,pressDecisions,save,slots}.ts`, `src/sim/recruit/{deals,decide}.ts`, `src/model/types.ts`, `src/ui2/{Match,Today,OfficeBar,News,Decisions,Talks}.tsx`, `src/App.tsx`, `src/lang-v2*.ts`, `src/lang-club*.ts`, `web/sim-tests/rework/{repro,trust}.ts` (new), `web/ui-tests/rework-shots.mjs` (new)
+- **Heads-up for the team:** Not merged to `main` and not live (not authorised yet). Match results are unchanged (engine fingerprint `a04af554a49efa49`, season 2.87 goals). New optional save fields: `vision.club`, and slot records `100+n` holding the previous save. Tier One untouched.
+
 ## 2026-10-02 · saifsaber · The Gaffer B4: the hidden traits count in the engine too (composure, vision, movement)
 - **What changed:** The last step of the plan to close the gaps with FM26. The hidden traits that already moved players on the pitch (A4) now also count in the match engine, worked out the same way (attributes, rating, age, a fixed per-player draw; nothing new saved), in a new shared module `engine/traits.ts`, with a fourth one, vision:
   - **Composure:** a composed finisher scores more of the same chances, and a composed taker more penalties.

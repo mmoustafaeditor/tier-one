@@ -269,6 +269,10 @@ export interface Point {
 }
 export interface Why { goals: [number, number]; xg: [number, number]; verdict: Verdict; points: Point[]; tips: Tip[] }
 
+// xG to one decimal through its two-decimal value, the way the full-time numbers show it (a sum of shots like 4.95 can
+// land a hair under in floating point and read 4.9 here but 5.0 there).
+const xg1 = (v: number) => Math.round(Math.round(v * 100) / 10) / 10;
+
 export function explain(m: LiveMatch, me: 0 | 1, get: Lookup, tips = true): Why {
   const them = (1 - me) as 0 | 1;
   const ev = m.events;
@@ -370,7 +374,7 @@ export function explain(m: LiveMatch, me: 0 | 1, get: Lookup, tips = true): Why 
   }
   pts.sort((a, b) => b.w - a.w);
   return {
-    goals: [m.goals[me], m.goals[them]], xg: [Math.round(xg[me] * 10) / 10, Math.round(xg[them] * 10) / 10], verdict,
+    goals: [m.goals[me], m.goals[them]], xg: [xg1(xg[me]), xg1(xg[them])], verdict,
     points: pts.slice(0, 4),
     // At full time the advice is for the next meeting: the same line-ups from kick-off.
     tips: !tips ? [] : m.minute < 90 ? suggest(m, me, get, 2) : suggest({ ...m, minute: 0, goals: [0, 0], fit: Object.fromEntries(Object.keys(m.fit).map((id) => [id, 96])) }, me, get, 2),

@@ -6,6 +6,7 @@ export const CL_FR: CLStrings = {
   tag: 'Réunion du conseil',
   derby: 'Derby',
   title: (season: string) => `Le plan du conseil pour ${season}`,
+  adviceTop: (target: string) => `Notre objectif : ${target}. C’est le plus haut qu’une direction puisse demander ; nous vous jugerons là-dessus.`,
   advice: (target: string) => `Notre objectif : ${target}. Visez plus haut et le propriétaire vous soutiendra financièrement, mais nous vous jugerons plus durement.`,
   choices: {
     expected: () => 'Votre objectif est le bon',
@@ -16,6 +17,7 @@ export const CL_FR: CLStrings = {
     kitty: (v: string) => `${v} du propriétaire`,
     strict: () => 'Conseil plus exigeant',
     target: (t: string) => t,
+    top: () => 'C’est déjà l’objectif le plus haut : rien de plus ambitieux à convenir',
   },
   board: {
     none: 'Le conseil se réunit avant les premières journées.',

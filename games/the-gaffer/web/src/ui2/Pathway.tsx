@@ -2,12 +2,16 @@
 // the rush-back call with its stated relapse risk, and the loaded legs before the next match. Academy & pathway: Intake
 // Day (preview, then the day itself), the academy as a real squad (promote, loan out, release), the loanees' minutes,
 // and the graduates in the first team. Every button is a command (sim/commands.ts → sim/youth.ts).
+import { MATCH_SHARP } from '../sim/tactics';
+import { SH } from '../lang-sharp';
 import { useMemo, useState } from 'react';
 import type { Player } from '../model/types';
 import { squadOf } from '../sim/world';
 import { staffOf } from '../sim/delegation';
 import { treatmentCost } from '../sim/training';
 import { windowOf } from '../sim/windows';
+import { promotionTerms } from '../sim/youth';
+import { PROSPECT_APPS, PROSPECT_WINDOW } from '../sim/room';
 import {
   academyLoanSpots, academyOf, canRush, capOf, gradsOf, intakeDay, loaneesOf, matchRisk, potBand, previewDay, readyBar, returnWindow, riskBand, riskMult,
   rushGain, rushRisk, standout, startRating, tierOf,
@@ -31,6 +35,7 @@ export function MedicalScreen() {
   const squad = squadOf(w, c.clubId);
   const hurt = squad.filter((p) => p.injured > 0).sort((a, b) => b.rating - a.rating);
   const edge = squad.filter((p) => p.injured === 0 && riskBand(p) > 0).sort((a, b) => matchRisk(b) - matchRisk(a));
+  const short = squad.filter((p) => p.injured === 0 && p.fitness < MATCH_SHARP).sort((a, b) => a.fitness - b.fitness);
   const doc = staffOf(c, 'doctor');
   const rested = new Set(c.rested ?? []);
   const risk = rushRisk(c);
@@ -94,6 +99,27 @@ export function MedicalScreen() {
             {!edge.length && <p className="muted small yempty"><I n="check" size="sm" />{M.noEdge}</p>}
           </div>
         </Panel>
+
+        {/* Rework §G: medically available is not the same as match-ready (sim/tactics.ts MATCH_SHARP; fitness +12 a matchday). */}
+        <Panel i={2} label={SH[g.ui].title} className="sharp">
+          <PanelHead title={SH[g.ui].title} right={<span className="eyebrow">{SH[g.ui].sub}</span>} />
+          <div className="rows">
+            {short.map((p) => {
+              const off = rested.has(p.id);
+              return (
+                <div key={p.id} className="row">
+                  <Portrait p={p} club={g.club} size={36} />
+                  <button className="grow linklike" onClick={() => g.player(p.id)}>
+                    <span className="name">{nm(p, lang)}</span>
+                    <span className="sub">{SH[g.ui].line(Math.round(p.fitness), Math.max(1, Math.ceil((MATCH_SHARP - p.fitness) / 12)))}</span>
+                  </button>
+                  <button className={`btn btn--sm${off ? '' : ' btn--ghost'}`} aria-pressed={off} onClick={() => void g.run({ type: 'rest.set', playerId: p.id, rest: !off }, { toast: false })}>{off ? M.unrest : M.rest}</button>
+                </div>
+              );
+            })}
+            {!short.length && <p className="muted small yempty"><I n="check" size="sm" />{SH[g.ui].none}</p>}
+          </div>
+        </Panel>
       </div>
     </div>
   );
@@ -113,6 +139,7 @@ export function AcademyScreen({ focus }: { focus?: string }) {
   const bar = readyBar(w, c);
   const [loanFor, setLoanFor] = useState<Player | null>(null);
   const [letGo, setLetGo] = useState<Player | null>(null);
+  const [promote, setPromote] = useState<Player | null>(null);
   const it = c.intake && c.intake.season === c.season && c.intake.club === c.clubId ? c.intake : null;
   const day = intakeDay(c);
   const fresh = it?.arrived && c.round - it.day <= 6;
@@ -201,7 +228,7 @@ export function AcademyScreen({ focus }: { focus?: string }) {
                   </button>
                   <span className="pband num"><span>{k.rating}</span><small>{plo}–{phi}</small></span>
                   <span className="btns">
-                    <button className="btn btn--sm" disabled={age(k) < 16} onClick={() => void g.run({ type: 'academy.promote', id: k.id })}>{A.promote}</button>
+                    <button className="btn btn--sm" disabled={age(k) < 16} onClick={() => setPromote(k)}>{A.promote}</button>
                     <button className="btn btn--ghost btn--sm" onClick={() => setLoanFor(k)}>{A.loan}</button>
                     <button className="btn btn--ghost btn--sm" onClick={() => setLetGo(k)}>{A.release}</button>
                   </span>
@@ -261,6 +288,7 @@ export function AcademyScreen({ focus }: { focus?: string }) {
       </div>
 
       {loanFor && <LoanSheet kid={loanFor} onClose={() => setLoanFor(null)} />}
+      {promote && <PromoteSheet kid={promote} onClose={() => setPromote(null)} />}
       {letGo && (
         <Sheet label={A.release} onClose={() => setLetGo(null)}>
           <h2 className="h2">{A.release}</h2>
@@ -272,6 +300,30 @@ export function AcademyScreen({ focus }: { focus?: string }) {
         </Sheet>
       )}
     </div>
+  );
+}
+
+// F05 (rework): promotion says what it commits the club to before the yes: squad place, contract, and the prospect
+// promise the dressing room will hold him to (sim/room.ts PROSPECT_APPS in PROSPECT_WINDOW matchdays, or a loan).
+export function PromoteSheet({ kid, onClose }: { kid: Player; onClose: () => void }) {
+  const g = useGame();
+  const { w, c, lang } = g;
+  const A = Y[g.ui].ac;
+  const t = promotionTerms(w, c, kid);
+  return (
+    <Sheet label={A.pmTitle(nm(kid, lang))} onClose={onClose}>
+      <h2 className="h2">{A.pmTitle(nm(kid, lang))}</h2>
+      <ul className="pm-list">
+        <li>{A.pmSquad(t.squad, t.max)}</li>
+        <li>{A.pmDeal(money(t.wage), t.until)}</li>
+        <li><b>{A.pmPromise(PROSPECT_APPS, PROSPECT_WINDOW)}</b></li>
+      </ul>
+      <p className="small muted">{A.pmAlt}</p>
+      <div className="sheet-actions">
+        <button className="btn btn--ghost" onClick={onClose}>{g.x.notNowShort}</button>
+        <button className="btn btn--primary" disabled={t.squad > t.max} onClick={async () => { const r = await g.run({ type: 'academy.promote', id: kid.id }); if (r.ok) onClose(); }}>{A.pmYes}</button>
+      </div>
+    </Sheet>
   );
 }
 

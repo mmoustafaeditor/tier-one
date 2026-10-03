@@ -75,14 +75,16 @@ export function decisions(w: World, c: Career): Decision[] {
     const kitty = kittyFor(w, c);
     add({
       id: `vision:${c.season}`, kind: 'vision', dept: null, role: 'director', icon: 'club',
-      title: { key: 'cl.vision', n: c.season }, advice: { key: 'cl.vision', s: base }, due: days(VISION_DEADLINE - c.round),
+      title: { key: 'cl.vision', n: c.season }, advice: { key: high === base ? 'cl.visionTop' : 'cl.vision', s: base }, due: days(VISION_DEADLINE - c.round),
       choices: [
-        { id: 'expected', key: 'cl.expected', cmds: [{ type: 'vision.set', level: 'expected' }], pick: true, fx: [{ tone: 'good', icon: 'check', key: 'cl.goodwill' }] },
-        { id: 'ambitious', key: 'cl.ambitious', s: high, cmds: [{ type: 'vision.set', level: 'ambitious' }], fx: [
-          ...(high !== base ? [{ tone: 'warn' as const, icon: 'star', key: 'cl.target', s: high }] : []),
+        { id: 'expected', key: 'cl.expected', cmds: [{ type: 'vision.set', level: 'expected' }], pick: true, fx: [{ tone: 'good', icon: 'check', key: 'cl.goodwill' }, ...(high === base ? [{ tone: 'plain' as const, icon: 'star', key: 'cl.top' }] : [])] },
+        // F04 (rework): "aim higher" only exists when there is a higher target; at the top of the ladder it would be the
+        // same predicate with free money attached.
+        ...(high === base ? [] : [{ id: 'ambitious', key: 'cl.ambitious', s: high, cmds: [{ type: 'vision.set', level: 'ambitious' }], fx: [
+          { tone: 'warn' as const, icon: 'star', key: 'cl.target', s: high },
           ...(kitty > 0 ? [{ tone: 'good' as const, icon: 'pound', key: 'cl.kitty', n: kitty }] : []),
           { tone: 'bad', icon: 'alert', key: 'cl.strict' },
-        ] },
+        ] } as Choice]),
       ],
       score: 80, open: { to: 'office' },
     });

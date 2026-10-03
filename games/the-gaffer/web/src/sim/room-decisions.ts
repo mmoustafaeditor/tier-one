@@ -11,7 +11,7 @@ import { balanceOf } from './balance';
 import { biasOf, levelOf, staffOf } from './delegation';
 import { windowLeft } from './windows';
 import {
-  archetypeOf, canTalk, pledgeKey, hierarchy, homegrown, now, pledgeCheck, pledgeState, renewFactor, roomOf, talkCall, talkPreview, trustOf, type PledgeReq, type Tone,
+  archetypeOf, canTalk, pledgeKey, hierarchy, homegrown, now, pledgeCheck, pledgeState, renewFactor, roomOf, talkCall, talkPreview, trustOf, type PledgeReq, type Tone, PROSPECT_APPS,
 } from './room';
 
 const sign = (n: number) => (n > 0 ? `+${n}` : `${n}`);
@@ -155,7 +155,10 @@ function promiseDue(w: World, c: Career, p: Player, pl: Pledge): Decision | null
   if (pl.type === 'role') {
     const s = pledgeState(pl);
     // Three matchdays before it can no longer be kept: the starts he still needs are within 2 of the matchdays left.
-    if (pl.role === 'prospect' || !s.slipping || s.lost || s.margin > 2) return null;
+    // M3 (rework): the prospect's pathway promise warns too (it used to be silent until it broke): when the games he
+    // still needs come within 2 of the league matchdays left, the assistant proposes starting him in the next match —
+    // cup ties count as appearances, so a cup tie is often the cheapest place to keep your word.
+    if (!s.slipping || s.lost || s.margin > 2) return null;
     const start = startHim(w, c, p);
     const b = biasOf(staffOf(c, 'assistant'));
     const pick = !!start && start.cost <= (b === 'cautious' ? 2 : b === 'bold' ? 6 : 4);
@@ -164,7 +167,9 @@ function promiseDue(w: World, c: Career, p: Player, pl: Pledge): Decision | null
     choices.push({ id: 'letgo', key: 'dr.ch.letgo', cmds: [], pick: !pick, fx: [{ tone: 'bad', icon: 'handshake', key: 'dr.fx.trust', s: '-20' }] });
     return {
       id: `pdue:${pl.id}:${pl.n}`, kind: 'promise', dept: 'matchprep', role: 'assistant', icon: 'doc', ev: pl.ev,
-      title: { key: `dr.due.role.${pl.role}`, pn: p.name, n: pl.st, s: String(pl.el), p: p.id },
+      // Decision memory (rework §C): the title carries how far the promise has got (starts of fit matchdays, or a
+      // prospect's appearances of the ten), so the card can quote it.
+      title: { key: `dr.due.role.${pl.role}`, pn: p.name, n: pl.role === 'prospect' ? pl.apps : pl.st, s: String(pl.role === 'prospect' ? PROSPECT_APPS : pl.el), p: p.id },
       advice: { key: pick ? 'dr.adv.due.start' : start ? 'dr.adv.due.cost' : 'dr.adv.due.none', pn: p.name, n: start?.cost ?? 0, s: String(s.left) },
       due: { key: 'days', n: Math.max(1, s.left) }, choices, score: 72, open: { to: 'player', id: p.id },
     };

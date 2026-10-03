@@ -4,13 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { UI, dataLang, type UiLang } from './i18n';
 import { X } from './lang-v2-all';
 import { loadPrefs, savePrefs, type Prefs } from './sim/prefs';
+import { applyA11y } from './ui2/A11y';
 import type { Career } from './model/types';
 import { dispatch, type Command, type Result } from './sim/commands';
 import { advance, endOfSeason, finishSeason, simUntil } from './sim/clock';
 import { decisions, type Choice, type Decision } from './sim/decisions';
 import { nextUserMatch, seasonOver, type SeasonSummary } from './sim/season';
 import { staffPrep } from './sim/staff';
-import { store, tidyCareer, parseSave, metaOf } from './sim/save';
+import { store, tidyCareer, parseSave, metaOf, loadSlot } from './sim/save';
 import { listSlots, migrate, clearSlot, setActiveSlot, freeSlot, FREE_SLOTS, writeLive, readLive, clearLive } from './sim/slots';
 import type { World } from './sim/world';
 import type { LiveMatch } from './sim/match';
@@ -92,6 +93,7 @@ export function App() {
   useEffect(() => { window.scrollTo(0, 0); }, [route.s, top?.s]);
   // V2.10: the club look bought with credits or the Supporter pack (meta/looks.ts), presentation only.
   useEffect(() => { document.documentElement.dataset.look = prefs.look ? String(prefs.look) : ''; }, [prefs.look]);
+  useEffect(() => { applyA11y(prefs); }, [prefs.text, prefs.calm, prefs.contrast]); // eslint-disable-line react-hooks/exhaustive-deps
   // Club colours drive crests, tokens and the identity stripe.
   useEffect(() => {
     const club = world && career ? world.clubs.find((c) => c.id === career.clubId) : null;
@@ -106,10 +108,10 @@ export function App() {
     for (let n = 1; n <= FREE_SLOTS; n++) {
       const r = recs.find((x) => x.slot === n);
       if (!r) { out.push({ slot: n, meta: null }); continue; }
-      if (r.meta) { out.push({ slot: n, meta: r.meta }); continue; }
+      if (r.meta) { out.push({ slot: n, meta: r.meta, savedAt: r.savedAt }); continue; }
       // A save from before v2 (migrated into its slot without a description): open it once to describe it.
       const p = await parseSave(r.text);
-      if (p.ok && p.save.career) out.push({ slot: n, meta: metaOf(p.save.world as World, p.save.career, n) ?? null, legacy: true });
+      if (p.ok && p.save.career) out.push({ slot: n, meta: metaOf(p.save.world as World, p.save.career, n) ?? null, legacy: true, savedAt: r.savedAt });
       else { out.push({ slot: n, meta: null, bad: true }); setBadSave(true); }
     }
     setSlots(out);
@@ -161,13 +163,12 @@ export function App() {
 
   // ---------- starting and loading ----------
   const openSlot = async (n: number) => {
-    const recs = await listSlots();
-    const rec = recs.find((r) => r.slot === n);
-    if (!rec) return;
     setBusy(true);
-    const p = await parseSave(rec.text);
+    const p = await loadSlot(n); // F17: falls back to the slot's previous save when the latest one doesn't load
     setBusy(false);
+    if (!p.ok && p.reason === 'none') return;
     if (!p.ok || !p.save.career) { setBadSave(true); setToast(x.set.importBad); return; }
+    if (p.recovered) setToast(x.set.recovered);
     setSlot(n); setActiveSlot(n);
     const w = p.save.world as World;
     let c = p.save.career;
@@ -336,7 +337,7 @@ export function App() {
     return (
       <>
         {(!top || top.s === 'title') && (
-          <Title t={t} x={x} slots={slots} bad={badSave} busy={busy} {...langBtn}
+          <Title t={t} x={x} slots={slots} bad={badSave} busy={busy} {...langBtn} prefs={prefs} onPrefs={setPrefs}
             onOpen={(n) => void openSlot(n)} onQuick={() => setTop({ s: 'quick' })}
             onNew={async (replace) => {
               const n = replace ?? (await freeSlot());

@@ -5,7 +5,8 @@ import { I } from './kit';
 import { Chips, Panel, PanelHead } from './shell';
 import { useGame } from './game';
 import { msgText, newsText } from './text';
-import { shortDate, dateOf } from '../sim/calendar';
+import { shortDate } from '../sim/calendar';
+import { stampDate } from '../sim/cups';
 
 export function NewsScreen() {
   const g = useGame();
@@ -13,7 +14,7 @@ export function NewsScreen() {
   const N = x.news;
   const [tab, setTab] = useState<'inbox' | 'news'>('inbox');
   const unread = c.inbox.filter((m) => !m.read);
-  const when = (season: number, round: number) => shortDate(dateOf(season, Math.max(0, round)), ui);
+  const when = (season: number, round: number) => shortDate(stampDate(c, season, round), ui); // F02: never after today
   return (
     <div className="sc-news">
       <div className="h-head on-ground">

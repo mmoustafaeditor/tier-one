@@ -24,7 +24,10 @@ export function raiseObjective(o: Objective): Objective {
   return o;
 }
 
-export const visionOf = (c: Career): Vision | null => (c.vision && c.vision.season === c.season ? c.vision : null);
+// F09 (rework): the meeting was with one club's board; after a move it no longer applies (old saves have no club: theirs).
+export const visionOf = (c: Career): Vision | null => (c.vision && c.vision.season === c.season && (!c.vision.club || c.vision.club === c.clubId) ? c.vision : null);
+// F04 (rework): a higher aim exists only below the top of the club's ladder.
+export const canAimHigher = (w: World, c: Career) => { const club = w.clubs.find((x) => x.id === c.clubId)!; const base = objectiveOf(w, club); return raiseObjective(base) !== base; };
 export const ambitious = (c: Career) => visionOf(c)?.level === 'ambitious';
 export const strictness = (c: Career) => (ambitious(c) ? AMBITION_STRICT : 0);
 
@@ -48,11 +51,12 @@ export const needsMeeting = (c: Career) => !visionOf(c) && c.round < VISION_DEAD
 
 export function setVision(w: World, c: Career, level: VisionLevel): { world: World; career: Career } | null {
   if (visionOf(c) || c.round >= VISION_DEADLINE) return null;
+  if (level === 'ambitious' && !canAimHigher(w, c)) return null;
   if (level === 'expected') {
-    return { world: w, career: { ...c, vision: { season: c.season, level }, board: { ...c.board, confidence: clamp(c.board.confidence + EXPECTED_GOODWILL, 0, 100) } } };
+    return { world: w, career: { ...c, vision: { season: c.season, level, club: c.clubId }, board: { ...c.board, confidence: clamp(c.board.confidence + EXPECTED_GOODWILL, 0, 100) } } };
   }
   const kitty = kittyFor(w, c);
   const clubs = w.clubs.map((x) => (x.id === c.clubId ? { ...x, budget: x.budget + kitty } : x));
   const ledger = { ...c.ops.ledger, owner: (c.ops.ledger.owner ?? 0) + kitty };
-  return { world: { ...w, clubs }, career: { ...c, vision: { season: c.season, level, kitty }, ops: { ...c.ops, ledger } } };
+  return { world: { ...w, clubs }, career: { ...c, vision: { season: c.season, level, kitty, club: c.clubId }, ops: { ...c.ops, ledger } } };
 }

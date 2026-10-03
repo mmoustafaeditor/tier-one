@@ -257,8 +257,9 @@ function TermsComposer({ p, neg }: { p: Player; neg?: Negotiation }) {
   const t: Terms = { wage, years, role, signOn: signOn ? d.signOn : 0, release: rel < 0 ? null : roundFee(p.marketValue * REL[rel]), bonus: bonus ? roundFee(d.wage * 0.05) : 0 };
   const chance = signChance(t, d, ag, known, age);
   const green = greenFrom(t, d, ag, known, age);
-  const cost = neg ? dealCost(w, c, neg, t) : { total: agentFee(ag, 0, t.wage) + t.signOn, later: 0, agent: agentFee(ag, 0, t.wage), now: 0, upfront: 0, signOn: t.signOn, wage: t.wage };
   const room = spendingRoom(w, c, neg?.id), wr = wageRoom(w, c);
+  const free0 = agentFee(ag, 0, t.wage) + t.signOn;
+  const cost = neg ? dealCost(w, c, neg, t) : { total: free0, later: 0, agent: agentFee(ag, 0, t.wage), now: 0, upfront: 0, signOn: t.signOn, wage: t.wage, roomAfter: room - free0 };
   const step = Math.max(100, roundFee(d.wage * 0.01));
   const lo = roundFee(d.wage * 0.5), hi = roundFee(d.wage * 1.6);
   const usRounds = neg ? neg.rounds.filter((r) => r.by === 'us').length : 0;
@@ -310,7 +311,7 @@ function TermsComposer({ p, neg }: { p: Player; neg?: Negotiation }) {
         <div className="well impact">
           <div><span>{R2.bill}</span><b className="ltr">+{money(wage * 12)}{R2.perYear}</b></div>
           <div><span>{R2.wageRoomAfter}</span><b className={`ltr${wr - wage < 0 ? ' bad' : ''}`}>{money(wr - wage)}</b></div>
-          <div><span>{R2.roomAfter}</span><b className={`ltr${room - cost.total < 0 ? ' bad' : ''}`}>{money(room - cost.total)}</b></div>
+          <div><span>{R2.roomAfter}</span><b className={`ltr${cost.roomAfter < 0 ? ' bad' : ''}`}>{money(cost.roomAfter)}</b></div>
           {cost.later > 0 && <div><span>{R2.later}</span><b className="ltr">{money(cost.later)}</b></div>}
           <div><span>{R2.agentFee}</span><b className="ltr">{money(cost.agent)}</b></div>
         </div>

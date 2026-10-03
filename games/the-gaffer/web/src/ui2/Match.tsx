@@ -1,4 +1,5 @@
 // The Match tab: the tactics board for the next match (chalk on slate), and the fixtures, table and cups.
+import { delegated } from '../sim/delegation';
 import { useEffect, useMemo, useState } from 'react';
 import type { Player } from '../model/types';
 import { playerOf, squadOf } from '../sim/world';
@@ -17,8 +18,9 @@ import { groupTable } from '../sim/cups';
 import { dateOf, shortDate } from '../sim/calendar';
 import { Crest, I, Meter, Portrait } from './kit';
 import { Panel, PanelHead, Seg, Steps } from './shell';
+import { Trends } from './Trends';
 import { useGame, clubOf, cn, sn, matchLabel } from './game';
-import { leagueRows, upcoming } from './util';
+import { leagueRows, upcoming, pctOf } from './util';
 
 export function MatchScreen({ tab, onTab }: { tab: number; onTab: (n: number) => void }) {
   const g = useGame();
@@ -29,7 +31,7 @@ export function MatchScreen({ tab, onTab }: { tab: number; onTab: (n: number) =>
         <Seg label={g.x.nav.match} value={tab} onChange={onTab} options={T.tabs.map((l, i) => ({ v: i, label: l }))} onGround />
       </div>
       {tab === 0 && <TacticsBoard />}
-      {tab === 1 && <Fixtures />}
+      {tab === 1 && <><Trends /><Fixtures /></>}
       {tab === 2 && <LeagueTable />}
       {tab === 3 && <Cups />}
     </div>
@@ -38,6 +40,7 @@ export function MatchScreen({ tab, onTab }: { tab: number; onTab: (n: number) =>
 
 // ---------- the board ----------
 type Ins = 'pressing' | 'line' | 'width' | 'tempo' | 'passing';
+const BASIC = new Set(['press', 'line']); // the essentials of the team plan (with style, shape and approach)
 const INS: [Ins, string][] = [['pressing', 'press'], ['line', 'line'], ['width', 'width'], ['tempo', 'tempo'], ['passing', 'passing']];
 // Tactics v3 instructions (copy in lang-tac*.ts): build-up, both transitions, the trap and corners.
 type Ins3 = 'build' | 'cpress' | 'trap' | 'routine' | 'marking' | 'setMark';
@@ -55,6 +58,8 @@ function TacticsBoard() {
   const [ghosts, setGhosts] = useState(true);
   const [focus, setFocus] = useState<string | null>(null);
   const [ph, setPh] = useState<Phase>('ip');
+  const [adv, setAdvState] = useState(() => { try { return localStorage.getItem('gaffer.tac.adv') === '1'; } catch { return false; } });
+  const setAdv = (v: boolean) => { setAdvState(v); try { localStorage.setItem('gaffer.tac.adv', v ? '1' : '0'); } catch { /* private mode */ } };
   useEffect(() => { setDraft(c.tactics ?? DEFAULT_TACTICS); }, [c.tactics]);
   const get = (id: string) => playerOf(w, id)!;
   const f = fullTactics(draft);
@@ -67,7 +72,7 @@ function TacticsBoard() {
   const m = useMemo(() => nextUserMatch(w, { ...c, tactics: { ...draft, xi } }), [w, c, draft, xi.join()]);
   const m0 = useMemo(() => nextUserMatch(w, c), [w, c]);
   const odds = (mm: typeof m) => { if (!mm) return 0; const p = predict(mm, get); return mm.sides[0].clubId === c.clubId ? p[0] : p[2]; };
-  const win = Math.round(odds(m) * 100), win0 = Math.round(odds(m0) * 100);
+  const win = pctOf(odds(m)), win0 = pctOf(odds(m0)); // F08: never 0 or 100
   const me = m ? (m.sides[0].clubId === c.clubId ? 0 : 1) : 0;
   const opp = m ? m.sides[1 - me] : null;
   const oppClub = opp ? clubOf(w, opp.clubId) : undefined;
@@ -77,6 +82,9 @@ function TacticsBoard() {
   const acts = model ? model.actors[me] : [];
   const actAt = (k: number) => acts.find((a) => a.slot === k);
   const fs = fullTactics(saved);
+  // How many fine-tuning settings differ from a plain default plan (shown on the "More instructions" button).
+  const d0 = fullTactics({ ...DEFAULT_TACTICS, formation: f.formation, philosophy: f.philosophy } as UserTactics);
+  const advSet = (['width', 'tempo', 'passing', 'build', 'counter', 'cpress', 'trap', 'routine', 'marking', 'setMark'] as const).filter((k) => JSON.stringify((f as Record<string, unknown>)[k]) !== JSON.stringify((d0 as Record<string, unknown>)[k])).length + (f.oop !== f.formation ? 1 : 0) + (f.mark ? 1 : 0);
   const changes = CHANGE_KEYS.filter((k) => JSON.stringify((f as Record<string, unknown>)[k] ?? null) !== JSON.stringify((fs as Record<string, unknown>)[k] ?? null)).length
     + (JSON.stringify(draft.xi) !== JSON.stringify(saved.xi) ? 1 : 0);
   const setXI = (ids: string[]) => setDraft({ ...draft, xi: ids });
@@ -87,13 +95,14 @@ function TacticsBoard() {
     const ids = [...xi]; [ids[sel], ids[i]] = [ids[i], ids[sel]]; setXI(ids); setSel(null);
     g.toast(x.tac.swapped(sn(get(ids[i]), lang), sn(get(ids[sel]), lang)));
   };
-  const setShape = (fm: FormationId) => setDraft({ ...draft, formation: fm, xi: reslot(xi, fm, get), ...(draft.roles || draft.oopRoles ? carryRoles(f, fm) : {}) });
+  const setShape = (fm: FormationId) => setDraft({ ...draft, formation: fm, xi: draft.xi ? reslot(xi, fm, get) : null, ...(draft.roles || draft.oopRoles ? carryRoles(f, fm) : {}) });
   const setOop = (fm: FormationId | undefined) => setDraft({ ...draft, oop: fm, ...(draft.oopRoles ? { oopRoles: carryRoles(f, f.formation, fm ?? f.formation).oopRoles } : {}) });
   const setStyle = (ph2: Philosophy) => setDraft(applyPreset(draft, ph2));
   const setRole = (phase: Phase, k: number, r: string) => { const arr = rolesArrays(f); const next = phase === 'ip' ? arr.roles : arr.oopRoles; next[k] = r; setDraft({ ...draft, ...arr }); };
   const xiPlayers = xi.map((id) => (id ? playerOf(w, id) ?? null : null));
   const suggestRoles = () => { setDraft({ ...draft, ...autoRoles(xiPlayers, f) }); g.toast(X.suggested); };
-  const lock = async () => { const r = await g.run({ type: 'tactics.set', tactics: { ...draft, xi } }, { toast: x.tac.locked }); if (r.ok) setSel(null); };
+  // F01: only an XI the manager actually picked is saved as his; otherwise the assistant keeps picking at kick-off.
+  const lock = async () => { const r = await g.run({ type: 'tactics.set', tactics: { ...draft, xi: draft.xi ? xi : null } }, { toast: x.tac.locked }); if (r.ok) setSel(null); };
   const fam = Math.round(c.mastery?.[f.philosophy] ?? (f.philosophy === 'balanced' ? 100 : 30));
   const focusP = focus ? playerOf(w, focus) : xi[0] ? get(xi[0]) : null;
   const focusSlot = focusP ? xi.indexOf(focusP.id) : -1;
@@ -199,6 +208,19 @@ function TacticsBoard() {
               </button>
             ))}
           </div>
+          {/* F06: why a man plays out of position: his value there against the best natural player not in the XI. */}
+          {(() => {
+            const notes = xi.map((id, i) => ({ p: id ? playerOf(w, id) : undefined, pos: slots[i]?.pos })).filter((o) => o.p && o.pos && o.p.position !== o.pos).slice(0, 3).map(({ p, pos }) => {
+              const alt = squadOf(w, c.clubId).filter((q) => q.position === pos && !inXI.has(q.id) && available(q)).sort((a, b) => slotValue(b, pos!) - slotValue(a, pos!))[0];
+              return <li key={p!.id}>{alt ? T.outPos(sn(p!, lang), x.common.posLong[pos!], Math.round(slotValue(p!, pos!)), sn(alt, lang), Math.round(slotValue(alt, pos!))) : T.outPosNone(sn(p!, lang), x.common.posLong[pos!], Math.round(slotValue(p!, pos!)))}</li>;
+            });
+            return notes.length ? <ul className="xi-notes small on-ground">{notes}</ul> : null;
+          })()}
+          {/* F01: whose XI this is, said where the XI is picked. */}
+          <div className="xi-owner small on-ground">
+            <span>{saved.xi ? T.xiMine : delegated(c, 'lineup') ? T.xiStaff : T.xiAuto}</span>
+            {saved.xi && <button className="btn btn--ghost on-ground btn--sm" onClick={() => void g.run({ type: 'tactics.set', tactics: { ...saved, xi: null } })}>{T.xiHand}</button>}
+          </div>
           <div className="save">
             <button className="btn btn--ghost on-ground btn--sm" disabled={!changes} onClick={() => setDraft(saved)}>{T.undo}</button>
             <button className="btn btn--ghost on-ground btn--sm" onClick={() => setDraft({ ...draft, xi: null })}>{T.reset}</button>
@@ -219,17 +241,10 @@ function TacticsBoard() {
               <div className="chips wrap">{FORMATION_IDS.map((fm) => <button key={fm} className="chip ltr" aria-pressed={draft.formation === fm} onClick={() => setShape(fm)}>{fmt(fm)}</button>)}</div>
             </div>
             <div className="ins">
-              <div className="between"><b>{X.shapeOop}</b>{f.oop !== fs.oop && <span className="tag tag--club">{T.changed}</span>}</div>
-              <div className="chips wrap">
-                <button className="chip" aria-pressed={f.oop === f.formation} onClick={() => setOop(undefined)}>{X.same}</button>
-                {FORMATION_IDS.filter((fm) => fm !== f.formation).map((fm) => <button key={fm} className="chip ltr" aria-pressed={f.oop === fm} onClick={() => { setOop(fm); setPh('oop'); }}>{fmt(fm)}</button>)}
-              </div>
-            </div>
-            <div className="ins">
               <div className="between"><b>{T.ins.mentality[0]}</b>{f.mentality !== fs.mentality && <span className="tag tag--club">{T.changed}</span>}</div>
               <Steps label={T.ins.mentality[0]} value={f.mentality + 2} options={T.ins.mentality[1]} was={fs.mentality + 2} onChange={(v) => setDraft({ ...draft, mentality: v - 2 })} />
             </div>
-            {INS.map(([k, key]) => {
+            {INS.filter(([, key]) => adv || BASIC.has(key)).map(([k, key]) => {
               const v = f[k] as number;
               const was = (fs as unknown as Record<string, number>)[k];
               const [gain, risk] = T.trade[key][v];
@@ -241,6 +256,18 @@ function TacticsBoard() {
                 </div>
               );
             })}
+            {/* Rework (handoff §J): progressive disclosure. The essentials stay; the fine-tuning opens on request and says how
+                many of its settings differ from the defaults, so nothing set is ever hidden silently. */}
+            <button className="btn btn--ghost btn--sm adv-toggle" aria-expanded={adv} onClick={() => setAdv(!adv)}>{adv ? X.advLess : X.advMore(advSet)}</button>
+            {!adv && <p className="small muted">{X.advWhy}</p>}
+            {adv && <>
+            <div className="ins">
+              <div className="between"><b>{X.shapeOop}</b>{f.oop !== fs.oop && <span className="tag tag--club">{T.changed}</span>}</div>
+              <div className="chips wrap">
+                <button className="chip" aria-pressed={f.oop === f.formation} onClick={() => setOop(undefined)}>{X.same}</button>
+                {FORMATION_IDS.filter((fm) => fm !== f.formation).map((fm) => <button key={fm} className="chip ltr" aria-pressed={f.oop === fm} onClick={() => { setOop(fm); setPh('oop'); }}>{fmt(fm)}</button>)}
+              </div>
+            </div>
             {insRow('build', f.build, fs.build)}
             {insRow('counter', f.counter ? 1 : 0, fs.counter ? 1 : 0)}
             {insRow('cpress', f.cpress, fs.cpress)}
@@ -258,6 +285,7 @@ function TacticsBoard() {
                 <p className="small muted">{X.markHint}</p>
               </div>
             )}
+            </>}
           </Panel>
         </section>
 

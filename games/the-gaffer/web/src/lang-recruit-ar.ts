@@ -5,6 +5,7 @@ const N = (n: number, one: string, two: string, few: string, many = one) => (n =
 
 export const R_AR: RStrings = {
   tabs: ['الأهداف', 'دوّر', 'المفاوضات', 'الصفقات', 'الإعارات', 'الاحتياجات', 'الكشافين'],
+  stages: ['الاحتياجات والكشافين', 'القايمة والبحث', 'المفاوضات', 'الصفقات والإعارات'],
   hero: { need: (pos: string) => `دوّر على ${pos}`, none: 'كل مركز عليه بديل.' },
   kpi: { room: 'المساحة للصرف', wageRoom: 'مساحة المرتبات / شهر', committed: 'متزنق فيه' },
   talksBtn: (n: number) => `مفاوضات · ${n}`,

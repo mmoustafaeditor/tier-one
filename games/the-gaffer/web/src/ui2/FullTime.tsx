@@ -7,7 +7,10 @@ import type { Aftermath } from '../sim/aftermath';
 import { playerOf } from '../sim/world';
 import { Crest, I, LineChart, Portrait } from './kit';
 import { Panel, PanelHead } from './shell';
-import { useGame, clubOf, cn } from './game';
+import type { Route } from './game';
+import { pointText } from './why';
+import { TX } from '../lang-tac-all';
+import { useGame, clubOf, cn, sn } from './game';
 import { verdictText } from './why';
 import { D } from '../lang-dressing-all';
 import { AI_COH, cohLevel } from '../sim/cohesion';
@@ -15,7 +18,11 @@ import { levelText } from './roomText';
 import { Analysis } from './Analysis';
 import { AN } from '../lang-ana';
 
-export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
+// M4 (rework): which screen acts on each kind of finding (engine/story.ts Point.k).
+export const ACT_OF: Record<string, string | undefined> = { midfield: 'tactics', pressed: 'tactics', pressing: 'tactics', duel: 'tactics', role: 'tactics', setpiece: 'tactics', theyChanged: 'tactics', change: 'tactics', tired: 'train', finish: 'needs', cohesion: 'room' };
+export const ACT_ROUTE: Record<string, Route> = { tactics: { s: 'match', tab: 0 }, train: { s: 'train' }, needs: { s: 'transfers', tab: 5 }, room: { s: 'room' } };
+// F11 (rework): `quick` — a quick match's read-only full time: no "what it changed" (nothing counts), Rematch / Change teams.
+export function FullTime({ a, onDone, quick }: { a: Aftermath; onDone: () => void; quick?: { rematch: () => void; change: () => void } }) {
   const g = useGame();
   const { w, c, x, lang } = g;
   const [all, setAll] = useState(false);
@@ -32,6 +39,8 @@ export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
   const ratings = all ? a.ratings : a.ratings.slice(0, 4);
   const why = a.why ? verdictText(a.why, g.t) : '';
   const doc = c.ops.staff.assistant;
+  const pname = (id: string) => { const p = playerOf(w, id); return p ? sn(p, lang) : ''; };
+  const nextActs = [...new Set((a.why?.points ?? []).filter((p) => !p.good).map((p) => ACT_OF[p.k]).filter(Boolean) as string[])].slice(0, 3);
   const ground = a.home ? x.today.ourGround : x.today.theirGround;
   return (
     <div className="sc-ft">
@@ -55,7 +64,21 @@ export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
             markers={a.scorers.map((s) => ({ i: s.min, label: s.pn[lang].split(' ').slice(-1)[0] }))} />
         </Panel>
 
-        <Panel i={2} label={F.changed}>
+        {/* Rework (handoff §O): "why it happened" — the analysts' findings from the engine's own record of this match. */}
+        {(a.why?.points.length ?? 0) > 0 && (
+          <Panel i={2} className="g-why" label={x.ht.eyebrow}>
+            <PanelHead title={x.ht.eyebrow} />
+            <div className="ft-why">
+              {a.why!.points.slice(0, 3).map((p, i) => (
+                <div key={i} className={`cause ${p.good ? 'good' : 'bad'}`}>
+                  <span className="n">{i + 1}</span>
+                  <div><b>{p.k === 'role' ? TX[g.ui].why.head[p.good ? 0 : 1] : (x.ht.cause[p.k] ?? ['', ''])[p.good ? 0 : 1] || pointText(p, g.t, pname)}</b><p className="small">{pointText(p, g.t, pname)}</p></div>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        )}
+        {quick ? <Panel i={2} label={F.quickNote}><p className="small muted">{F.quickNote}</p></Panel> : <Panel i={2} label={F.changed}>
           <PanelHead title={F.changed} />
           <div className="changes">
             {a.pos && a.pos[1] > 0 && (
@@ -68,13 +91,17 @@ export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
           </div>
           {a.out.length > 0 && <div className="outs">{a.out.map((o, i) => <span key={i} className="tag tag--bad"><I n={o.ban ? 'x' : 'medic'} size="sm" />{o.ban ? F.bannedFor(o.pn[lang], o.n) : F.injuredFor(o.pn[lang], o.n)}</span>)}</div>}
           {a.records.length > 0 && <p className="small"><span className="tag tag--good"><I n="star" size="sm" />{F.record}</span> {a.records.map((r) => x.career.recs[r]).join(' · ')}</p>}
+          {/* M4 (rework): every finding leads somewhere — the screen where it can be acted on. */}
+          {!quick && nextActs.length > 0 && (
+            <div className="ft-next"><span className="eyebrow">{F.next}</span><div className="row wrap">{nextActs.map((k) => <button key={k} className="btn btn--ghost btn--sm" onClick={() => g.go(ACT_ROUTE[k])}>{F.act[k]}</button>)}</div></div>
+          )}
           {a.why?.tips[0] && doc && (
             <div className="advice ft-note">
               <span className="staff" aria-hidden="true">AS</span>
               <div><div className="who">{doc.name[lang]}, <span>{x.office.roles.assistant.toLowerCase()}</span></div><q>{why}</q></div>
             </div>
           )}
-        </Panel>
+        </Panel>}
 
         {a.ref && (
           <Panel i={4} label={RF[g.ui].report.title}>
@@ -103,7 +130,11 @@ export function FullTime({ a, onDone }: { a: Aftermath; onDone: () => void }) {
       <div className="mbar" role="toolbar">
         {a.ana && <button className="btn btn--ghost" aria-pressed={ana} onClick={() => { setAna(!ana); if (!ana) requestAnimationFrame(() => document.querySelector('.g-ana')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }}>{AN[g.ui].open}</button>}
         <span className="grow" />
-        <button className="btn btn--accent" onClick={onDone}>{F.done}<I n="arrowr" size="sm" /></button>
+        {quick ? <>
+          <button className="btn btn--ghost" onClick={onDone}>{F.back}</button>
+          <button className="btn btn--ghost" onClick={quick.change}>{F.changeTeams}</button>
+          <button className="btn btn--accent" onClick={quick.rematch}>{F.rematch}<I n="arrowr" size="sm" /></button>
+        </> : <button className="btn btn--accent" onClick={onDone}>{F.done}<I n="arrowr" size="sm" /></button>}
       </div>
     </div>
   );

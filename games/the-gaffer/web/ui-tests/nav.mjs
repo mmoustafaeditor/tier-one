@@ -71,7 +71,8 @@ const PHONE = [
   ['tactics', ['nav:Match'], /Without the ball/, 1],
   ['table', ['nav:Match', 'Table'], /Pts/, 2],
   ['player', ['nav:Squad', 'EMAM ASHOUR'], /Emam Ashour/, 2, 600], // a row in the player list: some scrolling is normal
-  ['search', ['nav:Transfers', 'Search'], /PLAYERS/i, 2],
+  // Rework: Transfers is a four-stage funnel now; Search sits in stage 2 (Shortlist & search), one tap more than the old chip row.
+  ['search', ['nav:Transfers', '2 Shortlist & search', 'Search'], /PLAYERS/i, 3],
   ['money', ['nav:Club'], /runway/i, 1],
   ['facilities', ['nav:Club', 'Facilities'], /Build/, 2],
   ['room', ['nav:Squad', 'Dressing room'], /Cohesion/, 2],

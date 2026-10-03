@@ -1,0 +1,19 @@
+# The Gaffer rework — state map
+
+Where each authoritative piece of state lives, who writes it and who reads it. The handoff's "domain contracts" are
+mapped onto what exists; gaps are marked **GAP** with the milestone that closes them.
+
+| Contract (handoff) | Lives in | Writers | Readers | Notes / gaps |
+|---|---|---|---|---|
+| Simulation clock | `career.season`, `career.round` (matchday index), `career.cupDay` (our cup step done), `career.coach.days` (league steps, the unit of promises), `rc` ticks `season*100+round` | `advance` (`sim/clock.ts`) → `playDay` (`sim/season.ts`), `endOfSeason` | everything | One step = our cup tie (Wed) or a matchday (Sat). Display date: `todayOf` / `stampDate` (`sim/cups.ts`, F02). All counters are matchdays; labels say so (M1). |
+| Decision command | `Command` union + `dispatch(w, c, cmd, by)` (`sim/commands.ts`) | UI (`g.run`), staff (`act` in `sim/staff.ts`), decision choices (`cmds`) | event log `career.events` | Validated, emits events with `by`. **GAP (M2):** no expected-state-version guard (stale cards rely on ids). |
+| Financial quote / ledger | club `budget` (cash), `rc.commits` (instalments), reserved = fees agreed at `terms` stage (`sim/recruit/money.ts`), `ops.ledger` (category totals) | `complete`, `payCommitments` (`sim/recruit/*`), economy week | Today cards, Talks, Transfers header, Office Money | One quote `dealCost(...).roomAfter` (F03). Reservations release when a talk leaves `terms`. |
+| Match-start snapshot | `nextUserMatch(w, c)` → `LiveMatch` (sides: onPitch, bench, tactics, mods, seed key) after `staffPrep` | `startMatch` (`sim/match.ts`) | live screen, quick result (`playDay`) | Same snapshot + seed, no interventions → same result watched/instant/quick (test `rework/trust`). The manager's XI (`tactics.xi`) is the selection authority (F01). |
+| Match event / participation stream | `LiveMatch.events`, `flow`, `ps` (passes), `played`, ratings → `MatchRecord` (`sim/record.ts`) | engine (`sim/engine/play.ts`), `simulate` | aftermath, stats, ratings, analysis, commentary, pitch | Pitch is presentation only (fingerprint). Promises read `played`/starts in `roomDay`. |
+| Promise registry | `career.room.pledges` (`sim/room.ts`: role/contract/sign promises), loan minutes clauses `rc.loans`, academy prospect pledge | `roomDay`, talk/contract commands, youth | room decisions (`promiseDue`), Dressing room, Player | **GAP (M2/M3):** academy promotion creates a pledge without disclosure (F05). |
+| Club / career boundary | manager: `career.coach`, `career.matches` (history), `career.history`; club: `career.ops` (stashed per club in `world.clubOps`), `career.vision` (now with `club`), `rc` commits/negs | `moveTo` (`sim/coach.ts`) | Today, press, room, Office | M1: last-match readers use `lastMatchHere`; vision scoped; old club's instalments settled and talks closed on a move. |
+| Versioned save envelope | `SaveFile { format, version 8, savedAt, checksum sha-256, world, career }`, packed `GZ1:` | `store` → `writeSlot` | `parseSave` → `upgradeWorld/Career/Save` → `tidyCareer` → checks | Validate before use; future versions refused. M1: previous copy per slot (`PREV+slot`) and fallback on load. |
+| Content event reference | `career.events` (domain events with refs), `career.inbox`, `career.news` (keys + params) | `emit`, `addMsg`, `addNews` | News, Today, digest | News/messages are keyed templates with real refs (no free text). |
+| Seeded RNG | `makeRng(seed…)`, `hash32` | engine, season, youth, recruit | — | All randomness is seeded from career/world seeds. |
+| Delegation | `career.dept` levels per department (`me`/`ask`/`staff`), `pending` proposals | Club › Staff, first-day card | `staffPrep`, `staffWeek`, decision builders | Default: match prep, opposition, fitness, development, commercial = staff; recruitment, contracts = ask. |
+| Live match in progress | `career.live` + `gaffer.live.<slot>` (localStorage) | Live screen | `openSlot` resume | |

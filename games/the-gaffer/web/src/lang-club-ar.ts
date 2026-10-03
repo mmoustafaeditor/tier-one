@@ -7,6 +7,7 @@ export const CL_AR: CLStrings = {
   tag: 'اجتماع الإدارة',
   derby: 'ديربي',
   title: (season: string) => `خطة الإدارة لموسم ${season}`,
+  adviceTop: (target: string) => `هدفنا: ${target}. ده أعلى حاجة أي إدارة تطلبها، وهنحاسبك عليه.`,
   advice: (target: string) => `هدفنا: ${target}. لو عايز تطمح لأكتر، صاحب النادي هيدعمك بفلوس، بس هنحاسبك أصعب.`,
   choices: {
     expected: () => 'هدفكم مظبوط',
@@ -17,6 +18,7 @@ export const CL_AR: CLStrings = {
     kitty: (v: string) => `${v} من صاحب النادي`,
     strict: () => 'إدارة أشد',
     target: (t: string) => t,
+    top: () => 'ده أعلى هدف أصلًا: مفيش أعلى منه نتفق عليه',
   },
   board: {
     none: 'الإدارة بتجتمع قبل أول جولات الموسم.',

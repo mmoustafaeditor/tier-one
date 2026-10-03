@@ -2,15 +2,18 @@
 import { useGame, cn } from './game';
 import { Crest, I } from './kit';
 import { leagueRows } from './util';
-import { dateOf, shortDate } from '../sim/calendar';
+import { shortDate } from '../sim/calendar';
+import { todayOf } from '../sim/cups';
+import { nextUserMatch } from '../sim/season';
 
 export function OfficeBarInner({ openCount }: { openCount: number }) {
   const g = useGame();
   const { c, x, club, league, lang } = g;
   const rows = leagueRows(g.w, c);
   const pos = rows.findIndex((r) => r.clubId === c.clubId) + 1;
-  const d = dateOf(c.season, Math.max(0, c.round), false);
-  const today = new Date(d.getTime() - 2 * 86400000);
+  const today = todayOf(c);
+  // Continue names its next step, in the order App.cont takes them (live match, sacked, decisions, matchday, season end).
+  const nextLabel = c.live ? x.next.live : c.sacked ? x.next.sacked : openCount ? x.next.dec(openCount) : nextUserMatch(g.w, c) ? x.next.match : x.next.season;
   return (
     <header className="topbar on-ground officebar">
       <div className="club">
@@ -19,7 +22,7 @@ export function OfficeBarInner({ openCount }: { openCount: number }) {
       </div>
       <div className="when"><b>{shortDate(today, g.ui)}</b><span>{x.wk(x.seasonLabel(c.season), c.round + 1)}</span></div>
       <button className={`btn btn--accent continue${g.busy ? ' loading' : ''}`} disabled={g.busy} onClick={g.cont}>
-        <span>{x.cont}</span> <small>{x.open(openCount)}</small><I n="arrowr" size="sm" />
+        <span>{x.cont}</span> <small>· {nextLabel}</small><I n="arrowr" size="sm" />
       </button>
     </header>
   );

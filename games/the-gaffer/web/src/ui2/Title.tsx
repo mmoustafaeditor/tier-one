@@ -7,11 +7,30 @@ import type { SaveMeta } from '../model/types';
 import { Crest, I } from './kit';
 import { wordmarkSvg } from '../brand';
 import { Panel, Sheet } from './shell';
+import type { Prefs } from '../sim/prefs';
+import { A11yControls } from './A11y';
+import { AX } from '../lang-a11y';
 
 // The brand mark (brand.ts): a constant SVG string, the same one the favicon and Android icons are drawn from.
 const WORDMARK = wordmarkSvg('dark');
 
-export interface SlotView { slot: number; meta: SaveMeta | null; legacy?: boolean; bad?: boolean }
+export interface SlotView { slot: number; meta: SaveMeta | null; legacy?: boolean; bad?: boolean; savedAt?: string }
+
+// "2 hours ago", in the UI language; nothing when the time is unknown or unreadable.
+function ago(iso: string | undefined, ui: UiLang): string {
+  const ms = iso ? Date.parse(iso) : NaN;
+  if (!Number.isFinite(ms)) return '';
+  const s = Math.round((ms - Date.now()) / 1000);
+  const steps: [Intl.RelativeTimeFormatUnit, number][] = [['second', 60], ['minute', 60], ['hour', 24], ['day', 7], ['week', 4.35], ['month', 12], ['year', Infinity]];
+  let v = s;
+  for (const [unit, n] of steps) {
+    if (Math.abs(v) < n || unit === 'year') {
+      try { return new Intl.RelativeTimeFormat(ui, { numeric: 'auto' }).format(unit === 'second' ? 0 : Math.round(v), unit === 'second' ? 'minute' : unit); } catch { return ''; }
+    }
+    v /= n;
+  }
+  return '';
+}
 const LANGS: [UiLang, string][] = [['en', 'EN'], ['ar', 'عربي'], ['es', 'ES'], ['fr', 'FR']];
 
 export function LangSwitch({ ui, onLang }: { ui: UiLang; onLang: (l: UiLang) => void }) {
@@ -22,12 +41,14 @@ export function LangSwitch({ ui, onLang }: { ui: UiLang; onLang: (l: UiLang) => 
   );
 }
 
-export function Title({ t, x, slots, bad, busy, ui, onLang, onOpen, onNew, onQuick }: {
+export function Title({ t, x, slots, bad, busy, ui, onLang, onOpen, onNew, onQuick, prefs, onPrefs }: {
   t: Strings; x: XStrings; slots: SlotView[] | null; bad: boolean; busy: boolean; ui: UiLang; onLang: (l: UiLang) => void;
+  prefs: Prefs; onPrefs: (p: Prefs) => void;
   onOpen: (slot: number) => void; onNew: (replace: number | null) => void; onQuick: () => void;
 }) {
   const [replace, setReplace] = useState<SlotView | null>(null);
   const [choose, setChoose] = useState(false);
+  const [a11y, setA11y] = useState(false);
   const used = (slots ?? []).filter((s) => s.meta);
   const free = (slots ?? []).some((s) => !s.meta && !s.bad);
   const old = used.find((s) => s.meta!.data === 'generated');
@@ -40,6 +61,7 @@ export function Title({ t, x, slots, bad, busy, ui, onLang, onOpen, onNew, onQui
         <header className="title-top on-ground">
           <span className="stripe" aria-hidden="true" />
           <LangSwitch ui={ui} onLang={onLang} />
+          <button className="chip a11y-open" onClick={() => setA11y(true)} aria-haspopup="dialog"><I n="eye" size="sm" />{AX[ui].open}</button>
         </header>
         <section className="title-hero on-ground">
           <h1 className="wordmark" aria-label="The Gaffer" dangerouslySetInnerHTML={{ __html: WORDMARK }} />
@@ -79,15 +101,27 @@ export function Title({ t, x, slots, bad, busy, ui, onLang, onOpen, onNew, onQui
                   {s.meta ? (
                     <>
                       <Crest club={{ id: s.meta.club, colors: s.meta.colors, name: { en: s.meta.clubName, ar: s.meta.clubName }, shortName: s.meta.clubName }} size={40} />
-                      <div className="grow"><div className="name">{s.meta.clubName}</div><div className="sub">{T.slot(s.slot)} · {x.seasonLabel(s.meta.season)} · {T.matchday(s.meta.round + 1)}{s.meta.data === 'generated' ? ` · ${T.oldWorld}` : ''}</div></div>
+                      <div className="grow">
+                        <div className="name">{s.meta.clubName}</div>
+                        <div className="sub">{s.meta.manager} · {x.seasonLabel(s.meta.season)} · {T.matchday(s.meta.round + 1)}{s.meta.round > 0 && s.meta.pos && s.meta.of ? ` · ${T.card(s.meta.pos, s.meta.of)}` : ''}{s.meta.data === 'generated' ? ` · ${T.oldWorld}` : ''}</div>
+                        {s.meta.next && <div className="sub">{T.next(ui === 'ar' ? s.meta.next.ar || s.meta.next.en : s.meta.next.en, s.meta.next.home)}</div>}
+                        <div className="sub dim">{T.slot(s.slot)}{ago(s.savedAt, ui) ? ` · ${T.played(ago(s.savedAt, ui))}` : ''}</div>
+                      </div>
                       <button className="btn btn--primary btn--sm" disabled={busy} onClick={() => onOpen(s.slot)}>{T.cont}</button>
                     </>
                   ) : (
-                    <>
-                      <span className="slot-empty" aria-hidden="true"><I n="plus" /></span>
-                      <div className="grow"><div className="name dim">{s.bad ? '—' : T.empty}</div><div className="sub">{T.slot(s.slot)}</div></div>
-                      {!s.bad && <button className="btn btn--ghost btn--sm" onClick={() => onNew(null)}>{T.newCareer}</button>}
-                    </>
+                    s.bad ? (
+                      <>
+                        <span className="slot-empty" aria-hidden="true"><I n="alert" /></span>
+                        <div className="grow"><div className="name dim">—</div><div className="sub">{T.slot(s.slot)}</div></div>
+                      </>
+                    ) : (
+                      <button className="slot-new" onClick={() => onNew(null)}>
+                        <span className="slot-empty" aria-hidden="true"><I n="plus" /></span>
+                        <span className="grow"><span className="name">{T.newCareer}</span><span className="sub">{T.slot(s.slot)} · {T.newHere}</span></span>
+                        <I n="arrowr" size="sm" />
+                      </button>
+                    )
                   )}
                 </div>
               ))}
@@ -117,6 +151,13 @@ export function Title({ t, x, slots, bad, busy, ui, onLang, onOpen, onNew, onQui
               </div>
             ))}
           </div>
+        </Sheet>
+      )}
+      {a11y && (
+        <Sheet label={AX[ui].title} onClose={() => setA11y(false)}>
+          <h2 className="h2">{AX[ui].title}</h2>
+          <A11yControls ui={ui} prefs={prefs} onPrefs={onPrefs} />
+          <button className="btn btn--primary btn--block" onClick={() => setA11y(false)}>{AX[ui].done}</button>
         </Sheet>
       )}
       {replace && (

@@ -1,6 +1,7 @@
 // One decision card: the situation, the staff member's call in their own voice, the choices with what each costs,
 // the staff pick marked (never forced), one tap to resolve. Swiping the card right takes the staff pick.
 import { useRef, useState } from 'react';
+import { isDeadlineDay, windowLeft } from '../sim/windows';
 import type { Decision, Choice, Fx, Ref } from '../sim/decisions';
 import type { StaffRole } from '../model/types';
 import { fmt, type FormationId } from '../sim/tactics';
@@ -17,11 +18,12 @@ import type { Objective } from '../model/types';
 // V2.7 the board meeting ('cl.' keys): the objective in a sentence ("finish in the top half"), the season, the money.
 const target = (g: Game, o?: string) => { const t = (g.t.objective as Record<string, string>)[o ?? ''] ?? o ?? ''; return g.ui === 'ar' ? t : t.charAt(0).toLowerCase() + t.slice(1); };
 const clTitle = (g: Game, r: Ref) => CL[g.ui].title(g.x.seasonLabel(r.n ?? g.c.season));
-const clAdvice = (g: Game, r: Ref) => CL[g.ui].advice(target(g, r.s as Objective));
+const clAdvice = (g: Game, r: Ref) => (r.key === 'cl.visionTop' ? CL[g.ui].adviceTop : CL[g.ui].advice)(target(g, r.s as Objective)); // F04: no "aim higher" talk at the top
 const clChoice = (g: Game, ch: Choice) => (ch.key === 'cl.ambitious' ? CL[g.ui].choices.ambitious(target(g, ch.s)) : CL[g.ui].choices.expected());
 function clFx(g: Game, f: Fx): string {
   const F = CL[g.ui].fx;
   if (f.key === 'cl.kitty') return F.kitty(money(f.n ?? 0));
+  if (f.key === 'cl.top') return F.top();
   if (f.key === 'cl.target') return F.target((g.t.objective as Record<string, string>)[f.s ?? ''] ?? f.s ?? '');
   return f.key === 'cl.strict' ? F.strict() : F.goodwill();
 }
@@ -167,7 +169,9 @@ export function DecisionCard({ d, i, onResolve }: { d: Decision; i: number; onRe
   const move = (e: React.PointerEvent) => { if (x0.current == null) return; const v = (e.clientX - x0.current) * dir; setDx(v > 8 ? v : 0); };
   const up = () => { if (x0.current == null) return; x0.current = null; if (dx > 96 && pick) onResolve(d, pick); setDx(0); };
   const many = d.choices.length > 2 && d.choices.every((c) => c.fx.length <= 1);
-  const due = g.x.dec.due[d.due.key];
+  // F02: "window shuts tonight" only on deadline day; before that, how many matchdays the window has left.
+  const wl = d.due.key === 'window' && !isDeadlineDay(g.c) ? windowLeft(g.c) : 0;
+  const due = wl ? g.x.dec.due.windowIn : g.x.dec.due[d.due.key];
   return (
     <article ref={card} className={`panel decision${dx ? ' swiping' : ''}`} style={{ ['--i' as string]: i, transform: dx ? `translateX(${dir * dx * 0.6}px) rotate(${dir * dx * 0.02}deg)` : undefined }}
       onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} aria-label={titleText(g, d)}>
@@ -176,13 +180,13 @@ export function DecisionCard({ d, i, onResolve }: { d: Decision; i: number; onRe
           <span className={`tag ${TONE[d.kind] ?? ''}`}><I n={KIND_ICON[d.kind] ?? d.icon} size="sm" />{(g.x.dec.tag as Record<string, string>)[d.kind] ?? (R[g.ui].tag as Record<string, string>)[d.kind] ?? (Y[g.ui].tag as Record<string, string>)[d.kind] ?? (d.kind === 'vision' ? CL[g.ui].tag : d.kind === 'presser' ? CL[g.ui].press.tag : roomTag(g, d.kind))}</span>
           <h3>{titleText(g, d)}</h3>
         </div>
-        <span className="due"><I n="clock" size="sm" />{typeof due === 'function' ? due(d.due.n ?? 1) : due}</span>
+        <span className="due"><I n="clock" size="sm" />{typeof due === 'function' ? due(wl || (d.due.n ?? 1)) : due}</span>
       </div>
       {d.advice && staff ? (
         <div className="advice">
           <span className="staff" style={{ background: ROLE_TONE[staff.role] }} aria-hidden="true">{initialsOf(staff.name.en)}</span>
           <div>
-            <div className="who">{staff.name[g.lang]}, <span>{g.x.office.roles[staff.role]}{bias ? ` · ${g.x.office.bias[bias].toLowerCase()}` : ''}</span></div>
+            <div className="who">{staff.name[g.lang]}, <span>{g.x.office.roles[staff.role]}{bias ? ` · ${g.x.office.bias[bias].toLowerCase()}` : ''}{d.advice ? ` · ${g.x.dec.conf(Math.round(staff.quality))}` : ''}</span></div>{/* rework: how sure the advice is (his quality decides how good his calls are) */}
             <q>{adviceText(g, d.advice)}</q>
           </div>
         </div>

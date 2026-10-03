@@ -3,6 +3,7 @@
 // E2E lessons: the continental cups are really played (#12), and cup results come from the real bracket (#3).
 import type { Career, Cup, CupGroups, LocalizedName, Tie } from '../model/types';
 import { makeRng, type Rng } from './rng';
+import { dateOf } from './calendar';
 import { indexOf, squadOf, type World } from './world';
 import { simulate, startMatch, winnerOf, type LiveMatch } from './match';
 
@@ -183,6 +184,18 @@ export function userTie(c: Career): { cupId: string; k: number; i: number; tie: 
     if (tie[0] === c.clubId || tie[1] === c.clubId) return { cupId, k, i, tie };
   }
   return null;
+}
+
+// F02 (rework): the one "today" every screen shows. A calendar step is either our cup tie (played on the Wednesday) or
+// the matchday (Saturday): today is the day before a cup tie of ours, otherwise the Thursday before the matchday. The
+// header, Today's countdown and the dates on messages all come from here, so nothing on screen is dated after today.
+export function todayOf(c: Career): Date {
+  const cup = !!userTie(c);
+  return new Date(dateOf(c.season, Math.max(0, c.round), cup).getTime() - (cup ? 1 : 2) * 86400000);
+}
+// The date a message or news item of (season, round) shows: one from this step is dated today, older ones on their matchday.
+export function stampDate(c: Career, season: number, round: number): Date {
+  return season === c.season && round >= c.round ? todayOf(c) : dateOf(season, Math.max(0, round));
 }
 
 export function userCupMatch(w: World, c: Career): LiveMatch | null {

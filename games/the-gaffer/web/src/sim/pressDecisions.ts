@@ -3,6 +3,7 @@
 //   after a controversy in our last match (a red card for us, a defeat by 3+, a lost derby), questions 'blame'/'ref';
 //   otherwise before the matchweek's first match if it's a big one (a derby, a top-three clash from matchday 5, a cup
 //   final), 'predict', 'star', 'rival'.
+import { lastMatchHere } from './record';
 import type { Career, Player } from '../model/types';
 import type { Choice, Decision, Fx } from './decisions';
 import { pressFx, type PressQ, type PressTone } from './press';
@@ -16,7 +17,7 @@ export interface PresserPlan { id: string; kind: 'big' | 'after'; opp: string; q
 
 export function presserOf(w: World, c: Career): PresserPlan | null {
   const squad = squadOf(w, c.clubId);
-  const last = c.matches?.[0];
+  const last = lastMatchHere(c);
   // One presser a matchweek: once a match of this matchweek is played (a cup tie before the league game), that's it.
   if (last && last.season === c.season && last.round === c.round) return null;
   if (last && last.season === c.season && last.round === c.round - 1) {

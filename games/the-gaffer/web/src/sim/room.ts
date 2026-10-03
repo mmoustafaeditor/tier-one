@@ -10,11 +10,12 @@
 //   feeds     engine (cohesion ±2 levels; morale settle point pulled by the leaders), renewals (trust gate), offers for
 //             unsettled players and release clauses (the market), Today decisions, inbox, news, the Why card
 // Everything is pure and seeded (no Math.random): same state + same commands → same room.
+import { lastMatchHere } from './record';
 import type { Archetype, Career, LocalizedName, Player, Pledge, PledgeType, RoomAsk, RoomCause, RoomState, SquadRole, TalkWhy, Tier } from '../model/types';
 import { FREE_AGENT } from '../model/types';
 import { clamp, hash32, rngFor } from './rng';
 import { playerOf, squadOf, squadStrength, type World } from './world';
-import { autoXI, available, DEFAULT_TACTICS, xiFor } from './tactics';
+import { aiXI, available, DEFAULT_TACTICS, xiFor } from './tactics';
 import { emit } from './events';
 import { addMsg } from './coach';
 import { addNews } from './news';
@@ -65,7 +66,7 @@ export const rankRole = (rank: number, age: number): SquadRole => (rank < 3 ? 's
 export function defaultRoles(w: World, c: Career | null, clubId: string): Map<string, SquadRole> {
   const squad = squadOf(w, clubId);
   const season = c?.season ?? 2026;
-  const xi = c && c.clubId === clubId ? xiFor(w, c).xi : autoXI(squad, DEFAULT_TACTICS.formation);
+  const xi = c && c.clubId === clubId ? xiFor(w, c).xi : aiXI(squad, DEFAULT_TACTICS.formation);
   const inXI = new Set(xi.map((p) => p.id));
   const top = new Set(byRating(xi).slice(0, 3).map((p) => p.id));
   return new Map(squad.map((p) => [p.id, top.has(p.id) ? 'star' : inXI.has(p.id) ? 'starter' : season - p.birthYear <= 21 ? 'prospect' : 'rotation'] as [string, SquadRole]));
@@ -563,7 +564,7 @@ export function roomDay(pre: World, w0: World, c0: Career, mine: LiveMatch | nul
 // Academy graduates: promoted by you, produced by the club's academy (V2.6 `hg`), or at the club since he was 17.
 export const homegrown = (c: Career, p: Player) => (c.grads ?? []).includes(p.id) || p.hg === c.clubId || (p.jc === c.clubId && p.since !== undefined && p.since - p.birthYear <= 17);
 
-const PRIO: Record<TalkWhy, number> = { broken: 0, request: 1, asked: 2, minutes: 3, role: 4, contract: 5, unhappy: 6, doubts: 7, new: 8, form: 9 };
+const PRIO: Record<TalkWhy, number> = { broken: 0, request: 1, asked: 2, minutes: 3, role: 4, contract: 5, unhappy: 6, doubts: 7, new: 8, form: 9, debut: 10, scored: 11, dropped: 12 };
 // Why a player would come knocking (the ask), from the state only.
 function askWhy(x: Ctx, p: Player): TalkWhy | null {
   const t = now(x.c);
@@ -602,8 +603,18 @@ export function talkWhy(w: World, c: Career, p: Player): TalkWhy | null {
   if (p.morale < 45) return 'unhappy';
   if (trustOf(p) < 35) return 'doubts';
   if (p.jc === c.clubId && p.since === c.season && c.round <= 8 && room.talks[p.id] === undefined) return 'new';
-  const last = c.matches?.[0];
+  const last = lastMatchHere(c);
   if (last && last.motm && (last.motm.pn.en === p.name.en) && last.motm.side === (last.home === c.clubId ? 0 : 1)) return 'form';
+  // F16 (rework): something to say from what actually happened in our last match, once, and only if nobody talked to
+  // him since (the talk records the time, the cooldown stops repeats: no morale farming).
+  const fresh = !!last && (room.talks[p.id] === undefined || room.talks[p.id] < t - 1);
+  if (last && fresh) {
+    const side = last.home === c.clubId ? 0 : 1;
+    if (homegrown(c, p) && (c.stats[p.id]?.[0] ?? 0) === 1) return 'debut';
+    if (last.scorers.some((g) => g.side === side && g.pn.en === p.name.en)) return 'scored';
+    const roll = room.roll[p.id] ?? '';
+    if (roll.endsWith('10') && available(p) && roleOf(w, c, p) !== 'prospect') return 'dropped';
+  }
   return null;
 }
 
@@ -645,6 +656,9 @@ function talkApply(x: Ctx, p: Player, tone: Tone, q: PledgeReq | null, by: strin
     if (tone === 'reassure' && substance && (x.room.heard[p.id] ?? 0) >= 1) { dm = 1; dt = -3; reply = 'reassure.heard'; }
     if (tone === 'challenge' && trustOf(p) < 30) { dt -= 3; reply = 'challenge.cold'; }
     if (why === 'form' && tone === 'reassure') { dm += 2; dt += 1; reply = `praise.${a === 'volatile' ? 'volatile' : 'steady'}`; }
+    if ((why === 'scored' || why === 'debut') && tone === 'reassure') { dm += 1; dt += 1; reply = `praise.${a === 'volatile' ? 'volatile' : 'steady'}`; }
+    if (why === 'dropped' && tone === 'challenge' && (a === 'driven' || a === 'leader')) { dm += 1; dt += 1; }
+    if (why === 'dropped' && tone === 'challenge' && (a === 'volatile' || a === 'mercenary')) { dm -= 2; dt -= 1; }
   }
   if (dry) return { reply, dm, dt };
   const realDm = x.morale(p.id, dm, `talk.${tone}`);

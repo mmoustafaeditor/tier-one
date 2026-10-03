@@ -107,7 +107,9 @@ export interface SaveFile {
 // Which world a career was created with. Old careers (before v2.1) are 'generated' and stay fictional forever.
 export type WorldKind = 'real2026' | 'generated';
 export type NamesMode = 'real' | 'fictional';
-export interface SaveMeta { slot: number; build: number; data: WorldKind; names: NamesMode; club: string; clubName: string; colors: [string, string]; season: number; round: number; manager: string }
+export interface SaveMeta { slot: number; build: number; data: WorldKind; names: NamesMode; club: string; clubName: string; colors: [string, string]; season: number; round: number; manager: string;
+  // Title-screen card extras (optional: saves written before them still describe themselves without).
+  pos?: number; of?: number; next?: { en: string; ar: string; home: boolean } | null }
 
 // ---------- v2 foundation (save v4) ----------
 
@@ -226,7 +228,7 @@ export interface Legend { clubId: string; id: string; pn: LocalizedName; apps: n
 // V2.7: the pre-season board meeting. 'expected': the board's own targets and its goodwill (+5 confidence).
 // 'ambitious': the league target one step higher, the owner's money on the table (`kitty`), a stricter board.
 export type VisionLevel = 'expected' | 'ambitious';
-export interface Vision { season: number; level: VisionLevel; kitty?: number }
+export interface Vision { season: number; level: VisionLevel; kitty?: number; club?: string } // club: F09, whose board it was
 
 // ---------- v2.4 dressing room (save v6) ----------
 export type SquadRole = 'star' | 'starter' | 'rotation' | 'prospect';
@@ -244,7 +246,7 @@ export interface Pledge {
   cu0?: number; d0?: number;              // contract end when made; deals on the books when made
   status: 'open' | 'kept' | 'broken'; closed?: number; ev?: string;
 }
-export type TalkWhy = 'asked' | 'request' | 'broken' | 'minutes' | 'role' | 'contract' | 'unhappy' | 'doubts' | 'new' | 'form';
+export type TalkWhy = 'asked' | 'request' | 'broken' | 'minutes' | 'role' | 'contract' | 'unhappy' | 'doubts' | 'new' | 'form' | 'scored' | 'debut' | 'dropped'; // F16: scored/debut/dropped from the last match here
 export interface RoomAsk { playerId: string; pn: LocalizedName; why: TalkWhy; made: number; until: number; ev?: string }
 export interface RoomCause { k: string; d: number; at: number; pn?: LocalizedName }
 export interface RoomClause { playerId: string; pn: LocalizedName; clubId: string; fee: number; until: number; ev?: string }

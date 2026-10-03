@@ -148,7 +148,8 @@ html[lang="ar"] .eyebrow { letter-spacing: 0; text-transform: none; font-size: v
 /* The Continue button: the heartbeat of a career. Always the same place. */
 .continue { min-height: 44px; padding: 0 var(--s-4) 0 var(--s-5); gap: var(--s-2); }
 .continue small { font-weight: 500; opacity: .75; }
-@media (max-width: 520px) { .continue small { display: none; } }
+/* rework: Continue always says what it does next, on phones too (compact) */
+@media (max-width: 520px) { .continue { padding: 0 var(--s-3); gap: 6px; } .continue small { font-size: 11px; max-width: 9.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
 
 /* ---------- Chips, segmented, tags -------------------------------------- */
 .chip {

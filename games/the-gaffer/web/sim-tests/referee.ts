@@ -238,7 +238,17 @@ async function scenarios() {
       const m11 = clone(m); m11.sides[red.side].onPitch[empty] = red.playerId;
       const R0 = expected(m11, get);
       const gd = (R: typeof R1) => R.goals[red.side] - R.goals[1 - red.side];
-      ok(gd(R1) < gd(R0) - 0.3, `${L}: the engine's goal difference per 90 for the ten: ${gd(R0).toFixed(2)} → ${gd(R1).toFixed(2)}`);
+      // One sending-off depends on who it was (a full-back costs less than a centre-back), so the engine's rating of a
+      // ten-man side is checked as the average over losing each outfield player in turn at this moment.
+      const drops: number[] = [];
+      for (let i = 0; i < m11.sides[red.side].onPitch.length; i++) {
+        const id = m11.sides[red.side].onPitch[i];
+        if (!id || i === 0) continue; // keep the goalkeeper (slot 0)
+        const mx = clone(m11); mx.sides[red.side].onPitch[i] = '';
+        drops.push(gd(R0) - gd(expected(mx, get)));
+      }
+      const avg = drops.reduce((s, x) => s + x, 0) / Math.max(1, drops.length);
+      ok(gd(R1) < gd(R0) && avg > 0.3, `${L}: the engine's goal difference per 90 for the ten: ${gd(R0).toFixed(2)} → ${gd(R1).toFixed(2)} for this red; ${avg.toFixed(2)} lower on average over losing any outfield player (${drops.map((d) => d.toFixed(2)).join(' ')})`);
       simulate(m, get);
       ok(JSON.stringify(m.events) === JSON.stringify(f.m.events), `${L}: the match plays out the same when stepped in parts`);
       ok(!m.events.some((e, i) => i > m.events.indexOf(m.events.find((x) => x.kind === 'red')!) && (e.playerId === red.playerId || e.assistId === red.playerId || e.inId === red.playerId)), `${L}: no events for him after the red`);

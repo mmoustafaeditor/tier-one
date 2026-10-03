@@ -6,6 +6,7 @@ export const CL_ES: CLStrings = {
   tag: 'Reunión de la directiva',
   derby: 'Derbi',
   title: (season: string) => `El plan de la directiva para ${season}`,
+  adviceTop: (target: string) => `Nuestro objetivo: ${target}. Es lo máximo que puede pedir una directiva; te juzgaremos por ello.`,
   advice: (target: string) => `Nuestro objetivo: ${target}. Si apuntas más alto, el dueño te respaldará con dinero, pero te juzgaremos con más dureza.`,
   choices: {
     expected: () => 'Vuestro objetivo es el correcto',
@@ -16,6 +17,7 @@ export const CL_ES: CLStrings = {
     kitty: (v: string) => `${v} del dueño`,
     strict: () => 'Directiva más exigente',
     target: (t: string) => t,
+    top: () => 'Ya es el objetivo máximo: no hay meta más alta que pactar',
   },
   board: {
     none: 'La directiva se reúne antes de las primeras jornadas.',

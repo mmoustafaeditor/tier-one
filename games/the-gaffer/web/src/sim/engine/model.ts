@@ -114,7 +114,7 @@ const S = {
 };
 export const SKILL = S;
 // B4: how much the hidden traits count in the engine (engine/traits.ts; sim-tests/traitsengine.ts).
-export const TRAIT = { CALM: 0.8, MOVE: 0.8, VISION: 0.9, PEN: 0.08 };
+export const TRAIT = { CALM: 1.5, MOVE: 1.0, VISION: 0.9, PEN: 0.08 }; // Saif, 2026-10-03, with AI sides on a best XI: MOVE 0.8 → 1.0 (its effect sat on the test margin); CALM 0.8 → 1.5 now that composure is measured against the side's own shooters and adds no goals (see below)
 
 // The engine's tuning in one place (logit units; 10 attribute points ≈ K).
 export const TUNE = {
@@ -441,14 +441,22 @@ function attack(side: 0 | 1, A: Actor[], D: Actor[], ta: FullTactics, td: FullTa
   // B4: hidden traits, relative to the side's own men (they share out its chances, they don't add to them): the better
   // mover off the ball gets more of the open-play shots, the more composed finisher scores more of the same chances.
   const avgT = (k: 'calm' | 'offBall' | 'vision') => (outs.length ? outs.reduce((t, x) => t + (x.tr?.[k] ?? 0.5), 0) / outs.length : 0.5);
-  const cMean = avgT('calm'), oMean = avgT('offBall');
+  const oMean = avgT('offBall');
   for (let k = 0; k < outs.length; k++) {
     const x = outs[k], sh = pw15(x.a[1] / 70), air = (S.airA(x.a) / 70) ** 2;
-    const move = 1 + TRAIT.MOVE * ((x.tr?.offBall ?? 0.5) - oMean), calm = 1 + TRAIT.CALM * ((x.tr?.calm ?? 0.5) - cMean);
+    const move = 1 + TRAIT.MOVE * ((x.tr?.offBall ?? 0.5) - oMean);
     const open = ROLE_SHOT[x.pos] * x.ifx.shot * (0.4 + band(x.y, 58, 110)) * sh * (x.id === mark ? 0.7 : 1) * move;
     wOpen.push(open); wRun.push(open * pw15(x.a[0] / 70));
     wAir.push(za[Z.BOX][ix[k]] * air); wSet.push(za[Z.SET][ix[k]] * air);
     wLong.push(ROLE_LONG[x.pos] * (x.a[1] / 70) ** 2);
+  }
+  // Composure is measured against the men who take the shots (their open-play share), so it moves goals between them
+  // without adding to the side's total. Against the plain outfield mean, composed forwards lifted every side's goals
+  // (+1.5% at CALM 0.8, +2.9% at 1.0).
+  const wSum = wOpen.reduce((s, v) => s + v, 0);
+  const cMean = wSum > 0 ? outs.reduce((s, x, k) => s + wOpen[k] * (x.tr?.calm ?? 0.5), 0) / wSum : avgT('calm');
+  for (const x of outs) {
+    const calm = 1 + TRAIT.CALM * ((x.tr?.calm ?? 0.5) - cMean);
     finF.push(fin(x.a[1]) * calm); finH.push(fin(0.5 * x.a[1] + 0.5 * x.a[5]) * calm);
   }
   const taker = (id: string) => outs.find((x) => x.id === id) ?? outs.reduce<Actor | undefined>((b, x) => (!b || x.a[1] > b.a[1] ? x : b), undefined);

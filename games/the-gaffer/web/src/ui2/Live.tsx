@@ -1,6 +1,8 @@
 // Matchday under the floodlights: the scoreboard, key moments, where the ball has lived, the numbers, shouts from
 // the touchline, and the changes sheet. At half-time the analysts' Why takes over the screen; at full time the
 // record goes to the aftermath. Every minute is the engine's (sim/match.ts); nothing here decides anything.
+import { calmNow } from './A11y';
+import { pctOf as chanceOf } from './util';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Player } from '../model/types';
 import { playerOf } from '../sim/world';
@@ -31,7 +33,7 @@ const clone = (m: LiveMatch): LiveMatch => JSON.parse(JSON.stringify(m));
 const pctOf = (a: number, b: number) => Math.round((100 * a) / Math.max(1, b));
 const holdK = (rate: number) => Math.pow(RATES[1] / rate, 0.6);
 const PHASE_MS = 1500;
-const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = calmNow; // the device setting or the in-game "Reduce motion" (ui2/A11y.tsx)
 
 export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFinish, onRate, onHl }: {
   m: LiveMatch; locked: boolean; rate0: number; hl0?: HlMode; onUpdate: (m: LiveMatch) => void; onSave: (m: LiveMatch) => void; onFinish: (m: LiveMatch) => void;
@@ -350,7 +352,7 @@ function Changes({ m, me, onChange, onClose }: { m: LiveMatch; me: 0 | 1; onChan
   const plan = planOf(ft);
   const X = TX[g.ui];
   const T = x.tac;
-  const win = Math.round(winChance(m, me, expected(m, get)) * 100);
+  const win = chanceOf(winChance(m, me, expected(m, get)));
   const setT = (patch: Partial<Tactics>) => onChange((n) => setTactics(n, me, patch));
   const row = (p: Player, pos: string, on: boolean, sel: boolean, pick: () => void) => (
     <button key={p.id} className={`subrow${sel ? ' on' : ''}`} aria-pressed={sel} onClick={pick}>
@@ -415,6 +417,7 @@ function Changes({ m, me, onChange, onClose }: { m: LiveMatch; me: 0 | 1; onChan
 }
 
 // ---------- half-time ----------
+const SUB_FIT = 80; // F07: below this a half-time change is worth suggesting
 function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHalf: (m: LiveMatch) => void }) {
   const g = useGame();
   const { w, x, lang } = g;
@@ -422,12 +425,16 @@ function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHa
   const why = useMemo(() => explain(m, me, get), [m.minute]);
   const [picked, setPicked] = useState<number[]>(why.tips.length ? [0] : []);
   const [talk, setTalkOpen] = useState(false);
+  // F12 (rework): the team talk is staged like the changes and the sub; nothing restarts until "Start the second half".
+  const [talkSel, setTalkSel] = useState<number | null>(null);
   const home = clubOf(w, m.sides[0].clubId)!, away = clubOf(w, m.sides[1].clubId)!;
   const name = (id: string) => (id ? sn(get(id), lang) : '');
   // The one sub the numbers point at: our most tired outfielder for the best-rested fit on the bench.
   const s = m.sides[me];
   const slots = FORMATIONS[s.tactics.formation].slots;
-  const tired = s.onPitch.map((id, k) => ({ id, k })).filter((o) => o.id && slots[o.k]?.pos !== 'GK').sort((a, b) => (m.fit[a.id] ?? 100) - (m.fit[b.id] ?? 100))[0];
+  // F07 (rework): only someone actually flagging (under SUB_FIT), and never a man who scored or set one up this match.
+  const involved = new Set(m.events.filter((e) => e.kind === 'goal' && e.side === me).flatMap((e) => [e.playerId, e.assistId ?? '']));
+  const tired = s.onPitch.map((id, k) => ({ id, k })).filter((o) => o.id && slots[o.k]?.pos !== 'GK' && (m.fit[o.id] ?? 100) < SUB_FIT && !involved.has(o.id)).sort((a, b) => (m.fit[a.id] ?? 100) - (m.fit[b.id] ?? 100))[0];
   const subIn = tired && canSub(m, me) ? s.bench.map(get).filter((p) => p.position !== 'GK').sort((a, b) => b.rating - a.rating - (a.position === slots[tired.k].pos ? 0 : 0))
     .find((p) => p.position === slots[tired.k].pos) ?? s.bench.map(get).filter((p) => p.position !== 'GK')[0] : undefined;
   const [doSub, setDoSub] = useState(false);
@@ -437,8 +444,8 @@ function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHa
     if (sub && tired && subIn) userSub(n, me, tired.id, subIn.id);
     return n;
   };
-  const w0 = Math.round(winChance(m, me, expected(m, get)) * 100);
-  const w1 = Math.round(winChance(plan(picked, doSub), me, expected(plan(picked, doSub), get)) * 100);
+  const w0 = chanceOf(winChance(m, me, expected(m, get)));
+  const w1 = chanceOf(winChance(plan(picked, doSub), me, expected(plan(picked, doSub), get)));
   const pts = why.points.slice(0, 3);
   const head = x.ht.heads[why.verdict] ?? '';
   return (
@@ -488,16 +495,16 @@ function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHa
         </div>
       </div>
       <div className="mbar" role="toolbar">
-        <button className="btn btn--ghost on-ground" onClick={() => setTalkOpen(true)}><I n="chat" />{x.ht.teamTalk}</button>
+        <button className="btn btn--ghost on-ground" aria-pressed={talkSel !== null} onClick={() => setTalkOpen(true)}><I n="chat" />{talkSel === null ? x.ht.teamTalk : `${x.ht.teamTalk}: ${x.pre.talks[talkSel][0]}`}</button>
         <span className="grow" />
-        <button className="btn btn--accent" onClick={() => onSecondHalf(plan(picked, doSub))}><I n="whistle" />{x.ht.second}</button>
+        <button className="btn btn--accent" onClick={() => { const n = plan(picked, doSub); if (talkSel !== null) setTalk(n, me, ([1, 3, 2] as Talk[])[talkSel]); onSecondHalf(n); }}><I n="whistle" />{x.ht.second}</button>
       </div>
       {talk && (
         <Sheet label={x.ht.teamTalk} onClose={() => setTalkOpen(false)}>
           <h2 className="h2">{x.ht.teamTalk}</h2>
           <div className="talk">
             {x.pre.talks.map(([a, b], i) => (
-              <button key={i} className="choice" onClick={() => { const n = clone(m); setTalk(n, me, ([1, 3, 2] as Talk[])[i]); setTalkOpen(false); onSecondHalf(n); }}>
+              <button key={i} className="choice" aria-pressed={talkSel === i} onClick={() => { setTalkSel(i); setTalkOpen(false); }}>
                 <div className="grow"><b>{a}</b><span>{b}</span></div>
               </button>
             ))}
