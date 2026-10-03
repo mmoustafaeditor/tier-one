@@ -11,7 +11,6 @@ import { ensureMissions, levelOf } from '../lib/progress';
 import { sfx } from '../lib/sfx';
 import { Icon, useNow, Sheet } from '../ui/bits';
 import { TopBar } from '../ui/game';
-import { WalletPill } from '../ui/chrome';
 import { chapterOf, chapterName } from '../lib/storyMode';
 import type { Chrome } from '../App';
 import { dailyFeed } from '../lib/byline';
@@ -43,9 +42,9 @@ export function Home(chrome: Chrome) {
   const careerSub = s.career?.live ? t('sh.home.sub.careerLive') : ch && s.career ? t('sh.home.sub.careerAt', { c: ch.n, n: s.career.windows + 1 }) : t('sh.home.sub.careerNew');
   const arrow = <Icon n={t.rtl ? 'back' : 'arrow'} size={20} />;
   return <div className="g-screen home hm hm39 fit">
-    <TopBar onMenu={chrome.openSettings} wallet={false} />
+    <TopBar onMenu={chrome.openSettings} />
     <div className="fit__body hm__body">
-      <div className="hm39__art"><img src="art/desk-hero-full.webp" alt="" aria-hidden="true" decoding="async" /><span className="hm39__wallet"><WalletPill compact /></span></div>
+      <div className="hm39__art" aria-hidden="true"><img className="hm39__photo" src="art/desk-hero-full.webp" alt="" decoding="async" /><img className="hm39__hair" src="art/desk-hero-full.webp" alt="" decoding="async" /></div>
 
       <section className={'hm39__daily' + (played ? ' is-filed' : '')} aria-label={t('u39.home.title')}>
         <div className="hm39__top">

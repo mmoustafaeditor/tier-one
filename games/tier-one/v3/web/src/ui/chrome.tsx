@@ -12,7 +12,6 @@ import type { Route } from '../App';
 import { Icon } from './bits';
 import { Roll } from './game';
 import { Bell, navTo } from './connect';
-import { Portrait } from './portrait';
 
 // ---------- the route, for components that render inside every screen (TopBar) but get no props about it
 let chromeRoute: Route['n'] = 'front';
@@ -80,7 +79,6 @@ export function TopBar({ back, title, onHelp, onMenu, children, bell, wallet, ba
       {children}
       {showWallet && <WalletPill compact={route === 'front'} />}
       {showBell && <Bell />}
-      {!bare && route !== 'me' && <button type="button" className="g-top__me" onClick={() => { sfx('ui.tap'); navTo({ n: 'me' }); }} aria-label={t('u39.tabs.me')}><Portrait kind="staff" id="you" size={40} round /></button>}
       {onHelp && <button className="g-icbtn" onClick={onHelp} aria-label={t('nav.howto')}><Icon n="help" /></button>}
       {onMenu && <button className="g-icbtn" onClick={onMenu} aria-label={t('common.settings') + ' · ' + t('common.language')}><Icon n="language" /></button>}
     </span>

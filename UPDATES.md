@@ -7,6 +7,12 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.13 — the Desk, aligned and rounded
+
+- The newsroom picture is a rounded card with the same corners and edges as the Daily Challenge card and the tiles; her head breaks out of its top edge (two layers of one image: the rounded photo, and the cut-out head above it).
+- Top bar: the profile avatar is gone everywhere (Profile is a tab). On the Desk the bar is wordmark · coins and credits · bell · globe (settings), clear of her head; the logo is no longer crowded.
+- Desktop and tablet show the same Desk as one centred column (Career Mode, Multiplayer and Transfer Market as three tiles). Short phones hide the tagline so everything stays on one screen. home39.css rewritten as one consolidated stylesheet.
+
 ## 2026-10-03 · Tier One 3.9.12 — the full newsroom banner, her head in the top bar
 
 - The Desk banner is the owner's whole illustration (lamp, posters, mug), with the anime character's head rising into a transparent top bar like the mockup (art/desk-hero-full.webp; the head is cut out by colour so her hair stays).
