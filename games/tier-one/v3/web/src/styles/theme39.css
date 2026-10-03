@@ -139,3 +139,16 @@ html, body { background: var(--desk); color: var(--on-desk); }
   .g-wal { height: 36px; } .g-wal__b { padding: 0 6px; font-size: 14px; }
 }
 @media (max-width: 360px) { .g-top__logo.g-wordmark { font-size: 19px; } .g-wal__b--c { display: none; } }
+
+/* 3.9.15 the tools pill: bell · language · settings in one rounded group; the language menu drops down below it */
+.g-top__tools { display: inline-flex; align-items: center; height: 44px; padding: 0 2px; border-radius: 14px; background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line-2); }
+.g-top__tools > * + * { border-inline-start: 1px solid var(--desk-line); }
+.g-top__tools .g-icbtn, .g-top__tools .cn-bell { width: 42px !important; height: 40px !important; background: transparent !important; box-shadow: none !important; border-radius: 12px; }
+.g-lang { position: relative; display: inline-flex; }
+.g-lang__menu { position: absolute; top: calc(100% + 8px); inset-inline-end: -40px; z-index: 60; min-width: 180px; padding: 6px; border-radius: 14px; background: var(--card); color: var(--card-ink); box-shadow: 0 18px 40px -12px rgba(0,0,0,.75); display: grid; gap: 2px; animation: g-lang-in .16s var(--m-ease) both; }
+@keyframes g-lang-in { from { opacity: 0; transform: translateY(-4px); } }
+.g-lang__menu button { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 0 12px; border-radius: 10px; font: 600 16px var(--f-text); color: var(--card-ink); text-align: start; }
+.g-lang__menu button[aria-selected="true"] { background: var(--card-2); }
+.g-lang__menu button:hover { background: var(--card-2); }
+.g-lang__menu button svg { color: var(--red); }
+@media (prefers-reduced-motion: reduce) { .g-lang__menu { animation: none; } }

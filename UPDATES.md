@@ -7,6 +7,29 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.18 — Daily tab uses the Desk's painted jerseys
+
+- Locked: the Desk's dark painted shirts with the question mark (art/daily-shirt.webp), no tile boxes.
+- Revealed: the same painted shirt in the club's colour (art/daily-shirt-tex.webp multiplied over a club-colour fill) with the surname under it.
+- The shirts reveal as soon as today's challenge has been opened (backing out mid-game), not only after it is completed.
+
+## 2026-10-03 · Tier One 3.9.17 — Daily tab: revealed shirts match the locked ones
+
+- After you play, each of the five tiles keeps the locked tile's size and plain shirt, now in the club's colours with a collar trim, and the player's surname under it. No more numbers or patterns on these shirts.
+
+## 2026-10-03 · Tier One 3.9.16 — the Daily Challenge tab to the owner's mockups
+
+- Paper card with a coral band (Daily No. and reset clock), "The Daily Challenge." title, "Five sagas. Make your calls."
+- Today's five sagas: mystery shirts before you play, the five clubs' kits with player names after.
+- Week strip (sage check on played days, coral ring on today), streak and status line, then Play Daily Challenge (before) or Share results (after).
+- Leaderboard and Past Results rows with coral arrows. Deadline Day and Practice cards are no longer on this tab.
+
+## 2026-10-03 · Tier One 3.9.15 — the Desk to the owner's mockup; language dropdown
+
+- Top bar: wordmark, then one grouped pill: bell · language · settings (gear). The language button drops down English / العربية / Español only; the gear opens the full Settings. This applies on every page with a settings button. The Desk's bar no longer shows coins (the Shop has its own card).
+- Desk below the Daily Challenge card: a paper Career Mode card (title, chapter · level · XP, or Prologue · Your story starts here., with a coral arrow), then a paper Multiplayer card beside Transfer Market and Shop rows, each with a coral arrow. The tagline is gone from the Daily card (as in the mockup).
+- Fits one screen at 390×664 and up; desktop shows the same Desk centred.
+
 ## 2026-10-03 · Tier One 3.9.14 — head in the top bar, icons above the picture
 
 - The Desk's top bar items (coins, bell, globe/settings) sit on the logo's line, above the picture's top edge and drawn over it; the character's head rises into the bar in the gap between the logo and the icons.
