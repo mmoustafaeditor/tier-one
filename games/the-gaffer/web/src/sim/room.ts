@@ -564,7 +564,7 @@ export function roomDay(pre: World, w0: World, c0: Career, mine: LiveMatch | nul
 // Academy graduates: promoted by you, produced by the club's academy (V2.6 `hg`), or at the club since he was 17.
 export const homegrown = (c: Career, p: Player) => (c.grads ?? []).includes(p.id) || p.hg === c.clubId || (p.jc === c.clubId && p.since !== undefined && p.since - p.birthYear <= 17);
 
-const PRIO: Record<TalkWhy, number> = { broken: 0, request: 1, asked: 2, minutes: 3, role: 4, contract: 5, unhappy: 6, doubts: 7, new: 8, form: 9 };
+const PRIO: Record<TalkWhy, number> = { broken: 0, request: 1, asked: 2, minutes: 3, role: 4, contract: 5, unhappy: 6, doubts: 7, new: 8, form: 9, debut: 10, scored: 11, dropped: 12 };
 // Why a player would come knocking (the ask), from the state only.
 function askWhy(x: Ctx, p: Player): TalkWhy | null {
   const t = now(x.c);
@@ -605,6 +605,16 @@ export function talkWhy(w: World, c: Career, p: Player): TalkWhy | null {
   if (p.jc === c.clubId && p.since === c.season && c.round <= 8 && room.talks[p.id] === undefined) return 'new';
   const last = lastMatchHere(c);
   if (last && last.motm && (last.motm.pn.en === p.name.en) && last.motm.side === (last.home === c.clubId ? 0 : 1)) return 'form';
+  // F16 (rework): something to say from what actually happened in our last match, once, and only if nobody talked to
+  // him since (the talk records the time, the cooldown stops repeats: no morale farming).
+  const fresh = !!last && (room.talks[p.id] === undefined || room.talks[p.id] < t - 1);
+  if (last && fresh) {
+    const side = last.home === c.clubId ? 0 : 1;
+    if (homegrown(c, p) && (c.stats[p.id]?.[0] ?? 0) === 1) return 'debut';
+    if (last.scorers.some((g) => g.side === side && g.pn.en === p.name.en)) return 'scored';
+    const roll = room.roll[p.id] ?? '';
+    if (roll.endsWith('10') && available(p) && roleOf(w, c, p) !== 'prospect') return 'dropped';
+  }
   return null;
 }
 
@@ -646,6 +656,9 @@ function talkApply(x: Ctx, p: Player, tone: Tone, q: PledgeReq | null, by: strin
     if (tone === 'reassure' && substance && (x.room.heard[p.id] ?? 0) >= 1) { dm = 1; dt = -3; reply = 'reassure.heard'; }
     if (tone === 'challenge' && trustOf(p) < 30) { dt -= 3; reply = 'challenge.cold'; }
     if (why === 'form' && tone === 'reassure') { dm += 2; dt += 1; reply = `praise.${a === 'volatile' ? 'volatile' : 'steady'}`; }
+    if ((why === 'scored' || why === 'debut') && tone === 'reassure') { dm += 1; dt += 1; reply = `praise.${a === 'volatile' ? 'volatile' : 'steady'}`; }
+    if (why === 'dropped' && tone === 'challenge' && (a === 'driven' || a === 'leader')) { dm += 1; dt += 1; }
+    if (why === 'dropped' && tone === 'challenge' && (a === 'volatile' || a === 'mercenary')) { dm -= 2; dt -= 1; }
   }
   if (dry) return { reply, dm, dt };
   const realDm = x.morale(p.id, dm, `talk.${tone}`);

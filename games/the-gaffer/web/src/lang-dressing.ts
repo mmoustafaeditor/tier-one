@@ -77,7 +77,7 @@ export const D_EN = {
     why: {
       asked: 'He asked to see you.', request: 'He has asked to leave.', broken: 'You broke your word to him.', minutes: 'He isn’t playing as much as his role says.',
       role: 'He’s playing above the role in his contract.', contract: 'His deal is running down.', unhappy: 'He’s low.', doubts: 'He doesn’t believe you any more.',
-      new: 'He’s new here. First impressions count.', form: 'He was the best man on the pitch.',
+      new: 'He’s new here. First impressions count.', form: 'He was the best man on the pitch.', scored: 'He scored last time out.', debut: 'His first game for the club, from our own academy.', dropped: 'He started the game before and sat out the last one.',
     } as Record<TalkWhy, string>,
     none: 'Nothing to talk about. He knows where he stands.',
     wait: 'You spoke to him this week. Give it a few days.',

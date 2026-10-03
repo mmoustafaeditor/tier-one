@@ -23,7 +23,7 @@ no named Android device was available — see Known limitations).
 
 ## 2. F01–F17 disposition
 See `REWORK_BASELINE.md` (table) — F01, F02, F03, F04, F05, F07, F08, F09, F10, F11, F12, F13, F15 fixed; F06 fixed for
-the manager's side (AI clubs deferred, see §6); F14 not reproduced; F17 not reproduced and hardened; F16 open (M3+).
+the manager's side (AI clubs deferred, see §6); F14 not reproduced; F17 not reproduced and hardened; F16 fixed (contextual talks).
 Current-code reproduction: `node sim-tests/build.mjs rework/repro` → every checked item OK.
 
 ## 3. Test report (this container, final state `fac4989`)
@@ -53,7 +53,7 @@ load. Rollback: older builds ignore both fields.
 
 ## 6. Known limitations (not hidden)
 * AI clubs still pick their XI slot by slot (F06 for AI) — a results change that needs its own recalibration (M4).
-* F16 (contextual conversations) and the derby/board arc as authored content are not built; the systems exist.
+* The derby/board-pressure arc has no new authored content; the existing systems cover it (world test, press cards).
 * No Android device test, no WebView back/resume run, no named-device benchmark in this environment.
 * No human comprehension sessions (the handoff's human gates) — none could be run here.
 * The `marking` test is noisy at its default sample size (pre-existing).
@@ -69,7 +69,7 @@ load. Rollback: older builds ignore both fields.
 ## 8. Next backlog
 * P0: none open from the trust backlog.
 * P1: AI best XI with recalibration (M4); Android/WebView resume + import on a named device; human first-hour test.
-* P2: F16 contextual talks; Today "World pulse"; analysis "tactical causes" tab; scenarios / Tactics Lab modes.
+* P2: Today "World pulse"; analysis "tactical causes" tab; scenarios / Tactics Lab modes.
 
 ## 9. Evidence index
 `evidence/m1-before|after` (Today/board, inbox dates, Tactics), `m2-before|after` (promotion sheet, availability,

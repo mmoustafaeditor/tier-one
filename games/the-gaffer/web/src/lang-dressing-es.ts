@@ -73,7 +73,7 @@ export const D_ES: DStrings = {
     why: {
       asked: 'Ha pedido verte.', request: 'Ha pedido salir.', broken: 'Rompiste tu palabra con él.', minutes: 'No juega lo que dice su rol.',
       role: 'Juega por encima del rol de su contrato.', contract: 'Su contrato se acaba.', unhappy: 'Está hundido.', doubts: 'Ya no te cree.',
-      new: 'Es nuevo aquí. La primera impresión cuenta.', form: 'Fue el mejor del partido.',
+      new: 'Es nuevo aquí. La primera impresión cuenta.', form: 'Fue el mejor del partido.', scored: 'Marcó en el último partido.', debut: 'Su primer partido con el club, salido de nuestra cantera.', dropped: 'Fue titular el partido anterior y se quedó fuera en el último.',
     },
     none: 'No hay nada que hablar. Sabe dónde está.',
     wait: 'Ya hablaste con él esta semana. Dale unos días.',

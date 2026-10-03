@@ -57,5 +57,5 @@ checks for the fixes). "Observed" = reproduced in this build.
 | F13 | reproduced/open → **fixed (M2)**: cup chips | — | check season review/career labels at a season end |
 | F14 | **not reproduced** (counters scoped per run; markers grouped) | — | check chart grouping and digest counters |
 | F15 | reproduced/open → **fixed (M2)**: effects disclosed | courses (`enrol`, `src/sim/coach.ts`) are instant and the card shows only cost | disclose effect/duration/stacking before paying |
-| F16 | open (M3, design) | — | contextual conversations within the room system |
+| F16 | reproduced/open → **fixed (M3)** | talks had reasons only for problems and man of the match | scored / homegrown debut / dropped, once, cooldown kept (`rework/talks`) |
 | F17 | **not reproduced** (round trip, tamper, future version, junk all handled) → hardened (M1) | slot writes overwrote in place with no previous copy | previous copy kept per slot; `loadSlot` falls back to it and says so |

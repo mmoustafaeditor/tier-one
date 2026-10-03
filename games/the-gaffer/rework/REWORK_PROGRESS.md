@@ -82,4 +82,8 @@ pieces and marking (remembered per device; it never hides a setting silently). E
   Derby/board pressure already exists and is covered by `sim-tests/world.ts` (a derby defeat costs ×1.5 with the board)
   and the press cards ("feeling the heat").
 
-Next: M4 (AI best-XI with recalibration, analysis next-action links), M5 validation package.
+* **F16** contextual talks (`rework/talks`): "scored", "debut" (homegrown first game) and "dropped" from the last match
+  here, once each, cooldown kept; no invented reasons. Fingerprint unchanged.
+* **M4** full-time "What to do next" links (tactics / training / needs / dressing room) from the analysts' findings.
+
+Next: AI best-XI with recalibration (needs Saif's decision: results change), M5 device/human validation.

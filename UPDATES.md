@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework F16: players have something real to talk about
+- **What changed:** Players now have three new reasons to talk, all from what actually happened in your last match: he scored, a homegrown player made his first appearance, or a starter was dropped. Praise after a goal or a debut lifts morale and trust a little. Challenging a dropped player works on driven players and leaders, and backfires on volatile or mercenary ones. Each reason comes up once, and the existing cooldown stops repeats, so talks can't be farmed for morale. Players with nothing new still have nothing to say.
+- **Files:** `web/src/sim/room.ts`, `src/model/types.ts`, `src/lang-dressing*.ts`, `web/sim-tests/rework/talks.ts` (new)
+- **Heads-up for the team:** Match results unchanged (fingerprint `a04af554a49efa49`). Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework M4: full time says what to do next
 - **What changed:** Under the assistant's verdict, full time now offers "What to do next": up to three buttons that lead to where each problem from the match can be fixed. Tactical problems go to Tactics, tired legs to Training, poor finishing to recruitment needs, and cohesion to the Dressing room. They only appear when the match found something to fix.
 - **Files:** `web/src/ui2/FullTime.tsx`, `src/lang-v2*.ts`, `src/styles/app.css`
