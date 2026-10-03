@@ -10,22 +10,21 @@ import { playerOf, squadOf } from '../sim/world';
 import { userObjective } from '../sim/vision';
 import { isDerby } from '../sim/rivalry';
 import { CL } from '../lang-club-all';
-import { NV } from '../lang-nav-all';
 import { nextUserMatch, seasonOver } from '../sim/season';
 import { availabilityFor } from '../sim/tactics';
-import { dayName, dayNum, shortDate } from '../sim/calendar';
+import { dayName, shortDate } from '../sim/calendar';
 import { DEPTS } from '../sim/delegation';
 import { levelOf } from '../sim/staff';
-import { Crest, Form, I, Portrait, Spark, initialsOf } from './kit';
+import { Crest, I, Portrait, Spark, initialsOf } from './kit';
 import { Panel, PanelHead } from './shell';
 import { useGame, clubOf, cn, sn, matchLabel } from './game';
-import { formOf, leagueRows, upcoming, avgMorale, pct3, pctText } from './util';
+import { leagueRows, upcoming, avgMorale, pct3, pctText } from './util';
 import { DecisionCard, Receipt, choiceText, titleText } from './Decisions';
-import { newsText } from './text';
 import { D } from '../lang-dressing-all';
 import { cohesionOf } from '../sim/room';
-import { todayOf } from '../sim/cups';
 import { FirstWeekGuide } from './Guide';
+import { StadiumScene } from './Scene';
+import { CN } from '../lang-cine';
 
 export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision, ch: Choice) => Promise<boolean>; onUndo: () => void; canUndo: string | null }) {
   const g = useGame();
@@ -41,8 +40,6 @@ export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision,
   const over = seasonOver(c);
   const oppId = nm0 ? (nm0.home === c.clubId ? nm0.away : nm0.home) : null;
   const opp = oppId ? clubOf(w, oppId) : undefined;
-  const today = todayOf(c);
-  const daysTo = nm0 ? Math.round((nm0.date.getTime() - today.getTime()) / 86400000) : 0;
   const dayWord = nm0 ? dayName(nm0.date, g.ui) : '';
   // No match left for us (our league finished while others play on) reads as season over, never as an empty day (GF-007).
   const head = c.sacked ? x.today.sacked : over || !nm0 ? x.today.seasonDone : nm0?.cup ? x.today.headCup(list.length) : x.today.head(list.length, dayWord);
@@ -54,107 +51,133 @@ export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision,
   const staffN = staffCallsSinceMatch(c);
 
   const unread = c.inbox.filter((m) => !m.read).length;
+  const C = CN[g.ui];
+  const home = nm0 ? clubOf(w, nm0.home) : undefined, away = nm0 ? clubOf(w, nm0.away) : undefined;
+  const live = !!(nm0 && opp && !c.sacked && !over);
+  // The hero's one action is Continue, named for what it does next (the same order App.cont takes).
+  const go = c.live ? x.next.live : c.sacked ? x.next.sacked : list.length ? `${x.cont} · ${x.next.dec(list.length)}` : live ? C.prepare(dayWord) : x.cont;
   return (
-    <div className="sc-today">
-      <div className="layout">
-        <section className="hero a-hero on-ground">
-          <span className="eyebrow">{nm0 && opp ? x.today.eyebrow(matchLabel(g, { cup: nm0.cup, round: nm0.round, group: nm0.group }), cn(opp, lang), x.today.inDays(daysTo)) : g.league.name[lang]}</span>
-          <h1 className="h-hero">{head[0]}<em>{head[1]}</em>{head[2]}</h1>
-          {/* UI/UX pass (UX-02): the inbox, one tap from Today, with its unread count. */}
-          <button className={`inbox-line${unread ? ' new' : ''}`} onClick={() => g.go({ s: 'news' })}><I n="news" size="sm" />{NV[g.ui].inboxLine(unread)}{unread > 0 && <em>{unread}</em>}<I n="chev" size="sm" flip={g.rtl} /></button>
-        </section>
-
-        <div className="week a-week on-ground" aria-label={x.today.week}>
-          {next.slice(0, 7).map((u, i) => {
-            const o = clubOf(w, u.home === c.clubId ? u.away : u.home);
-            return (
-              <div key={`${u.round}${u.cup ?? ''}`} className={`d${i === 0 ? ' mx' : ''}`} title={`${cn(o, lang)} · ${shortDate(u.date, g.ui)}`}>
-                <span>{dayName(u.date, g.ui)}</span><b>{dayNum(u.date, g.ui)}</b>
-                <Crest club={o} size={18} />
-              </div>
-            );
-          })}
+    <div className="sc-today cine-desk">
+      <section className="desk-top" aria-label={C.nextMatch}>
+        <StadiumScene host={home ?? g.club} guest={away && home && away.id !== home.id ? away : undefined} className="desk-scene" />
+        <div className="desk-match">
+          {live && home && away ? (
+            <>
+              <span className="eyebrow desk-eyebrow">{C.nextMatch}</span>
+              <h1 className="h-hero desk-vs"><span>{cn(home, lang)}</span><em>{C.vs}</em><span>{cn(away, lang)}</span></h1>
+              <p className="desk-when">{longDay(nm0!.date, g.ui)}</p>
+              <p className="desk-comp">{matchLabel(g, { cup: nm0!.cup, round: nm0!.round, group: nm0!.group })}{isDerby(home.id, away.id) ? ` · ${CL[g.ui].derby}` : ''}</p>
+              <FixtureMeta />
+            </>
+          ) : (
+            <>
+              <span className="eyebrow desk-eyebrow">{g.league.name[lang]}</span>
+              <h1 className="h-hero">{head[0]}<em>{head[1]}</em>{head[2]}</h1>
+            </>
+          )}
+          <button className={`btn btn--primary desk-go${g.busy ? ' loading' : ''}`} disabled={g.busy} onClick={g.cont}>{go}<I n="arrowr" size="sm" flip={g.rtl} /></button>
         </div>
+      </section>
 
-        <div className="col col-a">
-          <section className="a-dec stack" aria-label={x.nav.today}>
-            <FirstWeekGuide />
+      <div className="desk-grid">
+        <div className="desk-main">
+          {live && <FixtureActions />}
+          <FirstWeekGuide />
+          <section className="desk-list" aria-label={C.desk}>
+            <div className="desk-h"><h2 className="h2">{C.desk}</h2>{live && list.length > 0 && <span className="desk-need">{head[0]}{head[1]}{head[2]}</span>}</div>
             {receipts.map((r, k) => <Receipt key={r.id} label={x.dec.done(r.label)} undo={x.dec.undo} onUndo={k === 0 && canUndo === r.id ? () => { onUndo(); setReceipts((rs) => rs.slice(1)); } : undefined} />)}
             {shown.map((d, k) => <DecisionCard key={d.id} d={d} i={k + 1} onResolve={resolve} />)}
-            {list.length > 5 && <button className="btn btn--ghost on-ground" onClick={() => setAll(!all)}>{all ? x.today.fewer : x.today.more(list.length - 5)}</button>}
+            {list.length > 5 && <button className="btn btn--ghost" onClick={() => setAll(!all)}>{all ? x.today.fewer : x.today.more(list.length - 5)}</button>}
+            {/* UI/UX pass (UX-02): the inbox, one tap from Today, with its unread count. */}
+            <button className={`desk-row inbox-line${unread ? ' new' : ''}`} onClick={() => g.go({ s: 'news' })}>
+              <I n="inbox" /><span className="grow">{C.newMsgs(unread)}</span><span className="desk-go-l">{C.inbox}<I n="arrowr" size="sm" flip={g.rtl} /></span>
+            </button>
+            <button className="desk-row" onClick={() => g.sheet({ k: 'staffLog' })}>
+              <I n="squad" /><span className="grow">{list.length ? x.today.staffDid(staffN) : x.today.nothing}<small>{x.today.nothingSub(handedOver.join(', '))}</small></span><span className="desk-go-l">{x.today.review}<I n="arrowr" size="sm" flip={g.rtl} /></span>
+            </button>
           </section>
+          {live && <FitPanel />}
         </div>
-
-        <div className="col col-b">
-          {nm0 && opp && !c.sacked && <FixtureCard />}
-          <FitPanel />
-          <Panel flat i={6} className="a-note">
-            <div className="between">
-              <div className="hstack"><I n="doc" /><div><b className="note-b">{list.length ? x.today.staffDid(staffN) : x.today.nothing}</b><div className="meta note-sub">{x.today.nothingSub(handedOver.join(', '))}</div></div></div>
-              <button className="link" onClick={() => g.sheet({ k: 'staffLog' })}>{x.today.review}</button>
-            </div>
-          </Panel>
-        </div>
-
-        <div className="col col-c">
+        <div className="desk-side">
           <PulsePanel pos={pos} />
-          <TablePanel oppId={oppId} />
-          <HeadlinesPanel />
+          <ComingUp next={next.slice(0, 3)} />
+          <div className="desk-league">
+            <I n="history" /><b>{g.league.name[lang]}</b><span className="grow">· {C.leagueLine(x.place(pos), rows[pos - 1]?.p ?? 0)}</span>
+            <button className="link" onClick={() => g.go({ s: 'match', tab: 2 })}>{C.table}<I n="arrowr" size="sm" flip={g.rtl} /></button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function FixtureCard() {
+const longDay = (d: Date, ui: string) => d.toLocaleDateString(ui === 'ar' ? 'ar-EG' : ui, { weekday: 'long', day: 'numeric', month: 'long' });
+
+// Under the match: the odds the engine gives and who is available (F08/F10 rules), in one line.
+function FixtureMeta() {
+  const g = useGame();
+  const { w, c, x } = g;
+  const C = CN[g.ui];
+  const m = useMemo(() => nextUserMatch(w, c), [w, c]);
+  const u = upcoming(w, c, 1)[0];
+  if (!u) return null;
+  const squad = squadOf(w, c.clubId);
+  const av = availabilityFor(squad, u.cup, c.rested ?? []);
+  let win = '';
+  if (m) { const p = predict(m, (id) => playerOf(w, id)!); win = pctText(pct3(m.sides[0].clubId === c.clubId ? p : [p[2], p[1], p[0]])[0]); }
+  return <p className="desk-meta">{C.available(av.available.length, squad.length)}{win ? ` · ${C.winChance(win)}` : ''} · {u.home === c.clubId ? x.today.ourGround : x.today.theirGround}</p>;
+}
+
+// Pick the XI and the opponent report, with the assistant's one-line read (FixtureCard's actions, unchanged).
+function FixtureActions() {
   const g = useGame();
   const { w, c, x, lang } = g;
-  const u = upcoming(w, c, 1)[0];
-  // The same kick-off the engine will use (this week's rests and focus included).
   const m = useMemo(() => nextUserMatch(w, c), [w, c]);
-  if (!u) return null;
-  const home = clubOf(w, u.home)!, away = clubOf(w, u.away)!;
-  const rows = leagueRows(w, c);
-  let odds: [number, number, number] = [0.4, 0.3, 0.3];
-  if (m) {
-    const p = predict(m, (id) => playerOf(w, id)!);
-    odds = m.sides[0].clubId === c.clubId ? p : [p[2], p[1], p[0]];
-  }
   const report = m ? c.scouted?.[m.key] : undefined;
-  const tips = m ? advice(w, c, report, odds[2]) : [];
-  const tip = tips[0];
+  let odds: [number, number, number] = [0.4, 0.3, 0.3];
+  if (m) { const p = predict(m, (id) => playerOf(w, id)!); odds = m.sides[0].clubId === c.clubId ? p : [p[2], p[1], p[0]]; }
+  const tip = m ? advice(w, c, report, odds[2])[0] : undefined;
   const A = x.fixture.advice;
   const line = !tip ? A.fine : tip.k === 'scoutFirst' ? A.scoutFirst : tip.k === 'mismatch' ? A.mismatch(x.tac.styles[tip.use]) : tip.k === 'edge' ? A.edge
     : tip.k === 'lowMastery' ? A.lowMastery(tip.n) : tip.k === 'tired' ? A.tired(tip.n) : tip.k === 'outOfPos' ? A.outOfPos(tip.n) : tip.k === 'underdog' ? A.underdog : A.trap;
   const asst = c.ops.staff.assistant;
-  const [pw, pd, pl] = pct3(odds); // F08: they add up to 100
-  const mine = home.id === c.clubId;
   return (
-    <Panel className="fixture a-match" i={0} label={x.fixture.comp('', '')}>
-      <div className="top">
-        <div className="between">
-          <span className="eyebrow">{matchLabel(g, { cup: u.cup, round: u.round, group: u.group })}</span>
-          <span className="chips">{isDerby(home.id, away.id) && <span className="tag tag--warn"><I n="fans" size="sm" />{CL[g.ui].derby}</span>}<span className="tag"><I n="stadium" size="sm" />{mine ? x.today.ourGround : x.today.theirGround}</span></span>
-        </div>
-        <div className="vs">
-          <div className="team"><Crest club={home} size={64} /><b>{cn(home, lang)}</b><Form list={formOf(rows, home.id)} letters={x.wdl} /></div>
-          <div className="ko"><span className="num">{dayName(u.date, g.ui)}</span><small>{shortDate(u.date, g.ui)}</small></div>
-          <div className="team"><Crest club={away} size={64} /><b>{cn(away, lang)}</b><Form list={formOf(rows, away.id)} letters={x.wdl} /></div>
-        </div>
-        <div className="odds" style={{ ['--w' as string]: `${Math.max(1, Math.round(odds[0] * 100))}fr`, ['--d' as string]: `${Math.max(1, Math.round(odds[1] * 100))}fr`, ['--l' as string]: `${Math.max(1, Math.round(odds[2] * 100))}fr` }} aria-hidden="true"><i /><i /><i /></div>
-        <div className="odds-l"><span>{x.fixture.win} <b>{pctText(pw)}</b></span><span>{x.fixture.draw} <b>{pctText(pd)}</b></span><span>{x.fixture.loss} <b>{pctText(pl)}</b></span></div>
+    <div className="desk-acts">
+      <div className="desk-two">
+        <button className="btn btn--ghost desk-big" onClick={() => g.go({ s: 'match', tab: 0 })}><I n="tactics" />{x.fixture.pick}<I n="arrowr" size="sm" flip={g.rtl} /></button>
+        <button className="btn btn--ghost desk-big" onClick={() => (report ? g.sheet({ k: 'report' }) : g.run({ type: 'report.make' }, { toast: false }).then((r) => { if (r.ok) g.sheet({ k: 'report' }); }))}><I n="eye" />{report ? x.fixture.report : x.fixture.getReport}<I n="arrowr" size="sm" flip={g.rtl} /></button>
       </div>
-      <div className="read">
-        <div className="advice">
-          <span className="staff" aria-hidden="true">{asst ? initialsOf(asst.name.en) : 'AS'}</span>
-          <div><div className="who">{asst ? asst.name[lang] : x.fixture.assistant}, <span>{x.office.roles.assistant.toLowerCase()}</span></div><q>{line}</q></div>
-        </div>
+      <div className="desk-asst">
+        <span className="staff" aria-hidden="true">{asst ? initialsOf(asst.name.en) : 'AS'}</span>
+        <div><div className="who">{asst ? asst.name[lang] : x.fixture.assistant}, <span>{x.office.roles.assistant.toLowerCase()}</span></div><q>{line}</q></div>
       </div>
-      <div className="acts">
-        <button className="btn btn--primary" onClick={() => g.go({ s: 'match', tab: 0 })}><I n="tactics" />{x.fixture.pick}</button>
-        <button className="btn btn--ghost" onClick={() => (report ? g.sheet({ k: 'report' }) : g.run({ type: 'report.make' }, { toast: false }).then((r) => { if (r.ok) g.sheet({ k: 'report' }); }))}><I n="eye" />{report ? x.fixture.report : x.fixture.getReport}</button>
+    </div>
+  );
+}
+
+// The next three matches as cards (date, home/away, opponent crest), with the full fixture list one tap away.
+function ComingUp({ next }: { next: ReturnType<typeof upcoming> }) {
+  const g = useGame();
+  const { w, c } = g;
+  const C = CN[g.ui];
+  if (!next.length) return null;
+  return (
+    <section className="desk-coming" aria-label={C.coming}>
+      <div className="desk-h"><h2 className="h2">{C.coming}</h2><button className="link" onClick={() => g.go({ s: 'match', tab: 1 })}>{C.fixtures}<I n="arrowr" size="sm" flip={g.rtl} /></button></div>
+      <div className="coming">
+        {next.map((u, i) => {
+          const o = clubOf(w, u.home === c.clubId ? u.away : u.home);
+          const atHome = u.home === c.clubId;
+          return (
+            <div key={`${u.round}${u.cup ?? ''}`} className={`cu${i === 0 ? ' next' : ''}`}>
+              <div className="cu-t"><span className="cu-d">{shortDate(u.date, g.ui)}</span><I n={atHome ? 'today' : 'arrowr'} size="sm" /><span className="sr">{atHome ? C.home : C.away}</span></div>
+              <b>{C.vs} {cn(o, g.lang)}</b>
+              <Crest club={o} size={36} />
+            </div>
+          );
+        })}
       </div>
-    </Panel>
+    </section>
   );
 }
 
@@ -210,63 +233,24 @@ function PulsePanel({ pos }: { pos: number }) {
     ['fans', x.today.fans, x.today.fansMood(fans), res, fans, last(2, fans)],
     ['room', x.today.room, x.today.roomMood(room), `${D[g.ui].today.roomWhy(Math.round(cohesionOf(w, c.clubId)))} · ${x.today.roomWhy(low && low.morale < 50 ? sn(low, g.lang) : null)}`, room, last(3, room)],
   ];
+  const C = CN[g.ui];
   return (
-    <Panel i={4} className="a-pulse" label={x.today.pulse}>
-      <PanelHead title={x.today.pulse} right={<button className="link" onClick={() => g.go({ s: 'club' })}>{x.today.office}<I n="chev" size="sm" /></button>} />
-      <div className="pulse">
+    <section className="desk-around" aria-label={C.around}>
+      <div className="desk-h"><h2 className="h2">{C.around}</h2><button className="link" onClick={() => g.go({ s: 'club' })}>{x.today.office}<I n="arrowr" size="sm" flip={g.rtl} /></button></div>
+      <div className="pulse3">
         {rows.map(([k, label, mood, why, v, data]) => (
-          <div key={k} className={`p${v < 45 ? ' soft' : ''}${k === 'room' ? ' p-link' : ''}`} {...(k === 'room' ? { role: 'button', tabIndex: 0, onClick: () => g.go({ s: 'room' }), onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter') g.go({ s: 'room' }); } } : {})}>
-            <span className="ic"><I n={k} /></span>
-            <div><b>{label} · <em>{mood}</em></b><div className="why">{why}</div></div>
+          <div key={k} className={`p3${v < 45 ? ' soft' : ''}${k === 'room' ? ' p-link' : ''}`} title={why} {...(k === 'room' ? { role: 'button', tabIndex: 0, onClick: () => g.go({ s: 'room' }), onKeyDown: (e: React.KeyboardEvent) => { if (e.key === 'Enter') g.go({ s: 'room' }); } } : {})}>
+            <span className="ic"><I n={k === 'room' ? 'shirt' : k} size="lg" /></span>
+            <div>
+              <span className="l">{label}</span>
+              <b className="v">{v}</b>
+              <span className="m">{mood}</span>
+              <span className="why">{why}</span>
+            </div>
             <span className="spark"><Spark data={data} tone={data.length > 1 && data[data.length - 1] < data[0] ? 'down' : 'up'} rtl={g.rtl} /></span>
-            <span className="v">{v}</span>
           </div>
         ))}
       </div>
-    </Panel>
-  );
-}
-
-function TablePanel({ oppId }: { oppId: string | null }) {
-  const g = useGame();
-  const { w, c, x } = g;
-  const rows = leagueRows(w, c);
-  const i = rows.findIndex((r) => r.clubId === c.clubId);
-  const from = Math.max(0, Math.min(rows.length - 5, i - 2));
-  const played = rows[i]?.p ?? 0;
-  return (
-    <Panel i={5} className="a-table" label={x.today.table}>
-      <PanelHead title={x.today.table} right={<button className="link" onClick={() => g.go({ s: 'match', tab: 2 })}>{x.today.after(played)}<I n="chev" size="sm" /></button>} />
-      <table className="tbl">
-        <tbody>
-          {rows.slice(from, from + 5).map((r, k) => {
-            const cl = clubOf(w, r.clubId);
-            return (
-              <tr key={r.clubId} className={r.clubId === c.clubId ? 'me' : r.clubId === oppId ? 'opp' : undefined}>
-                <td className="pos">{from + k + 1}</td>
-                <td><span className="cl"><Crest club={cl} size={22} /><span className="cl-n">{cn(cl, g.lang)}</span>{r.clubId === oppId && <span className="nextchip">{x.today.next}</span>}</span></td>
-                <td className="gd">{r.gf - r.ga > 0 ? '+' : ''}{r.gf - r.ga}</td>
-                <td className="pts">{r.pts}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </Panel>
-  );
-}
-
-function HeadlinesPanel() {
-  const g = useGame();
-  const { w, c, x } = g;
-  const items = (c.news ?? []).slice(0, 3);
-  if (!items.length) return null;
-  return (
-    <Panel i={6} className="a-news" label={x.today.headlines}>
-      <PanelHead title={x.today.headlines} right={<button className="link" onClick={() => g.go({ s: 'news' })}>{x.today.allNews}<I n="chev" size="sm" /></button>} />
-      <div className="rows">
-        {items.map((n) => { const [h, b] = newsText(g.t, g.lang, w, c, n); return <div key={n.id} className="row news-row"><div className="grow"><div className="name wrap">{h}</div><div className="sub wrap">{b}</div></div></div>; })}
-      </div>
-    </Panel>
+    </section>
   );
 }

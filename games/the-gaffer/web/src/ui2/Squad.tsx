@@ -12,9 +12,10 @@ import { avgRating } from '../sim/ratings';
 import { loanOf } from '../sim/loans';
 import { riskBand } from '../sim/youth';
 import { Y } from '../lang-youth-all';
-import { Chips, Panel, PanelHead } from './shell';
+import { Panel, PanelHead, Seg } from './shell';
+import { CN } from '../lang-cine';
+import { NV } from '../lang-nav-all';
 import { I, Portrait, Ring } from './kit';
-import { SquadTabs } from './SquadTabs';
 import { SquadPlanner } from './Planner';
 import { useGame, money, sn } from './game';
 import { ageOf, moodOf } from './util';
@@ -28,6 +29,8 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
   const g = useGame();
   const { w, c, x, lang } = g;
   const [lens, setLens] = useState<Lens>((lens0 as Lens) ?? 'all');
+  const [view, setView] = useState<'players' | 'depth' | 'contracts'>('players');
+  const [all, setAll] = useState(!!lens0 && lens0 !== 'all');
   const squad = useMemo(() => squadOf(w, c.clubId), [w, c.clubId]);
   const { xi } = useMemo(() => xiFor(w, c), [w, c]);
   const inXI = new Set(xi.map((p) => p.id));
@@ -60,14 +63,16 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
     .sort((a, b) => (Number(inXI.has(b.id)) - Number(inXI.has(a.id))) || b.rating - a.rating);
   const ending = squad.filter((p) => p.contractUntil <= c.season + 1);
   const L = x.squad.lens;
+  const C = CN[g.ui];
+  // The row's second line: position and rating first, then only what changes a decision (form, injury, ban, load,
+  // loan, listing, an ask or a promise). Captaincy is a badge.
   const sub = (p: Player) => {
-    const bits = [x.common.pos[p.position], String(ageOf(p, c.season)), String(p.rating)];
+    const bits = [`${x.common.pos[p.position]} · ${p.rating}`];
     const r = avgRating(c.ratings?.[p.id]);
     if (r) bits.push(x.squad.form(r.toFixed(1)));
     if (p.injured) bits.push(x.squad.sub2.inj(p.injured)); else if (p.banned) bits.push(x.squad.sub2.ban);
     else if (cupBanned(p)) bits.push(RF[g.ui].suspended); // gf-ref: a cup suspension
     else if (riskBand(p) > 0) bits.push(`${Y[g.ui].cv.load} ${Y[g.ui].bands[riskBand(p)].toLowerCase()}`); // v2.6
-    if (p.captain) bits.push(x.squad.sub2.captain);
     if (loanOf(c, p.id)) bits.push(x.squad.sub2.loan);
     if (p.listed) bits.push(x.squad.sub2.listed);
     if (p.req !== undefined) bits.push(D[g.ui].squad.req);
@@ -75,83 +80,104 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
     else if (pledgeOf(c, p.id)) bits.push(D[g.ui].squad.word);
     return bits.join(' · ');
   };
+  const rows = view === 'contracts' ? [...squad].sort((a, b) => a.contractUntil - b.contractUntil || b.rating - a.rating) : list;
+  const SHOW = 8;
+  const shown = all || view === 'contracts' ? rows : rows.slice(0, SHOW);
+  const table = (
+    <div className="sq-table" role="table" aria-label={x.squad.player}>
+      <div className="sq-h" role="row"><span role="columnheader">{C.colPlayer}</span><span role="columnheader" className="c-pos">{C.colPos}</span><span role="columnheader">{C.colFit}</span><span role="columnheader">{C.colMood}</span><span role="columnheader">{C.colYears}</span></div>
+      {shown.map((p) => {
+        const yrs = Math.max(0, p.contractUntil - c.season);
+        const mood = moodOf(p);
+        return (
+          <button key={p.id} className="sq-r" role="row" onClick={() => g.player(p.id)}>
+            <span className="sq-who" role="cell"><Portrait p={p} club={g.club} /><span className="grow"><span className="name">{p.name[lang]}{p.captain && <span className="cap" aria-label={x.squad.sub2.captain}>C</span>}</span><span className="sub">{sub(p)}</span></span></span>
+            <span className="c-pos" role="cell">{x.common.pos[p.position]} · {p.rating}</span>
+            <span role="cell"><Ring v={p.injured || p.banned ? 0 : p.fitness} tone={p.fitness < 80 ? 'warn' : undefined} size={34} /></span>
+            <span role="cell"><span className={`mood${mood <= 1 ? ' bad' : mood === 2 ? ' meh' : ''}`} aria-label={x.player.moods[mood]}><I n={MOOD_ICON[mood]} /></span></span>
+            <span role="cell"><span className={`yrs${yrs <= 1 ? ' warn' : ''}`}>{yrs <= 0 ? '½' : yrs}</span></span>
+          </button>
+        );
+      })}
+    </div>
+  );
   return (
-    <div className="sc-squad">
-      <SquadTabs at="squad" />
-      <section className="s-head on-ground">
-        <h1 className="h-hero">{x.squad.title}</h1>
-        <div className="facts">
-          <span><b>{age.toFixed(1)}</b>{x.squad.facts.age}</span>
-          <span><b className="ltr">{money(wageBill(w, c.clubId))}</b>{x.squad.facts.wages}</span>
-          <span><b>{unhappy}</b>{x.squad.facts.unhappy}</span>
-          <span><b>{holes.length}</b>{x.squad.facts.holes(holes.length)}</span>
+    <div className="sc-squad cine-squad">
+      <header className="pg-head">
+        <div className="pg-title"><h1 className="h-hero">{x.squad.title}</h1><p className="pg-sub">{C.players(squad.length)}</p></div>
+        <div className="pg-facts">
+          <span><b className="num">{age.toFixed(1)}</b><small>{C.avgAge}</small></span>
+          <span><b className="ltr">{money(wageBill(w, c.clubId))}<em>{C.perMonth}</em></b><small>{C.wageBill}</small></span>
+          <span><b className="num">{unhappy}</b><small>{C.unhappy}</small></span>
         </div>
-        <Chips label={x.squad.title} value={lens} onChange={setLens}
-          options={(['all', 'starters', 'ending', 'unhappy', 'injured', 'loans', 'listed'] as Lens[]).map((v) => ({ v, label: L[v] }))} />
-      </section>
+        <button className="btn btn--ghost pg-cta" onClick={() => setView('depth')}>{C.planner}<I n="arrowr" size="sm" flip={g.rtl} /></button>
+      </header>
+      <Seg label={x.squad.title} value={view} onChange={setView} className="pg-tabs"
+        options={[{ v: 'players', label: NV[g.ui].players }, { v: 'depth', label: C.depth }, { v: 'contracts', label: <>{C.contracts}{ending.length > 0 && <em className="tab-n">{ending.length}</em>}</> }]} />
 
-      <div className="grid">
-        <Panel className="g-depth" i={1} label={x.squad.depth}>
-          <PanelHead title={x.squad.depth} right={<span className="eyebrow">{x.squad.depthSub}</span>} />
-          <div className="depth">
-            <svg viewBox="0 0 68 88" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="var(--pitch-line)" strokeWidth=".5"><rect x="2" y="2" width="64" height="84" /><line x1="2" y1="44" x2="66" y2="44" /><circle cx="34" cy="44" r="8" /><rect x="16" y="2" width="36" height="14" /><rect x="16" y="72" width="36" height="14" /></g></svg>
-            {depth.map((d, i) => (
-              <button key={i} className={`pos${d.state === 'ok' ? '' : ` ${d.state}`}`} style={{ left: `${d.sl.x}%`, top: `${Math.max(9, Math.min(91, 100 - d.sl.y))}%` }}
-                onClick={() => d.first && g.player(d.first.id)} aria-label={`${x.common.pos[d.sl.pos]} ${d.first ? sn(d.first, lang) : ''}`}>
-                <span className="ph">{x.common.pos[d.sl.pos]}<span className="dot" /></span>
-                <b>{d.first ? sn(d.first, lang) : '—'}</b>
-                <span className="alt">{d.cover ? sn(d.cover, lang) : x.squad.thenNobody}</span>
-              </button>
-            ))}
-          </div>
-          <div className="depth-key"><span><i style={{ background: 'var(--good)' }} />{x.squad.covered}</span><span><i style={{ background: 'var(--warn-mark)' }} />{x.squad.thin}</span><span><i style={{ background: 'var(--bad)' }} />{x.squad.hole}</span></div>
-          {worstHole?.first && (
-            <div className="alert">
-              <I n="alert" />
-              <div className="grow"><b>{x.squad.noCover(sn(worstHole.first, lang))}</b><span>{x.squad.noCoverSub}</span></div>
-              <button className="btn btn--primary btn--sm" onClick={() => g.go({ s: 'transfers', tab: 1 })}>{x.squad.shortlist}</button>
+      {view === 'players' && (
+        <div className="sq-grid">
+          <div className="sq-main">
+            <div className="sq-tools">
+              <label className="sel"><span className="sr">{x.squad.title}</span>
+                <select value={lens} onChange={(e) => { setLens(e.target.value as Lens); setAll(true); }}>
+                  {(['all', 'starters', 'ending', 'unhappy', 'injured', 'loans', 'listed'] as Lens[]).map((v) => <option key={v} value={v}>{L[v]}</option>)}
+                </select>
+              </label>
+              <span className="sq-holes"><b>{holes.length}</b> {x.squad.facts.holes(holes.length)}</span>
             </div>
-          )}
-        </Panel>
+            {table}
+            {rows.length > SHOW && <button className="link sq-all" onClick={() => setAll(!all)}>{all ? C.showFewer : C.viewAll(rows.length)}<I n="arrowr" size="sm" flip={g.rtl} /></button>}
+          </div>
+          <aside className="sq-side">
+            <button className={`sq-alert${ending.length ? '' : ' calm'}`} onClick={() => setView('contracts')}>
+              <I n="doc" /><b className="grow">{ending.length ? C.dealsEnding(ending.length) : x.squad.endingNone}</b><span>{C.review}<I n="arrowr" size="sm" flip={g.rtl} /></span>
+            </button>
+            <div className="sq-moves">
+              <I n="market" />
+              <button className="link" onClick={() => { setLens('listed'); setAll(true); }}>{C.listed} <b>{squad.filter((p) => p.listed).length}</b></button>
+              <span aria-hidden="true">·</span>
+              <button className="link" onClick={() => { setLens('loans'); setAll(true); }}>{C.onLoan} <b>{(c.loans ?? []).filter((l) => l.from === c.clubId && l.season === c.season).length}</b></button>
+            </div>
+            <div className="sq-tiles">
+              <button onClick={() => g.go({ s: 'room' })}><I n="room" size="lg" /><span>{NV[g.ui].room}</span></button>
+              <button onClick={() => g.go({ s: 'train' })}><I n="bolt" size="lg" /><span>{NV[g.ui].training}</span></button>
+              <button onClick={() => g.go({ s: 'medical' })}><I n="medic" size="lg" /><span>{NV[g.ui].medical}</span></button>
+              <button onClick={() => g.go({ s: 'academy' })}><I n="grad" size="lg" /><span>{NV[g.ui].academy}</span></button>
+            </div>
+          </aside>
+        </div>
+      )}
 
-        <SquadPlanner />
-
-        <Panel className="g-list" i={2} label={x.squad.player}>
-          <div className="col-h"><span /><span className="eyebrow">{x.squad.player}</span><span className="glance"><span className="g">{x.squad.fit}</span><span className="g">{x.squad.mood}</span><span className="g">{x.squad.yrs}</span></span></div>
-          <div className="plist">
-            {list.map((p) => {
-              const yrs = Math.max(0, p.contractUntil - c.season);
-              const mood = moodOf(p);
-              return (
-                <button key={p.id} className="pl" onClick={() => g.player(p.id)}>
-                  <Portrait p={p} club={g.club} />
-                  <span className="grow"><span className="name">{p.name[lang]}</span><span className="sub">{sub(p)}</span></span>
-                  <span className="glance">
-                    <span className="g"><Ring v={p.injured || p.banned ? 0 : p.fitness} tone={p.fitness < 80 ? 'warn' : undefined} /></span>
-                    <span className="g"><span className={`mood${mood <= 1 ? ' bad' : mood === 2 ? ' meh' : ''}`} aria-label={x.player.moods[mood]}><I n={MOOD_ICON[mood]} /></span></span>
-                    <span className="g"><span className={`yrs${yrs <= 1 ? ' warn' : ''}`}>{yrs <= 0 ? '½' : yrs}</span></span>
-                  </span>
+      {view === 'depth' && (
+        <div className="sq-depthview">
+          <Panel className="g-depth" i={1} label={x.squad.depth}>
+            <PanelHead title={x.squad.depth} right={<span className="eyebrow">{x.squad.depthSub}</span>} />
+            <div className="depth">
+              <svg viewBox="0 0 68 88" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="var(--pitch-line)" strokeWidth=".5"><rect x="2" y="2" width="64" height="84" /><line x1="2" y1="44" x2="66" y2="44" /><circle cx="34" cy="44" r="8" /><rect x="16" y="2" width="36" height="14" /><rect x="16" y="72" width="36" height="14" /></g></svg>
+              {depth.map((d, i) => (
+                <button key={i} className={`pos${d.state === 'ok' ? '' : ` ${d.state}`}`} style={{ left: `${d.sl.x}%`, top: `${Math.max(9, Math.min(91, 100 - d.sl.y))}%` }}
+                  onClick={() => d.first && g.player(d.first.id)} aria-label={`${x.common.pos[d.sl.pos]} ${d.first ? sn(d.first, lang) : ''}`}>
+                  <span className="ph">{x.common.pos[d.sl.pos]}<span className="dot" /></span>
+                  <b>{d.first ? sn(d.first, lang) : '—'}</b>
+                  <span className="alt">{d.cover ? sn(d.cover, lang) : x.squad.thenNobody}</span>
                 </button>
-              );
-            })}
-          </div>
-        </Panel>
+              ))}
+            </div>
+            <div className="depth-key"><span><i style={{ background: 'var(--good)' }} />{x.squad.covered}</span><span><i style={{ background: 'var(--warn-mark)' }} />{x.squad.thin}</span><span><i style={{ background: 'var(--bad)' }} />{x.squad.hole}</span></div>
+            {worstHole?.first && (
+              <div className="alert">
+                <I n="alert" />
+                <div className="grow"><b>{x.squad.noCover(sn(worstHole.first, lang))}</b><span>{x.squad.noCoverSub}</span></div>
+                <button className="btn btn--primary btn--sm" onClick={() => g.go({ s: 'transfers', tab: 1 })}>{x.squad.shortlist}</button>
+              </div>
+            )}
+          </Panel>
+          <SquadPlanner />
+        </div>
+      )}
 
-        <Panel className="g-prom" i={3} label={x.squad.desk}>
-          <PanelHead title={x.squad.desk} right={<span className="eyebrow">{x.squad.deskSub}</span>} />
-          <div className="rows">
-            <button className="row linkrow" onClick={() => setLens('ending')}><I n="doc" /><span className="grow"><span className="name">{ending.length ? x.squad.ending(ending.length) : x.squad.endingNone}</span><span className="sub">{ending.slice(0, 3).map((p) => sn(p, lang)).join(' · ')}</span></span><I n="chev" size="sm" /></button>
-            <button className="row linkrow" onClick={() => setLens('listed')}><I n="market" /><span className="grow"><span className="name">{x.squad.listedN(squad.filter((p) => p.listed).length)}</span></span><I n="chev" size="sm" /></button>
-            <button className="row linkrow" onClick={() => setLens('loans')}><I n="swap" /><span className="grow"><span className="name">{x.squad.loansOut((c.loans ?? []).filter((l) => l.from === c.clubId && l.season === c.season).length)}</span></span><I n="chev" size="sm" /></button>
-          </div>
-          <div className="squad-doors">
-            <button className="btn btn--primary btn--sm" onClick={() => g.go({ s: 'room' })}><I n="room" size="sm" />{D[g.ui].squad.door}</button>
-            <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'train' })}><I n="bolt" size="sm" />{x.squad.training}</button>
-            <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'medical' })}><I n="medic" size="sm" />{x.squad.medical}</button>
-            <button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'academy' })}><I n="grad" size="sm" />{x.squad.academy}</button>
-          </div>
-        </Panel>
-      </div>
+      {view === 'contracts' && <div className="sq-main sq-contracts">{table}</div>}
     </div>
   );
 }

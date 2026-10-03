@@ -8,8 +8,9 @@ import { FORMATIONS } from '../sim/tactics';
 import type { World } from '../sim/world';
 import { L, W } from './pitch/move';
 import { downIn, newAnim, setPitchDebug, tick, type Anim } from './pitch/sim';
-import { MONITOR, refKit } from './pitch/officials';
+import { MONITOR } from './pitch/officials';
 import type { HlMode } from '../sim/highlights';
+import { themeOf } from './theme';
 
 const PITCH_DEBUG = typeof location !== 'undefined' && /[?&]pitchdebug\b/.test(location.search);
 // Tests only (with ?pitchdebug): show the pitch in this weather (&wx=0-5), whatever the match's is.
@@ -18,6 +19,7 @@ setPitchDebug(PITCH_DEBUG);
 
 const rgb = (hex: string) => { const n = parseInt(hex.replace('#', '').slice(0, 6), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 const near = (a: string, b: string) => { const [p, q] = [rgb(a), rgb(b)]; return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]) < 140; };
+const GK_A = '#e9b83a', GK_B = '#3fa3e6', GK_C = '#b4e04a';
 // Numbers in black or white, whichever reads better on the shirt.
 const ink = (hex: string) => { const [r, g, b] = rgb(hex); return r * 0.299 + g * 0.587 + b * 0.114 > 150 ? '#111' : '#fff'; };
 // The away side changes shirt when both kits look alike (secondary colour, else white, else black).
@@ -110,11 +112,17 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
   const anim = useRef<Anim | null>(null);
 
   const colors = m.sides.map((s) => world.clubs.find((c) => c.id === s.clubId)!.colors);
-  const kit = [colors[0][0], awayKit(colors[0][0], colors[1] as [string, string])];
-  const refC = refKit(kit);
+  // Shirt colours from the club themes (the same shirts as everywhere else in the UI); the away side changes when they clash.
+  const th = m.sides.map((sd) => themeOf(world.clubs.find((c) => c.id === sd.clubId)));
+  void colors;
+  const kit = [th[0].kit, awayKit(th[0].kit, [th[1].kit, th[1].secondary])];
   const kitRef = useRef(kit);
   kitRef.current = kit;
   const numbers = m.sides.map((s) => s.onPitch.map((id) => (id ? world.players.find((p) => p.id === id)?.shirtNumber ?? '' : '')));
+  // Cinematic pack v2: the goalkeepers in their own colours (gold at home, blue away, swapped if a kit is close), so
+  // both keepers read at a glance; the slot's position comes from the side's current shape.
+  const gkKit = [near(kit[0], GK_A) || near(kit[1], GK_A) ? GK_C : GK_A, near(kit[1], GK_B) || near(kit[0], GK_B) ? GK_C : GK_B];
+  const isGk = m.sides.map((s) => FORMATIONS[s.tactics.formation].slots.map((sl) => sl.pos === 'GK'));
 
   if (!anim.current) { anim.current = newAnim(m, world); if (PITCH_WX >= 0 && PITCH_WX <= 5) anim.current.wx = PITCH_WX; }
   const wx = anim.current.wx;
@@ -225,20 +233,21 @@ export function Pitch2D({ m, world, msPerMinute, running, goalWord = 'GOAL', cam
       <rect x="-2" y={y0} width={L + 4} height={vh2} style={{ fill: 'var(--pitch-b)' }} />
       <path ref={pitchRef} style={{ fill: 'var(--pitch-a)' }} />
       <path ref={stripeRef} style={{ fill: 'var(--pitch-b)' }} />
-      <path ref={gridRef} fill="none" style={{ stroke: 'var(--pitch-line)' }} strokeOpacity=".45" strokeWidth=".3" strokeDasharray="1 1.4" />
+      <path ref={gridRef} fill="none" style={{ stroke: 'var(--pitch-line)' }} strokeOpacity=".14" strokeWidth=".25" strokeDasharray="1 1.4" />
       <path ref={zoneRef} className="g-zone" opacity=".2" />
       <path ref={lineRef} fill="none" style={{ stroke: 'var(--pitch-line)' }} strokeWidth=".4" strokeLinejoin="round" />
       {/* The ground in this weather: wet and dark in rain, a white cover of snow, dry and yellowing in the heat. */}
       {[1, 2, 4, 5].includes(wx) && <rect className={`g-ground wx${wx}`} x="-2" y={y0} width={L + 4} height={vh2} aria-hidden="true" />}
       <g ref={layer}>
         {([0, 1] as const).map((side) => m.sides[side].onPitch.map((_, k) => (
-          <g key={`${side}-${k}`} ref={(el) => { dots.current[side][k] = el; }} className="g-dot2">
-            <circle r="2.3" fill={kit[side]} stroke="#021311" strokeOpacity=".8" strokeWidth=".45" />
-            <text className="g-dot-n" y=".85" textAnchor="middle" fill={ink(kit[side])}>{numbers[side][k]}</text>
+          <g key={`${side}-${k}`} ref={(el) => { dots.current[side][k] = el; }} className={`g-dot2${isGk[side][k] ? ' gk' : ''}`}>
+            <circle r="2.3" fill={isGk[side][k] ? gkKit[side] : kit[side]} stroke="#071012" strokeOpacity=".85" strokeWidth=".45" />
+            <text className="g-dot-n" y=".85" textAnchor="middle" fill={ink(isGk[side][k] ? gkKit[side] : kit[side])}>{numbers[side][k]}</text>
           </g>
         )))}
-        <g ref={refRef} className="g-off"><circle r="1.7" fill={refC} stroke="#fff" strokeOpacity=".85" strokeWidth=".35" /></g>
-        {[0, 1].map((i) => <g key={i} ref={(el) => { arRef.current[i] = el; }} className="g-off"><circle r="1.4" fill={refC} stroke="#fff" strokeOpacity=".85" strokeWidth=".3" /></g>)}
+        {/* The officials (pack v2): black with an amber outline, the referee marked REF, never a player's colours. */}
+        <g ref={refRef} className="g-off g-ref"><circle r="2.1" fill="#0d0f10" stroke="#f2b84b" strokeWidth=".45" /><text y=".55" textAnchor="middle" fontSize="1.35" fontWeight="800" fill="#f4f2ed" letterSpacing="-.04">REF</text></g>
+        {[0, 1].map((i) => <g key={i} ref={(el) => { arRef.current[i] = el; }} className="g-off"><circle r="1.4" fill="#0d0f10" stroke="#f2b84b" strokeWidth=".35" /></g>)}
         <ellipse ref={shadowRef} rx="1.1" ry=".6" fill="#000" opacity="0" />
         <g ref={ballRef}><circle r="1.05" fill="#fff" stroke="#111" strokeWidth=".3" /></g>
       </g>

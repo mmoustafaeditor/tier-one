@@ -118,6 +118,9 @@
   --e2: 0 1px 0 rgba(255,255,255,.05) inset, 0 26px 50px -24px rgba(0,0,0,.95);
   --focus-ring: #f4f2ed;
 }
+/* The old mint ramp, still named by a few component rules, now means the club accent: light steps = the club's
+   link colour (≥4.5:1 on dark, so dark text reads on it as a fill), deep steps = its primary. */
+:root { --mint-300: var(--club-link); --mint-400: var(--club-link); --mint-500: var(--club-primary); --mint-600: var(--club-primary); --mint-200: var(--club-link); }
 /* Matchday keeps the same palette (the pitch is the light source). */
 :root[data-light="flood"] { --ground: #0a1013; }
 

@@ -19,7 +19,11 @@ import { Banner, CommentaryFeed, MomentIcon, RefLine, VarBanner, bannerOf, momen
 import { applyTip, explain, suggest, winChance, type Point, type Tip } from '../sim/engine/story';
 import { momentsOf, type KeyMoment } from '../sim/record';
 import { Crest, I, LineChart, MiniPitch, Momentum, Portrait, Spark } from './kit';
-import { Panel, PanelHead, Sheet, Steps } from './shell';
+import { Panel, PanelHead, Seg, Sheet, Steps } from './shell';
+import { CN } from '../lang-cine';
+import { wordmarkSvg } from '../brand';
+
+const WORDMARK = wordmarkSvg('dark');
 import { useGame, clubOf, cn, sn, matchLabel } from './game';
 import { Pitch2D } from './Pitch2D';
 import { pointText, tipWhat, tipWhy } from './why';
@@ -53,6 +57,7 @@ export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFini
   const minMs = minuteMs(m, hl, speed, prevTo.current);
   const scale = Math.round((2400 * RATES[1]) / speed);
   const [view, setView] = useState(0);
+  const [pane, setPane] = useState(0); // the reference's tabs: pitch, stats, commentary
   const [changes, setChanges] = useState(false);
   const [htSeen, setHtSeen] = useState(m.minute > 45);
   const [flash, setFlash] = useState<{ side: 0 | 1; id: string; n: number } | null>(null);
@@ -161,51 +166,118 @@ export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFini
     setYell({ l, at: Date.now() });
   };
   const ft = fullTactics(s.tactics);
+  const C = CN[g.ui];
+  const pct = (a: number, b: number) => Math.round((100 * a) / Math.max(1, a + b));
+  // The four numbers the reference keeps beside the pitch (possession, shots, on target, xG), ours first.
+  const top4: [string, number, number, string, string][] = [
+    [C.possession, m.stats[me][0], m.stats[o][0], `${m.stats[me][0]}%`, `${m.stats[o][0]}%`],
+    [C.shots, pct(m.stats[me][1], m.stats[o][1]), pct(m.stats[o][1], m.stats[me][1]), String(m.stats[me][1]), String(m.stats[o][1])],
+    [C.onTarget, pct(m.stats[me][2], m.stats[o][2]), pct(m.stats[o][2], m.stats[me][2]), String(m.stats[me][2]), String(m.stats[o][2])],
+    [C.xg, pct(m.xg?.[me] ?? 0, m.xg?.[o] ?? 0), pct(m.xg?.[o] ?? 0, m.xg?.[me] ?? 0), (m.xg?.[me] ?? 0).toFixed(1), (m.xg?.[o] ?? 0).toFixed(1)],
+  ];
+  const latest = moments.filter((k) => !banner || !(k.min === m.minute && (k.plus ?? 0) === (m.plus ?? 0)));
   return (
-    <div className="sc-live">
+    <div className="sc-live cine-live">
       <header className="topbar on-ground">
         <div className="club">
           <button className="icon-btn" aria-label={x.back} onClick={() => g.go({ s: 'today' })}><I n="back" /></button>
-          <div className="grow"><b>{matchLabel(g, m)}</b><small>{done ? x.live.ft : isHalfTime(m) ? x.live.ht : `${clock}′`}</small><RefLine m={m} /></div>
+          <span className="mast-logo solo-logo" aria-hidden="true" dangerouslySetInnerHTML={{ __html: WORDMARK }} />
+          <Crest club={us} size={36} />
+          <div className="grow"><b>{cn(us, lang)}</b><small>{matchLabel(g, m)}</small><RefLine m={m} /></div>
         </div>
         <button className="icon-btn" aria-pressed={sound} aria-label={x.live.sound} onClick={() => { setSound(!sound); setSoundState(!sound); }}><I n={sound ? 'sound' : 'mute'} /></button>
+        {!done && <button className="icon-btn lv-pause-top" aria-label={paused ? x.live.play : x.live.pause} onClick={() => setPaused(!paused)}><I n={paused ? 'play' : 'pause'} /></button>}
       </header>
-      <div className="grid">
-        <Panel className={`g-score board-top${flash ? ' goalflash' : ''}`} i={0} label={`${cn(home, lang)} ${shown[0]} ${cn(away, lang)} ${shown[1]}`}>
-          <span className="floodglow" aria-hidden="true" />
-          <span className="lights l" aria-hidden="true"><i /><i /><i /><i /></span><span className="lights r" aria-hidden="true"><i /><i /><i /><i /></span>
-          <div className="scoreboard">
-            <div className="side"><Crest club={home} size={48} /><b>{cn(home, lang)}</b></div>
-            <div className="mid"><span className="score ltr" aria-live="polite">{shown[0]}–{shown[1]}</span>{m.pens && <span className="pens ltr">({m.pens[0]}–{m.pens[1]})</span>}<span className={`clock${done ? ' stop' : ''}`}>{done ? x.live.ft : <><span className="ltr">{clock}′</span>{board !== undefined && <span className="board ltr">+{board}</span>}</>}</span></div>
-            <div className="side"><Crest club={away} size={48} /><b>{cn(away, lang)}</b></div>
-          </div>
-          <div className="scorers"><span>{scorers(0)}</span><span /><span>{scorers(1)}</span></div>
-          {flash && !banner && <div className={`goalbanner${flash.side === me ? ' mine' : ''}`} role="status"><b>{x.live.goal}</b><span>{name(flash.id)}</span></div>}
-          {banner && <VarBanner b={banner} mine={banner.side === me} />}
-        </Panel>
-
-        <Panel className="g-feed" i={1} label={x.live.moments}>
-          <PanelHead title={feed === 0 ? x.live.moments : R.commentary} right={<div className="chips feed-tabs">{[R.moments, R.commentary].map((l, i) => <button key={l} className="chip" aria-pressed={feed === i} onClick={() => setFeed(i)}>{l}</button>)}</div>} />
-          {feed === 0 ? (
-            <div className="feed">
-              {moments.length === 0 && <p className="small muted">{x.live.noMoments}</p>}
-              {/* while a decision is on screen, its outcome stays off the timeline */}
-              {moments.filter((k) => !banner || !(k.min === m.minute && (k.plus ?? 0) === (m.plus ?? 0))).slice(0, 10).map((k) => <MomentRow key={k.ev} k={k} m={m} me={me} name={name} />)}
+      <div className="lv-grid">
+        <section className="lv-main">
+          <div className={`lv-score${flash ? ' goalflash' : ''}`} aria-label={`${cn(home, lang)} ${shown[0]} ${cn(away, lang)} ${shown[1]}`}>
+            <span className="eyebrow lv-comp">{matchLabel(g, m)}</span>
+            <div className="lv-board">
+              <div className="side h"><b>{cn(home, lang)}</b><Crest club={home} size={60} /></div>
+              <div className="mid">
+                <span className="score ltr" aria-live="polite"><span>{shown[0]}</span><span className={`clock${done ? ' stop' : ''}`}>{done ? x.live.ft : isHalfTime(m) ? x.live.ht : <><span className="ltr">{clock}′</span>{board !== undefined && <span className="board ltr">+{board}</span>}</>}</span><span>{shown[1]}</span></span>
+                {m.pens && <span className="pens ltr">({m.pens[0]}–{m.pens[1]})</span>}
+              </div>
+              <div className="side a"><Crest club={away} size={60} /><b>{cn(away, lang)}</b></div>
             </div>
-          ) : <CommentaryFeed m={m} name={name} club={(i) => cn(i === 0 ? home : away, lang)} hideNow={!!banner} />}
-        </Panel>
+            <div className="scorers"><span>{scorers(0)}</span><span /><span>{scorers(1)}</span></div>
+            {flash && !banner && <div className={`goalbanner${flash.side === me ? ' mine' : ''}`} role="status"><b>{x.live.goal}</b><span>{name(flash.id)}</span></div>}
+            {banner && <VarBanner b={banner} mine={banner.side === me} />}
+          </div>
 
-        <Panel className="g-pitch pitch-card" i={2} label={x.live.where}>
-          <span className="eyebrow">{x.live.where} · {x.live.whereSub} · {R.wx[m.wx ?? 0]}</span>
-          <div className="chips view-chips">{x.live.views.map((v, i) => <button key={v} className="chip" aria-pressed={view === i} onClick={() => setView(i)}>{v}</button>)}</div>
-          {/* What the match shows (highlights, like FM): a viewing choice, so it sits with the pitch, not on the match bar. */}
-          <select className="sel hlsel" value={hl} aria-label={R.hlTitle} title={R.hlTitle} onChange={(e) => { const v = +e.target.value as HlMode; setHl(v); onHl?.(v); }}>
-            {R.hl.map((l, i) => <option key={l} value={i}>{R.hlTitle}: {l}</option>)}
-          </select>
-          {view === 0 && hl !== 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={minMs} mode={hl} scale={scale} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} />
-              {yell && <div key={yell.at} className="yell" aria-live="polite" onAnimationEnd={() => setYell(null)}>📣 {yell.l}</div>}</div>
-            : <ZonePitch m={m} me={me} mode={view || 1} /> /* commentary only: the zone map, no pitch */}
-          {!done && (
+          <Seg label={x.live.where} value={pane} onChange={setPane} className="lv-tabs" options={[{ v: 0, label: C.pitch }, { v: 1, label: C.stats }, { v: 2, label: C.commentary }]} />
+
+          {pane === 0 && (
+            <div className="lv-pitch pitch-card">
+              <div className="lv-pitch-tools">
+                <div className="chips view-chips">{x.live.views.map((v, i) => <button key={v} className="chip" aria-pressed={view === i} onClick={() => setView(i)}>{v}</button>)}</div>
+                <span className="eyebrow">{x.live.whereSub} · {R.wx[m.wx ?? 0]}</span>
+              </div>
+              {view === 0 && hl !== 0 ? <div className="pitchwrap"><Pitch2D m={m} world={w} msPerMinute={minMs} mode={hl} scale={scale} running={!paused && !done && !changes && !banner} goalWord={x.live.goal} />
+                  {yell && <div key={yell.at} className="yell" aria-live="polite" onAnimationEnd={() => setYell(null)}>📣 {yell.l}</div>}</div>
+                : <ZonePitch m={m} me={me} mode={view || 1} /> /* commentary only: the zone map, no pitch */}
+            </div>
+          )}
+          {pane === 1 && (
+            <div className="lv-pane">
+              <Panel i={4} label={x.live.numbers}>
+                <PanelHead title={x.live.numbers} />
+                <div className="stats">
+                  {stats.map(([l, a, b], k) => (
+                    <div key={l} className="st">
+                      <b>{a}{k === 0 || k === pctRow ? '%' : ''}</b>
+                      <div className="mid"><span>{l}</span><div className="bars" style={{ ['--u' as string]: `${Math.max(1, a)}fr`, ['--t' as string]: `${Math.max(1, b)}fr` }}><i /><i /></div></div>
+                      <b>{b}{k === 0 || k === pctRow ? '%' : ''}</b>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+              <Panel className="g-xg" i={3} label={x.live.xg}>
+                <div className="between"><span className="eyebrow">{x.live.xg}</span><div className="legend"><span><i />{cn(us, lang)}</span><span><i className="them" />{cn(them, lang)}</span></div></div>
+                <h2 className="h2 ltr-auto">{(m.xg?.[me] ?? 0).toFixed(2)} v {(m.xg?.[1 - me] ?? 0).toFixed(2)}</h2>
+                <LineChart h={150} step rtl={g.rtl} x={xgLine(me).map((_, i) => (i % 15 === 0 ? `${i}′` : ''))} fmt={(v) => v.toFixed(1)}
+                  series={[{ data: xgLine(me), label: cn(us, lang) }, { data: xgLine((1 - me) as 0 | 1), them: true, label: cn(them, lang) }]}
+                  markers={m.events.filter((e) => e.kind === 'goal').map((e) => ({ i: e.min, label: x.live.goal }))} tipX={(i) => `${i}′`} />
+              </Panel>
+            </div>
+          )}
+          {pane === 2 && (
+            <Panel className="g-feed lv-pane" i={1} label={x.live.moments}>
+              <PanelHead title={feed === 0 ? x.live.moments : R.commentary} right={<div className="chips feed-tabs">{[R.moments, R.commentary].map((l, i) => <button key={l} className="chip" aria-pressed={feed === i} onClick={() => setFeed(i)}>{l}</button>)}</div>} />
+              {feed === 0 ? (
+                <div className="feed">
+                  {latest.length === 0 && <p className="small muted">{x.live.noMoments}</p>}
+                  {latest.slice(0, 30).map((k) => <MomentRow key={k.ev} k={k} m={m} me={me} name={name} />)}
+                </div>
+              ) : <CommentaryFeed m={m} name={name} club={(i) => cn(i === 0 ? home : away, lang)} hideNow={!!banner} />}
+            </Panel>
+          )}
+
+          <div className="mbar lv-bar" role="toolbar" aria-label={x.live.changes}>
+            {!done ? (
+              <>
+                <button className="icon-btn lv-pause" aria-label={paused ? x.live.play : x.live.pause} onClick={() => setPaused(!paused)}><I n={paused ? 'play' : 'pause'} /></button>
+                {/* What the match shows (highlights, like FM) and how fast (the speed bar). */}
+                <select className="sel hlsel" value={hl} aria-label={R.hlTitle} title={R.hlTitle} onChange={(e) => { const v = +e.target.value as HlMode; setHl(v); onHl?.(v); }}>
+                  {R.hl.map((l, i) => <option key={l} value={i}>{l}</option>)}
+                </select>
+                <label className="spdbar" title={x.live.speed}>
+                  <span className="spd-l">{C.speed}</span>
+                  <input type="range" min={RATE_MIN} max={RATE_MAX} step={RATE_STEP} value={speed} aria-label={x.live.speed} aria-valuetext={`×${speed}`} onChange={(e) => pickSpeed(+e.target.value)} />
+                  <b className="ltr">×{speed}</b>
+                </label>
+                <span className="grow" />
+                <button className="btn btn--primary lv-changes" onClick={() => setChanges(true)}><I n="swap" />{C.makeChanges}</button>
+                <button className="btn btn--ghost skipbtn" title={x.live.skip} onClick={() => { const n = clone(m); n.sides[me].autoSubs = true; simulate(n, get); setBanner(null); onUpdate(n); onSave(n); }}>{R.instant}<I n="arrowr" size="sm" flip={g.rtl} /></button>
+              </>
+            ) : (
+              <>
+                <span className="grow" />
+                <button className="btn btn--primary" disabled={g.busy} onClick={() => onFinish(m)}>{x.live.ft}<I n="arrowr" size="sm" flip={g.rtl} /></button>
+              </>
+            )}
+          </div>
+          {!done && pane === 0 && (
             <div className="shoutbar" role="group" aria-label={x.live.touchline}>
               {x.live.shouts.map(([l, k, v]) => {
                 const on = (ft as unknown as Record<string, number>)[k] === v;
@@ -213,69 +285,49 @@ export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFini
               })}
             </div>
           )}
-          <div className="mom-h"><b>{x.live.momentum}</b><span>{x.live.momentumKey(cn(us, lang), cn(them, lang))}</span></div>
-          <Momentum data={mom} rtl={g.rtl} label={x.live.momentum} />
-        </Panel>
+        </section>
 
-        <Panel className="g-xg" i={3} label={x.live.xg}>
-          <div className="between"><span className="eyebrow">{x.live.xg}</span><div className="legend"><span><i />{cn(us, lang)}</span><span><i className="them" />{cn(them, lang)}</span></div></div>
-          <h2 className="h2 ltr-auto">{(m.xg?.[me] ?? 0).toFixed(2)} v {(m.xg?.[1 - me] ?? 0).toFixed(2)}</h2>
-          <LineChart h={150} step rtl={g.rtl} x={xgLine(me).map((_, i) => (i % 15 === 0 ? `${i}′` : ''))} fmt={(v) => v.toFixed(1)}
-            series={[{ data: xgLine(me), label: cn(us, lang) }, { data: xgLine((1 - me) as 0 | 1), them: true, label: cn(them, lang) }]}
-            markers={m.events.filter((e) => e.kind === 'goal').map((e) => ({ i: e.min, label: x.live.goal }))} tipX={(i) => `${i}′`} />
-        </Panel>
-
-        <div className="g-side stack">
-          <Panel i={4} label={x.live.numbers}>
-            <PanelHead title={x.live.numbers} />
-            <div className="stats">
-              {stats.map(([l, a, b], k) => (
-                <div key={l} className="st">
-                  <b>{a}{k === 0 || k === pctRow ? '%' : ''}</b>
-                  <div className="mid"><span>{l}</span><div className="bars" style={{ ['--u' as string]: `${Math.max(1, a)}fr`, ['--t' as string]: `${Math.max(1, b)}fr` }}><i /><i /></div></div>
-                  <b>{b}{k === 0 || k === pctRow ? '%' : ''}</b>
-                </div>
-              ))}
+        <aside className="lv-side">
+          <section className="lv-card lv-stats" aria-label={C.matchStats}>
+            <h2 className="h2">{C.matchStats}</h2>
+            <div className="lv-teams"><span><Crest club={us} size={34} /><b>{cn(us, lang)}</b></span><span><b>{cn(them, lang)}</b><Crest club={them} size={34} /></span></div>
+            {top4.map(([l, a, b, av, bv]) => (
+              <div key={l} className="lv-st">
+                <div className="lv-st-h"><b className="ltr">{av}</b><span>{l}</span><b className="ltr">{bv}</b></div>
+                <div className="lv-bars" aria-hidden="true"><i style={{ flexGrow: Math.max(1, a) }} /><i style={{ flexGrow: Math.max(1, b) }} /></div>
+              </div>
+            ))}
+          </section>
+          <section className="lv-card lv-moments" aria-label={C.keyMoments}>
+            <div className="desk-h"><h2 className="h2">{C.keyMoments}</h2><button className="link" onClick={() => { setPane(2); setFeed(0); }}>{R.commentary}<I n="arrowr" size="sm" flip={g.rtl} /></button></div>
+            <div className="feed">
+              {latest.length === 0 && <p className="small muted">{x.live.noMoments}</p>}
+              {latest.slice(0, 4).map((k) => <MomentRow key={k.ev} k={k} m={m} me={me} name={name} />)}
             </div>
-          </Panel>
+          </section>
+          {pane === 0 && (
+            <section className="lv-card lv-mom" aria-label={x.live.momentum}>
+              <div className="mom-h"><b>{x.live.momentum}</b><span>{x.live.momentumKey(cn(us, lang), cn(them, lang))}</span></div>
+              <Momentum data={mom} rtl={g.rtl} label={x.live.momentum} />
+            </section>
+          )}
           {!done && (tip || c.planB) && (
-            <Panel i={5} label={x.live.touchline}>
-              <PanelHead title={x.live.touchline} right={<span className="eyebrow">{x.live.takes}</span>} />
+            <section className="lv-card" aria-label={x.live.touchline}>
+              <div className="desk-h"><h2 className="h2">{x.live.touchline}</h2><span className="eyebrow">{x.live.takes}</span></div>
               {tip && (
                 <div className="advice live-tip">
                   <span className="staff" aria-hidden="true">AS</span>
                   <div>
                     <div className="who">{x.live.assistant}</div>
                     <q>{tipWhy(tip, g.t, name)}</q>
-                    <button className="btn btn--accent btn--sm" onClick={() => { change((n) => applyTip(n, me, tip, get)); g.toast(x.ht.applied); }}>{tipWhat(tip.patch, g.t, name, tip.note)}</button>
+                    <button className="btn btn--primary btn--sm" onClick={() => { change((n) => applyTip(n, me, tip, get)); g.toast(x.ht.applied); }}>{tipWhat(tip.patch, g.t, name, tip.note)}</button>
                   </div>
                 </div>
               )}
               {c.planB && <button className="btn btn--ghost btn--sm planb" onClick={() => change((n) => { const b = c.planB!; if (b.formation !== n.sides[me].tactics.formation) reshape(n, me, b.formation, get, 'planB'); setTactics(n, me, { ...b }, 'planB'); })}>{x.live.planB}</button>}
-            </Panel>
+            </section>
           )}
-        </div>
-      </div>
-
-      <div className="mbar" role="toolbar" aria-label={x.live.changes}>
-        {!done ? (
-          <>
-            <button className="icon-btn" aria-label={paused ? x.live.play : x.live.pause} onClick={() => setPaused(!paused)}><I n={paused ? 'play' : 'pause'} /></button>
-            {/* The match speed bar, like FM's: slower to study a move, faster to get through it. */}
-            <label className="spdbar" title={x.live.speed}>
-              <input type="range" min={RATE_MIN} max={RATE_MAX} step={RATE_STEP} value={speed} aria-label={x.live.speed} aria-valuetext={`×${speed}`} onChange={(e) => pickSpeed(+e.target.value)} />
-              <b className="ltr">×{speed}</b>
-            </label>
-            <span className="grow" />
-            <button className="btn btn--ghost btn--sm skipbtn" title={x.live.skip} onClick={() => { const n = clone(m); n.sides[me].autoSubs = true; simulate(n, get); setBanner(null); onUpdate(n); onSave(n); }}>{R.instant}</button>
-            <button className="btn btn--accent" onClick={() => setChanges(true)}><I n="swap" />{x.live.changes}</button>
-          </>
-        ) : (
-          <>
-            <span className="grow" />
-            <button className="btn btn--accent" disabled={g.busy} onClick={() => onFinish(m)}>{x.live.ft}<I n="arrowr" size="sm" /></button>
-          </>
-        )}
+        </aside>
       </div>
       {changes && <Changes m={m} me={me} onChange={change} onClose={() => setChanges(false)} />}
     </div>
