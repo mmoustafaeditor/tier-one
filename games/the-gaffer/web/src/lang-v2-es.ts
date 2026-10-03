@@ -128,6 +128,7 @@ export const X_ES: XStrings = {
     staffPick: 'Elección del cuerpo técnico',
     yourCall: 'Decides tú. Nadie más.',
     done: (label: string) => `Hecho: ${label}`,
+    conf: (q: number) => `${q >= 75 ? 'seguro' : q >= 55 ? 'bastante seguro' : 'una corazonada'} (nivel ${q})`,
     undo: 'Deshacer',
     swipe: 'Desliza a la derecha para aceptar la propuesta',
     open: 'Abrir',

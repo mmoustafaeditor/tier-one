@@ -18,7 +18,7 @@ import type { Objective } from '../model/types';
 // V2.7 the board meeting ('cl.' keys): the objective in a sentence ("finish in the top half"), the season, the money.
 const target = (g: Game, o?: string) => { const t = (g.t.objective as Record<string, string>)[o ?? ''] ?? o ?? ''; return g.ui === 'ar' ? t : t.charAt(0).toLowerCase() + t.slice(1); };
 const clTitle = (g: Game, r: Ref) => CL[g.ui].title(g.x.seasonLabel(r.n ?? g.c.season));
-const clAdvice = (g: Game, r: Ref) => CL[g.ui].advice(target(g, r.s as Objective));
+const clAdvice = (g: Game, r: Ref) => (r.key === 'cl.visionTop' ? CL[g.ui].adviceTop : CL[g.ui].advice)(target(g, r.s as Objective)); // F04: no "aim higher" talk at the top
 const clChoice = (g: Game, ch: Choice) => (ch.key === 'cl.ambitious' ? CL[g.ui].choices.ambitious(target(g, ch.s)) : CL[g.ui].choices.expected());
 function clFx(g: Game, f: Fx): string {
   const F = CL[g.ui].fx;
@@ -186,7 +186,7 @@ export function DecisionCard({ d, i, onResolve }: { d: Decision; i: number; onRe
         <div className="advice">
           <span className="staff" style={{ background: ROLE_TONE[staff.role] }} aria-hidden="true">{initialsOf(staff.name.en)}</span>
           <div>
-            <div className="who">{staff.name[g.lang]}, <span>{g.x.office.roles[staff.role]}{bias ? ` · ${g.x.office.bias[bias].toLowerCase()}` : ''}</span></div>
+            <div className="who">{staff.name[g.lang]}, <span>{g.x.office.roles[staff.role]}{bias ? ` · ${g.x.office.bias[bias].toLowerCase()}` : ''}{d.advice ? ` · ${g.x.dec.conf(Math.round(staff.quality))}` : ''}</span></div>{/* rework: how sure the advice is (his quality decides how good his calls are) */}
             <q>{adviceText(g, d.advice)}</q>
           </div>
         </div>

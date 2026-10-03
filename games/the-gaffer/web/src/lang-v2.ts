@@ -135,6 +135,7 @@ export const X_EN = {
     staffPick: 'Staff pick',
     yourCall: 'Your call. Nobody else’s.',
     done: (label: string): string => `Done: ${label}`,
+    conf: (q: number): string => `${q >= 75 ? 'confident' : q >= 55 ? 'fairly sure' : 'a hunch'} (quality ${q})`,
     undo: 'Undo',
     swipe: 'Swipe right to take the staff pick',
     open: 'Open',

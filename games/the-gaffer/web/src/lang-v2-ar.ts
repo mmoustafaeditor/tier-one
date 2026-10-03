@@ -129,6 +129,7 @@ export const X_AR: XStrings = {
     staffPick: 'اختيار الجهاز',
     yourCall: 'قرارك إنت. محدش غيرك.',
     done: (label: string) => `اتعمل: ${label}`,
+    conf: (q: number) => `${q >= 75 ? 'متأكد' : q >= 55 ? 'متأكد لحد ما' : 'إحساس'} (مستواه ${q})`,
     undo: 'تراجع',
     swipe: 'اسحب يمين تاخد اختيار الجهاز',
     open: 'افتح',

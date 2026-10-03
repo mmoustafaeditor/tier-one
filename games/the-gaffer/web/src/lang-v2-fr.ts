@@ -128,6 +128,7 @@ export const X_FR: XStrings = {
     staffPick: 'Choix du staff',
     yourCall: 'C’est ta décision. Celle de personne d’autre.',
     done: (label: string) => `Fait : ${label}`,
+    conf: (q: number) => `${q >= 75 ? 'sûr de lui' : q >= 55 ? 'assez sûr' : 'une intuition'} (niveau ${q})`,
     undo: 'Annuler',
     swipe: 'Glisse à droite pour suivre le staff',
     open: 'Ouvrir',

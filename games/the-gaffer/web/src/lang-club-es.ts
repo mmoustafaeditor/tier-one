@@ -6,6 +6,7 @@ export const CL_ES: CLStrings = {
   tag: 'Reunión de la directiva',
   derby: 'Derbi',
   title: (season: string) => `El plan de la directiva para ${season}`,
+  adviceTop: (target: string) => `Nuestro objetivo: ${target}. Es lo máximo que puede pedir una directiva; te juzgaremos por ello.`,
   advice: (target: string) => `Nuestro objetivo: ${target}. Si apuntas más alto, el dueño te respaldará con dinero, pero te juzgaremos con más dureza.`,
   choices: {
     expected: () => 'Vuestro objetivo es el correcto',

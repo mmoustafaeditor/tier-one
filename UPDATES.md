@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: staff say how sure they are; board advice matches its choices
+- **What changed:** Each decision card's staff line now says how sure the advice is: confident, fairly sure, or a hunch, with that person's quality, since quality decides how good their calls are. At a club whose target is already the top one, the board's advice no longer mentions "aim higher", which isn't offered there.
+- **Files:** `web/src/ui2/Decisions.tsx`, `src/sim/decisions.ts`, `src/lang-v2*.ts`, `src/lang-club*.ts`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: best XI fix limited to your side; match results back to baseline
 - **What changed:** The full test suite showed that moving AI clubs to the new best-XI pick (F06) shifted four calibrated tests. Those were the AI's kick-off read, the ten-men effect, the role positions, and the trait effects. So the improved pick now applies only to your side: the assistant at kick-off, "Best XI for me", and filling gaps in your XI. AI clubs pick as before until Milestone 4 recalibrates with it. The repro script now checks the current code: F01-F11 and F17 all report OK.
 - **Files:** `web/src/sim/tactics.ts` (`bestXI` for the manager, `autoXI` unchanged for AI), `src/sim/staff.ts`, `web/sim-tests/{morale.ts,rework/trust.ts,rework/repro.ts}`, `games/the-gaffer/rework/*`

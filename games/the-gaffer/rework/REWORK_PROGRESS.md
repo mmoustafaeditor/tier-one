@@ -63,7 +63,7 @@ Done (regression checks in `rework/trust`, 33 checks, all pass; screenshots `evi
 M2 status: the trust items F05–F15 are done or checked. Tactics now uses progressive disclosure: style, shape, approach,
 press and line stay; "More instructions · n set" opens shape without the ball, width, tempo, passing, transitions, set
 pieces and marking (remembered per device; it never hides a setting silently). Evidence `evidence/m2e-after/` (before:
-`evidence/m1-before/03-tactics-*`). Open M2 polish: decision cards' "why it matters" and confidence.
+`evidence/m1-before/03-tactics-*`). Decision cards show the adviser's confidence (from staff quality); the board's advice no longer mentions "aim higher" where it isn't offered. M2 done.
 
 ## Milestone 3 — connected career-memory slice: first slice done
 * `sim-tests/rework/slice.ts` (seeded, Node): promote a 17-year-old (sheet terms = applied terms) → the dressing room
