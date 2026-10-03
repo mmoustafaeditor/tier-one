@@ -25,6 +25,7 @@ no named Android device was available — see Known limitations).
   is a "Start a career" card.
 * Squad has a planner: each line's roles, deals running out, ages, who is out and the scouts' needs, one tap from
   Transfers › Needs.
+* Accessibility from the title screen and Settings: larger text, reduce motion, stronger contrast.
 * Nothing is wider than a phone at 320–412 px, in English or Arabic.
 
 ## 2. F01–F17 disposition
@@ -82,5 +83,5 @@ load. Rollback: older builds ignore both fields.
 quick-match full time), `m2b-before|after` (half-time staging, Continue, courses), `m2c-before|after` (Transfers
 funnel), `m2d-after` (first-week guide), `m2e-after` (Tactics essentials), `m3-slice` (the connected sequence:
 promotion sheet → warning card → Your XI → full time → after reload), `m4-after` (full-time why/next), `m4c-after`
-(pre-match briefing), `m4d-before|after` (title-screen career cards), `m4e-before|after` (squad planner). Phone 390 px and desktop 1440 px, English and
+(pre-match briefing), `m4d-before|after` (title-screen career cards), `m4e-before|after` (squad planner), `m4f-before|after` (accessibility). Phone 390 px and desktop 1440 px, English and
 Arabic where the screen changed.

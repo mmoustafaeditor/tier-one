@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: accessibility settings, reachable before a career
+- **What changed:** The title screen has an "Accessibility" button, and Settings has the same panel. It offers text size (standard, larger, largest), Reduce motion (stops animations and the live-match flashes; it shows as on when the phone itself asks for reduced motion) and Stronger contrast (darker or brighter secondary text). The choices are kept on the device, not in the save, and apply straight away. At the largest size no main screen scrolls sideways, in English or Arabic.
+- **Files:** `web/src/ui2/A11y.tsx` (new), `src/lang-a11y.ts` (new), `src/sim/prefs.ts` (`text`/`calm`/`contrast`), `src/App.tsx`, `src/ui2/Title.tsx`, `src/ui2/Settings.tsx`, `src/ui2/Live.tsx`, `src/styles/app.css`, `web/ui-tests/rework-a11y.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** The old "Motion follows your device" line in Settings is replaced by the panel. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: squad planner
 - **What changed:** The Squad screen has a "Squad planner" with one card per line (goalkeepers, defence, midfield, attack). Each card shows the roles (first choice / rotation / prospects), deals ending this season or next (coloured), average age and how many players are 31+, who is out, and the needs the scouts already work out from your tactics. Tapping a need opens Transfers › Needs. On phones the planner starts folded to one row so the player list stays near the top; it remembers whether you opened it.
 - **Files:** `web/src/ui2/Planner.tsx` (new), `src/lang-planner.ts` (new), `src/ui2/Squad.tsx`, `src/styles/app.css`, `web/ui-tests/rework-planner.mjs` (new), `games/the-gaffer/rework/*`

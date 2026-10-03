@@ -107,4 +107,10 @@ Decision (Saif, 2026-10-03): AI clubs keep their current XI selection; the best-
   choice is remembered. Read-only. `ui-tests/rework-planner.mjs`; evidence `evidence/m4e-before|after/`.
   Not done from §D: Plan B fit, registration/homegrown status (no competition in the game requires it yet).
 
+* Accessibility before a career starts (handoff §A, §19): an "Accessibility" button on the title screen and the same
+  panel in Settings. Text size (standard / larger / largest, page zoom 1.1 / 1.2), Reduce motion (stops CSS
+  animations and the live-match flashes/whistle; shown on and locked when the device asks for reduced motion), Stronger
+  contrast (secondary text and lines). Device prefs, not the save; survive reloads. No sideways scroll at the largest
+  size on Today/Squad/Match/Transfers/Club, EN and AR. `ui-tests/rework-a11y.mjs`; evidence `evidence/m4f-before|after/`.
+
 Next: M5 validation items possible here (save round-trip/slot isolation checks, full-suite run), then the report.

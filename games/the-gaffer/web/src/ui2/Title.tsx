@@ -7,6 +7,9 @@ import type { SaveMeta } from '../model/types';
 import { Crest, I } from './kit';
 import { wordmarkSvg } from '../brand';
 import { Panel, Sheet } from './shell';
+import type { Prefs } from '../sim/prefs';
+import { A11yControls } from './A11y';
+import { AX } from '../lang-a11y';
 
 // The brand mark (brand.ts): a constant SVG string, the same one the favicon and Android icons are drawn from.
 const WORDMARK = wordmarkSvg('dark');
@@ -38,12 +41,14 @@ export function LangSwitch({ ui, onLang }: { ui: UiLang; onLang: (l: UiLang) => 
   );
 }
 
-export function Title({ t, x, slots, bad, busy, ui, onLang, onOpen, onNew, onQuick }: {
+export function Title({ t, x, slots, bad, busy, ui, onLang, onOpen, onNew, onQuick, prefs, onPrefs }: {
   t: Strings; x: XStrings; slots: SlotView[] | null; bad: boolean; busy: boolean; ui: UiLang; onLang: (l: UiLang) => void;
+  prefs: Prefs; onPrefs: (p: Prefs) => void;
   onOpen: (slot: number) => void; onNew: (replace: number | null) => void; onQuick: () => void;
 }) {
   const [replace, setReplace] = useState<SlotView | null>(null);
   const [choose, setChoose] = useState(false);
+  const [a11y, setA11y] = useState(false);
   const used = (slots ?? []).filter((s) => s.meta);
   const free = (slots ?? []).some((s) => !s.meta && !s.bad);
   const old = used.find((s) => s.meta!.data === 'generated');
@@ -56,6 +61,7 @@ export function Title({ t, x, slots, bad, busy, ui, onLang, onOpen, onNew, onQui
         <header className="title-top on-ground">
           <span className="stripe" aria-hidden="true" />
           <LangSwitch ui={ui} onLang={onLang} />
+          <button className="chip a11y-open" onClick={() => setA11y(true)} aria-haspopup="dialog"><I n="eye" size="sm" />{AX[ui].open}</button>
         </header>
         <section className="title-hero on-ground">
           <h1 className="wordmark" aria-label="The Gaffer" dangerouslySetInnerHTML={{ __html: WORDMARK }} />
@@ -145,6 +151,13 @@ export function Title({ t, x, slots, bad, busy, ui, onLang, onOpen, onNew, onQui
               </div>
             ))}
           </div>
+        </Sheet>
+      )}
+      {a11y && (
+        <Sheet label={AX[ui].title} onClose={() => setA11y(false)}>
+          <h2 className="h2">{AX[ui].title}</h2>
+          <A11yControls ui={ui} prefs={prefs} onPrefs={onPrefs} />
+          <button className="btn btn--primary btn--block" onClick={() => setA11y(false)}>{AX[ui].done}</button>
         </Sheet>
       )}
       {replace && (

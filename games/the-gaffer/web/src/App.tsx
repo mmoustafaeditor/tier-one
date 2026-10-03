@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { UI, dataLang, type UiLang } from './i18n';
 import { X } from './lang-v2-all';
 import { loadPrefs, savePrefs, type Prefs } from './sim/prefs';
+import { applyA11y } from './ui2/A11y';
 import type { Career } from './model/types';
 import { dispatch, type Command, type Result } from './sim/commands';
 import { advance, endOfSeason, finishSeason, simUntil } from './sim/clock';
@@ -92,6 +93,7 @@ export function App() {
   useEffect(() => { window.scrollTo(0, 0); }, [route.s, top?.s]);
   // V2.10: the club look bought with credits or the Supporter pack (meta/looks.ts), presentation only.
   useEffect(() => { document.documentElement.dataset.look = prefs.look ? String(prefs.look) : ''; }, [prefs.look]);
+  useEffect(() => { applyA11y(prefs); }, [prefs.text, prefs.calm, prefs.contrast]); // eslint-disable-line react-hooks/exhaustive-deps
   // Club colours drive crests, tokens and the identity stripe.
   useEffect(() => {
     const club = world && career ? world.clubs.find((c) => c.id === career.clubId) : null;
@@ -335,7 +337,7 @@ export function App() {
     return (
       <>
         {(!top || top.s === 'title') && (
-          <Title t={t} x={x} slots={slots} bad={badSave} busy={busy} {...langBtn}
+          <Title t={t} x={x} slots={slots} bad={badSave} busy={busy} {...langBtn} prefs={prefs} onPrefs={setPrefs}
             onOpen={(n) => void openSlot(n)} onQuick={() => setTop({ s: 'quick' })}
             onNew={async (replace) => {
               const n = replace ?? (await freeSlot());

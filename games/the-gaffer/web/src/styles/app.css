@@ -616,3 +616,14 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .plan-needs span.tag { cursor: default; }
 @media (min-width: 1100px) { .sc-squad .g-plan { grid-column: 3; } }
 .plan-fold { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; padding: 0; background: none; border: 0; cursor: pointer; text-align: start; }
+
+/* Rework: accessibility prefs (ui2/A11y.tsx), set on <html> by App. */
+:root[data-text="1"] body { zoom: 1.1; }
+:root[data-text="2"] body { zoom: 1.2; }
+:root[data-calm="1"] *, :root[data-calm="1"] *::before, :root[data-calm="1"] *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+:root[data-contrast="1"]:not([data-light="flood"]) { --ink-2: #213F3A; --ink-3: #2C4D47; --line-2: rgba(11,42,38,.32); }
+:root[data-contrast="1"] { --on-ground-2: #DCEEE9; --on-ground-3: #C4DDD6; }
+:root[data-contrast="1"][data-light="flood"] { --ink-2: #D3E8E2; --ink-3: #BFDAD3; --line-2: rgba(255,255,255,.32); }
+.title-top { flex-wrap: wrap; gap: 8px; }
+.a11y-open { gap: 6px; }
+.a11y { display: grid; gap: 8px; margin-bottom: 12px; }

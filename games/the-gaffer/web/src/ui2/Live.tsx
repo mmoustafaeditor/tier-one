@@ -1,6 +1,7 @@
 // Matchday under the floodlights: the scoreboard, key moments, where the ball has lived, the numbers, shouts from
 // the touchline, and the changes sheet. At half-time the analysts' Why takes over the screen; at full time the
 // record goes to the aftermath. Every minute is the engine's (sim/match.ts); nothing here decides anything.
+import { calmNow } from './A11y';
 import { pctOf as chanceOf } from './util';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Player } from '../model/types';
@@ -32,7 +33,7 @@ const clone = (m: LiveMatch): LiveMatch => JSON.parse(JSON.stringify(m));
 const pctOf = (a: number, b: number) => Math.round((100 * a) / Math.max(1, b));
 const holdK = (rate: number) => Math.pow(RATES[1] / rate, 0.6);
 const PHASE_MS = 1500;
-const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = calmNow; // the device setting or the in-game "Reduce motion" (ui2/A11y.tsx)
 
 export function LiveScreen({ m, locked, rate0, hl0 = 2, onUpdate, onSave, onFinish, onRate, onHl }: {
   m: LiveMatch; locked: boolean; rate0: number; hl0?: HlMode; onUpdate: (m: LiveMatch) => void; onSave: (m: LiveMatch) => void; onFinish: (m: LiveMatch) => void;

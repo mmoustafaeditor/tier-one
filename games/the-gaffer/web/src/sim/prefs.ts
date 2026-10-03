@@ -6,7 +6,7 @@ import type { UiLang } from '../i18n';
 // credits: Semba Credits earned on this device (concept on the web: local only, nothing is sold).
 // pace (gf-ref): watched-match speed, 0 slow, 1 normal (the default), 2 fast. `speed` (the old 1×/2×/4×) is no longer read.
 // hl: what a watched match shows (sim/highlights.ts, like FM): 0 commentary only, 1 key, 2 extended (the default), 3 comprehensive, 4 full match.
-export interface Prefs { lang: UiLang; speed: 0 | 1 | 2; pace?: 0 | 1 | 2; rate?: number; hl?: 0 | 1 | 2 | 3 | 4; openOn: 0 | 1; camera: 0 | 1 | 2; look: 0 | 1 | 2 | 3; supporter: boolean; paid?: string[]; stop?: 0 | 1 | 2; credits?: number; adsToday?: [string, number] }
+export interface Prefs { lang: UiLang; speed: 0 | 1 | 2; pace?: 0 | 1 | 2; rate?: number; hl?: 0 | 1 | 2 | 3 | 4; openOn: 0 | 1; camera: 0 | 1 | 2; look: 0 | 1 | 2 | 3; supporter: boolean; paid?: string[]; stop?: 0 | 1 | 2; text?: 0 | 1 | 2; calm?: boolean; contrast?: boolean; credits?: number; adsToday?: [string, number] }
 const KEY = 'gaffer.prefs.v1';
 // Looks bought with credits (meta/looks.ts keeps the list; read here without importing meta into sim).
 const owned = (): number[] => { try { const v = JSON.parse(localStorage.getItem('gaffer.looks.v1') ?? '[]'); return Array.isArray(v) ? v : []; } catch { return []; } };
@@ -28,6 +28,9 @@ export function loadPrefs(): Prefs {
       look: [1, 2, 3].includes(p.look) && (p.supporter === true || owned().includes(p.look)) ? p.look : 0,
       paid: Array.isArray(p.paid) ? p.paid.filter((x: unknown) => typeof x === 'string').slice(-20) : [],
       stop: [0, 1, 2].includes(p.stop) ? p.stop : 1,
+      text: [1, 2].includes(p.text) ? p.text : 0,
+      calm: p.calm === true,
+      contrast: p.contrast === true,
       credits: Number.isFinite(p.credits) ? Math.max(0, Math.floor(p.credits)) : 0,
       adsToday: Array.isArray(p.adsToday) && typeof p.adsToday[0] === 'string' ? [p.adsToday[0], Number(p.adsToday[1]) || 0] : undefined,
     };
