@@ -3,6 +3,12 @@
 Every change to this repo gets an entry here, **newest first**, so each of us (and each
 Claude Code session) can see what the others did before starting work.
 
+## 2026-10-03 · moemsacod · Tier One UI/UX overhaul branch — work in progress
+
+- **What changed:** Opening isolated UI/UX work branch. No game logic or shared paths touched yet.
+- **Files:** UPDATES.md
+- **Heads-up for the team:** This PR is moemsacod's isolated UI/UX sandbox — don't merge until he's done.
+
 **How to add an entry:** copy the template, put it at the top of the list, fill it in, commit it
 together with your change.
 
