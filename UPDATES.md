@@ -7,6 +7,11 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.7 — painted players actually show
+
+- Fix: the app loaded the portrait list (art/manifest.json) with `force-cache`, so phones that had seen the old, empty list kept it and showed initials instead of the 227 painted players. It now asks fresh once per build.
+- Checked live: today's Daily board is five painted players; Career and Practice rebuild their boards from the painted roster.
+
 ## 2026-10-02 · Tier One 3.9.6 — roster = the owner's art pack
 
 - Imported the owner's player art pack: 227 painted portraits (512px WebP, public/art/players/, loaded on demand, not precached).

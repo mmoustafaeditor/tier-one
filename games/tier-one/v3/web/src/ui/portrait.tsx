@@ -29,7 +29,8 @@ export function loadArtManifest(): Promise<ArtManifest> {
   if (manifest) return Promise.resolve(manifest);
   if (!loading) {
     const url = (typeof location !== 'undefined' && (location.protocol === 'file:' || location.hostname === 'appassets.androidplatform.net')) ? 'https://www.sembagames.app/tier-one/art/manifest.json' : 'art/manifest.json';
-    loading = fetch(url, { cache: 'force-cache' }).then((r) => (r.ok ? r.json() : { v: 0 })).catch(() => ({ v: 0 })).then((m: ArtManifest) => { manifest = m; subs.forEach((f) => f()); return m; });
+    // 3.9.7: never trust an old cached copy (a phone kept the empty list from before the art pack): ask fresh, per build.
+    loading = fetch(url + '?b=' + __BUILD__, { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : { v: 0 })).catch(() => ({ v: 0 })).then((m: ArtManifest) => { manifest = m; subs.forEach((f) => f()); return m; });
   }
   return loading;
 }
