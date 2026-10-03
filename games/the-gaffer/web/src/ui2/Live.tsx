@@ -416,6 +416,7 @@ function Changes({ m, me, onChange, onClose }: { m: LiveMatch; me: 0 | 1; onChan
 }
 
 // ---------- half-time ----------
+const SUB_FIT = 80; // F07: below this a half-time change is worth suggesting
 function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHalf: (m: LiveMatch) => void }) {
   const g = useGame();
   const { w, x, lang } = g;
@@ -423,12 +424,16 @@ function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHa
   const why = useMemo(() => explain(m, me, get), [m.minute]);
   const [picked, setPicked] = useState<number[]>(why.tips.length ? [0] : []);
   const [talk, setTalkOpen] = useState(false);
+  // F12 (rework): the team talk is staged like the changes and the sub; nothing restarts until "Start the second half".
+  const [talkSel, setTalkSel] = useState<number | null>(null);
   const home = clubOf(w, m.sides[0].clubId)!, away = clubOf(w, m.sides[1].clubId)!;
   const name = (id: string) => (id ? sn(get(id), lang) : '');
   // The one sub the numbers point at: our most tired outfielder for the best-rested fit on the bench.
   const s = m.sides[me];
   const slots = FORMATIONS[s.tactics.formation].slots;
-  const tired = s.onPitch.map((id, k) => ({ id, k })).filter((o) => o.id && slots[o.k]?.pos !== 'GK').sort((a, b) => (m.fit[a.id] ?? 100) - (m.fit[b.id] ?? 100))[0];
+  // F07 (rework): only someone actually flagging (under SUB_FIT), and never a man who scored or set one up this match.
+  const involved = new Set(m.events.filter((e) => e.kind === 'goal' && e.side === me).flatMap((e) => [e.playerId, e.assistId ?? '']));
+  const tired = s.onPitch.map((id, k) => ({ id, k })).filter((o) => o.id && slots[o.k]?.pos !== 'GK' && (m.fit[o.id] ?? 100) < SUB_FIT && !involved.has(o.id)).sort((a, b) => (m.fit[a.id] ?? 100) - (m.fit[b.id] ?? 100))[0];
   const subIn = tired && canSub(m, me) ? s.bench.map(get).filter((p) => p.position !== 'GK').sort((a, b) => b.rating - a.rating - (a.position === slots[tired.k].pos ? 0 : 0))
     .find((p) => p.position === slots[tired.k].pos) ?? s.bench.map(get).filter((p) => p.position !== 'GK')[0] : undefined;
   const [doSub, setDoSub] = useState(false);
@@ -489,16 +494,16 @@ function HalfTime({ m, me, onSecondHalf }: { m: LiveMatch; me: 0 | 1; onSecondHa
         </div>
       </div>
       <div className="mbar" role="toolbar">
-        <button className="btn btn--ghost on-ground" onClick={() => setTalkOpen(true)}><I n="chat" />{x.ht.teamTalk}</button>
+        <button className="btn btn--ghost on-ground" aria-pressed={talkSel !== null} onClick={() => setTalkOpen(true)}><I n="chat" />{talkSel === null ? x.ht.teamTalk : `${x.ht.teamTalk}: ${x.pre.talks[talkSel][0]}`}</button>
         <span className="grow" />
-        <button className="btn btn--accent" onClick={() => onSecondHalf(plan(picked, doSub))}><I n="whistle" />{x.ht.second}</button>
+        <button className="btn btn--accent" onClick={() => { const n = plan(picked, doSub); if (talkSel !== null) setTalk(n, me, ([1, 3, 2] as Talk[])[talkSel]); onSecondHalf(n); }}><I n="whistle" />{x.ht.second}</button>
       </div>
       {talk && (
         <Sheet label={x.ht.teamTalk} onClose={() => setTalkOpen(false)}>
           <h2 className="h2">{x.ht.teamTalk}</h2>
           <div className="talk">
             {x.pre.talks.map(([a, b], i) => (
-              <button key={i} className="choice" onClick={() => { const n = clone(m); setTalk(n, me, ([1, 3, 2] as Talk[])[i]); setTalkOpen(false); onSecondHalf(n); }}>
+              <button key={i} className="choice" aria-pressed={talkSel === i} onClick={() => { setTalkSel(i); setTalkOpen(false); }}>
                 <div className="grow"><b>{a}</b><span>{b}</span></div>
               </button>
             ))}

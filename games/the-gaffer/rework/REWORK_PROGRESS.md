@@ -33,4 +33,17 @@ Done (regression checks in `rework/trust`, 33 checks, all pass; screenshots `evi
   Rematch; nothing touches a career (throwaway career, never saved).
 * Bottom-bar ghost buttons readable (full time, quick match).
 
-Next: F12 half-time draft → Continue blocker label → F07/F13/F14/F15 checks → onboarding.
+* **F12** half-time: the team talk is staged with the suggested changes and the sub; nothing restarts until "Second
+  half" (before: choosing a talk restarted the match at once and dropped the picked changes). Browser check
+  `ui-tests/rework-ht.mjs` (fails on the old build, passes now).
+* **Continue** says its next step everywhere, phones included: "n to decide", "Next: matchday", "Back to the match",
+  "Season review", "Your career" (same order as `App.cont`).
+* **F15** courses state effect, permanence, once-only and reputation before paying (the numbers are the engine's:
+  fatigue ×0.85, press ×1.03, youth growth ×1.15, defeats hurt morale less).
+* **F13** season review cup chips say won / runners-up / out in the semi-finals… instead of a bare name.
+* **F07** half-time sub suggestion only for a man actually flagging (< 80% fit) and never one who scored or assisted.
+* **F14** checked, not reproduced: digest counters are scoped to the sim run (`staffCallsSince(seq0)`), xG chart
+  markers group a scorer's goals ("Haaland ×2").
+
+Next (M2 rest): onboarding (first-week guide, skippable), Today decision cards (why it matters, confidence), Tactics
+basic/advanced layers, recruitment funnel (7 chips → 4 stages). Then M3 connected career-memory slice.

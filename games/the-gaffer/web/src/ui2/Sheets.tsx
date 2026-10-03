@@ -271,7 +271,7 @@ function SummarySheet({ s, onDone }: { s: SeasonSummary; onDone: () => void }) {
       <p className="lead">{S.finish(x.place(r.position), t.objective[r.objective].toLowerCase())} <b>{r.met ? S.met : S.missed}</b></p>
       <div className="chips wrap">
         <span className={`tag ${up ? 'tag--good' : down ? 'tag--bad' : ''}`}>{up ? S.up : down ? S.down : S.stay}</span>
-        {s.cups.map((cu) => <span key={cu.id} className={`tag${cu.won ? ' tag--good' : ''}`}><I n="star" size="sm" />{cu.name[lang]}</span>)}
+        {s.cups.map((cu) => <span key={cu.id} className={`tag${cu.won ? ' tag--good' : ''}`}><I n={cu.won ? 'star' : 'history'} size="sm" />{cu.name[lang]}: {S.cupRun(cu.won, cu.rounds - cu.round, cu.round)}</span>)}{/* F13: won, reached or out, never just a chip */}
       </div>
       {s.topScorer && <p className="small">{x.table.scorers}: <b>{nm(s.topScorer.player, lang)}</b> · {s.topScorer.value}</p>}
       {s.left.length > 0 && <p className="small"><b>{S.left}:</b> {s.left.map((p) => sn(p, lang)).join(', ')}</p>}

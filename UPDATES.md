@@ -97,6 +97,16 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework M2 (part 2): half-time staging, Continue says what's next, honest courses, cup labels, smarter half-time sub
+- **What changed:**
+  - **F12** at half-time the team talk now waits with your other changes until "Second half". Before, choosing a talk restarted the match at once and dropped the changes you'd ticked.
+  - **Continue** now says what happens next on every screen, phones included: "2 to decide", "Next: matchday", "Back to the match", "Season review".
+  - **F15** each course says what it does before you pay: tire 15% slower, defeats hurt morale less, press 3% harder, or youngsters grow 15% faster. It's permanent and taken once, and shows its reputation gain.
+  - **F13** the season review says how far you went in each cup (won it, runners-up, out in the semis...), not just the cup's name.
+  - **F07** the half-time sub suggestion no longer takes off someone who scored or set up a goal, and only appears when a player is actually tired.
+- **Files:** `web/src/ui2/{Live,OfficeBar,Career,Sheets}.tsx`, `src/lang-v2*.ts`, `src/styles/{app.css,look/components.css}`, `web/ui-tests/rework-ht.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** No change to results. Still on the branch only, not live. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework M2 (part 1): availability, honest percentages, best XI with reasons, promotion sheet, quick-match full time
 - **What changed:**
   - **F10** Today's "Available for Sat" now uses the same rule as team selection: a cup ban counts for the cup match and rested players are out, with a reason per player. Tired players count as available but are flagged.

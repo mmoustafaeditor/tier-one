@@ -14,6 +14,8 @@ export const X_EN = {
   close: 'Close',
   cont: 'Continue',
   open: (n: number): string => (n ? `· ${n} open` : '· all clear'),
+  // rework: Continue says what it does next (or what's in the way)
+  next: { live: 'Back to the match', dec: (n: number): string => `${n} to decide`, match: 'Next: matchday', season: 'Season review', sacked: 'Your career' },
   wk: (season: string, n: number): string => `${season} · Wk ${n}`,
   seasonLabel: (y: number): string => `${y}/${String((y + 1) % 100).padStart(2, '0')}`,
   place: (n: number): string => `${n}${n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'}`,
@@ -533,7 +535,7 @@ export const X_EN = {
     seasons: 'Season by season', now: 'Now', noSeasons: 'Your first season is still being written.',
     records: 'Records', recs: { bigWin: 'Biggest win', mostPoints: 'Most points', mostGoals: 'Most goals', unbeaten: 'Longest unbeaten', scorer: 'Top scorer in a season', bestFinish: 'Best finish', bestBuy: 'Record signing', bestSale: 'Record sale' } as Record<string, string>,
     jobs: 'Clubs asking about you', noJobs: 'Nobody’s calling. Win things and they will.', take: 'Take the job', decline: 'Not interested',
-    courses: 'Courses', courseBuy: (v: string): string => `Enrol · ${v}`, done: 'Done',
+    courses: 'Courses', courseFx: { conditioning: 'Your side tires 15% slower in matches', psychology: 'Defeats hurt your players’ morale less', gegenpress: 'Your high press bites 3% harder', fellowship: 'Your young players develop 15% faster' } as Record<string, string>, courseMeta: (rep: number): string => `Yours for good, once · reputation +${rep}`, courseBuy: (v: string): string => `Enrol · ${v}`, done: 'Done',
     wallet: 'Your own money',
     lift: (season: string, club: string): string => `${season} · ${club}`,
     trophyKinds: { league: 'League title', cup: 'Cup', continental: 'Continental cup', promotion: 'Promotion' } as Record<string, string>,
@@ -580,6 +582,7 @@ export const X_EN = {
   } as Record<string, (...a: any[]) => string>,
   news: { title: 'News and inbox', inbox: 'Inbox', news: 'News', empty: 'Quiet day.', read: 'Mark all read' },
   season: {
+    cupRun: (won: boolean, left: number, round: number): string => (won ? 'won it' : left === 1 ? 'runners-up' : left === 2 ? 'out in the semi-finals' : left === 3 ? 'out in the quarter-finals' : round < 0 ? 'out in the group stage' : `out in round ${round + 1}`),
     title: (y: string): string => `${y} is done`, finish: (p: string, obj: string): string => `Finished ${p}. The board wanted ${obj}.`,
     met: 'Job done.', missed: 'Not good enough.', up: 'Promoted', down: 'Relegated', stay: 'Staying put',
     next: (y: string): string => `Start ${y}`, finishRest: 'Play out the other leagues', left: 'Left the club', kids: 'Up from the academy', retired: (n: number): string => `${n} players retired around the world.`,

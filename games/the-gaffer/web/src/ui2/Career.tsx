@@ -106,7 +106,7 @@ export function CareerScreen() {
               const has = k.courses.includes(co.id);
               return (
                 <div key={co.id} className="row">
-                  <I n="grad" /><span className="grow"><span className="name">{g.t.courseNames[co.id]}</span></span>
+                  <I n="grad" /><span className="grow"><span className="name">{g.t.courseNames[co.id]}</span><span className="sub course-fx">{K.courseFx[co.id]} · {K.courseMeta(co.rep)}</span></span>{/* F15: what it does before you pay */}
                   {has ? <span className="tag tag--good"><I n="check" size="sm" />{K.done}</span> : <button className="btn btn--ghost btn--sm" disabled={k.wallet < co.cost} onClick={() => void g.run({ type: 'coach.course', id: co.id }, { toast: x.saved })}>{K.courseBuy(money(co.cost))}</button>}
                 </div>
               );

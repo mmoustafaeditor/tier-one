@@ -559,3 +559,5 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .xi-owner { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: 8px 0 4px; color: var(--on-ground-2, rgba(255,255,255,.75)); }
 .xi-notes { margin: 6px 0 0; padding-inline-start: 18px; color: var(--on-ground-2, rgba(255,255,255,.75)); }
 .xi-notes li { margin: 2px 0; }
+/* F15: a course's effect is read in full before paying */
+.row .course-fx, .row .grow:has(.course-fx) .name { white-space: normal; overflow: visible; text-overflow: clip; display: block; }
