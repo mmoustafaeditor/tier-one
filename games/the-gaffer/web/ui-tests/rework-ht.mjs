@@ -25,7 +25,7 @@ await p.goto(URL0); await p.waitForFunction(() => window.__bootDone === true, nu
 await click(/2026\/27/); await p.waitForTimeout(500); await click(/🇪🇬/); await p.waitForTimeout(500);
 await p.evaluate(() => [...document.querySelectorAll('button')].find((b) => /Al Ahly/.test(b.innerText))?.click()); await p.waitForTimeout(600);
 await p.evaluate(() => document.querySelector('button.btn--accent.big')?.click()); await p.waitForTimeout(1500);
-const label = await p.evaluate(() => document.querySelector('.officebar .continue')?.innerText.replace(/\s+/g, ' ').trim());
+const label = await p.evaluate(() => document.querySelector('.mast .continue')?.innerText.replace(/\s+/g, ' ').trim());
 ok(/to decide/.test(label ?? ''), `Continue says what it does next: "${label}"`);
 await p.screenshot({ path: join(OUT, 'continue-label-phone-en.png') });
 await nav('career'); await p.waitForTimeout(700);

@@ -103,7 +103,7 @@ await scrollBy(600, 1600); await scrollBy(600, 1600); await scroll(0, 700);
 await say('الرجوع', 'السهم فوق بيرجّعك للفريق.', 2000);
 await tap(css('header .icon-btn'), { after: 1500 });
 const sqTab = async (re, title, text, more = 1) => {
-  await tap(T('.page .seg button, .page [role=tablist] button, .area-tabs .seg button, .o-tabs button', re), { after: 1400 });
+  await tap(T('.page .seg button, .page [role=tablist] button, .area-tabs .seg button, .sq-tiles--top button, .o-tabs button', re), { after: 1400 });
   await say(title, text, 3800);
   for (let i = 0; i < more; i++) await scrollBy(600, 1500);
   await scroll(0, 600);
@@ -121,7 +121,7 @@ await tap(T('button', /^والكورة معاهم$/), { after: 1600 });
 await say('الماتش › التكتيك', 'جوه التكتيك فيه مفتاح «والكورة معانا / والكورة معاهم»: تشوف وتظبط الرسم وإنت مستحوذ، والرسم من غير الكورة.', 4200);
 await tap(T('button', /^والكورة معانا$/), { after: 1400 });
 await scrollBy(600, 1500); await scrollBy(600, 1500); await scroll(0, 600);
-const mTab = async (re, title, text) => { await tap(T('.page .seg button, .page [role=tablist] button, .area-tabs .seg button, .o-tabs button', re), { after: 1400 }); await say(title, text, 3400); await scrollBy(500, 1400); await scroll(0, 500); };
+const mTab = async (re, title, text) => { await tap(T('.page .seg button, .page [role=tablist] button, .area-tabs .seg button, .sq-tiles--top button, .o-tabs button', re), { after: 1400 }); await say(title, text, 3400); await scrollBy(500, 1400); await scroll(0, 500); };
 await mTab(/^المواعيد$/, 'الماتش › المواعيد', 'كل ماتشات الموسم، و«إيه اللي بيتكرر» في آخر 6 ماتشات.');
 await mTab(/^الجدول$/, 'الماتش › الجدول', 'جدول الدوري.');
 await mTab(/^الكاسات$/, 'الماتش › الكاسات', 'الكاس ومشوارك فيه لحد فين.');
@@ -139,7 +139,7 @@ for (let i = 0; i < 4; i++) {
 // ---------- Club ----------
 await tap(nav('club'), { after: 1500 });
 await say('النادي', `5 تابات: الفلوس، الإدارة، المنشآت، الجهاز، التسويق. و${DESK ? 'في الشريط اللي على الجنب' : 'فوق'}: مشواري، كلوب باس، الإعدادات.`, 3800);
-const cTab = async (re, title, text) => { await tap(T('.page .seg button, .page [role=tablist] button, .area-tabs .seg button, .o-tabs button', re), { after: 1400 }); await say(title, text, 3600); await scrollBy(600, 1400); await scroll(0, 500); };
+const cTab = async (re, title, text) => { await tap(T('.page .seg button, .page [role=tablist] button, .area-tabs .seg button, .sq-tiles--top button, .o-tabs button', re), { after: 1400 }); await say(title, text, 3600); await scrollBy(600, 1400); await scroll(0, 500); };
 await cTab(/^الفلوس$/, 'النادي › الفلوس', 'الميزانية، المرتبات، الدخل والمصاريف، وسعر التذاكر.');
 await cTab(/^الإدارة$/, 'النادي › الإدارة', 'ثقة الإدارة وهدف الموسم، و«ليه اتحركت»: آخر 8 تغييرات في الثقة وسبب كل واحدة.');
 await cTab(/^المنشآت$/, 'النادي › المنشآت', 'الملعب ومركز التدريب والأكاديمية. قبل أي تطوير بتشوف توقع: هيكلّف كام وهيرجّع إيه.');

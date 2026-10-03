@@ -112,6 +112,13 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
         </div>
         <button className="btn btn--ghost pg-cta" onClick={() => setView('depth')}>{C.planner}<I n="arrowr" size="sm" flip={g.rtl} /></button>
       </header>
+      {/* Phones: the four doors right under the head (no scrolling to reach them, UX-01); desktop keeps them beside the list. */}
+      <div className="sq-tiles sq-tiles--top">
+        <button onClick={() => g.go({ s: 'room' })}><I n="room" /><span>{NV[g.ui].room}</span></button>
+        <button onClick={() => g.go({ s: 'train' })}><I n="bolt" /><span>{NV[g.ui].training}</span></button>
+        <button onClick={() => g.go({ s: 'medical' })}><I n="medic" /><span>{NV[g.ui].medical}</span></button>
+        <button onClick={() => g.go({ s: 'academy' })}><I n="grad" /><span>{NV[g.ui].academy}</span></button>
+      </div>
       <Seg label={x.squad.title} value={view} onChange={setView} className="pg-tabs"
         options={[{ v: 'players', label: NV[g.ui].players }, { v: 'depth', label: C.depth }, { v: 'contracts', label: <>{C.contracts}{ending.length > 0 && <em className="tab-n">{ending.length}</em>}</> }]} />
 
@@ -139,7 +146,7 @@ export function SquadScreen({ lens: lens0 }: { lens?: string }) {
               <span aria-hidden="true">·</span>
               <button className="link" onClick={() => { setLens('loans'); setAll(true); }}>{C.onLoan} <b>{(c.loans ?? []).filter((l) => l.from === c.clubId && l.season === c.season).length}</b></button>
             </div>
-            <div className="sq-tiles">
+            <div className="sq-tiles sq-tiles--side">
               <button onClick={() => g.go({ s: 'room' })}><I n="room" size="lg" /><span>{NV[g.ui].room}</span></button>
               <button onClick={() => g.go({ s: 'train' })}><I n="bolt" size="lg" /><span>{NV[g.ui].training}</span></button>
               <button onClick={() => g.go({ s: 'medical' })}><I n="medic" size="lg" /><span>{NV[g.ui].medical}</span></button>

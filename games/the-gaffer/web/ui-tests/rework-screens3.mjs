@@ -27,7 +27,7 @@ await p.evaluate(() => [...document.querySelectorAll('button')].find((b) => /Al 
 await p.evaluate(() => document.querySelector('button.btn--accent.big')?.click()); await p.waitForTimeout(1500);
 await click(/^Our target is right/); await p.waitForTimeout(400); await click(/^The usual split/); await p.waitForTimeout(600);
 const nav = (id) => p.evaluate((id) => document.querySelector(`nav.nav a[href="#${id}"]`)?.click(), id);
-const area = async (re) => { await nav('squad'); await p.waitForTimeout(700); await p.evaluate((s) => [...document.querySelectorAll('.area-tabs .seg button')].find((b) => new RegExp(s).test(b.innerText))?.click(), re.source); await p.waitForTimeout(900); };
+const area = async (re) => { await nav('squad'); await p.waitForTimeout(700); await p.evaluate((s) => [...document.querySelectorAll('.area-tabs .seg button, .sq-tiles button')].find((b) => new RegExp(s).test(b.innerText))?.click(), re.source); await p.waitForTimeout(900); };
 const top = (sel) => p.evaluate((s) => { const r = document.querySelector(s)?.getBoundingClientRect(); if (r) window.scrollBy(0, r.top - 90); }, sel);
 // 1. Academy: the loan sheet for the first kid old enough.
 await area(/^Academy$/);

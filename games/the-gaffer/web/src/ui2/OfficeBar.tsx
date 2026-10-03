@@ -23,7 +23,7 @@ export function OfficeBarInner({ openCount }: { openCount: number }) {
       </div>
       <div className="mast-when"><b>{shortDate(today, g.ui)}</b><span>{x.wk(x.seasonLabel(c.season), c.round + 1)}</span></div>
       <button className={`btn btn--accent continue${g.busy ? ' loading' : ''}`} disabled={g.busy} onClick={g.cont}>
-        <span>{x.cont}</span> <small>· {nextLabel}</small><I n="arrowr" size="sm" />
+        <span>{x.cont}</span> <small><span className="cdot">· </span>{nextLabel}</small><I n="arrowr" size="sm" />
       </button>
     </>
   );

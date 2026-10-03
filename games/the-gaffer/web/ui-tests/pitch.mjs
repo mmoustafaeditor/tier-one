@@ -20,7 +20,7 @@ const tap = async (t) => {
   if (!r) throw new Error(`not found: ${t}`); await p.mouse.click(r[0], r[1]); await p.waitForTimeout(900);
 };
 await p.goto(URL0); await p.waitForFunction(() => window.__bootDone === true, null, { timeout: 20000 }).catch(() => {}); await p.waitForTimeout(800);
-await tap('Start a 2026/27 career'); await tap('🇪🇬'); await tap('A Al Ahly'); await p.waitForTimeout(800);
+await tap('Start a 2026/27 career'); await tap('🇪🇬'); await tap('AHL Al Ahly'); await p.waitForTimeout(800);
 await tap('css:button.btn--accent.big'); await p.waitForTimeout(1500);
 await tap('The usual split'); await tap('Our target is right');
 await tap('Continue'); if (await p.evaluate(() => /Take the staff calls/.test(document.body.innerText))) await tap('Take the staff calls');

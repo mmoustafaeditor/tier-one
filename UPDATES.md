@@ -190,6 +190,11 @@ together with your change.
 
 ---
 
+## 2026-10-04 · saifsaber · The Gaffer: cinematic UI rebuild (reference pack v2)
+- **What changed:** The whole UI of The Gaffer rebuilt to Saif's approved cinematic references: a dark charcoal editorial look (Playfair Display headings, Inter for UI), a full-width masthead over the club's locker room with the five destinations (bottom bar on phones), and the career club's colours as the only accent. All 328 clubs get a theme from the pack (accent, shirt colour, original crest/shirt/banner/flag art drawn in code, a stadium and locker room by scale and region), set the moment the club is picked and kept with the career. Today, Squad, Transfers and the live match follow the approved screens (live pitch: all 22 players, both keepers in gold/blue, the referee marked REF, both assistants, the ball, real 105×68 geometry); every other page, tab and dialog uses the same system. Arabic RTL, saves, the simulation and every feature are unchanged; see `games/the-gaffer/rework/CINEMATIC_UI.md` for the feature map and limits.
+- **Files:** `games/the-gaffer/web/src/styles/{cinematic.css,look/tokens.css,look/fonts.css}` and new fonts in `look/fonts/`, `src/assets/art/*.webp`, `src/data/clubThemes.ts`, `src/ui2/{theme.ts,Scene.tsx}` (new), `src/ui2/{shell,kit,OfficeBar,Today,Guide,Squad,Transfers,Match,Live,PreMatch,NewCareer,Pitch2D}.tsx`, `src/App.tsx`, `src/lang-cine.ts`, `sim-tests/themes-map.ts`, `ui-tests/{cine-shots,cine-sweep}.mjs` and updated UI tests, `games/the-gaffer/rework/CINEMATIC_UI.md`.
+- **Heads-up for the team:** Web build only (no Android change, so no new APK: installed apps take it as a web update). The single-file build grows by about 0.45 MB (stadium/locker photos) and drops the old Archivo/Instrument Sans fonts. Branch only, not merged.
+
 ## 2026-10-03 · saifsaber · The Gaffer: guided tour video script
 - **What changed:** New script that plays through every screen of The Gaffer in Arabic and records a video with captions saying what each tap opens (phone 412×892 or laptop 1440×900). Nothing in the game changed.
 - **Files:** `games/the-gaffer/web/ui-tests/tour.mjs`

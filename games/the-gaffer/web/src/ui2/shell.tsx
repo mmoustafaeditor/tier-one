@@ -22,7 +22,7 @@ export function Shell({ tab, club, labels, onTab, solo, children, badge, mast }:
   const [menu, setMenu] = useState(false);
   const go = (t: Tab) => { setMenu(false); onTab(t); };
   const extras = TABS.filter((x) => x.extra);
-  const extraBadge = extras.reduce((s, x) => s + (badge?.[x.id] ?? 0), 0);
+  const extraBadge = extras.reduce((s, x) => s + (x.id === 'news' ? 0 : badge?.[x.id] ?? 0), 0);
   return (
     <div className={`shell${solo ? ' solo' : ''}`}>
       {!solo && (
@@ -42,6 +42,10 @@ export function Shell({ tab, club, labels, onTab, solo, children, badge, mast }:
               </a>
             ))}
           </nav>
+          {/* The inbox in the header on phones and tablets (approved-home reference), one tap from anywhere. */}
+          <button className="mast-inbox icon-btn" aria-label={labels.news} onClick={() => go('news')}>
+            <I n="inbox" />{badge?.news ? <em className="nav-badge">{badge.news}</em> : null}
+          </button>
           <button className="mast-more icon-btn" aria-label={`${labels.news} · ${labels.career} · ${labels.pass} · ${labels.settings}`} aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
             <I n="gear" />{extraBadge ? <em className="nav-badge">{extraBadge}</em> : null}
           </button>

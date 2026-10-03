@@ -27,7 +27,7 @@ async function open(vp, lang = 'en') {
   await p.waitForFunction(() => window.__bootDone === true, null, { timeout: 20000 }).catch(() => {});
   await p.waitForTimeout(800);
   // A fresh Al Ahly career, made in English, then the language switched (prefs are device settings).
-  await tap(p, 'Start a 2026/27 career'); await tap(p, '🇪🇬'); await tap(p, 'A Al Ahly'); await p.waitForTimeout(1000);
+  await tap(p, 'Start a 2026/27 career'); await tap(p, '🇪🇬'); await tap(p, 'AHL Al Ahly'); await p.waitForTimeout(1000);
   await tap(p, 'css:button.btn--accent.big'); await p.waitForTimeout(1500);
   await tap(p, 'The usual split'); await tap(p, 'Our target is right');
   if (lang !== 'en') {
@@ -70,9 +70,9 @@ const sees = (p, re) => p.evaluate(([s, f]) => new RegExp(s, f).test(document.bo
 const PHONE = [
   ['tactics', ['nav:Match'], /Without the ball/, 1],
   ['table', ['nav:Match', 'Table'], /Pts/, 2],
-  ['player', ['nav:Squad', 'EMAM ASHOUR'], /Emam Ashour/, 2, 600], // a row in the player list: some scrolling is normal
-  // Rework: Transfers is a four-stage funnel now; Search sits in stage 2 (Shortlist & search), one tap more than the old chip row.
-  ['search', ['nav:Transfers', '2 Shortlist & search', 'Search'], /PLAYERS/i, 3],
+  ['player', ['nav:Squad', 'css:.sq-r'], /Ability/, 2, 600], // the first row of the roster: some scrolling is normal
+  // Transfers' four stages (Needs / Targets / Talks / Deals, cinematic UI); Search sits in Targets.
+  ['search', ['nav:Transfers', 'Targets', 'Search'], /PLAYERS/i, 3],
   ['money', ['nav:Club'], /runway/i, 1],
   ['facilities', ['nav:Club', 'Facilities'], /Build/, 2],
   ['room', ['nav:Squad', 'Dressing room'], /Cohesion/, 2],
@@ -80,7 +80,7 @@ const PHONE = [
   ['medical', ['nav:Squad', 'Medical'], /Treatment room/, 2],
   ['academy', ['nav:Squad', 'Academy'], /The academy/, 2],
   ['between areas', ['nav:Squad', 'Academy', 'Medical', 'Training', 'Dressing room', 'Players'], /Depth/, 6],
-  ['inbox', ['css:.inbox-line'], /Inbox/, 1],
+  ['inbox', ['css:.mast-inbox'], /Inbox/, 1],
   ['career', ['nav:Club', 'Career'], /Club legends/, 2],
   ['pass', ['nav:Club', 'Club Pass'], /Looks/, 2],
   ['settings', ['nav:Club', 'Settings and saves'], /Language/, 2],
@@ -114,7 +114,8 @@ async function run(name, vp, tasks) {
 
 await run('phone', { width: 390, height: 844 }, PHONE);
 await run('small phone', { width: 360, height: 740 }, PHONE.filter(([id]) => ['room', 'academy', 'between areas', 'inbox', 'settings'].includes(id)));
-await run('desktop', { width: 1280, height: 860 }, DESKTOP);
+// Cinematic UI: the utilities are icons in the masthead from 1300 px (below that they sit in its menu, one tap more).
+await run('desktop', { width: 1440, height: 900 }, DESKTOP);
 
 // Every language labels every navigation item; the Squad areas fit on a phone; Arabic runs right to left.
 for (const lang of ['ar', 'es', 'fr']) {
@@ -123,8 +124,9 @@ for (const lang of ['ar', 'es', 'fr']) {
   ok(nav.length === 5 && nav.every(Boolean), `${lang}: 5 labelled tabs (${nav.join(' · ')})`);
   ok(await p.evaluate(() => !!document.querySelector('.inbox-line')?.innerText.trim()), `${lang}: the inbox line on Today`);
   await tap(p, 'css:nav.nav a[href="#squad"]');
-  const areas = await p.evaluate(() => [...document.querySelectorAll('.area-tabs button')].map((b) => { const q = b.getBoundingClientRect(); return { t: b.innerText.trim(), in: q.left >= 0 && q.right <= innerWidth }; }));
-  ok(areas.length === 5 && areas.every((a) => a.t && a.in), `${lang}: Squad areas labelled and all on screen (${areas.map((a) => a.t).join(' · ')})`);
+  // Cinematic UI: the squad landing has its own tabs and four doors to the other areas (dressing room, training, medical, academy).
+  const areas = await p.evaluate(() => [...document.querySelectorAll('.pg-tabs button, .sq-tiles button')].filter((b) => b.getBoundingClientRect().width > 0).map((b) => { const q = b.getBoundingClientRect(); return { t: b.innerText.trim(), in: q.left >= 0 && q.right <= innerWidth }; }));
+  ok(areas.length === 7 && areas.every((a) => a.t && a.in), `${lang}: Squad tabs and areas labelled and all on screen (${areas.map((a) => a.t.replace(/\s+/g, ' ')).join(' · ')})`);
   if (lang === 'ar') ok((await p.evaluate(() => document.documentElement.dir)) === 'rtl', 'ar: right to left');
   ok(!errs.length, `${lang}: no console errors`);
   await ctx.close();
