@@ -141,6 +141,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: dressing room timeline, the coach's week, clearer academy loans
+- **What changed:** Dressing room: a new "What happened in the dressing room" timeline for the season, covering your talks (reassure / challenge / promise), how you answered requests, the armband, promises kept or broken, players asking for a word or to leave, new leaders and departures. The turning points are highlighted. The same history for one player shows on his page as "Between you and him". Training: "The fitness coach's week" shows his proposed intensity and focus with his reasons, and "Use his week" applies it. It's the same decision he makes when you delegate fitness to him. Academy: each loan club now says how much he'd play there (starter / rotation / bench) and the team's level against his, and the best option is marked.
+- **Files:** `web/src/ui2/RoomLog.tsx` (new), `src/ui2/Room.tsx`, `src/ui2/Training.tsx`, `src/ui2/Pathway.tsx`, `src/sim/staff.ts` (`weekPlan`), `src/sim/commands.ts` (talk tone and request answer in the event data), `src/lang-roomlog.ts`, `src/lang-weekplan.ts`, `src/lang-loanspot.ts` (new), `src/styles/app.css`, `web/sim-tests/rework/{roomlog,weekplan}.ts`, `web/ui-tests/rework-screens3.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** Match results don't change (fingerprint still `7116eb372ed61d68`). Branch only, not merged.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: Medical shows who is fit but not match-ready
 - **What changed:** Medical has a new list, "Fit, not match-ready": players who aren't injured but are below 78% fitness. Each shows how many matchdays until he's ready (the game recovers 12% a matchday) and a rest switch. After a single match in a week the list is usually empty; it fills up in weeks with cup and league matches together.
 - **Files:** `web/src/ui2/Pathway.tsx`, `src/lang-sharp.ts` (new), `web/ui-tests/rework-medical.mjs` (new), `games/the-gaffer/rework/*`

@@ -167,6 +167,17 @@ Next: M5 validation items possible here (save round-trip/slot isolation checks, 
   at the game's own +12% a matchday and the rest switch. Often empty after a one-match week; fills in cup weeks.
   `ui-tests/rework-medical.mjs`.
 
+* **Dressing room (§E):** "What happened in the dressing room": talks (with their tone), answers to requests, the
+  armband, promises kept or broken, requests to talk or leave, new leaders, departures, read from the season's event
+  log (the talk/answer command events now record the tone and the answer); turning points marked. The same history,
+  for one player, on his page ("Between you and him"). `ui2/RoomLog.tsx`, `rework/roomlog`.
+* **Training (§F):** "The fitness coach's week": his proposal (intensity and focus) with its reasons (squad fitness
+  against his "tired" line, the next opponent), "Use his week" applies it. The coach's own delegated call and the
+  proposal are one function (`sim/staff.ts weekPlan`), so they can't differ: `rework/weekplan` (40 of 40 weeks).
+* **Academy (§H):** each loan club says the playing time (his role there, from who is better in his position) and the
+  team's level against his; the first suggestion is marked when he would start. `ui-tests/rework-screens3.mjs`;
+  evidence `evidence/m4j-after/`.
+
 ## Final plan (Saif, 2026-10-03: "do everything, then merge")
 1. M5 validation possible here: multi-season regression, save round-trip / slot isolation, ES/FR width gate, browser
    performance numbers, rollback plan.

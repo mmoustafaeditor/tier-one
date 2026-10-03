@@ -430,6 +430,9 @@ export function dispatch(w: World, c: Career, cmd: Command, by = 'me', cause?: s
   if (pid) refs.p = [pid];
   const club = (cmd as { clubId?: string }).clubId;
   if (club) refs.c = [club];
+  // Rework §E: the dressing-room timeline reads how a talk went and how a request was answered.
+  if (cmd.type === 'room.talk') data.tone = cmd.tone;
+  if (cmd.type === 'room.answer') data.answer = (cmd as { answer: string }).answer;
   const e = emit(next.career, 'cmd', cmd.type, { refs, data, cause });
   const career = stamp(c, e.career, e.id);
   return { ok: true, world: next.world, career, events: [e.id], note: next.note };
