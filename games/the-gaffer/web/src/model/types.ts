@@ -107,7 +107,9 @@ export interface SaveFile {
 // Which world a career was created with. Old careers (before v2.1) are 'generated' and stay fictional forever.
 export type WorldKind = 'real2026' | 'generated';
 export type NamesMode = 'real' | 'fictional';
-export interface SaveMeta { slot: number; build: number; data: WorldKind; names: NamesMode; club: string; clubName: string; colors: [string, string]; season: number; round: number; manager: string }
+export interface SaveMeta { slot: number; build: number; data: WorldKind; names: NamesMode; club: string; clubName: string; colors: [string, string]; season: number; round: number; manager: string;
+  // Title-screen card extras (optional: saves written before them still describe themselves without).
+  pos?: number; of?: number; next?: { en: string; ar: string; home: boolean } | null }
 
 // ---------- v2 foundation (save v4) ----------
 

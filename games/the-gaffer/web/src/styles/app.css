@@ -590,3 +590,13 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .ft-why .cause.good .n { background: var(--mint-400, #7FE3C4); color: #04211C; }
 .ft-why .cause.bad .n { background: rgba(229,96,74,.18); color: var(--bad, #E5604A); }
 .ft-why .cause p { margin: 2px 0 0; }
+/* Rework: the pre-match briefing */
+.brief-list { margin: 0; padding-inline-start: 20px; display: grid; gap: 8px; }
+.brief-list li { line-height: 1.4; }
+
+/* Rework: an empty slot is a "New career" card, not dead space; the career card gets an extra line or two. */
+.slot-new { display: flex; align-items: center; gap: 12px; width: 100%; padding: 4px 0; background: none; border: 0; color: inherit; font: inherit; text-align: start; cursor: pointer; }
+.slot-new .grow { display: flex; flex-direction: column; min-width: 0; }
+.slot-new:hover .slot-empty, .slot-new:focus-visible .slot-empty { border-color: var(--accent, currentColor); color: var(--ink); }
+.slot-line .grow { min-width: 0; }
+.sc-title .slot-line .sub { white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }

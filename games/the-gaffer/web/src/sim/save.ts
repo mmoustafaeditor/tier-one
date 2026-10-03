@@ -3,6 +3,7 @@
 // A client-side checksum only catches corruption and casual edits; online features must re-check on the server.
 import type { Career, SaveFile, SaveMeta } from '../model/types';
 import { checkWorld, type World } from './world';
+import { leagueOf, nextFixture, table } from './season';
 import { SAVE_VERSION, upgradeCareer, upgradeSave, upgradeWorld } from './upgrade';
 import { renameSave } from './renames';
 import { checkEvents } from './events';
@@ -146,7 +147,20 @@ export function metaOf(world: World, career: Career | null, slot: number): SaveM
   return {
     slot, build: typeof __BUILD__ === 'number' ? __BUILD__ : 0, data: career.data ?? 'generated', names: career.names ?? 'fictional', club: career.clubId,
     clubName: club?.name.en ?? '', colors: club?.colors ?? ['#0E4F47', '#7DEBCB'], season: career.season, round: career.round, manager: career.managerName,
+    ...cardOf(world, career),
   };
+}
+
+// League position and the next league fixture for the slot card; nothing if the world can't answer (never blocks a save).
+function cardOf(world: World, career: Career): Pick<SaveMeta, 'pos' | 'of' | 'next'> {
+  try {
+    const rows = table(world, career, leagueOf(world, career.clubId));
+    const i = rows.findIndex((r) => r.clubId === career.clubId);
+    const nf = nextFixture(world, career);
+    const home = nf ? nf.fixture[0] === career.clubId : false;
+    const opp = nf ? world.clubs.find((x) => x.id === nf.fixture[home ? 1 : 0]) : undefined;
+    return { pos: i >= 0 ? i + 1 : undefined, of: rows.length, next: opp ? { en: opp.name.en, ar: opp.name.ar, home } : null };
+  } catch { return {}; }
 }
 
 export async function makeSave(world: World, career: Career | null): Promise<SaveFile> {

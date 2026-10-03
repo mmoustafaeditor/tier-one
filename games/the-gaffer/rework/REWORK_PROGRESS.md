@@ -89,4 +89,15 @@ pieces and marking (remembered per device; it never hides a setting silently). E
 * Full time "Why it happened": the analysts' top three findings (engine record), marked good/bad. Evidence
   `evidence/m4-after/`. Today's "World pulse" already exists (Headlines panel: the latest three news items → News).
 
-Next: AI best-XI with recalibration (needs Saif's decision: results change), M5 device/human validation.
+Decision (Saif, 2026-10-03): AI clubs keep their current XI selection; the best-XI assignment stays on the manager's side only.
+
+* Pre-match "Three things for this match": the two biggest numbers edges either way from the match model (ours, where
+  they crowd us, their danger zone) plus what the scouting report knows; "Open tactics" link. Read-only, no result change.
+  Evidence `evidence/m4c-after/`.
+
+* Title screen: the career card shows manager, season, matchday, league position (after the first match), the next
+  league fixture (home/away) and when it was last played; an empty slot is a "Start a 2026/27 career" card. The new
+  save-description fields are optional (`SaveMeta.pos/of/next`): older saves show the old card until saved again, no
+  migration needed. `ui-tests/rework-title.mjs`; evidence `evidence/m4d-before|after/`.
+
+Next: squad planner view; M5 device/human validation.

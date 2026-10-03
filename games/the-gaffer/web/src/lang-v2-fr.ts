@@ -43,6 +43,10 @@ export const X_FR: XStrings = {
     foot: 'Jeu non officiel. Les vrais noms de clubs et de joueurs ne servent que de faits ; blasons et maillots sont nos propres dessins ; les notes sont le jugement de The Gaffer, de personne d’autre. Aucun lien avec un club, une ligue ou un joueur.',
     badSave: 'Une sauvegarde de cet appareil n’a pas passé la vérification et a été laissée telle quelle. Ton autre emplacement va bien.',
     loading: 'Ouverture du bureau…',
+    card: (pos: number, of: number) => `${pos}${pos === 1 ? 'er' : 'e'} sur ${of}`,
+    next: (club: string, home: boolean) => `Prochain : ${club} ${home ? '(à domicile)' : '(à l’extérieur)'}`,
+    played: (when: string) => `Dernière partie ${when}`,
+    newHere: 'Commencer une nouvelle carrière ici',
     matchday: (n: number) => `Journée ${n}`,
   },
   pick: {
@@ -237,6 +241,14 @@ export const X_FR: XStrings = {
   },
 
   pre: {
+    crowd2: (zone: string, lane: string, a: string, b: string) => `Là, ils sont plus nombreux : ${zone}, ${lane.toLowerCase()}. ${a} des nôtres contre ${b} quand on attaque.`,
+    brief: 'Trois clés pour ce match',
+    edge: (zone: string, lane: string, a: string, b: string) => `Notre avantage : ${zone}, ${lane.toLowerCase()}. ${a} des nôtres contre ${b}.`,
+    danger: (zone: string, lane: string, a: string, b: string) => `Leur avantage : ${zone}, ${lane.toLowerCase()}. ${b} des leurs contre nos ${a}.`,
+    even: 'Aucune zone où un camp a clairement un homme de plus.',
+    known: (style: string, shape: string) => `Le rapport : ils jouent ${style.toLowerCase()} en ${shape}.`,
+    unknown: (shape: string) => `Pas encore de rapport : on ne connaît que le ${shape}. L’analyste peut l’avoir avant le match.`,
+    openTac: 'Ouvrir la tactique',
     crowd: (n: string, club: string) => `${n} · ${club} donne de la voix`,
     crowdAway: (n: string) => `${n} · le parcage visiteur est plein`,
     stakesUp: (club: string, pos: string) => `Gagne et tu passes ${pos}. ${club} est sur le chemin.`,

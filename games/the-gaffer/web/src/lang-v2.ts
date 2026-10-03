@@ -49,6 +49,10 @@ export const X_EN = {
     foot: 'Unofficial game. Real club and player names are used as facts only; crests and kits are our own drawings; ratings are The Gaffer\'s own judgement, not anyone else\'s. Not affiliated with any club, league or player.',
     badSave: 'A save on this device failed its check and was left alone. Your other slot is fine.',
     loading: 'Opening the office…',
+    card: (pos: number, of: number): string => `${pos}${['th', 'st', 'nd', 'rd'][(pos % 100 > 10 && pos % 100 < 14) || pos % 10 > 3 ? 0 : pos % 10]} of ${of}`,
+    next: (club: string, home: boolean): string => `Next: ${club} ${home ? '(home)' : '(away)'}`,
+    played: (when: string): string => `Last played ${when}`,
+    newHere: 'Start a new career in this slot',
     matchday: (n: number): string => `Matchday ${n}`,
   },
   pick: {
@@ -245,6 +249,14 @@ export const X_EN = {
 
   // ---------- matchday ----------
   pre: {
+    crowd2: (zone: string, lane: string, a: string, b: string): string => `They crowd us there: ${zone}, ${lane.toLowerCase()}. ${a} of ours against ${b} when we attack.`,
+    brief: 'Three things for this match',
+    edge: (zone: string, lane: string, a: string, b: string): string => `Our edge: ${zone}, ${lane.toLowerCase()}. ${a} of ours against ${b}.`,
+    danger: (zone: string, lane: string, a: string, b: string): string => `Their edge: ${zone}, ${lane.toLowerCase()}. ${b} of theirs against our ${a}.`,
+    even: 'No zone where either side has a clear extra man.',
+    known: (style: string, shape: string): string => `The report: they play ${style.toLowerCase()} in a ${shape}.`,
+    unknown: (shape: string): string => `No report on them yet: all we know is the ${shape}. The analyst can get one before kick-off.`,
+    openTac: 'Open tactics',
     crowd: (n: string, club: string): string => `${n} · ${club} in full voice`,
     crowdAway: (n: string): string => `${n} · the away end is packed`,
     stakesUp: (club: string, pos: string): string => `Win and you go ${pos}. ${club} are the ones in the way.`,

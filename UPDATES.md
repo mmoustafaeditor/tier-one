@@ -97,6 +97,16 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: richer career cards on the title screen
+- **What changed:** Your career card on the title screen now shows the manager, season and matchday, the league position (from the first match on), the next league match (home or away) and when you last played. An empty slot is now a clear "Start a 2026/27 career" card instead of a grey "Empty slot" row.
+- **Files:** `web/src/ui2/Title.tsx`, `src/sim/save.ts` (`metaOf` adds `pos`/`of`/`next`), `src/model/types.ts`, `src/App.tsx`, `src/lang-v2*.ts`, `src/styles/app.css`, `web/ui-tests/rework-title.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** The new save fields are optional, so no migration is needed: older saves show the old card until they are saved again. Branch only. Tier One untouched.
+
+## 2026-10-03 · saifsaber · The Gaffer rework: pre-match briefing
+- **What changed:** The pre-match screen has a "Three things for this match" panel with an "Open tactics" button. It lists the two biggest number edges either way, taken straight from the match model (e.g. "Our edge: Build-up, centre. 4.7 of ours against 2.6", or where they crowd us), plus what the scouting report knows about them. Also recorded Saif's decision: AI clubs keep their current XI selection, and the best-XI assignment stays on the manager's side only.
+- **Files:** `web/src/ui2/PreMatch.tsx`, `src/lang-v2*.ts`, `src/styles/app.css`, `web/ui-tests/rework-ht.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** Read-only display: match results unchanged. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: full time explains why it happened
 - **What changed:** Full time (career and quick match) has a "Why it happened" panel. It shows the analysts' top three findings from the engine's own record of the match (e.g. "Their press is biting: 10 balls lost in our own third"), each marked as helping or hurting us. These are the same findings half-time shows, and they now feed the "What to do next" buttons.
 - **Files:** `web/src/ui2/FullTime.tsx`, `src/styles/app.css`, `games/the-gaffer/rework/*`

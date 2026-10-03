@@ -19,6 +19,10 @@ no named Android device was available — see Known limitations).
 * Quick match ends on a full-time screen with Rematch; half-time stages the team talk with your changes; Continue says
   what it does next; courses say what they do; cup runs say how far you went; full time links to what to do next.
 * Full time explains why it happened (the analysts' top findings) and links to what to do next. Transfers is one four-step funnel; Tactics shows the essentials first; a first-week guide on Today.
+* Pre-match "Three things for this match": where we have the extra man, where they crowd us, and what the report
+  knows, straight from the match model.
+* The title screen's career card shows the league position, the next match and when you last played; an empty slot
+  is a "Start a career" card.
 * Nothing is wider than a phone at 320–412 px, in English or Arabic.
 
 ## 2. F01–F17 disposition
@@ -52,7 +56,7 @@ Save format version unchanged (8). New optional fields, all read with defaults s
 load. Rollback: older builds ignore both fields.
 
 ## 6. Known limitations (not hidden)
-* AI clubs still pick their XI slot by slot (F06 for AI) — a results change that needs its own recalibration (M4).
+* AI clubs pick their XI slot by slot (F06 for AI): Saif decided (2026-10-03) to keep it that way.
 * The derby/board-pressure arc has no new authored content; the existing systems cover it (world test, press cards).
 * No Android device test, no WebView back/resume run, no named-device benchmark in this environment.
 * No human comprehension sessions (the handoff's human gates) — none could be run here.
@@ -68,12 +72,13 @@ load. Rollback: older builds ignore both fields.
 
 ## 8. Next backlog
 * P0: none open from the trust backlog.
-* P1: AI best XI with recalibration (M4); Android/WebView resume + import on a named device; human first-hour test.
+* P1: Android/WebView resume + import on a named device; human first-hour test.
 * P2: scenarios / Tactics Lab modes; an analysis tab aggregating tactical causes across a run of matches.
 
 ## 9. Evidence index
 `evidence/m1-before|after` (Today/board, inbox dates, Tactics), `m2-before|after` (promotion sheet, availability,
 quick-match full time), `m2b-before|after` (half-time staging, Continue, courses), `m2c-before|after` (Transfers
 funnel), `m2d-after` (first-week guide), `m2e-after` (Tactics essentials), `m3-slice` (the connected sequence:
-promotion sheet → warning card → Your XI → full time → after reload). Phone 390 px and desktop 1440 px, English and
+promotion sheet → warning card → Your XI → full time → after reload), `m4-after` (full-time why/next), `m4c-after`
+(pre-match briefing), `m4d-before|after` (title-screen career cards). Phone 390 px and desktop 1440 px, English and
 Arabic where the screen changed.

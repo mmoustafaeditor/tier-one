@@ -8,7 +8,9 @@ import { RF } from '../lang-ref-all';
 import { squadOf } from '../sim/world';
 import { useMemo, useState } from 'react';
 import { nextUserMatch, table, leagueOf } from '../sim/season';
-import { predict, expected, type Talk } from '../sim/match';
+import { predict, expected, modelOf, type Talk } from '../sim/match';
+import { N } from '../sim/engine/model';
+import { TX } from '../lang-tac-all';
 import { playerOf } from '../sim/world';
 import { attendance, capacityOf } from '../sim/economy';
 import { FORMATIONS } from '../sim/tactics';
@@ -48,6 +50,28 @@ export function PreMatch() {
     return sd.onPitch.map((id, i) => ({ id, p: get(id), pos: slots[i]?.pos ?? get(id).position }));
   };
   const bars = [3, 2, 1];
+  // The briefing: our biggest extra-man zone, theirs, and what the scouts know (engine/model.ts zone contests).
+  const model = modelOf(m, get);
+  const Z = TX[g.ui].preview.zones, lanes = x.tac.lanes as unknown as string[];
+  const at = (n: number, side: 0 | 1) => model.att[side].nodes[n]?.duel;
+  const cells = [[N.B, Z.build, 1], [N.P0, Z.mid, 0], [N.P1, Z.mid, 1], [N.P2, Z.mid, 2], [N.F0, Z.final, 0], [N.F1, Z.final, 1], [N.F2, Z.final, 2], [N.CRS, Z.box, 1]] as const;
+  const theirZone = (n: number) => (n === N.B ? Z.press : n === N.CRS ? Z.box : n === N.F0 || n === N.F1 || n === N.F2 ? Z.defend : Z.screen);
+  // Candidates: with the ball, where we have the extra man (edge) or they crowd us (crowd); without it, where they have it.
+  const cand: { mag: number; text: string }[] = [];
+  for (const [n, z, l] of cells) {
+    const d = at(n, me);
+    if (d && d.na - d.nd > 0.3) cand.push({ mag: d.na - d.nd, text: x.pre.edge(z, lanes[l], d.na.toFixed(1), d.nd.toFixed(1)) });
+    if (d && d.nd - d.na > 0.3) cand.push({ mag: d.nd - d.na, text: x.pre.crowd2(z, lanes[l], d.na.toFixed(1), d.nd.toFixed(1)) });
+    const e = at(n, (1 - me) as 0 | 1);
+    if (e && e.na - e.nd > 0.3) cand.push({ mag: e.na - e.nd, text: x.pre.danger(theirZone(n), lanes[2 - l], e.nd.toFixed(1), e.na.toFixed(1)) });
+  }
+  const top = cand.sort((p, q) => q.mag - p.mag).slice(0, 2).map((cc) => cc.text);
+  const report = c.scouted?.[m.key];
+  const oppSide = m.sides[1 - me];
+  const brief: string[] = [
+    ...(top.length ? top : [x.pre.even]),
+    report ? x.pre.known(x.tac.styles[report.plan.philosophy] ?? report.plan.philosophy, oppSide.tactics.formation) : x.pre.unknown(oppSide.tactics.formation),
+  ];
   // gf-ref: our players suspended for this competition.
   const banned = squadOf(w, c.clubId).filter((p) => (m.cup ? (p.sus?.[m.cup] ?? 0) > 0 : p.banned > 0));
   return (
@@ -108,6 +132,13 @@ export function PreMatch() {
               </button>
             ))}
           </div>
+        </Panel>
+
+        {/* Rework (handoff §K): a briefing, not a results preview — the engine's own zone numbers for this match (the same
+            grid Tactics shows) and what the scouts know. */}
+        <Panel i={3} className="brief" label={x.pre.brief}>
+          <PanelHead title={x.pre.brief} right={<button className="btn btn--ghost btn--sm" onClick={() => g.go({ s: 'match', tab: 0 })}>{x.pre.openTac}</button>} />
+          <ol className="brief-list">{brief.map((line, i) => <li key={i}>{line}</li>)}</ol>
         </Panel>
 
         <div className="stack">

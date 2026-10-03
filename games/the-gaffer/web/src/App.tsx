@@ -106,10 +106,10 @@ export function App() {
     for (let n = 1; n <= FREE_SLOTS; n++) {
       const r = recs.find((x) => x.slot === n);
       if (!r) { out.push({ slot: n, meta: null }); continue; }
-      if (r.meta) { out.push({ slot: n, meta: r.meta }); continue; }
+      if (r.meta) { out.push({ slot: n, meta: r.meta, savedAt: r.savedAt }); continue; }
       // A save from before v2 (migrated into its slot without a description): open it once to describe it.
       const p = await parseSave(r.text);
-      if (p.ok && p.save.career) out.push({ slot: n, meta: metaOf(p.save.world as World, p.save.career, n) ?? null, legacy: true });
+      if (p.ok && p.save.career) out.push({ slot: n, meta: metaOf(p.save.world as World, p.save.career, n) ?? null, legacy: true, savedAt: r.savedAt });
       else { out.push({ slot: n, meta: null, bad: true }); setBadSave(true); }
     }
     setSlots(out);

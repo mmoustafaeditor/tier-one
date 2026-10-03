@@ -44,6 +44,10 @@ export const X_AR: XStrings = {
     foot: 'لعبة غير رسمية. أسامي الأندية واللاعيبة الحقيقية مستخدمة كمعلومات بس؛ الشعارات والأطقم رسوماتنا إحنا؛ والتقييمات رأي The Gaffer، مش رأي حد تاني. ملناش علاقة بأي نادي أو دوري أو لاعب.',
     badSave: 'فيه حفظ على الجهاز ده ماعداش الفحص فسبناه زي ما هو. الخانة التانية سليمة.',
     loading: 'بنفتح المكتب…',
+    card: (pos: number, of: number) => `المركز ${pos} من ${of}`,
+    next: (club: string, home: boolean) => `الجاي: ${club} ${home ? '(على أرضنا)' : '(بره)'}`,
+    played: (when: string) => `آخر لعب ${when}`,
+    newHere: 'ابدأ مشوار جديد في الخانة دي',
     matchday: (n: number) => `الجولة ${n}`,
   },
   pick: {
@@ -238,6 +242,14 @@ export const X_AR: XStrings = {
   },
 
   pre: {
+    crowd2: (zone: string, lane: string, a: string, b: string) => `هنا بيزحموا علينا: ${zone}، ${lane}. ${a} مننا قدام ${b} وإحنا بنهاجم.`,
+    brief: 'تلات حاجات للماتش ده',
+    edge: (zone: string, lane: string, a: string, b: string) => `ميزتنا: ${zone}، ${lane}. ${a} مننا قدام ${b}.`,
+    danger: (zone: string, lane: string, a: string, b: string) => `ميزتهم: ${zone}، ${lane}. ${b} منهم قدام ${a} مننا.`,
+    even: 'مفيش منطقة فيها لاعب زيادة واضح لأي فريق.',
+    known: (style: string, shape: string) => `التقرير: بيلعبوا ${style} بـ ${shape}.`,
+    unknown: (shape: string) => `لسه مفيش تقرير عنهم: كل اللي نعرفه الرسم ${shape}. المحلل يقدر يجيبه قبل الماتش.`,
+    openTac: 'افتح التكتيك',
     crowd: (n: string, club: string) => `${n} · جمهور ${club} مولّع`,
     crowdAway: (n: string) => `${n} · مدرج الضيوف مليان`,
     stakesUp: (club: string, pos: string) => `لو كسبنا نبقى ${pos}. و${club} هما اللي في السكة.`,
