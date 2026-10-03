@@ -4,6 +4,7 @@
 import { memo, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type { Club, Player } from '../model/types';
 import { hash32 } from '../sim/rng';
+import { crestSvg as clubCrest, shirtSvg, themeOf } from './theme';
 
 // ---------- icons (24px grid, 1.75 stroke) ----------
 export const ICON: Record<string, string> = {
@@ -129,7 +130,8 @@ export function crestSvg(id: Identity, label: string): string {
 }
 
 export const Crest = memo(function Crest({ club, size = 40, className = '' }: { club: Pick<Club, 'id' | 'colors' | 'name' | 'code' | 'shortName'> | undefined; size?: number; className?: string }) {
-  const html = useMemo(() => (club ? crestSvg(identityOf(club), club.name.en) : ''), [club?.id, club?.colors[0], club?.colors[1], club?.name.en]);
+  // Cinematic pack v2: the club's original geometric crest (ui2/theme.ts), the same for every club in every screen.
+  const html = useMemo(() => (club ? clubCrest(themeOf(club)).replace('<svg ', `<svg role="img" aria-label="${club.name.en.replace(/[<>&"]/g, '')}" `) : ''), [club?.id, club?.colors[0], club?.colors[1], club?.name.en, club?.code]);
   return <span className={`crest ${className}`} style={{ width: size, height: size }} dangerouslySetInnerHTML={{ __html: html }} />;
 });
 
@@ -185,7 +187,8 @@ export const surnameOf = (p: Pick<Player, 'name' | 'short'>) => {
 export const Portrait = memo(function Portrait({ p, club, size, round, bare, className = '', style }: {
   p: Pick<Player, 'name' | 'short' | 'shirtNumber'>; club: Pick<Club, 'id' | 'colors' | 'name' | 'code' | 'shortName'> | undefined; size?: number; round?: boolean; bare?: boolean; className?: string; style?: CSSProperties;
 }) {
-  const html = useMemo(() => (club ? portraitSvg(surnameOf(p), p.shirtNumber, identityOf(club), bare) : ''), [p.name.en, p.short, p.shirtNumber, club?.id, club?.colors[0], bare]);
+  // Cinematic pack v2: the generic fabric shirt in the club's kit colour with the squad number (ui2/theme.ts).
+  const html = useMemo(() => (club ? shirtSvg(themeOf(club), p.shirtNumber || undefined).replace('<svg ', `<svg role="img" aria-label="${surnameOf(p).replace(/[<>&"]/g, '')} ${p.shirtNumber || ''}" `) : ''), [p.name.en, p.short, p.shirtNumber, club?.id, club?.colors[0]]);
   return <span className={`portrait${round ? ' portrait--round' : ''} ${className}`} style={{ ...(size ? { width: size } : {}), ...(bare ? { background: 'none' } : {}), ...style }} dangerouslySetInnerHTML={{ __html: html }} />;
 });
 

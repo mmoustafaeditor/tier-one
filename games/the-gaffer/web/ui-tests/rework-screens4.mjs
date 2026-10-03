@@ -27,7 +27,7 @@ await p.evaluate(() => [...document.querySelectorAll('button')].find((b) => /Al 
 await p.evaluate(() => document.querySelector('button.btn--accent.big')?.click()); await p.waitForTimeout(1500);
 await click(/^Our target is right/); await p.waitForTimeout(400); await click(/^The usual split/); await p.waitForTimeout(600);
 const nav = (id) => p.evaluate((id) => (document.querySelector(`nav.nav a[href="#${id}"]`) ?? document.querySelector(`a[href="#${id}"]`))?.click(), id);
-const area = async (re) => { await nav('squad'); await p.waitForTimeout(700); await p.evaluate((s) => [...document.querySelectorAll('.area-tabs .seg button')].find((b) => new RegExp(s).test(b.innerText))?.click(), re.source); await p.waitForTimeout(900); };
+const area = async (re) => { await nav('squad'); await p.waitForTimeout(700); await p.evaluate((s) => [...document.querySelectorAll('.area-tabs .seg button, .sq-tiles button')].find((b) => new RegExp(s).test(b.innerText))?.click(), re.source); await p.waitForTimeout(900); };
 const txt = (sel) => p.evaluate((s) => document.querySelector(s)?.innerText.replace(/\n+/g, ' | ') ?? '', sel);
 const shotOf = async (sel, name) => { await p.waitForTimeout(500); await (await p.$(sel))?.screenshot({ path: join(OUT, name) }); };
 // Training: this week.

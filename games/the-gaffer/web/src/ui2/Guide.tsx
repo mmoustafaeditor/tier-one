@@ -5,9 +5,9 @@ import { useState } from 'react';
 import { visionOf, VISION_DEADLINE } from '../sim/vision';
 import { nextUserMatch } from '../sim/season';
 import { useGame } from './game';
-import { Panel, PanelHead } from './shell';
 import { I } from './kit';
 import { GD } from '../lang-guide';
+import { CN } from '../lang-cine';
 
 const HIDE = 'gaffer.guide.hidden';
 const hidden = () => { try { return localStorage.getItem(HIDE) === '1'; } catch { return false; } };
@@ -16,6 +16,7 @@ export function FirstWeekGuide() {
   const g = useGame();
   const { w, c } = g;
   const [off, setOff] = useState(hidden);
+  const [open, setOpen] = useState(false);
   const S = GD[g.ui];
   const m = nextUserMatch(w, c);
   const steps: { key: keyof typeof S.steps; done: boolean; go?: () => void }[] = [
@@ -28,20 +29,30 @@ export function FirstWeekGuide() {
   const n = steps.filter((s) => s.done).length;
   if (off || c.history.length > 0 || (c.matches ?? []).length > 1 || n === steps.length) return null;
   const hide = () => { try { localStorage.setItem(HIDE, '1'); } catch { /* private mode: hidden for this session */ } setOff(true); };
+  // Cinematic desk: a one-line progress strip ("First week 4/5"); the full checklist opens below it.
   return (
-    <Panel className="guide" i={0} label={S.title}>
-      <PanelHead title={S.title} right={<span className="eyebrow">{S.progress(n, steps.length)}</span>} />
-      <p className="small muted">{S.lead}</p>
-      <ol className="guide-steps">
-        {steps.map((s) => (
-          <li key={s.key} className={s.done ? 'done' : ''}>
-            <I n={s.done ? 'check' : 'chev'} size="sm" />
-            <div className="grow"><b>{S.steps[s.key][0]}</b><span className="small">{S.steps[s.key][1]}</span></div>
-            {!s.done && s.go && <button className="btn btn--ghost btn--sm" onClick={s.go}>{S.show}</button>}
-          </li>
-        ))}
-      </ol>
-      <button className="link small" onClick={hide}>{S.hide}</button>
-    </Panel>
+    <section className={`guide-strip${open ? ' open' : ''}`} aria-label={S.title}>
+      <button className="gs-row" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <I n="doc" />
+        <span className="gs-l">{CN[g.ui].firstWeek} <b className="num">{n}/{steps.length}</b></span>
+        <span className="gs-bars" aria-hidden="true">{steps.map((s, k) => <i key={k} className={s.done ? 'on' : ''} />)}</span>
+        <span className="gs-go">{open ? CN[g.ui].closeGuide : CN[g.ui].guide}<I n="arrowr" size="sm" flip={g.rtl} /></span>
+      </button>
+      {open && (
+        <div className="gs-body">
+          <p className="small muted">{S.lead}</p>
+          <ol className="guide-steps">
+            {steps.map((s) => (
+              <li key={s.key} className={s.done ? 'done' : ''}>
+                <I n={s.done ? 'check' : 'chev'} size="sm" />
+                <div className="grow"><b>{S.steps[s.key][0]}</b><span className="small">{S.steps[s.key][1]}</span></div>
+                {!s.done && s.go && <button className="btn btn--ghost btn--sm" onClick={s.go}>{S.show}</button>}
+              </li>
+            ))}
+          </ol>
+          <button className="link small" onClick={hide}>{S.hide}</button>
+        </div>
+      )}
+    </section>
   );
 }

@@ -21,6 +21,7 @@ import { agentOf, demandOf, interestOf } from '../sim/recruit/agent';
 import { CLAUSE_NEED } from '../sim/recruit/tick';
 import { isUnhappy } from '../sim/recruit/ai';
 import { R } from '../lang-recruit-all';
+import { CN } from '../lang-cine';
 import { Crest, I, Kpi, Portrait, initialsOf } from './kit';
 import { Panel, PanelHead, inView } from './shell';
 import { useGame, clubOf, cn, money, sn, type Game } from './game';
@@ -52,22 +53,20 @@ export function TransfersScreen({ tab, onTab, neg, pid }: { tab: number; onTab: 
   const reds = list.filter((n) => n.level === 'red').length;
   return (
     <div className="sc-transfers">
-      <header className="topbar on-ground">
-        <div className="club"><div className="grow"><b>{T.title}</b><small>{isDeadlineDay(c) ? T.deadline : T.window(open, open ? windowLeft(c) : untilWindow(c))}</small></div></div>
-        {live.length > 0 && tab !== 2 && <button className="btn btn--ghost on-ground btn--sm" onClick={() => onTab(2)}><I n="handshake" size="sm" />{Rs.talksBtn(live.length)}</button>}
-      </header>
-      <div className="r-head on-ground">
-        <h1 className="h-hero">{top ? Rs.hero.need(x.common.posLong[top.pos]) : Rs.hero.none}</h1>
-        <div className="money">
-          <Kpi v={<span className={`ltr${room < 0 ? ' down' : ''}`}>{money(room)}</span>} l={Rs.kpi.room} />
-          <Kpi v={<span className="ltr">{money(Math.max(0, wageRoom(w, c)))}</span>} l={Rs.kpi.wageRoom} />
-          <Kpi v={<span className="ltr">{money(committed(c))}</span>} l={Rs.kpi.committed} />
+      <header className="pg-head">
+        <div className="pg-title"><h1 className="h-hero">{T.title}</h1><p className="pg-sub">{isDeadlineDay(c) ? T.deadline : T.window(open, open ? windowLeft(c) : untilWindow(c))}</p></div>
+        <div className="pg-facts">
+          <span><b className={`ltr${room < 0 ? ' down' : ''}`}>{money(room)}</b><small>{Rs.kpi.room}</small></span>
+          <span><b className="ltr">{money(Math.max(0, wageRoom(w, c)))}</b><small>{Rs.kpi.wageRoom}</small></span>
+          <span><b className="ltr">{money(committed(c))}</b><small>{Rs.kpi.committed}</small></span>
         </div>
-      </div>
+        {live.length > 0 && tab !== 2 && <button className="btn btn--ghost pg-cta" onClick={() => onTab(2)}><I n="handshake" size="sm" />{Rs.talksBtn(live.length)}</button>}
+      </header>
+      {top && tab !== 5 && <p className="r-need-line"><I n="flag" size="sm" />{Rs.hero.need(x.common.posLong[top.pos])}</p>}
       <div ref={chipRow} className="rc-funnel on-ground" role="group" aria-label={T.title}>
         {STAGES.map((st, k) => (
           <button key={k} className="stage" aria-pressed={stageOf(tab) === k} onClick={() => onTab(st[0])}>
-            <span className="n">{k + 1}</span><b>{Rs.stages[k]}</b>
+            <span className="n">{k + 1}</span><b title={Rs.stages[k]}>{CN[g.ui].stages[k]}</b>
             {st.includes(2) && live.length ? <em className="count">{live.length}</em> : st.includes(5) && reds ? <em className="count warn">{reds}</em> : null}
           </button>
         ))}

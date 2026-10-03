@@ -28,7 +28,7 @@ await p.evaluate(() => document.querySelector('button.btn--accent.big')?.click()
 await click(/^Our target is right/); await p.waitForTimeout(400); await click(/^The usual split/); await p.waitForTimeout(600);
 // 1. Promote the first academy player old enough, through the sheet.
 await nav('squad'); await p.waitForTimeout(700);
-await p.evaluate(() => { const s = document.querySelector('.page .seg'); s?.querySelectorAll('button')[4]?.click(); }); await p.waitForTimeout(800);
+await p.evaluate(() => [...document.querySelectorAll('.sq-tiles button')].find((b) => /Academy/.test(b.innerText))?.click()); await p.waitForTimeout(800);
 const kid = await p.evaluate(() => { const row = [...document.querySelectorAll('.ac-row')].find((r) => !r.querySelector('.btns button')?.disabled); row?.querySelector('.btns button')?.click(); return row?.querySelector('.name')?.childNodes[0]?.textContent?.trim() ?? null; });
 await p.waitForTimeout(700); await shot('promotion-sheet');
 ok(!!kid && /10 appearances/.test(await body()), `1 the promotion sheet states the promise for ${kid}`);
@@ -52,7 +52,7 @@ for (let i = 0; i < (+process.env.LOOPS || 25) && !found; i++) {
   const c3 = (await click(/^Sim to the next decision/)) ?? (await click(/^Just give me the result/));
   await p.waitForTimeout(2500);
   const c4 = await p.evaluate(() => { const b = document.querySelector('.mbar .btn--accent'); b?.click(); return b?.innerText.trim() ?? null; }); await p.waitForTimeout(800);
-  const wk = await p.evaluate(() => document.querySelector('.officebar .when span')?.innerText ?? '');
+  const wk = await p.evaluate(() => document.querySelector('.mast-when span')?.innerText ?? '');
   if (process.env.DEBUG) console.log('  loop', i, wk, '|', c1, '|', c2, '|', c3, '|', c4);
 }
 let keptByStaff = false;
@@ -89,6 +89,7 @@ if (found) {
   await p.reload(); await p.waitForFunction(() => window.__bootDone === true, null, { timeout: 20000 }).catch(() => {}); await p.waitForTimeout(1500);
   await click(/^Continue$/); await p.waitForTimeout(2000); // the saved career's Continue on the title screen
   await nav('squad'); await p.waitForTimeout(700);
+  await p.evaluate(() => document.querySelector('.sq-all')?.click()); await p.waitForTimeout(400);
   await p.evaluate((s) => [...document.querySelectorAll('.page button, .page a')].find((b) => b.innerText.includes(s))?.click(), short); await p.waitForTimeout(1200);
   await shot('player-after-reload');
   ok(/of 10 games|10 games/.test(await body()), '6 after reload: his player page shows the promise progress');

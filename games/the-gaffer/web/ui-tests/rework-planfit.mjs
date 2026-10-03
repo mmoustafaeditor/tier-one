@@ -27,7 +27,7 @@ await p.evaluate(() => document.querySelector('button.btn--accent.big')?.click()
 await click(/^Our target is right/); await p.waitForTimeout(400); await click(/^The usual split/); await p.waitForTimeout(600);
 const nav = (id) => p.evaluate((id) => document.querySelector(`nav.nav a[href="#${id}"]`)?.click(), id);
 const fitText = () => p.evaluate(() => document.querySelector('.plan-fit')?.innerText.replace(/\n+/g, ' | ') ?? '');
-const openNth = async (n) => { await nav('squad'); await p.waitForTimeout(800); await p.evaluate((n) => document.querySelectorAll('.plist .pl')[n]?.click(), n); await p.waitForTimeout(900); };
+const openNth = async (n) => { await nav('squad'); await p.waitForTimeout(800); await p.evaluate(() => document.querySelector('.sq-all')?.click()); await p.waitForTimeout(400); await p.evaluate((n) => document.querySelectorAll('.sq-r')[n]?.click(), n); await p.waitForTimeout(900); };
 await openNth(0);
 const t1 = await fitText(); console.log('  first player:', t1);
 ok(/In your [\d-]+ \| Starts at /i.test(t1), 'a starter: "In your <shape> — Starts at <position>"');

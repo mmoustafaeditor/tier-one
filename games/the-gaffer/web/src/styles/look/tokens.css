@@ -18,11 +18,12 @@
      Gaffer runs it WIDE (118%) for headlines and scores — stadium signage —
      where Tier One runs it condensed (62%) for clocks. Same studio face,
      opposite stretch. */
-  --f-display: "Archivo", "Arial", sans-serif;
-  --display-stretch: 118%;
-  --data-stretch: 88%;        /* dense tables, tokens on the pitch */
+  --f-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --display-stretch: 100%;
+  --data-stretch: 100%;        /* dense tables, tokens on the pitch */
   /* Text / UI: Instrument Sans — calm, precise grotesk for copy & controls. */
-  --f-text: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-text: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --f-num: "Inter", "Helvetica Neue", Arial, sans-serif;  /* figures: tabular sans */
   /* Arabic: Readex Pro (display, wide & sporty), IBM Plex Sans Arabic (text). */
   --f-ar-display: "Readex Pro", "IBM Plex Sans Arabic", sans-serif;
   --f-ar-text: "IBM Plex Sans Arabic", "Noto Naskh Arabic", sans-serif;
@@ -44,10 +45,10 @@
   --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px; --s-5: 20px;
   --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px;
   --gutter: 16px;
-  --page-max: 1360px;
+  --page-max: 1440px;
 
   /* ---- Radii: glass is held in the hand, so corners are soft ---------- */
-  --r-xs: 8px; --r-sm: 12px; --r-md: 18px; --r-lg: 24px; --r-pill: 999px;
+  --r-xs: 6px; --r-sm: 8px; --r-md: 10px; --r-lg: 12px; --r-pill: 999px;
 
   /* ---- Motion (Semba names; Gaffer adds a drag spring) ----------------- */
   --ease-out:  cubic-bezier(.16, 1, .3, 1);
@@ -68,79 +69,60 @@
   --mint-700: #0F8A70; --mint-800: #0B6456; --mint-900: #0B2A26;
 }
 
-/* ---- OFFICE (default) --------------------------------------------------- */
+/* ---- CINEMATIC (reference pack v2) -------------------------------------
+   One dark, editorial football-game palette for every screen: near-black charcoal canvas, slightly lighter panels,
+   thin dividers. The career's club supplies only the accent (--club-*, set by App from ui2/theme.ts): buttons, the
+   active tab, links and the masthead tint. Text, semantic colours and the logo never change with the club. */
 :root {
   color-scheme: dark;
-  /* ground */
-  --ground: var(--teal-850); --ground-2: var(--teal-800); --ground-3: var(--teal-700);
-  --on-ground: #EEF8F5; --on-ground-2: #B3D3CB; --on-ground-3: #8DB5AC;
-  --ground-line: rgba(255,255,255,.12); --ground-line-2: rgba(255,255,255,.22);
-  --ground-panel: rgba(255,255,255,.06);
-  --glow-a: rgba(125,235,203,.14); --glow-b: rgba(20,120,100,.32);
+  --club-primary: #be233a; --club-on-primary: #ffffff; --club-link: #e0707f; --club-secondary: #f1f2f4; --club-kit: #be233a;
+  --club-deep: #48101a; --club-wash: rgba(190,35,58,.18); --club-line: rgba(190,35,58,.55);
+  --club-1: #be233a; --club-2: #f1f2f4;  /* legacy names: the club kit pair (App sets them) */
 
-  /* surface: light frosted glass */
-  --surface: linear-gradient(168deg, rgba(250,255,253,.97), rgba(226,244,238,.95));
-  --surface-solid: var(--mint-50);
-  --surface-2: var(--mint-100);          /* recessed rows / wells */
-  --surface-3: var(--mint-150);
-  --ink: #0B2A26; --ink-2: #3E5F59; --ink-3: #56766F;
-  --line: rgba(11,42,38,.10); --line-2: rgba(11,42,38,.18);
+  /* ground = the canvas */
+  --ground: #0b1215; --ground-2: #10171a; --ground-3: #192125;
+  --on-ground: #f4f2ed; --on-ground-2: #b8c0cc; --on-ground-3: #929ca7;
+  --ground-line: rgba(255,255,255,.09); --ground-line-2: #343e42;
+  --ground-panel: #10171a;
+  --glow-a: rgba(0,0,0,0); --glow-b: rgba(0,0,0,0);
 
-  /* action */
-  --accent: var(--mint-400); --accent-ink: #04211C;        /* on ground */
-  --accent-text: #0B6456;                                    /* on surface, AA */
-  --primary: #0E4F47; --primary-2: #0A3B35; --on-primary: #F2FFFB;
+  /* surface = panels, rows, sheets */
+  --surface: #10171a;
+  --surface-solid: #10171a;
+  --surface-2: #192125;
+  --surface-3: #212b30;
+  --ink: #f4f2ed; --ink-2: #b8c0cc; --ink-3: #929ca7;
+  --line: #262f33; --line-2: #343e42;
 
-  /* signal (always icon + word, never colour alone) */
-  --good: #16865F;  --good-wash: rgba(22,134,95,.12);
-  --warn: #9A5B00;  --warn-wash: rgba(214,140,20,.16); --warn-mark: #E0A019;
-  --bad:  #B3372E;  --bad-wash: rgba(200,70,55,.12);
-  --info: #2E5FB8;
+  /* action: the club accent */
+  --accent: var(--club-primary); --accent-ink: var(--club-on-primary);
+  --accent-text: var(--club-link);
+  --primary: var(--club-primary); --primary-2: var(--club-deep); --on-primary: var(--club-on-primary);
 
-  /* data viz — validated categorical (light surface #F3FAF7). Us, Them, 3rd, 4th.
-     Us/Them pair is WARN for protan (ΔE 7.4): Them is ALWAYS dashed + labelled. */
-  --dv-us: #0F8A70; --dv-them: #DA5A3C; --dv-3: #3F6FD0; --dv-4: #A87612;
-  --dv-grid: rgba(11,42,38,.08); --dv-axis: #56766F;
-  --heat-0: rgba(15,138,112,0); --heat-1: rgba(15,138,112,.18); --heat-2: rgba(15,138,112,.42);
-  --heat-3: rgba(15,138,112,.7); --heat-4: #0B6456;
+  /* signal (always icon + word, never colour alone; never the club colour) */
+  --good: #3fcf86;  --good-wash: rgba(63,207,134,.14);
+  --warn: #f2b84b;  --warn-wash: rgba(242,184,75,.14); --warn-mark: #f2b84b;
+  --bad:  #ff7a6e;  --bad-wash: rgba(255,122,110,.14);
+  --info: #8fb4ff;
 
-  --pitch-a: #DDF1EA; --pitch-b: #D2EBE2; --pitch-line: rgba(11,42,38,.22);
+  /* data viz: us = the club's link colour, them = a light neutral (dashed + labelled where it matters) */
+  --dv-us: var(--club-link); --dv-them: #c9d0d6; --dv-3: #8fb4ff; --dv-4: #f2b84b;
+  --dv-grid: rgba(255,255,255,.07); --dv-axis: #929ca7;
+  --heat-0: rgba(255,255,255,0); --heat-1: rgba(255,255,255,.08); --heat-2: rgba(255,255,255,.18);
+  --heat-3: rgba(255,255,255,.32); --heat-4: var(--club-link);
 
-  --scrim: rgba(2,16,14,.6);
-  --e1: 0 1px 0 rgba(255,255,255,.8) inset, 0 14px 30px -20px rgba(0,14,12,.7);
-  --e2: 0 1px 0 rgba(255,255,255,.8) inset, 0 26px 50px -24px rgba(0,14,12,.85);
-  --focus-ring: #7DEBCB;
+  --pitch-a: #1f5a2e; --pitch-b: #23633a; --pitch-line: rgba(255,255,255,.78);
+
+  --scrim: rgba(3,7,9,.72);
+  --e1: 0 1px 0 rgba(255,255,255,.04) inset, 0 12px 28px -18px rgba(0,0,0,.9);
+  --e2: 0 1px 0 rgba(255,255,255,.05) inset, 0 26px 50px -24px rgba(0,0,0,.95);
+  --focus-ring: #f4f2ed;
 }
-
-/* ---- FLOODLIGHT (matchday) ---------------------------------------------- */
-:root[data-light="flood"] {
-  --ground: var(--teal-950); --ground-2: var(--teal-900); --ground-3: #07241F;
-  --glow-a: rgba(63,214,176,.10); --glow-b: rgba(10,80,66,.30);
-  --surface: linear-gradient(168deg, rgba(20,60,54,.72), rgba(8,34,30,.78));
-  --surface-solid: #0B2723; --surface-2: rgba(255,255,255,.05); --surface-3: rgba(255,255,255,.09);
-  --ink: #EAF7F3; --ink-2: #A6C8C0; --ink-3: #85A9A1;
-  --line: rgba(255,255,255,.09); --line-2: rgba(255,255,255,.18);
-  --accent-text: #7DEBCB;
-  --primary: var(--mint-400); --primary-2: var(--mint-500); --on-primary: #04211C;
-  --good: #56E0A0; --good-wash: rgba(86,224,160,.12);
-  --warn: #FFC857; --warn-wash: rgba(255,200,87,.12); --warn-mark: #FFC857;
-  --bad: #FF8A7A; --bad-wash: rgba(255,138,122,.12);
-  --info: #8FB8FF;
-  /* validated on #0A2E2A */
-  --dv-us: #1CA986; --dv-them: #E2694B; --dv-3: #5B8CE6; --dv-4: #C08A1E;
-  --dv-grid: rgba(255,255,255,.07); --dv-axis: #85A9A1;
-  --heat-1: rgba(63,214,176,.16); --heat-2: rgba(63,214,176,.34); --heat-3: rgba(63,214,176,.58); --heat-4: #3FD6B0;
-  --pitch-a: #0B2C27; --pitch-b: #0D312B; --pitch-line: rgba(160,240,215,.20);
-  --e1: 0 1px 0 rgba(255,255,255,.06) inset, 0 18px 40px -24px rgba(0,0,0,.9);
-  --e2: 0 1px 0 rgba(255,255,255,.08) inset, 0 30px 60px -28px rgba(0,0,0,.95);
-}
-
-/* Club colour inputs — set per save from the managed club's colours.
-   Only crests, portraits, kit tokens and a 3px identity stripe use them. */
-:root {
-  --club-1: #7A263A;  /* Aston Villa claret */
-  --club-2: #95BFE5;  /* sky blue */
-}
+/* The old mint ramp, still named by a few component rules, now means the club accent: light steps = the club's
+   link colour (≥4.5:1 on dark, so dark text reads on it as a fill), deep steps = its primary. */
+:root { --mint-300: var(--club-link); --mint-400: var(--club-link); --mint-500: var(--club-primary); --mint-600: var(--club-primary); --mint-200: var(--club-link); }
+/* Matchday keeps the same palette (the pitch is the light source). */
+:root[data-light="flood"] { --ground: #0a1013; }
 
 @media (prefers-reduced-motion: reduce) {
   :root { --d-tap: 0ms; --d-quick: 0ms; --d-base: 0ms; --d-sheet: 0ms; --d-goal: 0ms; }

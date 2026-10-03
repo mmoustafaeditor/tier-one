@@ -11,6 +11,8 @@ import { seedAcademies } from '../sim/youth';
 import { FIRST_SEASON, clubsOf, money, objectiveOf, squadOf, strengthOf, type World } from '../sim/world';
 import { Crest, I, Portrait } from './kit';
 import { Panel } from './shell';
+import { StadiumScene } from './Scene';
+import { themeOf, themeVars } from './theme';
 import { JB } from '../lang-job';
 import { isDerby } from '../sim/rivalry';
 
@@ -75,7 +77,7 @@ export function NewCareer({ t, x, ui, slot, onBack, onStart }: { t: Strings; x: 
 
   return (
     <div className="shell solo">
-      <main className="main"><div className="page sc-new">
+      <main className="main"><div className="page sc-new" style={club ? (themeVars(themeOf(club)) as React.CSSProperties) : undefined}>
         <header className="topbar on-ground">
           <div className="club">
             <button className="icon-btn" aria-label={x.back} onClick={() => (club ? setClub(null) : league ? setLeague(null) : onBack())}><I n="back" /></button>
@@ -117,11 +119,12 @@ export function NewCareer({ t, x, ui, slot, onBack, onStart }: { t: Strings; x: 
           const stars = [...squadOf(world, club.id)].sort((a, b) => b.rating - a.rating).slice(0, 3);
           return (
             <div className="confirm-grid">
-              <section className="panel club-splash" style={{ ['--club-1' as string]: club.colors[0], ['--club-2' as string]: club.colors[1] }}>
-                <Crest club={club} size={96} />
-                <div><span className="eyebrow">{lg.name[lang]} · {x.seasonLabel(FIRST_SEASON)}</span><h1 className="h1">{club.name[lang]}</h1></div>
+              {/* Pack v2: the club's own ground, flags and banner; the page takes its colours from the moment it's picked. */}
+              <StadiumScene host={club} className="panel club-splash">
+                <div className="splash-id"><Crest club={club} size={96} />
+                  <div><span className="eyebrow">{lg.name[lang]} · {x.seasonLabel(FIRST_SEASON)}</span><h1 className="h1">{club.name[lang]}</h1></div></div>
                 <div className="splash-kits">{stars.map((p) => <div key={p.id} className="splash-kit"><Portrait p={p} club={club} /><b>{p.short ?? p.name[lang]}</b><span className="num">{p.rating}</span></div>)}</div>
-              </section>
+              </StadiumScene>
               <Panel i={1}>
                 <span className="eyebrow">{P.expects}</span>
                 <h2 className="h1 expects">{t.objective[objectiveOf(world, club)]}</h2>

@@ -1,9 +1,11 @@
 // The frame every office screen sits in: one navigation element with two shapes (floating tab bar on phones, a
 // sticky rail on desktop with Career and Club Pass added), the top bar with the club and the Continue button, sheets
 // and toasts. Matchday screens use the solo shell (no navigation, a match bar instead).
-import { Fragment, useEffect, useRef, type ReactNode } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { Club } from '../model/types';
 import { Crest, I } from './kit';
+import { lockerArt, shirtSvg, svgUri, themeOf } from './theme';
+import { wordmarkSvg } from '../brand';
 
 export type Tab = 'today' | 'squad' | 'match' | 'transfers' | 'club' | 'career' | 'pass' | 'news' | 'settings';
 const TABS: { id: Tab; icon: string; extra?: boolean }[] = [
@@ -14,31 +16,70 @@ const TABS: { id: Tab; icon: string; extra?: boolean }[] = [
 // On phones the extra items aren't in the bar: the area that holds them is marked current instead (UI/UX pass).
 const PARENT: Partial<Record<Tab, Tab>> = { career: 'club', pass: 'club', settings: 'club', news: 'today' };
 
-export function Shell({ tab, club, labels, onTab, solo, children, badge }: {
-  tab: Tab | null; club?: Club; labels: Record<Tab, string>; onTab: (t: Tab) => void; solo?: boolean; children: ReactNode; badge?: Partial<Record<Tab, number>>;
+export function Shell({ tab, club, labels, onTab, solo, children, badge, mast }: {
+  tab: Tab | null; club?: Club; labels: Record<Tab, string>; onTab: (t: Tab) => void; solo?: boolean; children: ReactNode; badge?: Partial<Record<Tab, number>>; mast?: ReactNode;
 }) {
+  const [menu, setMenu] = useState(false);
+  const go = (t: Tab) => { setMenu(false); onTab(t); };
+  const extras = TABS.filter((x) => x.extra);
+  const extraBadge = extras.reduce((s, x) => s + (x.id === 'news' ? 0 : badge?.[x.id] ?? 0), 0);
   return (
     <div className={`shell${solo ? ' solo' : ''}`}>
       {!solo && (
-        <nav className="nav" aria-label={labels.today}>
-          <span className="nav-brand" aria-hidden="true">{club && <Crest club={club} size={40} />}</span>
-          {TABS.map((x, i) => (
-            <Fragment key={x.id}>
-              {i === 5 && <span className="nav-sep" />}
-              <a href={`#${x.id}`} className={x.extra ? 'nav-extra' : tab && PARENT[tab] === x.id ? 'nav-parent' : undefined} aria-current={tab === x.id ? 'page' : undefined}
-                onClick={(e) => { e.preventDefault(); onTab(x.id); }}>
+        // Cinematic masthead (pack v2): the original logo, the club, the five destinations, Continue and the utilities,
+        // over the club's locker room tinted with its colour. Phones: a compact header and the bar at the bottom.
+        <header className="mast">
+          <MastArt club={club} />
+          <a className="mast-logo" href="#today" aria-label="The Gaffer" onClick={(e) => { e.preventDefault(); go('today'); }} dangerouslySetInnerHTML={{ __html: WORDMARK }} />
+          {mast}
+          <nav className="nav" aria-label={labels.today}>
+            {TABS.map((x) => (
+              <a key={x.id} href={`#${x.id}`} className={x.extra ? 'nav-extra' : tab && PARENT[tab] === x.id ? 'nav-parent' : undefined} aria-current={tab === x.id ? 'page' : undefined}
+                title={x.extra ? labels[x.id] : undefined} onClick={(e) => { e.preventDefault(); go(x.id); }}>
                 <I n={x.icon} />
                 <span>{labels[x.id]}</span>
                 {badge?.[x.id] ? <em className="nav-badge" aria-label={String(badge[x.id])}>{badge[x.id]}</em> : null}
               </a>
-            </Fragment>
-          ))}
-        </nav>
+            ))}
+          </nav>
+          {/* The inbox in the header on phones and tablets (approved-home reference), one tap from anywhere. */}
+          <button className="mast-inbox icon-btn" aria-label={labels.news} onClick={() => go('news')}>
+            <I n="inbox" />{badge?.news ? <em className="nav-badge">{badge.news}</em> : null}
+          </button>
+          <button className="mast-more icon-btn" aria-label={`${labels.news} · ${labels.career} · ${labels.pass} · ${labels.settings}`} aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
+            <I n="gear" />{extraBadge ? <em className="nav-badge">{extraBadge}</em> : null}
+          </button>
+          {menu && (
+            <>
+              <div className="mast-menu-scrim" onClick={() => setMenu(false)} />
+              <div className="mast-menu" role="menu">
+                {extras.map((x) => (
+                  <a key={x.id} role="menuitem" href={`#${x.id}`} aria-current={tab === x.id ? 'page' : undefined} onClick={(e) => { e.preventDefault(); go(x.id); }}>
+                    <I n={x.icon} /><span>{labels[x.id]}</span>{badge?.[x.id] ? <em className="nav-badge">{badge[x.id]}</em> : null}
+                  </a>
+                ))}
+              </div>
+            </>
+          )}
+        </header>
       )}
       <main className="main"><div className="page">{children}</div></main>
     </div>
   );
 }
+
+// The masthead's backdrop: the club's locker room (elite / standard / community), tinted with its colour, with its
+// generic shirts hung on the pegs (the pack's locker composition). Presentation only.
+export const MastArt = memo(function MastArt({ club }: { club?: Club }) {
+  const t = themeOf(club);
+  const shirt = useMemo(() => svgUri(shirtSvg(t)), [t]);
+  return (
+    <span className="mast-art" aria-hidden="true" style={{ backgroundImage: `url(${lockerArt(t)})` }}>
+      <span className="mast-kits">{[0, 1, 2, 3].map((k) => <img key={k} src={shirt} alt="" />)}</span>
+    </span>
+  );
+});
+const WORDMARK = wordmarkSvg('dark');
 
 export function Topbar({ club, title, sub, back, backLabel, right }: { club?: Club; title: ReactNode; sub?: ReactNode; back?: () => void; backLabel?: string; right?: ReactNode }) {
   return (

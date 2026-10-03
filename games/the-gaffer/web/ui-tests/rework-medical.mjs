@@ -33,7 +33,7 @@ for (let i = 0; i < 4; i++) {
   await p.evaluate(() => document.querySelector('.mbar .btn--accent')?.click()); await p.waitForTimeout(800);
 }
 await p.evaluate(() => document.querySelector('nav.nav a[href="#squad"]')?.click()); await p.waitForTimeout(800);
-await p.evaluate(() => [...document.querySelectorAll('.area-tabs .seg button')].find((b) => /Medical/.test(b.innerText))?.click()); await p.waitForTimeout(900);
+await p.evaluate(() => [...document.querySelectorAll('.area-tabs .seg button, .sq-tiles button')].find((b) => /Medical/.test(b.innerText))?.click()); await p.waitForTimeout(900);
 const txt = await p.evaluate(() => document.querySelector('.sharp')?.innerText.replace(/\n+/g, ' | ') ?? '');
 console.log('  ', txt.slice(0, 300));
 ok(/Fit, not match-ready/.test(txt), 'Medical has "Fit, not match-ready"');

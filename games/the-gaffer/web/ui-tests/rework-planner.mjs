@@ -27,6 +27,7 @@ await p.evaluate(() => document.querySelector('button.btn--accent.big')?.click()
 await click(/^Our target is right/); await p.waitForTimeout(400); await click(/^The usual split/); await p.waitForTimeout(600);
 const nav = (id) => p.evaluate((id) => document.querySelector(`nav.nav a[href="#${id}"]`)?.click(), id);
 await nav('squad'); await p.waitForTimeout(900);
+await p.evaluate(() => [...document.querySelectorAll('.pg-tabs button')].find((b) => /Depth|العمق/.test(b.innerText))?.click()); await p.waitForTimeout(700);
 const folded = await p.evaluate(() => !!document.querySelector('.g-plan .plan-fold'));
 ok(folded, 'on a phone the planner starts folded to one row, so the player list stays near the top');
 await p.evaluate(() => document.querySelector('.g-plan')?.scrollIntoView({ block: 'start' })); await p.waitForTimeout(400);
@@ -49,6 +50,7 @@ await p.waitForTimeout(1200); await p.reload(); await boot();
 await p.evaluate(() => [...document.querySelectorAll('.langs .chip')].find((b) => b.innerText === 'عربي')?.click()); await p.waitForTimeout(700);
 await p.evaluate(() => document.querySelector('.title-slots .slot-line .btn--primary')?.click()); await p.waitForTimeout(1800);
 await nav('squad'); await p.waitForTimeout(900);
+await p.evaluate(() => [...document.querySelectorAll('.pg-tabs button')].find((b) => /Depth|العمق/.test(b.innerText))?.click()); await p.waitForTimeout(700);
 await p.evaluate(() => document.querySelector('.g-plan')?.scrollIntoView({ block: 'start' })); await p.waitForTimeout(400);
 ok(await p.evaluate(() => document.querySelectorAll('.g-plan .plan-line').length === 4 && /الدفاع/.test(document.querySelector('.g-plan')?.innerText ?? '')), 'the planner shows in Arabic');
 const wide = await p.evaluate(() => document.documentElement.scrollWidth); ok(wide <= 390, `no sideways scroll in Arabic (${wide}px)`);

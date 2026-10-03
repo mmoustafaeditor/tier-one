@@ -5,6 +5,7 @@ import { UI, dataLang, type UiLang } from './i18n';
 import { X } from './lang-v2-all';
 import { loadPrefs, savePrefs, type Prefs } from './sim/prefs';
 import { applyA11y } from './ui2/A11y';
+import { themeOf, themeVars } from './ui2/theme';
 import type { Career } from './model/types';
 import { dispatch, type Command, type Result } from './sim/commands';
 import { advance, endOfSeason, finishSeason, simUntil } from './sim/clock';
@@ -98,7 +99,11 @@ export function App() {
   useEffect(() => {
     const club = world && career ? world.clubs.find((c) => c.id === career.clubId) : null;
     const s = document.documentElement.style;
-    if (club) { s.setProperty('--club-1', club.colors[0]); s.setProperty('--club-2', club.colors[1]); }
+    if (club) {
+      s.setProperty('--club-1', club.colors[0]); s.setProperty('--club-2', club.colors[1]);
+      // Cinematic UI: the career's club theme (accent, link, shirt) from the pack, resolved by its stable id.
+      for (const [k, v] of Object.entries(themeVars(themeOf(club)))) s.setProperty(k, v);
+    }
   }, [world, career?.clubId]);
 
   // ---------- slots ----------
@@ -360,9 +365,8 @@ export function App() {
   const unread = career ? career.inbox.filter((m) => !m.read).length : 0;
   return (
     <GameCtx.Provider value={game}>
-      <Shell tab={tab} club={club} labels={labels} solo={solo} badge={{ today: openCount, news: unread }}
+      <Shell tab={tab} club={club} labels={labels} solo={solo} badge={{ today: openCount, news: unread }} mast={<OfficeBarInner openCount={openCount} />}
         onTab={(tb) => { setSheet(null); setRoute(tb === 'today' ? { s: 'today' } : tb === 'squad' ? { s: 'squad' } : tb === 'match' ? { s: 'match', tab: 0 } : tb === 'transfers' ? { s: 'transfers' } : tb === 'club' ? { s: 'club' } : tb === 'career' ? { s: 'career' } : tb === 'news' ? { s: 'news' } : tb === 'settings' ? { s: 'settings' } : { s: 'pass' }); }}>
-        {!solo && <OfficeBarInner openCount={openCount} />}
         {route.s === 'today' && <Today onResolve={resolve} onUndo={() => void doUndo()} canUndo={undo?.id ?? null} />}
         {route.s === 'squad' && <SquadScreen lens={route.lens} />}
         {route.s === 'player' && <PlayerScreen id={route.id} />}
