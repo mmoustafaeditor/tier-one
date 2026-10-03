@@ -206,3 +206,11 @@ Next: M5 validation items possible here (save round-trip/slot isolation checks, 
 3. M4 match polish: commentary / stats / pitch agree with the engine's events; analysis across several matches.
 4. Remaining handoff screens (dressing room, training, medical, academy, player page, club, news): result-neutral items.
 5. Merge into `main` (merge commit; main merged in first), check the Gaffer workflow and the live site.
+
+## Deferred, to revisit (Saif, 2026-10-03: "keep these in mind if they really should be done")
+1. A per-day training microcycle that changes the simulation (today the week strip explains the weekly model).
+   Changes results: needs its own balance pass and Saif's go-ahead on the numbers.
+2. Tactics Lab / scenario modes and a narrative-event engine (trigger, actors, options, delayed effects, cooldowns,
+   relationship memory) beyond the existing room, press and board events.
+3. The world's player count rises ~350 a season (youth intakes outnumber retirements). Bound it (retire or release more
+   at season end) with a multi-season balance check; changes results.
