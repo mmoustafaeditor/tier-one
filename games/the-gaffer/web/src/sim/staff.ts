@@ -252,14 +252,17 @@ function selling(x: Ctx) {
       const want = p.marketValue * (core.has(p.id) ? greed + 0.35 : p.listed ? 0.85 : greed);
       const senior = squadOf(x.world, x.career.clubId).filter((y) => !loanOf(x.career, y.id)).length;
       const thin = !p.listed && senior <= SQUAD_COMFORT; // GF-005: a thin squad keeps its unlisted players
-      if (o.fee >= want && !thin && canSell(x.world, x.career, o).ok) act(x, { type: 'offer.accept', offerId: o.id }, 'sold', { pn: p.name, n: o.fee, s: o.clubId });
+      const word = !p.listed && (x.career.room?.pledges ?? []).some((pl) => pl.status === 'open' && pl.playerId === p.id); // M3: his promise stands
+      if (o.fee >= want && !thin && !word && canSell(x.world, x.career, o).ok) act(x, { type: 'offer.accept', offerId: o.id }, 'sold', { pn: p.name, n: o.fee, s: o.clubId });
       else if (x.career.round - o.round >= 1) act(x, { type: 'offer.reject', offerId: o.id }, 'rejected', { pn: p.name, n: o.fee });
     }
   }
   // Too many players: list the lowest-rated ones beyond 26 (24 for a money-first director).
   const keep = b === 'money' ? 24 : 26;
   const sq = squadOf(x.world, x.career.clubId).filter((p) => !loanOf(x.career, p.id)).sort((a, z) => z.rating - a.rating);
-  for (const p of sq.slice(keep)) if (!p.listed) act(x, { type: 'player.list', playerId: p.id, listed: true }, 'listed', { pn: p.name });
+  // M3 (rework): never a player the manager has given his word to (an open promise: a pathway, a role, a contract).
+  const promised = new Set((x.career.room?.pledges ?? []).filter((pl) => pl.status === 'open').map((pl) => pl.playerId));
+  for (const p of sq.slice(keep)) if (!p.listed && !promised.has(p.id)) act(x, { type: 'player.list', playerId: p.id, listed: true }, 'listed', { pn: p.name });
 }
 
 // A cap rise already waiting on the manager: one at a time, so the desk isn't flooded with them.

@@ -97,6 +97,14 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework M3: a promise to a youngster that the whole game remembers
+- **What changed:**
+  - **The prospect promise now warns before it breaks.** Promote a youngster and he's promised 10 games in 20 matchdays. Before, nothing warned you and it simply broke. Now the assistant flags it in time and proposes starting him in the next match, cup ties included, with what that costs the team.
+  - **The staff respect your word.** They no longer put a player you've promised something to on the transfer list, or sell him.
+  - **Proven end to end, in Node and in the real build:** promote, get warned, start him, he plays, the promise counts it. He ends up with 10 games and the promise kept, his trust goes up and a message names it. After a save and reload, the promise and your XI are still there.
+- **Files:** `web/src/sim/room-decisions.ts`, `src/sim/staff.ts`, `src/lang-dressing*.ts`, `web/sim-tests/rework/slice.ts` (new), `web/ui-tests/rework-slice.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** More "Your word" cards will appear for academy graduates. Match results unchanged. Branch only, not live. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: first-week guide, and no screen wider than a phone
 - **What changed:** A skippable "Your first week" guide on Today. It has five steps (agree the season, decide how hands-on you are, set your plan, get the opponent report, play your first match). Each ticks itself off when the game state shows it's done, each has a "Show me" link, and it disappears after the first matches. A new width check opens every area and tab at 320, 360, 390 and 412 px wide, in English and Arabic, and fails if a page scrolls sideways. It caught a problem from today's work (long effect chips widened Today) and older ones (Club header and tabs, the Tactics button row, a transfer target card); all fixed.
 - **Files:** `web/src/ui2/Guide.tsx` (new), `src/lang-guide.ts` (new), `src/ui2/Today.tsx`, `src/styles/app.css`, `web/ui-tests/overflow.mjs` (new), `web/ui-tests/rework-shots.mjs`, `games/the-gaffer/rework/*`

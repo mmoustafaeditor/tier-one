@@ -59,5 +59,19 @@ Done (regression checks in `rework/trust`, 33 checks, all pass; screenshots `evi
   It caught a regression of this rework (long effect chips widened Today to 518 px) and older ones (Club hero/tabs
   at 320-360, Tactics action row and a Targets card at 320); all fixed, gate passes.
 
-Next (M2 rest): onboarding (first-week guide, skippable), Today decision cards (why it matters, confidence), Tactics
-basic/advanced layers, recruitment funnel (7 chips → 4 stages). Then M3 connected career-memory slice.
+M2 status: the trust items F05–F15 are done or checked; remaining M2 polish (decision-card "why it matters" and
+confidence, Tactics basic/advanced layers) is open.
+
+## Milestone 3 — connected career-memory slice: first slice done
+* `sim-tests/rework/slice.ts` (seeded, Node): promote a 17-year-old (sheet terms = applied terms) → the dressing room
+  holds the pathway promise (10 games in 20 league matchdays) → delegated selection leaves him out → the assistant's
+  card flags it 2 matchdays before it can't be kept, with the sporting cost → the manager starts him (his XI, F01) → he
+  plays (here a cup tie, which counts) → the promise counts it → 10 games: kept, trust 65 → 77, a message citing the
+  event → the staff never transfer-listed him → save + reload: same promise record, same XI. All checks pass.
+* `ui-tests/rework-slice.mjs` (browser, phone): the same path in the real build (promotion sheet → card on Today →
+  start him → "Your XI" with him → full-time ratings → page reload → player page with promise progress). Passes;
+  screenshots `evidence/m3-slice/`.
+* Fixes found by the slice: prospect promises never warned before breaking (now they do); the staff could list or
+  sell a player with an open promise (now they don't); the assistant's advice said "Saturday" for a Wednesday cup tie.
+
+Next: M3 pilot arcs (broken promise, derby/board pressure) on the same rails; M2 polish; M4/M5 validation.

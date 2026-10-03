@@ -155,7 +155,10 @@ function promiseDue(w: World, c: Career, p: Player, pl: Pledge): Decision | null
   if (pl.type === 'role') {
     const s = pledgeState(pl);
     // Three matchdays before it can no longer be kept: the starts he still needs are within 2 of the matchdays left.
-    if (pl.role === 'prospect' || !s.slipping || s.lost || s.margin > 2) return null;
+    // M3 (rework): the prospect's pathway promise warns too (it used to be silent until it broke): when the games he
+    // still needs come within 2 of the league matchdays left, the assistant proposes starting him in the next match —
+    // cup ties count as appearances, so a cup tie is often the cheapest place to keep your word.
+    if (!s.slipping || s.lost || s.margin > 2) return null;
     const start = startHim(w, c, p);
     const b = biasOf(staffOf(c, 'assistant'));
     const pick = !!start && start.cost <= (b === 'cautious' ? 2 : b === 'bold' ? 6 : 4);
