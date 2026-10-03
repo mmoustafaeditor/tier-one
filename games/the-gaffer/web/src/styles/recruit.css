@@ -169,3 +169,12 @@
 .g-comp .panel-h .h2 { flex: 1 1 auto; }
 .verdict .gauge .big.low { color: var(--bad); }
 .verdict .send:has(> :only-child) { grid-template-columns: 1fr; }
+
+/* Rework: the recruitment funnel — four numbered stages, one row on desktop, two by two on a phone. */
+.rc-funnel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: var(--s-3) 0 var(--s-2); }
+.rc-funnel .stage { position: relative; display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 8px 12px; border-radius: 14px; border: 1px solid var(--ground-line-2, rgba(255,255,255,.14)); background: rgba(255,255,255,.04); color: var(--on-ground); text-align: start; font: 600 14px/1.2 var(--f-text); }
+.rc-funnel .stage .n { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,.1); font: 700 12px/1 var(--f-text); }
+.rc-funnel .stage[aria-pressed="true"] { background: var(--mint-400, #7FE3C4); border-color: transparent; color: #04211C; }
+.rc-funnel .stage[aria-pressed="true"] .n { background: rgba(4,33,28,.15); }
+.rc-funnel .stage .count { margin-inline-start: auto; }
+@media (max-width: 720px) { .rc-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); } .rc-funnel .stage { font-size: 13px; } }

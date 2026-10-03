@@ -45,5 +45,11 @@ Done (regression checks in `rework/trust`, 33 checks, all pass; screenshots `evi
 * **F14** checked, not reproduced: digest counters are scoped to the sim run (`staffCallsSince(seq0)`), xG chart
   markers group a scorer's goals ("Haaland ×2").
 
+* **Recruitment funnel**: Transfers is four numbered stages (Needs & scouting → Shortlist & search → Negotiations →
+  Deals & loans) with a sub-switch where a stage holds two views; all seven views and deep links unchanged. Search is one
+  tap further (nav test budget 2 → 3, recorded there). Evidence `evidence/m2c-*`.
+* Observed for F07 (open): for Al Ahly's ageing keeper the scouts' first pick is a 35-year-old external keeper — the
+  audit's succession example; needs an age/horizon term in `sim/recruit/picks.ts`.
+
 Next (M2 rest): onboarding (first-week guide, skippable), Today decision cards (why it matters, confidence), Tactics
 basic/advanced layers, recruitment funnel (7 chips → 4 stages). Then M3 connected career-memory slice.

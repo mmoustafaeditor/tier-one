@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework M2 (part 3): Transfers as one recruitment funnel
+- **What changed:** Transfers' seven equal chips are now four numbered stages: 1 Needs & scouting, 2 Shortlist & search, 3 Negotiations, 4 Deals & loans. A stage with two views (e.g. Needs | Scouts) has a small switch underneath. Nothing was removed, and every link into Transfers (cards, the player page, talks) lands where it did.
+- **Files:** `web/src/ui2/Transfers.tsx`, `src/lang-recruit*.ts`, `src/styles/recruit.css`, `web/ui-tests/nav.mjs` (Search is now 3 taps from Today, was 2), `web/ui-tests/rework-shots.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** Search is one tap further away; the nav test budget was raised to match. Still on the branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework M2 (part 2): half-time staging, Continue says what's next, honest courses, cup labels, smarter half-time sub
 - **What changed:**
   - **F12** at half-time the team talk now waits with your other changes until "Second half". Before, choosing a talk restarted the match at once and dropped the changes you'd ticked.

@@ -5,6 +5,7 @@ const P = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
 export const R_FR: RStrings = {
   tabs: ['Cibles', 'Chercher', 'Négociations', 'Opérations', 'Prêts', 'Besoins', 'Recruteurs'],
+  stages: ['Besoins et recrutement', 'Liste et recherche', 'Négociations', 'Opérations et prêts'],
   hero: { need: (pos: string) => `Trouver un ${pos.toLowerCase()}`, none: 'Chaque poste est doublé.' },
   kpi: { room: 'Marge de dépense', wageRoom: 'Marge salariale / mois', committed: 'Engagé' },
   talksBtn: (n: number) => `Négociations · ${n}`,

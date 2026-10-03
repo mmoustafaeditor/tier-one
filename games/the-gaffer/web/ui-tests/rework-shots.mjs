@@ -46,6 +46,11 @@ for (const lang of LANGS) {
     await shot('02-inbox-dates');                            // F02: message dated vs header
     await nav(p, 'match'); await p.waitForTimeout(800); await seg(p, 0); await p.waitForTimeout(800);
     await shot('03-tactics', true);                          // F01: whose XI
+    // The recruitment funnel (stages) and a stage with two views.
+    await nav(p, 'transfers'); await p.waitForTimeout(900);
+    await shot('07-transfers-funnel');
+    await p.evaluate(() => document.querySelectorAll('.rc-funnel .stage')[1]?.click()); await p.waitForTimeout(800);
+    await shot('08-transfers-shortlist-search');
     // F05: the academy's Promote opens the promotion sheet (squad place, contract, the promise).
     await nav(p, 'squad'); await p.waitForTimeout(700); await seg(p, 4); await p.waitForTimeout(800);
     await p.evaluate(() => [...document.querySelectorAll('.ac-row .btns button')][0]?.click()); await p.waitForTimeout(800);

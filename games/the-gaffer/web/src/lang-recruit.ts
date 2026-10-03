@@ -6,6 +6,7 @@ const P = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
 export const R_EN = {
   tabs: ['Targets', 'Search', 'Talks', 'Deals', 'Loans', 'Needs', 'Scouts'],
+  stages: ['Needs & scouting', 'Shortlist & search', 'Negotiations', 'Deals & loans'],
   hero: { need: (pos: string): string => `Find a ${pos.toLowerCase()}`, none: 'Every spot has cover.' },
   kpi: { room: 'Spending room', wageRoom: 'Wage room / mo', committed: 'Committed' },
   talksBtn: (n: number): string => `Talks · ${n}`,
