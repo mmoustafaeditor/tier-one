@@ -7,6 +7,12 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.18 — Daily tab uses the Desk's painted jerseys
+
+- Locked: the Desk's dark painted shirts with the question mark (art/daily-shirt.webp), no tile boxes.
+- Revealed: the same painted shirt in the club's colour (art/daily-shirt-tex.webp multiplied over a club-colour fill) with the surname under it.
+- The shirts reveal as soon as today's challenge has been opened (backing out mid-game), not only after it is completed.
+
 ## 2026-10-03 · Tier One 3.9.17 — Daily tab: revealed shirts match the locked ones
 
 - After you play, each of the five tiles keeps the locked tile's size and plain shirt, now in the club's colours with a collar trim, and the player's surname under it. No more numbers or patterns on these shirts.

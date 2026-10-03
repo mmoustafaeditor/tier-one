@@ -8,7 +8,7 @@ import type { CastSaga } from '../lib/engine';
 import { ymdUTC } from '../lib/meta';
 import { ensureMissions, allMissions, claimMission, MODE_ORDER, type MissionMode } from '../lib/progress';
 import { sfx } from '../lib/sfx';
-import { Icon, Kit, GBtn, TopBar, confetti } from '../ui/game';
+import { Icon, GBtn, TopBar, confetti } from '../ui/game';
 import { useNow } from '../ui/bits';
 import { dailyNoToday } from './Front';
 import { hms, dailyLiveDay, PastResults } from './Home';
@@ -28,8 +28,8 @@ export function DailyHubScreen(chrome: Chrome) {
   const now = useNow(1000);
   const today = ymdUTC(), no = dailyNoToday();
   const played = s.daily[today];
-  const cast = useTodayCast(today, !!played);
   const live = dailyLiveDay(s);
+  const cast = useTodayCast(today, !!played || !!live);
   const closes = Date.parse(today + 'T00:00:00Z') + 864e5 - now;
   const d0 = new Date(today + 'T00:00:00Z'); const dow = (d0.getUTCDay() + 6) % 7;
   const week = Array.from({ length: 7 }, (_, k) => { const d = new Date(d0.getTime() + (k - dow) * 864e5).toISOString().slice(0, 10); return { d, on: !!s.daily[d], now: d === today }; });
@@ -50,9 +50,9 @@ export function DailyHubScreen(chrome: Chrome) {
           <p className="dh39__sub">{t('u39.dh.sub')}</p>
           <h2 className="dh39__h">{t('u39.dh.five')}</h2>
           <div className="dh39__kits">
-            {Array.from({ length: 5 }, (_, k) => { const c = played ? cast?.[k] : undefined;
+            {Array.from({ length: 5 }, (_, k) => { const c = cast?.[k];
               return <span key={k} className={'dh39__kit' + (c ? ' is-on' : '')}>
-                {c ? <Kit club={c.from} plain size={44} /> : <Kit mystery size={44} />}
+                {c ? <i className="dh39__shirt" style={{ ['--c1' as string]: c.from?.c1 || '#777', ['--tex' as string]: 'url(' + new URL('art/daily-shirt-tex.webp', document.baseURI).href + ')' }} aria-hidden="true" /> : <img className="dh39__shirt" src="art/daily-shirt.webp" alt="" aria-hidden="true" decoding="async" />}
                 {c && <b dir="auto" title={c.player.n}>{(c.player.s || c.player.n).split(/\s+/).pop()}</b>}
               </span>; })}
           </div>
