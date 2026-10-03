@@ -138,14 +138,14 @@ for (let i = 0; i < 4; i++) {
 
 // ---------- Club ----------
 await tap(nav('club'), { after: 1500 });
-await say('النادي', '5 تابات: الفلوس، الإدارة، المنشآت، الجهاز، التسويق. وفوق: مشواري، كلوب باس، الإعدادات والحفظ.', 3800);
+await say('النادي', `5 تابات: الفلوس، الإدارة، المنشآت، الجهاز، التسويق. و${DESK ? 'في الشريط اللي على الجنب' : 'فوق'}: مشواري، كلوب باس، الإعدادات.`, 3800);
 const cTab = async (re, title, text) => { await tap(T('.page .seg button, .page [role=tablist] button, .area-tabs .seg button, .o-tabs button', re), { after: 1400 }); await say(title, text, 3600); await scrollBy(600, 1400); await scroll(0, 500); };
 await cTab(/^الفلوس$/, 'النادي › الفلوس', 'الميزانية، المرتبات، الدخل والمصاريف، وسعر التذاكر.');
 await cTab(/^الإدارة$/, 'النادي › الإدارة', 'ثقة الإدارة وهدف الموسم، و«ليه اتحركت»: آخر 8 تغييرات في الثقة وسبب كل واحدة.');
 await cTab(/^المنشآت$/, 'النادي › المنشآت', 'الملعب ومركز التدريب والأكاديمية. قبل أي تطوير بتشوف توقع: هيكلّف كام وهيرجّع إيه.');
 await cTab(/^الجهاز$/, 'النادي › الجهاز', 'المساعد والمدربين والكشافين والدكاترة، ومين بيمسك أنهي قسم (إنت ولا الجهاز).');
 await cTab(/^التسويق$/, 'النادي › التسويق', 'الرعاة والعقود التجارية.');
-const club = async (re, title, text) => { await tap(T('.page button', re), { after: 1600 }); await say(title, text, 3600); await scrollBy(600, 1400); await tap(nav('club'), { after: 1200 }); };
+const club = async (re, title, text) => { await tap(T('.page button, nav button, nav a, aside button, aside a', re), { after: 1600 }); await say(title, text, 3600); await scrollBy(600, 1400); await tap(nav('club'), { after: 1200 }); };
 await club(/^مشواري$/, 'مشواري', 'الكاريير بتاعك: سمعتك، أسلوبك من واقع لعبك، الألقاب والتاريخ.');
 await club(/^كلوب باس$/, 'كلوب باس', 'اشتراك الداعمين والمميزات.');
 await club(/^الإعدادات والحفظ$/, 'الإعدادات والحفظ', 'اللغة، الصوت، الإتاحة، وتحفظ أو تصدّر أو تستورد السيف.');
