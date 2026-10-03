@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: "About the job" when picking a club
+- **What changed:** When you pick a club for a new career, a new panel lists facts about the job: where the squad and the budget rank in the league, the squad's average age against the league's, the club's derbies (which count extra with the board), and how many of the first eleven are out of contract next summer. Also re-ran the full test suite: 46 of 47 sim tests pass (`marking` is the same known sampling-noise check), and the engine fingerprint is unchanged.
+- **Files:** `web/src/ui2/NewCareer.tsx`, `src/lang-job.ts` (new), `src/styles/app.css`, `web/ui-tests/rework-job.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: accessibility settings, reachable before a career
 - **What changed:** The title screen has an "Accessibility" button, and Settings has the same panel. It offers text size (standard, larger, largest), Reduce motion (stops animations and the live-match flashes; it shows as on when the phone itself asks for reduced motion) and Stronger contrast (darker or brighter secondary text). The choices are kept on the device, not in the save, and apply straight away. At the largest size no main screen scrolls sideways, in English or Arabic.
 - **Files:** `web/src/ui2/A11y.tsx` (new), `src/lang-a11y.ts` (new), `src/sim/prefs.ts` (`text`/`calm`/`contrast`), `src/App.tsx`, `src/ui2/Title.tsx`, `src/ui2/Settings.tsx`, `src/ui2/Live.tsx`, `src/styles/app.css`, `web/ui-tests/rework-a11y.mjs` (new), `games/the-gaffer/rework/*`

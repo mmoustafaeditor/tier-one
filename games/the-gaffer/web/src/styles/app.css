@@ -627,3 +627,6 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .title-top { flex-wrap: wrap; gap: 8px; }
 .a11y-open { gap: 6px; }
 .a11y { display: grid; gap: 8px; margin-bottom: 12px; }
+/* Rework: "About the job" on the new-career club page. */
+.job-list { margin: 8px 0 0; padding-inline-start: 18px; display: grid; gap: 6px; font-size: 14px; color: var(--ink-2); }
+@media (min-width: 900px) { .confirm-grid .club-splash { grid-row: span 3; } }

@@ -11,6 +11,8 @@ import { seedAcademies } from '../sim/youth';
 import { FIRST_SEASON, clubsOf, money, objectiveOf, squadOf, strengthOf, type World } from '../sim/world';
 import { Crest, I, Portrait } from './kit';
 import { Panel } from './shell';
+import { JB } from '../lang-job';
+import { isDerby } from '../sim/rivalry';
 
 const newSeed = () => (Math.random() * 2 ** 31) >>> 0; // the one allowed Math.random(): a new career's seed
 
@@ -24,6 +26,23 @@ export function NewCareer({ t, x, ui, slot, onBack, onStart }: { t: Strings; x: 
   const [name, setName] = useState('');
   const [age, setAge] = useState('38');
   const [nation, setNation] = useState('');
+  // "About the job": facts from the world (rank in the league by strength and budget, age, derbies, expiring deals).
+  const jobFacts = (wd: World, club: Club): string[] => {
+    const J = JB[ui];
+    const lg = wd.clubs.filter((o) => o.leagueId === club.leagueId);
+    const rank = (f: (o: Club) => number) => 1 + lg.filter((o) => f(o) > f(club)).length;
+    const ageAvg = (id: string) => { const s = squadOf(wd, id); return s.reduce((a, p) => a + FIRST_SEASON - p.birthYear, 0) / Math.max(1, s.length); };
+    const lgAge = lg.reduce((a, o) => a + ageAvg(o.id), 0) / Math.max(1, lg.length);
+    const xi = [...squadOf(wd, club.id)].sort((a, b) => b.rating - a.rating).slice(0, 11);
+    const derbies = wd.clubs.filter((o) => o.id !== club.id && isDerby(club.id, o.id)).map((o) => o.name[lang]);
+    return [
+      J.strength(rank((o) => strengthOf(wd, o.id)), lg.length),
+      J.budget(rank((o) => o.budget), lg.length),
+      J.age(ageAvg(club.id).toFixed(1), lgAge.toFixed(1)),
+      ...(derbies.length ? [J.derby(derbies.join(', '))] : []),
+      J.deals(xi.filter((p) => p.contractUntil <= FIRST_SEASON).length),
+    ];
+  };
   const P = x.pick;
   const ageOk = /^\d+$/.test(age) && +age >= 20 && +age <= 80;
   const covered = new Set(world.clubs.filter((c) => c.real).map((c) => c.leagueId));
@@ -112,7 +131,11 @@ export function NewCareer({ t, x, ui, slot, onBack, onStart }: { t: Strings; x: 
                   <div className="kpi"><span className="v">{squadOf(world, club.id).length}</span><span className="l">{x.squad.title}</span></div>
                 </div>
               </Panel>
-              <Panel i={2}>
+              <Panel i={2} className="job">
+                <span className="eyebrow">{JB[ui].title}</span>
+                <ul className="job-list">{jobFacts(world, club).map((s) => <li key={s}>{s}</li>)}</ul>
+              </Panel>
+              <Panel i={3}>
                 <span className="eyebrow">{P.you}</span>
                 <label className="fieldl"><span>{P.name}</span><input className="field" dir="auto" maxLength={24} placeholder={P.nameDefault} value={name} onChange={(e) => setName(e.target.value)} /></label>
                 <div className="two">

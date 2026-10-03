@@ -25,6 +25,8 @@ no named Android device was available — see Known limitations).
   is a "Start a career" card.
 * Squad has a planner: each line's roles, deals running out, ages, who is out and the scouts' needs, one tap from
   Transfers › Needs.
+* Picking a club shows "About the job": league rank by squad and budget, age against the league, derbies, expiring
+  deals in the first eleven.
 * Accessibility from the title screen and Settings: larger text, reduce motion, stronger contrast.
 * Nothing is wider than a phone at 320–412 px, in English or Arabic.
 
@@ -33,11 +35,12 @@ See `REWORK_BASELINE.md` (table) — F01, F02, F03, F04, F05, F07, F08, F09, F10
 the manager's side (AI clubs deferred, see §6); F14 not reproduced; F17 not reproduced and hardened; F16 fixed (contextual talks).
 Current-code reproduction: `node sim-tests/build.mjs rework/repro` → every checked item OK.
 
-## 3. Test report (this container, final state `fac4989`)
+## 3. Test report (this container; full sim suite re-run on `4b99ca3`+, UI tests on the latest build)
 | Suite | Command | Result |
 |---|---|---|
 | Typecheck | `npx tsc --noEmit` | clean |
-| Sim tests (43) | `node sim-tests/build.mjs <name>` | 42 pass; `marking` fails one sampling-noise check, same as the baseline (passes at 4,000) |
+| Sim tests (47, incl. `rework/*`) | `node sim-tests/build.mjs <name>` | 46 pass; `marking` fails one sampling-noise check (corner headers), same as the baseline (passes at 4,000) |
+| Engine fingerprint | `fingerprint` | `a04af554a49efa49`, unchanged from the baseline: no match result changed |
 | Trust regressions | `rework/trust` | 33+ checks pass (F01–F10, F17, F07 picks) |
 | Career-memory slice | `rework/slice` | pass (promote → warn → start → plays → kept → reload) |
 | Broken-promise arc | `rework/arcs` | pass |
@@ -45,6 +48,10 @@ Current-code reproduction: `node sim-tests/build.mjs rework/repro` → every che
 | Width gate 320/360/390/412, EN/AR | `ui-tests/overflow.mjs` | pass |
 | Half-time staging, Continue label, courses | `ui-tests/rework-ht.mjs` | pass (fails on the old build: F12 reproduced) |
 | Browser slice | `ui-tests/rework-slice.mjs` | pass |
+| Title career cards | `ui-tests/rework-title.mjs` | pass |
+| Squad planner | `ui-tests/rework-planner.mjs` | pass (folded on phones; need → Transfers › Needs) |
+| Accessibility | `ui-tests/rework-a11y.mjs` | pass (no sideways scroll at the largest text, EN/AR) |
+| New-career job facts | `ui-tests/rework-job.mjs` | pass |
 
 ## 4. Balance report
 Engine fingerprint unchanged from the baseline (`a04af554a49efa49`): the rework did not change how matches are
@@ -83,5 +90,5 @@ load. Rollback: older builds ignore both fields.
 quick-match full time), `m2b-before|after` (half-time staging, Continue, courses), `m2c-before|after` (Transfers
 funnel), `m2d-after` (first-week guide), `m2e-after` (Tactics essentials), `m3-slice` (the connected sequence:
 promotion sheet → warning card → Your XI → full time → after reload), `m4-after` (full-time why/next), `m4c-after`
-(pre-match briefing), `m4d-before|after` (title-screen career cards), `m4e-before|after` (squad planner), `m4f-before|after` (accessibility). Phone 390 px and desktop 1440 px, English and
+(pre-match briefing), `m4d-before|after` (title-screen career cards), `m4e-before|after` (squad planner), `m4f-before|after` (accessibility), `m4g-before|after` (new-career job facts). Phone 390 px and desktop 1440 px, English and
 Arabic where the screen changed.

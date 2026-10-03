@@ -113,4 +113,10 @@ Decision (Saif, 2026-10-03): AI clubs keep their current XI selection; the best-
   contrast (secondary text and lines). Device prefs, not the save; survive reloads. No sideways scroll at the largest
   size on Today/Squad/Match/Transfers/Club, EN and AR. `ui-tests/rework-a11y.mjs`; evidence `evidence/m4f-before|after/`.
 
+* New career, club page (handoff §B.2): "About the job" with the club's league rank by squad strength and by budget,
+  average age against the league, its derbies (from `sim/rivalry.ts`; they count 1.5× with the board) and how many of
+  the first eleven are out of contract next summer. Facts only. `ui-tests/rework-job.mjs`; evidence
+  `evidence/m4g-before|after/`.
+* Full suite re-run: 46/47 sim tests pass (`marking` baseline noise), fingerprint unchanged; all UI gates pass.
+
 Next: M5 validation items possible here (save round-trip/slot isolation checks, full-suite run), then the report.
