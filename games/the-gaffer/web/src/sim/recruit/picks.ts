@@ -46,7 +46,11 @@ export function scoutPicks(w: World, c: Career, perNeed = 3, only?: Need[]): Pic
       const age = c.season - p.birthYear;
       const fit = styleFit(p, ph);
       const tilt = b === 'youth' ? (age <= 23 ? 3 : 0) : b === 'veteran' ? (age >= 27 ? 2 : 0) : b === 'money' ? -fee / Math.max(1, room) * 3 : 0;
-      const score = mid + (fit - p.rating) / 4 + k / 25 + (p.position === need.pos ? 1.5 : 0) + tilt - (fee / Math.max(1, room)) * 2 + (isUnhappy(p) ? 1.5 : 0);
+      // F07 (rework): the time horizon. A search that exists because the starter is old or his deal ends wants a man who
+      // outlasts him: every year past 29 costs a point there (and past 32 for any need), so a 35-year-old is no longer
+      // the scouts' first answer to an ageing keeper, though he can still be picked when nobody younger is close.
+      const horizon = need.why.includes('old') || need.why.includes('expiring') ? Math.max(0, age - 29) : Math.max(0, age - 32);
+      const score = mid + (fit - p.rating) / 4 + k / 25 + (p.position === need.pos ? 1.5 : 0) + tilt - (fee / Math.max(1, room)) * 2 + (isUnhappy(p) ? 1.5 : 0) - horizon;
       cands.push({ p, need, mid, lo: e.lo, hi: e.hi, k, fee, fit, age, natural: p.position === need.pos, score, interest: interestOf(w, c, p) });
     }
     cands.sort((a, z) => z.score - a.score);

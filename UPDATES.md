@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework F07: scout picks think about the future
+- **What changed:** When the search exists because the starter is getting old or his deal is ending, the scouts no longer put a 35-year-old first (Al Ahly's keeper search did). Each year past 29 costs a candidate in those searches, and past 32 in any search. An older player can still be picked when nobody younger is close.
+- **Files:** `web/src/sim/recruit/picks.ts`, `web/sim-tests/rework/trust.ts`
+- **Heads-up for the team:** Delegated signings use the same list, so staff sign younger players for succession. Match results unchanged. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework M2 (part 3): Transfers as one recruitment funnel
 - **What changed:** Transfers' seven equal chips are now four numbered stages: 1 Needs & scouting, 2 Shortlist & search, 3 Negotiations, 4 Deals & loans. A stage with two views (e.g. Needs | Scouts) has a small switch underneath. Nothing was removed, and every link into Transfers (cards, the player page, talks) lands where it did.
 - **Files:** `web/src/ui2/Transfers.tsx`, `src/lang-recruit*.ts`, `src/styles/recruit.css`, `web/ui-tests/nav.mjs` (Search is now 3 taps from Today, was 2), `web/ui-tests/rework-shots.mjs`, `games/the-gaffer/rework/*`

@@ -190,5 +190,24 @@ const clone = <T,>(x: T): T => structuredClone(x);
   } else ok(false, 'F05 no academy player to promote in the test club');
 }
 
+// ---------- F07: succession picks look past the starter's age ----------
+{
+  const { scoutPicks } = await import('../../src/sim/recruit/picks');
+  const { needs } = await import('../../src/sim/recruit/needs');
+  let older = 0, total = 0;
+  for (const club of ['egy-al-ahly', 'eng-liverpool', 'ita-inter', 'esp-barcelona', 'ger-bayern', 'fra-psg']) {
+    const { w, c } = fresh(club);
+    const succ = needs(w, c).filter((n) => n.why.includes('old'));
+    for (const n of succ) {
+      const top = scoutPicks(w, c, 3, [n])[0];
+      const st = n.starter ? playerOf(w, n.starter) : undefined;
+      if (!top || !st) continue;
+      total++;
+      if (top.age >= c.season - st.birthYear - 2) { older++; console.log(`  ${club} ${n.pos}: starter ${c.season - st.birthYear}, first pick ${top.p.name.en} ${top.age}`); }
+    }
+  }
+  ok(total > 0 && older === 0, `F07 succession searches: the scouts' first pick is clearly younger than the ageing starter (${total - older}/${total})`);
+}
+
 console.log(fails ? `\n${fails} FAILED` : '\nall passed');
 process.exit(fails ? 1 : 0);
