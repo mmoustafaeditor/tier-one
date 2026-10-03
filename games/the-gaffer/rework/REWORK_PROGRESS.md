@@ -77,4 +77,9 @@ pieces and marking (remembered per device; it never hides a setting silently). E
 * Fixes found by the slice: prospect promises never warned before breaking (now they do); the staff could list or
   sell a player with an open promise (now they don't); the assistant's advice said "Saturday" for a Wednesday cup tie.
 
-Next: M3 pilot arcs (broken promise, derby/board pressure) on the same rails; M2 polish; M4/M5 validation.
+* Pilot arc **broken promise** (`sim-tests/rework/arcs.ts`): warned, let go, never played → broken (0 of 10), trust
+  65 → 45, morale 66 → 55, he asks for a word, message and news name it, the next talk is "broken". Passes.
+  Derby/board pressure already exists and is covered by `sim-tests/world.ts` (a derby defeat costs ×1.5 with the board)
+  and the press cards ("feeling the heat").
+
+Next: M4 (AI best-XI with recalibration, analysis next-action links), M5 validation package.
