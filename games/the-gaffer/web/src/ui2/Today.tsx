@@ -25,6 +25,7 @@ import { newsText } from './text';
 import { D } from '../lang-dressing-all';
 import { cohesionOf } from '../sim/room';
 import { todayOf } from '../sim/cups';
+import { FirstWeekGuide } from './Guide';
 
 export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision, ch: Choice) => Promise<boolean>; onUndo: () => void; canUndo: string | null }) {
   const g = useGame();
@@ -77,6 +78,7 @@ export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision,
 
         <div className="col col-a">
           <section className="a-dec stack" aria-label={x.nav.today}>
+            <FirstWeekGuide />
             {receipts.map((r, k) => <Receipt key={r.id} label={x.dec.done(r.label)} undo={x.dec.undo} onUndo={k === 0 && canUndo === r.id ? () => { onUndo(); setReceipts((rs) => rs.slice(1)); } : undefined} />)}
             {shown.map((d, k) => <DecisionCard key={d.id} d={d} i={k + 1} onResolve={resolve} />)}
             {list.length > 5 && <button className="btn btn--ghost on-ground" onClick={() => setAll(!all)}>{all ? x.today.fewer : x.today.more(list.length - 5)}</button>}

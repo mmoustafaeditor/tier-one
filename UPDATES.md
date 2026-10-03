@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: first-week guide, and no screen wider than a phone
+- **What changed:** A skippable "Your first week" guide on Today. It has five steps (agree the season, decide how hands-on you are, set your plan, get the opponent report, play your first match). Each ticks itself off when the game state shows it's done, each has a "Show me" link, and it disappears after the first matches. A new width check opens every area and tab at 320, 360, 390 and 412 px wide, in English and Arabic, and fails if a page scrolls sideways. It caught a problem from today's work (long effect chips widened Today) and older ones (Club header and tabs, the Tactics button row, a transfer target card); all fixed.
+- **Files:** `web/src/ui2/Guide.tsx` (new), `src/lang-guide.ts` (new), `src/ui2/Today.tsx`, `src/styles/app.css`, `web/ui-tests/overflow.mjs` (new), `web/ui-tests/rework-shots.mjs`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** The guide's "hidden" choice is saved on the device (`gaffer.guide.hidden`), not in the save. Branch only, not live. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework F07: scout picks think about the future
 - **What changed:** When the search exists because the starter is getting old or his deal is ending, the scouts no longer put a 35-year-old first (Al Ahly's keeper search did). Each year past 29 costs a candidate in those searches, and past 32 in any search. An older player can still be picked when nobody younger is close.
 - **Files:** `web/src/sim/recruit/picks.ts`, `web/sim-tests/rework/trust.ts`

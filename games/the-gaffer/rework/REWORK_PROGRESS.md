@@ -51,5 +51,13 @@ Done (regression checks in `rework/trust`, 33 checks, all pass; screenshots `evi
 * Observed for F07 (open): for Al Ahly's ageing keeper the scouts' first pick is a 35-year-old external keeper — the
   audit's succession example; needs an age/horizon term in `sim/recruit/picks.ts`.
 
+* **F07 recruitment** done: succession picks weigh age against the starter's horizon (test: 6/6 clubs).
+* **First-week guide** on Today (`ui2/Guide.tsx`, `lang-guide.ts`, 4 languages): five steps ticked off by the career's
+  own state (board meeting, staff split, plan set, opponent report, first match), "Show me" deep links, hideable,
+  gone after the first matches. Evidence `evidence/m2d-after/`.
+* **Width gate** `ui-tests/overflow.mjs`: every area and tab at 320/360/390/412 px, EN and AR, no sideways scroll.
+  It caught a regression of this rework (long effect chips widened Today to 518 px) and older ones (Club hero/tabs
+  at 320-360, Tactics action row and a Targets card at 320); all fixed, gate passes.
+
 Next (M2 rest): onboarding (first-week guide, skippable), Today decision cards (why it matters, confidence), Tactics
 basic/advanced layers, recruitment funnel (7 chips → 4 stages). Then M3 connected career-memory slice.

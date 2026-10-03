@@ -41,7 +41,9 @@ for (const lang of LANGS) {
     await click(p, /🇪🇬/); await p.waitForTimeout(600);
     await p.evaluate(() => [...document.querySelectorAll('button')].find((b) => /Al Ahly|الأهلي/.test(b.innerText))?.click()); await p.waitForTimeout(700);
     await p.evaluate(() => document.querySelector('button.btn--accent.big')?.click()); await p.waitForTimeout(1500);
-    await shot('01-today-first-decisions', true);            // board meeting card (F04), header date (F02)
+    await shot('01-today-first-decisions', true);
+    await p.evaluate(() => document.querySelector('.guide')?.scrollIntoView({ block: 'start' })); await p.waitForTimeout(300);
+    await p.screenshot({ path: join(OUT, `09-first-week-guide-${tag}-${lang}.png`) }); console.log('guide');            // board meeting card (F04), header date (F02)
     await nav(p, 'news'); await p.waitForTimeout(700);
     await shot('02-inbox-dates');                            // F02: message dated vs header
     await nav(p, 'match'); await p.waitForTimeout(800); await seg(p, 0); await p.waitForTimeout(800);
