@@ -19,6 +19,7 @@ import { dateOf, shortDate } from '../sim/calendar';
 import { Crest, I, Meter, Portrait } from './kit';
 import { Panel, PanelHead, Seg, Steps } from './shell';
 import { Trends } from './Trends';
+import { CN } from '../lang-cine';
 import { useGame, clubOf, cn, sn, matchLabel } from './game';
 import { leagueRows, upcoming, pctOf } from './util';
 
@@ -27,6 +28,7 @@ export function MatchScreen({ tab, onTab }: { tab: number; onTab: (n: number) =>
   const T = g.x.table;
   return (
     <div className="sc-match sc-tactics">
+      <MatchHead tab={tab} />
       <div className="match-tabs on-ground">
         <Seg label={g.x.nav.match} value={tab} onChange={onTab} options={T.tabs.map((l, i) => ({ v: i, label: l }))} onGround />
       </div>
@@ -35,6 +37,24 @@ export function MatchScreen({ tab, onTab }: { tab: number; onTab: (n: number) =>
       {tab === 2 && <LeagueTable />}
       {tab === 3 && <Cups />}
     </div>
+  );
+}
+
+// The editorial head (pack v2): "Your match plan" with the next match on Tactics, the tab's name elsewhere.
+function MatchHead({ tab }: { tab: number }) {
+  const g = useGame();
+  const { w, c, x, lang } = g;
+  const C = CN[g.ui];
+  const u = upcoming(w, c, 1)[0];
+  const home = u ? clubOf(w, u.home) : undefined, away = u ? clubOf(w, u.away) : undefined;
+  const title = tab === 0 ? C.matchPlan : x.table.tabs[tab];
+  return (
+    <header className="pg-head">
+      <div className="pg-title"><h1 className="h-hero">{title}</h1>
+        {tab === 0 && u && home && away && <p className="pg-sub">{cn(home, lang)} {C.vs} {cn(away, lang)} · {matchLabel(g, { cup: u.cup, round: u.round, group: u.group })} · {shortDate(u.date, g.ui)}</p>}
+      </div>
+      {tab === 0 && u && <button className="btn btn--primary pg-cta pg-cta--go" disabled={g.busy} onClick={g.cont}>{C.toMatch}<I n="arrowr" size="sm" flip={g.rtl} /></button>}
+    </header>
   );
 }
 

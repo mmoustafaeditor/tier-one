@@ -64,6 +64,9 @@ interface CineStrings {
   shots: string;
   onTarget: string;
   xg: string;
+  matchPlan: string;
+  stages: [string, string, string, string];
+  toMatch: string;
 }
 
 const en: CineStrings = {
@@ -83,6 +86,8 @@ const en: CineStrings = {
   pitch: 'Pitch', stats: 'Stats', commentary: 'Commentary', keyMoments: 'Key moments', matchStats: 'Match stats', latest: 'Latest event',
   makeChanges: 'Make changes', nextDecision: 'Next decision', speed: 'Match speed',
   possession: 'Possession', shots: 'Shots', onTarget: 'On target', xg: 'xG',
+  matchPlan: 'Your match plan', toMatch: 'Continue to match',
+  stages: ['Needs', 'Targets', 'Talks', 'Deals'],
 };
 const ar: CineStrings = {
   nextMatch: 'الماتش الجاي', vs: 'ضد', desk: 'مكتب المدير', around: 'حوالين النادي', coming: 'اللي جاي', fixtures: 'المواعيد', table: 'الجدول',
@@ -101,6 +106,8 @@ const ar: CineStrings = {
   pitch: 'الملعب', stats: 'الأرقام', commentary: 'التعليق', keyMoments: 'أهم اللحظات', matchStats: 'أرقام الماتش', latest: 'آخر حاجة حصلت',
   makeChanges: 'اعمل تغييرات', nextDecision: 'القرار الجاي', speed: 'سرعة الماتش',
   possession: 'الاستحواذ', shots: 'التسديدات', onTarget: 'على المرمى', xg: 'xG',
+  matchPlan: 'خطة الماتش', toMatch: 'كمّل للماتش',
+  stages: ['الاحتياجات', 'الأهداف', 'المفاوضات', 'الصفقات'],
 };
 const es: CineStrings = {
   nextMatch: 'Próximo partido', vs: 'vs', desk: 'Despacho del míster', around: 'En el club', coming: 'Lo que viene', fixtures: 'Calendario', table: 'Clasificación',
@@ -119,6 +126,8 @@ const es: CineStrings = {
   pitch: 'Campo', stats: 'Datos', commentary: 'Narración', keyMoments: 'Momentos clave', matchStats: 'Datos del partido', latest: 'Última jugada',
   makeChanges: 'Hacer cambios', nextDecision: 'Próxima decisión', speed: 'Velocidad',
   possession: 'Posesión', shots: 'Tiros', onTarget: 'A puerta', xg: 'xG',
+  matchPlan: 'Tu plan de partido', toMatch: 'Ir al partido',
+  stages: ['Necesidades', 'Objetivos', 'Negociación', 'Fichajes'],
 };
 const fr: CineStrings = {
   nextMatch: 'Prochain match', vs: 'vs', desk: 'Bureau du coach', around: 'Autour du club', coming: 'À venir', fixtures: 'Calendrier', table: 'Classement',
@@ -137,6 +146,8 @@ const fr: CineStrings = {
   pitch: 'Terrain', stats: 'Stats', commentary: 'Commentaire', keyMoments: 'Moments clés', matchStats: 'Stats du match', latest: 'Dernière action',
   makeChanges: 'Faire des changements', nextDecision: 'Prochaine décision', speed: 'Vitesse',
   possession: 'Possession', shots: 'Tirs', onTarget: 'Cadrés', xg: 'xG',
+  matchPlan: 'Ton plan de match', toMatch: 'Aller au match',
+  stages: ['Besoins', 'Cibles', 'Négociations', 'Accords'],
 };
 
 export const CN: Record<UiLang, CineStrings> = { en, ar, es, fr };

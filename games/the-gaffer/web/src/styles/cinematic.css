@@ -159,7 +159,7 @@ html[lang="ar"] .kpi .v { font-family: var(--f-ar-text); }
   .nav { grid-area: nav; justify-self: center; position: static; display: flex; align-items: center; gap: 4px; padding: 0; background: none; border: 0; box-shadow: none; }
   .nav a { min-height: 72px; min-width: 92px; padding: 8px 12px; border-radius: var(--r-md); color: rgba(244,242,237,.86); font: 500 15px/1.1 var(--f-text); }
   .nav a .i { width: 26px; height: 26px; }
-  .nav a[aria-current="page"] { background: color-mix(in srgb, var(--club-primary) 72%, #000 28%); }
+  .nav a[aria-current="page"] { background: color-mix(in srgb, var(--club-primary) 55%, #000 45%); }
   .nav a[aria-current="page"]::after { bottom: 4px; width: 56%; }
   .nav .nav-extra { display: grid; min-width: 44px; min-height: 48px; padding: 8px; }
   .nav .nav-extra span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -498,3 +498,61 @@ html[lang="ar"] .kpi .v { font-family: var(--f-ar-text); }
   .lv-bar .lv-changes, .lv-bar .skipbtn { grid-column: 1 / -1; width: 100%; }
   .lv-pitch-tools .eyebrow { display: none; }
 }
+
+/* Segments on the ground and in the match bar read the same as every other tab row. */
+.on-ground .seg, .mbar .seg { background: transparent; }
+.on-ground .seg button, .mbar .seg button { color: var(--ink-2); }
+.on-ground .seg button[aria-pressed="true"], .mbar .seg button[aria-pressed="true"], .on-ground-seg button[aria-pressed="true"] {
+  background: linear-gradient(180deg, transparent, var(--club-wash)); color: var(--ink); box-shadow: none; }
+.o-tabs .seg, .area-tabs .seg { max-width: 100%; }
+.o-tabs .seg button, .area-tabs .seg button { flex: 0 1 auto; padding-inline: var(--s-5); }
+.pg-cta--go { color: var(--club-on-primary); text-decoration: none; box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--club-primary) 70%, transparent); }
+.sc-tactics .board-wrap ~ * .topbar, .sc-match .topbar.on-ground { display: none; }
+
+/* Former teal panels: the player card, the career trophy and the Club Pass card, on charcoal with the club's light. */
+.sc-player .hero-card { background: radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--club-primary) 35%, transparent), transparent 70%), linear-gradient(180deg, #1a2226, #0d1316); border: 1px solid var(--line-2); }
+.sc-career .lift { background: radial-gradient(60% 55% at 50% 30%, color-mix(in srgb, var(--club-primary) 30%, transparent), transparent 70%), linear-gradient(180deg, #1a2226, #0b1013); border: 1px solid var(--line-2); }
+.sc-pass .pass { background: linear-gradient(135deg, color-mix(in srgb, var(--club-primary) 55%, #10171a) 0%, #10171a 60%, #0b1013 100%); border: 1px solid var(--line-2); }
+.sc-live .pitch-card .chip[aria-pressed="true"] { background: var(--club-wash); color: var(--ink); box-shadow: inset 0 0 0 1px var(--club-line); }
+@media (max-width: 899px) {
+  .pg-head:has(.pg-cta--go) { grid-template-columns: 1fr; grid-template-areas: "title" "cta"; }
+  .pg-cta.pg-cta--go { width: 100%; min-height: 52px; justify-content: center; font-size: 16px; padding: 0 var(--s-4); }
+  .pg-head .pg-sub { font-size: 16px; }
+}
+
+/* ==========================================================================
+   PRE-MATCH — the host's ground behind the briefing (concept 33)
+   ========================================================================== */
+.sc-pre .pre-scene { min-height: 380px; border-radius: var(--r-lg); border: 1px solid var(--line-2); display: grid; align-content: end; background-position: center 60%; }
+.sc-pre .pre-scene::after { background: linear-gradient(180deg, rgba(8,12,14,.15) 0%, rgba(8,12,14,.35) 45%, rgba(8,12,14,.92) 100%); }
+.sc-pre .pre-scene .over { position: relative; z-index: 2; padding: var(--s-5); display: grid; gap: 6px; justify-items: start; }
+.sc-pre .pre-scene .h-hero { color: #fff; margin: 0; }
+.sc-pre .pre-scene .walkers { position: absolute; z-index: 1; left: 50%; bottom: 34%; translate: -50% 0; display: flex; gap: 10px; }
+.sc-pre .pre-scene .walkers .portrait { width: 54px; filter: drop-shadow(0 8px 12px rgba(0,0,0,.7)); }
+.sc-pre .pre-scene .stakes, .sc-pre .pre-scene .crowd, .sc-pre .pre-scene .refpre { color: rgba(244,242,237,.86); margin: 0; }
+.sc-pre .go .btn--accent { min-height: 54px; font-size: 17px; }
+@media (max-width: 759px) {
+  .sc-pre .pre-scene .scene-flag { height: 34%; top: 7%; }
+  .sc-pre .pre-scene .scene-banner { display: none; }
+  .sc-pre .pre-scene .walkers { bottom: auto; top: 22%; }
+  .sc-pre .pre-scene .walkers .portrait { width: 44px; }
+  .desk-scene .scene-flag { height: 44%; top: 10%; }
+}
+
+/* ==========================================================================
+   NEW CAREER — the picked club's ground and colours (concept 03)
+   ========================================================================== */
+.sc-new .club-splash { min-height: 380px; padding: 0; display: grid; align-content: end; overflow: hidden; }
+.sc-new .club-splash::after { background: linear-gradient(180deg, rgba(8,12,14,.1) 0%, rgba(8,12,14,.4) 50%, rgba(8,12,14,.93) 100%); }
+.sc-new .club-splash .splash-id, .sc-new .club-splash .splash-kits { position: relative; z-index: 2; }
+.sc-new .club-splash .splash-id { display: flex; align-items: flex-end; gap: var(--s-4); padding: 0 var(--s-5); }
+.sc-new .club-splash .splash-id .h1 { color: #fff; margin: 0; }
+.sc-new .club-splash .splash-kits { padding: var(--s-4) var(--s-5) var(--s-5); }
+.sc-new .clubcard[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--club-primary); }
+@media (max-width: 759px) { .sc-new .club-splash .scene-flag { height: 34%; top: 6%; } .sc-new .club-splash .scene-banner { display: none; } }
+.sc-new .club-splash::after { inset: 0; width: auto; aspect-ratio: auto; border-radius: 0; filter: none; }
+.sc-new .splash-kits { max-width: 420px; }
+.sc-new .splash-kit .portrait { width: 84px; }
+.sc-new .splash-kit b { color: #fff; }
+.sc-new .splash-kit .num { color: var(--club-link); }
+@media (max-width: 899px) { .pg-head .pg-cta.pg-cta--go { background: var(--b-bg); color: var(--club-on-primary); box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--club-primary) 70%, transparent); text-decoration: none; } }

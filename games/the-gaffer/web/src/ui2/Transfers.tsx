@@ -21,6 +21,7 @@ import { agentOf, demandOf, interestOf } from '../sim/recruit/agent';
 import { CLAUSE_NEED } from '../sim/recruit/tick';
 import { isUnhappy } from '../sim/recruit/ai';
 import { R } from '../lang-recruit-all';
+import { CN } from '../lang-cine';
 import { Crest, I, Kpi, Portrait, initialsOf } from './kit';
 import { Panel, PanelHead, inView } from './shell';
 import { useGame, clubOf, cn, money, sn, type Game } from './game';
@@ -65,7 +66,7 @@ export function TransfersScreen({ tab, onTab, neg, pid }: { tab: number; onTab: 
       <div ref={chipRow} className="rc-funnel on-ground" role="group" aria-label={T.title}>
         {STAGES.map((st, k) => (
           <button key={k} className="stage" aria-pressed={stageOf(tab) === k} onClick={() => onTab(st[0])}>
-            <span className="n">{k + 1}</span><b>{Rs.stages[k]}</b>
+            <span className="n">{k + 1}</span><b title={Rs.stages[k]}>{CN[g.ui].stages[k]}</b>
             {st.includes(2) && live.length ? <em className="count">{live.length}</em> : st.includes(5) && reds ? <em className="count warn">{reds}</em> : null}
           </button>
         ))}

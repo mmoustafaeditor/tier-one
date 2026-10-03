@@ -16,6 +16,7 @@ import { attendance, capacityOf } from '../sim/economy';
 import { FORMATIONS } from '../sim/tactics';
 import { dateOf, shortDate } from '../sim/calendar';
 import { Crest, I, Portrait } from './kit';
+import { StadiumScene } from './Scene';
 import { Panel, PanelHead } from './shell';
 import { useGame, clubOf, cn, sn, matchLabel } from './game';
 import { tacticsLab } from '../sim/lab';
@@ -86,20 +87,8 @@ export function PreMatch() {
         </div>
       </header>
       <div className="grid">
-        <section className="tunnel g-t" aria-label={`${cn(home, lang)} v ${cn(away, lang)}`}>
-          <svg className="walls" viewBox="0 0 400 440" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="wl" x1="0" x2="1"><stop offset="0" stopColor="#03110F" /><stop offset="1" stopColor="#0B2E28" /></linearGradient>
-              <linearGradient id="wr" x1="1" x2="0"><stop offset="0" stopColor="#03110F" /><stop offset="1" stopColor="#0B2E28" /></linearGradient>
-              <linearGradient id="fl" y1="1" y2="0"><stop offset="0" stopColor="#010807" /><stop offset="1" stopColor="#123E36" /></linearGradient>
-            </defs>
-            <polygon points="0,0 140,132 140,254 0,440" fill="url(#wl)" /><polygon points="400,0 260,132 260,254 400,440" fill="url(#wr)" />
-            <polygon points="0,0 400,0 260,132 140,132" fill="#020D0C" /><polygon points="0,440 140,254 260,254 400,440" fill="url(#fl)" />
-            <g fill="#CFFFF0" opacity=".55"><rect x="190" y="6" width="20" height="6" rx="2" /><rect x="193" y="40" width="14" height="4" rx="1.5" /><rect x="195" y="70" width="10" height="3" rx="1" /><rect x="196.5" y="95" width="7" height="2" rx="1" /><rect x="197.5" y="114" width="5" height="1.5" /></g>
-            <g stroke="#1A4A42" strokeWidth="1.5"><line x1="0" y1="440" x2="140" y2="254" /><line x1="400" y1="440" x2="260" y2="254" /></g>
-          </svg>
-          <span className="beam l" /><span className="beam r" />
-          <span className="mouth" />
+        {/* Pack v2: the host's ground (its flags and banner), not a drawn tunnel; on an away day it is their stadium. */}
+        <StadiumScene host={home} guest={away} className="tunnel g-t pre-scene">
           <div className="walkers" aria-hidden="true"><Portrait p={cap0(0)} club={home} bare /><Portrait p={cap0(1)} club={away} bare /></div>
           <div className="over">
             {isDerby(home.id, away.id) && <span className="tag tag--warn"><I n="fans" size="sm" />{CL[g.ui].derby}</span>}
@@ -109,7 +98,7 @@ export function PreMatch() {
             <p className="refpre"><RefLine m={m} /></p>
             {banned.length > 0 && <p className="refpre"><span className="tag tag--bad"><I n="x" size="sm" />{RF[g.ui].outSuspended(banned.map((p) => sn(p, lang)).join(', '))}</span></p>}
           </div>
-        </section>
+        </StadiumScene>
 
         <Panel i={1} label={x.pre.sheets}>
           <PanelHead title={x.pre.sheets} right={<span className="eyebrow">{x.pre.confirmed}</span>} />
