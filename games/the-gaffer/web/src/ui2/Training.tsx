@@ -80,19 +80,32 @@ export function TrainingScreen() {
           const games = upcoming(w, c, 4);
           const dayOf = (d: Date) => Math.round((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - day0) / 86400000);
           const onDay = new Map(games.map((m) => [dayOf(m.date), m] as const));
+          // The week's sessions are the intensity (light 2, normal 3, heavy 4): they go on the free days, the others are
+          // days off. "Day off" / "Extra session" move the intensity itself (training.set), so the plan is the real one.
+          const load = ops.training.load;
+          const want = [2, 3, 4][load];
+          let placed = 0;
           const days = Array.from({ length: 7 }, (_, i) => {
             const date = new Date(day0 + i * 86400000);
             const m = onDay.get(i);
-            const kind = m ? 'match' : onDay.has(i - 1) ? 'rec' : onDay.has(i + 1) ? 'light' : 'work';
-            const text = m ? K.match(cn(clubOf(w, m.home === c.clubId ? m.away : m.home), lang), m.home === c.clubId) : kind === 'rec' ? K.recovery : kind === 'light' ? K.light : K.work(Yx.intens[ops.training.load], x.train.focusNames[c.prep ?? 'tactical']);
+            let kind = m ? 'match' : onDay.has(i - 1) ? 'rec' : onDay.has(i + 1) ? 'light' : 'free';
+            if (kind === 'free') kind = placed++ < want ? 'work' : 'off';
+            const focus = x.train.focusNames[c.prep ?? 'tactical'];
+            const text = m ? K.match(cn(clubOf(w, m.home === c.clubId ? m.away : m.home), lang), m.home === c.clubId) : kind === 'rec' ? K.recovery : kind === 'light' ? K.light : kind === 'work' ? K.session(focus) : K.rest;
             return { date, kind, text };
           });
+          const setLoad = (l: 0 | 1 | 2) => void g.run({ type: 'training.set', load: l }, { toast: false });
           const two = busy; // the game's own rule for a two-match week (sim/youth.ts congested: a cup tie this matchday)
           return (
             <Panel i={0} className="week" label={K.title}>
               <PanelHead title={K.title} />
               <div className="week-days">
                 {days.map((d, i) => <div key={i} className={`wd ${d.kind}`}><b>{shortDate(d.date, g.ui)}</b><span>{d.text}</span></div>)}
+              </div>
+              <p className="small">{K.sessions(want, Yx.intens[load])}</p>
+              <div className="two week-btns">
+                <button className="btn btn--ghost btn--sm" disabled={load === 0} onClick={() => setLoad((load - 1) as 0 | 1)}>{K.dayOff}</button>
+                <button className="btn btn--ghost btn--sm" disabled={load === 2} onClick={() => setLoad((load + 1) as 1 | 2)}>{K.extra}</button>
               </div>
               {two && <p className="small"><span className="tag tag--warn"><I n="cal" size="sm" />{ops.training.load === 2 ? K.twoHeavy : K.two}</span></p>}
               <p className="small muted">{K.note}</p>

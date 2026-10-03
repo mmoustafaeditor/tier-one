@@ -41,6 +41,9 @@ import { applyCards, serveCupBans } from './discipline';
 // ---------- fixtures ----------
 
 // Double round robin by the circle method: n-1 rounds, then the same rounds with home and away swapped.
+// The most free agents kept from one season to the next (rework M5; see endOfSeason).
+export const FREE_MAX = 400;
+
 export function makeFixtures(clubIds: string[], r: Rng): Fixture[][] {
   const ids = [...clubIds].sort(() => r() - 0.5);
   if (ids.length % 2) ids.push('BYE');
@@ -708,6 +711,20 @@ export function endSeason(w0: World, c0: Career): { world: World; career: Career
       p.contractUntil = season + int(r, 1, 3);
       p.wage = wageOf(p.marketValue, lg.id);
       count.set(club.id, (count.get(club.id) ?? 0) + 1);
+    }
+  }
+  // Bound the free-agent pool (rework M5): released academy kids and expired contracts that nobody signed piled up
+  // (160 → 2,424 in three seasons). The FREE_MAX most valuable stay on the market; the rest leave the professional
+  // game. Anyone the career still refers to (shortlist, watch list, promises, asks, offers, loans) stays.
+  {
+    const refs = new Set<string>([...(c.shortlist ?? []), ...Object.keys(c.watch ?? {}), ...(c.offers ?? []).map((o) => o.playerId), ...(c.loans ?? []).map((l) => l.playerId),
+      ...(c.room?.pledges ?? []).map((pl) => pl.playerId), ...(c.room?.asks ?? []).map((a) => a.playerId), ...(c.room?.clauses ?? []).map((cl) => cl.playerId)]);
+    const frees = players.filter((p) => p.clubId === FREE_AGENT);
+    if (frees.length > FREE_MAX) {
+      const keep = new Set(frees.sort((a, b) => b.marketValue - a.marketValue || (a.id < b.id ? -1 : 1)).slice(0, FREE_MAX).map((p) => p.id));
+      const gone = new Set(frees.filter((p) => !keep.has(p.id) && !refs.has(p.id)).map((p) => p.id));
+      players.splice(0, players.length, ...players.filter((p) => !gone.has(p.id)));
+      retired += gone.size;
     }
   }
   // Keep the free-agent pool at about 160 players.
