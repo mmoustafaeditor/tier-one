@@ -312,6 +312,7 @@ export const X_EN = {
     } as Record<string, string>,
   },
   ft: {
+    next: 'What to do next', act: { tactics: 'Open tactics', train: 'Change training', needs: 'Recruitment needs', room: 'Dressing room' } as Record<string, string>,
     rematch: 'Rematch', changeTeams: 'Change teams', back: 'Back', quickNote: 'A quick match: nothing here counts towards a career.',
     eyebrow: (ground: string): string => `Full-time · ${ground}`,
     xg90: 'Expected goals · 90 min',

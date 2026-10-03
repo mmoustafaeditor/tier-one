@@ -7,6 +7,7 @@ import type { Aftermath } from '../sim/aftermath';
 import { playerOf } from '../sim/world';
 import { Crest, I, LineChart, Portrait } from './kit';
 import { Panel, PanelHead } from './shell';
+import type { Route } from './game';
 import { useGame, clubOf, cn } from './game';
 import { verdictText } from './why';
 import { D } from '../lang-dressing-all';
@@ -15,6 +16,9 @@ import { levelText } from './roomText';
 import { Analysis } from './Analysis';
 import { AN } from '../lang-ana';
 
+// M4 (rework): which screen acts on each kind of finding (engine/story.ts Point.k).
+const ACT_OF: Record<string, string | undefined> = { midfield: 'tactics', pressed: 'tactics', pressing: 'tactics', duel: 'tactics', role: 'tactics', setpiece: 'tactics', theyChanged: 'tactics', change: 'tactics', tired: 'train', finish: 'needs', cohesion: 'room' };
+const ACT_ROUTE: Record<string, Route> = { tactics: { s: 'match', tab: 0 }, train: { s: 'train' }, needs: { s: 'transfers', tab: 5 }, room: { s: 'room' } };
 // F11 (rework): `quick` — a quick match's read-only full time: no "what it changed" (nothing counts), Rematch / Change teams.
 export function FullTime({ a, onDone, quick }: { a: Aftermath; onDone: () => void; quick?: { rematch: () => void; change: () => void } }) {
   const g = useGame();
@@ -33,6 +37,7 @@ export function FullTime({ a, onDone, quick }: { a: Aftermath; onDone: () => voi
   const ratings = all ? a.ratings : a.ratings.slice(0, 4);
   const why = a.why ? verdictText(a.why, g.t) : '';
   const doc = c.ops.staff.assistant;
+  const nextActs = [...new Set((a.why?.points ?? []).filter((p) => !p.good).map((p) => ACT_OF[p.k]).filter(Boolean) as string[])].slice(0, 3);
   const ground = a.home ? x.today.ourGround : x.today.theirGround;
   return (
     <div className="sc-ft">
@@ -69,6 +74,10 @@ export function FullTime({ a, onDone, quick }: { a: Aftermath; onDone: () => voi
           </div>
           {a.out.length > 0 && <div className="outs">{a.out.map((o, i) => <span key={i} className="tag tag--bad"><I n={o.ban ? 'x' : 'medic'} size="sm" />{o.ban ? F.bannedFor(o.pn[lang], o.n) : F.injuredFor(o.pn[lang], o.n)}</span>)}</div>}
           {a.records.length > 0 && <p className="small"><span className="tag tag--good"><I n="star" size="sm" />{F.record}</span> {a.records.map((r) => x.career.recs[r]).join(' · ')}</p>}
+          {/* M4 (rework): every finding leads somewhere — the screen where it can be acted on. */}
+          {!quick && nextActs.length > 0 && (
+            <div className="ft-next"><span className="eyebrow">{F.next}</span><div className="row wrap">{nextActs.map((k) => <button key={k} className="btn btn--ghost btn--sm" onClick={() => g.go(ACT_ROUTE[k])}>{F.act[k]}</button>)}</div></div>
+          )}
           {a.why?.tips[0] && doc && (
             <div className="advice ft-note">
               <span className="staff" aria-hidden="true">AS</span>

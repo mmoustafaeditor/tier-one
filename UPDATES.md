@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework M4: full time says what to do next
+- **What changed:** Under the assistant's verdict, full time now offers "What to do next": up to three buttons that lead to where each problem from the match can be fixed. Tactical problems go to Tactics, tired legs to Training, poor finishing to recruitment needs, and cohesion to the Dressing room. They only appear when the match found something to fix.
+- **Files:** `web/src/ui2/FullTime.tsx`, `src/lang-v2*.ts`, `src/styles/app.css`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework M3: the broken-promise arc proven end to end
 - **What changed:** A new seeded test covers what happens when you break your word to a youngster. The assistant warns you, you let it go, he never plays, and the promise breaks. His trust and morale drop, he asks for a word, the message and the news say why, and the next talk with him is about it. No game code changed; this proves the existing systems connect.
 - **Files:** `web/sim-tests/rework/arcs.ts` (new), `games/the-gaffer/rework/REWORK_PROGRESS.md`

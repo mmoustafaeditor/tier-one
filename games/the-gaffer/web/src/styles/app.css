@@ -582,3 +582,4 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .sc-transfers .t-top { flex-wrap: wrap; }
 .sc-transfers .target { min-width: 0; overflow: clip; }
 .sc-tactics .save { flex-wrap: wrap; } .sc-tactics .save .btn { min-width: 0; }
+.ft-next { margin-top: var(--s-3); display: grid; gap: 6px; } .ft-next .row { gap: 6px; }

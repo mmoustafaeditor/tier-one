@@ -305,6 +305,7 @@ export const X_AR: XStrings = {
     },
   },
   ft: {
+    next: 'تعمل إيه بعد كده', act: { tactics: 'افتح التكتيك', train: 'غيّر التمرين', needs: 'احتياجات الانتقالات', room: 'غرفة اللبس' } as Record<string, string>,
     rematch: 'ماتش تاني', changeTeams: 'غيّر الفرق', back: 'رجوع', quickNote: 'ماتش سريع: مفيش حاجة هنا بتتحسب في أي مشوار.',
     eyebrow: (ground: string) => `نهاية الماتش · ${ground}`,
     xg90: 'الأهداف المتوقعة · 90 دقيقة',

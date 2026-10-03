@@ -304,6 +304,7 @@ export const X_ES: XStrings = {
     },
   },
   ft: {
+    next: 'Qué hacer ahora', act: { tactics: 'Abrir la táctica', train: 'Cambiar el entrenamiento', needs: 'Necesidades de fichajes', room: 'Vestuario' } as Record<string, string>,
     rematch: 'Revancha', changeTeams: 'Cambiar equipos', back: 'Volver', quickNote: 'Partido rápido: nada de esto cuenta para una carrera.',
     eyebrow: (ground: string) => `Final · ${ground}`,
     xg90: 'Goles esperados · 90 min',
