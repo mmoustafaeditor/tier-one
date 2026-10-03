@@ -121,7 +121,7 @@ export const X_AR: XStrings = {
     },
   },
   dec: {
-    due: { kickoff: 'قبل الماتش', days: (n: number) => (n <= 1 ? 'النهارده' : `فاضل ${n} أيام`), week: 'الأسبوع ده', season: 'قبل الصيف', window: 'الميركاتو بيقفل الليلة' },
+    due: { kickoff: 'قبل الماتش', days: (n: number) => (n <= 1 ? 'قبل الماتش الجاي' : `فاضل ${n} ماتشات`), week: 'الأسبوع ده', season: 'قبل الصيف', window: 'الميركاتو بيقفل الليلة', windowIn: (n: number) => `الميركاتو بيقفل بعد ${n} ماتشات` },
     tag: { welcome: 'أول يوم', offer: 'عرض شراء', condition: 'اللياقة', contract: 'عقد', staff: 'قرار الجهاز', job: 'عرض شغل', tape: 'تحليل', focus: 'أسبوع التمرين', deadline: 'آخر يوم ميركاتو' },
     staffPick: 'اختيار الجهاز',
     yourCall: 'قرارك إنت. محدش غيرك.',
@@ -406,7 +406,7 @@ export const X_AR: XStrings = {
     board: 'سبورة التكتيك. دوس على لاعب، وبعدين دوس على مكان أو لاعب تاني تبدّلهم.',
     hint: 'دوس تختار · دوس تاني تبدّل',
     theirPress: (club: string) => `شكل ${club}`,
-    bench: 'الدكة', lock: 'ثبّت الخطة', locked: 'الخطة اتثبتت', undo: 'تراجع', reset: 'أحسن تشكيل ليا',
+    bench: 'الدكة', lock: 'ثبّت الخطة', locked: 'الخطة اتثبتت', undo: 'تراجع', reset: 'أحسن تشكيل ليا', xiMine: 'التشكيل ده بتاعك: هيفضل زي ما هو لحد ما تغيّره. المصاب أو الموقوف بيتبدّل في الماتش بس.', xiStaff: 'المساعد هيختار التشكيل قبل الماتش.', xiAuto: 'أحسن تشكيل وقت الماتش.', xiHand: 'خلّي المساعد يختار',
     role: (pos: string) => `الدور · ${pos}`, fitFor: 'بيناسب كل مركز قد إيه',
     opp: (f: string, st: string) => `الخصم · ${f} · ${st}`, oppHow: (club: string) => `${club} بيلعبوا إزاي`,
     ours: 'بتاعنا', theirs: 'بتاعهم', even: 'متساوي',
@@ -552,7 +552,7 @@ export const X_AR: XStrings = {
     about: 'عن اللعبة', howTo: 'إزاي تلعب', privacy: 'الخصوصية', version: (v: string, b: number) => `The Gaffer ${v} · نسخة ${b}`,
     motion: 'الحركة بتمشي على إعداد تقليل الحركة في جهازك.',
     world: 'محرر العالم', worldSub: 'غيّر أسامي الأندية وانقل الدوريات', quick: 'ماتش سريع',
-    menu: 'الشاشة الرئيسية', importOk: 'المشوار اتستورد.', importBad: 'الملف ده ماعداش الفحص.',
+    menu: 'الشاشة الرئيسية', importOk: 'المشوار اتستورد.', recovered: 'آخر حفظ للمشوار ده ما فتحش، ففتحنا الحفظ اللي قبله.', importBad: 'الملف ده ماعداش الفحص.',
   },
   log: {
     'training:focus': (f: string) => `خلّى الأسبوع ${f}.`,

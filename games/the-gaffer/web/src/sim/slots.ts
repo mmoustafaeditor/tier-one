@@ -55,8 +55,14 @@ export async function readSlot(slot: number): Promise<SlotRecord | null> {
   return (await tx<SlotRecord | undefined>('readonly', (s) => s.get(slot) as IDBRequest<SlotRecord | undefined>)) ?? null;
 }
 
+// F17 (rework): the save a write replaces is kept as that slot's previous copy (record PREV + slot), so a write that
+// leaves an unreadable save behind (interrupted, or a bug) never costs the career: loadSlot falls back to it.
+const PREV = 100;
+export async function readPrev(slot: number): Promise<SlotRecord | null> { return readSlot(PREV + slot); }
 export async function writeSlot(slot: number, text: string, meta: SaveMeta | null): Promise<boolean> {
   const rec: SlotRecord = { slot, meta, text, savedAt: new Date().toISOString() };
+  const old = await readSlot(slot);
+  if (old && old.text !== text) await putRaw(PREV + slot, { ...old, slot: PREV + slot });
   const d = await db();
   let ok: boolean;
   if (!d) ok = ls.set(`gaffer.slot.${slot}`, JSON.stringify(rec));
@@ -77,8 +83,19 @@ export function readLive<M>(slot: number): LiveRecord<M> | null {
 }
 export const clearLive = (slot: number) => ls.del(`gaffer.live.${slot}`);
 
+async function putRaw(slot: number, rec: SlotRecord): Promise<boolean> {
+  const d = await db();
+  if (!d) return ls.set(`gaffer.slot.${slot}`, JSON.stringify(rec));
+  return (await tx('readwrite', (st) => st.put(rec))) !== null;
+}
+async function delRaw(slot: number): Promise<void> {
+  const d = await db();
+  if (!d) ls.del(`gaffer.slot.${slot}`);
+  else await tx('readwrite', (st) => st.delete(slot));
+}
 export async function clearSlot(slot: number): Promise<void> {
   clearLive(slot);
+  await delRaw(PREV + slot);
   const d = await db();
   if (!d) ls.del(`gaffer.slot.${slot}`);
   else await tx('readwrite', (s) => s.delete(slot));

@@ -33,7 +33,7 @@ export function recruitDecisions(w: World, c: Career): Decision[] {
     if (!p) continue;
     const call = directorCall(w, c, n);
     const base = { dept: 'recruitment' as const, role: 'director' as const, icon: 'handshake', open: { to: 'talks' as const, id: n.id } };
-    const room = spendingRoom(w, c);
+    const room = spendingRoom(w, c, n.id); // F03: this deal's own reserved fee is not counted twice
     if (n.stage === 'club' && n.rival && n.answerAt !== null) {
       const top = roundFee(n.rival.fee * 1.05);
       out.push({
@@ -90,11 +90,11 @@ export function recruitDecisions(w: World, c: Career): Decision[] {
       // A fresh agreement always asks; a talk already under way comes back when the agent's deadline is close.
       if (!fresh && !urgent) continue;
       const choices: Choice[] = [
-        { id: 'meet', key: 'rc.meet', cmds: [{ type: 'rc.meet', negId: n.id, which: 'demand' }], pick: call === 'meet', fx: [wageFx(d.wage), { tone: 'plain', icon: 'pound', key: 'rc.fx.fees', n: cost.agent + cost.signOn }, roomFx(room - cost.total)] },
+        { id: 'meet', key: 'rc.meet', cmds: [{ type: 'rc.meet', negId: n.id, which: 'demand' }], pick: call === 'meet', fx: [wageFx(d.wage), { tone: 'plain', icon: 'pound', key: 'rc.fx.fees', n: cost.agent + cost.signOn }, roomFx(cost.roomAfter)] },
       ];
       if (counter) {
         const cc = dealCost(w, c, n, counter);
-        choices.push({ id: 'counter', key: 'rc.takeCounter', cmds: [{ type: 'rc.meet', negId: n.id, which: 'counter' }], pick: call === 'counter', fx: [wageFx(counter.wage), roomFx(room - cc.total)] });
+        choices.push({ id: 'counter', key: 'rc.takeCounter', cmds: [{ type: 'rc.meet', negId: n.id, which: 'counter' }], pick: call === 'counter', fx: [wageFx(counter.wage), roomFx(cc.roomAfter)] });
       }
       choices.push({ id: 'talk', key: 'rc.talk', cmds: [], pick: call === 'wait', fx: [{ tone: 'plain', icon: 'chat', key: 'rc.fx.rounds', n: n.patience }], open: { to: 'talks', id: n.id } });
       choices.push({ id: 'walk', key: 'rc.walk', cmds: [{ type: 'rc.withdraw', negId: n.id }], pick: call === 'walk', fx: [{ tone: 'plain', icon: 'x', key: 'rc.fx.noDeal' }] });

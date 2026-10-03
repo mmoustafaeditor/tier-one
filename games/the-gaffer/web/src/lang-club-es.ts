@@ -16,6 +16,7 @@ export const CL_ES: CLStrings = {
     kitty: (v: string) => `${v} del dueño`,
     strict: () => 'Directiva más exigente',
     target: (t: string) => t,
+    top: () => 'Ya es el objetivo máximo: no hay meta más alta que pactar',
   },
   board: {
     none: 'La directiva se reúne antes de las primeras jornadas.',

@@ -226,7 +226,7 @@ export interface Legend { clubId: string; id: string; pn: LocalizedName; apps: n
 // V2.7: the pre-season board meeting. 'expected': the board's own targets and its goodwill (+5 confidence).
 // 'ambitious': the league target one step higher, the owner's money on the table (`kitty`), a stricter board.
 export type VisionLevel = 'expected' | 'ambitious';
-export interface Vision { season: number; level: VisionLevel; kitty?: number }
+export interface Vision { season: number; level: VisionLevel; kitty?: number; club?: string } // club: F09, whose board it was
 
 // ---------- v2.4 dressing room (save v6) ----------
 export type SquadRole = 'star' | 'starter' | 'rotation' | 'prospect';

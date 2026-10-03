@@ -2,15 +2,15 @@
 import { useGame, cn } from './game';
 import { Crest, I } from './kit';
 import { leagueRows } from './util';
-import { dateOf, shortDate } from '../sim/calendar';
+import { shortDate } from '../sim/calendar';
+import { todayOf } from '../sim/cups';
 
 export function OfficeBarInner({ openCount }: { openCount: number }) {
   const g = useGame();
   const { c, x, club, league, lang } = g;
   const rows = leagueRows(g.w, c);
   const pos = rows.findIndex((r) => r.clubId === c.clubId) + 1;
-  const d = dateOf(c.season, Math.max(0, c.round), false);
-  const today = new Date(d.getTime() - 2 * 86400000);
+  const today = todayOf(c);
   return (
     <header className="topbar on-ground officebar">
       <div className="club">

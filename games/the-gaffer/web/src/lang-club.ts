@@ -16,6 +16,7 @@ export const CL_EN = {
     kitty: (v: string): string => `${v} from the owner`,
     strict: (): string => 'Stricter board',
     target: (t: string): string => t,
+    top: (): string => 'Already the top target: there is no higher aim to agree',
   },
   board: {
     none: 'The board meets before the season’s first matchdays.',

@@ -2,6 +2,7 @@
 // E2E lessons: board messages match the real situation (#19), sacking really happens (#17), offers fit the coach (#18),
 // one licence at a time (#44), licences gate clubs and formations (#16), milestones only when really done (#43),
 // moving club never locks the career and the new club welcomes you (#40, #49, #50, #27), the inbox trims itself (#37).
+import { rcOf, tickOf, withRC } from './recruit/state';
 import type { Career, Club, Coach, Licence, LocalizedName, Msg, MsgKind, Objective } from '../model/types';
 import { clamp } from './rng';
 import { squadOf, type World } from './world';
@@ -110,14 +111,20 @@ export function moveTo(w: World, c: Career, clubId: string): { world: World; car
   const mastery = clubFam[clubId] ?? { balanced: 100 };
   delete clubOps[clubId];
   delete clubFam[clubId];
+  // F09 (rework): what the old club owes and is negotiating stays with the old club. Its instalments are settled from its
+  // own budget now (they were never this new club's money); its open talks end ("withdrawn") instead of following us.
+  const rc = rcOf(c);
+  const owed = rc.commits.reduce((sum, x) => sum + x.amount, 0);
+  const clubsPaid = owed ? w.clubs.map((x) => (x.id === c.clubId ? { ...x, budget: x.budget - owed } : rc.commits.some((k) => k.to === x.id) ? { ...x, budget: x.budget + rc.commits.filter((k) => k.to === x.id).reduce((sum, k) => sum + k.amount, 0) } : x)) : w.clubs;
+  const negs = rc.negs.map((n) => (n.stage === 'club' || n.stage === 'terms' ? { ...n, stage: 'collapsed' as const, end: 'withdrawn' as const, endT: tickOf(c), answerAt: null, due: null } : n));
   let career: Career = {
-    ...c, clubId, tactics: undefined, planB: undefined, rested: [], pending: [], offers: [], jobs: [], sacked: false, live: null, ops, mastery,
+    ...withRC(c, { ...rc, commits: [], negs }), clubId, tactics: undefined, planB: undefined, rested: [], pending: [], offers: [], jobs: [], sacked: false, live: null, ops, mastery,
     board: newBoard(c),
     coach: { ...c.coach, clubs: c.coach.clubs.includes(clubId) ? c.coach.clubs : [...c.coach.clubs, clubId] },
   };
   career = addMsg(career, 'club', 'welcome', { club: clubId });
   career = addNews(career, 'managers', 'appointed', { club: clubId, s: c.managerName });
-  return { world: { ...w, players, clubOps, clubFam }, career };
+  return { world: { ...w, clubs: clubsPaid, players, clubOps, clubFam }, career };
 }
 
 // Clubs that would hire this coach: within the licence cap and near the coach's reputation. When sacked, lower clubs only.

@@ -72,7 +72,9 @@ function act(x: Ctx, cmd: Command, key: string, ref: Ref = {}): boolean {
 // Line-up, shape and the opponent report at kick-off, for departments handed to the staff.
 export function staffPrep(w: World, c: Career, m: { sides: { clubId: string }[]; key: string } | null): { world: World; career: Career } {
   let world = w, career = c;
-  if (delegated(career, 'lineup') && career.tactics?.xi) career = { ...career, tactics: { ...career.tactics, xi: null } };
+  // F01 (rework): an XI the manager picked (tactics.xi, set only by the manager's own commands: the Tactics board or a
+  // card he answered) is his call and survives delegation; xiFor still swaps out anyone injured or banned since. With no
+  // XI of his own (xi null), the assistant's best XI is picked fresh at kick-off, as before.
   if (m && delegated(career, 'scouting') && !career.scouted?.[m.key]) {
     const full = startLike(world, career, m);
     const r = full && makeReport(world, career, full, true);
@@ -104,7 +106,8 @@ function planTactics(x: Ctx, m: { sides: { clubId: string }[]; key: string }) {
   const score = (f: FormationId) => autoXI(squad, f).reduce((s, p, i) => s + slotValue(p, FORMATIONS[f].slots[i]?.pos ?? 'CM'), 0) + FORMATIONS[f].attack * (good ? 2 : 0);
   // Only change shape for a clear gain (about half a rating point per player), so the team keeps a settled system.
   let best: FormationId = cur.formation, bestV = score(cur.formation) + 5;
-  for (const f of FORMATION_IDS) { if (f === cur.formation) continue; const v = score(f); if (v > bestV) { bestV = v; best = f; } }
+  // F01: the manager picked his XI for his shape; the assistant doesn't re-shape around it (mentality only).
+  if (!cur.xi) for (const f of FORMATION_IDS) { if (f === cur.formation) continue; const v = score(f); if (v > bestV) { bestV = v; best = f; } }
   const full = startLike(x.world, { ...c, tactics: { ...cur, formation: best, xi: null } }, m);
   let mentality = cur.mentality;
   if (full) {

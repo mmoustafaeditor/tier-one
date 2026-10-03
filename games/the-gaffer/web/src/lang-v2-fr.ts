@@ -120,7 +120,7 @@ export const X_FR: XStrings = {
     },
   },
   dec: {
-    due: { kickoff: 'Avant le coup d’envoi', days: (n: number) => (n <= 1 ? 'Aujourd’hui' : `${n} jours restants`), week: 'Cette semaine', season: 'Avant l’été', window: 'Le mercato ferme ce soir' },
+    due: { kickoff: 'Avant le coup d’envoi', days: (n: number) => (n <= 1 ? 'Avant la prochaine journée' : `${n} journées restantes`), week: 'Cette semaine', season: 'Avant l’été', window: 'Le mercato ferme ce soir', windowIn: (n: number) => `Le mercato ferme dans ${n} journées` },
     tag: { welcome: 'Premier jour', offer: 'Offre', condition: 'Forme', contract: 'Contrat', staff: 'Proposition du staff', job: 'Offre d’emploi', tape: 'Analyse', focus: 'Semaine d’entraînement', deadline: 'Dernier jour du mercato' },
     staffPick: 'Choix du staff',
     yourCall: 'C’est ta décision. Celle de personne d’autre.',
@@ -405,7 +405,7 @@ export const X_FR: XStrings = {
     board: 'Tableau tactique. Touche un joueur, puis un poste ou un autre joueur pour les échanger.',
     hint: 'Touche pour choisir · encore pour échanger',
     theirPress: (club: string) => `Le système de ${club}`,
-    bench: 'Banc', lock: 'Valider le plan', locked: 'Plan validé', undo: 'Annuler', reset: 'Mon meilleur onze',
+    bench: 'Banc', lock: 'Valider le plan', locked: 'Plan validé', undo: 'Annuler', reset: 'Mon meilleur onze', xiMine: 'Ton onze : il reste tel quel jusqu’à ce que tu le changes. Les blessés ou suspendus sont remplacés pour le match seulement.', xiStaff: 'L’adjoint choisit le onze avant le match.', xiAuto: 'Le meilleur onze au coup d’envoi.', xiHand: 'Laisser l’adjoint choisir',
     role: (pos: string) => `Rôle · ${pos}`, fitFor: 'Son adaptation à chaque poste',
     opp: (f: string, st: string) => `Adversaire · ${f} · ${st}`, oppHow: (club: string) => `Le jeu de ${club}`,
     ours: 'À nous', theirs: 'À eux', even: 'Équilibré',
@@ -551,7 +551,7 @@ export const X_FR: XStrings = {
     about: 'À propos', howTo: 'Comment jouer', privacy: 'Confidentialité', version: (v: string, b: number) => `The Gaffer ${v} · build ${b}`,
     motion: 'Les animations suivent le réglage « réduire les animations » de ton appareil.',
     world: 'Éditeur du monde', worldSub: 'Renommer les clubs, déplacer les championnats', quick: 'Match rapide',
-    menu: 'Écran titre', importOk: 'Carrière importée.', importBad: 'Ce fichier n’a pas passé la vérification.',
+    menu: 'Écran titre', importOk: 'Carrière importée.', recovered: 'La dernière sauvegarde de cette carrière ne se chargeait pas : la précédente a été ouverte.', importBad: 'Ce fichier n’a pas passé la vérification.',
   },
   log: {
     'training:focus': (f: string) => `Semaine « ${f.toLowerCase()} ».`,

@@ -1,4 +1,5 @@
 // The Match tab: the tactics board for the next match (chalk on slate), and the fixtures, table and cups.
+import { delegated } from '../sim/delegation';
 import { useEffect, useMemo, useState } from 'react';
 import type { Player } from '../model/types';
 import { playerOf, squadOf } from '../sim/world';
@@ -87,13 +88,14 @@ function TacticsBoard() {
     const ids = [...xi]; [ids[sel], ids[i]] = [ids[i], ids[sel]]; setXI(ids); setSel(null);
     g.toast(x.tac.swapped(sn(get(ids[i]), lang), sn(get(ids[sel]), lang)));
   };
-  const setShape = (fm: FormationId) => setDraft({ ...draft, formation: fm, xi: reslot(xi, fm, get), ...(draft.roles || draft.oopRoles ? carryRoles(f, fm) : {}) });
+  const setShape = (fm: FormationId) => setDraft({ ...draft, formation: fm, xi: draft.xi ? reslot(xi, fm, get) : null, ...(draft.roles || draft.oopRoles ? carryRoles(f, fm) : {}) });
   const setOop = (fm: FormationId | undefined) => setDraft({ ...draft, oop: fm, ...(draft.oopRoles ? { oopRoles: carryRoles(f, f.formation, fm ?? f.formation).oopRoles } : {}) });
   const setStyle = (ph2: Philosophy) => setDraft(applyPreset(draft, ph2));
   const setRole = (phase: Phase, k: number, r: string) => { const arr = rolesArrays(f); const next = phase === 'ip' ? arr.roles : arr.oopRoles; next[k] = r; setDraft({ ...draft, ...arr }); };
   const xiPlayers = xi.map((id) => (id ? playerOf(w, id) ?? null : null));
   const suggestRoles = () => { setDraft({ ...draft, ...autoRoles(xiPlayers, f) }); g.toast(X.suggested); };
-  const lock = async () => { const r = await g.run({ type: 'tactics.set', tactics: { ...draft, xi } }, { toast: x.tac.locked }); if (r.ok) setSel(null); };
+  // F01: only an XI the manager actually picked is saved as his; otherwise the assistant keeps picking at kick-off.
+  const lock = async () => { const r = await g.run({ type: 'tactics.set', tactics: { ...draft, xi: draft.xi ? xi : null } }, { toast: x.tac.locked }); if (r.ok) setSel(null); };
   const fam = Math.round(c.mastery?.[f.philosophy] ?? (f.philosophy === 'balanced' ? 100 : 30));
   const focusP = focus ? playerOf(w, focus) : xi[0] ? get(xi[0]) : null;
   const focusSlot = focusP ? xi.indexOf(focusP.id) : -1;
@@ -198,6 +200,11 @@ function TacticsBoard() {
                 <span className="disc">{p.shirtNumber}</span><span>{sn(p, lang)}</span>
               </button>
             ))}
+          </div>
+          {/* F01: whose XI this is, said where the XI is picked. */}
+          <div className="xi-owner small on-ground">
+            <span>{saved.xi ? T.xiMine : delegated(c, 'lineup') ? T.xiStaff : T.xiAuto}</span>
+            {saved.xi && <button className="btn btn--ghost on-ground btn--sm" onClick={() => void g.run({ type: 'tactics.set', tactics: { ...saved, xi: null } })}>{T.xiHand}</button>}
           </div>
           <div className="save">
             <button className="btn btn--ghost on-ground btn--sm" disabled={!changes} onClick={() => setDraft(saved)}>{T.undo}</button>

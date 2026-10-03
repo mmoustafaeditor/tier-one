@@ -8,7 +8,7 @@ import { renameSave } from './renames';
 import { checkEvents } from './events';
 import { checkRecruit, tidyRecruit } from './recruit/save';
 import { withNames, BUILD_NAMES } from './seed';
-import { activeSlot, clearSlot, migrate, readSlot, writeSlot } from './slots';
+import { activeSlot, clearSlot, migrate, readPrev, readSlot, writeSlot } from './slots';
 
 declare const __BUILD__: number;
 
@@ -194,7 +194,7 @@ export async function unpack(text: string): Promise<string> {
 export const saveText = async (world: World, career: Career | null) => pack(JSON.stringify(await makeSave(world, career)));
 
 export type LoadReason = 'none' | 'format' | 'checksum' | 'world' | 'career';
-export type LoadResult = { ok: true; save: SaveFile } | { ok: false; reason: LoadReason; detail?: string };
+export type LoadResult = { ok: true; save: SaveFile; recovered?: boolean } | { ok: false; reason: LoadReason; detail?: string };
 
 export async function parseSave(text: string): Promise<LoadResult> {
   let s: SaveFile;
@@ -248,7 +248,13 @@ export async function store(world: World, career: Career | null, slot = activeSl
 
 export async function loadSlot(slot: number): Promise<LoadResult> {
   const rec = await readSlot(slot);
-  return rec ? parseSave(rec.text) : { ok: false, reason: 'none' };
+  if (!rec) return { ok: false, reason: 'none' };
+  const r = await parseSave(rec.text);
+  if (r.ok) return r;
+  // F17 (rework): the slot's save doesn't load: the copy it replaced does, and nothing is overwritten until the player saves.
+  const prev = await readPrev(slot);
+  const back = prev ? await parseSave(prev.text) : null;
+  return back?.ok ? { ...back, recovered: true } : r;
 }
 
 export async function loadStored(): Promise<LoadResult> {

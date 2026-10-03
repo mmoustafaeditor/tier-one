@@ -97,6 +97,17 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework M0+M1: baseline, and the trust fixes (XI, dates, deal quote, board aim, job move, saves)
+- **What changed:** Started the rework from the V3 handoff. Milestone 0: the baseline, state map, screen map and feature ledger in `games/the-gaffer/rework/`, with the trust backlog F01-F17 reproduced in a seeded Node script. Milestone 1 fixes the ones that were real:
+  - **F01** the XI you pick is the XI that plays. Before, with match prep delegated (the default), the assistant wiped your XI before every match, so a "Start X" card or your own picks never reached the quick result. Tactics now says whose XI it is, with "Let the assistant pick". Watched + Instant and Quick give the same result for the same match.
+  - **F02** one "today". The header said Thu while messages were dated the Saturday after, and cup ties fell before "today". Promise and deal counters now say matchdays, and "Window shuts tonight" only shows on deadline day.
+  - **F03** one deal quote. Today's "meet his demands" card counted the agreed fee twice (£19M off in the test); it now shows the same "room after" as the Talks screen.
+  - **F04** no "Aim higher" when the board's target is already the top one (it was the same target plus the owner's money).
+  - **F09** after a job move, "Last time out" no longer shows the old club's match backwards. The old club's season plan, instalments and open talks stay with the old club.
+  - **F17** export/import checked (round trip, tampered, newer and junk files all handled). Each save now keeps the one it replaced, and a slot that doesn't load opens that copy and says so.
+- **Files:** `games/the-gaffer/rework/*` (new: baseline, ledgers, progress, before/after screenshots), `web/src/sim/{staff,cups,decisions,vision,coach,record,room,pressDecisions,save,slots}.ts`, `src/sim/recruit/{deals,decide}.ts`, `src/model/types.ts`, `src/ui2/{Match,Today,OfficeBar,News,Decisions,Talks}.tsx`, `src/App.tsx`, `src/lang-v2*.ts`, `src/lang-club*.ts`, `web/sim-tests/rework/{repro,trust}.ts` (new), `web/ui-tests/rework-shots.mjs` (new)
+- **Heads-up for the team:** Not merged to `main` and not live (not authorised yet). Match results are unchanged (engine fingerprint `a04af554a49efa49`, season 2.87 goals). New optional save fields: `vision.club`, and slot records `100+n` holding the previous save. Tier One untouched.
+
 ## 2026-10-02 · saifsaber · The Gaffer B4: the hidden traits count in the engine too (composure, vision, movement)
 - **What changed:** The last step of the plan to close the gaps with FM26. The hidden traits that already moved players on the pitch (A4) now also count in the match engine, worked out the same way (attributes, rating, age, a fixed per-player draw; nothing new saved), in a new shared module `engine/traits.ts`, with a fourth one, vision:
   - **Composure:** a composed finisher scores more of the same chances, and a composed taker more penalties.

@@ -126,7 +126,7 @@ export const X_EN = {
     },
   },
   dec: {
-    due: { kickoff: 'Before kick-off', days: (n: number): string => (n <= 1 ? 'Today' : `${n} days left`), week: 'This week', season: 'Before summer', window: 'Window shuts tonight' } as Record<string, string | ((n: number) => string)>,
+    due: { kickoff: 'Before kick-off', days: (n: number): string => (n <= 1 ? 'By the next matchday' : `${n} matchdays left`), week: 'This week', season: 'Before summer', window: 'Window shuts tonight', windowIn: (n: number): string => `Window shuts in ${n} matchdays` } as Record<string, string | ((n: number) => string)>,
     tag: { welcome: 'First day', offer: 'Transfer bid', condition: 'Fitness', contract: 'Contract', staff: 'Staff call', job: 'Job offer', tape: 'Analysis', focus: 'Training week', deadline: 'Deadline day' } as Record<string, string>,
     staffPick: 'Staff pick',
     yourCall: 'Your call. Nobody else’s.',
@@ -414,7 +414,7 @@ export const X_EN = {
     board: 'Tactics board. Tap a player, then tap a spot or another player to swap.',
     hint: 'Tap to pick · tap again to swap',
     theirPress: (club: string): string => `${club}’s shape`,
-    bench: 'Bench', lock: 'Lock it in', locked: 'Plan locked in', undo: 'Undo', reset: 'Best XI for me',
+    bench: 'Bench', lock: 'Lock it in', locked: 'Plan locked in', undo: 'Undo', reset: 'Best XI for me', xiMine: 'Your XI: it stays until you change it. Injured or banned players are swapped out for the match.', xiStaff: 'The assistant picks the XI at kick-off.', xiAuto: 'Best XI at kick-off.', xiHand: 'Let the assistant pick',
     role: (pos: string): string => `Role · ${pos}`, fitFor: 'How he fits each spot',
     opp: (f: string, st: string): string => `Opponent · ${f} · ${st}`, oppHow: (club: string): string => `How ${club} play`,
     ours: 'Ours', theirs: 'Theirs', even: 'Even',
@@ -565,7 +565,7 @@ export const X_EN = {
     about: 'About', howTo: 'How to play', privacy: 'Privacy', version: (v: string, b: number): string => `The Gaffer ${v} · build ${b}`,
     motion: 'Motion follows your device’s reduced-motion setting.',
     world: 'World editor', worldSub: 'Rename clubs, move leagues', quick: 'Quick match',
-    menu: 'Title screen', importOk: 'Career imported.', importBad: 'That file didn’t pass its check.',
+    menu: 'Title screen', importOk: 'Career imported.', recovered: 'The latest save of this career didn’t load, so the one before it was opened.', importBad: 'That file didn’t pass its check.',
   },
   log: {
     'training:focus': (f: string): string => `Made it a ${f.toLowerCase()} week.`,

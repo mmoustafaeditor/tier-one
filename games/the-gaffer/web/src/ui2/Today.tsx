@@ -1,5 +1,6 @@
 // Today: "What needs me before the next match?" The next match, up to five decisions with the staff's call, who's
 // fit, the club's pulse and the table. Continue is always in the same place.
+import { lastMatchHere } from '../sim/record';
 import { useMemo, useState } from 'react';
 import type { Choice, Decision } from '../sim/decisions';
 import { decisions, staffCallsSinceMatch } from '../sim/decisions';
@@ -12,7 +13,7 @@ import { CL } from '../lang-club-all';
 import { NV } from '../lang-nav-all';
 import { nextUserMatch, seasonOver } from '../sim/season';
 import { available } from '../sim/tactics';
-import { dayName, dayNum, shortDate, dateOf } from '../sim/calendar';
+import { dayName, dayNum, shortDate } from '../sim/calendar';
 import { DEPTS } from '../sim/delegation';
 import { levelOf } from '../sim/staff';
 import { Crest, Form, I, Portrait, Spark, initialsOf } from './kit';
@@ -23,6 +24,7 @@ import { DecisionCard, Receipt, choiceText, titleText } from './Decisions';
 import { newsText } from './text';
 import { D } from '../lang-dressing-all';
 import { cohesionOf } from '../sim/room';
+import { todayOf } from '../sim/cups';
 
 export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision, ch: Choice) => Promise<boolean>; onUndo: () => void; canUndo: string | null }) {
   const g = useGame();
@@ -38,8 +40,7 @@ export function Today({ onResolve, onUndo, canUndo }: { onResolve: (d: Decision,
   const over = seasonOver(c);
   const oppId = nm0 ? (nm0.home === c.clubId ? nm0.away : nm0.home) : null;
   const opp = oppId ? clubOf(w, oppId) : undefined;
-  const nowDate = dateOf(c.season, c.round, false);
-  const today = new Date(nowDate.getTime() - 2 * 86400000);
+  const today = todayOf(c);
   const daysTo = nm0 ? Math.round((nm0.date.getTime() - today.getTime()) / 86400000) : 0;
   const dayWord = nm0 ? dayName(nm0.date, g.ui) : '';
   // No match left for us (our league finished while others play on) reads as season over, never as an empty day (GF-007).
@@ -197,7 +198,7 @@ function PulsePanel({ pos }: { pos: number }) {
   const last = (k: 1 | 2 | 3, now: number) => [...pulse.map((p) => p[k]), now].slice(-6);
   const squad = squadOf(w, c.clubId);
   const low = [...squad].sort((a, b) => a.morale - b.morale)[0];
-  const lastM = c.matches?.[0];
+  const lastM = lastMatchHere(c);
   const res = lastM ? (() => { const me = lastM.home === c.clubId ? 0 : 1; const d = lastM.goals[me] - lastM.goals[1 - me]; const o = clubOf(w, me === 0 ? lastM.away : lastM.home); return `${x.today.lastResult}: ${lastM.goals[me]}–${lastM.goals[1 - me]} v ${cn(o, g.lang)}${d > 0 ? '' : ''}`; })() : '';
   const obj = g.t.objective[userObjective(w, c)]; // V2.7: after the board meeting
   const rows: [string, string, string, string, number, number[]][] = [

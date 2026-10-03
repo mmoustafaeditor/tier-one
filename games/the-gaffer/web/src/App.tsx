@@ -10,7 +10,7 @@ import { advance, endOfSeason, finishSeason, simUntil } from './sim/clock';
 import { decisions, type Choice, type Decision } from './sim/decisions';
 import { nextUserMatch, seasonOver, type SeasonSummary } from './sim/season';
 import { staffPrep } from './sim/staff';
-import { store, tidyCareer, parseSave, metaOf } from './sim/save';
+import { store, tidyCareer, parseSave, metaOf, loadSlot } from './sim/save';
 import { listSlots, migrate, clearSlot, setActiveSlot, freeSlot, FREE_SLOTS, writeLive, readLive, clearLive } from './sim/slots';
 import type { World } from './sim/world';
 import type { LiveMatch } from './sim/match';
@@ -161,13 +161,12 @@ export function App() {
 
   // ---------- starting and loading ----------
   const openSlot = async (n: number) => {
-    const recs = await listSlots();
-    const rec = recs.find((r) => r.slot === n);
-    if (!rec) return;
     setBusy(true);
-    const p = await parseSave(rec.text);
+    const p = await loadSlot(n); // F17: falls back to the slot's previous save when the latest one doesn't load
     setBusy(false);
+    if (!p.ok && p.reason === 'none') return;
     if (!p.ok || !p.save.career) { setBadSave(true); setToast(x.set.importBad); return; }
+    if (p.recovered) setToast(x.set.recovered);
     setSlot(n); setActiveSlot(n);
     const w = p.save.world as World;
     let c = p.save.career;

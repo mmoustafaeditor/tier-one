@@ -184,7 +184,10 @@ export function dealCost(w: World, c: Career, neg: Negotiation, t: Terms) {
   const upfront = neg.fee ? neg.fee.upfront : 0;
   const later = fee - upfront;
   const agent = agentFee(ag, fee, t.wage);
-  return { upfront, later, agent, signOn: t.signOn, now: upfront + agent + t.signOn, total: fee + agent + t.signOn, wage: t.wage };
+  const total = fee + agent + t.signOn;
+  // F03 (rework): the one quote every screen shows. `roomAfter` is the spending room once this deal is done, counted the
+  // way complete() checks it: this negotiation's own reserved fee is not held against it a second time.
+  return { upfront, later, agent, signOn: t.signOn, now: upfront + agent + t.signOn, total, wage: t.wage, roomAfter: spendingRoom(w, c, neg.id) - total };
 }
 
 // The one atomic step that signs him.

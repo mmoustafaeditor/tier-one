@@ -10,6 +10,7 @@
 //   feeds     engine (cohesion ±2 levels; morale settle point pulled by the leaders), renewals (trust gate), offers for
 //             unsettled players and release clauses (the market), Today decisions, inbox, news, the Why card
 // Everything is pure and seeded (no Math.random): same state + same commands → same room.
+import { lastMatchHere } from './record';
 import type { Archetype, Career, LocalizedName, Player, Pledge, PledgeType, RoomAsk, RoomCause, RoomState, SquadRole, TalkWhy, Tier } from '../model/types';
 import { FREE_AGENT } from '../model/types';
 import { clamp, hash32, rngFor } from './rng';
@@ -602,7 +603,7 @@ export function talkWhy(w: World, c: Career, p: Player): TalkWhy | null {
   if (p.morale < 45) return 'unhappy';
   if (trustOf(p) < 35) return 'doubts';
   if (p.jc === c.clubId && p.since === c.season && c.round <= 8 && room.talks[p.id] === undefined) return 'new';
-  const last = c.matches?.[0];
+  const last = lastMatchHere(c);
   if (last && last.motm && (last.motm.pn.en === p.name.en) && last.motm.side === (last.home === c.clubId ? 0 : 1)) return 'form';
   return null;
 }

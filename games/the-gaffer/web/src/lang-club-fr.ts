@@ -16,6 +16,7 @@ export const CL_FR: CLStrings = {
     kitty: (v: string) => `${v} du propriétaire`,
     strict: () => 'Conseil plus exigeant',
     target: (t: string) => t,
+    top: () => 'C’est déjà l’objectif le plus haut : rien de plus ambitieux à convenir',
   },
   board: {
     none: 'Le conseil se réunit avant les premières journées.',

@@ -120,7 +120,7 @@ export const X_ES: XStrings = {
     },
   },
   dec: {
-    due: { kickoff: 'Antes del partido', days: (n: number) => (n <= 1 ? 'Hoy' : `Quedan ${n} días`), week: 'Esta semana', season: 'Antes del verano', window: 'El mercado cierra esta noche' },
+    due: { kickoff: 'Antes del partido', days: (n: number) => (n <= 1 ? 'Antes de la próxima jornada' : `Quedan ${n} jornadas`), week: 'Esta semana', season: 'Antes del verano', window: 'El mercado cierra esta noche', windowIn: (n: number) => `El mercado cierra en ${n} jornadas` },
     tag: { welcome: 'Primer día', offer: 'Oferta', condition: 'Físico', contract: 'Contrato', staff: 'Propuesta', job: 'Oferta de trabajo', tape: 'Análisis', focus: 'Semana de entreno', deadline: 'Último día de mercado' },
     staffPick: 'Elección del cuerpo técnico',
     yourCall: 'Decides tú. Nadie más.',
@@ -405,7 +405,7 @@ export const X_ES: XStrings = {
     board: 'Pizarra táctica. Toca un jugador y luego un hueco u otro jugador para cambiarlos.',
     hint: 'Toca para elegir · otra vez para cambiar',
     theirPress: (club: string) => `El dibujo del ${club}`,
-    bench: 'Banquillo', lock: 'Fijar el plan', locked: 'Plan fijado', undo: 'Deshacer', reset: 'Mi mejor once',
+    bench: 'Banquillo', lock: 'Fijar el plan', locked: 'Plan fijado', undo: 'Deshacer', reset: 'Mi mejor once', xiMine: 'Tu once: se queda hasta que lo cambies. Los lesionados o sancionados se sustituyen solo para el partido.', xiStaff: 'El segundo elige el once antes del partido.', xiAuto: 'El mejor once al empezar el partido.', xiHand: 'Que elija el segundo',
     role: (pos: string) => `Rol · ${pos}`, fitFor: 'Cómo encaja en cada puesto',
     opp: (f: string, st: string) => `Rival · ${f} · ${st}`, oppHow: (club: string) => `Cómo juega el ${club}`,
     ours: 'Nuestro', theirs: 'Suyo', even: 'Igualado',
@@ -551,7 +551,7 @@ export const X_ES: XStrings = {
     about: 'Acerca de', howTo: 'Cómo se juega', privacy: 'Privacidad', version: (v: string, b: number) => `The Gaffer ${v} · build ${b}`,
     motion: 'El movimiento sigue el ajuste de movimiento reducido de tu dispositivo.',
     world: 'Editor del mundo', worldSub: 'Renombrar clubes, mover ligas', quick: 'Partido rápido',
-    menu: 'Pantalla de inicio', importOk: 'Carrera importada.', importBad: 'Ese archivo no pasó la comprobación.',
+    menu: 'Pantalla de inicio', importOk: 'Carrera importada.', recovered: 'El último guardado de esta carrera no cargaba, así que se abrió el anterior.', importBad: 'Ese archivo no pasó la comprobación.',
   },
   log: {
     'training:focus': (f: string) => `Semana de ${f.toLowerCase()}.`,

@@ -100,6 +100,10 @@ export function reconcile(r: MatchRecord): string[] {
   return out;
 }
 
+// F09 (rework): the manager's last match at the club he manages now. `matches` is his own history (it follows him), so
+// anything that talks about "our last match" (Today, the press, the dressing room) reads it through here.
+export const lastMatchHere = (c: Pick<Career, 'matches' | 'clubId'>) => (c.matches ?? []).find((m) => m.home === c.clubId || m.away === c.clubId);
+
 // What the career keeps of a user match after full time (the last few, newest first).
 export const MATCHES_KEPT = 6;
 export function keepRecord(c: Career, r: MatchRecord, get: (id: string) => Player | undefined, season: number): Career {

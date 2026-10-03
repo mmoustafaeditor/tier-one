@@ -17,6 +17,7 @@ export const CL_AR: CLStrings = {
     kitty: (v: string) => `${v} من صاحب النادي`,
     strict: () => 'إدارة أشد',
     target: (t: string) => t,
+    top: () => 'ده أعلى هدف أصلًا: مفيش أعلى منه نتفق عليه',
   },
   board: {
     none: 'الإدارة بتجتمع قبل أول جولات الموسم.',
