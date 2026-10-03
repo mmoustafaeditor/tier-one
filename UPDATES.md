@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: Medical shows who is fit but not match-ready
+- **What changed:** Medical has a new list, "Fit, not match-ready": players who aren't injured but are below 78% fitness. Each shows how many matchdays until he's ready (the game recovers 12% a matchday) and a rest switch. After a single match in a week the list is usually empty; it fills up in weeks with cup and league matches together.
+- **Files:** `web/src/ui2/Pathway.tsx`, `src/lang-sharp.ts` (new), `web/ui-tests/rework-medical.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** None. Branch only.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: engine re-tuned, match checks, "What keeps happening", fit in your plan
 - **What changed:** Engine tuning, as Saif approved. Off-the-ball movement counts a little more (`MOVE` 1.0). Composure is now measured against the team's own shooters, so it moves goals between players without adding any (`CALM` 1.5). Morale climbs back faster below 40, so the bottom teams sit at 43–46 instead of 33–35. A new test plays 400 matches (league and cup, including extra time and penalties) and checks that score, stats, commentary, ratings, "Why it happened" and highlights all agree with what actually happened. It found one small thing, now fixed: an xG of 4.95 showed as 4.9 in one place and 4.95 in another. Two new things on screen: "What keeps happening" on Match › Fixtures (record, average xG and the analysis findings that repeat over the last 6 matches, with a link to the fix), and "In your 4-3-3" on the player page (starts / would start ahead of so-and-so / behind so-and-so).
 - **Files:** `web/src/sim/engine/model.ts`, `src/sim/engine/story.ts`, `src/sim/season.ts`, `src/sim/planfit.ts` (new), `src/ui2/Trends.tsx` (new), `src/ui2/Player.tsx`, `src/ui2/Match.tsx`, `src/ui2/FullTime.tsx`, `src/lang-trends.ts`, `src/lang-fitplan.ts` (new), `src/styles/app.css`, `web/sim-tests/rework/{agree,planfit}.ts` (new), `web/sim-tests/{morale,pitch,rolespitch}.ts`, `web/ui-tests/{pitch-metrics,rework-trends,rework-planfit}.mjs`, `games/the-gaffer/rework/*`

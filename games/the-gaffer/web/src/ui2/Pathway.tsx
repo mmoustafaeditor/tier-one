@@ -2,6 +2,8 @@
 // the rush-back call with its stated relapse risk, and the loaded legs before the next match. Academy & pathway: Intake
 // Day (preview, then the day itself), the academy as a real squad (promote, loan out, release), the loanees' minutes,
 // and the graduates in the first team. Every button is a command (sim/commands.ts → sim/youth.ts).
+import { MATCH_SHARP } from '../sim/tactics';
+import { SH } from '../lang-sharp';
 import { useMemo, useState } from 'react';
 import type { Player } from '../model/types';
 import { squadOf } from '../sim/world';
@@ -33,6 +35,7 @@ export function MedicalScreen() {
   const squad = squadOf(w, c.clubId);
   const hurt = squad.filter((p) => p.injured > 0).sort((a, b) => b.rating - a.rating);
   const edge = squad.filter((p) => p.injured === 0 && riskBand(p) > 0).sort((a, b) => matchRisk(b) - matchRisk(a));
+  const short = squad.filter((p) => p.injured === 0 && p.fitness < MATCH_SHARP).sort((a, b) => a.fitness - b.fitness);
   const doc = staffOf(c, 'doctor');
   const rested = new Set(c.rested ?? []);
   const risk = rushRisk(c);
@@ -94,6 +97,27 @@ export function MedicalScreen() {
               );
             })}
             {!edge.length && <p className="muted small yempty"><I n="check" size="sm" />{M.noEdge}</p>}
+          </div>
+        </Panel>
+
+        {/* Rework §G: medically available is not the same as match-ready (sim/tactics.ts MATCH_SHARP; fitness +12 a matchday). */}
+        <Panel i={2} label={SH[g.ui].title} className="sharp">
+          <PanelHead title={SH[g.ui].title} right={<span className="eyebrow">{SH[g.ui].sub}</span>} />
+          <div className="rows">
+            {short.map((p) => {
+              const off = rested.has(p.id);
+              return (
+                <div key={p.id} className="row">
+                  <Portrait p={p} club={g.club} size={36} />
+                  <button className="grow linklike" onClick={() => g.player(p.id)}>
+                    <span className="name">{nm(p, lang)}</span>
+                    <span className="sub">{SH[g.ui].line(Math.round(p.fitness), Math.max(1, Math.ceil((MATCH_SHARP - p.fitness) / 12)))}</span>
+                  </button>
+                  <button className={`btn btn--sm${off ? '' : ' btn--ghost'}`} aria-pressed={off} onClick={() => void g.run({ type: 'rest.set', playerId: p.id, rest: !off }, { toast: false })}>{off ? M.unrest : M.rest}</button>
+                </div>
+              );
+            })}
+            {!short.length && <p className="muted small yempty"><I n="check" size="sm" />{SH[g.ui].none}</p>}
           </div>
         </Panel>
       </div>

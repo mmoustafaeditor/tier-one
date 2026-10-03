@@ -163,6 +163,10 @@ Next: M5 validation items possible here (save round-trip/slot isolation checks, 
   place (`sim/planfit.ts`, `rework/planfit`, `ui-tests/rework-planfit.mjs`); exact only when the scouts know him.
   Evidence `evidence/m4i-after/`.
 
+* **Medical (§G):** "Fit, not match-ready": not injured but below 78% fitness (MATCH_SHARP), with the matchdays back
+  at the game's own +12% a matchday and the rest switch. Often empty after a one-match week; fills in cup weeks.
+  `ui-tests/rework-medical.mjs`.
+
 ## Final plan (Saif, 2026-10-03: "do everything, then merge")
 1. M5 validation possible here: multi-season regression, save round-trip / slot isolation, ES/FR width gate, browser
    performance numbers, rollback plan.
