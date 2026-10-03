@@ -170,11 +170,10 @@ export function WindowScreen({ driver, ...chrome }: { driver: Driver } & Chrome)
   const toBoard = () => { if (window.matchMedia('(max-width: 959.98px)').matches) { setSel(null); window.scrollTo(0, 0); } };
   const file = <SagaFile view={view} g={g} i={deskSel} busy={busy} onLater={toBoard} last={calling ? null : last} dd={dd} onAsk={(src) => ask(deskSel, src)} onPost={(o, s, ut) => postCall(deskSel, o, s, ut)} favours={favours} justFiled={filedAt[deskSel]} rivalRecord={hasRecords() ? rivalRecordOf : undefined} />;
   // §28: during play the top bar carries only the way back and where you are (the wallet and the bell stay off).
-  const noTxt = view.mode === 'daily' ? t('u39.dh.no', { n: String(view.no || '').padStart(3, '0') }) : '';
   const dayTitle = <span className="play__title"><span>{view.mode === 'daily' ? t('g.win.daily', { n: String(view.no || '').padStart(3, '0') }) : title}</span></span>;
 
   return <div className={'g-screen g-screen--wide play fit fit--full' + (dd ? ' is-dd' : '')} ref={rootRef}>
-    <TopBar bare back={mob ? { label: t('c38.file.back'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : dayTitle}>{mob && noTxt ? <span className="play__no g-mono">{noTxt}</span> : null}</TopBar>
+    <TopBar bare back={mob ? { label: t('c38.file.back'), onClick: () => setSel(null) } : { label: t('g.tabs.home'), onClick: home }} title={mob ? undefined : dayTitle}>{mob ? <CallsPill left={view.state.left} /> : null}</TopBar>
     <img className="play__stad" src="art/stadium.webp" alt="" aria-hidden="true" decoding="async" />
     {dd && <DDHead view={view} onZero={finish} />}
     <div className="play__cols">
@@ -237,12 +236,13 @@ function SagaCard({ view, g, i, open, onOpen, filed, hint }: { view: View; g: Ga
         {vince && <span key="vp" className="g-chip vince-chip" title={t('g.story.vince.banner')}><Icon n="eye" />{t('g.story.vince.chip')}</span>}
         {!call && (ln.none ? <span className="scard__nr">{t('g.win.notRung')}</span>
           : <span key={'ev' + ev.word + ln.o + ev.agree + (ev.echo ? 'e' : '')} className={'g-chip chip-in scard__ev evw--' + ev.word + (ev.echo ? ' is-echo' : '') + ' g-chip--' + OUTS[ln.o]}>
-            {ev.echo ? <><Icon n="eye" />{t('c38.ev.' + ev.word)}</> : <>{t('c38.ev.' + ev.word)}{!ln.split && <> · {outWord(t.lang, ln.o)}</>}{ev.agree >= 2 ? <> · {t('c38.ev.circles', { n: ev.agree })}</> : null}</>}
+            {ev.echo ? <><Icon n="eye" />{t('c38.ev.' + ev.word)}</> : <>{t('c38.ev.' + ev.word)}{!ln.split && <> · {outWord(t.lang, ln.o)}</>}</>}
           </span>)}
+        {call && <span key={'pub' + (filed || 0)} className={'scard__pub oc--' + OUTS[call.o] + (filed ? ' is-slam' : '')}><Icon n="check" size={14} /><b>{t('u39.call2.pubShort')}</b> · {outWord(t.lang, call.o)} · {strWord(t.lang, call.s)}</span>}
         {posted > 0 && !call && <span key={'rv' + posted} className="g-chip scard__riv chip-in"><Icon n="bolt" />{posted === 1 ? t('c38.ev.rivalOne') : t('c38.ev.rival', { n: posted })}</span>}
       </span>
     </span>
-    <span className="scard__end">{call ? <span key={filed || 0} className={'g-stamp g-stamp--' + (hereWeGo(call) ? 'gold scard__hwg' : OUTS[call.o]) + (filed ? ' is-slam' : '')}>{hereWeGo(call) ? catchphraseOf().text : outWord(t.lang, call.o)}</span> : <span className="scard__go"><Icon n={t.rtl ? 'back' : 'arrow'} size={22} /></span>}</span>
+    <span className="scard__end"><span className="scard__go"><Icon n={t.rtl ? 'back' : 'arrow'} size={22} /></span></span>
   </button>;
 }
 

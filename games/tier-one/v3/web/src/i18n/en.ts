@@ -45,13 +45,13 @@ const en = {
   circle: { club: 'Club', agent: 'Agent', travel: 'Travel', street: 'Street', insider: 'Insider', office: 'Press office' },
   daily: {
     kicker: 'The Daily Challenge · {date}', closes: 'Board closes {t}', hed: 'Seven days, five sagas, and at least one of them is lying.',
-    contactsLeft: '{n} contact points left today', contactsNone: 'No contacts left today', contactsNote: 'Unused points don’t roll over. Nor does sleep.',
-    board: 'The board', boardAside: 'Lean · your call', sleep: 'Sleep on it · go to day {n}', sleepDD: 'Sleep on it · Deadline Day',
+    contactsLeft: '{n} call points left today', contactsNone: 'No contacts left today', contactsNote: 'Unused points don’t roll over. Nor does sleep.',
+    board: 'The board', boardAside: 'Lean · your call', sleep: 'Advance to Day {n}', sleepDD: 'Advance to Deadline Day',
     fair: 'Same board for everyone. Nothing you buy changes your Daily score.', needNet: 'The Daily Challenge is held on our server so nobody can peek at the answers. It needs a connection.',
     practiceInstead: 'Practise offline instead', play: 'Open the phones', resume: 'Back to the phones', read: 'Read the result', played: 'Filed. Tomorrow’s board at {t}.',
     tagline: 'Five sagas. Seven days. One window.', rank: '{r} of {n}', par: 'Par {n}', parNone: 'Par when three have filed', lean: 'Leans {o}', split: 'Split', noReads: 'Nobody rung yet', circles: '{n} circles',
     called: 'Filed · {s} {o}', calledDay: 'Filed day {d}', startNote: 'One attempt. Your score is worked out on our server from what you did.',
-    endConfirm: 'End day {n}? You still have {c} contact points.', endConfirmOk: 'End the day', twistChip: 'Twist', voided: 'Void · twist',
+    endConfirm: 'End day {n}? You still have {c} call points.', endConfirmOk: 'End the day', twistChip: 'Twist', voided: 'Void · twist',
   },
   saga: {
     read: 'The read', reported: 'Reported', evidence: 'Evidence', unknown: 'Unknown', publish: 'Publish now', rivals: 'Rivals', next: 'Next',
@@ -67,7 +67,7 @@ const en = {
     whyKit: 'one point says if he’s moving.', whyAgent: 'only he tells Off from Fake.', whyBarber: 'one point, a full answer, but it’s the street.', whySpotter: 'splits Done from Hijack.', whyPhysio: 'near certain.', whyLeak: 'the club’s own line.',
     evidenceFlag: 'The evidence', evidenceAside: '{r} reads · {c} circles', tallyFlag: 'The tally', tallyAside: 'Card weights · circles',
     beforeTwist: 'Before the twist', beforeTwistNote: 'They reported the story as it was. These no longer count.', noReads: 'Nothing on file. Pick a source below.',
-    says: 'Says', ringFlag: 'Ring a source', ringAside: '{n} contact points left', lineOpen: 'Line open', adds: 'Adds {x}', addsNothing: 'Adds nothing new',
+    says: 'Says', ringFlag: 'Ring a source', ringAside: '{n} call points left', lineOpen: 'Line open', adds: 'Adds {x}', addsNothing: 'Adds nothing new',
     fileFlag: 'File your call', fileAside: 'Closes on Deadline Day', outcome: 'Outcome', strength: 'Publish as', strengthAside: 'How loud',
     ifRight: 'If right', ifWrong: 'If wrong', earlyNote: '{b} base + {e} early', exclNote: '+{x} exclusive', penNote: '−{p} U-turn',
     exclOpen: 'Exclusive open: two circles, and no rival has posted it. Post Confirmed now and it’s yours.', exclTwo: 'No exclusive yet: only {n} circle points to {o}. The two-source rule needs two.',
@@ -82,7 +82,7 @@ const en = {
     title: 'Overnight', kicker: 'Day {n} · the morning papers', none: 'Quiet night. Nobody posted on your {n}.', contested: 'An exclusive on {o} for {p} is gone: {r} has it.',
     twist: 'TWIST · the {p} saga has turned', twistBody: 'The story changed at dawn. What the sources said before was true then. It doesn’t count now, and your call on it was withdrawn at no cost.',
     noTwist: 'No twist this window. What you’ve got is what it is.', back: 'Back to the phones · day {n}', ddGo: 'Start the clock',
-    ddBody: 'Deadline Day. Sixty seconds, three contact points, three posts. The clock starts when you turn the page.',
+    ddBody: 'Deadline Day. Sixty seconds, three call points, three posts. The clock starts when you turn the page.',
   },
   post: {
     tabloid: { 0: ['DONE DEAL. {p} to {to}, medical booked, pen out. You heard it here.', '{p} → {to}. Sorted. It’s happening.'], 1: ['HIJACK. {to} gazumped for {p}. Chaos.', '{p} snubs {to}. Someone else has him.'], 2: ['DEAD. {p} to {to} is OFF. Talks collapse.', '{from} tell {to} where to go. {p} deal off.'], 3: ['Never happened. {p} to {to} was agent smoke.', '{p} to {to}? Pure fiction.'] },
@@ -124,7 +124,7 @@ const en = {
     },
   },
   dd: {
-    band: 'Deadline Day · Extra', clockL: 'The window shuts in', note: 'Three contact points, three posts, sixty seconds. Nerve is a stat.', stillOpen: 'Still open', stillAside: 'One tap to post',
+    band: 'Deadline Day · Extra', clockL: 'The window shuts in', note: 'Three call points, three posts, sixty seconds. Nerve is a stat.', stillOpen: 'Still open', stillAside: 'One tap to post',
     posts: '{n} of 3 posts left', quick: 'Quick post', quickNote: 'Fifteen seconds. One tap posts your lean at Advanced.', postLean: 'Post {o} · Advanced', noLean: 'No read', filed: 'Filed {s} {o}',
     uturn: 'U-turn to {o}', whistle: 'The window has shut.', ring: 'Ring', over: 'Time. The window is shut.',
   },
@@ -182,7 +182,7 @@ const en = {
     promoted: 'Promoted: {rank}', history: 'Recent windows', rival: 'Start again at a rival paper', rivalD: 'A new name and a fresh contact book. Your trophies stay.',
     leakToast: '{c}’s press office is returning your calls.', frozenToast: '{c} have frozen you out.', repLine: 'Rep {a} → {b}', followersLine: '+{n} followers', favoursEarned: '+{n} favour',
     unl: ['Dougie, Sal and Rosa · @BackPageBants', 'Terminal Tony from day 3 · @ITK_Kev · 4 stories a window', 'Dr Inès · @PressBoxPete · club relations change your boards · a Trusted agent rings first', 'Reach ×1.5 · press offices open to a trusted name · Direct Line second opinions', '6 stories · 5 calls a day · star players · a 45-second Deadline Day'],
-    boardLine: '{s} sagas · {c} contact points a day · Deadline Day {d} s',
+    boardLine: '{s} sagas · {c} call points a day · Deadline Day {d} s',
     slotNote: 'One career slot. The Semba Pass adds two more (concept).',
   },
   pass: {
@@ -216,7 +216,7 @@ const en = {
   howto: {
     title: 'How to play', dek: 'Every number here is read from the rules the game runs on.',
     s1: ['The window', 'Five sagas, each one real player linked with one real club. Seven days. Exactly one of four things is true: Done (he signs for that club), Hijack (he leaves, for someone else), Off (real talks, collapsed) or Fake (never real).'],
-    s2: ['Asking', 'You get {c} contact points a day ({dd} on Deadline Day). Unused points are lost. Each source answers once per saga, and again after a twist. Same question, same answer, for everyone.'],
+    s2: ['Asking', 'You get {c} call points a day ({dd} on Deadline Day). Unused points are lost. Each source answers once per saga, and again after a twist. Same question, same answer, for everyone.'],
     s3: ['The spin', 'Every saga has one planted wrong story. Street voices (the barber, the tabloid, the ITK) repeat it when they’re wrong, so they’re wrong together. Count the street once.'],
     s4: ['Publishing', 'In talks, Advanced or Confirmed. Right pays base + early bonus per day left. Wrong costs. No sources, no story: you need a read of your own.'],
     s5: ['Exclusives', 'A right Confirmed call earns +{x} if you posted no later than the first rival who got it right, and two different circles of evidence pointed to it when you posted.'],

@@ -8,7 +8,7 @@ export default {
       page: 'Page {a} of {b}', prev: 'Previous page', next: 'Next page', back: 'Back', board: 'Leaderboard',
       tip: {
         home: 'Pick a mode. The Daily Challenge is new every day.',
-        board: 'Tap a player to ring sources. Sleep moves you to the next day.',
+        board: 'Tap a player to ring sources. “Advance to Day 2” moves the week on.',
         player: 'Ring two sources, then post your call before the rivals do.',
         career: 'Play windows to reach the goal and move up a chapter.',
         market: 'Real transfers. Filter, then tap a player to make your call.',

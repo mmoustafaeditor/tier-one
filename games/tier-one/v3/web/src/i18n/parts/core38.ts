@@ -29,7 +29,7 @@ export default {
         what: 'What happens?', loud: 'How sure are you?', win: 'Right: +{n}', lose: 'Wrong: {n}',
         talksD: 'Low risk, low reward', advancedD: 'Medium risk, medium reward', confirmedD: 'High risk, highest reward · Exclusive possible',
         exOk: 'Exclusive is on: Confirmed, two independent sources, no rival has it. +{n} on top.',
-        exNeedConf: 'Exclusive needs Confirmed.', exNeedTwo: 'Exclusive needs two independent sources. You have {n}.',
+        exNeedConf: 'Exclusive needs Confirmed. This publishes as a normal call.', exNeedTwo: 'Exclusive needs two different kinds of source backing this outcome. You have {n}. You can still publish it as a normal call.',
         exBeaten: 'No Exclusive: {r} got there first.', exRepost: 'No Exclusive on a repost.', hold: 'Hold to publish',
         early: 'Filed on day {d}: +{n} early bonus', dd: 'Deadline Day: no early bonus', coachOnly: 'Exact odds show in Practice Coach mode only.',
       },
