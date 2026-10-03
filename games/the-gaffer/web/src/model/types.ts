@@ -173,7 +173,7 @@ export interface Career {
   cups: Record<string, Cup>;             // this season's national and continental cups
   cupDay: number;                        // last matchday whose cup ties were played (-1 = none yet)
   coach: Coach;
-  board: { confidence: number; fans: number }; // 0-100
+  board: { confidence: number; fans: number; log?: import('../sim/boardlog').BoardNote[] }; // 0-100; log: the last confidence moves and why (rework §Q)
   inbox: Msg[];                          // newest first, trimmed to the last 60 (E2E #37)
   jobs: string[];                        // clubs offering the user a job right now
   sacked?: boolean;

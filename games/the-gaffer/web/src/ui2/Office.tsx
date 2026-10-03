@@ -1,5 +1,6 @@
 // The club office: the money (with a runway you can read), the board and what they want, the facilities, the staff
 // room (who does what, and how much you let them), and the commercial side.
+import { BL } from '../lang-boardlog';
 import { useState } from 'react';
 import type { Dept, DeptLevel, Facility, StaffRole } from '../model/types';
 import { monthly, upgradeCost, FACILITIES, attendance, capacityOf, refPrice, BUILD_DAYS, buildLeft } from '../sim/economy';
@@ -12,7 +13,7 @@ import { DEPTS, DEPT_ROLE, biasOf, levelOf } from '../sim/delegation';
 import { dateOf, monthName } from '../sim/calendar';
 import { I, Kpi, LineChart, Meter, initialsOf } from './kit';
 import { Panel, PanelHead, Seg, Stepper } from './shell';
-import { useGame, money } from './game';
+import { useGame, money, cn, clubOf } from './game';
 import { leagueRows } from './util';
 import { logText } from './text';
 import { spendingRoom, committed } from '../sim/recruit/money';
@@ -151,6 +152,20 @@ function Board() {
         ))}
         <p className="small muted vision-line">{visionLine}</p>
         <div className="trust"><span className="big">{conf}</span><div><b>{O.trust} · {x.today.mood(conf)}</b><p className="small muted">{O.trustWhy(conf)}</p></div></div>
+        {(() => {
+          // Rework §Q: the last moves of the board's trust, each with its cause (sim/boardlog.ts).
+          const B = BL[g.ui], log = c.board.log ?? [];
+          const club = (id?: string) => (id ? cn(clubOf(w, id), g.lang) : '');
+          const text = (n: (typeof log)[number]) => n.why === 'result' ? B.result(club(n.club), n.s ?? '', !!n.derby, n.d > 0) : n.why === 'claim' ? B.claim(club(n.club)) : n.why === 'table' ? B.table(n.d > 0) : n.why === 'review' ? B.review(x.place(Number(n.s) || 0)) : B[n.why];
+          return (
+            <div className="board-log">
+              <h3 className="h3">{B.title}</h3>
+              {!log.length ? <p className="small muted">{B.none}</p> : (
+                <ul>{log.slice(0, 6).map((n, i) => <li key={i}><b className={`ltr ${n.d > 0 ? 'up' : 'down'}`}>{n.d > 0 ? '+' : '−'}{Math.abs(n.d).toFixed(1)}</b><span>{text(n)}</span></li>)}</ul>
+              )}
+            </div>
+          );
+        })()}
       </Panel>
       <Panel i={2} label={x.today.pulse}>
         <PanelHead title={x.today.fans} right={<span className="eyebrow">{Math.round(c.board.fans)}</span>} />

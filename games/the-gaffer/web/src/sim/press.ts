@@ -12,6 +12,7 @@
 //            volatile, else −4, his trust −5, fans +1
 //   ref      Confident (go after the referee): fans +2, board −2; Deflect: fans −1
 // A public claim followed by a defeat costs board −3 and fans −4 on top of the result; a win after it gives fans +2.
+import { noteBoard } from './boardlog';
 import type { Career, Player } from '../model/types';
 import { clamp } from './rng';
 import { squadOf, type World } from './world';
@@ -59,7 +60,7 @@ export function answer(w: World, c: Career, q: PressQ, tone: PressTone, pid?: st
       return x;
     }),
   } : w;
-  const board = { confidence: clamp(c.board.confidence + (fx.board ?? 0), 0, 100), fans: clamp(c.board.fans + (fx.fans ?? 0), 0, 100) };
+  const board = noteBoard(c.board, { confidence: clamp(c.board.confidence + (fx.board ?? 0), 0, 100), fans: clamp(c.board.fans + (fx.fans ?? 0), 0, 100) }, c, 'press');
   const claim = fx.claim && opp ? { oppId: opp, season: c.season, round: c.round } : c.claim;
   return { world, career: { ...c, board, claim } };
 }
@@ -69,7 +70,7 @@ export function answer(w: World, c: Career, q: PressQ, tone: PressTone, pid?: st
 export function settleClaim(c: Career, oppId: string, pts: number): Career {
   if (!c.claim || c.claim.oppId !== oppId || c.claim.season !== c.season) return c.claim && c.claim.season !== c.season ? { ...c, claim: undefined } : c;
   const board = pts === 0
-    ? { confidence: clamp(c.board.confidence - CLAIM_LOSS.board, 0, 100), fans: clamp(c.board.fans - CLAIM_LOSS.fans, 0, 100) }
+    ? noteBoard(c.board, { confidence: clamp(c.board.confidence - CLAIM_LOSS.board, 0, 100), fans: clamp(c.board.fans - CLAIM_LOSS.fans, 0, 100) }, c, 'claim', { club: oppId })
     : pts === 3 ? { ...c.board, fans: clamp(c.board.fans + CLAIM_WIN_FANS, 0, 100) } : c.board;
   return { ...c, board, claim: undefined };
 }

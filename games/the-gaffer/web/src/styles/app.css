@@ -669,3 +669,12 @@ em.bias { font-style: normal; color: var(--ink-3); }
 /* Rework §H: academy loan rows explain the role and the level. */
 .loan-spot .sub { white-space: normal; }
 .loan-spot .ls-best { margin-inline-start: 6px; vertical-align: middle; }
+/* Rework §S: news sections (ui2/News.tsx). */
+.news-secs { flex-wrap: wrap; margin: 0 0 var(--s-3); }
+.news-secs .count { font-style: normal; opacity: .7; margin-inline-start: 4px; }
+.row.news.mine { background: var(--surface-2); border-radius: 10px; }
+/* Rework §Q: why the board's trust moved (Club › Board). */
+.board-log { margin-top: var(--s-3); }
+.board-log ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.board-log li { display: grid; grid-template-columns: 3.6em 1fr; gap: 8px; font-size: 14px; align-items: baseline; }
+.board-log .up { color: var(--good); } .board-log .down { color: var(--bad); }
