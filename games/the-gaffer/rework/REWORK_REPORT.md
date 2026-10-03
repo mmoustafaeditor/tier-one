@@ -41,7 +41,8 @@ Current-code reproduction: `node sim-tests/build.mjs rework/repro` → every che
 |---|---|---|
 | Typecheck | `npx tsc --noEmit` | clean |
 | Sim tests (47, incl. `rework/*`) | `node sim-tests/build.mjs <name>` | 46 pass; `marking` fails one sampling-noise check (corner headers), same as the baseline (passes at 4,000) |
-| Engine fingerprint | `fingerprint` | `a04af554a49efa49`, unchanged from the baseline: no match result changed |
+| Engine fingerprint | `fingerprint` | `a04af554a49efa49` through the M5 checks; `3879e6cc016b8942` since AI clubs moved to the best-XI pick (approved; §4) |
+| AI best-XI balance | `rework/aixi` | before/after table in §4; two tests open (§6) |
 | Trust regressions | `rework/trust` | 33+ checks pass (F01–F10, F17, F07 picks) |
 | Career-memory slice | `rework/slice` | pass (promote → warn → start → plays → kept → reload) |
 | Broken-promise arc | `rework/arcs` | pass |
@@ -62,7 +63,15 @@ Engine fingerprint unchanged from the baseline (`a04af554a49efa49`): the rework 
 decided. Season seed 7 (5,784 league matches): 2.86 goals/game, home wins 44.6%, draws 23.1% (baseline 2.87 / 44.5 /
 22.8 — the user club's own XI picks differ). Speed: ~2.7 ms a fast match, ~19 ms a full watched match in this
 container. The F06 attempt to move AI clubs to the new XI pick was measured and reverted (it shifted four calibrated
-tests; see `REWORK_PROGRESS.md`).
+tests; see `REWORK_PROGRESS.md`). Saif then approved it with recalibration; it is now on the branch:
+
+| 9 staff-run seasons (`rework/aixi`) | AI on slot-by-slot | AI on best XI |
+|---|---|---|
+| AI starters out of position | 5.9% | 0.6% |
+| Goals a league match | 2.887 | 2.916 |
+| Home wins | 44.0% | 44.6% |
+| Draws | 22.9% | 22.1% |
+| User's points a game (staff-run) | 1.798 | 1.775 |
 
 ## 5. Migration notes
 Save format version unchanged (8). New optional fields, all read with defaults so old saves load unchanged:
@@ -70,7 +79,9 @@ Save format version unchanged (8). New optional fields, all read with defaults s
 load. Rollback: older builds ignore both fields.
 
 ## 6. Known limitations (not hidden)
-* AI clubs pick their XI slot by slot (F06 for AI): Saif decided (2026-10-03) to keep it that way.
+* AI clubs on the best XI: two calibrated effects are slightly weaker and not yet re-tuned: composed finishers beat
+  their xG by 0.007 a shot over the least composed (test wants 0.01), and the lowest club's average morale can reach
+  33–34 (test floor 35). The tuning edit waits on Saif's go-ahead; the tests are left failing, not loosened.
 * The derby/board-pressure arc has no new authored content; the existing systems cover it (world test, press cards).
 * No Android device test, no WebView back/resume run, no named-device benchmark in this environment.
 * No human comprehension sessions (the handoff's human gates) — none could be run here.

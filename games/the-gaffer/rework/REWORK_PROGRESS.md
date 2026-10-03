@@ -90,6 +90,8 @@ pieces and marking (remembered per device; it never hides a setting silently). E
   `evidence/m4-after/`. Today's "World pulse" already exists (Headlines panel: the latest three news items → News).
 
 Decision (Saif, 2026-10-03): AI clubs keep their current XI selection; the best-XI assignment stays on the manager's side only.
+Update (Saif, later on 2026-10-03): approved moving AI clubs to the best-XI pick, with the balance recalibrated (see
+"AI clubs on the best XI" below).
 
 * Pre-match "Three things for this match": the two biggest numbers edges either way from the match model (ours, where
   they crowd us, their danger zone) plus what the scouting report knows; "Open tactics" link. Read-only, no result change.
@@ -130,6 +132,21 @@ Next: M5 validation items possible here (save round-trip/slot isolation checks, 
 * **M5 here:** `rework/lifecycle` (3 seasons: checks, exact save round trip, two-slot isolation, sane bands), ES/FR
   width gate (found and fixed Spanish/French overflow at 320–390 px), `ui-tests/perf.mjs` numbers, compatibility and
   rollback notes (report §7b–7c).
+
+* **AI clubs on the best XI (Final plan item 2, in progress).** `aiXI` in `sim/tactics.ts` is the one switch AI
+  selection goes through (match and dressing room); it now uses `bestXI`. Engine fingerprint changes
+  `a04af554a49efa49` → `3879e6cc016b8942` (approved). Balance, 9 staff-run seasons (`rework/aixi`, 3 clubs × seeds 7–9):
+  AI starters out of position 5.9% → 0.6%; goals 2.887 → 2.916; home wins 44.0% → 44.6%; draws 22.9% → 22.1%; the
+  user's points a game 1.798 → 1.775 (within noise). Tests that moved:
+  - `aiprep`: the points half of "the read helps" was sample noise at 600 matches; at 2,400 it passes (+0.025 pts,
+    +0.18 xG). Default raised to 2,400.
+  - `referee` ten men: one sending-off depended on who it was (−0.26 a 90 for this one); now also checks the average
+    over losing any outfield player: −0.56 a 90 (0.26–0.80). Passes.
+  - `rolespitch`: 4 matches gave press_fullback ~300 frames; at 32 matches every role passes. Default raised to 32.
+  - **Open:** `traitsengine` composure (most vs least composed finishers beat xG by 0.007 a shot over 4,000 matches;
+    the test wants 0.01) and `morale` (lowest club average 34–35 on seed 7 and 33 on seed 10; floor 35). Both need an
+    engine/morale number tuned (e.g. `TRAIT.CALM` 0.8 → 1.0). That edit was refused by the session's permission
+    check, so it waits on Saif: tune them, accept and document them, or put AI selection back on `autoXI`.
 
 ## Final plan (Saif, 2026-10-03: "do everything, then merge")
 1. M5 validation possible here: multi-season regression, save round-trip / slot isolation, ES/FR width gate, browser

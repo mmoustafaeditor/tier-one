@@ -15,7 +15,7 @@ import type { Archetype, Career, LocalizedName, Player, Pledge, PledgeType, Room
 import { FREE_AGENT } from '../model/types';
 import { clamp, hash32, rngFor } from './rng';
 import { playerOf, squadOf, squadStrength, type World } from './world';
-import { autoXI, available, DEFAULT_TACTICS, xiFor } from './tactics';
+import { aiXI, available, DEFAULT_TACTICS, xiFor } from './tactics';
 import { emit } from './events';
 import { addMsg } from './coach';
 import { addNews } from './news';
@@ -66,7 +66,7 @@ export const rankRole = (rank: number, age: number): SquadRole => (rank < 3 ? 's
 export function defaultRoles(w: World, c: Career | null, clubId: string): Map<string, SquadRole> {
   const squad = squadOf(w, clubId);
   const season = c?.season ?? 2026;
-  const xi = c && c.clubId === clubId ? xiFor(w, c).xi : autoXI(squad, DEFAULT_TACTICS.formation);
+  const xi = c && c.clubId === clubId ? xiFor(w, c).xi : aiXI(squad, DEFAULT_TACTICS.formation);
   const inXI = new Set(xi.map((p) => p.id));
   const top = new Set(byRating(xi).slice(0, 3).map((p) => p.id));
   return new Map(squad.map((p) => [p.id, top.has(p.id) ? 'star' : inXI.has(p.id) ? 'starter' : season - p.birthYear <= 21 ? 'prospect' : 'rotation'] as [string, SquadRole]));

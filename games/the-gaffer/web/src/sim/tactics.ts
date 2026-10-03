@@ -214,6 +214,9 @@ export function bestXI(squad: Player[], formation: FormationId, cup?: string): P
   return assignXI(pool, FORMATIONS[formation].slots.map((sl) => sl.pos)).filter(Boolean) as Player[];
 }
 
+// The AI clubs' pick (one place to switch it).
+export const aiXI = (squad: Player[], formation: FormationId, cup?: string): Player[] => bestXI(squad, formation, cup);
+
 // AI clubs still pick slot by slot, goalkeeper first (the selection every AI result and balance test is calibrated on).
 // Moving them to the assignment is a results change for Milestone 4, with its own recalibration (REWORK_PROGRESS.md).
 export function autoXI(squad: Player[], formation: FormationId, cup?: string): Player[] {

@@ -5,7 +5,7 @@
 import { generateWorld, playerOf } from '../src/sim/world';
 import { simulate, startMatch, stepMinute, type LiveMatch } from '../src/sim/match';
 
-const N = +(process.argv[2] ?? 600);
+const N = +(process.argv[2] ?? 2400); // 600 was too few for the points check (±0.05 noise) once AI sides pick a best XI
 const w = generateWorld(7);
 const get = (id: string) => playerOf(w, id)!;
 const clubs = w.clubs.filter((c) => ['eng1', 'esp1', 'ita1', 'ger1', 'fra1', 'egy1'].includes(c.leagueId));

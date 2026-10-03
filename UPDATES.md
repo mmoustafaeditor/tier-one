@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: AI clubs pick their best XI too (2 tuning items open)
+- **What changed:** The other clubs now pick their starting XI the same way as your team: the whole eleven together, so far fewer players end up out of position (5.9% → 0.6%). Measured over 9 full seasons, the game barely moved: goals 2.89 → 2.92 a match, home wins 44.0% → 44.6%, draws 22.9% → 22.1%, your team's points 1.80 → 1.78 a game. Three tests used samples too small to be reliable and now run on bigger ones (`aiprep`, `rolespitch`, the ten-men check in `referee`); they pass. Two effects really did get a bit weaker and still need tuning: composed finishers' edge over xG (`traitsengine`), and the lowest morale a club can sink to (`morale`).
+- **Files:** `web/src/sim/tactics.ts` (`aiXI`), `src/sim/match.ts`, `src/sim/room.ts`, `web/sim-tests/rework/aixi.ts` (new), `web/sim-tests/aiprep.ts`, `web/sim-tests/referee.ts`, `web/sim-tests/rolespitch.ts`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** Match results change: the engine fingerprint goes from `a04af554a49efa49` to `3879e6cc016b8942` (Saif approved). `traitsengine` and `morale` fail until the tuning is done. Branch only, not merged. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: release checks (seasons, saves, Spanish/French widths, speed)
 - **What changed:** Ran the checks the game needs before release. Three full seasons played on the clock: no world or career errors, saves load back exactly, the second save slot stays untouched, and goals, home wins, draws and player ratings stay steady. Running the screen-width check in Spanish and French found labels that made Today, Tactics, the Match tabs and Club wider than a small phone; all fixed. Measured speed in the browser, and wrote the rollback plan: the save format is unchanged, and the previous build can still open saves from this one.
 - **Files:** `web/sim-tests/rework/lifecycle.ts` (new), `web/ui-tests/perf.mjs` (new), `web/ui-tests/overflow.mjs` (`LANGS=`), `src/styles/app.css`, `games/the-gaffer/rework/*`
