@@ -182,6 +182,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer: guided tour video script
+- **What changed:** New script that plays through every screen of The Gaffer in Arabic and records a video with captions saying what each tap opens (phone 412×892 or laptop 1440×900). Nothing in the game changed.
+- **Files:** `games/the-gaffer/web/ui-tests/tour.mjs`
+- **Heads-up for the team:** None. Run `npm run build` first; the video lands in `OUT`.
+
 ## 2026-10-03 · saifsaber · The Gaffer: the three deferred items (bounded world, training week, Tactics Lab, captain's rotation talk)
 - **What changed:** (1) The world no longer grows each season: unsigned free agents piled up (160 → 2,424 in three seasons), so at season end only the 400 most valuable stay on the market (`FREE_MAX`); players over three seasons 8,422 → 8,386 instead of → 10,413, and the save grows ~60 KB a season instead of ~130. (2) Training › This week places the sessions (Light 2 / Normal 3 / Heavy 4) and days off around the fixtures, with "Give them a day off" / "Extra session" buttons that move the intensity one step. (3) Pre-match "Tactics Lab · Try another plan": each style's win chance and xG against this opponent in any shape, from the match engine itself; Use applies it. (4) New dressing-room event: the captain asks for a word when the side keeps changing (17+ league starters in five games) and it isn't winning (≤1 win in five).
 - **Files:** `games/the-gaffer/web/src/sim/{season,lab,room}.ts` (`lab.ts` new), `src/ui2/{PreMatch,Training}.tsx`, `src/lang-{lab,week}.ts` (`lang-lab.ts` new), `src/lang-dressing{,-ar,-es,-fr}.ts`, `src/model/types.ts` (`TalkWhy` gains `rotation`), `src/styles/app.css`, tests `sim-tests/rework/{lab,captainrot}.ts`, `ui-tests/rework-lab.mjs`, docs `games/the-gaffer/rework/REWORK_{PROGRESS,REPORT}.md`.
