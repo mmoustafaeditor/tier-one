@@ -149,7 +149,7 @@ const clone = <T,>(x: T): T => structuredClone(x);
 
 // ---------- M2: F05, F06, F08, F10 ----------
 {
-  const { autoXI: ax, slotValue, availabilityFor } = await import('../../src/sim/tactics');
+  const { bestXI: ax, slotValue, availabilityFor } = await import('../../src/sim/tactics');
   const { pct3 } = await import('../../src/ui2/util');
   const { promotionTerms, promoteKid } = await import('../../src/sim/youth');
   const { predict } = await import('../../src/sim/match');
@@ -160,7 +160,7 @@ const clone = <T,>(x: T): T => structuredClone(x);
     const f = (c.tactics ?? DEFAULT_TACTICS).formation;
     const xi = ax(squad, f);
     const bad = xi.filter((p, i) => { const pos = FORMATIONS[f].slots[i].pos; return p.position !== pos && squad.some((q) => q.position === pos && !xi.includes(q) && q.injured === 0 && slotValue(q, pos) >= slotValue(p, pos)); });
-    ok(bad.length === 0 && xi.length === 11 && new Set(xi.map((p) => p.id)).size === 11, `F06 ${club}: best XI has nobody out of position ahead of a better natural player (${bad.map((p) => p.name.en).join(', ') || 'none'})`);
+    ok(bad.length === 0 && xi.length === 11 && new Set(xi.map((p) => p.id)).size === 11, `F06 ${club}: the manager's best XI has nobody out of position ahead of a better natural player (${bad.map((p) => p.name.en).join(', ') || 'none'})`);
   }
   // F08: the three outcomes always add up to 100.
   let off = 0;

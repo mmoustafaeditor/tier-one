@@ -46,16 +46,16 @@ checks for the fixes). "Observed" = reproduced in this build.
 | F02 | reproduced/open → **fixed (M1)** | three clocks: header "today" = matchday−2, messages dated by matchday (Sat), cup ties on Wed (before "today"); `due.days` counted matchdays; "Window shuts tonight" on any window card | `todayOf`/`stampDate` (`src/sim/cups.ts`) used by header, Today, News; due labels in matchdays; window cards count matchdays left, "tonight" only on deadline day |
 | F03 | reproduced/open → **fixed (M1)** | Today's agent card used `spendingRoom(w,c)` (which already reserves this deal's fee) and subtracted the deal again: the fee counted twice (£19M in the repro) | `dealCost(...).roomAfter` is the one quote; Today and Talks both show it |
 | F04 | reproduced/open → **fixed (M1)** | `raiseObjective('title') === 'title'`: "Aim higher" had the same predicate plus owner money | no ambitious option (and the command refuses it) at the top of the ladder; explanation shown; money once, scoped to the club |
-| F05 | reproduced/open (M2) | `academy.promote` is one tap; the prospect pledge (10 apps in 20 matchdays or a loan) is added afterwards, never shown | promotion sheet with the commitment |
-| F06 | reproduced/open (M2) | `autoXI` fills slots greedily in slot order: Van Dijk at RB while Frimpong sits out (Liverpool 4-3-3) | global assignment + reasons |
-| F07 | untested (M2) | — | review the advice builders with score/time/horizon context |
-| F08 | reproduced/open (M2) | three outcomes rounded independently (5/18 Egyptian fixtures don't sum to 100) | largest-remainder rounding, ">99%" |
+| F05 | reproduced/open → **fixed (M2)** | `academy.promote` is one tap; the prospect pledge (10 apps in 20 matchdays or a loan) is added afterwards, never shown | promotion sheet with the commitment |
+| F06 | reproduced/open → **fixed for the manager's side (M2)** | `autoXI` fills slots greedily in slot order: Van Dijk at RB while Frimpong sits out (Liverpool 4-3-3) | `bestXI` assignment + reasons in Tactics; AI clubs deferred to M4 (recalibration) |
+| F07 | reproduced/open → **fixed (M2)**: half-time sub, succession picks | — | review the advice builders with score/time/horizon context |
+| F08 | reproduced/open → **fixed (M2)** | three outcomes rounded independently (5/18 Egyptian fixtures don't sum to 100) | largest-remainder rounding, ">99%" |
 | F09 | reproduced/open → **fixed (M1)** | Today read `c.matches[0]` (the manager's history) and picked "our" side with `home === clubId ? 0 : 1`: after a move the old match reads backwards ("0-2 v Liverpool"); the season vision, old club's instalments and talks followed the manager | `lastMatchHere`; vision scoped to its club; old instalments settled from the old club; old talks end on the move |
-| F10 | reproduced/open (M2) | "x of y fit" uses `available()` (injury + league ban): a cup ban for a cup match and tired players count as fit | "available for the next match" with reasons |
-| F11 | reproduced/open (M2) | `QuickMatch` `onFinish` → team picker | read-only full-time + analysis, Rematch / Change teams |
-| F12 | reproduced/open (M2, design) | half-time screen exists (`HalfTime` in `Live.tsx`); tactical edits apply at once in the Changes sheet, no staged draft | staged half-time draft + Start second half |
-| F13 | untested (M2) | — | check season review/career labels at a season end |
-| F14 | untested (M2) | — | check chart grouping and digest counters |
-| F15 | reproduced/open (M2, design) | courses (`enrol`, `src/sim/coach.ts`) are instant and the card shows only cost | disclose effect/duration/stacking before paying |
+| F10 | reproduced/open → **fixed (M2)** | "x of y fit" uses `available()` (injury + league ban): a cup ban for a cup match and tired players count as fit | "available for the next match" with reasons |
+| F11 | reproduced/open → **fixed (M2)** | `QuickMatch` `onFinish` → team picker | read-only full-time + analysis, Rematch / Change teams |
+| F12 | reproduced/open → **fixed (M2)**: talk restarted the match | half-time screen exists (`HalfTime` in `Live.tsx`); tactical edits apply at once in the Changes sheet, no staged draft | staged half-time draft + Start second half |
+| F13 | reproduced/open → **fixed (M2)**: cup chips | — | check season review/career labels at a season end |
+| F14 | **not reproduced** (counters scoped per run; markers grouped) | — | check chart grouping and digest counters |
+| F15 | reproduced/open → **fixed (M2)**: effects disclosed | courses (`enrol`, `src/sim/coach.ts`) are instant and the card shows only cost | disclose effect/duration/stacking before paying |
 | F16 | open (M3, design) | — | contextual conversations within the room system |
 | F17 | **not reproduced** (round trip, tamper, future version, junk all handled) → hardened (M1) | slot writes overwrote in place with no previous copy | previous copy kept per slot; `loadSlot` falls back to it and says so |

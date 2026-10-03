@@ -20,12 +20,13 @@ Done (regression checks in `rework/trust`, 33 checks, all pass; screenshots `evi
 * **F10** Today "Available for <day>": counts the next match's competition bans and rests (`availabilityFor`, the
   rule selection uses); tired players are available but flagged ("n not fully fit"); reasons per player.
 * **F08** win/draw/loss rounded together (`pct3`, always 100); single chances never 0%/100% (`pctOf`, `pct1`).
-* **F06** best XI = one assignment over the whole XI (Hungarian, `assignXI` in `sim/tactics.ts`) for the user and AI
-  clubs; Tactics lists why a man plays out of position against the best natural player left out.
-  Results changed (AI clubs pick better XIs): fingerprint `3879e6cc016b8942` (was `a04af554a49efa49`); season seed 7:
-  2.87 goals, home 43.6%, draws 23.6% (was 2.87 / 44.5% / 22.8%); seed 11: 2.87 / 44.1% / 23.7%. formations, rolebal,
-  roles, sanity, world, parity, room, recruit, youth, v2core, tactics, single pass. `morale` floor lowered 35 → 33 with the
-  measured spread written in the test (lowest club average 34.96 on seed 7, a struggling side; before 40).
+* **F06** the manager's best XI (assistant at kick-off, "Best XI for me", holes in his XI) = one assignment over the
+  whole XI (Hungarian, `assignXI`/`bestXI` in `sim/tactics.ts`); Tactics lists why a man plays out of position against
+  the best natural player left out. **Scoped to the user's side.** The first version moved AI clubs too; the full suite
+  then showed four calibrated statistical tests drifting (aiprep, referee ten-men, rolespitch, traitsengine; all pass on
+  the M1 commit), and tuning engine weights to win them back was chasing sample noise. AI clubs keep the slot-by-slot
+  pick (`autoXI`) until Milestone 4 recalibrates with it. Engine fingerprint is back to `a04af554a49efa49`; season seed 7
+  2.86 goals / 44.6% / 23.1% (the user club's own picks differ). The `morale` floor is back at 35.
 * **F05** Promote opens a sheet (Academy tab and Player page): squad place, contract and wage, and the prospect promise
   (10 apps in 20 league matchdays or a loan); academy cards' promote choice shows the promise too. `promotionTerms` is
   what the command applies (test).

@@ -19,9 +19,7 @@ for (const lg of ['eng1', 'egy1']) {
   const minM = Math.min(...rows.map((r) => r.m));
   const bottom3 = rows.slice(-3).reduce((a, r) => a + r.pts / r.p, 0) / 3;
   console.log(`${lg} after ${rows[0].p}: morale ${Math.round(minM)}–${Math.round(Math.max(...rows.map((r) => r.m)))}, bottom three ${bottom3.toFixed(2)} pts/game, leader ${(rows[0].pts / rows[0].p).toFixed(2)}`);
-  // Floor 33 (was 35): with the rework's best-XI assignment (F06) the lowest club average moved a few points on some seeds
-  // (seeds 7/11/23, Egypt: 40/46/37 before, 35/39/39 after; a struggling side at 34.96, not a slide to the floor).
-  ok(minM >= 33, `${lg}: no club averages below 33 morale (lowest ${minM.toFixed(1)})`);
+  ok(minM >= 35, `${lg}: no club averages below 35 morale (lowest ${Math.round(minM)})`);
   ok(bottom3 >= 0.5, `${lg}: bottom three take at least 0.5 pts/game (${bottom3.toFixed(2)})`);
 }
 console.log(fails ? `\n${fails} FAILED` : '\nall passed');

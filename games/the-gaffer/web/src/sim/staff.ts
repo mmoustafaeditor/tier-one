@@ -7,7 +7,7 @@
 import { FREE_AGENT, type Career, type Dept, type Duty, type LocalizedName, type Pending, type PrepFocus, type StaffLog } from '../model/types';
 import { makeRng } from './rng';
 import { money, playerOf, squadOf, strengthOf, type World } from './world';
-import { DEFAULT_TACTICS, FORMATIONS, FORMATION_IDS, autoXI, slotValue, xiFor, type FormationId } from './tactics';
+import { DEFAULT_TACTICS, FORMATIONS, FORMATION_IDS, bestXI, slotValue, xiFor, type FormationId } from './tactics';
 import { predict } from './match';
 import { makeReport } from './scouting';
 import { treatmentCost } from './training';
@@ -103,7 +103,7 @@ function planTactics(x: Ctx, m: { sides: { clubId: string }[]; key: string }) {
   }
   const squad = squadOf(x.world, c.clubId);
   const good = q(c, 'tactics') >= 50;
-  const score = (f: FormationId) => autoXI(squad, f).reduce((s, p, i) => s + slotValue(p, FORMATIONS[f].slots[i]?.pos ?? 'CM'), 0) + FORMATIONS[f].attack * (good ? 2 : 0);
+  const score = (f: FormationId) => bestXI(squad, f).reduce((s, p, i) => s + slotValue(p, FORMATIONS[f].slots[i]?.pos ?? 'CM'), 0) + FORMATIONS[f].attack * (good ? 2 : 0);
   // Only change shape for a clear gain (about half a rating point per player), so the team keeps a settled system.
   let best: FormationId = cur.formation, bestV = score(cur.formation) + 5;
   // F01: the manager picked his XI for his shape; the assistant doesn't re-shape around it (mentality only).

@@ -206,11 +206,28 @@ export function assignXI(pool: Player[], positions: Position[]): (Player | undef
   return out;
 }
 
-// Best XI for a formation, in slot order.
-export function autoXI(squad: Player[], formation: FormationId, cup?: string): Player[] {
+// The manager's side: the best eleven together (F06). Used for "Best XI for me", the assistant's pick at kick-off and
+// the holes in the manager's own XI.
+export function bestXI(squad: Player[], formation: FormationId, cup?: string): Player[] {
   const ok = squad.filter((p) => availableIn(p, cup));
   const pool = ok.length >= 11 ? ok : squad;
   return assignXI(pool, FORMATIONS[formation].slots.map((sl) => sl.pos)).filter(Boolean) as Player[];
+}
+
+// AI clubs still pick slot by slot, goalkeeper first (the selection every AI result and balance test is calibrated on).
+// Moving them to the assignment is a results change for Milestone 4, with its own recalibration (REWORK_PROGRESS.md).
+export function autoXI(squad: Player[], formation: FormationId, cup?: string): Player[] {
+  const ok = squad.filter((p) => availableIn(p, cup));
+  const pool = ok.length >= 11 ? ok : squad;
+  const used = new Set<string>();
+  const slots = FORMATIONS[formation].slots;
+  const order = slots.map((sl, i) => ({ sl, i })).sort((a, b) => (a.sl.pos === 'GK' ? -1 : b.sl.pos === 'GK' ? 1 : 0));
+  const out: (Player | undefined)[] = [];
+  for (const { sl, i } of order) {
+    const best = pool.filter((p) => !used.has(p.id)).sort((a, b) => slotValue(b, sl.pos) - slotValue(a, sl.pos))[0];
+    if (best) { used.add(best.id); out[i] = best; }
+  }
+  return out.filter(Boolean) as Player[];
 }
 
 // The user's XI in slot order. Picks the user made are kept while they're still fit, available and at the club;
@@ -223,7 +240,7 @@ export function xiFor(w: World, c: Career, cup?: string): { xi: Player[]; replac
   const rest = new Set(c.rested ?? []);
   const squad = rest.size && all.filter((p) => available(p) && !rest.has(p.id)).length >= 11 ? all.filter((p) => !rest.has(p.id)) : all;
   const byId = new Map(squad.map((p) => [p.id, p]));
-  if (!tac.xi) return { xi: autoXI(squad, tac.formation, cup), replaced: [] };
+  if (!tac.xi) return { xi: bestXI(squad, tac.formation, cup), replaced: [] };
   const slots = FORMATIONS[tac.formation].slots;
   const used = new Set<string>();
   const out: (Player | undefined)[] = [];

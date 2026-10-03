@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: best XI fix limited to your side; match results back to baseline
+- **What changed:** The full test suite showed that moving AI clubs to the new best-XI pick (F06) shifted four calibrated tests. Those were the AI's kick-off read, the ten-men effect, the role positions, and the trait effects. So the improved pick now applies only to your side: the assistant at kick-off, "Best XI for me", and filling gaps in your XI. AI clubs pick as before until Milestone 4 recalibrates with it. The repro script now checks the current code: F01-F11 and F17 all report OK.
+- **Files:** `web/src/sim/tactics.ts` (`bestXI` for the manager, `autoXI` unchanged for AI), `src/sim/staff.ts`, `web/sim-tests/{morale.ts,rework/trust.ts,rework/repro.ts}`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** This replaces the earlier "results change" note for F06. The engine fingerprint is `a04af554a49efa49` again and the `morale` floor is back at 35. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: Tactics shows the essentials first
 - **What changed:** "How we play" now shows the essentials: style, shape, approach, press and defensive line. Everything else (shape without the ball, width, tempo, passing, transitions, set pieces, marking) sits behind "More instructions". That button says how many of those settings you've changed from the defaults, so nothing set is ever out of sight without you knowing. The choice is remembered on the device. On very narrow phones, long names on the pitch are shortened instead of pushing the page wider.
 - **Files:** `web/src/ui2/Match.tsx`, `src/lang-tac*.ts`, `src/styles/app.css`, `games/the-gaffer/rework/*`

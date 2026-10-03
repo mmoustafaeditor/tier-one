@@ -5,7 +5,7 @@
 import { generateRealWorld } from '../../src/sim/seed';
 import { newCareer, nextUserMatch } from '../../src/sim/season';
 import { advance } from '../../src/sim/clock';
-import { xiFor, autoXI, FORMATIONS, DEFAULT_TACTICS, available } from '../../src/sim/tactics';
+import { xiFor, bestXI as autoXI, FORMATIONS, DEFAULT_TACTICS, available } from '../../src/sim/tactics';
 import { squadOf, playerOf, objectiveOf } from '../../src/sim/world';
 import { dispatch } from '../../src/sim/commands';
 import { levelOf } from '../../src/sim/delegation';
@@ -42,15 +42,14 @@ const fresh = (club = 'egy-al-ahly') => ({ w: W0, c: newCareer(W0, seed, club, '
   rep('F01', shown && !played, `matchprep=${levelOf(c, 'matchprep')}; pre-match XI shows the chosen keeper: ${shown}; he played the quick result: ${played}`);
 }
 
-// F02 — one clock: the header's "today" vs the dates on messages, and cup ties vs "today".
+// F02 — one clock: the header's "today" (todayOf) vs the date a message from this step shows (stampDate), and cup ties.
 {
-  const { w, c } = fresh();
-  const today = new Date(dateOf(c.season, c.round).getTime() - 2 * 86400000); // OfficeBar/Today
-  const msg = dateOf(c.season, Math.max(0, c.inbox[0]?.round ?? c.round));   // News.tsx
-  let cupBeforeToday = 0;
-  for (let r = 0; r < 38; r++) { const cupDay = dateOf(c.season, r, true); const t = new Date(dateOf(c.season, r).getTime() - 2 * 86400000); if (cupDay < t) cupBeforeToday++; }
-  rep('F02', msg.getTime() !== today.getTime() || cupBeforeToday > 0, `header today=${today.toISOString().slice(0, 10)}, welcome message dated ${msg.toISOString().slice(0, 10)}; cup days that fall before the header's "today" of their week: ${cupBeforeToday}/38; promise/agent cards label matchdays as "days"`);
-  void w;
+  const { todayOf, stampDate, userTie } = await import('../../src/sim/cups');
+  let { w, c } = fresh();
+  const same = stampDate(c, c.season, c.round).getTime() === todayOf(c).getTime();
+  let after = 0;
+  for (let i = 0; i < 40 && c.round < 30; i++) { const next = userTie(c) ? dateOf(c.season, c.round, true) : dateOf(c.season, c.round); if (todayOf(c) >= next) after++; const s2 = advance(w, c); w = s2.world; c = s2.career; }
+  rep('F02', !same || after > 0, `a message from this step is dated today: ${same}; steps where "today" is on/after the next match: ${after}`);
 }
 
 // F03 — the Today "meet demands" card and the Talks room preview agree.
@@ -76,14 +75,23 @@ const fresh = (club = 'egy-al-ahly') => ({ w: W0, c: newCareer(W0, seed, club, '
 
 // F04 — "aim higher" with a target that is already the top of the ladder.
 {
+  const { decisions } = await import('../../src/sim/decisions');
   const { w, c } = fresh();
   const club = w.clubs.find((x) => x.id === c.clubId)!;
   const base = objectiveOf(w, club);
-  rep('F04', raiseObjective(base) === base && kittyFor(w, c) > 0, `${club.id}: base target ${base}, ambitious target ${raiseObjective(base)}, owner money still offered: ${kittyFor(w, c)}`);
+  const card = decisions(w, c).find((d) => d.kind === 'vision');
+  const offered = !!card?.choices.some((x) => x.id === 'ambitious');
+  rep('F04', raiseObjective(base) === base && offered, `${club.id}: base target ${base}; "aim higher" offered: ${offered}`);
+  void kittyFor;
 }
 
 // F05 — promotion discloses the pathway promise (code-level: the promote command has no preview/consent step).
-rep('F05', true, 'academy.promote is one tap (Pathway.tsx / Player.tsx); roomDay then adds a prospect pledge (10 apps in 20 matchdays or a loan) the user was never shown');
+{
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(`${process.cwd()}/src/ui2/Pathway.tsx`, 'utf8') + readFileSync(`${process.cwd()}/src/ui2/Player.tsx`, 'utf8');
+  const direct = (src.match(/type: 'academy\.promote'/g) ?? []).length !== 1; // only the sheet's own button promotes
+  rep('F05', direct || !src.includes('PromoteSheet'), `promote goes through the promotion sheet (squad, contract, promise): ${!direct && src.includes('PromoteSheet')}`);
+}
 
 // F06 — the Best XI puts natural full-backs/centre-backs where they belong.
 {
@@ -92,23 +100,25 @@ rep('F05', true, 'academy.promote is one tap (Pathway.tsx / Player.tsx); roomDay
   const f = (c.tactics ?? DEFAULT_TACTICS).formation;
   const xi = autoXI(squad, f);
   const out: string[] = [];
-  xi.forEach((p, i) => { const pos = FORMATIONS[f].slots[i].pos; if (p.position !== pos) { const nat = squad.filter((q) => q.position === pos && available(q) && !xi.includes(q)).sort((a, b) => b.rating - a.rating)[0]; out.push(`${p.name.en} (${p.position}) at ${pos}${nat ? ` while ${nat.name.en} (${pos} ${nat.rating}) sits out` : ''}`); } });
-  rep('F06', out.length > 0, `Liverpool ${f} best XI out of position: ${out.join('; ') || 'none'}; no reason is shown to the user`);
+  // A compromise is fine when it's the better option (Wirtz at RW over Chiesa); the defect is a man out of position ahead
+  // of a natural player who'd be at least as good there (Van Dijk at RB over Frimpong).
+  const { slotValue } = await import('../../src/sim/tactics');
+  xi.forEach((p, i) => { const pos = FORMATIONS[f].slots[i].pos; if (p.position !== pos) { const nat = squad.filter((q) => q.position === pos && available(q) && !xi.includes(q)).sort((a, b) => slotValue(b, pos) - slotValue(a, pos))[0]; if (nat && slotValue(nat, pos) >= slotValue(p, pos)) out.push(`${p.name.en} (${p.position}) at ${pos} while ${nat.name.en} (${pos} ${nat.rating}) sits out`); } });
+  rep('F06', out.length > 0, `Liverpool ${f}: the manager's best XI out of position ahead of a better natural player: ${out.join('; ') || 'none'} (reasons are shown in Tactics)`);
 }
 
-// F08 — three-way forecast rounding.
+// F08 — three-way forecast rounding as shown (pct3).
 {
-  const { w, c } = fresh();
-  let bad = 0, n = 0, sure = 0;
+  const { pct3 } = await import('../../src/ui2/util');
+  const { w } = fresh();
+  let bad = 0, n = 0;
   for (const club of w.clubs.filter((x) => x.leagueId === 'egy1')) {
     const cc = newCareer(w, seed, club.id, 'T', { age: 40, nationality: 'EGY' }, 2026);
     const m = nextUserMatch(w, cc); if (!m) continue;
-    const o = predict(m, (id) => playerOf(w, id)!);
-    const r = o.map((v) => Math.round(v * 100));
-    n++; if (r[0] + r[1] + r[2] !== 100) bad++; if (r.some((v) => v >= 100 || v <= 0)) sure++;
+    const r = pct3(predict(m, (id) => playerOf(w, id)!));
+    n++; if (r[0] + r[1] + r[2] !== 100) bad++;
   }
-  rep('F08', bad > 0, `${bad}/${n} pre-match forecasts round to a total other than 100%; independent Math.round per outcome (Today.tsx); 0%/100% can show (${sure})`);
-  void c;
+  rep('F08', bad > 0, `${bad}/${n} pre-match forecasts shown with a total other than 100%`);
 }
 
 // F09 — job move: what follows the manager and what stays with the club.
@@ -118,24 +128,29 @@ rep('F05', true, 'academy.promote is one tap (Pathway.tsx / Player.tsx); roomDay
   const m = c.matches![0];
   const m2 = moveTo(w, { ...c, jobs: ['ger-bayern'] }, 'ger-bayern');
   const c2 = m2.career;
-  const last = c2.matches?.[0];
+  const { lastMatchHere } = await import('../../src/sim/record');
+  const last = lastMatchHere(c2);
   const me = last && last.home === c2.clubId ? 0 : 1;
   const shown = last ? `${last.goals[me]}-${last.goals[1 - me]} v ${me === 0 ? last.away : last.home}` : '';
   const leak = !!last && last.home !== c2.clubId && last.away !== c2.clubId;
-  rep('F09', leak, `after the move Today reads "Last time out: ${shown}" (the match was ${m.home} ${m.goals[0]}-${m.goals[1]} ${m.away}); vision kept: ${!!c2.vision}; open negotiations kept: ${rcOf(c2).negs.length}; commitments kept: ${rcOf(c2).commits.length}`);
+  void m;
+  rep('F09', leak, `after the move "Last time out" ${last ? `reads ${shown}` : 'is empty (no match at Bayern yet)'}; vision applies: ${!!(await import('../../src/sim/vision')).visionOf(c2)}`);
 }
 
-// F10 — "fit" counts a player banned for the next (cup) match.
+// F10 — "available" for a cup match counts the cup ban (availabilityFor, what Today shows).
 {
+  const { availabilityFor } = await import('../../src/sim/tactics');
   const { w, c } = fresh();
-  const p = squadOf(w, c.clubId)[0];
-  const w2: World = { ...w, players: w.players.map((x) => (x.id === p.id ? { ...x, sus: { 'egy-cup': 1 } } : x)) };
-  const fit = squadOf(w2, c.clubId).filter(available).length;
-  rep('F10', fit === squadOf(w2, c.clubId).length, `Today's "x of y fit" uses available() (injury + league ban only): a cup-banned player still counts (${fit}/${squadOf(w2, c.clubId).length}); tired players count as fit too`);
+  const sq = squadOf(w, c.clubId).map((x, i) => (i === 0 ? { ...x, sus: { 'egy-cup': 1 } } : x));
+  const a = availabilityFor(sq, 'egy-cup');
+  rep('F10', a.available.includes(sq[0]), `a cup-banned player counts as available for the cup match: ${a.available.includes(sq[0])}; tired players are flagged separately`);
 }
 
-// F11 — quick match full time.
-rep('F11', true, 'QuickMatch.tsx: onFinish={() => setGame(null)} returns to the team picker; no full-time report, no Rematch');
+{
+  const { readFileSync } = await import('node:fs');
+  const q = readFileSync(`${process.cwd()}/src/ui2/QuickMatch.tsx`, 'utf8');
+  rep('F11', !q.includes('<FullTime'), `quick match ends on a read-only full time with Rematch: ${q.includes('<FullTime') && q.includes('rematch')}`);
+}
 
 // F17 — export/import round trip, tampering, version from the future.
 {
@@ -147,7 +162,7 @@ rep('F11', true, 'QuickMatch.tsx: onFinish={() => setGame(null)} returns to the 
   const future = await parseSave(JSON.stringify({ ...plain, version: 999 }));
   const junk = await parseSave('not a save');
   const ok = back.ok && back.save.career?.clubId === c.clubId && !tampered.ok && !future.ok && !junk.ok;
-  rep('F17', !ok, `round trip ${back.ok}; tampered rejected ${!tampered.ok}(${tampered.ok ? '' : tampered.reason}); future version rejected ${!future.ok}; junk rejected ${!junk.ok}. Slot writes overwrite in place with no previous-version copy (slots.ts)`);
+  rep('F17', !ok, `round trip ${back.ok}; tampered rejected ${!tampered.ok}(${tampered.ok ? '' : tampered.reason}); future version rejected ${!future.ok}; junk rejected ${!junk.ok}. each write keeps the slot's previous save (slots.ts PREV)`);
 }
 
 console.log('\n| ID | status | evidence |\n|---|---|---|');
