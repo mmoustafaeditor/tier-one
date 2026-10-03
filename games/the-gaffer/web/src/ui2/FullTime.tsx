@@ -8,7 +8,9 @@ import { playerOf } from '../sim/world';
 import { Crest, I, LineChart, Portrait } from './kit';
 import { Panel, PanelHead } from './shell';
 import type { Route } from './game';
-import { useGame, clubOf, cn } from './game';
+import { pointText } from './why';
+import { TX } from '../lang-tac-all';
+import { useGame, clubOf, cn, sn } from './game';
 import { verdictText } from './why';
 import { D } from '../lang-dressing-all';
 import { AI_COH, cohLevel } from '../sim/cohesion';
@@ -37,6 +39,7 @@ export function FullTime({ a, onDone, quick }: { a: Aftermath; onDone: () => voi
   const ratings = all ? a.ratings : a.ratings.slice(0, 4);
   const why = a.why ? verdictText(a.why, g.t) : '';
   const doc = c.ops.staff.assistant;
+  const pname = (id: string) => { const p = playerOf(w, id); return p ? sn(p, lang) : ''; };
   const nextActs = [...new Set((a.why?.points ?? []).filter((p) => !p.good).map((p) => ACT_OF[p.k]).filter(Boolean) as string[])].slice(0, 3);
   const ground = a.home ? x.today.ourGround : x.today.theirGround;
   return (
@@ -61,6 +64,20 @@ export function FullTime({ a, onDone, quick }: { a: Aftermath; onDone: () => voi
             markers={a.scorers.map((s) => ({ i: s.min, label: s.pn[lang].split(' ').slice(-1)[0] }))} />
         </Panel>
 
+        {/* Rework (handoff §O): "why it happened" — the analysts' findings from the engine's own record of this match. */}
+        {(a.why?.points.length ?? 0) > 0 && (
+          <Panel i={2} className="g-why" label={x.ht.eyebrow}>
+            <PanelHead title={x.ht.eyebrow} />
+            <div className="ft-why">
+              {a.why!.points.slice(0, 3).map((p, i) => (
+                <div key={i} className={`cause ${p.good ? 'good' : 'bad'}`}>
+                  <span className="n">{i + 1}</span>
+                  <div><b>{p.k === 'role' ? TX[g.ui].why.head[p.good ? 0 : 1] : (x.ht.cause[p.k] ?? ['', ''])[p.good ? 0 : 1] || pointText(p, g.t, pname)}</b><p className="small">{pointText(p, g.t, pname)}</p></div>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        )}
         {quick ? <Panel i={2} label={F.quickNote}><p className="small muted">{F.quickNote}</p></Panel> : <Panel i={2} label={F.changed}>
           <PanelHead title={F.changed} />
           <div className="changes">

@@ -86,4 +86,7 @@ pieces and marking (remembered per device; it never hides a setting silently). E
   here, once each, cooldown kept; no invented reasons. Fingerprint unchanged.
 * **M4** full-time "What to do next" links (tactics / training / needs / dressing room) from the analysts' findings.
 
+* Full time "Why it happened": the analysts' top three findings (engine record), marked good/bad. Evidence
+  `evidence/m4-after/`. Today's "World pulse" already exists (Headlines panel: the latest three news items → News).
+
 Next: AI best-XI with recalibration (needs Saif's decision: results change), M5 device/human validation.

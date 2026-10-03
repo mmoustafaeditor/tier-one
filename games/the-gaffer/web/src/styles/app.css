@@ -583,3 +583,10 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .sc-transfers .target { min-width: 0; overflow: clip; }
 .sc-tactics .save { flex-wrap: wrap; } .sc-tactics .save .btn { min-width: 0; }
 .ft-next { margin-top: var(--s-3); display: grid; gap: 6px; } .ft-next .row { gap: 6px; }
+/* Rework: why it happened, on full time */
+.ft-why { display: grid; gap: 10px; }
+.ft-why .cause { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+.ft-why .cause .n { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); font: 700 12px/1 var(--f-text); }
+.ft-why .cause.good .n { background: var(--mint-400, #7FE3C4); color: #04211C; }
+.ft-why .cause.bad .n { background: rgba(229,96,74,.18); color: var(--bad, #E5604A); }
+.ft-why .cause p { margin: 2px 0 0; }

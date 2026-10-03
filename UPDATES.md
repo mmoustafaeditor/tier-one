@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: full time explains why it happened
+- **What changed:** Full time (career and quick match) has a "Why it happened" panel. It shows the analysts' top three findings from the engine's own record of the match (e.g. "Their press is biting: 10 balls lost in our own third"), each marked as helping or hurting us. These are the same findings half-time shows, and they now feed the "What to do next" buttons.
+- **Files:** `web/src/ui2/FullTime.tsx`, `src/styles/app.css`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** None. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework F16: players have something real to talk about
 - **What changed:** Players now have three new reasons to talk, all from what actually happened in your last match: he scored, a homegrown player made his first appearance, or a starter was dropped. Praise after a goal or a debut lifts morale and trust a little. Challenging a dropped player works on driven players and leaders, and backfires on volatile or mercenary ones. Each reason comes up once, and the existing cooldown stops repeats, so talks can't be farmed for morale. Players with nothing new still have nothing to say.
 - **Files:** `web/src/sim/room.ts`, `src/model/types.ts`, `src/lang-dressing*.ts`, `web/sim-tests/rework/talks.ts` (new)

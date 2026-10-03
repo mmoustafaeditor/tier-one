@@ -18,7 +18,7 @@ no named Android device was available — see Known limitations).
   list or sell a player you gave your word to.
 * Quick match ends on a full-time screen with Rematch; half-time stages the team talk with your changes; Continue says
   what it does next; courses say what they do; cup runs say how far you went; full time links to what to do next.
-* Transfers is one four-step funnel; Tactics shows the essentials first; a first-week guide on Today.
+* Full time explains why it happened (the analysts' top findings) and links to what to do next. Transfers is one four-step funnel; Tactics shows the essentials first; a first-week guide on Today.
 * Nothing is wider than a phone at 320–412 px, in English or Arabic.
 
 ## 2. F01–F17 disposition
@@ -69,7 +69,7 @@ load. Rollback: older builds ignore both fields.
 ## 8. Next backlog
 * P0: none open from the trust backlog.
 * P1: AI best XI with recalibration (M4); Android/WebView resume + import on a named device; human first-hour test.
-* P2: Today "World pulse"; analysis "tactical causes" tab; scenarios / Tactics Lab modes.
+* P2: scenarios / Tactics Lab modes; an analysis tab aggregating tactical causes across a run of matches.
 
 ## 9. Evidence index
 `evidence/m1-before|after` (Today/board, inbox dates, Tactics), `m2-before|after` (promotion sheet, availability,
