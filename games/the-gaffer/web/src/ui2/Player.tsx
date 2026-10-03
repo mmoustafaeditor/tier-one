@@ -14,7 +14,9 @@ import { avgRating } from '../sim/ratings';
 import { askOf } from '../sim/recruit/club';
 import { rcOf } from '../sim/recruit/state';
 import { LoanSheet, LoanOutSheet } from './Talks';
-import { slotValue } from '../sim/tactics';
+import { DEFAULT_TACTICS, slotValue } from '../sim/tactics';
+import { planFit } from '../sim/planfit';
+import { FP } from '../lang-fitplan';
 import { loanOf } from '../sim/loans';
 import { windowOf } from '../sim/windows';
 import { Crest, I, Kpi, Meter, Portrait } from './kit';
@@ -161,6 +163,14 @@ export function PlayerScreen({ id }: { id: string }) {
 
           <Panel i={3} label={P.fits}>
             <PanelHead title={P.fits} />
+            {!ac && (() => {
+              // Rework §I: where he fits in the plan in use. Exact numbers only when the scouts know him.
+              const F = FP[g.ui];
+              const fit = exact ? planFit(w, c, p) : null;
+              const pos = (q: Position) => x.common.posLong[q];
+              const text = !exact ? F.scout : !fit ? '' : fit.k === 'starts' ? F.starts(pos(fit.pos)) : fit.k === 'open' ? F.open(pos(fit.pos)) : fit.k === 'none' ? F.none(pos(fit.pos), fit.d) : F[fit.k](pos(fit.pos), sn(fit.vs, lang), fit.d);
+              return text ? <p className={`plan-fit${fit && (fit.k === 'none' || fit.k === 'behind') ? ' warn' : ''}`}><span className="eyebrow">{F.title((c.tactics ?? DEFAULT_TACTICS).formation)}</span>{text}</p> : null;
+            })()}
             <div className="fits">
               {fitRows.map((f) => (
                 <div key={f.pos} className="fitrow"><b>{x.common.posLong[f.pos]}</b><span className="num">{exact ? f.v : '?'}</span><Meter v={exact ? f.v : 50} tone={f.v < p.rating - 6 ? 'warn' : undefined} /></div>

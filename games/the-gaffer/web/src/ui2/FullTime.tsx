@@ -19,8 +19,8 @@ import { Analysis } from './Analysis';
 import { AN } from '../lang-ana';
 
 // M4 (rework): which screen acts on each kind of finding (engine/story.ts Point.k).
-const ACT_OF: Record<string, string | undefined> = { midfield: 'tactics', pressed: 'tactics', pressing: 'tactics', duel: 'tactics', role: 'tactics', setpiece: 'tactics', theyChanged: 'tactics', change: 'tactics', tired: 'train', finish: 'needs', cohesion: 'room' };
-const ACT_ROUTE: Record<string, Route> = { tactics: { s: 'match', tab: 0 }, train: { s: 'train' }, needs: { s: 'transfers', tab: 5 }, room: { s: 'room' } };
+export const ACT_OF: Record<string, string | undefined> = { midfield: 'tactics', pressed: 'tactics', pressing: 'tactics', duel: 'tactics', role: 'tactics', setpiece: 'tactics', theyChanged: 'tactics', change: 'tactics', tired: 'train', finish: 'needs', cohesion: 'room' };
+export const ACT_ROUTE: Record<string, Route> = { tactics: { s: 'match', tab: 0 }, train: { s: 'train' }, needs: { s: 'transfers', tab: 5 }, room: { s: 'room' } };
 // F11 (rework): `quick` — a quick match's read-only full time: no "what it changed" (nothing counts), Rematch / Change teams.
 export function FullTime({ a, onDone, quick }: { a: Aftermath; onDone: () => void; quick?: { rematch: () => void; change: () => void } }) {
   const g = useGame();

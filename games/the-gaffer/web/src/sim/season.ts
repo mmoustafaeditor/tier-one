@@ -115,11 +115,14 @@ export function userMatch(w: World, c: Career): LiveMatch | null {
 // for every squad. A fixed ±1 a matchday could not keep up with ±6 a result, so a side losing more than a third of its
 // games sank to the floor and lost ~2.5 on every attribute (audit GF-003). With a 20% pull a poor side settles in the
 // mid-40s and a dominant one in the high 70s.
-export const MORALE_SETTLE = 0.2;
+// Below 40 the pull back up is stronger (30%): once AI sides picked a best XI, the weakest side in a league could lose
+// three games in four and settle in the low 30s, back towards the floor GF-003 removed. Same rule for every squad.
+export const MORALE_SETTLE = 0.2, MORALE_LOW = 40, MORALE_SETTLE_LOW = 0.3;
 export function settleMorale(morale: number, target: number): number {
   const gap = target - morale;
   if (!gap) return morale;
-  return morale + Math.sign(gap) * Math.max(1, Math.round(Math.abs(gap) * MORALE_SETTLE));
+  const k = gap > 0 && morale < MORALE_LOW ? MORALE_SETTLE_LOW : MORALE_SETTLE;
+  return morale + Math.sign(gap) * Math.max(1, Math.round(Math.abs(gap) * k));
 }
 
 // The leaders' pull for every club but the user's: 0.25 × (mean morale of its three best players − 60), rounded.

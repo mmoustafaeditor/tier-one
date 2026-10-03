@@ -2,7 +2,7 @@
 // default role, then with one slot in the new role. In the frames that matter for the role (with the ball in their
 // half for in-possession roles; without it for out-of-possession ones), where that player is on average against
 // where the default man was: each role must move the way it says (deeper, higher, wider, inside).
-//   node sim-tests/build.mjs rolespitch [matches=32]
+//   node sim-tests/build.mjs rolespitch [matches=64]
 import { generateWorld, playerOf } from '../src/sim/world';
 import { startMatch, stepMinute, type LiveMatch } from '../src/sim/match';
 import { playOver } from '../src/sim/engine/clock';
@@ -14,7 +14,7 @@ import { ROLES, type RoleId } from '../src/sim/engine/roles';
 setPitchDebug(true);
 const w = generateWorld(7); const get = (id: string) => playerOf(w, id)!;
 const top = w.clubs.filter((c) => ['eng1', 'esp1', 'ita1', 'ger1', 'fra1'].includes(c.leagueId));
-const N = +(process.argv[2] ?? 32), W = 68; // 4 matches gave press_fullback ~300 frames (noise); 32 gives 5,000+ (slow: ~12 min)
+const N = +(process.argv[2] ?? 64), W = 68; // press_fullback acts only with the ball on its flank: 4 matches gave ~300 frames, 32 still swung ±0.8 m; 64 (~45 min) is stable
 type Want = { depth?: 1 | -1; wide?: 1 | -1; when?: 'theirFlank' }; // when: only the frames the role is for
 const CASES: [RoleId, FormationId, Want][] = [
   ['mezzala', '4-3-3', { depth: 1, wide: 1 }], ['wide_playmaker', '4-3-3', { wide: -1 }], ['deep_forward', '4-3-3', { depth: -1 }],

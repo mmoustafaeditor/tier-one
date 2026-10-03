@@ -7,8 +7,9 @@ import { squadOf } from '../src/sim/world';
 let fails = 0;
 const ok = (c: boolean, msg: string) => { console.log(`${c ? 'ok  ' : 'FAIL'} ${msg}`); if (!c) fails++; };
 
-// The settle rule itself: a share of the gap, at least one point, never past the target.
-ok(settleMorale(10, 60) === 20 && settleMorale(58, 60) === 59 && settleMorale(90, 60) === 84 && settleMorale(60, 60) === 60, 'settleMorale pulls 20% of the gap, at least 1');
+// The settle rule itself: a share of the gap (more when morale is very low), at least one point, never past the target.
+ok(settleMorale(45, 60) === 48 && settleMorale(58, 60) === 59 && settleMorale(90, 60) === 84 && settleMorale(60, 60) === 60, 'settleMorale pulls 20% of the gap, at least 1');
+ok(settleMorale(10, 60) === 25 && settleMorale(39, 60) === 45, 'below 40 it pulls back up harder (30%)');
 
 const seed = +(process.argv[2] ?? 7);
 let w = generateRealWorld(seed);

@@ -18,6 +18,7 @@ import { groupTable } from '../sim/cups';
 import { dateOf, shortDate } from '../sim/calendar';
 import { Crest, I, Meter, Portrait } from './kit';
 import { Panel, PanelHead, Seg, Steps } from './shell';
+import { Trends } from './Trends';
 import { useGame, clubOf, cn, sn, matchLabel } from './game';
 import { leagueRows, upcoming, pctOf } from './util';
 
@@ -30,7 +31,7 @@ export function MatchScreen({ tab, onTab }: { tab: number; onTab: (n: number) =>
         <Seg label={g.x.nav.match} value={tab} onChange={onTab} options={T.tabs.map((l, i) => ({ v: i, label: l }))} onGround />
       </div>
       {tab === 0 && <TacticsBoard />}
-      {tab === 1 && <Fixtures />}
+      {tab === 1 && <><Trends /><Fixtures /></>}
       {tab === 2 && <LeagueTable />}
       {tab === 3 && <Cups />}
     </div>

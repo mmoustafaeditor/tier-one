@@ -143,10 +143,25 @@ Next: M5 validation items possible here (save round-trip/slot isolation checks, 
   - `referee` ten men: one sending-off depended on who it was (−0.26 a 90 for this one); now also checks the average
     over losing any outfield player: −0.56 a 90 (0.26–0.80). Passes.
   - `rolespitch`: 4 matches gave press_fullback ~300 frames; at 32 matches every role passes. Default raised to 32.
-  - **Open:** `traitsengine` composure (most vs least composed finishers beat xG by 0.007 a shot over 4,000 matches;
-    the test wants 0.01) and `morale` (lowest club average 34–35 on seed 7 and 33 on seed 10; floor 35). Both need an
-    engine/morale number tuned (e.g. `TRAIT.CALM` 0.8 → 1.0). That edit was refused by the session's permission
-    check, so it waits on Saif: tune them, accept and document them, or put AI selection back on `autoXI`.
+  - **Closed (Saif: "tune the engine numbers"):** `TRAIT.MOVE` 0.8 → 1.0; composure now measured against the side's own
+    shooters (open-play share) so it moves goals between them and adds none (traits on vs off: goals +0.1%, it was
+    +1.5% before), with `TRAIT.CALM` 0.8 → 1.5 so the effect stays clear (composed finishers +0.011–0.014 goals over xG
+    a shot, test wants 0.01). Morale: below 40 the pull back to normal is 30% instead of 20%, same rule for every
+    squad; the lowest club now averages 43–46 on seeds 7–10 (was 33–35). `rolespitch` default 64 matches
+    (press_fullback +1.5 m; 32 still swung ±0.8 m). `pitch` checks move.ts buildUp directly: quiet minutes went from
+    3 in 900 to none in 2,700, so the old check had nothing to measure.
+  - Final engine fingerprint `7116eb372ed61d68`. Balance (9 staff-run seasons): goals 2.854, home 44.6%, draws 22.6%,
+    the user's points a game 1.72 (1.80 before AI sides picked a best XI: they are a little harder to beat).
+* **M4 match polish:** `rework/agree` plays 400 matches (100 cup ties: 21 to extra time, 11 to penalties) minute by
+  minute and checks that score, stats, cards, shots, commentary (goals, VAR, disallowed goals), ratings, the
+  "Why it happened" score and xG, red-card minutes and highlights (no key moment ever skipped in any mode) all agree
+  with the event log: all pass. Found and fixed one display mismatch: "Why it happened" could round an xG of 4.95 to
+  4.9 while the full-time chart showed 4.95 (now rounded through the two-decimal value). Match › Fixtures opens with
+  "What keeps happening": record, xG a match and the analysts' findings that came back over the last six matches,
+  each bad one linking to its screen (`ui2/Trends.tsx`, `ui-tests/rework-trends.mjs`).
+* **Player page (§I):** "In your 4-3-3": starts at …, would start ahead of …, pushing …, behind …, or no natural
+  place (`sim/planfit.ts`, `rework/planfit`, `ui-tests/rework-planfit.mjs`); exact only when the scouts know him.
+  Evidence `evidence/m4i-after/`.
 
 ## Final plan (Saif, 2026-10-03: "do everything, then merge")
 1. M5 validation possible here: multi-season regression, save round-trip / slot isolation, ES/FR width gate, browser

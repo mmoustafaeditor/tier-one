@@ -9,6 +9,8 @@ import { startMatch, stepMinute, type LiveMatch } from '../src/sim/match';
 import { playOver } from '../src/sim/engine/clock';
 import { FORMATIONS } from '../src/sim/tactics';
 import { newAnim, setPitchDebug, tick, type Anim } from '../src/ui2/pitch/sim';
+import { buildUp, type Mate } from '../src/ui2/pitch/move';
+import { makeRng } from '../src/sim/rng';
 import { RATES, minuteMs, shownOf, type HlMode } from '../src/sim/highlights';
 // @ts-expect-error plain JS module shared with the browser test
 import { measure } from '../ui-tests/pitch-metrics.mjs';
@@ -84,6 +86,26 @@ const T1 = performance.now();
 const r2 = run();
 for (const l of r1) console.log(l);
 let fails = r1.filter((l) => l.startsWith('FAIL')).length;
+// The build-up of a quiet minute, checked directly (natural quiet minutes are too rare to rely on): for every philosophy,
+// 300 chains from a 4-3-3 shape are as long as the style says, use real team-mates, and never pass to the same man twice
+// in a row.
+{
+  const LEN: Record<string, [number, number]> = { possession: [5, 6], balanced: [3, 5], gegenpress: [3, 5], direct: [2, 3], counter: [2, 3], bus: [2, 3], wings: [3, 4] };
+  const mates: Mate[] = [[1, 'def', 8], [2, 'def', 26], [3, 'def', 42], [4, 'def', 60], [5, 'mid', 20], [6, 'mid', 34], [7, 'mid', 48], [8, 'fwd', 10], [9, 'fwd', 34], [10, 'fwd', 58]].map(([k, line, y]) => ({ k: k as number, line: line as Mate['line'], y: y as number }));
+  const r = makeRng(42);
+  const bad: string[] = [];
+  for (const ph of Object.keys(LEN)) {
+    let sum = 0;
+    for (let i = 0; i < 300; i++) {
+      const ch = buildUp(ph, mates, 1, r);
+      sum += ch.length;
+      if (ch.length < LEN[ph][0] || ch.length > LEN[ph][1] || ch.some((k, j) => !mates.some((m) => m.k === k) || k === (j ? ch[j - 1] : 1))) { bad.push(ph); break; }
+    }
+    if (process.env.DEBUG) console.log(`  ${ph}: ${(sum / 300).toFixed(2)} passes a chain`);
+  }
+  console.log(`${bad.length ? 'FAIL' : 'ok  '} buildUp: every philosophy's chain is as long as its style, to real team-mates${bad.length ? ' — ' + bad.join(', ') : ''}`);
+  if (bad.length) fails++;
+}
 const same = r1.join('\n') === r2.join('\n');
 console.log(`${same ? 'ok  ' : 'FAIL'} the same matches give the same numbers on a second run`);
 if (!same) fails++;

@@ -28,6 +28,7 @@ no named Android device was available — see Known limitations).
 * Picking a club shows "About the job": league rank by squad and budget, age against the league, derbies, expiring
   deals in the first eleven.
 * Promise cards remember: "Your word to X: a pathway · 0 played so far", "regular starts · started 1 of 5".
+* Match › Fixtures: "What keeps happening" over the last six matches; the player page says where he fits in your shape.
 * Accessibility from the title screen and Settings: larger text, reduce motion, stronger contrast.
 * Nothing is wider than a phone at 320–412 px, in English or Arabic.
 
@@ -41,8 +42,11 @@ Current-code reproduction: `node sim-tests/build.mjs rework/repro` → every che
 |---|---|---|
 | Typecheck | `npx tsc --noEmit` | clean |
 | Sim tests (47, incl. `rework/*`) | `node sim-tests/build.mjs <name>` | 46 pass; `marking` fails one sampling-noise check (corner headers), same as the baseline (passes at 4,000) |
-| Engine fingerprint | `fingerprint` | `a04af554a49efa49` through the M5 checks; `3879e6cc016b8942` since AI clubs moved to the best-XI pick (approved; §4) |
-| AI best-XI balance | `rework/aixi` | before/after table in §4; two tests open (§6) |
+| Engine fingerprint | `fingerprint` | `a04af554a49efa49` through the M5 checks; `7116eb372ed61d68` since AI clubs moved to the best-XI pick and the engine was re-tuned (approved; §4) |
+| AI best-XI balance | `rework/aixi` | before/after table in §4 |
+| Event agreement (400 matches) | `rework/agree` | pass: score, stats, commentary, ratings, Why, highlights all agree with the log |
+| Player fit in the plan | `rework/planfit`, `ui-tests/rework-planfit.mjs` | pass |
+| What keeps happening | `ui-tests/rework-trends.mjs` | pass |
 | Trust regressions | `rework/trust` | 33+ checks pass (F01–F10, F17, F07 picks) |
 | Career-memory slice | `rework/slice` | pass (promote → warn → start → plays → kept → reload) |
 | Broken-promise arc | `rework/arcs` | pass |
@@ -73,15 +77,18 @@ tests; see `REWORK_PROGRESS.md`). Saif then approved it with recalibration; it i
 | Draws | 22.9% | 22.1% |
 | User's points a game (staff-run) | 1.798 | 1.775 |
 
+After the re-tuning (MOVE 1.0, composure against the side's shooters with CALM 1.5, morale pull 30% below 40): goals
+2.854, home 44.6%, draws 22.6%, the user's points a game 1.72; lowest club morale 43–46 (was 33–35); traits add no
+goals (+0.1% on vs off).
+
 ## 5. Migration notes
 Save format version unchanged (8). New optional fields, all read with defaults so old saves load unchanged:
 `vision.club` (absent = the current club), slot records `100+n` (the previous save of slot n). No data is rewritten on
 load. Rollback: older builds ignore both fields.
 
 ## 6. Known limitations (not hidden)
-* AI clubs on the best XI: two calibrated effects are slightly weaker and not yet re-tuned: composed finishers beat
-  their xG by 0.007 a shot over the least composed (test wants 0.01), and the lowest club's average morale can reach
-  33–34 (test floor 35). The tuning edit waits on Saif's go-ahead; the tests are left failing, not loosened.
+* AI clubs on the best XI make the other sides a little harder to beat: the staff-run user's points a game went
+  1.80 → 1.72 over 9 seasons.
 * The derby/board-pressure arc has no new authored content; the existing systems cover it (world test, press cards).
 * No Android device test, no WebView back/resume run, no named-device benchmark in this environment.
 * No human comprehension sessions (the handoff's human gates) — none could be run here.
@@ -126,5 +133,5 @@ Build 2,834 KB (1,270 KB gzip). A full world season in Node takes ~22 s (`rework
 quick-match full time), `m2b-before|after` (half-time staging, Continue, courses), `m2c-before|after` (Transfers
 funnel), `m2d-after` (first-week guide), `m2e-after` (Tactics essentials), `m3-slice` (the connected sequence:
 promotion sheet → warning card → Your XI → full time → after reload), `m4-after` (full-time why/next), `m4c-after`
-(pre-match briefing), `m4d-before|after` (title-screen career cards), `m4e-before|after` (squad planner), `m4f-before|after` (accessibility), `m4g-before|after` (new-career job facts), `m4h-after` (promise card with memory). Phone 390 px and desktop 1440 px, English and
+(pre-match briefing), `m4d-before|after` (title-screen career cards), `m4e-before|after` (squad planner), `m4f-before|after` (accessibility), `m4g-before|after` (new-career job facts), `m4h-after` (promise card with memory), `m4i-after` (what keeps happening, fit in your plan). Phone 390 px and desktop 1440 px, English and
 Arabic where the screen changed.
