@@ -4,9 +4,9 @@
 //   bell     Home and the hubs (today, me, story, rooms, wire) and the small pages; never inside a window or the Shop
 //   wallet   only where currency matters: the Shop, the season track, Contacts (coffee), Missions; Home shows a compact pill
 //   help     where the screen passes it (Career, Market, Rooms)
-import { useSyncExternalStore, type ReactNode } from 'react';
-import { useT } from '../lib/i18n';
-import { useSave } from '../lib/save';
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useT, LANGS } from '../lib/i18n';
+import { useSave, update } from '../lib/save';
 import { sfx } from '../lib/sfx';
 import type { Route } from '../App';
 import { Icon } from './bits';
@@ -63,6 +63,29 @@ export function WalletPill({ compact }: { compact?: boolean }) {
   </button>;
 }
 
+// ---------- 3.9.15 (owner): the language button drops down the languages only; the gear opens the rest of Settings
+function LangMenu() {
+  const t = useT();
+  const s = useSave();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const off = (e: Event) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', off); document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('pointerdown', off); document.removeEventListener('keydown', esc); };
+  }, [open]);
+  return <span className="g-lang" ref={ref}>
+    <button className="g-icbtn" aria-haspopup="listbox" aria-expanded={open} aria-label={t('common.language')} onClick={() => { sfx('ui.tap'); setOpen(!open); }}><Icon n="language" /></button>
+    {open && <span className="g-lang__menu" role="listbox" aria-label={t('common.language')}>
+      {LANGS.map(([k, n]) => <button key={k} lang={k} role="option" aria-selected={s.lang === k} onClick={() => { sfx('ui.tap'); update((x) => { x.lang = k; }); setOpen(false); }}>
+        <span>{n}</span>{s.lang === k && <Icon n="check" size={16} />}
+      </button>)}
+    </span>}
+  </span>;
+}
+
 // ---------- the top bar
 // `bare` (3.8, LAUNCH_BRIEF §28): during play only the day, calls and sagas matter, so the wallet and the bell stay
 // off the window, the player file, Deadline Day and the first results reveal. Back is always top-left (owner rule).
@@ -78,9 +101,9 @@ export function TopBar({ back, title, onHelp, onMenu, children, bell, wallet, ba
     <span className="g-top__end">
       {children}
       {showWallet && <WalletPill compact={route === 'front'} />}
-      {showBell && <Bell />}
       {onHelp && <button className="g-icbtn" onClick={onHelp} aria-label={t('nav.howto')}><Icon n="help" /></button>}
-      {onMenu && <button className="g-icbtn" onClick={onMenu} aria-label={t('common.settings') + ' · ' + t('common.language')}><Icon n="language" /></button>}
+      {onMenu ? <span className="g-top__tools">{showBell && <Bell />}<LangMenu /><button className="g-icbtn" onClick={() => { sfx('ui.tap'); onMenu(); }} aria-label={t('common.settings')}><Icon n="gear" /></button></span>
+        : showBell && <Bell />}
     </span>
   </header>;
 }

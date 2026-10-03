@@ -106,3 +106,61 @@
   .hm39__tic svg { width: 18px; height: 18px; }
   .hm39__tb b { font-size: 13px; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: normal; word-break: keep-all; }
 }
+
+/* 3.9.15 (owner mockup): Career Mode as a paper card with the chapter row; Multiplayer as a big paper card beside
+   Transfer Market and Shop rows. Coral arrow buttons, the same radius and edges as everything else. */
+.hm39__careerc { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: 12px; padding: 10px 12px 10px 14px; border-radius: var(--hm-r); background: var(--card); color: var(--card-ink); text-align: start; box-shadow: 0 14px 30px -18px rgba(0,0,0,.9); }
+.hm39__ch { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--card-line); margin-inline-end: 0; }
+.hm39__ch b { font-size: clamp(24px, 7vw, 30px); line-height: 1; color: var(--card-ink); }
+.hm39__ch svg { color: var(--gold-deep); flex: none; }
+.hm39__cr { grid-column: 1; display: flex; align-items: center; gap: 10px; min-width: 0; padding-top: 8px; }
+.hm39__cr > b { font-family: var(--f-display); font-weight: 600; font-size: 17px; white-space: nowrap; color: var(--card-ink); }
+.hm39__cr > i { width: 1px; height: 22px; background: var(--card-line); flex: none; }
+.hm39__cr .hm39__lv { color: var(--card-ink); font-size: 17px; }
+.hm39__cr .hm39__bar { background: var(--desk); height: 7px; }
+.hm39__cr .hm39__xp { color: var(--card-ink-2); font-size: 12.5px; font-weight: 700; }
+.hm39__pro1 { font-style: italic; color: var(--gold-deep) !important; }
+.hm39__cr .hm39__pro { color: var(--card-ink); font-size: 14.5px; }
+.hm39__careerc > .hm39__go { grid-column: 2; grid-row: 2; align-self: end; margin-top: 8px; }
+.hm39__careerc.is-hot { box-shadow: inset 0 0 0 2px var(--gold), 0 14px 30px -18px rgba(0,0,0,.9); }
+.hm39__go { display: inline-grid; place-items: center; width: 42px; height: 38px; border-radius: 9px; background: var(--red); color: #fff; box-shadow: 0 2px 0 var(--red-deep); flex: none; }
+.hm39__modes { flex: none; display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); grid-template-rows: auto auto; gap: 8px; }
+.hm39__mp { grid-row: 1 / span 2; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px; border-radius: var(--hm-r); background: var(--card); color: var(--card-ink); text-align: start; box-shadow: 0 14px 30px -18px rgba(0,0,0,.9); }
+.hm39__mp > svg { color: var(--gold-deep); }
+.hm39__mp > b { font-size: clamp(22px, 6.4vw, 28px); line-height: 1; color: var(--card-ink); }
+.hm39__row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 54px; padding: 6px 8px 6px 12px; border-radius: var(--hm-r); background: var(--desk-2); box-shadow: inset 0 0 0 1px var(--desk-line); color: var(--on-desk); text-align: start; }
+.hm39__row > svg { color: var(--gold); }
+.hm39__row > b { font-family: var(--f-display); font-weight: 600; font-size: 17px; line-height: 1.1; }
+.hm39__careerc:active, .hm39__mp:active, .hm39__row:active { transform: scale(.985); }
+.hm39__careerc:focus-visible, .hm39__mp:focus-visible, .hm39__row:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+/* the bar on the Desk: just the wordmark and the tools pill */
+.hm39 > .g-top .g-top__tools { background: color-mix(in srgb, var(--desk-2) 92%, transparent); }
+/* short phones */
+@media (max-height: 700px) and (max-width: 699px) {
+  .hm39__ch b { font-size: 24px; } .hm39__ch { padding-bottom: 4px; } .hm39__cr { padding-top: 6px; }
+  .hm39__careerc { padding: 8px 10px 8px 12px; }
+  .hm39__row { min-height: 48px; } .hm39__go { width: 38px; height: 34px; }
+  .hm39__mp { padding: 10px 12px; }
+}
+/* 3.9.15b short phones (≤ 700px tall, e.g. Safari with its toolbars): every block tightens so Shop stays on screen */
+@media (max-height: 700px) and (max-width: 699px) {
+  .hm39 .fit__body { gap: 6px; }
+  .hm39__daily { padding: 9px 12px 10px; }
+  .hm39__t { font-size: 25px; line-height: .96; margin: 1px 0 2px; }
+  .hm39__k { font-size: 11px; }
+  .hm39__shirts { width: 116px; }
+  .hm39__meta { margin-top: 6px; padding-top: 6px; }
+  .hm39__streak { font-size: 15.5px; min-height: 30px; }
+  .hm39__clock { font-size: 13px; } .hm39__clock b { font-size: 15px; }
+  .hm39__acts { margin-top: 7px; }
+  .hm39__play, .hm39__past, .hm39__ic { min-height: 42px; }
+  .hm39__play { font-size: 17px; } .hm39__past { font-size: 14px; }
+  .hm39__careerc { padding: 7px 10px 7px 12px; }
+  .hm39__ch b { font-size: 22px; } .hm39__ch svg { width: 22px; height: 22px; }
+  .hm39__cr { padding-top: 5px; } .hm39__cr > b, .hm39__cr .hm39__lv { font-size: 15.5px; }
+  .hm39__careerc > .hm39__go { margin-top: 5px; }
+  .hm39__go { width: 36px; height: 32px; }
+  .hm39__modes { gap: 6px; }
+  .hm39__row { min-height: 46px; padding: 4px 6px 4px 10px; } .hm39__row > b { font-size: 15.5px; }
+  .hm39__mp { padding: 8px 12px; gap: 4px; } .hm39__mp > b { font-size: 22px; } .hm39__mp > svg { width: 24px; height: 24px; }
+}

@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { useT, num, fmtDate } from '../lib/i18n';
 import { update, useSave } from '../lib/save';
 import type { Save } from '../lib/save';
-import { useWire } from '../lib/wireData';
 import { ymdUTC } from '../lib/meta';
 import { ensureMissions, levelOf } from '../lib/progress';
 import { sfx } from '../lib/sfx';
@@ -26,7 +25,6 @@ const pad3 = (n: number) => String(n).padStart(3, '0');
 export function Home(chrome: Chrome) {
   const t = useT();
   const s = useSave();
-  const w = useWire();
   const now = useNow(1000);
   useEffect(() => { update((x) => { ensureMissions(x); }); dailyFeed(); }, []);
   const today = ymdUTC(), no = dailyNoToday();
@@ -34,15 +32,13 @@ export function Home(chrome: Chrome) {
   const liveD = dailyLiveDay(s);
   const closes = Date.parse(today + 'T00:00:00Z') + 864e5 - now;
   const ch = chapterOf(s);
-  const openCalls = (w.mine?.calls || []).filter((c) => !c.done).length;
   const [sheet, setSheet] = useState<null | 'past' | 'streak'>(null);
   const past = Object.entries(s.daily).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 30);
   const lv = levelOf(s.pp, s);
   const xpIn = lv.max ? lv.per : Math.round((lv.pct / 100) * lv.per);
-  const careerSub = s.career?.live ? t('sh.home.sub.careerLive') : ch && s.career ? t('sh.home.sub.careerAt', { c: ch.n, n: s.career.windows + 1 }) : t('sh.home.sub.careerNew');
   const arrow = <Icon n={t.rtl ? 'back' : 'arrow'} size={20} />;
   return <div className="g-screen home hm hm39 fit">
-    <TopBar onMenu={chrome.openSettings} />
+    <TopBar onMenu={chrome.openSettings} wallet={false} />
     <div className="fit__body hm__body">
       <div className="hm39__art" aria-hidden="true"><img className="hm39__photo" src="art/desk-hero-full.webp" alt="" decoding="async" /><img className="hm39__hair" src="art/desk-hero-full.webp" alt="" decoding="async" /></div>
 
@@ -54,7 +50,7 @@ export function Home(chrome: Chrome) {
           <div className="hm39__head">
             <h1 className="hm39__t g-hed">{t('u39.home.title')}</h1>
             {played ? <p className="hm39__sub"><span className={'g-stamp g-stamp--' + (TIER_STAMP[played.tier] || '')}>{t('tier.' + played.tier)}</span> <b className="g-num">{t('sh.home.filed', { p: num(played.total) })}</b>{played.rank ? ' · ' + t('sh.home.rank', { r: played.rank, n: played.players || 1 }) : ''}</p>
-              : <p className="hm39__sub">{t('u39.home.sub')}</p>}
+              : null}
           </div>
           <img className="hm39__shirts" src="art/daily-shirts.webp" alt="" aria-hidden="true" width={398} height={130} decoding="async" />
         </div>
@@ -69,34 +65,25 @@ export function Home(chrome: Chrome) {
         </div>
       </section>
 
-      {s.career && ch ? <button type="button" className="hm39__season" onClick={() => { sfx('ui.tap'); chrome.go({ n: 'story' }); }} aria-label={t('u39.home.chapter', { n: ch.n }) + ' · ' + t(chapterName(ch.id))} title={t(chapterName(ch.id))}>
-        <b>{t('u39.home.chapter', { n: ch.n })}</b><i aria-hidden="true" />
-        <span className="hm39__lv">{t('g.lv', { n: lv.n })}</span>
-        <span className="hm39__bar" aria-hidden="true"><i style={{ width: Math.max(2, Math.min(100, lv.pct)) + '%' }} /></span>
-        <span className="hm39__xp g-num">{xpIn} / {lv.per} XP</span>
-      </button> : <button type="button" className="hm39__season hm39__prologue" onClick={() => { sfx('open'); chrome.go({ n: 'story' }); }}>
-        <b>{t('u39.home.prologue')}</b><i aria-hidden="true" />
-        <span className="hm39__pro">{t('u39.home.prologueSub')}</span>
-        <span className="hm39__begin">{t('u39.home.begin')}<Icon n={t.rtl ? 'back' : 'arrow'} size={16} /></span>
-      </button>}
-
-      <button type="button" className={'hm39__career' + (s.career?.live ? ' is-hot' : '')} onClick={() => { sfx('open'); chrome.go({ n: 'story' }); }}>
-        <span className="hm39__cic" aria-hidden="true"><Icon n="career" size={30} /></span>
-        <span className="hm39__cb"><b>{t('u39.home.career')}</b><small dir="auto">{careerSub}</small></span>
-        {arrow}
+      <button type="button" className={'hm39__careerc' + (s.career?.live ? ' is-hot' : '')} onClick={() => { sfx('open'); chrome.go({ n: 'story' }); }} aria-label={t('u39.home.career') + (s.career && ch ? ' · ' + t(chapterName(ch.id)) : '')}>
+        <span className="hm39__ch"><b className="g-hed">{t('u39.home.career')}</b><Icon n="career" size={26} /></span>
+        <span className="hm39__cr">
+          {s.career && ch ? <><b>{t('u39.home.chapter', { n: ch.n })}</b><i aria-hidden="true" /><span className="hm39__lv">{t('g.lv', { n: lv.n })}</span><span className="hm39__bar" aria-hidden="true"><i style={{ width: Math.max(2, Math.min(100, lv.pct)) + '%' }} /></span><span className="hm39__xp g-num">{xpIn} / {lv.per} XP</span></>
+            : <><b className="hm39__pro1">{t('u39.home.prologue')}</b><i aria-hidden="true" /><span className="hm39__pro">{t('u39.home.prologueSub')}</span></>}
+        </span>
+        <span className="hm39__go" aria-hidden="true">{arrow}</span>
       </button>
-      <div className="hm39__tiles">
-        <button type="button" className="hm39__tile hm39__tile--career" onClick={() => { sfx('open'); chrome.go({ n: 'story' }); }}>
-          <span className="hm39__tic" aria-hidden="true"><Icon n="career" size={24} /></span>
-          <span className="hm39__tb"><b>{t('u39.home.career')}</b><small dir="auto">{careerSub}</small></span>
+      <div className="hm39__modes">
+        <button type="button" className="hm39__mp" onClick={() => { sfx('open'); chrome.go({ n: 'rooms' }); }}>
+          <Icon n="rooms" size={30} />
+          <b className="g-hed">{t('u39.home.rooms')}</b>
+          <span className="hm39__go" aria-hidden="true">{arrow}</span>
         </button>
-        <button type="button" className="hm39__tile" onClick={() => { sfx('open'); chrome.go({ n: 'rooms' }); }}>
-          <span className="hm39__tic" aria-hidden="true"><Icon n="rooms" size={24} /></span>
-          <span className="hm39__tb"><b>{t('u39.home.rooms')}</b><small>{s.rooms.length ? t('u39.home.roomsN', { n: s.rooms.length }) : t('u39.home.roomsSub')}</small></span>
+        <button type="button" className="hm39__row" onClick={() => { sfx('open'); chrome.go({ n: 'wire' }); }}>
+          <Icon n="market" size={26} /><b>{t('u39.home.market')}</b><span className="hm39__go" aria-hidden="true">{arrow}</span>
         </button>
-        <button type="button" className="hm39__tile" onClick={() => { sfx('open'); chrome.go({ n: 'wire' }); }}>
-          <span className="hm39__tic" aria-hidden="true"><Icon n="market" size={24} /></span>
-          <span className="hm39__tb"><b>{t('u39.home.market')}</b><small>{openCalls ? t('sh.home.sub.marketCalls', { n: openCalls }) : t('u39.home.marketSub')}</small></span>
+        <button type="button" className="hm39__row" onClick={() => { sfx('open'); chrome.go({ n: 'customize' }); }}>
+          <Icon n="shop" size={26} /><b>{t('u39.home.shop')}</b><span className="hm39__go" aria-hidden="true">{arrow}</span>
         </button>
       </div>
     </div>

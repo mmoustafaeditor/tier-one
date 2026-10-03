@@ -7,6 +7,12 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.15 — the Desk to the owner's mockup; language dropdown
+
+- Top bar: wordmark, then one grouped pill: bell · language · settings (gear). The language button drops down English / العربية / Español only; the gear opens the full Settings. This applies on every page with a settings button. The Desk's bar no longer shows coins (the Shop has its own card).
+- Desk below the Daily Challenge card: a paper Career Mode card (title, chapter · level · XP, or Prologue · Your story starts here., with a coral arrow), then a paper Multiplayer card beside Transfer Market and Shop rows, each with a coral arrow. The tagline is gone from the Daily card (as in the mockup).
+- Fits one screen at 390×664 and up; desktop shows the same Desk centred.
+
 ## 2026-10-03 · Tier One 3.9.14 — head in the top bar, icons above the picture
 
 - The Desk's top bar items (coins, bell, globe/settings) sit on the logo's line, above the picture's top edge and drawn over it; the character's head rises into the bar in the gap between the logo and the icons.
