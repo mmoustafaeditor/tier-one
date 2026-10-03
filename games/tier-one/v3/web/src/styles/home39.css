@@ -86,3 +86,23 @@
 .hm39__lp { font-size: 18px; min-width: 52px; text-align: end; }
 .hm39__streakbox { display: grid; justify-items: center; text-align: center; gap: 8px; padding-bottom: 12px; }
 .hm39__flame { color: var(--red); }
+
+/* 3.9.14 (owner): the bar's items share the logo's line, above the picture; her head rises into the gap between the
+   logo and the icons; the Desk's wallet shows coins only so the gap stays clear (credits live in the Shop). */
+.hm39 > .g-top { position: relative !important; z-index: 9; }
+.hm39 > .g-top .g-wal--compact .g-wal__b--c { display: none; }
+.hm39 > .g-top .g-wal--compact .g-wal__b + .g-wal__b { border: 0; }
+.hm39__art { margin-top: -46px; }
+@media (min-width: 700px) { .hm39__art { margin-top: -46px !important; } }
+/* the three mode tiles: icon and name on one line, no empty space */
+@media (max-height: 760px), (min-width: 700px) {
+  .hm39__tile { grid-template-columns: auto minmax(0, 1fr); align-items: center; justify-items: start; gap: 6px; min-height: 0; padding: 10px 8px; }
+  .hm39__tic svg { width: 20px; height: 20px; }
+  .hm39__tb b { font-size: 13.5px; line-height: 1.12; }
+}
+.hm39 .fit__body { overflow: visible !important; }
+@media (max-height: 760px), (min-width: 700px) {
+  .hm39__tile { gap: 5px; padding: 9px 7px; }
+  .hm39__tic svg { width: 18px; height: 18px; }
+  .hm39__tb b { font-size: 13px; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: normal; word-break: keep-all; }
+}

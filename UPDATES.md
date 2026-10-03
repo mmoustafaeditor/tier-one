@@ -7,6 +7,12 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.14 — head in the top bar, icons above the picture
+
+- The Desk's top bar items (coins, bell, globe/settings) sit on the logo's line, above the picture's top edge and drawn over it; the character's head rises into the bar in the gap between the logo and the icons.
+- The Desk's wallet shows coins only (credits stay in the Shop) so that gap stays clear.
+- The three mode tiles are compact: icon and name on one line (names wrap by word), no empty space.
+
 ## 2026-10-03 · Tier One 3.9.13 — the Desk, aligned and rounded
 
 - The newsroom picture is a rounded card with the same corners and edges as the Daily Challenge card and the tiles; her head breaks out of its top edge (two layers of one image: the rounded photo, and the cut-out head above it).
