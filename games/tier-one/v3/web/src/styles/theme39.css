@@ -111,3 +111,20 @@ html, body { background: var(--desk); color: var(--on-desk); }
 
 /* painted player art fills its frame, face in view */
 .g-portrait.is-art[data-kind="player"] img { object-fit: cover; object-position: 50% 18%; }
+
+/* 3.9.9 six destinations (Desk · Daily · Career · Multiplayer · Market · Profile), always on screen */
+.g-tabs { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+.g-tabs::after { inset-inline-start: calc((var(--tab-i, 0) + .5) * (100% - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) / 6 + env(safe-area-inset-left, 0px) - 17px); }
+.g-tabs a { font-size: 10.5px; padding-inline: 1px; }
+.g-tabs a span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+@media (max-width: 360px) { .g-tabs a { font-size: 9.5px; } .g-tabs a svg { width: 22px; height: 22px; } }
+.g-screen.fit--full { padding-bottom: calc(var(--tabs-h) + 8px + env(safe-area-inset-bottom, 0px)); }
+@media (min-width: 700px) and (max-width: 1023.98px) {
+  .g-tabs { width: 600px !important; }
+  .g-tabs::after { inset-inline-start: calc((var(--tab-i, 0) + .5) * 100% / 6 - 17px) !important; }
+  .g-screen.fit--full { padding-bottom: calc(var(--tabs-h) + 24px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (min-width: 1024px) { .g-screen.fit--full { padding-bottom: 16px; } }
+/* Back on every page: the icon-only back sits before the wordmark */
+.g-top__back--auto { padding-inline-end: 4px; }
+.g-top__back--auto + .g-top__logo { margin-inline-start: 2px; }

@@ -3,7 +3,7 @@
 export default {
   en: {
     sh: {
-      tabs: { home: 'Home', daily: 'Daily', career: 'Career', rooms: 'Rooms', me: 'My Press Card' },
+      tabs: { home: 'Desk', daily: 'Daily', career: 'Career', rooms: 'Rooms', me: 'My Press Card' },
       top: { wallet: '{c} coins, {k} credits. Open the Shop', menu: 'Settings', back: 'Back' },
       home: {
         kicker: 'The Daily Challenge', no: 'No. {n}', closes: 'Closes in {t}', play: 'Play today’s Daily', resume: 'Back to day {d}', result: 'See your result',
@@ -45,7 +45,7 @@ export default {
   },
   ar: {
     sh: {
-      tabs: { home: 'الرئيسية', daily: 'اليومي', career: 'المسيرة', rooms: 'الأوض', me: 'كارنيه الصحافة' },
+      tabs: { home: 'المكتب', daily: 'اليومي', career: 'المسيرة', rooms: 'الأوض', me: 'كارنيه الصحافة' },
       top: { wallet: '{c} كوينز و{k} كريدت. افتح المحل', menu: 'الإعدادات', back: 'رجوع' },
       home: {
         kicker: 'تحدي النهارده', no: 'رقم {n}', closes: 'بيقفل بعد {t}', play: 'العب تحدي النهارده', resume: 'ارجع لليوم {d}', result: 'شوف نتيجتك',
@@ -87,7 +87,7 @@ export default {
   },
   es: {
     sh: {
-      tabs: { home: 'Inicio', daily: 'Diario', career: 'Carrera', rooms: 'Salas', me: 'Mi carné' },
+      tabs: { home: 'Mesa', daily: 'Diario', career: 'Carrera', rooms: 'Salas', me: 'Mi carné' },
       top: { wallet: '{c} monedas, {k} créditos. Abrir la Tienda', menu: 'Ajustes', back: 'Atrás' },
       home: {
         kicker: 'El Diario', no: 'N.º {n}', closes: 'Cierra en {t}', play: 'Jugar el Diario de hoy', resume: 'Vuelve al día {d}', result: 'Ver tu resultado',

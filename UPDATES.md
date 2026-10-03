@@ -7,6 +7,12 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.9 — six tabs, always on; Back everywhere
+
+- Bottom bar: Desk · Daily · Career · Multiplayer · Market · Profile, on every page (also inside the Daily, Career and room windows; the page leaves room for it).
+- Back is top-left on every page. Pages without their own Back get one before the wordmark; it returns to the page you came from (a real history, reset when you tap a tab). Android's back key uses the same.
+- Back labels say "Desk" (was "Home").
+
 ## 2026-10-03 · Tier One 3.9.8 — the Desk (owner page-by-page pass, page 1)
 
 - Desk rebuilt to the owner's screenshot: newsroom banner (owner art), the Daily Challenge card (Daily No., title, five mystery shirts, streak · reset clock), then Play today · Past results · Leaderboards (daily and weekly) · Streak; the Season row with level and XP; a Career Mode card; Multiplayer and Transfer Market tiles. Practice, Missions and Shop are off the Desk.

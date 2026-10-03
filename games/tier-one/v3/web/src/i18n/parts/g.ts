@@ -4,7 +4,7 @@ export default {
     g: {
       coins: '{n} coins', level: 'Level {n}', lv: 'Lv {n}',
       bar: { daily: 'Daily', career: 'Career Mode', room: 'Room', toPlay: 'Play today', ch: 'Chapter {c}', noRank: 'Unranked', start: 'Start', rank: '#{r}' },
-      tabs: { home: 'Home', story: 'Career Mode', wire: 'Transfer Market', friends: 'Multiplayer', me: 'My Press Card' },
+      tabs: { home: 'Desk', story: 'Career Mode', wire: 'Transfer Market', friends: 'Multiplayer', me: 'My Press Card' },
       home: {
         noName: 'New reporter', freelance: 'Out of work since Deadline Day', xp: 'XP {a}/{b}', followers: '{n} followers', streak: 'Streak',
         dailyNo: 'The Daily Challenge · No. {n}', todaysFive: 'Today’s five', filed: 'Filed.', tag: 'Five transfer sagas. Some are lying. Break them first or get ratio’d trying.',
@@ -39,7 +39,7 @@ export default {
     g: {
       coins: '{n} عملة', level: 'المستوى {n}', lv: 'مستوى {n}',
       bar: { daily: 'اليومي', career: 'وضع المسيرة', room: 'الأوضة', toPlay: 'العب النهارده', ch: 'الفصل {c}', noRank: 'من غير ترتيب', start: 'ابدأ', rank: '#{r}' },
-      tabs: { home: 'الرئيسية', story: 'وضع المسيرة', wire: 'سوق الانتقالات', friends: 'جماعي', me: 'كارنيه الصحافة بتاعي' },
+      tabs: { home: 'المكتب', story: 'وضع المسيرة', wire: 'سوق الانتقالات', friends: 'جماعي', me: 'كارنيه الصحافة بتاعي' },
       home: {
         noName: 'صحفي جديد', freelance: 'قاعد من غير شغل من آخر يوم', xp: 'خبرة {a}/{b}', followers: '{n} متابع', streak: 'السلسلة',
         dailyNo: 'التحدي اليومي · رقم {n}', todaysFive: 'خمسة النهارده', filed: 'اتقفل.', tag: 'خمس صفقات. فيهم كدب. اكشفهم الأول ولا هتبقى تريند بالغلط.',
@@ -73,7 +73,7 @@ export default {
     g: {
       coins: '{n} monedas', level: 'Nivel {n}', lv: 'Nv {n}',
       bar: { daily: 'Diario', career: 'Modo Carrera', room: 'Sala', toPlay: 'Juega hoy', ch: 'Capítulo {c}', noRank: 'Sin puesto', start: 'Empezar', rank: '#{r}' },
-      tabs: { home: 'Inicio', story: 'Modo Carrera', wire: 'Mercado', friends: 'Multijugador', me: 'Mi carné de prensa' },
+      tabs: { home: 'Mesa', story: 'Modo Carrera', wire: 'Mercado', friends: 'Multijugador', me: 'Mi carné de prensa' },
       home: {
         noName: 'Nuevo periodista', freelance: 'En paro desde el último día de mercado', xp: 'XP {a}/{b}', followers: '{n} seguidores', streak: 'Racha',
         dailyNo: 'El Diario · N.º {n}', todaysFive: 'Los cinco de hoy', filed: 'Enviado.', tag: 'Cinco culebrones de fichajes. Alguno miente. Dalo antes que nadie o hazte viral por errar.',
