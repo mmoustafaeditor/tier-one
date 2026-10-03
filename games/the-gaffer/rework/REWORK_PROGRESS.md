@@ -100,4 +100,11 @@ Decision (Saif, 2026-10-03): AI clubs keep their current XI selection; the best-
   save-description fields are optional (`SaveMeta.pos/of/next`): older saves show the old card until saved again, no
   migration needed. `ui-tests/rework-title.mjs`; evidence `evidence/m4d-before|after/`.
 
-Next: squad planner view; M5 device/human validation.
+* Squad planner (Squad screen, handoff §D): one card per line (GK/DEF/MID/ATT) with roles (first choice / rotation /
+  prospects, from the dressing-room roles), deals ending this season / next (heat colour), average age and 31+, who is
+  out, and the needs the scouts derive from Plan A (`needs()`, the same list Transfers › Needs shows; a chip opens it).
+  Folded to one summary row on phones so the player list stays inside the nav budget; open on wider screens; the
+  choice is remembered. Read-only. `ui-tests/rework-planner.mjs`; evidence `evidence/m4e-before|after/`.
+  Not done from §D: Plan B fit, registration/homegrown status (no competition in the game requires it yet).
+
+Next: M5 validation items possible here (save round-trip/slot isolation checks, full-suite run), then the report.

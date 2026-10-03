@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: squad planner
+- **What changed:** The Squad screen has a "Squad planner" with one card per line (goalkeepers, defence, midfield, attack). Each card shows the roles (first choice / rotation / prospects), deals ending this season or next (coloured), average age and how many players are 31+, who is out, and the needs the scouts already work out from your tactics. Tapping a need opens Transfers › Needs. On phones the planner starts folded to one row so the player list stays near the top; it remembers whether you opened it.
+- **Files:** `web/src/ui2/Planner.tsx` (new), `src/lang-planner.ts` (new), `src/ui2/Squad.tsx`, `src/styles/app.css`, `web/ui-tests/rework-planner.mjs` (new), `games/the-gaffer/rework/*`
+- **Heads-up for the team:** Read-only: nothing in the game changes. Branch only. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework: richer career cards on the title screen
 - **What changed:** Your career card on the title screen now shows the manager, season and matchday, the league position (from the first match on), the next league match (home or away) and when you last played. An empty slot is now a clear "Start a 2026/27 career" card instead of a grey "Empty slot" row.
 - **Files:** `web/src/ui2/Title.tsx`, `src/sim/save.ts` (`metaOf` adds `pos`/`of`/`next`), `src/model/types.ts`, `src/App.tsx`, `src/lang-v2*.ts`, `src/styles/app.css`, `web/ui-tests/rework-title.mjs` (new), `games/the-gaffer/rework/*`
