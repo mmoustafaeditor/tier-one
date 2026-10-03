@@ -47,3 +47,17 @@
 .dh39__streak svg, .dh39__status svg { flex: none; }
 .dh39__status { min-width: 0; }
 @media (max-width: 370px) { .dh39__kit b { font-size: 9.5px; } }
+/* 3.9.17: after play the tiles keep the locked tile's size and shirt; the shirt takes the club's colours, the surname sits under it */
+.dh39__kit { height: 66px; min-height: 0; align-content: center; }
+.dh39__kit.is-on { gap: 3px; padding-top: 4px; }
+.dh39__kit.is-on .g-kit { width: 40px !important; height: 40px !important; }
+.dh39__kit.is-on b { display: block; width: 100%; padding: 0 3px; box-sizing: border-box; font-family: var(--f-text); font-size: 11px; font-weight: 600; line-height: 1.15; color: var(--card-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-height: 700px) { .dh39__kit { height: 58px; } .dh39__kit.is-on .g-kit { width: 34px !important; height: 34px !important; } }
+.dh39__kit { height: 66px; padding: 4px 2px; }
+.dh39__kit.is-on { gap: 4px; }
+.dh39__kit.is-on .g-kit { width: 38px !important; height: 38px !important; }
+.dh39__kit.is-on b { font-family: var(--f-text); font-size: 10.5px; font-weight: 700; letter-spacing: -.01em; text-overflow: clip; padding: 0 1px; }
+@media (max-height: 700px) { .dh39__kit { height: 60px; } .dh39__kit.is-on .g-kit { width: 34px !important; height: 34px !important; } }
+@media (max-width: 370px) { .dh39__kit.is-on b { font-size: 9.5px; } }
+.dh39__kit.is-on { gap: 0; padding: 2px 2px 5px; } .dh39__kit.is-on .g-kit { width: 44px !important; height: 44px !important; margin-top: -4px; }
+@media (max-height: 700px) { .dh39__kit.is-on .g-kit { width: 44px !important; height: 44px !important; } }

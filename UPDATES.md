@@ -7,6 +7,10 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.17 — Daily tab: revealed shirts match the locked ones
+
+- After you play, each of the five tiles keeps the locked tile's size and plain shirt, now in the club's colours with a collar trim, and the player's surname under it. No more numbers or patterns on these shirts.
+
 ## 2026-10-03 · Tier One 3.9.16 — the Daily Challenge tab to the owner's mockups
 
 - Paper card with a coral band (Daily No. and reset clock), "The Daily Challenge." title, "Five sagas. Make your calls."

@@ -52,8 +52,8 @@ export function DailyHubScreen(chrome: Chrome) {
           <div className="dh39__kits">
             {Array.from({ length: 5 }, (_, k) => { const c = played ? cast?.[k] : undefined;
               return <span key={k} className={'dh39__kit' + (c ? ' is-on' : '')}>
-                {c ? <Kit club={c.from} player={c.player} size={44} /> : <Kit mystery size={44} />}
-                {c && <b dir="auto">{c.player.s || c.player.n}</b>}
+                {c ? <Kit club={c.from} plain size={44} /> : <Kit mystery size={44} />}
+                {c && <b dir="auto" title={c.player.n}>{(c.player.s || c.player.n).split(/\s+/).pop()}</b>}
               </span>; })}
           </div>
           <div className="dh39__week" aria-label={t('g.home.weekAria')}>
