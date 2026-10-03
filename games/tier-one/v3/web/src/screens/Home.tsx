@@ -11,6 +11,7 @@ import { ensureMissions, levelOf } from '../lib/progress';
 import { sfx } from '../lib/sfx';
 import { Icon, useNow, Sheet } from '../ui/bits';
 import { TopBar } from '../ui/game';
+import { WalletPill } from '../ui/chrome';
 import { chapterOf, chapterName } from '../lib/storyMode';
 import type { Chrome } from '../App';
 import { dailyFeed } from '../lib/byline';
@@ -42,9 +43,9 @@ export function Home(chrome: Chrome) {
   const careerSub = s.career?.live ? t('sh.home.sub.careerLive') : ch && s.career ? t('sh.home.sub.careerAt', { c: ch.n, n: s.career.windows + 1 }) : t('sh.home.sub.careerNew');
   const arrow = <Icon n={t.rtl ? 'back' : 'arrow'} size={20} />;
   return <div className="g-screen home hm hm39 fit">
-    <TopBar onMenu={chrome.openSettings} />
+    <TopBar onMenu={chrome.openSettings} wallet={false} />
     <div className="fit__body hm__body">
-      <div className="hm39__art" aria-hidden="true"><img src="art/desk-hero.webp" alt="" decoding="async" /></div>
+      <div className="hm39__art"><img src="art/desk-hero-full.webp" alt="" aria-hidden="true" decoding="async" /><span className="hm39__wallet"><WalletPill compact /></span></div>
 
       <section className={'hm39__daily' + (played ? ' is-filed' : '')} aria-label={t('u39.home.title')}>
         <div className="hm39__top">
@@ -86,6 +87,10 @@ export function Home(chrome: Chrome) {
         {arrow}
       </button>
       <div className="hm39__tiles">
+        <button type="button" className="hm39__tile hm39__tile--career" onClick={() => { sfx('open'); chrome.go({ n: 'story' }); }}>
+          <span className="hm39__tic" aria-hidden="true"><Icon n="career" size={24} /></span>
+          <span className="hm39__tb"><b>{t('u39.home.career')}</b><small dir="auto">{careerSub}</small></span>
+        </button>
         <button type="button" className="hm39__tile" onClick={() => { sfx('open'); chrome.go({ n: 'rooms' }); }}>
           <span className="hm39__tic" aria-hidden="true"><Icon n="rooms" size={24} /></span>
           <span className="hm39__tb"><b>{t('u39.home.rooms')}</b><small>{s.rooms.length ? t('u39.home.roomsN', { n: s.rooms.length }) : t('u39.home.roomsSub')}</small></span>

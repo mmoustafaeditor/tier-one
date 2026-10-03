@@ -7,6 +7,12 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.12 — the full newsroom banner, her head in the top bar
+
+- The Desk banner is the owner's whole illustration (lamp, posters, mug), with the anime character's head rising into a transparent top bar like the mockup (art/desk-hero-full.webp; the head is cut out by colour so her hair stays).
+- Top bar on the Desk: wordmark, bell, avatar, globe. Coins and credits sit in a pill on the banner's bottom-right corner (still opens the Shop), so nothing covers her.
+- Shorter phones (under 760px tall): Career Mode joins Multiplayer and Transfer Market as a third tile and the card tightens, so the Desk stays one screen. Taller phones keep the Career card. Desktop keeps a framed banner and a normal top bar.
+
 ## 2026-10-03 · Tier One 3.9.11 — Desk polish
 
 - Fixed "Lv NaN / NaN XP": the level maths now treats a missing or corrupt saved number as 0 (lib/progress.ts levelOf, lib/season.ts seasonLevel).

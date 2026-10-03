@@ -97,3 +97,38 @@
 .hm39__tile { min-height: 58px; padding: 6px 10px; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; }
 .hm39__tb b { font-size: 15.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hm39__shirts { width: clamp(124px, 38vw, 200px); }
+
+/* 3.9.12 the banner is the whole illustration; her head rises into a transparent top bar (owner mockup).
+   The wallet moves onto the banner so nothing in the bar covers her. */
+.hm39.g-screen { position: relative; }
+.hm39 > .g-top { position: absolute; inset: 0 0 auto 0; z-index: 6; margin: 0 !important; background: transparent !important; border-bottom: 0 !important; box-shadow: none !important; }
+.hm39 > .g-top .g-icbtn, .hm39 > .g-top .cn-bell { background: color-mix(in srgb, var(--desk) 72%, transparent); }
+.hm39 .fit__body { padding-top: 0; }
+.hm39__art { position: relative; flex: none !important; display: block !important; aspect-ratio: 941 / 474; min-height: 0 !important; max-height: none !important; margin: 0 -16px !important; overflow: visible; }
+.hm39__art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; }
+.hm39__wallet { position: absolute; inset-inline-end: 12px; bottom: 12px; z-index: 2; }
+.hm39__wallet .g-wal { background: color-mix(in srgb, var(--desk) 80%, transparent); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.hm39__daily { margin-top: -4px !important; }
+.hm39__tile--career { display: none !important; }
+/* shorter phones: Career joins the tiles as a third tile and the card tightens, so the Desk stays one screen */
+@media (max-height: 760px) and (max-width: 700px) {
+  .hm39__career { display: none !important; }
+  .hm39__tile--career { display: grid !important; }
+  .hm39__tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .hm39__tile { grid-template-columns: 1fr; justify-items: start; gap: 2px; min-height: 64px; padding: 8px 10px; }
+  .hm39__tb small { display: none; }
+  .hm39__tb b { font-size: 14.5px; white-space: normal; line-height: 1.1; }
+  .hm39__t { font-size: clamp(26px, 7.6vw, 34px); }
+  .hm39__sub { font-size: 13.5px; }
+  .hm39__play, .hm39__past, .hm39__ic { min-height: 44px; }
+  .hm39__play { font-size: 17px; }
+  .hm39__season { min-height: 44px; }
+  .hm39 .fit__body { gap: 7px; }
+}
+@media (max-height: 600px) { .hm39__art { display: none !important; } .hm39 > .g-top { position: sticky; background: var(--desk) !important; } }
+/* desktop: the banner keeps its height; the top bar returns to the page */
+@media (min-width: 1024px) {
+  .hm39 > .g-top { position: sticky; background: var(--desk) !important; }
+  .hm39__art { aspect-ratio: auto; height: 230px; margin: 0 !important; border-radius: 14px; overflow: hidden; }
+  .hm39__art img { object-position: 50% 30%; }
+}
