@@ -14,6 +14,7 @@ import { D } from '../lang-dressing-all';
 import { I, Meter, Portrait } from './kit';
 import { Panel, PanelHead, Sheet } from './shell';
 import { SquadTabs } from './SquadTabs';
+import { RoomLog } from './RoomLog';
 import { useGame, sn, nm } from './game';
 import { causeText, levelText, pledgeKeyOf, pledgeWhat } from './roomText';
 
@@ -141,6 +142,8 @@ export function RoomScreen() {
             </div>
           )}
         </Panel>
+
+        <RoomLog />
       </div>
     </div>
   );
@@ -319,6 +322,7 @@ export function PlayerRoom({ p }: { p: Player }) {
       </div>
       {pl && <PledgeChip pl={pl} />}
       {!pl && last && <div className={`word ${last.status}`}><I n={last.status === 'kept' ? 'check' : 'alert'} size="sm" /><span>{(last.status === 'kept' ? d.player.kept : d.player.broken)(pledgeWhat(d, pledgeKeyOf(last)))}</span></div>}
+      <RoomLog playerId={p.id} max={6} />
     </div>
   );
 }

@@ -29,6 +29,10 @@ import { levelOf, biasOf, staffOf } from './delegation';
 import { matchRatings } from './ratings';
 import type { LiveMatch } from './match';
 
+// Rework §E: which dressing-room events are remembered across seasons, and how many.
+const MEMO = new Set(['promise.kept', 'promise.broken', 'room.request', 'room.exit', 'room.captain', 'room.leader', 'room.return', 'room.stayed']);
+export const MEMO_MAX = 60;
+
 export { COH0, cohLevel };
 
 // ---------- numbers (judgement, V2_DESIGN §3.2; tune in playtests) ----------
@@ -202,6 +206,8 @@ class Ctx {
   event(name: string, pid: string | null, data: Record<string, string | number | boolean | null> = {}) {
     const e = emit(this.c, 'room', name, { refs: pid ? { p: [pid] } : {}, data: { club: this.c.clubId, ...data } });
     this.c = e.career;
+    // Rework §E: the turning points outlive the season's event log.
+    if (pid && MEMO.has(name)) this.room.memory = [{ t: [this.c.season, this.c.round] as [number, number], n: name, p: pid, ...(typeof data.why === 'string' ? { why: data.why } : {}) }, ...(this.room.memory ?? [])].slice(0, MEMO_MAX);
     return e.id;
   }
   msg(key: string, p: Pick<Player, 'id' | 'name'>, ev: string, ref: { n?: number; s?: string; club?: string } = {}) {

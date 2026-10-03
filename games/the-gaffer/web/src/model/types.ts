@@ -173,7 +173,7 @@ export interface Career {
   cups: Record<string, Cup>;             // this season's national and continental cups
   cupDay: number;                        // last matchday whose cup ties were played (-1 = none yet)
   coach: Coach;
-  board: { confidence: number; fans: number }; // 0-100
+  board: { confidence: number; fans: number; log?: import('../sim/boardlog').BoardNote[] }; // 0-100; log: the last confidence moves and why (rework §Q)
   inbox: Msg[];                          // newest first, trimmed to the last 60 (E2E #37)
   jobs: string[];                        // clubs offering the user a job right now
   sacked?: boolean;
@@ -269,7 +269,10 @@ export interface RoomState {
   clauses: RoomClause[];                  // release clauses met, waiting on the player
   arm?: number;                           // season the armband question was last asked
   lead?: string[];                        // the leaders at the last tick (a leader sold is felt)
+  memory?: RoomMemo[];                    // rework §E: turning points kept across seasons (the event log is per season), newest first
 }
+// One remembered turning point: when, what (a room event name), who, and its reason when it has one.
+export interface RoomMemo { t: [number, number]; n: string; p: string; why?: string }
 
 // Intake Day (V2.6): a yearly event at ~70 % of the season. Ten matchdays before, the Head of Youth previews the group
 // (the kids already exist here, hidden); on the day they join the club's academy as world players.

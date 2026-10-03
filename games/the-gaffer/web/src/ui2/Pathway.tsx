@@ -2,6 +2,8 @@
 // the rush-back call with its stated relapse risk, and the loaded legs before the next match. Academy & pathway: Intake
 // Day (preview, then the day itself), the academy as a real squad (promote, loan out, release), the loanees' minutes,
 // and the graduates in the first team. Every button is a command (sim/commands.ts → sim/youth.ts).
+import { CO } from '../lang-cohort';
+import { LS } from '../lang-loanspot';
 import { MATCH_SHARP } from '../sim/tactics';
 import { SH } from '../lang-sharp';
 import { useMemo, useState } from 'react';
@@ -213,8 +215,12 @@ export function AcademyScreen({ focus }: { focus?: string }) {
       <div className="grid2">
         <Panel i={1} label={A.squad}>
           <PanelHead title={A.squad} right={<span className="eyebrow">{A.cap(ac.length, cap)}</span>} />
-          <div className="rows">
-            {ac.map((k) => {
+          {/* Rework §H: the academy by age group, each with its size, level and who is ready. */}
+          {([['u18', ac.filter((k) => age(k) < 18)], ['u21', ac.filter((k) => age(k) >= 18)]] as const).filter(([, ks]) => ks.length).map(([coh, ks]) => (
+            <div key={coh} className="cohort">
+              <div className="between coh-h"><h3 className="h3">{CO[g.ui][coh]}</h3><span className="small muted">{CO[g.ui].head(ks.length, (ks.reduce((s, k) => s + k.rating, 0) / ks.length).toFixed(0), ks.filter((k) => age(k) >= 17 && k.rating >= bar - 1).length)}</span></div>
+              <div className="rows">
+            {ks.map((k) => {
               const [plo, phi] = potBand(c, k);
               const grown = k.rating - startRating(k, c.season);
               const ready = age(k) >= 17 && k.rating >= bar - 1;
@@ -235,6 +241,10 @@ export function AcademyScreen({ focus }: { focus?: string }) {
                 </div>
               );
             })}
+              </div>
+            </div>
+          ))}
+          <div className="rows">
             {!ac.length && <p className="muted small">{A.empty}</p>}
           </div>
         </Panel>
@@ -329,7 +339,7 @@ export function PromoteSheet({ kid, onClose }: { kid: Player; onClose: () => voi
 
 export function LoanSheet({ kid, onClose }: { kid: Player; onClose: () => void }) {
   const g = useGame();
-  const { w, c, x, lang } = g;
+  const { w, c, lang } = g;
   const A = Y[g.ui].ac;
   const open = !!windowOf(c);
   const young = ageOf(kid, c.season) < 17;
@@ -342,12 +352,22 @@ export function LoanSheet({ kid, onClose }: { kid: Player; onClose: () => void }
         : young ? <p className="small"><span className="tag tag--warn"><I n="alert" size="sm" />{A.tooYoung}</span></p>
           : (
             <div className="rows">
-              {spots.map((s) => {
+              {spots.map((s, i) => {
                 const cl = clubOf(w, s.clubId);
+                // Rework §H: what the loan gives him — playing time (his role there, from who is better in his position)
+                // and the level against his own.
+                const L = LS[g.ui];
+                const lg = w.leagues.find((l) => l.id === cl?.leagueId);
+                const d = s.strength - kid.rating;
+                const lvl = d >= 3 ? L.up(s.strength, kid.rating) : d <= -6 ? L.down(s.strength, kid.rating) : L.level(s.strength, kid.rating);
                 return (
-                  <button key={s.clubId} className="row linkrow" onClick={async () => { const r = await g.run({ type: 'academy.loan', id: kid.id, to: s.clubId }); if (r.ok) onClose(); }}>
+                  <button key={s.clubId} className="row linkrow loan-spot" onClick={async () => { const r = await g.run({ type: 'academy.loan', id: kid.id, to: s.clubId }); if (r.ok) onClose(); }}>
                     <Crest club={cl} size={32} />
-                    <span className="grow"><span className="name">{cn(cl, lang)}</span><span className="sub">{x.squad.facts.age ? '' : ''}{s.strength}</span></span>
+                    <span className="grow">
+                      <span className="name">{cn(cl, lang)}{i === 0 && s.role === 0 ? <span className="tag tag--good ls-best">{L.best}</span> : null}</span>
+                      <span className="sub">{lg ? `${lg.name[lang]} · ` : ''}{L.role[s.role]}</span>
+                      <span className="sub">{lvl}</span>
+                    </span>
                     <span className={`tag${s.role === 0 ? ' tag--good' : s.role === 2 ? ' tag--warn' : ''}`}>{A.roles[s.role]}</span>
                     <I n="chev" size="sm" flip={g.rtl} />
                   </button>

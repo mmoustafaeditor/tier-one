@@ -1,5 +1,8 @@
 // The club office: the money (with a runway you can read), the board and what they want, the facilities, the staff
 // room (who does what, and how much you let them), and the commercial side.
+import { BL } from '../lang-boardlog';
+import { FC } from '../lang-forecast';
+import { roundFee } from '../sim/season';
 import { useState } from 'react';
 import type { Dept, DeptLevel, Facility, StaffRole } from '../model/types';
 import { monthly, upgradeCost, FACILITIES, attendance, capacityOf, refPrice, BUILD_DAYS, buildLeft } from '../sim/economy';
@@ -12,7 +15,7 @@ import { DEPTS, DEPT_ROLE, biasOf, levelOf } from '../sim/delegation';
 import { dateOf, monthName } from '../sim/calendar';
 import { I, Kpi, LineChart, Meter, initialsOf } from './kit';
 import { Panel, PanelHead, Seg, Stepper } from './shell';
-import { useGame, money } from './game';
+import { useGame, money, cn, clubOf } from './game';
 import { leagueRows } from './util';
 import { logText } from './text';
 import { spendingRoom, committed } from '../sim/recruit/money';
@@ -151,6 +154,20 @@ function Board() {
         ))}
         <p className="small muted vision-line">{visionLine}</p>
         <div className="trust"><span className="big">{conf}</span><div><b>{O.trust} · {x.today.mood(conf)}</b><p className="small muted">{O.trustWhy(conf)}</p></div></div>
+        {(() => {
+          // Rework §Q: the last moves of the board's trust, each with its cause (sim/boardlog.ts).
+          const B = BL[g.ui], log = c.board.log ?? [];
+          const club = (id?: string) => (id ? cn(clubOf(w, id), g.lang) : '');
+          const text = (n: (typeof log)[number]) => n.why === 'result' ? B.result(club(n.club), n.s ?? '', !!n.derby, n.d > 0) : n.why === 'claim' ? B.claim(club(n.club)) : n.why === 'table' ? B.table(n.d > 0) : n.why === 'review' ? B.review(x.place(Number(n.s) || 0)) : B[n.why];
+          return (
+            <div className="board-log">
+              <h3 className="h3">{B.title}</h3>
+              {!log.length ? <p className="small muted">{B.none}</p> : (
+                <ul>{log.slice(0, 6).map((n, i) => <li key={i}><b className={`ltr ${n.d > 0 ? 'up' : 'down'}`}>{n.d > 0 ? '+' : '−'}{Math.abs(n.d).toFixed(1)}</b><span>{text(n)}</span></li>)}</ul>
+              )}
+            </div>
+          );
+        })()}
       </Panel>
       <Panel i={2} label={x.today.pulse}>
         <PanelHead title={x.today.fans} right={<span className="eyebrow">{Math.round(c.board.fans)}</span>} />
@@ -164,10 +181,24 @@ function Board() {
 
 function Facilities() {
   const g = useGame();
-  const { c, x } = g;
+  const { w, c, x } = g;
   const O = x.office;
   const C = CL[g.ui];
   const build = c.ops.build; // V2.7: one project at a time, open once built
+  // Rework §Q "forecast before major spending": cash after paying, the extra upkeep (0.4% of the wage cap a month for
+  // each facility level, sim/economy.ts upkeep) and the lowest point left this season on the monthly picture.
+  const mo = monthly(w, c);
+  const months: Date[] = [];
+  for (let r = c.round; r <= roundsIn(c); r++) {
+    const d = dateOf(c.season, r), prev = months[months.length - 1];
+    if (!prev || prev.getUTCMonth() !== d.getUTCMonth()) months.push(d);
+  }
+  const forecast = (cost: number) => {
+    const keep = roundFee(g.club.wageCap * 0.004);
+    const pts = (months.length ? months : [dateOf(c.season, c.round)]).map((d, i) => ({ d, v: g.club.budget - cost + (mo.net - keep) * i }));
+    const low = pts.reduce((a, b) => (b.v < a.v ? b : a));
+    return { cash: g.club.budget - cost, keep, low };
+  };
   return (
     <div className="grid">
       <Panel i={1} label={O.facilities}>
@@ -184,6 +215,10 @@ function Facilities() {
                 {build?.f === f ? <span className="tag tag--warn"><I n="clock" size="sm" />{C.build.busy(build.level, buildLeft(c))}</span>
                   : lvl < 5 ? <button className="btn btn--ghost btn--sm" disabled={g.club.budget < cost || !!build} title={build ? C.build.oneAtATime : C.build.takes(BUILD_DAYS[lvl + 1])} onClick={() => void g.run({ type: 'facility.upgrade', facility: f }, { toast: x.saved })}>{O.upgrade(money(cost))}</button> : <span className="small muted">{O.maxed}</span>}
               </div>
+              {lvl < 5 && !build && g.club.budget >= cost && (() => {
+                const fc = forecast(cost), F = FC[g.ui];
+                return <p className={`fac-fc small${fc.low.v < 0 ? ' warn' : ' muted'}`}>{F.line(money(fc.cash), money(fc.keep), money(fc.low.v), monthName(fc.low.d, g.ui))}{fc.low.v < 0 ? ` ${F.short}` : ''}</p>;
+              })()}
             </div>
           );
         })}

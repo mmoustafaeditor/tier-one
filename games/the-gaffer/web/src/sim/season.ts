@@ -1,5 +1,6 @@
 // Fixtures, match simulation, league tables and the end of a season.
 // Every league plays the same matchday together; leagues with fewer clubs finish earlier.
+import { noteBoard } from './boardlog';
 import { FREE_AGENT, type Career, type Club, type Deal, type Fixture, type LocalizedName, type Offer, type Player, type PlayerStats, type Position, type SeasonRecord } from '../model/types';
 import { bell, clamp, int, makeRng, pick, type Rng } from './rng';
 import { predict, sideLevel, simulate, startMatch, winnerOf, type LiveMatch } from './match';
@@ -399,7 +400,7 @@ export function playDay(w: World, c: Career, played?: LiveMatch): { world: World
   // off the top is left alone, a club clear of its target builds trust and one far adrift loses it (±1 a week at most).
   if (c.round >= 5) {
     const delta = tableMood(world, career, club);
-    career = { ...career, board: { ...career.board, confidence: clamp(Math.round((career.board.confidence + delta) * 10) / 10, 0, 100) } };
+    career = { ...career, board: noteBoard(career.board, { ...career.board, confidence: clamp(Math.round((career.board.confidence + delta) * 10) / 10, 0, 100) }, career, 'table') };
   }
   career = sackCheck(world, career, onCourse(world, career, club));
   return { world, career, mine: res.mine };

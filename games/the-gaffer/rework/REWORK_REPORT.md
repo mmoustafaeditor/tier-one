@@ -29,6 +29,9 @@ no named Android device was available — see Known limitations).
   deals in the first eleven.
 * Promise cards remember: "Your word to X: a pathway · 0 played so far", "regular starts · started 1 of 5".
 * Match › Fixtures: "What keeps happening" over the last six matches; the player page says where he fits in your shape.
+* Dressing room timeline (and per player); the fitness coach proposes the week; academy loan rows explain the move.
+* News sections; why the board's trust moved; a forecast before upgrades; academy age groups; your style from your
+  career; dressing-room memory across seasons; this week around the fixtures.
 * Accessibility from the title screen and Settings: larger text, reduce motion, stronger contrast.
 * Nothing is wider than a phone at 320–412 px, in English or Arabic.
 
@@ -47,6 +50,8 @@ Current-code reproduction: `node sim-tests/build.mjs rework/repro` → every che
 | Event agreement (400 matches) | `rework/agree` | pass: score, stats, commentary, ratings, Why, highlights all agree with the log |
 | Player fit in the plan | `rework/planfit`, `ui-tests/rework-planfit.mjs` | pass |
 | What keeps happening | `ui-tests/rework-trends.mjs` | pass |
+| Dressing room / training / academy | `rework/roomlog`, `rework/weekplan`, `ui-tests/rework-screens3.mjs` | pass |
+| Board causes, last screens | `rework/boardlog`, `ui-tests/rework-screens4.mjs` | pass |
 | Trust regressions | `rework/trust` | 33+ checks pass (F01–F10, F17, F07 picks) |
 | Career-memory slice | `rework/slice` | pass (promote → warn → start → plays → kept → reload) |
 | Broken-promise arc | `rework/arcs` | pass |
@@ -92,6 +97,8 @@ load. Rollback: older builds ignore both fields.
 * The derby/board-pressure arc has no new authored content; the existing systems cover it (world test, press cards).
 * No Android device test, no WebView back/resume run, no named-device benchmark in this environment.
 * No human comprehension sessions (the handoff's human gates) — none could be run here.
+* The world's player count rises ~350 a season (youth intakes outnumber retirements); left as is because changing it
+  changes results. Old opponent reports are now pruned.
 * The packed save grows ~130 KB a season (878 → 1,139 KB over three seasons). Fine for IndexedDB; on the
   localStorage fallback (~5 MB) a career of ten-plus seasons could hit the limit.
 * The `marking` test is noisy at its default sample size (pre-existing).
@@ -127,15 +134,17 @@ Build 2,834 KB (1,270 KB gzip). A full world season in Node takes ~22 s (`rework
 * P0: none open from the trust backlog.
 * P1: Android/WebView resume + import on a named device; human first-hour test.
 * P2: scenarios / Tactics Lab modes (not built; the title screen only offers modes that exist).
-* Handoff screens not yet reworked beyond what is listed above: Dressing room (§E: relationship history, hierarchy
-  groups view), Training (§F: weekly microcycle, staff-proposed week), Academy (§H: cohorts, loan recommendations),
-  Club/Office (§Q), News/World (§S). Done from those sections: promise progress on cards (§E), fit-but-not-match-ready
-  on Medical (§G), the player's fit in your plan (§I).
+* Handoff items not done, because they can't be done in this container or need people: Android device runs (resume,
+  update, a named-device benchmark), human first-hour and comprehension tests, and confirming the live deploy (the
+  session may not read deploy status). Not built by choice: a per-day training simulation (the week strip explains the
+  weekly model instead; a real microcycle would change results and needs its own balance pass), Tactics Lab /
+  scenario modes, and a narrative-event engine beyond the existing room, press and board events.
 
 ## 9. Evidence index
 `evidence/m1-before|after` (Today/board, inbox dates, Tactics), `m2-before|after` (promotion sheet, availability,
 quick-match full time), `m2b-before|after` (half-time staging, Continue, courses), `m2c-before|after` (Transfers
 funnel), `m2d-after` (first-week guide), `m2e-after` (Tactics essentials), `m3-slice` (the connected sequence:
 promotion sheet → warning card → Your XI → full time → after reload), `m4-after` (full-time why/next), `m4c-after`
-(pre-match briefing), `m4d-before|after` (title-screen career cards), `m4e-before|after` (squad planner), `m4f-before|after` (accessibility), `m4g-before|after` (new-career job facts), `m4h-after` (promise card with memory), `m4i-after` (what keeps happening, fit in your plan). Phone 390 px and desktop 1440 px, English and
+(pre-match briefing), `m4d-before|after` (title-screen career cards), `m4e-before|after` (squad planner), `m4f-before|after` (accessibility), `m4g-before|after` (new-career job facts), `m4h-after` (promise card with memory), `m4i-after` (what keeps happening, fit in your plan), `m4j-after` (dressing-room timeline, coach's week, loan rows), `m4k-after` (week strip, cohorts, board causes, forecast,
+style profile, news sections). Phone 390 px and desktop 1440 px, English and
 Arabic where the screen changed.

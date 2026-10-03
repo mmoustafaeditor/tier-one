@@ -4,6 +4,7 @@
 //   'ambitious' the league target one step higher, the owner puts money on the table (15% of the club's cash, into
 //               the transfer budget at once), and the board is stricter all season (sack lines +5).
 // Unanswered by matchday 3 the board takes it as 'expected' without the goodwill.
+import { noteBoard } from './boardlog';
 import type { Career, Objective, Vision, VisionLevel } from '../model/types';
 import { objectiveOf, type World } from './world';
 import { clamp } from './rng';
@@ -53,7 +54,7 @@ export function setVision(w: World, c: Career, level: VisionLevel): { world: Wor
   if (visionOf(c) || c.round >= VISION_DEADLINE) return null;
   if (level === 'ambitious' && !canAimHigher(w, c)) return null;
   if (level === 'expected') {
-    return { world: w, career: { ...c, vision: { season: c.season, level, club: c.clubId }, board: { ...c.board, confidence: clamp(c.board.confidence + EXPECTED_GOODWILL, 0, 100) } } };
+    return { world: w, career: { ...c, vision: { season: c.season, level, club: c.clubId }, board: noteBoard(c.board, { ...c.board, confidence: clamp(c.board.confidence + EXPECTED_GOODWILL, 0, 100) }, c, 'plan') } };
   }
   const kitty = kittyFor(w, c);
   const clubs = w.clubs.map((x) => (x.id === c.clubId ? { ...x, budget: x.budget + kitty } : x));

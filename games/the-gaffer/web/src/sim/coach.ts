@@ -2,6 +2,7 @@
 // E2E lessons: board messages match the real situation (#19), sacking really happens (#17), offers fit the coach (#18),
 // one licence at a time (#44), licences gate clubs and formations (#16), milestones only when really done (#43),
 // moving club never locks the career and the new club welcomes you (#40, #49, #50, #27), the inbox trims itself (#37).
+import { noteBoard } from './boardlog';
 import { rcOf, tickOf, withRC } from './recruit/state';
 import type { Career, Club, Coach, Licence, LocalizedName, Msg, MsgKind, Objective } from '../model/types';
 import { clamp } from './rng';
@@ -205,12 +206,12 @@ export function afterMatch(w: World, c: Career, o: MatchOutcome): { world: World
     reputation: clamp(c.coach.reputation + (surprise > 0.8 ? 0.1 : surprise < -1.2 ? -0.1 : 0), 0, 100),
   };
   const before = c.board;
-  const board = {
+  const board = noteBoard(before, {
     confidence: clamp(Math.round((before.confidence + surprise * BOARD_PER_SURPRISE * k) * 10) / 10, 0, 100),
     // Fans enjoy winning whatever the odds said, and a surprise moves them on top: odds alone left a winning
     // favourite's fans "muttering" all season (audit GF-004).
     fans: clamp(Math.round((before.fans + (FANS_RESULT[pts] + surprise * FANS_PER_SURPRISE) * k + (o.mine >= 3 ? 1 : 0) + (FANS_REST - before.fans) * FANS_SETTLE) * 10) / 10, 0, 100),
-  };
+  }, c, 'result', { club: opp.id, s: `${o.mine}-${o.theirs}`, ...(k > 1 ? { derby: true } : {}) });
   let career: Career = settleClaim({ ...c, coach, board }, o.oppId, pts); // V2.9: a presser's public claim
   // Messages that match what really happened (E2E #19).
   if (o.mine - o.theirs >= 3) career = addMsg(career, 'fans', 'bigWin', { club: opp.id, s: `${o.mine}-${o.theirs}` });
@@ -317,7 +318,7 @@ export function coachSeasonEnd(w: World, c: Career, position: number, leagueId: 
   let career: Career = {
     ...c,
     coach: { ...c.coach, trophies, reputation: clamp(rep, 0, 100), xp: c.coach.xp + (met ? 400 : 100) },
-    board: { ...c.board, confidence: clamp(c.board.confidence + delta, 0, 100), fans: clamp(c.board.fans + (met ? 10 : -10) + FANS_PER_TROPHY * (trophies.length - c.coach.trophies.length), 0, 100) },
+    board: noteBoard(c.board, { ...c.board, confidence: clamp(c.board.confidence + delta, 0, 100), fans: clamp(c.board.fans + (met ? 10 : -10) + FANS_PER_TROPHY * (trophies.length - c.coach.trophies.length), 0, 100) }, c, 'review', { s: String(position) }),
   };
   career = addMsg(career, 'board', met ? 'seasonGood' : 'seasonBad', { n: position });
   const ms = checkMilestones(career, null);

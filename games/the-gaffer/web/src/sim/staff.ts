@@ -164,21 +164,28 @@ function opposition(x: Ctx) {
 }
 
 // Fitness coach: training load from the squad's condition. Hard weeks only in the opening matchdays with a fresh squad.
+// Rework §F: the same call is shown on Training as his proposal for the week (`weekPlan`), with its reasons.
 const PRESEASON_ROUNDS = 3;
-function training(x: Ctx) {
-  const c = x.career;
-  const squad = squadOf(x.world, c.clubId);
+export interface WeekPlan { load: 0 | 1 | 2; focus: PrepFocus; fit: number; tired: number; test: boolean; scouted: boolean; opp?: string; early: boolean }
+export function weekPlan(w: World, c: Career): WeekPlan {
+  const squad = squadOf(w, c.clubId);
   const fit = squad.reduce((s, p) => s + p.fitness, 0) / Math.max(1, squad.length);
   const b = bias(c, 'training');
   const tired = b === 'cautious' ? 85 : b === 'bold' ? 74 : 80;
-  const load = (fit < tired ? 0 : fit > 95 && (c.round < PRESEASON_ROUNDS || b === 'bold') ? 2 : 1) as 0 | 1 | 2;
-  if (load !== c.ops.training.load) act(x, { type: 'training.set', load }, 'load', { n: load });
+  const early = c.round < PRESEASON_ROUNDS || b === 'bold';
+  const load = (fit < tired ? 0 : fit > 95 && early ? 2 : 1) as 0 | 1 | 2;
   // The week's focus: legs first when they're tired, the opponent when he's a real test, otherwise the plan.
-  const m = nextUserMatch(x.world, x.career);
+  const m = nextUserMatch(w, c);
   const opp = m?.sides.find((s) => s.clubId !== c.clubId)?.clubId;
-  const test = !!opp && strengthOf(x.world, opp) >= strengthOf(x.world, c.clubId) - 2;
-  const focus: PrepFocus = fit < tired ? 'recovery' : test && m && x.career.scouted?.[m.key] ? 'opposition' : b === 'youth' ? 'development' : 'tactical';
-  if (focus !== x.career.prep) act(x, { type: 'prep.set', focus }, 'focus', { s: focus });
+  const test = !!opp && strengthOf(w, opp) >= strengthOf(w, c.clubId) - 2;
+  const scouted = !!(m && c.scouted?.[m.key]);
+  const focus: PrepFocus = fit < tired ? 'recovery' : test && scouted ? 'opposition' : b === 'youth' ? 'development' : 'tactical';
+  return { load, focus, fit, tired, test, scouted, opp, early };
+}
+function training(x: Ctx) {
+  const plan = weekPlan(x.world, x.career);
+  if (plan.load !== x.career.ops.training.load) act(x, { type: 'training.set', load: plan.load }, 'load', { n: plan.load });
+  if (plan.focus !== x.career.prep) act(x, { type: 'prep.set', focus: plan.focus }, 'focus', { s: plan.focus });
 }
 
 // Doctor: pays for rehab on longer injuries when the club can easily afford it; rushes a key man back when his bias

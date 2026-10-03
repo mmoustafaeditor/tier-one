@@ -7,12 +7,23 @@ import { useGame } from './game';
 import { msgText, newsText } from './text';
 import { shortDate } from '../sim/calendar';
 import { stampDate } from '../sim/cups';
+import { NF } from '../lang-newsf';
+import type { NewsCat, NewsItem } from '../model/types';
+
+// Rework §S: the world feed by section (each item already has its category), and "our club".
+const CAT_ICON: Record<NewsCat, string> = { results: 'ball', transfers: 'swap', managers: 'whistle', youth: 'grad', records: 'star', crisis: 'alert', room: 'room' };
 
 export function NewsScreen() {
   const g = useGame();
   const { w, c, x, t, lang, ui } = g;
   const N = x.news;
   const [tab, setTab] = useState<'inbox' | 'news'>('inbox');
+  const [sec, setSec] = useState<'all' | 'mine' | NewsCat>('all');
+  const F = NF[ui];
+  const mineN = (n: NewsItem) => n.club === c.clubId || n.club2 === c.clubId;
+  const all = c.news ?? [];
+  const cats = (Object.keys(CAT_ICON) as NewsCat[]).filter((k) => all.some((n) => n.cat === k));
+  const feed = all.filter((n) => sec === 'all' || (sec === 'mine' ? mineN(n) : n.cat === sec));
   const unread = c.inbox.filter((m) => !m.read);
   const when = (season: number, round: number) => shortDate(stampDate(c, season, round), ui); // F02: never after today
   return (
@@ -43,18 +54,25 @@ export function NewsScreen() {
       ) : (
         <Panel i={1} label={N.news}>
           <PanelHead title={N.news} />
+          <div className="chips news-secs" role="group" aria-label={N.news}>
+            {(['all', 'mine', ...cats] as ('all' | 'mine' | NewsCat)[]).map((k) => (
+              <button key={k} className="chip" aria-pressed={sec === k} onClick={() => setSec(k)}>
+                {k === 'all' ? F.all : k === 'mine' ? F.mine : F.cat[k]} <em className="count">{k === 'all' ? all.length : k === 'mine' ? all.filter(mineN).length : all.filter((n) => n.cat === k).length}</em>
+              </button>
+            ))}
+          </div>
           <div className="rows">
-            {(c.news ?? []).slice(0, 40).map((n) => {
+            {feed.slice(0, 40).map((n) => {
               const [a, b] = newsText(t, lang, w, c, n);
               return (
-                <div key={n.id} className="row news">
-                  <I n="news" size="sm" />
+                <div key={n.id} className={`row news${mineN(n) ? ' mine' : ''}`}>
+                  <I n={CAT_ICON[n.cat] ?? 'news'} size="sm" />
                   <span className="grow"><span className="name">{a}</span>{b && <span className="sub">{b}</span>}</span>
                   <span className="when small muted">{when(n.season, n.round)}</span>
                 </div>
               );
             })}
-            {!(c.news ?? []).length && <p className="muted">{N.empty}</p>}
+            {!all.length ? <p className="muted">{N.empty}</p> : !feed.length ? <p className="muted">{F.none}</p> : null}
           </div>
         </Panel>
       )}
