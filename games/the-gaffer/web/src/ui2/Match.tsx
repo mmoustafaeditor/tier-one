@@ -39,6 +39,7 @@ export function MatchScreen({ tab, onTab }: { tab: number; onTab: (n: number) =>
 
 // ---------- the board ----------
 type Ins = 'pressing' | 'line' | 'width' | 'tempo' | 'passing';
+const BASIC = new Set(['press', 'line']); // the essentials of the team plan (with style, shape and approach)
 const INS: [Ins, string][] = [['pressing', 'press'], ['line', 'line'], ['width', 'width'], ['tempo', 'tempo'], ['passing', 'passing']];
 // Tactics v3 instructions (copy in lang-tac*.ts): build-up, both transitions, the trap and corners.
 type Ins3 = 'build' | 'cpress' | 'trap' | 'routine' | 'marking' | 'setMark';
@@ -56,6 +57,8 @@ function TacticsBoard() {
   const [ghosts, setGhosts] = useState(true);
   const [focus, setFocus] = useState<string | null>(null);
   const [ph, setPh] = useState<Phase>('ip');
+  const [adv, setAdvState] = useState(() => { try { return localStorage.getItem('gaffer.tac.adv') === '1'; } catch { return false; } });
+  const setAdv = (v: boolean) => { setAdvState(v); try { localStorage.setItem('gaffer.tac.adv', v ? '1' : '0'); } catch { /* private mode */ } };
   useEffect(() => { setDraft(c.tactics ?? DEFAULT_TACTICS); }, [c.tactics]);
   const get = (id: string) => playerOf(w, id)!;
   const f = fullTactics(draft);
@@ -78,6 +81,9 @@ function TacticsBoard() {
   const acts = model ? model.actors[me] : [];
   const actAt = (k: number) => acts.find((a) => a.slot === k);
   const fs = fullTactics(saved);
+  // How many fine-tuning settings differ from a plain default plan (shown on the "More instructions" button).
+  const d0 = fullTactics({ ...DEFAULT_TACTICS, formation: f.formation, philosophy: f.philosophy } as UserTactics);
+  const advSet = (['width', 'tempo', 'passing', 'build', 'counter', 'cpress', 'trap', 'routine', 'marking', 'setMark'] as const).filter((k) => JSON.stringify((f as Record<string, unknown>)[k]) !== JSON.stringify((d0 as Record<string, unknown>)[k])).length + (f.oop !== f.formation ? 1 : 0) + (f.mark ? 1 : 0);
   const changes = CHANGE_KEYS.filter((k) => JSON.stringify((f as Record<string, unknown>)[k] ?? null) !== JSON.stringify((fs as Record<string, unknown>)[k] ?? null)).length
     + (JSON.stringify(draft.xi) !== JSON.stringify(saved.xi) ? 1 : 0);
   const setXI = (ids: string[]) => setDraft({ ...draft, xi: ids });
@@ -234,17 +240,10 @@ function TacticsBoard() {
               <div className="chips wrap">{FORMATION_IDS.map((fm) => <button key={fm} className="chip ltr" aria-pressed={draft.formation === fm} onClick={() => setShape(fm)}>{fmt(fm)}</button>)}</div>
             </div>
             <div className="ins">
-              <div className="between"><b>{X.shapeOop}</b>{f.oop !== fs.oop && <span className="tag tag--club">{T.changed}</span>}</div>
-              <div className="chips wrap">
-                <button className="chip" aria-pressed={f.oop === f.formation} onClick={() => setOop(undefined)}>{X.same}</button>
-                {FORMATION_IDS.filter((fm) => fm !== f.formation).map((fm) => <button key={fm} className="chip ltr" aria-pressed={f.oop === fm} onClick={() => { setOop(fm); setPh('oop'); }}>{fmt(fm)}</button>)}
-              </div>
-            </div>
-            <div className="ins">
               <div className="between"><b>{T.ins.mentality[0]}</b>{f.mentality !== fs.mentality && <span className="tag tag--club">{T.changed}</span>}</div>
               <Steps label={T.ins.mentality[0]} value={f.mentality + 2} options={T.ins.mentality[1]} was={fs.mentality + 2} onChange={(v) => setDraft({ ...draft, mentality: v - 2 })} />
             </div>
-            {INS.map(([k, key]) => {
+            {INS.filter(([, key]) => adv || BASIC.has(key)).map(([k, key]) => {
               const v = f[k] as number;
               const was = (fs as unknown as Record<string, number>)[k];
               const [gain, risk] = T.trade[key][v];
@@ -256,6 +255,18 @@ function TacticsBoard() {
                 </div>
               );
             })}
+            {/* Rework (handoff §J): progressive disclosure. The essentials stay; the fine-tuning opens on request and says how
+                many of its settings differ from the defaults, so nothing set is ever hidden silently. */}
+            <button className="btn btn--ghost btn--sm adv-toggle" aria-expanded={adv} onClick={() => setAdv(!adv)}>{adv ? X.advLess : X.advMore(advSet)}</button>
+            {!adv && <p className="small muted">{X.advWhy}</p>}
+            {adv && <>
+            <div className="ins">
+              <div className="between"><b>{X.shapeOop}</b>{f.oop !== fs.oop && <span className="tag tag--club">{T.changed}</span>}</div>
+              <div className="chips wrap">
+                <button className="chip" aria-pressed={f.oop === f.formation} onClick={() => setOop(undefined)}>{X.same}</button>
+                {FORMATION_IDS.filter((fm) => fm !== f.formation).map((fm) => <button key={fm} className="chip ltr" aria-pressed={f.oop === fm} onClick={() => { setOop(fm); setPh('oop'); }}>{fmt(fm)}</button>)}
+              </div>
+            </div>
             {insRow('build', f.build, fs.build)}
             {insRow('counter', f.counter ? 1 : 0, fs.counter ? 1 : 0)}
             {insRow('cpress', f.cpress, fs.cpress)}
@@ -273,6 +284,7 @@ function TacticsBoard() {
                 <p className="small muted">{X.markHint}</p>
               </div>
             )}
+            </>}
           </Panel>
         </section>
 

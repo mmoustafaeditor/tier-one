@@ -71,6 +71,7 @@ export const TX_EN = {
     setMark: [['Players hold zones in the box: first contact at the near post.', 'Attackers running onto it win more headers.'], ['A few hold zones, the rest pick up a man.', 'Nothing special.'], ['Each takes a man in the box: fewer free headers.', 'The second ball at the edge of the box is left open.']],
   } as Record<'build' | 'cpress' | 'counter' | 'trap' | 'routine' | 'marking' | 'setMark', [string, string][]>,
   trapOff: 'A trap needs a press: set Press to Mid-block or higher.',
+  advMore: (n: number): string => (n ? `More instructions · ${n} set` : 'More instructions'), advLess: 'Fewer instructions', advWhy: 'The essentials are above. These fine-tune it: shape without the ball, width, tempo, passing, transitions, set pieces, marking.',
   mark: 'Man-mark', markNone: 'Nobody', markHint: 'He wins far fewer duels; his marker leaves a hole.',
   preview: {
     title: 'What the engine sees',

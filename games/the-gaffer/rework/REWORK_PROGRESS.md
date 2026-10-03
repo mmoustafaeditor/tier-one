@@ -59,8 +59,10 @@ Done (regression checks in `rework/trust`, 33 checks, all pass; screenshots `evi
   It caught a regression of this rework (long effect chips widened Today to 518 px) and older ones (Club hero/tabs
   at 320-360, Tactics action row and a Targets card at 320); all fixed, gate passes.
 
-M2 status: the trust items F05–F15 are done or checked; remaining M2 polish (decision-card "why it matters" and
-confidence, Tactics basic/advanced layers) is open.
+M2 status: the trust items F05–F15 are done or checked. Tactics now uses progressive disclosure: style, shape, approach,
+press and line stay; "More instructions · n set" opens shape without the ball, width, tempo, passing, transitions, set
+pieces and marking (remembered per device; it never hides a setting silently). Evidence `evidence/m2e-after/` (before:
+`evidence/m1-before/03-tactics-*`). Open M2 polish: decision cards' "why it matters" and confidence.
 
 ## Milestone 3 — connected career-memory slice: first slice done
 * `sim-tests/rework/slice.ts` (seeded, Node): promote a 17-year-old (sheet terms = applied terms) → the dressing room

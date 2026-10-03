@@ -68,6 +68,7 @@ export const TX_FR: TxStrings = {
     setMark: [['Des zones dans la surface : premier contact au premier poteau.', 'Ceux qui attaquent le ballon lancés gagnent plus de têtes.'], ['Quelques-uns en zone, les autres à l’homme.', 'Rien de spécial.'], ['Chacun un joueur dans la surface : moins de têtes libres.', 'Le second ballon à l’entrée de la surface reste libre.']],
   },
   trapOff: 'Un piège a besoin de pressing : réglez le pressing sur bloc médian ou plus.',
+  advMore: (n: number) => (n ? `Plus de consignes · ${n} réglées` : 'Plus de consignes'), advLess: 'Moins de consignes', advWhy: 'L’essentiel est au-dessus. Ceci affine : bloc sans ballon, largeur, tempo, passes, transitions, coups de pied arrêtés, marquage.',
   mark: 'Marquage individuel', markNone: 'Personne', markHint: 'Il gagne beaucoup moins de duels ; son marqueur laisse un trou.',
   preview: {
     title: 'Ce que voit le moteur',

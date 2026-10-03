@@ -68,6 +68,7 @@ export const TX_ES: TxStrings = {
     setMark: [['Zonas en el área: primer contacto en el primer palo.', 'Los que atacan el balón en carrera ganan más cabezazos.'], ['Unos en zona y el resto al hombre.', 'Nada especial.'], ['Cada uno con un hombre en el área: menos cabezazos libres.', 'El rechace en la frontal queda libre.']],
   },
   trapOff: 'Una trampa necesita presión: pon la presión en bloque medio o más.',
+  advMore: (n: number) => (n ? `Más instrucciones · ${n} ajustadas` : 'Más instrucciones'), advLess: 'Menos instrucciones', advWhy: 'Lo esencial está arriba. Esto lo afina: forma sin balón, amplitud, ritmo, pase, transiciones, balón parado, marcaje.',
   mark: 'Marcaje individual', markNone: 'Nadie', markHint: 'Gana muchos menos duelos; su marcador deja un hueco.',
   preview: {
     title: 'Lo que ve el motor',

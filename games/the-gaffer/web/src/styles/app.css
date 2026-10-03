@@ -578,7 +578,7 @@ em.bias { font-style: normal; color: var(--ink-3); }
 .sc-transfers .t-top svg { max-width: 100%; }
 .sc-tactics section, .sc-tactics .stack, .sc-tactics .layout > * { min-width: 0; }
 .sc-tactics .board { overflow: clip; }
-.sc-tactics .board .tok .nm { max-width: 76px; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 400px) { .sc-tactics .board .tok .nm { max-width: 76px; overflow: hidden; text-overflow: ellipsis; } }
 .sc-transfers .t-top { flex-wrap: wrap; }
 .sc-transfers .target { min-width: 0; overflow: clip; }
 .sc-tactics .save { flex-wrap: wrap; } .sc-tactics .save .btn { min-width: 0; }

@@ -97,6 +97,11 @@ together with your change.
 
 ---
 
+## 2026-10-03 · saifsaber · The Gaffer rework: Tactics shows the essentials first
+- **What changed:** "How we play" now shows the essentials: style, shape, approach, press and defensive line. Everything else (shape without the ball, width, tempo, passing, transitions, set pieces, marking) sits behind "More instructions". That button says how many of those settings you've changed from the defaults, so nothing set is ever out of sight without you knowing. The choice is remembered on the device. On very narrow phones, long names on the pitch are shortened instead of pushing the page wider.
+- **Files:** `web/src/ui2/Match.tsx`, `src/lang-tac*.ts`, `src/styles/app.css`, `games/the-gaffer/rework/*`
+- **Heads-up for the team:** None. Branch only, not live. Tier One untouched.
+
 ## 2026-10-03 · saifsaber · The Gaffer rework M3: a promise to a youngster that the whole game remembers
 - **What changed:**
   - **The prospect promise now warns before it breaks.** Promote a youngster and he's promised 10 games in 20 matchdays. Before, nothing warned you and it simply broke. Now the assistant flags it in time and proposes starting him in the next match, cup ties included, with what that costs the team.
