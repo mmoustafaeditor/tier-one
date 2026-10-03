@@ -7,6 +7,16 @@ Claude Code session) can see what the others did before starting work.
 together with your change.
 
 ```markdown
+## 2026-10-03 · Tier One 3.9.20 — mobile Daily usability pass (owner's recording review)
+
+- Independent circles are gone from the player-facing UI (the Evidence card, board chips). The exclusive rule is unchanged in the engine; its line now reads "Exclusive needs two different kinds of source backing this outcome. You have N. You can still publish it as a normal call." (it counts the kinds backing the outcome you picked, which is why it can differ from the total).
+- Rivals tab (was "Rival journalists"; the accessible label keeps the full name): only rival journalists' posts, with readable stacked rows (handle, style, posting days). The unexplained W-L-D numbers are gone. Your sources' quotes no longer appear there; each one now sits under the source that gave it in Sources, with "Evidence added: …".
+- One unit everywhere: call points ("3 call points left", "Ring · 1 pt / 2 pts", call scene "1 call point"). On the Player File the budget sits in the top bar next to Back to Board (shown once); the Daily number moved into the hero kicker.
+- Evidence: compact "No evidence yet. Call a source to gather evidence." until a source answers; then the four bars with counts and "Not a guarantee."
+- Your Call: 2×2 outcome grid; selected options are dark text on cream with a dark border and a check (no pale-on-white); one score preview (Right / Wrong) under the confidence choice; the button is "Publish call · Done · Confirmed" (no "IT'S HAPPENING" before publishing). After publishing: a "Call published" summary (player, call, confidence, filed day, exclusive yes/no, "this is your prediction, not the result"), then Revise call with the U-turn rule.
+- Board: published sagas keep the full name, both clubs and the coral arrow; the status sits on its own row ("✓ Published · Done · Confirmed"). "Sleep on it" is now "Advance to Day n".
+- Source cards: descriptions wrap to two lines; "Biased" is amber, not green. Checked at 390×664 and 360×640 with the full flow (open saga, ring the barber, Rivals, Your Call, publish, board): no horizontal scroll.
+
 ## 2026-10-03 · Tier One 3.9.19 — board and Player File to the owner's mockups; Past Results detail
 
 - Desk: Play today now opens the Daily Challenge tab first (not straight into the sagas).

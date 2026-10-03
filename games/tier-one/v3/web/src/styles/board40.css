@@ -144,3 +144,88 @@
 .pf40 .pf39__art { -webkit-mask-image: radial-gradient(farthest-side at 72% 52%, #000 52%, transparent 100%) !important; mask-image: radial-gradient(farthest-side at 72% 52%, #000 52%, transparent 100%) !important; }
 [dir="rtl"] .pf40 .pf39__art { -webkit-mask-image: radial-gradient(farthest-side at 28% 52%, #000 52%, transparent 100%) !important; mask-image: radial-gradient(farthest-side at 28% 52%, #000 52%, transparent 100%) !important; }
 .src39__act { flex-direction: row !important; }
+
+/* ===== 3.9.20: mobile Daily usability pass ===== */
+/* top bar on the file: Back to Board left, the call points right (shown once per screen) */
+.play .g-top .callpill { min-height: 32px; font-size: 12px; padding: 0 10px; }
+.src39__left { display: none; }
+
+/* compact hero on phones */
+@media (max-width: 959.98px) {
+  .pf40 { min-height: 0; }
+  .pf40 .pf39__txt { padding: 8px 0 6px !important; gap: 4px; max-width: 66%; }
+  .pf40 .pf39__n { font-size: clamp(32px, 9.6vw, 44px) !important; }
+  .pf40 .pf39__m { font-size: 15px; }
+  .pf40 .pf39__route { margin-top: 4px; font-size: 15px; white-space: normal; flex-wrap: wrap; row-gap: 4px; }
+  .pf40 .pf39__route .crest { --size: 28px !important; }
+  .pf40 .pf39__sim { display: none; }
+}
+
+/* evidence: compact when empty; no circles; counts beside bars */
+.ev40.is-empty { display: flex !important; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; padding: 10px 14px !important; }
+.ev40.is-empty .ev39__h { margin: 0 !important; font-size: 20px !important; }
+.ev40__none { margin: 0; color: var(--card-ink-2); font-size: 15px; } .ev40__none b { color: var(--card-ink); }
+.ev40 .ev39__r { grid-template-columns: 72px minmax(0, 1fr) 22px; }
+.ev40 .ev39__r b { text-align: end; font-size: 14px; color: var(--card-ink-2); }
+.ev40 .ev39__r.is-lead span:first-child { font-weight: 800; }
+.ev40 .ev40__hint { font-size: 13px; }
+.ev40 .ev39__circ { display: none !important; }
+.ev40 .ev39__bars { grid-area: auto; }
+
+/* sources: two-line descriptions, honest colour for Biased, the earned quote under the source */
+.src39__b small { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; white-space: normal !important; text-overflow: clip !important; font-size: 14px; line-height: 1.25; }
+.src39__row[data-src="agent"] .src39__rel em, .src39__row[data-src="leak"] .src39__rel em { color: var(--gold) !important; }
+.src39__q { grid-column: 1 / -1; margin: 4px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--desk-3); color: var(--on-desk); font-family: var(--f-display); font-size: 16px; line-height: 1.35; display: flex; flex-direction: column; gap: 8px; }
+.src39__q span::before { content: '“'; } .src39__q span::after { content: '”'; }
+.src39__q small { align-self: flex-start; font-family: var(--f-text); font-size: 12px; }
+.src39__q.is-new { box-shadow: inset 0 0 0 1px var(--gold); }
+@media (max-width: 380px) { .src39__row { grid-template-columns: 52px minmax(0, 1fr); } .src39__act { grid-column: 1 / -1; width: 100%; } }
+
+/* rivals: readable stacked rows */
+.file3 .rivals__row { display: flex !important; flex-direction: column; gap: 6px; }
+.file3 .rv { display: grid !important; grid-template-columns: 40px minmax(0, 1fr) auto; grid-template-areas: "a n s" "a r s"; align-items: center; column-gap: 10px; padding: 8px 12px !important; text-align: start; }
+.file3 .rv .rv-av { grid-area: a; }
+.file3 .rv__n { grid-area: n; font-size: 16px; font-weight: 700; }
+.file3 .rv__rel { grid-area: r; font-size: 13px !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--on-desk-2); font-family: var(--f-text) !important; }
+.file3 .rv > .g-chip, .file3 .rv__when { grid-area: s; font-size: 13px !important; letter-spacing: 0 !important; color: var(--on-desk-2); }
+.file3 .know__none { color: var(--on-desk-2); font-size: 15px; }
+
+/* your call: readable selected states (dark label, clear border, a check) */
+.file3 .outs { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px; }
+.file3 .out { position: relative; min-height: 56px; }
+.file3 .out span { display: block !important; font-size: 12.5px; line-height: 1.25; color: var(--card-ink-2); }
+.file3 .out[aria-pressed="true"], .file3 .vol[aria-pressed="true"] { position: relative; background: var(--card) !important; color: var(--card-ink) !important; box-shadow: inset 0 0 0 3px var(--card-ink) !important; transform: none; }
+.file3 .out[aria-pressed="true"] svg, .file3 .out[aria-pressed="true"] b, .file3 .vol[aria-pressed="true"] b { color: var(--card-ink) !important; }
+.file3 .out[aria-pressed="true"] span, .file3 .vol[aria-pressed="true"] .vol__d { color: var(--card-ink-2) !important; }
+.file3 .out[aria-pressed="true"]::after, .file3 .vol[aria-pressed="true"]::after { content: '✓'; position: absolute; top: 4px; inset-inline-end: 6px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--card-ink); color: var(--card); font-size: 12px; font-weight: 900; }
+.file3 .vol[aria-pressed="true"] .vol__meter i:not(.on) { background: var(--card-3); }
+.file3 .vol__odds { display: none !important; }
+.file3 .vol__d { display: block !important; font-size: 12px; }
+.file3 .stake3 p { font-size: 15px; }
+.file3 .stake__w { color: var(--sage-deep); font-weight: 800; } .file3 .stake__l { color: var(--red-deep); font-weight: 800; }
+
+/* the filed call: a structured summary */
+.filed40 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin: 6px 0 4px; }
+.filed40 div:first-child { grid-column: 1 / -1; }
+.filed40 dt { font-size: 12px; color: var(--card-ink-3); text-transform: uppercase; letter-spacing: .08em; }
+.filed40 dd { margin: 0; font-size: 16px; font-weight: 700; color: var(--card-ink); }
+.filed40__note, .filed40__ut { margin: 6px 0 0; font-size: 14px; color: var(--card-ink-2); }
+.filed40__cancel { margin-inline-start: 6px; text-decoration: underline; color: var(--card-ink); min-height: 44px; }
+.callbox__ut { margin-top: 10px; }
+
+/* board: publication status gets its own row; names and clubs never squeezed; the arrow always stays */
+.play .scard__n { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; white-space: normal !important; text-overflow: clip !important; }
+.play .scard__r { flex-wrap: wrap; row-gap: 3px; }
+.play .scard__cl bdi { white-space: nowrap; }
+.scard__pub { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 8px; background: var(--desk-3); color: var(--on-desk); font-size: 13px; box-shadow: inset 3px 0 0 var(--oc, var(--gold)); }
+.scard__pub svg { color: var(--sage); } .scard__pub.is-slam { animation: pub40 .5s var(--ease-out, ease-out); }
+@keyframes pub40 { from { transform: scale(1.15); opacity: 0; } }
+:root.reduce .scard__pub { animation: none; }
+@media (prefers-reduced-motion: reduce) { .scard__pub { animation: none !important; } }
+.pf40 .pf39__k { white-space: nowrap; }
+.pf40 .pf39__cl { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+@media (max-width: 440px) { .dh40__of { display: none; } }
+.dh40 .callpill { flex: none; }
+.src39__q span::before, .src39__q span::after { content: none; }
+.ev40:not(.is-empty) { display: block !important; }
+.ev40:not(.is-empty) .ev39__h { margin: 0 0 8px !important; }

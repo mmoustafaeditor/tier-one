@@ -46,7 +46,7 @@ export default {
         cred: 'Credibility', promoted: 'Promoted', editor: 'The editor', share: 'Brag to the group chat', shareSub: 'Your five in one line. No spoilers for anyone yet to play.',
       },
       win: {
-        daily: 'Daily No. {n}', offlineH: 'The line’s dead', board: 'Board', dailyK: 'The Daily Challenge · {date}', dayH: 'Day {n}', sleep: 'Sleep on it · day {n}',
+        daily: 'Daily No. {n}', offlineH: 'The line’s dead', board: 'Board', dailyK: 'The Daily Challenge · {date}', dayH: 'Day {n}', sleep: 'Advance to Day {n}',
         callsLeft: '{n} calls left today', noCalls: 'No calls left', notRung: 'Not rung yet', rivalPosted: '{n} rival',
         published: ['Posted!', 'Published!', 'Front page!'], ddIncoming: 'Deadline Day.', overnight: '{n} stories broke overnight',
         taunt: { tabloid: '@BackPageBants: “Too slow, mate. Again.”', itk: '@ITK_Kev: “Some of us have real sources.”', insider: '@PressBoxPete: “Should’ve rung the physio, son.”' },

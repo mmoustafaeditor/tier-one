@@ -1,9 +1,9 @@
 {
   "game": "tier-one-v3",
-  "version": "3.9.19",
-  "build": 29850682,
+  "version": "3.9.20",
+  "build": 29850782,
   "kind": "web",
-  "bytes": 13280203,
-  "sha256": "0efcf1d9f778fcf6dc68bbd093183982463dcc889c512886b494acf76789d7bb",
+  "bytes": 13286893,
+  "sha256": "9de8ff72a03bb394d8ce563034dc6cae45cc43064647ee7d76e31dff1365c82d",
   "files": 312
 }

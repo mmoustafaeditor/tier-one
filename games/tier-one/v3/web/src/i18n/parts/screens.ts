@@ -35,7 +35,7 @@ export default {
       howto: {
         k: 'How to play', hed: 'How Tier One works in 60 seconds', swipe: 'Swipe', step: 'Step {n} of {m}', next: 'Next', prev: 'Back', go: 'Try it in Practice', early: 'Early bonus: a right call earns extra for every day left before Deadline Day, so the same call pays less as the week goes on.',
         steps: [
-          ['Ring your sources', 'Spend contact points calling the kit man, the barber, the agent and friends.', 'The physio says: “Medical at Chelsea.”'],
+          ['Ring your sources', 'Spend call points calling the kit man, the barber, the agent and friends.', 'The physio says: “Medical at Chelsea.”'],
           ['Read the evidence', 'Every answer adds a tally to one outcome. Street voices repeat each other, so count the street once.', 'Done ✓✓ · Hijack ✓ · Off · Fake'],
           ['Pick what happens', 'Exactly one is true: Done, Hijack, Off or Fake.', 'Done: he signs for the club in the story.'],
           ['Pick how loud', 'In talks, Advanced or Confirmed. Louder pays more and hurts more.', 'Right on day 1: In talks +{b0}, Advanced +{b1}, Confirmed +{b2}. Wrong: −{l}.'],

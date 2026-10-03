@@ -14,7 +14,7 @@ import { useT, num } from '../lib/i18n';
 import { leanOf, voiceLine, postLine, saysWord, outWord, strWord, vars, varsH, evidenceOf, relKey, GRADE } from '../lib/story';
 import { Glyph, Lines, Crest } from '../ui/bits';
 import { Icon, SrcIcon, GBtn } from '../ui/game';
-import { Portrait, moodFor, accentOf } from '../ui/portrait';
+import { Portrait, moodFor } from '../ui/portrait';
 import { sfx, buzz } from '../lib/sfx';
 import { hereWeGo } from '../lib/share';
 import type { View } from '../lib/driver';
@@ -30,7 +30,6 @@ export interface SagaProps {
   /** Optional: the record shown under each rival avatar in the race strip. Nothing renders when absent or null. */
   rivalRecord?: (id: string) => RivalRecord | null | undefined;
 }
-const CIRC_IC: Record<string, string> = { club: 'shield', agent: 'briefcase', travel: 'plane', street: 'scissors', office: 'fax', insider: 'eye' };
 export const RIVAL_IC: Record<string, string> = { tabloid: 'BB', itk: '?', insider: 'PP' };
 /** A rival's face: the art slot (Addendum A), with the old initials as the accessible label. */
 export const RivalFace = ({ id, size = 34, name }: { id: string; size?: number; name?: string }) => <Portrait kind="rival" id={id} size={size} round name={name} className={'rv-av rv-av--' + id} />;
@@ -38,10 +37,10 @@ export const RivalFace = ({ id, size = 34, name }: { id: string; size?: number; 
 /** The calls you have left today: a paper pill with a coral phone (board and Player File). */
 export function CallsPill({ left }: { left: number }) {
   const t = useT();
-  return <span className={'callpill' + (left ? '' : ' is-out')} aria-label={t('daily.contactsLeft', { n: left })}><Icon n="phone" size={18} /><b>{left ? t('u39.file.calls', { n: left }) : t('g.win.noCalls')}</b></span>;
+  return <span className={'callpill' + (left ? '' : ' is-out')} aria-label={t('daily.contactsLeft', { n: left })}><Icon n="phone" size={18} /><b>{left ? t(left === 1 ? 'u39.file.callsOne' : 'u39.file.calls', { n: left }) : t('g.win.noCalls')}</b></span>;
 }
 
-export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, justFiled, rivalRecord }: SagaProps) {
+export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, justFiled }: SagaProps) {
   const t = useT();
   const c = view.cast[i];
   const ln = leanOf(g, i);
@@ -90,13 +89,12 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     <div className="g-sec"><h2>{t('calls.race.h')}</h2></div>
     <div className="rivals__row">
       {g.R.RIVALS.map((r) => {
-        const mine = livePosts.filter((p) => p.id === r.id), rec = rivalRecord?.(r.id), name = t('rival.' + r.id);
+        const mine = livePosts.filter((p) => p.id === r.id), name = t('rival.' + r.id);
         return <div key={r.id + (mine.length ? ':' + mine[0].claim : '')} className={'rv' + (mine.length ? ' is-posted rv--' + OUTS[mine[0].claim] : '')}>
           <RivalFace id={r.id} name={name} />
           <span className="rv__n">{name}</span>
           <span className="rv__rel g-mono">{t(relKey(r.id))}</span>
           {mine.length ? <span className={'g-chip g-chip--' + OUTS[mine[0].claim]}>{outWord(t.lang, mine[0].claim)} · {t('g.saga.dayShort', { n: mine[0].day })}</span> : <span className="rv__when g-mono">{t('g.saga.rivalWhen', { a: r.days[0], b: r.days[1] })}</span>}
-          {rec && <span className="rv__rec g-mono" aria-label={t('calls.race.recAria', { w: rec.w, l: rec.l, d: rec.d, r: name })}>{t('calls.race.rec', { w: rec.w, l: rec.l, d: rec.d })}</span>}
         </div>;
       })}
     </div>
@@ -106,10 +104,10 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     {/* ---- header (3.9, screenshot 03): the file card, the player's portrait large on the right ---- */}
     <header className={'pf39 pf40' + (justFiled ? ' is-filed' : '')}>
       <div className="pf39__txt">
-        <span className="pf39__k g-mono">{t('u39.file.k')} · {t('c38.file.sagaNo', { n: i + 1, m: view.cast.length })}</span>
+        <span className="pf39__k g-mono">{view.mode === 'daily' && view.no ? t('u39.dh.no', { n: String(view.no).padStart(3, '0') }) : t('u39.file.k')} · {t('c38.file.sagaNo', { n: i + 1, m: view.cast.length })}</span>
         <h1 className="pf39__n" dir="auto">{c.player.n}</h1>
         <span className="pf39__m">{[t('pos.' + c.player.pos), c.player.age > 0 ? t('u39.file.age', { n: c.player.age }) : ''].filter(Boolean).join(' · ')}</span>
-        <span className="pf39__route"><Crest club={c.from} size={34} /><bdi>{c.from.s}</bdi><Icon n={t.rtl ? 'back' : 'arrow'} size={20} /><Crest club={c.to} size={34} /><bdi><b>{c.to.s}</b></bdi></span>
+        <span className="pf39__route"><span className="pf39__cl"><Crest club={c.from} size={34} /><bdi>{c.from.s}</bdi></span><Icon n={t.rtl ? 'back' : 'arrow'} size={20} /><span className="pf39__cl"><Crest club={c.to} size={34} /><bdi><b>{c.to.s}</b></bdi></span></span>
         <em className="pf39__sim">{t('u39.file.sim')}</em>
       </div>
       <span className="pf39__art" aria-hidden="true"><Portrait kind="player" id={c.player.id} club={c.from} size={150} /></span>
@@ -121,32 +119,27 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
     {g.tips && i in g.tips && <div className="g-chip g-chip--gold tipchip">{t(g.tips[i] ? 'career.tipFake' : 'career.tipReal', { p: c.player.s })}</div>}
 
     {/* ---- evidence (3.9): four bars on the left, the independent circles on the right ---- */}
-    <section className={'ev39 ev40 ev--' + ev.word} aria-label={t('c38.ev.summary')}>
+    <section className={'ev39 ev40 ev--' + ev.word + (curReads.length ? '' : ' is-empty')} aria-label={t('c38.ev.summary')}>
       <h2 className="ev39__h">{t('c38.ev.summary')}</h2>
-      <div className="ev39__bars">
-        {[0, 1, 2, 3].map((k) => <div key={k} className={'ev39__r oc--' + OUTS[k] + (!ln.none && ln.o === k ? ' is-lead' : '')}>
-          <span>{outWord(t.lang, k)}</span><span className="ev39__bar"><i style={{ width: (100 * ln.tally[k]) / maxT + '%' }} /></span>
-        </div>)}
-      </div>
-      <div className="ev39__circ">
-        {(() => { const cs = Array.from(new Set(curReads.map((r) => g.R.CIRCLE[r.src]).filter(Boolean))); return <>
-          <span className="ev39__cn"><b className="g-num">{cs.length}</b> {t(cs.length === 1 ? 'u39.file.circle1' : 'u39.file.circles')}</span>
-          <span className="ev39__icons">{cs.slice(0, 3).map((x) => <span key={x} className="ev39__ci"><i><Icon n={CIRC_IC[x] || 'eye'} size={20} /></i><small>{t('u39.file.circ.' + x)}</small></span>)}</span>
-          {view.posterior && <span className="ev39__coach g-mono">{view.posterior(i).map((p, k) => `${outWord(t.lang, k)[0]} ${Math.round(p * 100)}%`).join(' · ')}</span>}
-        </>; })()}
-      </div>
-      {!curReads.length && <p className="ev40__hint">{t('u39.file.gather')}</p>}
+      {curReads.length ? <>
+        <div className="ev39__bars">
+          {[0, 1, 2, 3].map((k) => <div key={k} className={'ev39__r oc--' + OUTS[k] + (!ln.none && ln.o === k ? ' is-lead' : '')}>
+            <span>{outWord(t.lang, k)}</span><span className="ev39__bar"><i style={{ width: (100 * ln.tally[k]) / maxT + '%' }} /></span><b className="g-num">{ln.tally[k]}</b>
+          </div>)}
+        </div>
+        <p className="ev40__hint">{t('u39.file.evNote')}</p>
+        {view.posterior && <span className="ev39__coach g-mono">{view.posterior(i).map((p, k) => `${outWord(t.lang, k)[0]} ${Math.round(p * 100)}%`).join(' · ')}</span>}
+      </> : <p className="ev40__none"><b>{t('u39.file.noEv')}</b> {t('u39.file.gather')}</p>}
     </section>
 
     <div className="sg-tabs sg39" role="tablist">
-      {(['ring', 'clips', 'call'] as const).map((k) => <button key={k} role="tab" aria-selected={pane === k} onClick={() => { sfx('ui.tap'); setPane(k); }}>
-        {k === 'ring' ? t('c38.file.tabs.sources') : k === 'clips' ? t('u39.said.tab') + (curReads.length + livePosts.length ? ` (${curReads.length + livePosts.length})` : '') : t('c38.file.tabs.call')}
+      {(['ring', 'clips', 'call'] as const).map((k) => <button key={k} role="tab" aria-selected={pane === k} aria-label={k === 'clips' ? t('u39.said.tab') : undefined} onClick={() => { sfx('ui.tap'); setPane(k); }}>
+        {k === 'ring' ? t('c38.file.tabs.sources') : k === 'clips' ? t('u39.file.rivals') + (livePosts.length ? ` (${livePosts.length})` : '') : t('c38.file.tabs.call')}
       </button>)}
     </div>
 
     <div className="pf39__pane">
     {pane === 'ring' && <section className="src39" aria-label={t('g.saga.ring')}>
-      <div className="src39__left"><CallsPill left={g.left} /></div>
       {srcs.map((k) => {
         const st = E.askState(g, i, k), so = E.srcOf(g.R, i, k)!;
         const asked = curReads.filter((r) => r.src === k);
@@ -164,6 +157,7 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
           {lastR && st !== 'ok' ? <span className="src39__act is-done"><Icon n="check" size={16} />{t('u39.file.called')}</span>
             : st === 'closed' ? <span className="src39__act is-shut"><Icon n="lock" size={14} />{t('u39.file.opens', { n: so.from })}</span>
             : <button type="button" className="src39__act is-ring src" data-src={k} disabled={st !== 'ok' || busy} onClick={() => onAsk(k)}><Icon n="phone" size={16} />{t(so.cost === 1 ? 'u39.file.ring' : 'u39.file.rings', { n: so.cost })}</button>}
+          {lastR && <blockquote className={'src39__q' + (k === last?.c.src && last?.i === i ? ' is-new' : '')}><span>{voiceLine(t.lang, c, lastR)}</span><small className={'g-stamp g-stamp--' + OUTS[lo]}>{t('u39.file.added', { o: saysWord(t.lang, k, lastR.r, c) })}</small></blockquote>}
         </div>;
       })}
       {favours}
@@ -171,30 +165,27 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
 
     {pane === 'clips' && <>
       {rivalsRace}
-      {!(curReads.length > 0 || livePosts.length > 0) && <p className="know__none">{t('u39.said.none')}</p>}
-      {(curReads.length > 0 || livePosts.length > 0) && <section className="clips is-open">
+      {livePosts.length ? <section className="clips is-open">
         <ol className="clips__l">
-          {[...curReads.map((r, k) => {
-            const w = E.weights(g.R, r.src, r.r), isNew = k === newK;
-            return { d: r.day + k / 1000, el: <li key={'r' + k} ref={isNew ? newRef : undefined} className={'clip clip--q' + (isNew ? ' is-new' : '')} style={{ ['--acc' as string]: accentOf(r.src) }}>
-              <Portrait kind="source" id={r.src} size={36} mood={moodFor(r.src, w.indexOf(Math.max(...w)))} />
-              <div className="clip__b">
-                <div className="clip__h"><b>{view.mode === 'career' ? srcNamed(t, r.src) : t('src.' + r.src)}</b><span className="g-mono">{t('common.day', { n: r.day })}</span>{isNew && <span className="clip__new">{t('cf.new')}</span>}</div>
-                <blockquote className="clip__q" cite={t('src.' + r.src)}>{voiceLine(t.lang, c, r)}</blockquote>
-                <div className="clip__f"><span className={'g-stamp clip__says g-stamp--' + OUTS[w.indexOf(Math.max(...w))]}>{saysWord(t.lang, r.src, r.r, c)}</span><span className="clip__adds g-mono">{t(relKey(r.src))}</span></div>
-              </div>
-            </li> };
-          }),
-            ...livePosts.map((p, k) => ({ d: p.day + 100, el: <li key={'p' + k} className="clip clip--rival"><RivalFace id={p.id} name={t('rival.' + p.id)} /><div><div className="clip__h"><b>{t('rival.' + p.id)}</b><span className="g-mono">{t('common.day', { n: p.day })}</span><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div><p>{postLine(t.lang, c, p)}</p><span className="clip__adds g-mono">{t(relKey(p.id))}</span></div></li> }))].sort((a, b) => b.d - a.d).map((x) => x.el)}
+          {[...livePosts].sort((x, y) => y.day - x.day).map((p, k) => <li key={'p' + k} className="clip clip--rival"><RivalFace id={p.id} name={t('rival.' + p.id)} /><div><div className="clip__h"><b>{t('rival.' + p.id)}</b><span className="g-mono">{t('common.day', { n: p.day })}</span><span className={'g-chip g-chip--' + OUTS[p.claim]}>{outWord(t.lang, p.claim)}</span></div><p>{postLine(t.lang, c, p)}</p></div></li>)}
         </ol>
-      </section>}
+      </section> : <p className="know__none">{t('u39.file.noRivals')}</p>}
     </>}
 
     {pane === 'call' && <>
     <section className={'callbox g-card' + (dd ? ' is-dd' : '')} id={'file-' + i}>
-      <div className="callbox__h"><h2>{call ? (utOpen ? t('c38.file.change') : t('g.saga.yourCall')) : t('c38.file.call')}</h2>{post7 != null && <span className="g-chip g-chip--red">{t('dd.posts', { n: post7 })}</span>}</div>
-      {call && <p className="callbox__filed">{t('g.saga.filedLine', { s: strWord(t.lang, call.s), o: outWord(t.lang, call.o), d: call.day })}{canUt ? ' ' + t('saga.uturnNote', { p: g.R.UT_PEN[call.s] }) : call.ut ? ' ' + t('saga.uturnUsed') : ''}</p>}
-      {canUt && !utOpen && <GBtn kind="paper" size="sm" className="callbox__ut" onClick={() => setUtOpen(true)}><Icon n="uturn" />{t('calls.repost.open')}</GBtn>}
+      <div className="callbox__h"><h2>{call ? (utOpen ? t('c38.file.change') : t('u39.call2.h')) : t('c38.file.call')}</h2>{post7 != null && <span className="g-chip g-chip--red">{t('dd.posts', { n: post7 })}</span>}</div>
+      {call && !utOpen && <dl className="filed40">
+        <div><dt>{t('u39.call2.player')}</dt><dd dir="auto">{c.player.n}</dd></div>
+        <div><dt>{t('u39.call2.out')}</dt><dd>{outWord(t.lang, call.o)}</dd></div>
+        <div><dt>{t('u39.call2.conf')}</dt><dd>{strWord(t.lang, call.s)}</dd></div>
+        <div><dt>{t('u39.call2.day')}</dt><dd>{t('common.day', { n: call.day })}</dd></div>
+        <div><dt>{t('u39.call2.ex')}</dt><dd>{call.two ? t('u39.call2.yes') : t('u39.call2.no')}</dd></div>
+      </dl>}
+      {call && !utOpen && <p className="filed40__note">{t('u39.call2.note')}</p>}
+      {canUt && !utOpen && <><GBtn kind="paper" size="sm" className="callbox__ut" onClick={() => setUtOpen(true)}><Icon n="uturn" />{t('u39.call2.revise')}</GBtn><p className="filed40__ut">{t('saga.uturnNote', { p: g.R.UT_PEN[call!.s] })}</p></>}
+      {call && !canUt && call.ut && <p className="filed40__ut">{t('saga.uturnUsed')}</p>}
+      {canUt && utOpen && <p className="filed40__ut">{t('saga.uturnNote', { p: g.R.UT_PEN[call!.s] })} <button type="button" className="filed40__cancel" onClick={() => setUtOpen(false)}>{t('common.cancel')}</button></p>}
       {((cs === 'ok' && !call) || (canUt && utOpen)) && <div className="callform">
         <div className="step"><span className="step__n">1</span>{t('c38.pub.what')}</div>
         <div className="outs">
@@ -214,9 +205,9 @@ export function SagaFile({ view, g, i, busy, last, dd, onAsk, onPost, favours, j
           <p><span className="stake__w">{t('c38.pub.win', { n: pv.win })}</span><span className="stake__l">{t('c38.pub.lose', { n: num(pv.lose) })}</span><span className="stake3__early g-mono">{pv.early > 0 ? t('c38.pub.early', { d: g.day, n: pv.early }) : g.day === g.R.DAYS ? t('c38.pub.dd') : ''}</span></p>
           <p className={'stake3__ex' + (pv.exclPossible ? ' is-on' : '')}><Icon n="bolt" size={14} />{exLine}</p>
         </div>}
-        <HoldPublish disabled={selO == null || busy || (!!call && call.o === selO)} shine={selO != null} gold={selO === 0 && s === 2 && !call} onCommit={post}
-          label={selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}>
-          <Icon n={call ? 'uturn' : 'news'} size={24} /><span className="publish__t">{selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : selO === 0 && s === 2 ? <><b>{catchphraseOf().text.toUpperCase()}</b><em>{t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) })}</em></> : (() => { const [h, ...rest] = t('g.saga.publish', { s: strWord(t.lang, s), o: outWord(t.lang, selO) }).split(' · '); return rest.length ? <><b>{h}</b><em>{rest.join(' · ')}</em></> : h; })()}</span>
+        <HoldPublish disabled={selO == null || busy || (!!call && call.o === selO)} shine={selO != null} gold={false} onCommit={post}
+          label={selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : t('u39.call2.publish') + ' · ' + outWord(t.lang, selO) + ' · ' + strWord(t.lang, s)}>
+          <Icon n={call ? 'uturn' : 'news'} size={24} /><span className="publish__t">{selO == null ? t('saga.pick') : call ? t('calls.repost.btn', { o: outWord(t.lang, selO) }) : <><b>{t('u39.call2.publish')}</b><em>{outWord(t.lang, selO) + ' · ' + strWord(t.lang, s)}</em></>}</span>
         </HoldPublish>
         {view.mode !== 'practice' && <p className="stake3__coach g-mono">{t('c38.pub.coachOnly')}</p>}
       </div>}
